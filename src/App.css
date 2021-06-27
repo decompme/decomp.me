@@ -1,0 +1,156 @@
+body, .App {
+  /*text-align: center;*/
+  /*background-color: #282c34;*/
+  background-color: #20212A;
+  height: 100%;
+  color: #eee;
+}
+
+.label {
+  color: #888;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+input, .btn {
+  padding: 16px 32px;
+  margin: 8px;
+  font-size: 18px;
+  border: none;
+  background: #282932;
+  color: #fff;
+  width: 100%;
+  border-radius: 4px;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px #5B81F1;
+}
+
+input[type=submit] {
+  cursor: pointer;
+  width: auto;
+}
+
+.success {
+  background: #3FB04B;
+}
+.success:hover {
+  background: #57CB64;
+}
+
+a {
+  color: #5B81F1;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #78A1F8;
+}
+
+.btn {
+  background: #5B81F1;
+}
+.btn:hover {
+  color: #fff;
+  background: #78A1F8;
+}
+
+h1 {
+  color: #f3f3f3;
+}
+
+h2 {
+  color: #cacaca;
+  margin-top: 4px;
+}
+
+.columns {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+.column {
+  padding: 0px 20px;
+  border-right: 1px dashed rgba(255,255,255,0.2);
+  flex-grow: 1;
+}
+.column.rightmost {
+  border: none;
+}
+
+div.card {
+  border-radius: 4px;
+  padding: 16px;
+  background-color: #282932;
+  margin: 8px 0px;
+}
+
+a .card {
+  color: #fff;
+}
+a:hover .card {
+  background-color: #2E2F3C;
+}
+
+nav {
+  margin: 0 auto;
+  width: 1024px;
+  border-bottom: 1px solid #2e2f3b;
+}
+nav ul {
+  list-style: none;
+}
+nav li {
+  display: inline-block;
+}
+nav li a {
+  padding: 20px 10px;
+  color: #aaa;
+}
+nav li a:hover {
+  background: #2e2f3b;
+  color: #ccc;
+}
+
+td {
+  padding: 8px;
+}
+
+.overflowY {
+  overflow-y:auto;
+}
