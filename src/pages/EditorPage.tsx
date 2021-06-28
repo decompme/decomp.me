@@ -1,9 +1,9 @@
 import debounce from "lodash.debounce";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router";
 import { CodeEditor } from "../components/CodeEditor"
 import { DiffEditor } from "../components/DiffEditor";
-import { API_URL } from "../constants";
+import { API_URL, CEXPLORE_URL, COMPILE_DEBOUNCE_TIME } from "../constants";
 import { Func } from "../types";
 
 interface Params {
@@ -32,7 +32,9 @@ const EditorPage: React.FC<RouteComponentProps<Params>> = ({ match }) => {
 
 
 
-    const debouncedCompile = debounce(nextValue => compile(nextValue), 500);
+    const debouncedCompile =
+        useCallback(
+            debounce(nextValue => compile(nextValue), COMPILE_DEBOUNCE_TIME), []);
 
     const onCodeChange = (newValue: any) => {
         setCCode(newValue)
@@ -41,7 +43,7 @@ const EditorPage: React.FC<RouteComponentProps<Params>> = ({ match }) => {
 
     const compile = async (nextValue: any) => {
         console.log('compiling', nextValue);
-        const res = await fetch("http://cexplore.henny022.de/api/compiler/tmc_agbcc/compile", {
+        const res = await fetch(CEXPLORE_URL, {
             "headers": {
                 "accept": "application/json, text/javascript, */*; q=0.01",
                 //"accept-language": "en-US,en;q=0.9",

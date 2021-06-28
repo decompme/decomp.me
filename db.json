@@ -51,6 +51,14 @@
       "asmCode": "thumb_func_start sub_0801CED8\nsub_0801CED8:\n        push {r4, lr}\n        mov r3, r0\n        ldr r0, _data0_0\n        mov r1, r0\n        add r1, #0x24\n        ldrb r4, [r1]\n        cmp r4, #0x1\n        bne _code0_0\n        mov r2, #0x2\n        mov r0, #0x2\n        strb r0, [r1]\n        mov r1, #0x0\n        mov r0, #0x10\n        strh r0, [r3, #0xc]\n        mov r0, #0x90\n        strh r0, [r3, #0xe]\n        strb r1, [r3, #0x6]\n        mov r0, #0x7\n        strb r0, [r3, #0x1]\n        strb r4, [r3, #0x4]\n        ldrb r0, [r3]\n        orr r0, r2\n        strb r0, [r3]\n        ldr r1, _data0_0+0x4\n        mov r0, r3\n        bl sub_0801CAB8\n_code0_0:\n        pop {r4, pc}\n_data0_0:\n        .4byte gUnk_0200AF00\n        .4byte gUnk_080C9094",
       "score": "33",
       "id": 4
+    },
+    {
+      "name": "sub_0804C258",
+      "projectId": "1",
+      "cCode": "#include \"global.h\"\n#include \"audio.h\"\n#include \"entity.h\"\n#include \"area.h\"\n#include \"room.h\"\n#include \"flags.h\"\n#include \"npc.h\"\n#include \"player.h\"\n#include \"screen.h\"\n#include \"main.h\"\n#include \"structures.h\"\n#include \"save.h\"\n#include \"script.h\"\n#include \"random.h\"\n#include \"functions.h\"\n\n// end of existing headers\n\nvoid sub_0804C258(void) {\n\n}",
+      "asmCode": "thumb_func_start sub_0804C258\nsub_0804C258:\n        push {lr}\n        ldr r3, _data0_0\n        ldrb r0, [r3, #0xd]\n        mov r2, #0xf\n        neg r2, r2\n        and r2, r0\n        mov r0, #0x2\n        orr r2, r0\n        mov r0, #0xf\n        and r2, r0\n        strb r2, [r3, #0xd]\n        ldr r0, _data0_0+0x4\n        ldrb r0, [r0, #0xe]\n        cmp r0, #0x4\n        bne _code0_0\n        mov r1, #0xe\n        mov r0, r2\n        orr r0, r1\n        strb r0, [r3, #0xd]\n        mov r0, #0x1\n        bl sub_080AF250\n_code0_0:\n        pop {pc}\n_data0_0:\n        .4byte gArea\n        .4byte gScreenTransition",
+      "score": "28",
+      "id": 7
     }
     ]
 }
