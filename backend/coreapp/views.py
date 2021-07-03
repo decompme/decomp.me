@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404
 
-from coreapp.models import Function, Project
+from .models import Function, Project
 
 def index(request):
     return HttpResponse("This is the index page.")
