@@ -1,41 +1,27 @@
-import datetime
-
 from django.db import models
-from django.utils import timezone
 
-class User(models.Model):
-    username = models.CharField(max_length=30)
-
-    def __str(self):
-        return self.username
-
-class Project(models.Model):
-    slug = models.SlugField(max_length=50)
-    name = models.CharField(max_length=200)
-    creation_date = models.DateTimeField('creation date')
-    repo_url = models.URLField(blank=True)
-    discord_url = models.URLField(blank=True)
-
-    def was_created_recently(self):
-        return self.creation_date >= timezone.now() - datetime.timedelta(days=1)
+class Compiler(models.Model):
+    shortname = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
-class Function(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    fn_text = models.TextField()
-    visits = models.IntegerField(default=0)
+class Assembly(models.Model):
+    hash = models.CharField(max_length=64, primary_key=True)
+    data = models.TextField()
 
     def __str__(self):
-        return self.name
+        return self.data
 
-class Submission(models.Model):
-    function = models.ForeignKey(Function, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.TextField()
-    submission_time = models.DateTimeField('submission time')
+class Scratch(models.Model):
+    slug = models.SlugField(primary_key=True)
+    submission_time = models.DateTimeField()
+    compiler = models.ForeignKey(Compiler, on_delete=models.CASCADE)
+    assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
+    c_code = models.TextField()
+    parent = models.ForeignKey("self", null=True, on_delete=models.CASCADE)
+    owner = models.UUIDField()
 
     def __str__(self):
-        return self.function.name
+        return self.slug

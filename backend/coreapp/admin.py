@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Function, Project
+from .models import Compiler, Assembly, Scratch
 
-admin.site.register(Function)
-admin.site.register(Project)
+admin.site.register(Compiler)
+admin.site.register(Assembly)
+admin.site.register(Scratch)
