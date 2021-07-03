@@ -3,7 +3,7 @@ from django.http import HttpResponse
 
 from rest_framework import viewsets
 
-from coreapp.models import Compiler
+from .models import Compiler
 
 def index(request):
     return HttpResponse("This is the index page.")
