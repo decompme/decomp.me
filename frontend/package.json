@@ -1,0 +1,14 @@
+{
+    "name": "decomp-me-app",
+    "version": "0.1.0",
+    "repository": "https://github.com/ethteck/decomp.me",
+    "license": "MIT",
+    "private": true,
+    "scripts": {
+        "start": "snowpack dev",
+        "build": "snowpack build"
+    },
+    "devDependencies": {
+        "snowpack": "^3.7.1"
+    }
+}
