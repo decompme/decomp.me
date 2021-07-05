@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Decompilation scratchpad" />
+
+        <link rel="stylesheet" href="index.css" />
+
+        <title>decomp.me</title>
+    </head>
+    <body class="vstack">
+        <nav>
+            decomp.me scratchpad
+        </nav>
+
+        <main class="vstack grow">
+            <form id="scratchpad" class="grow hstack" method="post" action="">
+                <div class="grow scratchpad-lcol vstack">
+                    <div>
+                        <label for="compiler">Compiler</label>
+                        <select name="compiler">
+                            {% for compiler, configs in compilers.items %}
+                                <optgroup label="{{ compiler.name }}">
+                                    {% for config in configs %}
+                                        <option value="config.id"> {{ config }} </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <textarea class="code scratchpad-sourcecode grow" name="sourcecode" rows="30" cols="80">{{ source_code }}</textarea>
+                </div>
+
+                <div class="grow vstack">
+                    <code class="grow code diff-compiled">{{ compiled_asm }}</code>
+
+                    <textarea form="scratchpad" name="targetasm" rows="30" cols="60" class="grow code diff-target">{{ target_asm }}</textarea>
+
+                    <div>
+                        <input class="btn" type="submit" value="Compile">
+                    </div>
+                </div>
+            </form>
+        </main>
+    </body>
+</html>

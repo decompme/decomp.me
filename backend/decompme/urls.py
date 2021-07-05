@@ -9,6 +9,7 @@ router = routers.DefaultRouter()
 router.register(r"compilers", views.CompilerViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # path('', include(router.urls)),
+    path('', include('coreapp.urls')),
     path('admin/', admin.site.urls),
 ]
