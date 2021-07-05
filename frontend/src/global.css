@@ -1,0 +1,112 @@
+html {
+    font-size: calc(1rem + 0.5vw);
+    font-family: monospace;
+
+    --ratio: 1.25;
+    --s-5: calc(var(--s-4) / var(--ratio));
+    --s-4: calc(var(--s-3) / var(--ratio));
+    --s-3: calc(var(--s-2) / var(--ratio));
+    --s-2: calc(var(--s-1) / var(--ratio));
+    --s-1: calc(var(--s0) / var(--ratio));
+    --s0: 1rem;
+    --s1: calc(var(--s0) * var(--ratio));
+    --s2: calc(var(--s1) * var(--ratio));
+    --s3: calc(var(--s2) * var(--ratio));
+    --s4: calc(var(--s3) * var(--ratio));
+    --s5: calc(var(--s4) * var(--ratio));
+    --s6: calc(var(--s5) * var(--ratio));
+    --s7: calc(var(--s6) * var(--ratio));
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    color: inherit;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    line-height: var(--ratio);
+    overflow: hidden;
+    height: 100vh;
+    text-rendering: optimizeSpeed;
+}
+
+#root {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr;
+    grid-template-rows: var(--s3) 1fr 1fr;
+    gap: var(--s1) var(--s1);
+    padding: var(--s1);
+    grid-template-areas:
+        "nav nav nav"
+        "c c output"
+        "c c output";
+    height: 100vh;
+}
+
+.cover {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    --cover-space: var(--s1);
+    padding: var(--cover-space);
+}
+
+.cover > :first-child {
+    margin-bottom: var(--cover-space);
+}
+
+.cover > :last-child {
+    margin-top: var(--cover-space);
+}
+
+.cover > :nth-child(2) {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+nav {
+    grid-area: nav;
+
+    user-select: none;
+    font-size: var(--s-2);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+main {
+    padding: var(--s1);
+}
+
+.scratchpad-c {
+    grid-area: c;
+}
+
+.scratchpad-output {
+    grid-area: output;
+}
+
+button {
+    background: #000;
+    color: #fff;
+    border: 0.125rem solid;
+    border-bottom: 0.2rem solid;
+    border-radius: 0.25rem;
+    padding: var(--s-4) var(--s-2);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+button:active {
+    border-bottom: 0.125rem solid;
+}
