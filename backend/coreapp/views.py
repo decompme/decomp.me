@@ -1,9 +1,8 @@
-from rest_framework.generics import get_object_or_404
-from coreapp.serializers import CompilerSerializer
+from coreapp.serializers import CompilerConfigurationSerializer
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-
-from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 from .models import Compiler, CompilerConfiguration, Scratch
 
@@ -12,7 +11,7 @@ def index(request):
 
 def scratch(request, slug=None):
     db_scratch = None
-    
+
     if slug:
         db_scratch = get_object_or_404(Scratch, slug=slug)
     
@@ -34,6 +33,21 @@ def scratch(request, slug=None):
     return render(request, "coreapp/scratch.html", context=context)
 
 # Rest API
-class CompilerViewSet(viewsets.ModelViewSet):
-    queryset = Compiler.objects.all()
-    serializer_class = CompilerSerializer
+@api_view(["GET"])
+def compiler_configs(request):
+    """
+    Get all compiler configurations in a dict {compiler, [configs]}
+    """
+    compilers = Compiler.objects.all()
+    ret = {}
+
+    for compiler in compilers:
+        configs = CompilerConfiguration.objects.filter(compiler=compiler)
+
+        ret[compiler.name] = []
+
+        for config in configs:
+            ret[compiler.name].append(CompilerConfigurationSerializer(config).data)
+
+    return Response(ret)
+

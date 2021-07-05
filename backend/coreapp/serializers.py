@@ -1,7 +1,7 @@
-from coreapp.models import Compiler
+from coreapp.models import CompilerConfiguration
 from rest_framework import serializers
 
-class CompilerSerializer(serializers.HyperlinkedModelSerializer):
+class CompilerConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Compiler
-        fields = ["shortname", "name"]
+        model = CompilerConfiguration
+        fields = ["id", "shortname", "flags"]
