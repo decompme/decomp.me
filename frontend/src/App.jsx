@@ -2,6 +2,8 @@ import { h, Fragment } from "preact"
 import { useState } from "preact/hooks"
 import Editor, { DiffEditor } from "@monaco-editor/react"
 
+import * as api from "./api"
+
 const DEFAULT_C_CODE = `int add(int a, int b) {
     return a + b;
 }
@@ -13,8 +15,16 @@ function App() {
     const [currentAsm, setCurrentAsm] = useState("/* press 'compile!' */")
 
     const compile = async () => {
-        // TODO fetch POST /api/compile
-        setCurrentAsm("/* compiled: */\n" + cCode)
+        // TODO add selection ui to pick which compiler to use
+        const compilers = await api.get("/compiler_configs")
+        const compiler = Object.values(compilers)[0] // Pick the first compiler
+
+        const compiledAsm = await api.post("/compile", {
+            compiler_config: compiler,
+            code: cCode,
+        })
+
+        setCurrentAsm(compiledAsm)
     }
 
     return <>

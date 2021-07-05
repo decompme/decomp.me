@@ -1508,7 +1508,7 @@ smart-buffer@^4.1.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.1.0.tgz#91605c25d91652f4661ea69ccf45f1b331ca21ba"
   integrity sha512-iVICrxOzCynf/SNaBQCw34eM9jROU/s5rzIhpOvzhzuYHfJR/DhZfDkXiZSgKXfgv26HT3Yni3AV/DGw0cGnnw==
 
-snowpack@^3.3.7:
+snowpack@^3.7.1:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/snowpack/-/snowpack-3.7.1.tgz#2ecee14018a84a748d7628253d90b7166e9435e6"
   integrity sha512-i7yj8zywKvg0Z/v2FfkKW1kROjnqIp+kkg/rU9rtaIOly2gsgwe0jSXh5/8SiAXw6XszOid2eJ6j9SmrJFPxRQ==
