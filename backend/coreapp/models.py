@@ -1,41 +1,42 @@
-import datetime
-
 from django.db import models
-from django.utils import timezone
 
-class User(models.Model):
-    username = models.CharField(max_length=30)
-
-    def __str(self):
-        return self.username
-
-class Project(models.Model):
-    slug = models.SlugField(max_length=50)
-    name = models.CharField(max_length=200)
-    creation_date = models.DateTimeField('creation date')
-    repo_url = models.URLField(blank=True)
-    discord_url = models.URLField(blank=True)
-
-    def was_created_recently(self):
-        return self.creation_date >= timezone.now() - datetime.timedelta(days=1)
+class Compiler(models.Model):
+    shortname = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=100)
+    compile_cmd = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
-class Function(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    fn_text = models.TextField()
-    visits = models.IntegerField(default=0)
+class CompilerConfiguration(models.Model):
+    compiler = models.ForeignKey(Compiler, on_delete=models.CASCADE)
+    shortname = models.CharField(max_length=50)
+    flags = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.compiler.name + " " + self.flags
 
-class Submission(models.Model):
-    function = models.ForeignKey(Function, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.TextField()
-    submission_time = models.DateTimeField('submission time')
+class Assembly(models.Model):
+    hash = models.CharField(max_length=64, primary_key=True)
+    data = models.TextField()
 
     def __str__(self):
-        return self.function.name
+        return self.data
+
+class Compilation(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
+    source_code = models.TextField()
+    assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
+
+class Scratch(models.Model):
+    slug = models.SlugField(primary_key=True)
+    creation_time = models.DateTimeField(auto_now_add=True)
+    compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
+    target_asm = models.ForeignKey(Assembly, on_delete=models.CASCADE)
+    source_code = models.TextField()
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
+    owner = models.UUIDField(null=True, blank=True)
+
+    def __str__(self):
+        return self.slug

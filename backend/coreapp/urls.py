@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path("project/<str:project_slug>/", views.project, name="project"),
-    path("project/<str:project_slug>/<str:function_name>", views.function, name="function")
+    path('compile/', views.compile, name='compile'),
+    path('compiler_configs/', views.compiler_configs, name='compiler_configs'),
+    path('scratch/', views.scratch, name='scratch'),
+    path('scratch/<slug:slug>/', views.scratch, name='scratch'),
 ]
