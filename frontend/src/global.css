@@ -41,7 +41,7 @@ body {
 
 #root {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.5fr;
+    grid-template-columns: 1fr 1fr 6fr;
     grid-template-rows: var(--s3) 1fr 1fr;
     gap: var(--s1) var(--s1);
     padding: var(--s1);
