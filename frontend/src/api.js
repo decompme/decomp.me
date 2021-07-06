@@ -27,6 +27,9 @@ export async function post(url, body) {
         ...commonOpts,
         method: "POST",
         body,
+        headers: {
+            'Content-Type': 'application/json',
+        },
     })
 
     if (!response.ok) {

@@ -17,10 +17,16 @@ function App() {
     const compile = async () => {
         // TODO add selection ui to pick which compiler to use
         const compilers = await api.get("/compiler_configs")
-        const compiler = Object.values(compilers)[0] // Pick the first compiler
+        const compiler = Object.values(compilers)[0][0] // Pick the first compiler
+
+        if (!compiler) {
+            throw new Error("No compiler configurations available")
+        }
+
+        console.log(compiler)
 
         const compiledAsm = await api.post("/compile", {
-            compiler_config: compiler,
+            compiler_config: compiler.id,
             code: cCode,
         })
 
