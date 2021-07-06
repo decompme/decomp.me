@@ -1,14 +1,16 @@
 {
-    "name": "decomp-me-app",
-    "version": "0.1.0",
-    "repository": "https://github.com/ethteck/decomp.me",
     "license": "MIT",
-    "private": true,
     "scripts": {
         "start": "snowpack dev",
         "build": "snowpack build"
     },
+    "dependencies": {
+        "@monaco-editor/react": "^4.2.1",
+        "preact": "^10.5.13",
+        "swr": "^0.5.6"
+    },
     "devDependencies": {
+        "@prefresh/snowpack": "^3.0.0",
         "snowpack": "^3.7.1"
     }
 }
