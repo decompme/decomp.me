@@ -2,6 +2,7 @@ import { h, Fragment } from "preact"
 import { useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import Editor, { DiffEditor } from "@monaco-editor/react"
+import * as resizer from "react-simple-resizer"
 
 import * as api from "./api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -38,35 +39,43 @@ function App() {
 
             {compilerConfig !== null && <button onClick={compile}>compile!</button>}
         </nav>
-        <div class="scratchpad-c">
-            <Editor
-                value={cCode}
-                onChange={value => debounced(setCCode(value))}
 
-                language="c"
-                theme="vs-dark"
-                options={{
-                    minimap: {
-                        enabled: false,
-                    },
-                }}
-            />
-        </div>
-        <div class="scratchpad-output">
-            <DiffEditor
-                original={currentAsm}
-                modified={targetAsm}
-                onChange={value => setTargetAsm(value)}
+        <main>
+            <resizer.Container style={{ height: "100%" }}>
+                <resizer.Section minSize={200}>
+                    <Editor
+                        value={cCode}
+                        onChange={value => debounced(setCCode(value))}
 
-                language="asm"
-                theme="vs-dark"
-                options={{
-                    minimap: {
-                        enabled: false,
-                    },
-                }}
-            />
-        </div>
+                        language="c"
+                        theme="vs-dark"
+                        options={{
+                            minimap: {
+                                enabled: false,
+                            },
+                        }}
+                    />
+                </resizer.Section>
+
+                <resizer.Bar size={20} style={{ cursor: 'col-resize' }} />
+
+                <resizer.Section minSize={400}>
+                    <DiffEditor
+                        original={currentAsm}
+                        modified={targetAsm}
+                        onChange={value => setTargetAsm(value)}
+
+                        language="asm"
+                        theme="vs-dark"
+                        options={{
+                            minimap: {
+                                enabled: false,
+                            },
+                        }}
+                    />
+                </resizer.Section>
+            </resizer.Container>
+        </main>
     </>
 }
 

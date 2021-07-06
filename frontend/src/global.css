@@ -40,37 +40,14 @@ body {
 }
 
 #root {
+    height: 100vh;
+
     display: grid;
-    grid-template-columns: 1fr 1fr 1.5fr;
-    grid-template-rows: var(--s3) 1fr 1fr;
-    gap: var(--s1) var(--s1);
+    grid-template-rows: auto 1fr;
     padding: var(--s1);
     grid-template-areas:
-        "nav nav nav"
-        "c c output"
-        "c c output";
-    height: 100vh;
-}
-
-.cover {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    --cover-space: var(--s1);
-    padding: var(--cover-space);
-}
-
-.cover > :first-child {
-    margin-bottom: var(--cover-space);
-}
-
-.cover > :last-child {
-    margin-top: var(--cover-space);
-}
-
-.cover > :nth-child(2) {
-    margin-top: auto;
-    margin-bottom: auto;
+        "nav"
+        "main";
 }
 
 nav {
@@ -81,18 +58,12 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    padding-bottom: var(--s1);
 }
 
 main {
-    padding: var(--s1);
-}
-
-.scratchpad-c {
-    grid-area: c;
-}
-
-.scratchpad-output {
-    grid-area: output;
+    grid-area: main;
 }
 
 button {
