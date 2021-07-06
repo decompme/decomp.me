@@ -1,5 +1,6 @@
 import { h, Fragment } from "preact"
 import { useState } from "preact/hooks"
+import { useDebouncedCallback }  from "use-debounce"
 import Editor, { DiffEditor } from "@monaco-editor/react"
 
 import * as api from "./api"
@@ -26,6 +27,9 @@ function App() {
         setCurrentAsm(compiledAsm)
     }
 
+    // Recompile automatically
+    const debounced = useDebouncedCallback(compile, 1000)
+
     return <>
         <nav>
             decomp.me scratchpad
@@ -37,7 +41,7 @@ function App() {
         <div class="scratchpad-c">
             <Editor
                 value={cCode}
-                onChange={value => setCCode(value)}
+                onChange={value => debounced(setCCode(value))}
 
                 language="c"
                 theme="vs-dark"
