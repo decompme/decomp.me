@@ -1,5 +1,5 @@
 html {
-    font-size: calc(1rem + 0.5vw);
+    font-size: 1rem;
     font-family: monospace;
 
     --ratio: 1.25;
@@ -40,60 +40,30 @@ body {
 }
 
 #root {
+    height: 100vh;
+
     display: grid;
-    grid-template-columns: 1fr 1fr 6fr;
-    grid-template-rows: var(--s3) 1fr 1fr;
-    gap: var(--s1) var(--s1);
+    grid-template-rows: auto 1fr;
     padding: var(--s1);
     grid-template-areas:
-        "nav nav nav"
-        "c c output"
-        "c c output";
-    height: 100vh;
-}
-
-.cover {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    --cover-space: var(--s1);
-    padding: var(--cover-space);
-}
-
-.cover > :first-child {
-    margin-bottom: var(--cover-space);
-}
-
-.cover > :last-child {
-    margin-top: var(--cover-space);
-}
-
-.cover > :nth-child(2) {
-    margin-top: auto;
-    margin-bottom: auto;
+        "nav"
+        "main";
 }
 
 nav {
     grid-area: nav;
 
     user-select: none;
-    font-size: var(--s-2);
 
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    padding-bottom: var(--s1);
 }
 
 main {
-    padding: var(--s1);
-}
-
-.scratchpad-c {
-    grid-area: c;
-}
-
-.scratchpad-output {
-    grid-area: output;
+    grid-area: main;
 }
 
 button {
@@ -104,6 +74,7 @@ button {
     border-radius: 0.25rem;
     padding: var(--s-4) var(--s-2);
     font-weight: 500;
+    font-size: var(--s-1);
     cursor: pointer;
 }
 
@@ -116,6 +87,7 @@ select {
     border-radius: 0.15rem;
     background: transparent;
     outline: none !important;
+    font-size: var(--s-1);
 }
 
 option, optgroup {
@@ -123,5 +95,5 @@ option, optgroup {
 }
 
 label {
-    font-size: var(--s-3);
+    font-size: var(--s-2);
 }
