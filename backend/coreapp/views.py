@@ -1,3 +1,4 @@
+from coreapp.compilerwrapper import CompilerWrapper
 from coreapp.serializers import CompilerConfigurationSerializer, ScratchSerializer
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -11,9 +12,6 @@ from .models import Assembly, Compiler, CompilerConfiguration, Scratch
 
 def index(request):
     return HttpResponse("This is the index page.")
-
-def compile_code(compiler_config, code):
-    return f"I COMPILED THIS CODE: {code}"
 
 def get_db_asm(request_asm):
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -32,7 +30,7 @@ def compiler_configs(request):
     """
     Get all compiler configurations in a dict {compiler, [configs]}
     """
-    compilers = Compiler.objects.all()
+    compilers = Compiler.objects.all().order_by('name')
     ret = {}
 
     for compiler in compilers:
@@ -79,4 +77,4 @@ def compile(request):
     compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
     code = request.data["code"]
         
-    return Response(compile_code(compiler_config, code))
+    return Response(CompilerWrapper.compile_code(compiler_config, code))

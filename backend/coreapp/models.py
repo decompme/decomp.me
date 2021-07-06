@@ -3,7 +3,7 @@ from django.db import models
 class Compiler(models.Model):
     shortname = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=100)
-    compile_cmd = models.CharField(max_length=100)
+    compile_cmd = models.CharField(max_length=1000)
 
     def __str__(self):
         return self.name
