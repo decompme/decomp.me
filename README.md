@@ -33,7 +33,7 @@ python manage.py createsuperuser
 ```
 Run the backend server
 ```shell
-python manage.py runserver
+COMPILER_BASE_PATH=$(pwd)/../compilers/ python manage.py runserver
 ```
 If you changed the database models you need to make new migrations
 ```shell
