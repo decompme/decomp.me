@@ -6,7 +6,8 @@
     },
     "dependencies": {
         "@monaco-editor/react": "^4.2.1",
-        "preact": "^10.5.13"
+        "preact": "^10.5.13",
+        "swr": "^0.5.6"
     },
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",

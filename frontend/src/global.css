@@ -110,3 +110,18 @@ button {
 button:active {
     border-bottom: 0.125rem solid;
 }
+
+select {
+    border: 0.1rem solid;
+    border-radius: 0.15rem;
+    background: transparent;
+    outline: none !important;
+}
+
+option, optgroup {
+    background: black;
+}
+
+label {
+    font-size: var(--s-3);
+}
