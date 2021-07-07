@@ -4,7 +4,7 @@ from rest_framework import serializers
 class CompilerConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompilerConfiguration
-        fields = ["id", "shortname", "flags"]
+        fields = "__all__"
 
 class ScratchSerializer(serializers.ModelSerializer):
     class Meta:
