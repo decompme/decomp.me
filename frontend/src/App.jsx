@@ -1,12 +1,12 @@
 import { h, Fragment } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
-import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react"
 import * as resizer from "react-simple-resizer"
+import { DiffEditor } from "@monaco-editor/react" // TEMP
 
 import * as api from "./api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
-import monacoTheme from "./monacoTheme.json"
+import Editor from "./Editor"
 
 const DEFAULT_C_CODE = `int add(int a, int b) {
     return a + b;
@@ -14,15 +14,6 @@ const DEFAULT_C_CODE = `int add(int a, int b) {
 `
 
 function App() {
-    const monaco = useMonaco()
-
-    useEffect(() => {
-        if (monaco) {
-            monaco.editor.defineTheme("custom", monacoTheme)
-            monaco.editor.setTheme("custom")
-        }
-    }, [monaco])
-
     const [compilerConfig, setCompilerConfig] = useState(null)
 
     const [cCode, setCCode] = useState(DEFAULT_C_CODE)
@@ -69,21 +60,6 @@ function App() {
                     <Editor
                         value={cCode}
                         onChange={value => debounced(setCCode(value))}
-
-                        language="c"
-                        theme="custom"
-                        loading=""
-                        options={{
-                            minimap: {
-                                enabled: false,
-                            },
-                            scrollBeyondLastLine: false,
-                            cursorBlinking: "phase",
-                            //cursorSmoothCaretAnimation: true,
-                            fontLigatures: true,
-                            matchBrackets: "near",
-                            mouseWheelZoom: true,
-                        }}
                     />
                 </resizer.Section>
 
