@@ -48,7 +48,7 @@ class CompilerWrapper:
 
     @staticmethod
     def run_objdump(object_path: Path):
-        objdump_command = "mips-linux-gnu-objdump -drz -j .text " + str(object_path)
+        objdump_command = "mips-linux-gnu-objdump -m mips:4300 -drz -j .text " + str(object_path)
 
         logger.debug(f"Objdumping: {objdump_command}")
 
