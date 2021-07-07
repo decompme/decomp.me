@@ -1,4 +1,4 @@
-from coreapp.compilerwrapper import CompilerWrapper
+from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import CompilerConfigurationSerializer, ScratchSerializer
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
