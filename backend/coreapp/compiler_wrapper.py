@@ -1,4 +1,4 @@
-from coreapp.models import Compiler, CompilerConfiguration
+from coreapp.models import Assembly, Compiler, CompilerConfiguration
 from django.utils.crypto import get_random_string
 import logging
 import os
@@ -67,7 +67,7 @@ class CompilerWrapper:
         return (0, output)
 
     @staticmethod
-    def compile_code(compiler_config: CompilerConfiguration, code: str):
+    def compile_code(compiler_config: CompilerConfiguration, code: str, target_asm: Assembly=None):
         CompilerWrapper.initialize_base_path()
 
         compiler: Compiler = compiler_config.compiler
@@ -91,7 +91,7 @@ class CompilerWrapper:
             code_path,
             object_path,
             compiler_path,
-            compiler_config.flags
+            compiler_config.cc_flags
         )
 
         os.remove(code_path)
@@ -112,4 +112,7 @@ class CompilerWrapper:
         if objdump_status[0] != 0:
             return f"ERROR: {objdump_status[1]}"
 
-        return objdump_status[1]
+        return {
+            "target_asm": target_asm.data,
+            "compiled_asm": objdump_status[1],
+        }

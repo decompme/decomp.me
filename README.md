@@ -9,12 +9,13 @@ PostgreSQL and Python are the main runtime dependencies required. Credentials fo
 
 ### Directory structure
 `frontend/` contains the website sourcecode
+
 `backend/` contains the Django project
 
 ### Backend
 The backend requires a running PostgreSQL database.
 A virtual environment like virtualenv is recommended for handling python dependencies.
-You might have to use python3 instead of python here.
+You might have to use python3 instead of python for the following commands.
 ```shell
 cd backend
 python -m virtualenv venv
@@ -22,20 +23,27 @@ source venv/bin/activate
 ```
 All the following commands need to be run inside the virtual environment.
 
-Once the virtual environment is set up you can install the requirements and set up the database
+Once the virtual environment is set up you can install the requirements
 ```shell
 pip install -r requirements.txt
-python manage.py migrate
 ```
-Create a superuser account to be able to use the admin interface
+
+Load the dev database from the repo
 ```shell
+python manage.py loaddata db.json
+```
+
+Alternatively, you can set up a database from scratch and create an admin account:
+```shell
+python manage.py migrate
 python manage.py createsuperuser
 ```
+
 Run the backend server
 ```shell
 COMPILER_BASE_PATH=$(pwd)/../compilers/ python manage.py runserver
 ```
-If you changed the database models you need to make new migrations
+If you changed the database models, you'll need to make new migrations
 ```shell
 python manage.py makemigrations
 python manage.py migrate

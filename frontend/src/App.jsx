@@ -7,6 +7,8 @@ import * as resizer from "react-simple-resizer"
 import * as api from "./api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
 
+const DUMMY_SCRATCH = '133i5'
+
 const DEFAULT_C_CODE = `int add(int a, int b) {
     return a + b;
 }
@@ -20,12 +22,12 @@ function App() {
     const [currentAsm, setCurrentAsm] = useState("/* press 'compile!' */")
 
     const compile = async () => {
-        const compiledAsm = await api.post("/compile", {
+        const compileResult = await api.post("/scratch/" + DUMMY_SCRATCH + "/compile", {
             compiler_config: compilerConfig,
             code: cCode,
         })
-
-        setCurrentAsm(compiledAsm)
+        setCurrentAsm(compileResult["compiled_asm"])
+        setTargetAsm(compileResult["target_asm"])
     }
 
     // Recompile automatically

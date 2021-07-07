@@ -33,7 +33,7 @@ export default function CompilerConfigSelect({ value, onChange }) {
             <select onChange={event => onChange(parseInt(event.target.value))}>
                 {Object.entries(data).map(([compiler, configs]) => {
                     return <optgroup label={compiler}>
-                        {configs.map(config => <option value={config.id}>{compiler} {config.flags}</option>)}
+                        {configs.map(config => <option value={config.id}>{compiler} {config.cc_flags}</option>)}
                     </optgroup>
                 })}
             </select>
