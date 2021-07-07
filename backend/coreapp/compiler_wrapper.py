@@ -79,7 +79,7 @@ class CompilerWrapper:
             return "ERROR: Compiler not found"
 
         temp_name = get_random_string(length=8)
-        code_path = CompilerWrapper.base_path / (temp_name + ".txt")
+        code_path = CompilerWrapper.base_path / (temp_name + ".c")
         object_path = CompilerWrapper.base_path / (temp_name + ".o")
 
         with open(code_path, "w", newline="\n") as f:
