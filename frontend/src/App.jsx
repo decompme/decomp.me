@@ -1,90 +1,28 @@
 import { h, Fragment } from "preact"
-import { useEffect, useState } from "preact/hooks"
-import { useDebouncedCallback }  from "use-debounce"
-import * as resizer from "react-simple-resizer"
-import { DiffEditor } from "@monaco-editor/react" // TEMP
+import Router from "preact-router"
 
-import * as api from "./api"
-import CompilerConfigSelect from "./CompilerConfigSelect"
-import Editor from "./Editor"
+import NewScratch from "./scratch/NewScratch"
+import Scratch from "./scratch/Scratch"
 
-const DUMMY_SCRATCH = '133i5'
-
-const DEFAULT_C_CODE = `int add(int a, int b) {
-    return a + b;
-}
-`
-
-function App() {
-    const [compilerConfig, setCompilerConfig] = useState(null)
-
-    const [cCode, setCCode] = useState(DEFAULT_C_CODE)
-    const [targetAsm, setTargetAsm] = useState("/* target asm */")
-    const [currentAsm, setCurrentAsm] = useState("/* press 'compile!' */")
-
-    const compile = async () => {
-        const compileResult = await api.post("/scratch/" + DUMMY_SCRATCH + "/compile", {
-            compiler_config: compilerConfig,
-            code: cCode,
-        })
-        setCurrentAsm(compileResult["compiled_asm"])
-        setTargetAsm(compileResult["target_asm"])
-    }
-
-    // Recompile automatically
-    const debounced = useDebouncedCallback(compile, 1000)
-
-    // Ctrl + S to compile
-    useEffect(() => {
-        const handler = event => {
-            if (event.ctrlKey && event.key == "s") {
-                event.preventDefault()
-                compile()
-            }
-        }
-
-        document.addEventListener("keydown", handler)
-        return () => document.removeEventListener("keydown", handler)
-    })
-
+export default function App() {
     return <>
         <nav>
-            decomp.me scratchpad
-
-            <CompilerConfigSelect value={compilerConfig} onChange={id => setCompilerConfig(id)} />
-
-            {compilerConfig !== null && <button onClick={compile}>compile!</button>}
+            <a href="/">decomp.me</a>
         </nav>
 
         <main>
-            <resizer.Container style={{ height: "100%" }}>
-                <resizer.Section minSize={200}>
-                    <Editor
-                        value={cCode}
-                        onChange={value => debounced(setCCode(value))}
-                    />
-                </resizer.Section>
+            <Router>
+                <div path="/">
+                    <a href="/scratch">Click me to make a scratch</a>
+                </div>
 
-                <resizer.Bar size={20} style={{ cursor: 'col-resize' }} />
+                <NewScratch path="/scratch" />
+                <Scratch path="/scratch/:slug" />
 
-                <resizer.Section minSize={400}>
-                    <DiffEditor
-                        original={currentAsm}
-                        modified={targetAsm}
-                        onChange={value => setTargetAsm(value)}
-
-                        language="asm"
-                        theme="custom"
-                        options={{
-                            minimap: {
-                                enabled: false,
-                            },
-                        }}
-                    />
-                </resizer.Section>
-            </resizer.Container>
+                <div default>
+                    Page not found :(<br />
+                </div>
+            </Router>
         </main>
     </>
 }
-
-export default App

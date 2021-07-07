@@ -1,0 +1,55 @@
+.container {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+}
+
+.card {
+    border: .1em solid #fff;
+    border-radius: .6em;
+    box-shadow: 0 0 1em #999, 0 0 .5em #999 inset;
+
+    width: calc(var(--s1) * 40);
+    height: calc(var(--s1) * 30);
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.heading {
+    padding: var(--s2);
+    padding-bottom: var(--s-3);
+}
+
+.description {
+    padding: var(--s2);
+    padding-top: 0;
+}
+
+.targetasm {
+    flex: 1;
+    overflow: hidden;
+    padding-right: var(--s2);
+}
+
+/* hide monaco's scrollbar minimap */
+.targetasm :global(.decorationsOverviewRuler) {
+    display: none;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    padding: var(--s2);
+}
+
+.errormsg {
+    flex: 1;
+}
+
+.compilerselect {
+    padding-left: var(--s2);
+    padding-right: var(--s2);
+}

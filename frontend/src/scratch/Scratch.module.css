@@ -1,0 +1,19 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.toolbar {
+    display: flex;
+    padding-bottom: var(--s1);
+}
+
+.resizer {
+    flex: 1;
+}
+
+.compile {
+    margin-left: auto;
+    margin-right: var(--s-4);
+}
