@@ -1,5 +1,5 @@
 import { h, Fragment } from "preact"
-import { useState } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import Editor, { DiffEditor } from "@monaco-editor/react"
 import * as resizer from "react-simple-resizer"
@@ -30,6 +30,19 @@ function App() {
 
     // Recompile automatically
     const debounced = useDebouncedCallback(compile, 1000)
+
+    // Ctrl + S to compile
+    useEffect(() => {
+        const handler = event => {
+            if (event.ctrlKey && event.key == "s") {
+                event.preventDefault()
+                compile()
+            }
+        }
+
+        document.addEventListener("keydown", handler)
+        return () => document.removeEventListener("keydown", handler)
+    })
 
     return <>
         <nav>
