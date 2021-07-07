@@ -28,15 +28,14 @@ Once the virtual environment is set up you can install the requirements
 pip install -r requirements.txt
 ```
 
+Set up the tables needed for the database:
+```shell
+python manage.py migrate
+```
+
 Load the dev database from the repo
 ```shell
 python manage.py loaddata db.json
-```
-
-Alternatively, you can set up a database from scratch and create an admin account:
-```shell
-python manage.py migrate
-python manage.py createsuperuser
 ```
 
 Run the backend server

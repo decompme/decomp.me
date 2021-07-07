@@ -48,7 +48,7 @@ class CompilerWrapper:
 
     @staticmethod
     def run_objdump(object_path: Path):
-        objdump_command = "mips-linux-gnu-objdump -drz -j .text " + str(object_path)
+        objdump_command = "mips-linux-gnu-objdump -m mips:4300 -drz -j .text " + str(object_path)
 
         logger.debug(f"Objdumping: {objdump_command}")
 
@@ -79,7 +79,7 @@ class CompilerWrapper:
             return "ERROR: Compiler not found"
 
         temp_name = get_random_string(length=8)
-        code_path = CompilerWrapper.base_path / (temp_name + ".txt")
+        code_path = CompilerWrapper.base_path / (temp_name + ".c")
         object_path = CompilerWrapper.base_path / (temp_name + ".o")
 
         with open(code_path, "w", newline="\n") as f:
