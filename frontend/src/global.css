@@ -32,7 +32,7 @@ html {
 
 body {
     background: #000;
-    color: #fff;
+    color: #ccc;
     line-height: var(--ratio);
     overflow: hidden;
     height: 100vh;
@@ -64,6 +64,7 @@ nav {
 
 main {
     grid-area: main;
+    overflow: hidden;
 }
 
 button {
@@ -76,10 +77,16 @@ button {
     font-weight: 500;
     font-size: var(--s-1);
     cursor: pointer;
+    transition: opacity 80ms ease-out;
+    user-select: none;
 }
 
 button:active {
-    border-bottom: 0.125rem solid;
+    border-bottom: 0.125rem solid; /* TODO: use box shadow to maintain height */
+}
+
+button[disabled] {
+    opacity: 0.4;
 }
 
 select {
@@ -96,4 +103,20 @@ option, optgroup {
 
 label {
     font-size: var(--s-2);
+}
+
+.white, h1, h2, h3, h4, h5, h6, a:hover, a:active {
+    color: #fff;
+}
+
+.glow {
+    text-shadow: 1px 1px 8px currentColor;
+}
+
+.red {
+    color: #f34;
+}
+
+::selection {
+    background: #2A2A2A;
 }

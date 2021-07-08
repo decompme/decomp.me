@@ -60,11 +60,17 @@ def scratch(request, slug=None):
     elif request.method == "POST":
         data = request.data
 
+        if slug:
+            return Response({"error": "Not allowed to POST with slug"}, status=status.HTTP_400_BAD_REQUEST)
+
         if "target_asm" not in data:
             return Response({"error": "Missing target_asm"}, status=status.HTTP_400_BAD_REQUEST)
 
         data["slug"] = get_random_string(length=5)
         data["target_asm"] = get_db_asm(data["target_asm"])
+
+        # TODO: set data["source_code"] (attempt mips2c, falling back to a stub function with the glabel name)
+        data["source_code"] = "void func() {}\n"
 
         serializer = ScratchSerializer(data=data)
         if serializer.is_valid():
@@ -76,11 +82,11 @@ def scratch(request, slug=None):
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if "code" not in request.data:
-            return Response({"error": "Missing code"}, status=status.HTTP_400_BAD_REQUEST)
+        if "source_code" not in request.data:
+            return Response({"error": "Missing source_code"}, status=status.HTTP_400_BAD_REQUEST)
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
-        db_scratch.source_code = request.data["code"]
+        db_scratch.source_code = request.data["source_code"]
         db_scratch.save()
         return Response(status=status.HTTP_202_ACCEPTED)
 

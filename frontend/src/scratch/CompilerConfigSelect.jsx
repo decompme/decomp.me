@@ -2,7 +2,7 @@ import { h } from "preact"
 import { useState } from "preact/hooks"
 import useSWR from "swr"
 
-import * as api from "./api"
+import * as api from "../api"
 
 export default function CompilerConfigSelect({ value, onChange }) {
     const { data, error } = useSWR("/compiler_configs", api.get)
@@ -39,6 +39,13 @@ export default function CompilerConfigSelect({ value, onChange }) {
             </select>
         </div>
     } else {
-        return <span>Loading...</span>
+        return <div>
+            <label>Compiler</label>
+            <br />
+
+            <select>
+                <option>Loading...</option>
+            </select>
+        </div>
     }
 }
