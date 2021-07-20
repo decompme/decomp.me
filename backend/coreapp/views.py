@@ -1,3 +1,4 @@
+from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import CompilerConfigurationSerializer, ScratchSerializer
 from django.http import HttpResponse
@@ -6,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.utils.crypto import get_random_string
+
 import hashlib
 
 from .models import Assembly, Compiler, CompilerConfiguration, Scratch
@@ -19,10 +21,12 @@ def get_db_asm(request_asm):
     db_asm = Assembly.objects.filter(hash=h)
 
     if not db_asm:
-        db_asm = Assembly(hash=h, data=request_asm)
-        db_asm.save()
+        ret = Assembly(hash=h, data=request_asm)
+        ret.save()
+    else:
+        ret = db_asm.first()
     
-    return h
+    return ret
 
 # Rest API
 @api_view(["GET"])
@@ -67,10 +71,11 @@ def scratch(request, slug=None):
             return Response({"error": "Missing target_asm"}, status=status.HTTP_400_BAD_REQUEST)
 
         data["slug"] = get_random_string(length=5)
-        data["target_asm"] = get_db_asm(data["target_asm"])
+        asm = get_db_asm(data["target_asm"])
 
-        # TODO: set data["source_code"] (attempt mips2c, falling back to a stub function with the glabel name)
-        data["source_code"] = "void func() {}\n"
+        data["target_asm"] = asm.hash
+        m2c_stab = M2CWrapper.decompile(asm.data)
+        data["source_code"] = m2c_stab if m2c_stab else "void func() {}\n"
 
         serializer = ScratchSerializer(data=data)
         if serializer.is_valid():

@@ -40,7 +40,7 @@ python manage.py loaddata db.json
 
 Run the backend server
 ```shell
-COMPILER_BASE_PATH=$(pwd)/../compilers/ python manage.py runserver
+COMPILER_BASE_PATH=$(pwd)/compilers/ python manage.py runserver
 ```
 If you changed the database models, you'll need to make new migrations
 ```shell
@@ -62,3 +62,6 @@ Start a development webserver hosting the site:
 ```
 yarn start
 ```
+
+# License
+decomp.me uses the MIT license. All dependencies may contain their own licenses, which decomp.me respects.
