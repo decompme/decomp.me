@@ -28,6 +28,7 @@ class Compilation(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     source_code = models.TextField()
+    context = models.TextField(blank=True)
     assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
 
 class Scratch(models.Model):
@@ -36,6 +37,7 @@ class Scratch(models.Model):
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     target_asm = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField()
+    context = models.TextField(blank=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.UUIDField(null=True, blank=True)
 

@@ -14,6 +14,7 @@ export default function Scratch({ slug }) {
     const [compilerConfig, setCompilerConfig] = useState(null)
 
     const [cCode, setCCode] = useState()
+    const [cContext, setCContext] = useState()
     const [targetAsm, setTargetAsm] = useState()
     const [currentAsm, setCurrentAsm] = useState()
 
@@ -22,6 +23,7 @@ export default function Scratch({ slug }) {
             .then(data => {
                 setCompilerConfig(data.compiler_config)
                 setCCode(data.source_code)
+                setCContext(data.context)
             })
     }, [])
 
@@ -29,6 +31,7 @@ export default function Scratch({ slug }) {
         const { compiled_asm, target_asm } = await api.post(`/scratch/${slug}/compile`, {
             compiler_config: compilerConfig,
             code: cCode,
+            context: cContext,
         })
 
         setCurrentAsm(compiled_asm)

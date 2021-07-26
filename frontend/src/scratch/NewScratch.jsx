@@ -11,6 +11,7 @@ import styles from "./NewScratch.module.css"
 export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState("")
     const [asm, setAsm] = useState()
+    const [context, setContext] = useState()
     const [compilerConfig, setCompilerConfig] = useState()
 
     // TODO: loading state
@@ -21,6 +22,7 @@ export default function NewScratch() {
         try {
             const { slug } = await api.post("/scratch", {
                 target_asm: asm,
+                context: context,
                 compiler_config: compilerConfig,
             })
 
@@ -37,11 +39,18 @@ export default function NewScratch() {
         <div class={styles.card}>
             <h1 class={`glow ${styles.heading}`}>New Scratch</h1>
             <p class={styles.description}>
-                Paste your function's <span class="white glow">target assembly</span> below to begin decomping!
+                Paste your function's <span class="white glow">target assembly</span> below:
             </p>
 
             <div class={styles.targetasm}>
                 <Editor language="asm" value={asm} onChange={setAsm} />
+            </div>
+            
+            <p class={styles.description}>
+                Include any <span class="white glow">C context</span> (structs, definitions, etc) below:
+            </p>
+            <div class={styles.targetasm}>
+                <Editor language="c" value={context} onChange={setContext} />
             </div>
 
             <div class={styles.actions}>
@@ -51,7 +60,7 @@ export default function NewScratch() {
                 <div class={styles.compilerselect}>
                     <CompilerConfigSelect value={compilerConfig} onChange={setCompilerConfig} />
                 </div>
-                <button disabled={!asm && compilerConfig !== null} onClick={submit}>use this asm</button>
+                <button disabled={!asm && compilerConfig !== null} onClick={submit}>Create</button>
             </div>
         </div>
     </div>

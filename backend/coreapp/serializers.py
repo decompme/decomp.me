@@ -9,4 +9,4 @@ class CompilerConfigurationSerializer(serializers.ModelSerializer):
 class ScratchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler_config", "target_asm", "source_code", "parent", "owner"]
+        fields = ["slug", "compiler_config", "target_asm", "source_code", "context", "parent", "owner"]

@@ -98,21 +98,22 @@ def scratch(request, slug=None):
 
 @api_view(["POST"])
 def compile(request, slug=None):
-    required_params = ["compiler_config", "code"]
+    required_params = ["compiler_config", "code", "context"]
 
     if not slug:
         required_params.append("target_asm")
 
     for param in required_params:
         if param not in request.data:
-            return Response({f"error": "Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
     
     compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
     code = request.data["code"]
+    context = request.data["context"]
 
     target_asm = None
     if slug:
         scratch = Scratch.objects.get(slug=slug)
         target_asm = scratch.target_asm
         
-    return Response(CompilerWrapper.compile_code(compiler_config, code, target_asm))
+    return Response(CompilerWrapper.compile_code(compiler_config, context + code, target_asm))
