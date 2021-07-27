@@ -34,9 +34,10 @@ class Compilation(models.Model):
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     target_asm = models.ForeignKey(Assembly, on_delete=models.CASCADE)
-    source_code = models.TextField()
+    source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.UUIDField(null=True, blank=True)

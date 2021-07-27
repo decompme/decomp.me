@@ -86,12 +86,20 @@ def scratch(request, slug=None):
     elif request.method == "PATCH":
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if "compiler_config" not in request.data:
+            return Response({"error": "Missing compiler_config"}, status=status.HTTP_400_BAD_REQUEST)
 
         if "source_code" not in request.data:
             return Response({"error": "Missing source_code"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if "context" not in request.data:
+            return Response({"error": "Missing context"}, status=status.HTTP_400_BAD_REQUEST)
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
+        db_scratch.compiler_config = request.data["compiler_config"]
         db_scratch.source_code = request.data["source_code"]
+        db_scratch.context = request.data["context"]
         db_scratch.save()
         return Response(status=status.HTTP_202_ACCEPTED)
 
