@@ -15,7 +15,7 @@ from .models import Asm, Compiler, CompilerConfiguration, Scratch
 def index(request):
     return HttpResponse("This is the index page.")
 
-def get_db_asm(request_asm):
+def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
 
     db_asm = Asm.objects.filter(hash=h)
