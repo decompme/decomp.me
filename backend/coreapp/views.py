@@ -128,7 +128,7 @@ def compile(request, slug=None):
 
     response_obj = {
         "target_asm": target_asm.data,
-        "compiled_asm": errors,
+        "compiled_asm": compiled_code,
         "errors": errors,
     }
         
