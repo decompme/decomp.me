@@ -24,21 +24,33 @@ class CompilerWrapper:
 
         logger.debug(f"Compiling: {compile_command}")
 
+        return_code = 0
+
         try:
             result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            stderr = result.stderr.decode()
+
+            stderr_lines = stderr.splitlines()
+            for i, line in enumerate(stderr_lines):
+                file_end = line.find(":")
+
+                if file_end != -1:
+                    stderr_lines[i] = "input.c" + line[file_end:].strip()
+            
+            stderr = "\n".join(stderr_lines)
             
             if result.returncode != 0:
                 logger.error(result.stderr.decode())
-                return (1, "Non-zero error code from compiler")
+                return_code = 1
         except Exception as e:
             logger.error(e)
-            return (2, "Exception while running compiler")
+            return_code = 2
         
         if not output_path.exists():
             logger.error(f"Compiled object does not exist: {str(output_path)}")
-            return (3, "Compiled object does not exist")
+            return_code = 3
 
-        return (0, )
+        return (return_code, stderr)
 
     @staticmethod
     def run_objdump(object_path: Path):
@@ -78,7 +90,7 @@ class CompilerWrapper:
             f.write(code)
 
         # Run compiler
-        compile_status = CompilerWrapper.run_compiler(
+        compile_status, stderr = CompilerWrapper.run_compiler(
             compiler.compile_cmd,
             code_path,
             object_path,
@@ -89,22 +101,22 @@ class CompilerWrapper:
         os.remove(code_path)
 
         # Compilation failed
-        if compile_status[0] != 0:
+        if compile_status != 0:
             if object_path.exists():
                 os.remove(object_path)
-            return f"ERROR: {compile_status[1]}"
+            return ("", stderr)
 
         # Run objdump
-        objdump_status = CompilerWrapper.run_objdump(object_path)
+        objdump_status, result = CompilerWrapper.run_objdump(object_path)
 
         if object_path.exists():
             os.remove(object_path)
 
         # Objdump failed
-        if objdump_status[0] != 0:
-            return f"ERROR: {objdump_status[1]}"
+        if objdump_status != 0:
+            return ("", f"ERROR: {result}")
 
-        return objdump_status[1]
+        return (result, stderr)
 
     @staticmethod
     def assemble_asm(compiler_config: CompilerConfiguration, asm: Asm):

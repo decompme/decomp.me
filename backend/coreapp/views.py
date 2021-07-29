@@ -124,11 +124,12 @@ def compile(request, slug=None):
         scratch = Scratch.objects.get(slug=slug)
         target_asm = scratch.target_asm
     
-    compiled_code = CompilerWrapper.compile_code(compiler_config, context + code)
+    compiled_code, errors = CompilerWrapper.compile_code(compiler_config, context + code)
 
     response_obj = {
         "target_asm": target_asm.data,
-        "compiled_asm": compiled_code,
+        "compiled_asm": errors,
+        "errors": errors,
     }
         
     return Response(response_obj)
