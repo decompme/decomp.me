@@ -136,3 +136,6 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
+LOCAL_FILE_DIR = BASE_DIR / "local_files"
+COMPILER_BASE_PATH = BASE_DIR / "compilers"

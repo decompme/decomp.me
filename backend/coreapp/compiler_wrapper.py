@@ -1,4 +1,5 @@
-from coreapp.models import Assembly, Compiler, CompilerConfiguration
+from coreapp.models import Asm, Assembly, Compiler, CompilerConfiguration
+from django.conf import settings
 from django.utils.crypto import get_random_string
 import logging
 import os
@@ -9,24 +10,17 @@ import sys
 logger = logging.getLogger(__name__)
 
 class CompilerWrapper:
-    base_path = None
-
-    def initialize_base_path():
-        if CompilerWrapper.base_path:
-            return
-
-        if "COMPILER_BASE_PATH" not in os.environ:
-            sys.exit("COMPILER_BASE_PATH not set")
-
-        CompilerWrapper.base_path = Path(os.environ["COMPILER_BASE_PATH"]).resolve()
+    def base_path():
+        return settings.COMPILER_BASE_PATH
 
     @staticmethod
     def run_compiler(compile_cmd: str, input_path: Path, output_path: Path, compiler_path: Path, cc_flags: str):
-        compile_command = compile_cmd \
+        compile_command = "set -o pipefail; " +  compile_cmd \
             .replace("$INPUT", str(input_path)) \
             .replace("$OUTPUT", str(output_path)) \
             .replace("$COMPILER_PATH", str(compiler_path)) \
             .replace("$CC_FLAGS", cc_flags)
+        compile_command = f"bash -c \"{compile_command}\""
 
         logger.debug(f"Compiling: {compile_command}")
 
@@ -67,20 +61,18 @@ class CompilerWrapper:
         return (0, output)
 
     @staticmethod
-    def compile_code(compiler_config: CompilerConfiguration, code: str, target_asm: Assembly=None):
-        CompilerWrapper.initialize_base_path()
-
+    def compile_code(compiler_config: CompilerConfiguration, code: str):
         compiler: Compiler = compiler_config.compiler
 
-        compiler_path = CompilerWrapper.base_path / compiler.shortname
+        compiler_path = CompilerWrapper.base_path() / compiler.shortname
 
         if not compiler_path.exists():
             logger.error(f"Compiler {compiler.shortname} not found")
             return "ERROR: Compiler not found"
 
         temp_name = get_random_string(length=8)
-        code_path = CompilerWrapper.base_path / (temp_name + ".c")
-        object_path = CompilerWrapper.base_path / (temp_name + ".o")
+        code_path = CompilerWrapper.base_path() / (temp_name + ".c")
+        object_path = CompilerWrapper.base_path() / (temp_name + ".o")
 
         with open(code_path, "w", newline="\n") as f:
             f.write(code)
@@ -112,7 +104,41 @@ class CompilerWrapper:
         if objdump_status[0] != 0:
             return f"ERROR: {objdump_status[1]}"
 
-        return {
-            "target_asm": target_asm.data,
-            "compiled_asm": objdump_status[1],
-        }
+        return objdump_status[1]
+
+    @staticmethod
+    def assemble_asm(compiler_config: CompilerConfiguration, asm: Asm):
+        compiler: Compiler = compiler_config.compiler
+
+        compiler_path = CompilerWrapper.base_path() / compiler.shortname
+
+        if not compiler_path.exists():
+            logger.error(f"Compiler {compiler.shortname} not found")
+            return "ERROR: Compiler not found"
+        
+        assemblies_path = CompilerWrapper.base_path() / "assemblies"
+        os.path.mkdir(assemblies_path, exist_ok=True)
+        
+        temp_name = get_random_string(length=8)
+
+        object_path = assemblies_path / (temp_name + ".o")
+
+        assemble_status = CompilerWrapper.run_assembler(
+            compiler.assemble_cmd,
+            asm.data,
+            object_path,
+            compiler_path,
+            compiler_config.as_flags
+        )
+
+        # Assembly failed
+        if assemble_status[0] != 0:
+            if object_path.exists():
+                os.remove(object_path)
+            return f"ERROR: {assemble_status[1]}"
+        
+        # Store Assembly to db
+        assembly = Assembly(compiler_config=compiler_config, source_asm=asm, object=object_path)
+        assembly.save()
+
+        return assembly

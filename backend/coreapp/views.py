@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 
 import hashlib
 
-from .models import Assembly, Compiler, CompilerConfiguration, Scratch
+from .models import Asm, Compiler, CompilerConfiguration, Scratch
 
 def index(request):
     return HttpResponse("This is the index page.")
@@ -18,10 +18,10 @@ def index(request):
 def get_db_asm(request_asm):
     h = hashlib.sha256(request_asm.encode()).hexdigest()
 
-    db_asm = Assembly.objects.filter(hash=h)
+    db_asm = Asm.objects.filter(hash=h)
 
     if not db_asm:
-        ret = Assembly(hash=h, data=request_asm)
+        ret = Asm(hash=h, data=request_asm)
         ret.save()
     else:
         ret = db_asm.first()
@@ -123,5 +123,12 @@ def compile(request, slug=None):
     if slug:
         scratch = Scratch.objects.get(slug=slug)
         target_asm = scratch.target_asm
+    
+    compiled_code = CompilerWrapper.compile_code(compiler_config, context + code)
+
+    response_obj = {
+        "target_asm": target_asm.data,
+        "compiled_asm": compiled_code,
+    }
         
-    return Response(CompilerWrapper.compile_code(compiler_config, context + code, target_asm))
+    return Response(response_obj)

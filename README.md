@@ -14,6 +14,9 @@ PostgreSQL and Python are the main runtime dependencies required. Credentials fo
 
 ### Backend
 The backend requires a running PostgreSQL database.
+
+Please create a user named `decompme` who has permissions to work with a database called `decompme`.
+
 A virtual environment like virtualenv is recommended for handling python dependencies.
 You might have to use python3 instead of python for the following commands.
 ```shell
@@ -40,7 +43,7 @@ python manage.py loaddata db.json
 
 Run the backend server
 ```shell
-COMPILER_BASE_PATH=$(pwd)/compilers/ python manage.py runserver
+python manage.py runserver
 ```
 If you changed the database models, you'll need to make new migrations
 ```shell
