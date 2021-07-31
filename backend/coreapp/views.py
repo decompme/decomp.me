@@ -114,7 +114,6 @@ def scratch(request, slug=None):
         db_scratch.save()
         return Response(status=status.HTTP_202_ACCEPTED)
 
-
 @api_view(["POST"])
 def compile(request, slug):
     required_params = ["compiler_config", "code", "context"]
@@ -130,8 +129,9 @@ def compile(request, slug):
     
     compilation, errors = CompilerWrapper.compile_code(compiler_config, code, context)
 
-    # TODO fix slugless compile (this won't work currently)
-    diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
+    diff_output = ""
+    if not errors:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
 
     response_obj = {
         "diff_output": diff_output,
