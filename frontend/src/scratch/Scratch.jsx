@@ -28,14 +28,15 @@ export default function Scratch({ slug }) {
     }, [])
 
     const compile = async () => {
-        const { compiled_asm, target_asm } = await api.post(`/scratch/${slug}/compile`, {
+        const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
             compiler_config: compilerConfig,
             code: cCode,
             context: cContext,
         })
 
-        setCurrentAsm(compiled_asm)
-        setTargetAsm(target_asm)
+        // TODO unify output panes, add errors pane
+        // setCurrentAsm(compiled_asm)
+        setTargetAsm(diff_output)
     }
 
     // Recompile automatically

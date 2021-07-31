@@ -1,3 +1,4 @@
+from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import CompilerConfigurationSerializer, ScratchSerializer
@@ -71,9 +72,17 @@ def scratch(request, slug=None):
             return Response({"error": "Missing target_asm"}, status=status.HTTP_400_BAD_REQUEST)
 
         data["slug"] = get_random_string(length=5)
-        asm = get_db_asm(data["target_asm"])
 
-        data["target_asm"] = asm.hash
+        asm = get_db_asm(data["target_asm"])
+        del data["target_asm"]
+
+        # Validate target asm
+        compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
+
+        data["target_assembly"] = CompilerWrapper.assemble_asm(compiler_config, asm)
+        if not data["target_assembly"]:
+            return Response({"error": "Error when assembling target asm"}, status=status.HTTP_400_BAD_REQUEST)
+
         m2c_stab = M2CWrapper.decompile(asm.data)
         data["source_code"] = m2c_stab if m2c_stab else "void func() {}\n"
 
@@ -105,11 +114,8 @@ def scratch(request, slug=None):
 
 
 @api_view(["POST"])
-def compile(request, slug=None):
+def compile(request, slug):
     required_params = ["compiler_config", "code", "context"]
-
-    if not slug:
-        required_params.append("target_asm")
 
     for param in required_params:
         if param not in request.data:
@@ -118,17 +124,15 @@ def compile(request, slug=None):
     compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
     code = request.data["code"]
     context = request.data["context"]
-
-    target_asm = None
-    if slug:
-        scratch = Scratch.objects.get(slug=slug)
-        target_asm = scratch.target_asm
+    scratch = Scratch.objects.get(slug=slug)
     
-    compiled_code, errors = CompilerWrapper.compile_code(compiler_config, context + code)
+    compilation, errors = CompilerWrapper.compile_code(compiler_config, code, context)
+
+    # TODO fix slugless compile (this won't work currently)
+    diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
 
     response_obj = {
-        "target_asm": target_asm.data,
-        "compiled_asm": compiled_code,
+        "diff_output": diff_output,
         "errors": errors,
     }
         

@@ -6,6 +6,9 @@ from django.db import models
 def asm_objects_path():
     return os.path.join(settings.LOCAL_FILE_DIR, 'assemblies')
 
+def compilation_objects_path():
+    return os.path.join(settings.LOCAL_FILE_DIR, 'compilations')
+
 class Compiler(models.Model):
     shortname = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=100)
@@ -41,14 +44,14 @@ class Compilation(models.Model):
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     source_code = models.TextField()
     context = models.TextField(blank=True)
-    asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
+    object = models.FilePathField(path=compilation_objects_path)
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
-    target_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
+    target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
