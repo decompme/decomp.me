@@ -28,17 +28,17 @@ def static_assert_unreachable(x: NoReturn) -> NoReturn:
     raise Exception("Unreachable! " + repr(x))
 
 
-# Prefer to use diff_settings.py from the current working directory
-sys.path.insert(0, ".")
-try:
-    import diff_settings
-except ModuleNotFoundError:
-    fail("Unable to find diff_settings.py in the same directory.")
-sys.path.pop(0)
-
 # ==== COMMAND-LINE ====
 
 if __name__ == "__main__":
+    # Prefer to use diff_settings.py from the current working directory
+    sys.path.insert(0, ".")
+    try:
+        import diff_settings
+    except ModuleNotFoundError:
+        fail("Unable to find diff_settings.py in the same directory.")
+    sys.path.pop(0)
+
     try:
         import argcomplete  # type: ignore
     except ModuleNotFoundError:
@@ -786,7 +786,9 @@ def run_objdump(cmd: ObjdumpCommand, config: Config, project: ProjectSettings) -
     try:
         out = subprocess.run(
             [project.objdump_executable] + config.arch.arch_flags + flags + [target],
-            check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
         ).stdout
     except subprocess.CalledProcessError as e:
@@ -1343,7 +1345,11 @@ def process(lines: List[str], config: Config) -> List[Line]:
             continue
 
         # match source lines here to avoid matching relocation lines
-        if config.source and config.source_old_binutils and (row and not re.match(r"^ +[0-9a-f]+:\t", row)):
+        if (
+            config.source
+            and config.source_old_binutils
+            and (row and not re.match(r"^ +[0-9a-f]+:\t", row))
+        ):
             source_lines.append(row)
             continue
 
