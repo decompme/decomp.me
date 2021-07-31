@@ -47,6 +47,8 @@ class AsmDifferWrapper:
                 universal_newlines=True,
             ).stdout
         except subprocess.CalledProcessError as e:
+            logger.error(e.stdout)
+            logger.error(e.stderr)
             raise e
 
         if restrict is not None:

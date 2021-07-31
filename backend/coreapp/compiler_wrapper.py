@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 ASM_MACROS = """.macro glabel label
     .global \label
+    .type \label, @function
     \label:
 .endm
 
