@@ -248,6 +248,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--no-pager",
+        dest="no_pager",
         action="store_true",
         help="Disable the pager; write output directly to stdout, then exit. "
         "Incompatible with --watch.",
@@ -339,7 +340,6 @@ class Config:
     ignore_large_imms: bool
     ignore_addr_diffs: bool
     algorithm: str
-    use_pager: bool
 
 
 def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
@@ -394,7 +394,6 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
         ignore_large_imms=args.ignore_large_imms,
         ignore_addr_diffs=args.ignore_addr_diffs,
         algorithm=args.algorithm,
-        use_pager=args.format != "html" and not args.no_pager,
     )
 
 
@@ -1202,13 +1201,12 @@ def hexify_int(row: str, pat: Match[str], arch: ArchSettings) -> str:
 
 
 def parse_relocated_line(line: str) -> Tuple[str, str, str]:
-    try:
-        ind2 = line.rindex(",")
-    except ValueError:
-        try:
-            ind2 = line.rindex("\t")
-        except ValueError:
-            ind2 = line.rindex(" ")
+    for c in ",\t ":
+        if c in line:
+            ind2 = line.rindex(c)
+            break
+    else:
+        raise Exception(f"failed to parse relocated line: {line}")
     before = line[: ind2 + 1]
     after = line[ind2 + 1 :]
     ind2 = after.find("(")
@@ -1995,7 +1993,7 @@ def main() -> None:
 
     display = Display(basedump, mydump, config)
 
-    if not config.use_pager:
+    if args.no_pager or args.format == "html":
         print(display.run_diff())
     elif not args.watch:
         display.run_sync()
