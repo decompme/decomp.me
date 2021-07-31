@@ -79,8 +79,10 @@ def scratch(request, slug=None):
         # Validate target asm
         compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
 
-        data["target_assembly"] = CompilerWrapper.assemble_asm(compiler_config, asm)
-        if not data["target_assembly"]:
+        assembly = CompilerWrapper.assemble_asm(compiler_config, asm)
+        if assembly:
+            data["target_assembly"] = assembly.pk
+        else:
             return Response({"error": "Error when assembling target asm"}, status=status.HTTP_400_BAD_REQUEST)
 
         m2c_stab = M2CWrapper.decompile(asm.data)

@@ -126,6 +126,7 @@ class CompilerWrapper:
             return (None, "ERROR: Compiler not found")
 
         temp_name = get_random_string(length=8)
+        compilation_objects_path().mkdir(exist_ok=True, parents=True)
         code_path = compilation_objects_path() / (temp_name + ".c")
         object_path = compilation_objects_path() / (temp_name + ".o")
 
