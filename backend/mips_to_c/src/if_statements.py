@@ -173,7 +173,7 @@ class DoWhileLoop:
     def format(self, fmt: Formatter) -> str:
         space = fmt.indent("")
         after_do = f"\n{space}" if fmt.coding_style.newline_after_if else " "
-        cond = format_expr(self.condition, fmt)
+        cond = format_expr(simplify_condition(self.condition), fmt)
         with fmt.indented():
             return "\n".join(
                 [
@@ -367,18 +367,6 @@ def add_labels_for_switch(
         context.case_nodes[target].append((switch_index, index + offset))
 
     return switch_index
-
-
-def emit_goto_or_early_return(context: Context, target: Node, body: Body) -> None:
-    """
-    Emit a goto to a node, *unless* that node is a return or terminal node.
-    This is similar to `emit_node`, but won't write the node body here unless
-    the node is a return.
-    """
-    if isinstance(target, ReturnNode):
-        emit_node(context, target, body)
-    elif not isinstance(target, TerminalNode):
-        emit_goto(context, target, body)
 
 
 def is_switch_guard(node: Node) -> bool:
@@ -832,6 +820,10 @@ def build_flowgraph_between(
             body.add_switch(build_switch_between(context, curr_start, None, curr_end))
         elif isinstance(curr_start, ConditionalNode):
             body.add_if_else(build_conditional_subgraph(context, curr_start, curr_end))
+        elif (
+            isinstance(curr_start, BasicNode) and curr_start.fake_successor == curr_end
+        ):
+            curr_end = curr_start.successor
         else:
             # No branch, but double check that we didn't skip any nodes.
             # If the check fails, then the immediate_postdominator computation was wrong
@@ -852,6 +844,12 @@ def build_naive(context: Context, nodes: List[Node]) -> Body:
 
     body = Body(print_node_comment=context.options.debug)
 
+    def emit_goto_or_early_return(node: Node, body: Body) -> None:
+        if isinstance(node, ReturnNode) and not node.is_real():
+            emit_node(context, node, body)
+        else:
+            emit_goto(context, node, body)
+
     def emit_successor(node: Node, cur_index: int) -> None:
         if (
             cur_index + 1 < len(nodes)
@@ -860,7 +858,7 @@ def build_naive(context: Context, nodes: List[Node]) -> Body:
         ):
             # Fallthrough is fine
             return
-        emit_goto(context, node, body)
+        emit_goto_or_early_return(node, body)
 
     for i, node in enumerate(nodes):
         if isinstance(node, ReturnNode):
@@ -887,7 +885,7 @@ def build_naive(context: Context, nodes: List[Node]) -> Body:
         elif isinstance(node, ConditionalNode):
             emit_node(context, node, body)
             if_body = Body(print_node_comment=True)
-            emit_goto(context, node.conditional_edge, if_body)
+            emit_goto_or_early_return(node.conditional_edge, if_body)
             block_info = get_block_info(node)
             assert block_info.branch_condition is not None
             body.add_if_else(
@@ -929,8 +927,7 @@ def build_body(context: Context, options: Options) -> Body:
         body = Body(print_node_comment=context.options.debug)
         if options.ifs and not is_reducible:
             body.add_comment(
-                "Flowgraph is not reducible, falling back to gotos-only mode. "
-                "(Are there infinite loops?)"
+                "Flowgraph is not reducible, falling back to gotos-only mode."
             )
         body.extend(build_naive(context, context.flow_graph.nodes))
 

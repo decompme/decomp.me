@@ -797,9 +797,14 @@ class BaseNode(_BaseNode, abc.ABC):
 @dataclass(eq=False, repr=False)
 class BasicNode(BaseNode):
     successor: "Node"
+    # Optional link to the TerminalNode, used to make infinite loops reducible.
+    # Used by `compute_relations()`, but ignored when emitting code.
+    fake_successor: Optional["TerminalNode"] = None
 
     def children(self) -> List["Node"]:
         # TODO: Should we also include the fallthrough node if `emit_goto` is True?
+        if self.fake_successor is not None:
+            return [self.successor, self.fake_successor]
         return [self.successor]
 
     def __str__(self) -> str:
@@ -1159,6 +1164,9 @@ def duplicate_premature_returns(nodes: List[Node]) -> List[Node]:
             node.successor = n
             extra_nodes.append(n)
 
+    nodes += extra_nodes
+    nodes.sort(key=lambda node: node.block.index)
+
     # Filter nodes to only include ones reachable from the entry node
     queue = {nodes[0]}
     # Always include the TerminalNode (even if it isn't reachable right now)
@@ -1167,8 +1175,7 @@ def duplicate_premature_returns(nodes: List[Node]) -> List[Node]:
         node = queue.pop()
         reachable_nodes.add(node)
         queue.update(set(node.children()) - reachable_nodes)
-    nodes = sorted(reachable_nodes, key=lambda node: node.block.index)
-    return nodes
+    return [n for n in nodes if n in reachable_nodes]
 
 
 def compute_relations(nodes: List[Node]) -> None:
@@ -1280,6 +1287,37 @@ def compute_relations(nodes: List[Node]) -> None:
                     child.loop.nodes.add(parent)
 
 
+def terminate_infinite_loops(nodes: List[Node]) -> None:
+    terminal_node = nodes[-1]
+    assert isinstance(terminal_node, TerminalNode)
+
+    # Fixed-point iteration
+    while True:
+        # Find the set of nodes which are rechable from the TerminalNode, backwards
+        seen = set()
+        queue: Set[Node] = {terminal_node}
+        while queue:
+            n = queue.pop()
+            seen.add(n)
+            queue.update(set(n.parents) - seen)
+
+        # Find the BasicNodes which cannot reach the TerminalNode
+        # Although it's possible to design asm which has an infinite loop without
+        # BasicNodes, it doesn't seem to happen in practice. Keeping these fixups
+        # contained keeps the `build_flowgraph_between(...)` logic simpler.
+        unterminated_nodes = [
+            node for node in nodes if node not in seen and isinstance(node, BasicNode)
+        ]
+        if not unterminated_nodes:
+            # Nothing left to do!
+            return
+
+        # Add a "fake" edge from the final BasicNode to the TerminalNode,
+        # which is used by `compute_relations()` but is ignored in codegen.
+        unterminated_nodes[-1].fake_successor = terminal_node
+        compute_relations(nodes)
+
+
 @dataclass(frozen=True)
 class FlowGraph:
     nodes: List[Node]
@@ -1364,6 +1402,7 @@ def build_flowgraph(function: Function, asm_data: AsmData) -> FlowGraph:
     nodes = build_nodes(function, blocks, asm_data)
     nodes = duplicate_premature_returns(nodes)
     compute_relations(nodes)
+    terminate_infinite_loops(nodes)
     return FlowGraph(nodes)
 
 

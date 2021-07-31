@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/matt-kempster/mips_to_c
 	branch = master
-	commit = 62bccb922de81c94c5051c321964a18bfd6f2a9a
-	parent = c3882b33836c996eecac80352fe5861c6a1a7b4a
+	commit = 2f70fa81e1d33ee978c49a53256c268ed8c051c0
+	parent = 6155391623e429c3f7217554f89b39c02f918988
 	method = merge
 	cmdver = 0.4.3

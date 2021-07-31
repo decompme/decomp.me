@@ -403,31 +403,25 @@ def get_stack_info(
     # but outside of these two regions, is considered a local variable.
     callee_saved_offset_and_size: List[Tuple[int, int]] = []
     for inst in flow_graph.entry_node().block.instructions:
-        if not inst.args or not isinstance(inst.args[0], Register):
-            continue
-
-        destination = inst.args[0]
-
         if inst.mnemonic == "jal":
             break
-        elif inst.mnemonic == "addiu" and destination.register_name == "sp":
+        elif inst.mnemonic == "addiu" and inst.args[0] == Register("sp"):
             # Moving the stack pointer.
             assert isinstance(inst.args[2], AsmLiteral)
             info.allocated_stack_size = abs(inst.args[2].signed_value())
         elif (
             inst.mnemonic == "move"
-            and destination.register_name == "fp"
-            and isinstance(inst.args[1], Register)
-            and inst.args[1].register_name == "sp"
+            and inst.args[0] == Register("fp")
+            and inst.args[1] == Register("sp")
         ):
             # "move fp, sp" very likely means the code is compiled with frame
             # pointers enabled; thus fp should be treated the same as sp.
             info.uses_framepointer = True
         elif (
             inst.mnemonic == "sw"
-            and destination.register_name == "ra"
+            and inst.args[0] == Register("ra")
             and isinstance(inst.args[1], AsmAddressMode)
-            and inst.args[1].rhs.register_name == "sp"
+            and inst.args[1].rhs == Register("sp")
             and info.is_leaf
         ):
             # Saving the return address on the stack.
@@ -437,14 +431,15 @@ def get_stack_info(
             callee_saved_offset_and_size.append((stack_offset, 4))
         elif (
             inst.mnemonic in ["sw", "swc1", "sdc1"]
-            and destination in SAVED_REGS
+            and isinstance(inst.args[0], Register)
+            and inst.args[0] in SAVED_REGS
             and isinstance(inst.args[1], AsmAddressMode)
-            and inst.args[1].rhs.register_name == "sp"
-            and destination not in info.callee_save_reg_locations
+            and inst.args[1].rhs == Register("sp")
+            and inst.args[0] not in info.callee_save_reg_locations
         ):
             # Initial saving of callee-save register onto the stack.
             stack_offset = inst.args[1].lhs_as_literal()
-            info.callee_save_reg_locations[destination] = stack_offset
+            info.callee_save_reg_locations[inst.args[0]] = stack_offset
             callee_saved_offset_and_size.append(
                 (stack_offset, 8 if inst.mnemonic == "sdc1" else 4)
             )
@@ -455,14 +450,10 @@ def get_stack_info(
         info.subroutine_arg_top = info.allocated_stack_size
         for node in flow_graph.nodes:
             for inst in node.block.instructions:
-                if not inst.args or not isinstance(inst.args[0], Register):
-                    continue
-                destination = inst.args[0]
-
                 if (
                     inst.mnemonic in ["lw", "lwc1", "ldc1"]
                     and isinstance(inst.args[1], AsmAddressMode)
-                    and inst.args[1].rhs.register_name == "sp"
+                    and inst.args[1].rhs == Register("sp")
                     and inst.args[1].lhs_as_literal() >= 16
                 ):
                     info.subroutine_arg_top = min(
@@ -470,7 +461,7 @@ def get_stack_info(
                     )
                 elif (
                     inst.mnemonic == "addiu"
-                    and destination.register_name != "sp"
+                    and inst.args[0] != Register("sp")
                     and inst.args[1] == Register("sp")
                     and isinstance(inst.args[2], AsmLiteral)
                     and inst.args[2].value < info.allocated_stack_size
@@ -1070,7 +1061,8 @@ class StructAccess(Expression):
             )
             return f"MIPS2C_FIELD({var.format(fmt)}, {Type.ptr(self.type).format(fmt)}, {offset_str})"
         else:
-            field_name = "unk" + format_hex(self.offset)
+            prefix = "unk" + ("_" if fmt.coding_style.unknown_underscore else "")
+            field_name = prefix + format_hex(self.offset)
 
         if isinstance(var, AddressOf):
             if isinstance(var.expr, GlobalSymbol) and var.expr.array_dim is not None:
