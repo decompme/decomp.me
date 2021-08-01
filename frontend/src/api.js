@@ -23,6 +23,8 @@ export async function post(url, body) {
         body = JSON.stringify(body)
     }
 
+    console.info("POST", url, JSON.parse(body))
+
     const response = await fetch(API_BASE + url, {
         ...commonOpts,
         method: "POST",
