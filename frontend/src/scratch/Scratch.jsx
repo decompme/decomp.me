@@ -2,7 +2,6 @@ import { h } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
-import { DiffEditor } from "@monaco-editor/react" // TEMP
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -15,9 +14,10 @@ export default function Scratch({ slug }) {
 
     const [cCode, setCCode] = useState()
     const [cContext, setCContext] = useState()
-    const [targetAsm, setTargetAsm] = useState()
-    const [currentAsm, setCurrentAsm] = useState()
+    const [diff, setDiff] = useState()
+    const [log, setLog] = useState()
 
+    // TODO: preload this and compile output with a wrapper component of some kind
     useEffect(() => {
         api.get(`/scratch/${slug}`)
             .then(data => {
@@ -34,9 +34,11 @@ export default function Scratch({ slug }) {
             context: cContext,
         })
 
-        // TODO unify output panes, add errors pane
-        // setCurrentAsm(compiled_asm)
-        setTargetAsm(diff_output)
+        setLog(errors)
+
+        if (diff_output) {
+            setDiff(diff_output)
+        }
     }
 
     // Recompile automatically
@@ -79,18 +81,8 @@ export default function Scratch({ slug }) {
             <resizer.Bar size={20} style={{ cursor: 'col-resize' }} />
 
             <resizer.Section minSize={400}>
-                <DiffEditor
-                    original={currentAsm}
-                    modified={targetAsm}
-
-                    language="asm"
-                    theme="vs-dark"
-                    options={{
-                        minimap: {
-                            enabled: false,
-                        },
-                    }}
-                />
+                <code class={styles.log}>{log}</code>
+                <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
             </resizer.Section>
         </resizer.Container>
     </div>

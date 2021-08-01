@@ -17,3 +17,31 @@
     margin-left: auto;
     margin-right: var(--s-4);
 }
+
+.diff :global(table.diff),
+.log {
+    border: none;
+    font-family: monospace;
+    font-size: var(--s-1);
+    white-space: pre;
+}
+
+.diff :global(.immediate) { color: #e78c45 }
+.diff :global(.stack) { color: #b9ca4a }
+.diff :global(.register) { color: #e78c45 }
+.diff :global(.delay-slot) { font-weight: bold; color: #969896 }
+.diff :global(.diff-change) { color: #b9ca4a }
+.diff :global(.diff-add) { color: #718c00 }
+.diff :global(.diff-remove) { color: #c82829 }
+.diff :global(.source-filename) { font-weight: bold }
+.diff :global(.source-function) { font-weight: bold; text-decoration: underline }
+:diff :global(.source-other) { font-style: italic }
+.diff :global(.rotation-0) { color: #0074D9 }
+.diff :global(.rotation-1) { color: #7FDBFF }
+.diff :global(.rotation-2) { color: #F012BE }
+.diff :global(.rotation-3) { color: #FF851B }
+.diff :global(.rotation-4) { color: #3D9970 }
+.diff :global(.rotation-5) { color: #01FF70 }
+.diff :global(.rotation-6) { color: #2ECC40 }
+.diff :global(.rotation-7) { color: #B10DC9 }
+.diff :global(.rotation-8) { color: #39CCCC }
