@@ -2,6 +2,7 @@ import { h } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
+import toast, { Toaster } from 'react-hot-toast';
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -30,7 +31,7 @@ export default function Scratch({ slug }) {
     const compile = async () => {
         const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
             compiler_config: compilerConfig,
-            code: cCode,
+            source_code: cCode,
             context: cContext,
         })
 
@@ -39,6 +40,19 @@ export default function Scratch({ slug }) {
         if (diff_output) {
             setDiff(diff_output)
         }
+    }
+
+    const update = async () => {
+        const { errors } = await api.patch(`/scratch/${slug}`, {
+            compiler_config: compilerConfig,
+            source_code: cCode,
+            context: cContext,
+        })
+        .then(
+            toast.success("Scratch updated!", {position: "top-right"})
+        )
+
+        setLog(errors)
     }
 
     // Recompile automatically
@@ -58,6 +72,7 @@ export default function Scratch({ slug }) {
     })
 
     return <div class={styles.container}>
+        <Toaster />
         <div class={styles.toolbar}>
             <CompilerConfigSelect
                 value={compilerConfig}
@@ -68,6 +83,7 @@ export default function Scratch({ slug }) {
             />
 
             <button onClick={compile} class={styles.compile}>compile</button>
+            <button onClick={update} class={styles.compile}>update</button>
         </div>
 
         <resizer.Container class={styles.resizer}>

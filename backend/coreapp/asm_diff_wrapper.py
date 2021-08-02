@@ -59,6 +59,11 @@ class AsmDifferWrapper:
         config = AsmDifferWrapper.create_config(MIPS_SETTINGS) # todo read arch from compiler config of compilation
         basedump = AsmDifferWrapper.run_objdump(target_assembly.object, config)
         mydump = AsmDifferWrapper.run_objdump(compilation.object, config)
+
+        # Remove first few junk lines from objdump output
+        basedump = "\n".join(basedump.split("\n")[6:])
+        mydump = "\n".join(mydump.split("\n")[6:])
+
         display = Display(basedump, mydump, config)
 
         return display.run_diff()

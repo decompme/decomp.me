@@ -76,7 +76,6 @@ def scratch(request, slug=None):
         asm = get_db_asm(data["target_asm"])
         del data["target_asm"]
 
-        # Validate target asm
         compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
 
         assembly = CompilerWrapper.assemble_asm(compiler_config, asm)
@@ -98,17 +97,16 @@ def scratch(request, slug=None):
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if "compiler_config" not in request.data:
-            return Response({"error": "Missing compiler_config"}, status=status.HTTP_400_BAD_REQUEST)
+        required_params = ["compiler_config", "source_code", "context"]
 
-        if "source_code" not in request.data:
-            return Response({"error": "Missing source_code"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if "context" not in request.data:
-            return Response({"error": "Missing context"}, status=status.HTTP_400_BAD_REQUEST)
+        for param in required_params:
+            if param not in request.data:
+                return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
-        db_scratch.compiler_config = request.data["compiler_config"]
+        db_scratch.compiler_config = compiler_config
         db_scratch.source_code = request.data["source_code"]
         db_scratch.context = request.data["context"]
         db_scratch.save()
@@ -116,21 +114,21 @@ def scratch(request, slug=None):
 
 @api_view(["POST"])
 def compile(request, slug):
-    required_params = ["compiler_config", "code", "context"]
+    required_params = ["compiler_config", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
             return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
     
     compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
-    code = request.data["code"]
+    code = request.data["source_code"]
     context = request.data["context"]
     scratch = Scratch.objects.get(slug=slug)
     
     compilation, errors = CompilerWrapper.compile_code(compiler_config, code, context)
 
     diff_output = ""
-    if not errors:
+    if compilation:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
 
     response_obj = {
