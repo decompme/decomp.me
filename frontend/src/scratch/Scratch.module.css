@@ -7,6 +7,8 @@
 .toolbar {
     display: flex;
     padding-bottom: var(--s1);
+    align-items: flex-end;
+	justify-content: space-evenly;
 }
 
 .resizer {

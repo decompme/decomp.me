@@ -36,7 +36,7 @@ export default function Scratch({ slug }) {
         }
     }
 
-    const update = async () => {
+    const save = async () => {
         const promise = api.patch(`/scratch/${slug}`, {
             compiler_config: compilerConfig,
             source_code: cCode,
@@ -44,13 +44,10 @@ export default function Scratch({ slug }) {
         }).catch(error => error.message)
 
         toast.promise(promise, {
-            loading: 'Loading',
-            success: 'Scratch updated!',
-            error: 'Error updating Scratch',
+            loading: 'Saving...',
+            success: 'Scratch saved!',
+            error: 'Error saving scratch',
         })
-
-        setLog(errors)
-        setLog(promise.errors)
     }
 
     useEffect(async () => {
@@ -69,11 +66,12 @@ export default function Scratch({ slug }) {
     // Recompile automatically
     const debounced = useDebouncedCallback(compile, 1000)
 
-    // Ctrl + S to compile
+    // Ctrl + S to save
     useEffect(() => {
         const handler = event => {
             if (event.ctrlKey && event.key == "s") {
                 event.preventDefault()
+                save()
                 compile()
             }
         }
@@ -93,8 +91,10 @@ export default function Scratch({ slug }) {
                 }}
             />
 
-            <button onClick={compile} class={styles.compile}>compile</button>
-            <button onClick={update} class={styles.compile}>update</button>
+            <div>
+                <button onClick={compile} class={styles.compile}>compile</button>
+                <button onClick={save} class={styles.compile}>save</button>
+            </div>
         </div>
 
         <resizer.Container class={styles.resizer}>
