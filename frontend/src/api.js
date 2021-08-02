@@ -61,5 +61,9 @@ export async function patch(url, body) {
         throw new Error(response.status)
     }
 
-    return await response.json()
+    let text = await response.text()
+    if (!text) {
+        return
+    }
+    return JSON.parse(text)
 }

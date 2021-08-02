@@ -37,16 +37,20 @@ export default function Scratch({ slug }) {
     }
 
     const update = async () => {
-        const { errors } = await api.patch(`/scratch/${slug}`, {
+        const promise = api.patch(`/scratch/${slug}`, {
             compiler_config: compilerConfig,
             source_code: cCode,
             context: cContext,
+        }).catch(error => error.message)
+
+        toast.promise(promise, {
+            loading: 'Loading',
+            success: 'Scratch updated!',
+            error: 'Error updating Scratch',
         })
-        .then(
-            toast.success("Scratch updated!")
-        )
 
         setLog(errors)
+        setLog(promise.errors)
     }
 
     useEffect(async () => {
