@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 import logging
 import os
-import re
 from pathlib import Path
 import subprocess
 
@@ -23,10 +22,6 @@ def asm_objects_path() -> Path:
 
 def compilation_objects_path() -> Path:
     return Path(os.path.join(settings.LOCAL_FILE_DIR, 'compilations'))
-
-def replace_paths(match) -> str:
-    s = match.group(0)
-    return "src" + s[-2:]
 
 class CompilerWrapper:
     def base_path():
@@ -49,10 +44,6 @@ class CompilerWrapper:
             result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             stderr = result.stderr.decode()
 
-            
-            pattern = re.compile(r"[/](?:(?!\.\s+)\S)+(\.)?")
-            stderr = re.sub(pattern, replace_paths, stderr)
-            
             if result.returncode != 0:
                 logger.error(result.stderr.decode())
                 return_code = 1
@@ -132,7 +123,13 @@ class CompilerWrapper:
         object_path = compilation_objects_path() / (temp_name + ".o")
 
         with open(code_path, "w", newline="\n") as f:
-            f.write(context + code + "\n")
+            f.write('#line 1 "ctx.c"\n')
+            f.write(context)
+            f.write('\n')
+
+            f.write('#line 1 "src.c"\n')
+            f.write(code)
+            f.write('\n')
 
         # Run compiler
         compile_status, stderr = CompilerWrapper.run_compiler(
