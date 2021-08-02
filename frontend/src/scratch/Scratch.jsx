@@ -2,7 +2,7 @@ import { h } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
-import toast, { Toaster } from 'react-hot-toast';
+import toast from "react-hot-toast"
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -49,7 +49,7 @@ export default function Scratch({ slug }) {
             context: cContext,
         })
         .then(
-            toast.success("Scratch updated!", {position: "top-right"})
+            toast.success("Scratch updated!")
         )
 
         setLog(errors)
@@ -72,7 +72,6 @@ export default function Scratch({ slug }) {
     })
 
     return <div class={styles.container}>
-        <Toaster />
         <div class={styles.toolbar}>
             <CompilerConfigSelect
                 value={compilerConfig}
