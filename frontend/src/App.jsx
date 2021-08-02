@@ -1,12 +1,13 @@
 import { h, Fragment } from "preact"
 import Router from "preact-router"
 import { Toaster } from "react-hot-toast"
+import { SkeletonTheme } from "react-loading-skeleton"
 
 import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
 
 export default function App() {
-    return <>
+    return <SkeletonTheme color="#202020" highlightColor="#444">
         <nav>
             <a href="/">decomp.me</a>
         </nav>
@@ -37,5 +38,5 @@ export default function App() {
                 },
             }}
         />
-    </>
+    </SkeletonTheme>
 }

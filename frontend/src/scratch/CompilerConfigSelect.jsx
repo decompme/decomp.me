@@ -1,5 +1,6 @@
 import { h } from "preact"
 import useSWR from "swr"
+import Skeleton from "react-loading-skeleton"
 
 import * as api from "../api"
 
@@ -38,13 +39,6 @@ export default function CompilerConfigSelect({ value, onChange }) {
             </select>
         </div>
     } else {
-        return <div>
-            <label>Compiler</label>
-            <br />
-
-            <select>
-                <option>Loading...</option>
-            </select>
-        </div>
+        return <Skeleton/>
     }
 }

@@ -1,8 +1,9 @@
-import { h } from "preact"
+import { h, Fragment } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
+import Skeleton from "react-loading-skeleton"
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -11,24 +12,17 @@ import Editor from "./Editor"
 import styles from "./Scratch.module.css"
 
 export default function Scratch({ slug }) {
-    const [compilerConfig, setCompilerConfig] = useState(null)
-
-    const [cCode, setCCode] = useState()
-    const [cContext, setCContext] = useState()
-    const [diff, setDiff] = useState()
-    const [log, setLog] = useState()
-
-    // TODO: preload this and compile output with a wrapper component of some kind
-    useEffect(() => {
-        api.get(`/scratch/${slug}`)
-            .then(data => {
-                setCompilerConfig(data.compiler_config)
-                setCCode(data.source_code)
-                setCContext(data.context)
-            })
-    }, [])
+    let [compilerConfig, setCompilerConfig] = useState(null)
+    let [cCode, setCCode] = useState(null)
+    let [cContext, setCContext] = useState(null)
+    let [diff, setDiff] = useState(null)
+    let [log, setLog] = useState(null)
 
     const compile = async () => {
+        if (compilerConfig === null || cCode === null || cContext === null) {
+            return
+        }
+
         const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
             compiler_config: compilerConfig,
             source_code: cCode,
@@ -55,6 +49,19 @@ export default function Scratch({ slug }) {
         setLog(errors)
     }
 
+    useEffect(async () => {
+        const { compiler_config, source_code, context } = await api.get(`/scratch/${slug}`)
+        
+        setCompilerConfig(compiler_config)
+        setCContext(context)
+        setCCode(source_code)
+        
+        compilerConfig = compiler_config
+        cContext = context
+        cCode = source_code
+        compile()
+    }, [slug])
+
     // Recompile automatically
     const debounced = useDebouncedCallback(compile, 1000)
 
@@ -75,8 +82,9 @@ export default function Scratch({ slug }) {
         <div class={styles.toolbar}>
             <CompilerConfigSelect
                 value={compilerConfig}
-                onChange={id => {
-                    setCompilerConfig(id)
+                onChange={cc => {
+                    compilerConfig = cc
+                    setCompilerConfig(cc)
                     compile()
                 }}
             />
@@ -87,17 +95,19 @@ export default function Scratch({ slug }) {
 
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={200}>
-                <Editor
+                {cCode === null ? <Skeleton /> : <Editor
                     value={cCode}
                     onChange={value => debounced(setCCode(value))}
-                />
+                />}
             </resizer.Section>
 
             <resizer.Bar size={20} style={{ cursor: 'col-resize' }} />
 
             <resizer.Section minSize={400}>
-                <code class={styles.log}>{log}</code>
-                <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>
+                    <code class={styles.log}>{log}</code>
+                    <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                </>}
             </resizer.Section>
         </resizer.Container>
     </div>

@@ -40,8 +40,12 @@ body {
 }
 
 #root {
+    display: flex;
     height: 100vh;
+}
 
+#root > * {
+    flex: 1;
     display: grid;
     grid-template-rows: auto 1fr;
     padding: var(--s1);

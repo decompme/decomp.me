@@ -1,5 +1,6 @@
 import { h } from "preact"
-import { useEffect } from "preact/hooks"
+import { useEffect, useErrorBoundary } from "preact/hooks"
+import Skeleton from "react-loading-skeleton"
 
 import Monaco, { useMonaco } from "@monaco-editor/react"
 import monacoTheme from "./monacoTheme.json"
@@ -17,7 +18,7 @@ export default function Editor(props) {
     return <Monaco
         language="c"
         theme="custom"
-        loading=""
+        loading={<Skeleton count={20} />}
         options={{
             minimap: {
                 enabled: false,
