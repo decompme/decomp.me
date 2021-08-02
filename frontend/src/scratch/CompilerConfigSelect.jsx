@@ -1,11 +1,10 @@
 import { h } from "preact"
-import { useState } from "preact/hooks"
 import useSWR from "swr"
 
 import * as api from "../api"
 
 export default function CompilerConfigSelect({ value, onChange }) {
-    const { data, error } = useSWR("/compiler_configs", api.get)
+    const { data, error } = useSWR("/compiler_configs", api.get, { revalidateOnFocus: false })
 
     if (error) {
         if (value !== null) {
