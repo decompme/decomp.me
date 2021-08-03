@@ -4,3 +4,8 @@ djangorestframework
 django-cors-headers
 pycparser
 django-environ
+colorama
+ansiwrap
+watchdog
+python-Levenshtein
+cxxfilt
