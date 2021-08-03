@@ -26,6 +26,15 @@
     margin-bottom: var(--s1);
 }
 
+.diff {
+    display: block;
+    overflow: auto;
+    height: 100%;
+
+    scrollbar-color: #ffffff33 transparent;
+    scrollbar-width: thin;
+}
+
 .diff :global(table.diff),
 .log {
     border: none;

@@ -16,6 +16,8 @@
     },
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",
+        "@snowpack/plugin-postcss": "^1.4.3",
+        "postcss-scrollbar": "^0.3.0",
         "snowpack": "^3.7.1"
     }
 }

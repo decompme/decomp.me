@@ -9,6 +9,7 @@ export default {
     },
     plugins: [
         "@prefresh/snowpack",
+        "@snowpack/plugin-postcss",
     ],
     routes: [
         /* Route everything to index.html */
