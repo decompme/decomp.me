@@ -45,7 +45,7 @@ class CompilerWrapper:
             stderr = result.stderr.decode()
 
             if result.returncode != 0:
-                #logger.debug(result.stderr.decode())
+                logger.debug("Compiler returned with a non-zero return code:\n" + result.stderr.decode())
                 return_code = 1
         except Exception as e:
             logger.error(e)

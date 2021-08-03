@@ -32,10 +32,7 @@ export default function Scratch({ slug }) {
         })
 
         setLog(errors)
-
-        if (diff_output) {
-            setDiff(diff_output)
-        }
+        setDiff(diff_output)
     }
 
     const save = async () => {
