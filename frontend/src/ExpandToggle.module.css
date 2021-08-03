@@ -1,0 +1,5 @@
+.toggle {
+    cursor: pointer;
+    user-select: none;
+    font-weight: bold;
+}

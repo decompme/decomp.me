@@ -8,6 +8,7 @@ import Skeleton from "react-loading-skeleton"
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
 import Editor from "./Editor"
+import ExpandToggle from "../ExpandToggle"
 
 import styles from "./Scratch.module.css"
 
@@ -96,13 +97,18 @@ export default function Scratch({ slug }) {
                 <button onClick={save} class={styles.compile}>save</button>
             </div>
         </div>
-
-        <div class={styles.context}>
-            <p>context</p>
-        </div>
         
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={200}>
+                <ExpandToggle label="Context">
+                    <div class={styles.context}>
+                        <Editor
+                            value={cContext}
+                            onChange={value => debounced(setCContext(value))}
+                        />
+                    </div>
+                </ExpandToggle>
+
                 {cCode === null ? <Skeleton /> : <Editor
                     value={cCode}
                     onChange={value => debounced(setCCode(value))}

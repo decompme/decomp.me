@@ -13,6 +13,7 @@
 
 .resizer {
     flex: 1;
+    overflow: hidden;
 }
 
 .compile {
@@ -21,8 +22,8 @@
 }
 
 .context {
-    margin-left: var(--s-4);
-    margin-right: auto;
+    height: 50%;
+    margin-bottom: var(--s1);
 }
 
 .diff :global(table.diff),
