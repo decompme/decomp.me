@@ -49,7 +49,7 @@ export default function Scratch({ slug }) {
             compiler_config: compilerConfig,
             source_code: cCode,
             context: cContext,
-        }).catch(error => error.message)
+        }).catch(error => Promise.reject(error.message))
 
         toast.promise(promise, {
             loading: 'Saving...',

@@ -112,8 +112,6 @@ def scratch(request, slug=None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "PATCH":
-        # TODO: check (db_scratch.owner.id == request.session.get("profile", None) else return 403
-
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -126,6 +124,10 @@ def scratch(request, slug=None):
         compiler_config = CompilerConfiguration.objects.get(id=request.data["compiler_config"])
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
+
+        if db_scratch.owner and db_scratch.owner.id != request.session.get("profile", None):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         db_scratch.compiler_config = compiler_config
         db_scratch.source_code = request.data["source_code"]
         db_scratch.context = request.data["context"]
