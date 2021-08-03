@@ -17,12 +17,8 @@ env = environ.Env(
 with open(BASE_DIR / ".." / ".env") as f:
     environ.Env.read_env(f)
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
-
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
@@ -70,9 +66,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'decompme.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
     'default': env.db()
 }
