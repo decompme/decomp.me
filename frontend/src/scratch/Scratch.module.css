@@ -20,6 +20,11 @@
     margin-right: var(--s-4);
 }
 
+.context {
+    margin-left: var(--s-4);
+    margin-right: auto;
+}
+
 .diff :global(table.diff),
 .log {
     border: none;

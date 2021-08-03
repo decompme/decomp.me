@@ -31,7 +31,7 @@ html {
 }
 
 body {
-    background: #000;
+    background: rgb(20, 20, 20);
     color: #ccc;
     line-height: var(--ratio);
     overflow: hidden;

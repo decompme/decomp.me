@@ -7,7 +7,7 @@ import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
 
 export default function App() {
-    return <SkeletonTheme color="#202020" highlightColor="#444">
+    return <SkeletonTheme color="#404040" highlightColor="#444">
         <nav>
             <a href="/">decomp.me</a>
         </nav>

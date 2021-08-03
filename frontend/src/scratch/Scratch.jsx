@@ -97,6 +97,10 @@ export default function Scratch({ slug }) {
             </div>
         </div>
 
+        <div class={styles.context}>
+            <p>context</p>
+        </div>
+        
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={200}>
                 {cCode === null ? <Skeleton /> : <Editor
