@@ -7,6 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, []),
+    SECURE_SSL_REDIRECT=(bool, False),
+    SECURE_HSTS_SECONDS=(int, 0),
+    SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
+    SECURE_HSTS_PRELOAD=(bool, False),
 )
 
 with open(BASE_DIR / ".." / ".env") as f:
@@ -18,7 +23,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
 
@@ -122,8 +127,14 @@ LOGGING = {
     },
 }
 
+SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
+SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env('SECURE_HSTS_INCLUDE_SUBDOMAINS')
+SECURE_HSTS_PRELOAD=env('SECURE_HSTS_PRELOAD')
+
 SESSION_COOKIE_SAMESITE = "None" if DEBUG else "Lax"
 SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 COMPILER_BASE_PATH = BASE_DIR / "compilers"
