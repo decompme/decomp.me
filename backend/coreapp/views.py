@@ -7,11 +7,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.utils.crypto import get_random_string
+from django.utils.crypto import get_random_string#
+import logging
 
 import hashlib
 
-from .models import Asm, Compiler, CompilerConfiguration, Scratch
+from .models import Profile, Asm, Compiler, CompilerConfiguration, Scratch
 
 def index(request):
     return HttpResponse("This is the index page.")
@@ -60,7 +61,24 @@ def scratch(request, slug=None):
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
 
-        return Response(ScratchSerializer(db_scratch).data)
+        if not db_scratch.owner:
+            # Give ownership to this profile
+            profile = Profile.objects.filter(id=request.session.get("profile", None)).first()
+
+            if not profile:
+                profile = Profile()
+                profile.save()
+                request.session["profile"] = profile.id
+
+            logging.debug(f"Granting ownership of scratch {db_scratch} to {profile}")
+
+            db_scratch.owner = profile
+            db_scratch.save()
+
+        return Response({
+            "scratch": ScratchSerializer(db_scratch).data,
+            "is_yours": db_scratch.owner.id == request.session.get("profile", None),   
+        })
     
     elif request.method == "POST":
         data = request.data
@@ -94,6 +112,8 @@ def scratch(request, slug=None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "PATCH":
+        # TODO: check (db_scratch.owner.id == request.session.get("profile", None) else return 403
+
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
         

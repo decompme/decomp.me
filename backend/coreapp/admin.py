@@ -1,7 +1,8 @@
 from django.contrib import admin
 
-from .models import Assembly, Compilation, Compiler, Asm, CompilerConfiguration, Scratch
+from .models import Profile, Assembly, Compilation, Compiler, Asm, CompilerConfiguration, Scratch
 
+admin.site.register(Profile)
 admin.site.register(Compiler)
 admin.site.register(CompilerConfiguration)
 admin.site.register(Asm)
