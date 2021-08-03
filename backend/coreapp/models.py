@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -8,6 +9,9 @@ def asm_objects_path():
 
 def compilation_objects_path():
     return os.path.join(settings.LOCAL_FILE_DIR, 'compilations')
+
+class Profile(models.Model):
+    pass
 
 class Compiler(models.Model):
     shortname = models.CharField(max_length=50, primary_key=True)
@@ -55,7 +59,7 @@ class Scratch(models.Model):
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
-    owner = models.UUIDField(null=True, blank=True)
+    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.slug

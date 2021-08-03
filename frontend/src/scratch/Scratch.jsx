@@ -18,6 +18,7 @@ export default function Scratch({ slug }) {
     let [cContext, setCContext] = useState(null)
     let [diff, setDiff] = useState(null)
     let [log, setLog] = useState(null)
+    const [isYours, setIsYours] = useState(false)
 
     const compile = async () => {
         if (compilerConfig === null || cCode === null || cContext === null) {
@@ -38,11 +39,17 @@ export default function Scratch({ slug }) {
     }
 
     const save = async () => {
+        if (!isYours) {
+            // TODO: implicitly fork
+            toast.error("You don't own this scratch, so you can't save over it.")
+            return
+        }
+
         const promise = api.patch(`/scratch/${slug}`, {
             compiler_config: compilerConfig,
             source_code: cCode,
             context: cContext,
-        }).catch(error => error.message)
+        }).catch(error => Promise.reject(error.message))
 
         toast.promise(promise, {
             loading: 'Saving...',
@@ -52,15 +59,16 @@ export default function Scratch({ slug }) {
     }
 
     useEffect(async () => {
-        const { compiler_config, source_code, context } = await api.get(`/scratch/${slug}`)
+        const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
+
+        setIsYours(is_yours)
+        setCompilerConfig(scratch.compiler_config)
+        setCContext(scratch.context)
+        setCCode(scratch.source_code)
         
-        setCompilerConfig(compiler_config)
-        setCContext(context)
-        setCCode(source_code)
-        
-        compilerConfig = compiler_config
-        cContext = context
-        cCode = source_code
+        compilerConfig = scratch.compiler_config
+        cContext = scratch.context
+        cCode = scratch.source_code
         compile()
     }, [slug])
 
@@ -94,7 +102,15 @@ export default function Scratch({ slug }) {
 
             <div>
                 <button onClick={compile} class={styles.compile}>compile</button>
-                <button onClick={save} class={styles.compile}>save</button>
+
+                <button
+                    onClick={save}
+                    class={styles.compile}
+                    disabled={!isYours}
+                    title={isYours ? "" : "You don't own this scratch."}    
+                >
+                    save
+                </button>
             </div>
         </div>
         

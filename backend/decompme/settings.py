@@ -137,5 +137,8 @@ LOGGING = {
     },
 }
 
+SESSION_COOKIE_SAMESITE = "None" if DEBUG else "Lax"
+SESSION_COOKIE_SECURE = True
+
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 COMPILER_BASE_PATH = BASE_DIR / "compilers"

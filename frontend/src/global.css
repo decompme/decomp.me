@@ -85,12 +85,13 @@ button {
     user-select: none;
 }
 
-button:active {
+button:not([disabled]):active {
     border-bottom: 0.125rem solid; /* TODO: use box shadow to maintain height */
 }
 
 button[disabled] {
     opacity: 0.4;
+    cursor: not-allowed;
 }
 
 select {
