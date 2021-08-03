@@ -1,6 +1,11 @@
+ansiwrap
+colorama
+cxxfilt
 Django
-psycopg2
-djangorestframework
 django-cors-headers
-pycparser
 django-environ
+djangorestframework
+psycopg2
+pycparser
+python-Levenshtein
+watchdog
