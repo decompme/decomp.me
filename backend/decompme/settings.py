@@ -14,6 +14,8 @@ env = environ.Env(
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
     SECURE_HSTS_PRELOAD=(bool, False),
+    STATIC_URL=(str, '/static/'),
+    STATIC_ROOT=(str, BASE_DIR / 'static'),
 )
 
 env_file = BASE_DIR / ".." / ".env"
@@ -101,7 +103,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-STATIC_URL = '/static/'
+STATIC_URL = env('STATIC_URL')
+STATIC_ROOT = env('STATIC_ROOT')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
