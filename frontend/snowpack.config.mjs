@@ -1,6 +1,6 @@
 import { config } from "dotenv"
 
-config()
+config({ path: "../.env" })
 
 /** @type {import("snowpack").SnowpackUserConfig } */
 export default {
