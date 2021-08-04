@@ -19,7 +19,7 @@ export default {
         react: "preact/compat",
     },
     optimize: {
-        bundle: true,
+        preload: true,
         minify: true,
         target: "es2019",
         treeshake: true,
