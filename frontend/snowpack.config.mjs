@@ -1,7 +1,11 @@
+import { config } from "dotenv"
+
+config()
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 export default {
     env: {
-        API_BASE: "http://127.0.0.1:8000/api",
+        API_BASE: process.env.API_BASE,
     },
     mount: {
         public: { url: "/", static: true },
