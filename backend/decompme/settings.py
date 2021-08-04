@@ -18,7 +18,7 @@ env = environ.Env(
 
 env_file = BASE_DIR / ".." / ".env"
 if os.path.isfile(env_file):
-    with open() as f:
+    with open(env_file) as f:
         environ.Env.read_env(f)
 
 SECRET_KEY = env('SECRET_KEY')

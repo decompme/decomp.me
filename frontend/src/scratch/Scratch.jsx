@@ -128,7 +128,11 @@ export default function Scratch({ slug }) {
                 />}
             </resizer.Section>
 
-            <resizer.Bar size={20} style={{ cursor: 'col-resize' }} />
+            <resizer.Bar size={20} style={{
+                cursor: 'col-resize',
+                borderLeft: "2px solid #313131",
+                borderRight: "2px solid #313131",
+            }} />
 
             <resizer.Section minSize={400}>
                 {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>

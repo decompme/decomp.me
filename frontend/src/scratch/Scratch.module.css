@@ -2,13 +2,16 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    border: 2px solid #313131;
 }
 
 .toolbar {
     display: flex;
     padding-bottom: var(--s1);
-    align-items: flex-end;
-	justify-content: space-evenly;
+    padding-top: var(--s1);
+    align-items: center;
+    justify-content: space-evenly;
+    border-bottom: 1px solid #313131;
 }
 
 .resizer {
@@ -33,6 +36,7 @@
 
     scrollbar-color: #ffffff33 transparent;
     scrollbar-width: thin;
+    padding: var(--s-1);
 }
 
 .diff :global(table.diff),
