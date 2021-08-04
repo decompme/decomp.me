@@ -1,5 +1,4 @@
 Django
-psycopg2
 djangorestframework
 django-cors-headers
 pycparser

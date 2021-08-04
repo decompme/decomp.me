@@ -5,18 +5,15 @@ A collaborative decompilation and reverse engineering platform
 https://docs.google.com/document/d/19SjmFkjnxYEq5CXsuwiCcXetx07Z04b0QWRgRq_WjzM/edit?usp=sharing
 
 ## Contributing
-PostgreSQL and Python are the main runtime dependencies required. Credentials for a test environment can be found in the main app settings file.
 
 ### Directory structure
 `frontend/` contains the website sourcecode
 
 `backend/` contains the Django project
 
+`.env` contains configuration
+
 ### Backend
-The backend requires a running PostgreSQL database.
-
-Please create a user named `decompme` who has permissions to work with a database called `decompme`.
-
 A virtual environment like virtualenv is recommended for handling python dependencies.
 You might have to use python3 instead of python for the following commands.
 ```shell
