@@ -27,8 +27,8 @@ export default function Scratch({ slug }) {
 
         const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
             compiler_config: compilerConfig,
-            source_code: cCode,
-            context: cContext,
+            source_code: cCode.replace(/\r\n/g, "\n"),
+            context: cContext.replace(/\r\n/g, "\n"),
         })
 
         setLog(errors)
