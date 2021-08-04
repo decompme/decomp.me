@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 
 import environ
@@ -14,8 +16,10 @@ env = environ.Env(
     SECURE_HSTS_PRELOAD=(bool, False),
 )
 
-with open(BASE_DIR / ".." / ".env") as f:
-    environ.Env.read_env(f)
+env_file = BASE_DIR / ".." / ".env"
+if os.path.isfile(env_file):
+    with open() as f:
+        environ.Env.read_env(f)
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
