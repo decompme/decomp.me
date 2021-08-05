@@ -31,12 +31,6 @@
 
 .diff {
     display: block;
-    overflow: auto;
-    height: 100%;
-
-    scrollbar-color: #ffffff33 transparent;
-    scrollbar-width: thin;
-    padding: var(--s-1);
 }
 
 .diff :global(table.diff),
@@ -66,3 +60,10 @@
 .diff :global(.rotation-6) { color: #2ECC40 }
 .diff :global(.rotation-7) { color: #B10DC9 }
 .diff :global(.rotation-8) { color: #39CCCC }
+
+.outputPane {
+    scrollbar-color: #ffffff33 transparent;
+    scrollbar-width: thin;
+    overflow: auto !important; /* overrides resizer.Section inline style */
+    padding: var(--s-1);
+}

@@ -134,7 +134,7 @@ export default function Scratch({ slug }) {
                 borderRight: "2px solid #313131",
             }} />
 
-            <resizer.Section minSize={400}>
+            <resizer.Section minSize={400} className={styles.outputPane}>
                 {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>
                     <code class={styles.log}>{log}</code>
                     <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
