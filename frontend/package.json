@@ -17,7 +17,10 @@
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",
         "@snowpack/plugin-postcss": "^1.4.3",
+        "autoprefixer": "^10.3.1",
+        "cssnano": "^5.0.7",
         "dotenv": "^10.0.0",
+        "postcss": "^8.3.6",
         "postcss-scrollbar": "^0.3.0",
         "snowpack": "^3.7.1"
     }

@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 2px solid #313131;
 }
 
 .toolbar {
@@ -11,7 +10,6 @@
     padding-top: var(--s1);
     align-items: center;
     justify-content: space-evenly;
-    border-bottom: 1px solid #313131;
 }
 
 .resizer {
@@ -65,3 +63,27 @@
     overflow: auto !important; /* overrides resizer.Section inline style */
     padding: var(--s-1);
 }
+
+.sectionHeader {
+    font-size: 1rem;
+    font-weight: 600;
+
+    user-select: none;
+    cursor: default;
+
+    height: 3em;
+    padding-left: 1em;
+    background: #2e353f;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.sectionHeader button {
+    font-size: .9rem;
+}
+
+.grow { flex: 1 }
+
+.spacer { width: .3em }

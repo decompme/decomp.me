@@ -1,36 +1,59 @@
-import { h } from "preact"
-import { useEffect, useErrorBoundary } from "preact/hooks"
+import { h, Fragment } from "preact"
+import { useEffect, useState } from "preact/hooks"
 import Skeleton from "react-loading-skeleton"
 
 import Monaco, { useMonaco } from "@monaco-editor/react"
 import monacoTheme from "./monacoTheme.json"
 
-export default function Editor(props) {
+import { language } from "./c.js"
+
+export default function Editor({ forceLoading, value, onChange }) {
+    const [loadedMonaco, setLoaded] = useState(false)
+    const loaded = loadedMonaco && !forceLoading
     const monaco = useMonaco()
 
     useEffect(() => {
         if (monaco) {
             monaco.editor.defineTheme("custom", monacoTheme)
             monaco.editor.setTheme("custom")
+
+            monaco.languages.register({ id: "custom_c" })
+            monaco.languages.setMonarchTokensProvider("custom_c", language)
+
+            setTimeout(() => setLoaded(true), 0)
         }
     }, [monaco])
 
-    return <Monaco
-        language="c"
-        theme="custom"
-        loading={<Skeleton count={20} />}
-        options={{
-            minimap: {
-                enabled: false,
-            },
-            scrollBeyondLastLine: false,
-            cursorBlinking: "phase",
-            //cursorSmoothCaretAnimation: true,
-            fontLigatures: true,
-            matchBrackets: "near",
-            mouseWheelZoom: true,
-        }}
+    return <>
+        <div style={{ display: loaded ? 'block' : 'none', height: '100%' }}>
+            <Monaco
+                language="custom_c"
+                theme="custom"
+                loading=""
+                options={{
+                    minimap: {
+                        enabled: false,
+                    },
+                    scrollBeyondLastLine: false,
+                    cursorBlinking: "phase",
+                    //cursorSmoothCaretAnimation: true,
+                    fontLigatures: true,
+                    matchBrackets: "near",
+                    mouseWheelZoom: true,
+                    padding: { top: 30, bottom: 75 },
+                }}
+                value={value}
+                onChange={onChange}
+            />
+        </div>
 
-        {...props}
-    />
+        <div style={{
+            display: loaded ? 'none' : 'block',
+            padding: '2em',
+            background: '#14161a',
+            height: '100%',
+        }}>
+            <Skeleton count={30} height={22} />
+        </div>
+    </>
 }
