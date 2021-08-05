@@ -37,9 +37,9 @@ export default function NewScratch() {
 
     return <div class={styles.container}>
         <div class={styles.card}>
-            <h1 class={`glow ${styles.heading}`}>New Scratch</h1>
+            <h1 class={`${styles.heading}`}>New Scratch</h1>
             <p class={styles.description}>
-                Paste your function's <span class="white glow">target assembly</span> below:
+                Paste your function's target assembly below:
             </p>
 
             <div class={styles.targetasm}>
@@ -47,7 +47,7 @@ export default function NewScratch() {
             </div>
             
             <p class={styles.description}>
-                Include any <span class="white glow">C context</span> (structs, definitions, etc) below:
+                Include any C context (structs, definitions, etc) below:
             </p>
             <div class={styles.targetasm}>
                 <Editor language="c" value={context} onChange={setContext} />

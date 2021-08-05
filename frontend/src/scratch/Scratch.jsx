@@ -112,7 +112,7 @@ export default function Scratch({ slug }) {
         </div>
         
         <resizer.Container class={styles.resizer}>
-            <resizer.Section minSize={200}>
+            <resizer.Section>
                 <ExpandToggle label="Context">
                     <div class={styles.context}>
                         <Editor
@@ -128,13 +128,13 @@ export default function Scratch({ slug }) {
                 />}
             </resizer.Section>
 
-            <resizer.Bar size={20} style={{
+            <resizer.Bar size={15} style={{
                 cursor: 'col-resize',
                 borderLeft: "2px solid #313131",
                 borderRight: "2px solid #313131",
             }} />
 
-            <resizer.Section minSize={400} className={styles.outputPane}>
+            <resizer.Section minSize={0} className={styles.outputPane}>
                 {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>
                     <code class={styles.log}>{log}</code>
                     <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />

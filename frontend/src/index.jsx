@@ -7,5 +7,5 @@ const root = document.getElementById("root")
 if (root) {
     render(<App />, root)
 } else {
-    console.error("what the fuck?")
+    console.error("this shouldn't happen...")
 }

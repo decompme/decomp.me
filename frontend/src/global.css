@@ -1,6 +1,6 @@
 html {
     font-size: 1rem;
-    font-family: monospace;
+    font-family: system-ui;
 
     --ratio: 1.25;
     --s-5: calc(var(--s-4) / var(--ratio));
@@ -107,15 +107,11 @@ option, optgroup {
 }
 
 label {
-    font-size: var(--s-2);
+    font-size: var(--s-1);
 }
 
 .white, h1, h2, h3, h4, h5, h6, a:hover, a:active {
     color: #fff;
-}
-
-.glow {
-    text-shadow: 1px 1px 8px currentColor;
 }
 
 .red {

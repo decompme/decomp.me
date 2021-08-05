@@ -15,7 +15,7 @@ export default function App() {
         <main>
             <Router>
                 <div path="/">
-                    <a href="/scratch">Click me to make a scratch</a>
+                    <a href="/scratch">Create a scratch</a>
                 </div>
 
                 <NewScratch path="/scratch" />
