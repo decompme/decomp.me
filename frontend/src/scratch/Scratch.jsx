@@ -11,6 +11,7 @@ import Editor from "./Editor"
 import ExpandToggle from "../ExpandToggle"
 
 import styles from "./Scratch.module.css"
+import { Resizer } from "react-simple-resizer"
 
 export default function Scratch({ slug }) {
     let [compilerConfig, setCompilerConfig] = useState(null)
@@ -113,19 +114,27 @@ export default function Scratch({ slug }) {
         
         <resizer.Container class={styles.resizer}>
             <resizer.Section>
-                <ExpandToggle label="Context">
-                    <div class={styles.context}>
+                <resizer.Container vertical style={{ height: "100%" }}>
+                    <resizer.Section minSize={16} defaultSize={60} className={styles.context}>
+                        Context
                         <Editor
                             value={cContext}
                             onChange={value => debounced(setCContext(value))}
                         />
-                    </div>
-                </ExpandToggle>
-
-                {cCode === null ? <Skeleton /> : <Editor
-                    value={cCode}
-                    onChange={value => debounced(setCCode(value))}
-                />}
+                    </resizer.Section>
+                    <resizer.Bar size={20} style={{
+                        cursor: 'row-resize',
+                        borderTop: "2px solid #313131",
+                        borderBottom: "2px solid #313131",
+                    }} />
+                    <resizer.Section minSize={16} defaultSize={200}>
+                        Source
+                        {cCode === null ? <Skeleton /> : <Editor
+                            value={cCode}
+                            onChange={value => debounced(setCCode(value))}
+                        />}
+                    </resizer.Section>
+                </resizer.Container>
             </resizer.Section>
 
             <resizer.Bar size={15} style={{
@@ -134,7 +143,7 @@ export default function Scratch({ slug }) {
                 borderRight: "2px solid #313131",
             }} />
 
-            <resizer.Section minSize={0} className={styles.outputPane}>
+            <resizer.Section className={styles.outputPane}>
                 {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>
                     <code class={styles.log}>{log}</code>
                     <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
