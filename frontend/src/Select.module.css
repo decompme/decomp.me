@@ -1,0 +1,37 @@
+.group {
+    display: inline-flex;
+    position: relative;
+
+    background: #00000044;
+    color: #ffffffcc;
+
+    border: 0;
+    border-radius: 0.25rem;
+
+    padding: .6em 1em;
+
+    font-size: .8rem;
+
+    user-select: none;
+
+    box-shadow: 0 2px 16px #00000022;
+}
+
+.group select {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    appearance: none;
+    outline: none !important;
+}
+
+.group option, .group optgroup {
+    color: white;
+    background: #14161a;
+}
+
+.icon {
+    pointer-events: none;
+    position: absolute;
+    right: .6em;
+}

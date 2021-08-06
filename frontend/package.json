@@ -6,10 +6,12 @@
     },
     "dependencies": {
         "@monaco-editor/react": "^4.2.1",
+        "@primer/octicons-react": "^15.0.0",
+        "@react-hook/resize-observer": "^1.2.2",
         "preact": "^10.5.13",
-        "preact-router": "^3.2.1",
         "react-hot-toast": "^2.1.0",
         "react-loading-skeleton": "^2.2.0",
+        "react-router-dom": "^5.2.0",
         "react-simple-resizer": "^2.1.0",
         "swr": "^0.5.6",
         "use-debounce": "^7.0.0"
@@ -17,7 +19,10 @@
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",
         "@snowpack/plugin-postcss": "^1.4.3",
+        "autoprefixer": "^10.3.1",
+        "cssnano": "^5.0.7",
         "dotenv": "^10.0.0",
+        "postcss": "^8.3.6",
         "postcss-scrollbar": "^0.3.0",
         "snowpack": "^3.7.1"
     }

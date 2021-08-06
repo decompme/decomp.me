@@ -1,6 +1,8 @@
 html {
-    font-size: 1rem;
-    font-family: monospace;
+    font-size: 16px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+    line-height: 1.5;
+    text-rendering: optimizeQuality;
 
     --ratio: 1.25;
     --s-5: calc(var(--s-4) / var(--ratio));
@@ -31,12 +33,11 @@ html {
 }
 
 body {
-    background: rgb(20, 20, 20);
-    color: #ccc;
+    background: #0c0e12;
+    color: rgb(201, 199, 209);
     line-height: var(--ratio);
     overflow: hidden;
-    height: 100vh;
-    text-rendering: optimizeSpeed;
+    user-select: none;
 }
 
 #root {
@@ -48,7 +49,6 @@ body {
     flex: 1;
     display: grid;
     grid-template-rows: auto 1fr;
-    padding: var(--s1);
     grid-template-areas:
         "nav"
         "main";
@@ -63,7 +63,7 @@ nav {
     align-items: center;
     justify-content: space-between;
 
-    padding-bottom: var(--s1);
+    padding: 1em;
 }
 
 main {
@@ -71,51 +71,47 @@ main {
     overflow: hidden;
 }
 
-button {
-    background: #000;
-    color: #fff;
-    border: 0.125rem solid;
-    border-bottom: 0.2rem solid;
+button, .button {
+    background: #00000044;
+    color: #ffffffcc;
+
+    border: 0;
     border-radius: 0.25rem;
-    padding: var(--s-4) var(--s-2);
-    font-weight: 500;
-    font-size: var(--s-1);
-    cursor: pointer;
-    transition: opacity 80ms ease-out;
+
+    padding: .6em 1em;
+
+    font-size: .8rem;
+
     user-select: none;
+    appearance: none;
+    text-decoration: none;
+
+    display: inline-flex;
+    gap: .5em;
+    align-items: center;
+
+    box-shadow: 0 2px 16px #00000022;
 }
 
-button:not([disabled]):active {
-    border-bottom: 0.125rem solid; /* TODO: use box shadow to maintain height */
+button, .button {
+    cursor: pointer;
 }
 
 button[disabled] {
-    opacity: 0.4;
+    color: #ffffff33;
     cursor: not-allowed;
 }
 
-select {
-    border: 0.1rem solid;
-    border-radius: 0.15rem;
-    background: transparent;
-    outline: none !important;
-    font-size: var(--s-1);
-}
-
-option, optgroup {
-    background: black;
+button:active, .button:active {
+    box-shadow: none;
 }
 
 label {
-    font-size: var(--s-2);
+    font-size: var(--s-1);
 }
 
-.white, h1, h2, h3, h4, h5, h6, a:hover, a:active {
+.white, h1, h2, h3, h4, h5, h6, a:hover, a:active, button:not([disabled]):hover {
     color: #fff;
-}
-
-.glow {
-    text-shadow: 1px 1px 8px currentColor;
 }
 
 .red {
@@ -123,5 +119,9 @@ label {
 }
 
 ::selection {
+    background: #ffffff22;
+}
+
+nav .button {
     background: #2A2A2A;
 }

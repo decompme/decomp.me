@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 2px solid #313131;
 }
 
 .toolbar {
@@ -11,7 +10,6 @@
     padding-top: var(--s1);
     align-items: center;
     justify-content: space-evenly;
-    border-bottom: 1px solid #313131;
 }
 
 .resizer {
@@ -19,14 +17,7 @@
     overflow: hidden;
 }
 
-.compile {
-    margin-left: auto;
-    margin-right: var(--s-4);
-}
-
 .context {
-    height: 50%;
-    margin-bottom: var(--s1);
 }
 
 .diff {
@@ -61,9 +52,59 @@
 .diff :global(.rotation-7) { color: #B10DC9 }
 .diff :global(.rotation-8) { color: #39CCCC }
 
-.outputPane {
+.sectionHeader {
+    font-size: 1rem;
+    font-weight: 600;
+
+    user-select: none;
+    cursor: default;
+
+    height: 3em;
+    padding-left: 1em;
+    padding-right: .5em;
+    background: #2e353f;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: .25em;
+
+    box-shadow: 0 0 8px 0 #00000044;
+    z-index: 1;
+}
+
+.grow { flex: 1 }
+
+.diffSection {
+    display: flex;
+    flex-direction: column;
+
     scrollbar-color: #ffffff33 transparent;
     scrollbar-width: thin;
-    overflow: auto !important; /* overrides resizer.Section inline style */
-    padding: var(--s-1);
+    background: #14161a;
+}
+
+.diffSection .sectionHeader {
+    background: #1b1e22;
+}
+
+.diffExplanation {
+    opacity: 0.0;
+    transition: opacity 100ms ease-out;
+    word-wrap: no-wrap;
+}
+
+.diffExplanation.visible {
+    opacity: 0.3;
+}
+
+.diffExplanation.visible:hover {
+    opacity: 1.0;
+}
+
+.output {
+    padding: 1em;
+    flex: 1;
+    overflow: auto;
+    user-select: initial;
 }

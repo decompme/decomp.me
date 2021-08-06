@@ -6,9 +6,10 @@
 }
 
 .card {
-    border: .1em solid #fff;
+    border: .1em solid rgb(100, 100, 100);
     border-radius: .6em;
-    box-shadow: 0 0 1em #999, 0 0 .5em #999 inset;
+
+    background-color: #14161a;
 
     width: calc(var(--s1) * 40);
     height: calc(var(--s1) * 30);
@@ -31,7 +32,6 @@
 .targetasm {
     flex: 1;
     overflow: hidden;
-    padding-right: var(--s2);
 }
 
 /* hide monaco's scrollbar minimap */
