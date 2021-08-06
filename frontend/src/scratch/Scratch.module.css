@@ -52,13 +52,6 @@
 .diff :global(.rotation-7) { color: #B10DC9 }
 .diff :global(.rotation-8) { color: #39CCCC }
 
-.outputPane {
-    scrollbar-color: #ffffff33 transparent;
-    scrollbar-width: thin;
-    overflow: auto !important; /* overrides resizer.Section inline style */
-    padding: var(--s-1);
-}
-
 .sectionHeader {
     font-size: 1rem;
     font-weight: 600;
@@ -76,7 +69,34 @@
     align-items: center;
     gap: .25em;
 
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.82);
+    box-shadow: 0 0 8px 0 #00000044;
+    z-index: 1;
 }
 
 .grow { flex: 1 }
+
+.diffSection {
+    scrollbar-color: #ffffff33 transparent;
+    scrollbar-width: thin;
+    background: #14161a;
+}
+
+.diffSection .sectionHeader {
+    background: #1b1e22;
+}
+
+.diffExplanation {
+    opacity: 0.3;
+    transition: opacity 100ms ease-out;
+}
+
+.diffExplanation:hover {
+    opacity: 1.0;
+}
+
+.output {
+    padding: 1em;
+    height: 100%;
+    overflow: auto;
+    user-select: initial;
+}

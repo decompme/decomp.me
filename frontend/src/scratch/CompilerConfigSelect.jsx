@@ -26,23 +26,18 @@ export default function CompilerConfigSelect({ value, onChange }) {
             onChange(validIds[0])
         }
 
-        return <div>
-            <label>Compiler</label>
-            <br />
-
-            <select onChange={event => onChange(parseInt(event.target.value))}>
-                {Object.entries(data).map(([compiler, configs]) => {
-                    return <optgroup label={compiler}>
-                        {configs.map(config => 
-                            <option value={config.id} selected={config.id == value}>
-                                {compiler} {config.cc_flags}
-                            </option>
-                        )}
-                    </optgroup>
-                })}
-            </select>
-        </div>
+        return <select onChange={event => onChange(parseInt(event.target.value))}>
+            {Object.entries(data).map(([compiler, configs]) => {
+                return <optgroup label={compiler}>
+                    {configs.map(config => 
+                        <option value={config.id} selected={config.id == value}>
+                            {compiler} {config.cc_flags}
+                        </option>
+                    )}
+                </optgroup>
+            })}
+        </select>
     } else {
-        return <Skeleton/>
+        return <Skeleton />
     }
 }

@@ -83,7 +83,7 @@ button, .button, select {
     font-size: .8rem;
 
     user-select: none;
-    -webkit-appearance: none;
+    appearance: none;
     text-decoration: none;
 
     display: inline-flex;

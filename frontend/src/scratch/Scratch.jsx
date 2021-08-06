@@ -114,21 +114,6 @@ export default function Scratch({ slug }) {
     }
 
     return <div class={styles.container}>
-        <div class={styles.toolbar}>
-            <CompilerConfigSelect
-                value={compilerConfig}
-                onChange={cc => {
-                    compilerConfig = cc
-                    setCompilerConfig(cc)
-                    compile()
-                }}
-            />
-
-            <div>
-                
-            </div>
-        </div>
-        
         <resizer.Container class={styles.resizer}>
             <resizer.Section>
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
@@ -141,7 +126,6 @@ export default function Scratch({ slug }) {
                             </button>
                             <button
                                 onClick={save}
-                                class={styles.compile}
                                 disabled={!isYours}
                                 title={isYours ? "" : "You don't own this scratch."}
                             >
@@ -153,6 +137,15 @@ export default function Scratch({ slug }) {
                             >
                                 <RepoForkedIcon size={16} /> Fork
                             </button>
+
+                            <CompilerConfigSelect
+                                value={compilerConfig}
+                                onChange={cc => {
+                                    compilerConfig = cc
+                                    setCompilerConfig(cc)
+                                    compile()
+                                }}
+                            />
                         </div>
 
                         <Editor
@@ -196,11 +189,16 @@ export default function Scratch({ slug }) {
                 expandInteractiveArea={{ left: 4, right: 4 }}
             />
 
-            <resizer.Section className={styles.outputPane}>
-                {(diff === null && log === null) ? <Skeleton height="20px" count={20} /> : <>
-                    <code class={styles.log}>{log}</code>
-                    <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
-                </>}
+            <resizer.Section className={styles.diffSection}>
+                <div class={styles.sectionHeader}>
+                    Diff <span class={styles.diffExplanation}>(left is target, right is your code)</span>
+                </div>
+                <div class={styles.output}>
+                    {(diff === null && log === null) ? <Skeleton height={20} count={20} /> : <>
+                        <code class={styles.log}>{log}</code>
+                        <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                    </>}
+                </div>
             </resizer.Section>
         </resizer.Container>
     </div>
