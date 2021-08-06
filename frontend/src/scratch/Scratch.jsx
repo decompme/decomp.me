@@ -125,7 +125,7 @@ export default function Scratch() {
                         <div class={styles.sectionHeader}>
                             Sourcecode
                             <span class={styles.grow}></span>
-                            <button onClick={debouncedCompile} disabled={currentRequest}>
+                            <button onClick={compile} disabled={currentRequest}>
                                 Compile
                             </button>
                             <button
@@ -153,6 +153,7 @@ export default function Scratch() {
                         </div>
 
                         <Editor
+                            padding
                             value={cCode}
                             forceLoading={cCode === null}
                             onChange={value => {
@@ -173,6 +174,7 @@ export default function Scratch() {
 
                     <resizer.Section defaultSize={0} className={styles.context}>
                         <Editor
+                            padding
                             value={cContext}
                             forceLoading={cContext === null}
                             onChange={value => {

@@ -71,7 +71,7 @@ main {
     overflow: hidden;
 }
 
-button, .button, select {
+button, .button {
     background: #00000044;
     color: #ffffffcc;
 
@@ -89,6 +89,8 @@ button, .button, select {
     display: inline-flex;
     gap: .5em;
     align-items: center;
+
+    box-shadow: 0 2px 16px #00000022;
 }
 
 button, .button {
@@ -100,12 +102,8 @@ button[disabled] {
     cursor: not-allowed;
 }
 
-select {
-    outline: none !important;
-}
-
-option, optgroup {
-    background: black;
+button:active, .button:active {
+    box-shadow: none;
 }
 
 label {

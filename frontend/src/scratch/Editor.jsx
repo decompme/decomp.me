@@ -7,7 +7,7 @@ import monacoTheme from "./monacoTheme.json"
 import { language } from "./c.js"
 import styles from "./Editor.module.css"
 
-export default function Editor({ forceLoading, value, onChange }) {
+export default function Editor({ forceLoading, value, onChange, padding }) {
     const [loadedMonaco, setLoaded] = useState(false)
     const loaded = loadedMonaco && !forceLoading
     const monaco = useMonaco()
@@ -36,11 +36,9 @@ export default function Editor({ forceLoading, value, onChange }) {
                     },
                     scrollBeyondLastLine: false,
                     cursorBlinking: "phase",
-                    //cursorSmoothCaretAnimation: true,
-                    fontLigatures: true,
                     matchBrackets: "near",
                     mouseWheelZoom: true,
-                    padding: { top: 30, bottom: 75 },
+                    padding: padding ? { top: 30, bottom: 30 } : {},
                 }}
                 value={value}
                 onChange={onChange}

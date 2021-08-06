@@ -2,6 +2,7 @@ import { h } from "preact"
 import useSWR from "swr"
 import Skeleton from "react-loading-skeleton"
 
+import Select from "../Select"
 import * as api from "../api"
 
 export default function CompilerConfigSelect({ value, onChange }) {
@@ -26,7 +27,7 @@ export default function CompilerConfigSelect({ value, onChange }) {
             onChange(validIds[0])
         }
 
-        return <select onChange={event => onChange(parseInt(event.target.value))}>
+        return <Select onChange={event => onChange(parseInt(event.target.value))}>
             {Object.entries(data).map(([compiler, configs]) => {
                 return <optgroup label={compiler}>
                     {configs.map(config => 
@@ -36,7 +37,7 @@ export default function CompilerConfigSelect({ value, onChange }) {
                     )}
                 </optgroup>
             })}
-        </select>
+        </Select>
     } else {
         return <Skeleton />
     }
