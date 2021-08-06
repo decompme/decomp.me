@@ -9,12 +9,13 @@ import { RepoForkedIcon } from "@primer/octicons-react"
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
 import Editor from "./Editor"
-import ExpandToggle from "../ExpandToggle"
+import { useLocalStorage } from "../hooks"
 
 import styles from "./Scratch.module.css"
 
 export default function Scratch({ slug }) {
     const [currentRequest, setCurrentRequest] = useState(null)
+    const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     let [compilerConfig, setCompilerConfig] = useState(null)
     let [cCode, setCCode] = useState(null)
     let [cContext, setCContext] = useState(null)
@@ -192,10 +193,13 @@ export default function Scratch({ slug }) {
             <resizer.Section className={styles.diffSection}>
                 <div class={styles.sectionHeader}>
                     Diff <span class={styles.diffExplanation}>(left is target, right is your code)</span>
+                    <span class={styles.grow} />
+                    <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} />
+                    <label>Show warnings</label>
                 </div>
                 <div class={styles.output}>
                     {(diff === null && log === null) ? <Skeleton height={20} count={20} /> : <>
-                        <code class={styles.log}>{log}</code>
+                        {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
                         <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
                     </>}
                 </div>
