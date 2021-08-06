@@ -1,4 +1,5 @@
-import { useState } from "preact/hooks"
+import { useState, useRef, useLayoutEffect } from "preact/hooks"
+import useResizeObserver from "@react-hook/resize-observer"
 
 export function useLocalStorage(key, initialValue) {
     const [storedValue, setStoredValue] = useState(() => {
@@ -13,4 +14,17 @@ export function useLocalStorage(key, initialValue) {
     }
 
     return [storedValue, setValue]
-  }
+}
+
+export function useSize() {
+    const ref = useRef()
+    const [size, setSize] = useState({ width: 0, height: 0 })
+  
+    useLayoutEffect(() => {
+        setSize(ref.current.getBoundingClientRect())
+    }, [ref])
+
+    useResizeObserver(ref, entry => setSize(entry.contentRect))
+
+    return { width: size.width, height: size.height, ref }
+}

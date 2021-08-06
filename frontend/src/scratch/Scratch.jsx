@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom"
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
 import Editor from "./Editor"
-import { useLocalStorage } from "../hooks"
+import { useLocalStorage, useSize } from "../hooks"
 
 import styles from "./Scratch.module.css"
 
@@ -26,6 +26,7 @@ export default function Scratch() {
     let [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
     const codeResizeContainer = useRef(null)
+    const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
 
     const compile = async () => {
         if (compilerConfig === null || cCode === null || cContext === null) {
@@ -119,7 +120,7 @@ export default function Scratch() {
 
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>
-            <resizer.Section>
+            <resizer.Section minSize={500}>
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
                     <resizer.Section minSize="4em">
                         <div class={styles.sectionHeader}>
@@ -195,12 +196,12 @@ export default function Scratch() {
                 expandInteractiveArea={{ left: 4, right: 4 }}
             />
 
-            <resizer.Section className={styles.diffSection}>
-                <div class={styles.sectionHeader}>
+            <resizer.Section className={styles.diffSection} minSize={400}>
+                <div class={styles.sectionHeader} ref={diffSectionHeader}>
                     Diff
-                    <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
+                    {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
                         (left is target, right is your code)
-                    </span>
+                    </span>}
 
                     <span class={styles.grow} />
         
