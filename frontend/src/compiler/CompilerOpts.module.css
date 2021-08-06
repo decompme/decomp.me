@@ -44,7 +44,7 @@
 
 .flag {
     display: inline-block;
-    cursor: pointer;
+    cursor: default;
     padding: .5em;
     border-radius: .5em;
 }
@@ -66,4 +66,9 @@
     display: block;
     font-size: 0.8em;
     opacity: 0.5;
+}
+
+.optimisationSelect {
+    width: 20em;
+    margin-top: 1em;
 }
