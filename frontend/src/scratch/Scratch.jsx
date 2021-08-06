@@ -197,8 +197,13 @@ export default function Scratch() {
 
             <resizer.Section className={styles.diffSection}>
                 <div class={styles.sectionHeader}>
-                    Diff {diff && <span class={styles.diffExplanation}>(left is target, right is your code)</span>}
+                    Diff
+                    <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
+                        (left is target, right is your code)
+                    </span>
+
                     <span class={styles.grow} />
+        
                     <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
                     <label for="showWarnings">Show warnings</label>
                 </div>

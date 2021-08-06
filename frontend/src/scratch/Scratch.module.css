@@ -89,11 +89,15 @@
 }
 
 .diffExplanation {
-    opacity: 0.3;
+    opacity: 0.0;
     transition: opacity 100ms ease-out;
 }
 
-.diffExplanation:hover {
+.diffExplanation.visible {
+    opacity: 0.3;
+}
+
+.diffExplanation.visible:hover {
     opacity: 1.0;
 }
 
