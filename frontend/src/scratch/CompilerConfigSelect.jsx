@@ -5,8 +5,10 @@ import Skeleton from "react-loading-skeleton"
 import Select from "../Select"
 import * as api from "../api"
 
-export default function CompilerConfigSelect({ value, onChange }) {
+export default function CompilerConfigSelect({ value, onChange, class: className }) {
     const { data, error } = useSWR("/compiler_configs", api.get, { revalidateOnFocus: false })
+
+    console.log(className)
 
     if (error) {
         if (value !== null) {
@@ -27,7 +29,7 @@ export default function CompilerConfigSelect({ value, onChange }) {
             onChange(validIds[0])
         }
 
-        return <Select onChange={event => onChange(parseInt(event.target.value))}>
+        return <Select onChange={event => onChange(parseInt(event.target.value))} class={className}>
             {Object.entries(data).map(([compiler, configs]) => {
                 return <optgroup label={compiler}>
                     {configs.map(config => 

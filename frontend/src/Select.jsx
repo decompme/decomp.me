@@ -3,8 +3,8 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 
 import styles from "./Select.module.css"
 
-export default function Select({ onChange, children }) {
-    return <div class={styles.group}>
+export default function Select({ onChange, children, class: className }) {
+    return <div class={`${styles.group} ${className}`}>
         <select onChange={onChange}>
             {children}
         </select>
