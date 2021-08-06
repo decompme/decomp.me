@@ -1,6 +1,6 @@
 import { h } from "preact"
 import { useState } from "preact/hooks"
-import { route } from "preact-router"
+import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import Editor from "./Editor"
@@ -13,6 +13,7 @@ export default function NewScratch() {
     const [asm, setAsm] = useState()
     const [context, setContext] = useState()
     const [compilerConfig, setCompilerConfig] = useState()
+    const history = useHistory()
 
     // TODO: loading state
 
@@ -28,7 +29,7 @@ export default function NewScratch() {
 
             setErrorMsg("")
 
-            route(`/scratch/${slug}`)
+            history.push(`/scratch/${slug}`)
         } catch (error) {
             console.error(error)
             setErrorMsg("an error occurred :/")

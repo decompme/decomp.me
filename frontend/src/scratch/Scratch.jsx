@@ -5,6 +5,7 @@ import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
 import { RepoForkedIcon } from "@primer/octicons-react"
+import { useParams } from "react-router-dom"
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -13,7 +14,9 @@ import { useLocalStorage } from "../hooks"
 
 import styles from "./Scratch.module.css"
 
-export default function Scratch({ slug }) {
+export default function Scratch() {
+    const { slug } = useParams()
+
     const [currentRequest, setCurrentRequest] = useState(null)
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     let [compilerConfig, setCompilerConfig] = useState(null)

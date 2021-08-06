@@ -1,46 +1,56 @@
 import { h, Fragment } from "preact"
-import Router from "preact-router"
+import { BrowserRouter as Router, Route, Switch, Link, Redirect } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"
-import { MarkGithubIcon } from "@primer/octicons-react"
+import { MarkGithubIcon, PlusIcon } from "@primer/octicons-react"
 
 import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
 
 export default function App() {
     return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">
-        <nav>
-            <a href="/">decomp.me</a>
-            <a href="https://github.com/ethteck/decomp.me" class="button">
-                <MarkGithubIcon size={16} /> Contribute to decomp.me on GitHub!
-            </a>
-        </nav>
+        <Router>
+            <nav>
+                <Link class="button" to="/scratch">
+                    <PlusIcon size={16} /> New Scratch
+                </Link>
 
-        <main>
-            <Router>
-                <div path="/">
-                    <a href="/scratch">Create a scratch</a>
-                </div>
+                <a class="button" href="https://github.com/ethteck/decomp.me" target="_blank" rel="noopener noreferrer">
+                    <MarkGithubIcon size={16} /> Contribute to decomp.me on GitHub!
+                </a>
+            </nav>
 
-                <NewScratch path="/scratch" />
-                <Scratch path="/scratch/:slug" />
+            <main>
+                <Switch>
+                    <Route exact path="/">
+                        <Redirect to="/scratch" />
+                    </Route>
 
-                <div default>
-                    Page not found :(<br />
-                </div>
-            </Router>
-        </main>
+                    <Route exact path="/scratch">
+                        <NewScratch />
+                    </Route>
 
-        <Toaster
-            position="bottom-center"
-            reverseOrder={true}
-            toastOptions={{
-                style: {
-                    borderRadius: '100px',
-                    background: '#333',
-                    color: '#fff',
-                },
-            }}
-        />
+                    <Route path="/scratch/:slug">
+                        <Scratch />
+                    </Route>
+
+                    <div default>
+                        Page not found :(<br />
+                    </div>
+                </Switch>
+            </main>
+
+            <Toaster
+                position="bottom-center"
+                reverseOrder={true}
+                toastOptions={{
+                    style: {
+                        borderRadius: '100px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                }}
+            />
+        </Router>
     </SkeletonTheme>
 }
