@@ -122,7 +122,7 @@ export default function Scratch({ slug }) {
                         <div class={styles.sectionHeader}>
                             Sourcecode
                             <span class={styles.grow}></span>
-                            <button onClick={debouncedCompile}>
+                            <button onClick={debouncedCompile} disabled={currentRequest}>
                                 Compile
                             </button>
                             <button
@@ -192,10 +192,10 @@ export default function Scratch({ slug }) {
 
             <resizer.Section className={styles.diffSection}>
                 <div class={styles.sectionHeader}>
-                    Diff <span class={styles.diffExplanation}>(left is target, right is your code)</span>
+                    Diff {diff && <span class={styles.diffExplanation}>(left is target, right is your code)</span>}
                     <span class={styles.grow} />
-                    <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} />
-                    <label>Show warnings</label>
+                    <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
+                    <label for="showWarnings">Show warnings</label>
                 </div>
                 <div class={styles.output}>
                     {(diff === null && log === null) ? <Skeleton height={20} count={20} /> : <>
