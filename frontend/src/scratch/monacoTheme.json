@@ -2,6 +2,7 @@
     "base": "vs-dark",
     "inherit": false,
     "rules": [
+        { "token": "", "foreground": "ff494c" },
         { "token": "identifier", "foreground": "8599B3" },
         { "token": "delimiter", "foreground": "555f6e" },
         { "token": "operator", "foreground": "7F83FF" },

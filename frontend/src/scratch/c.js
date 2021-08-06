@@ -292,7 +292,7 @@ export const language = {
 	tokenizer: {
 		root: [
             // Macro
-            [/[A-Z][A-Z0-9_]*/, { token: 'macro' }],
+            [/[A-Z][A-Z0-9_]*(?=\b)/, { token: 'macro' }],
 
             // PascalCase for types
             [/[A-Z]\w*/, { token: 'storage.type' }],
