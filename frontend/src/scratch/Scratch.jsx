@@ -84,7 +84,7 @@ export default function Scratch({ slug }) {
         compile()
     }, [slug])
 
-    const debouncedCompile = useDebouncedCallback(compile, 1000, { leading: true, trailing: false })
+    const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     // Ctrl + S to save
     useEffect(() => {
