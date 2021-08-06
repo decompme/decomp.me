@@ -72,7 +72,6 @@ export const language = {
 		'false',
 		'final',
 		'finally',
-		'float',
 		'for',
 		'friend',
 		'gcnew',
@@ -82,7 +81,6 @@ export const language = {
 		'in',
 		'initonly',
 		'inline',
-		'int',
 		'interface',
 		'interior_ptr',
 		'internal',
@@ -129,7 +127,6 @@ export const language = {
 		'typeid',
 		'typename',
 		'union',
-		'unsigned',
 		'using',
 		'virtual',
 		'volatile',
@@ -237,6 +234,7 @@ export const language = {
         'int',
         'float',
         'long',
+        'unsigned',
     ],
 
 	operators: [
@@ -270,7 +268,8 @@ export const language = {
 		'%=',
 		'<<=',
 		'>>=',
-		'>>>='
+		'>>>=',
+        '...',
 	],
 
     comparisonOperators: [

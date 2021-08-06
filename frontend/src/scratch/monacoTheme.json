@@ -17,7 +17,7 @@
         { "token": "entity.name.function", "foreground": "FF4A98" },
         { "token": "entity.other.attribute-name", "foreground": "FF4A98" },
         { "token": "support.function", "foreground": "45B8FF" },
-        { "token": "storage", "foreground": "c1c1f1" },
+        { "token": "storage", "foreground": "45B8FF" },
         { "token": "macro", "foreground": "3bff6c" }
     ],
     "colors": {
