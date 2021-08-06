@@ -206,7 +206,7 @@ export default function Scratch() {
                     <span class={styles.grow} />
         
                     <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
-                    <label for="showWarnings">Show warnings</label>
+                    <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
                 </div>
                 <div class={styles.output}>
                     {(diff === null && log === null) ? <Skeleton height={20} count={20} /> : <>
