@@ -9,6 +9,8 @@
     border: .1em solid rgb(100, 100, 100);
     border-radius: .6em;
 
+    background-color: #14161a;
+
     width: calc(var(--s1) * 40);
     height: calc(var(--s1) * 30);
     overflow: hidden;
@@ -30,7 +32,6 @@
 .targetasm {
     flex: 1;
     overflow: hidden;
-    padding-right: var(--s2);
 }
 
 /* hide monaco's scrollbar minimap */

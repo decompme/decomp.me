@@ -58,9 +58,10 @@ export default function NewScratch() {
                     {errorMsg}
                 </p>
                 <div class={styles.compilerselect}>
+                    Compiler
                     <CompilerConfigSelect value={compilerConfig} onChange={setCompilerConfig} />
                 </div>
-                <button disabled={!asm && compilerConfig !== null} onClick={submit}>Create</button>
+                <button disabled={!asm && compilerConfig !== null} onClick={submit}>Create scratch</button>
             </div>
         </div>
     </div>
