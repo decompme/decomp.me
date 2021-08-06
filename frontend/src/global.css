@@ -37,6 +37,7 @@ body {
     color: rgb(201, 199, 209);
     line-height: var(--ratio);
     overflow: hidden;
+    user-select: none;
 }
 
 #root {
@@ -70,7 +71,7 @@ main {
     overflow: hidden;
 }
 
-button, .button {
+button, .button, select {
     background: #00000044;
     color: #ffffffcc;
 
@@ -79,9 +80,19 @@ button, .button {
 
     padding: .6em 1em;
 
-    cursor: pointer;
+    font-size: .8rem;
 
     user-select: none;
+    -webkit-appearance: none;
+    text-decoration: none;
+
+    display: inline-flex;
+    gap: .5em;
+    align-items: center;
+}
+
+button, .button {
+    cursor: pointer;
 }
 
 button[disabled] {
@@ -90,11 +101,7 @@ button[disabled] {
 }
 
 select {
-    border: 0.1rem solid;
-    border-radius: 0.15rem;
-    background: transparent;
     outline: none !important;
-    font-size: var(--s-1);
 }
 
 option, optgroup {
@@ -105,7 +112,7 @@ label {
     font-size: var(--s-1);
 }
 
-.white, h1, h2, h3, h4, h5, h6, a:hover, a:active {
+.white, h1, h2, h3, h4, h5, h6, a:hover, a:active, button:not([disabled]):hover {
     color: #fff;
 }
 
@@ -114,11 +121,9 @@ label {
 }
 
 ::selection {
-    background: #2A2A2A;
+    background: #ffffff22;
 }
 
 nav .button {
-    font-size: 0.8em;
-    text-decoration: none;
     background: #2A2A2A;
 }

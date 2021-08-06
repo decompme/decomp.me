@@ -2,6 +2,7 @@ import { h, Fragment } from "preact"
 import Router from "preact-router"
 import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"
+import { MarkGithubIcon } from "@primer/octicons-react"
 
 import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
@@ -10,7 +11,9 @@ export default function App() {
     return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">
         <nav>
             <a href="/">decomp.me</a>
-            <a href="https://github.com/ethteck/decomp.me" class="button">Contribute to decomp.me on GitHub</a>
+            <a href="https://github.com/ethteck/decomp.me" class="button">
+                <MarkGithubIcon size={16} /> Contribute to decomp.me on GitHub!
+            </a>
         </nav>
 
         <main>

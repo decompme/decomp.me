@@ -4,6 +4,7 @@ import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
+import { RepoForkedIcon } from "@primer/octicons-react"
 
 import * as api from "../api"
 import CompilerConfigSelect from "./CompilerConfigSelect"
@@ -134,22 +135,23 @@ export default function Scratch({ slug }) {
                     <resizer.Section minSize="4em">
                         <div class={styles.sectionHeader}>
                             Sourcecode
-
                             <span class={styles.grow}></span>
-
                             <button onClick={debouncedCompile}>
                                 Compile
                             </button>
-
-                            <span class={styles.spacer}></span>
-
                             <button
                                 onClick={save}
                                 class={styles.compile}
                                 disabled={!isYours}
-                                title={isYours ? "" : "You don't own this scratch."}    
+                                title={isYours ? "" : "You don't own this scratch."}
                             >
                                 Save
+                            </button>
+                            <button
+                                disabled
+                                title="Forking is not yet implemented"
+                            >
+                                <RepoForkedIcon size={16} /> Fork
                             </button>
                         </div>
 

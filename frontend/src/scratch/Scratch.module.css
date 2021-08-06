@@ -17,11 +17,6 @@
     overflow: hidden;
 }
 
-.compile {
-    margin-left: auto;
-    margin-right: var(--s-4);
-}
-
 .context {
 }
 
@@ -73,17 +68,15 @@
 
     height: 3em;
     padding-left: 1em;
+    padding-right: .5em;
     background: #2e353f;
 
     display: flex;
     flex-direction: row;
     align-items: center;
-}
+    gap: .25em;
 
-.sectionHeader button {
-    font-size: .9rem;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.82);
 }
 
 .grow { flex: 1 }
-
-.spacer { width: .3em }

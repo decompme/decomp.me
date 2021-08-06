@@ -6,3 +6,4 @@ build
 backend/local_files/
 postgres/
 *.db
+.DS_Store

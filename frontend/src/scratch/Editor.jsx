@@ -1,11 +1,11 @@
 import { h, Fragment } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import Skeleton from "react-loading-skeleton"
-
 import Monaco, { useMonaco } from "@monaco-editor/react"
-import monacoTheme from "./monacoTheme.json"
 
+import monacoTheme from "./monacoTheme.json"
 import { language } from "./c.js"
+import styles from "./Editor.module.css"
 
 export default function Editor({ forceLoading, value, onChange }) {
     const [loadedMonaco, setLoaded] = useState(false)
@@ -25,7 +25,7 @@ export default function Editor({ forceLoading, value, onChange }) {
     }, [monaco])
 
     return <>
-        <div style={{ display: loaded ? 'block' : 'none', height: '100%' }}>
+        <div style={{ display: loaded ? 'block' : 'none' }} class={styles.monacoContainer}>
             <Monaco
                 language="custom_c"
                 theme="custom"
