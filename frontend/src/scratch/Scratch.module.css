@@ -76,6 +76,9 @@
 .grow { flex: 1 }
 
 .diffSection {
+    display: flex;
+    flex-direction: column;
+
     scrollbar-color: #ffffff33 transparent;
     scrollbar-width: thin;
     background: #14161a;
@@ -96,7 +99,7 @@
 
 .output {
     padding: 1em;
-    height: 100%;
+    flex: 1;
     overflow: auto;
     user-select: initial;
 }
