@@ -2,7 +2,6 @@ from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchSerializer
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -13,9 +12,7 @@ import logging
 import hashlib
 
 from .models import Profile, Asm, Scratch
-
-def index(request):
-    return HttpResponse("This is the index page.")
+from coreapp.models import gen_scratch_id
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -29,7 +26,6 @@ def get_db_asm(request_asm) -> Asm:
         ret = db_asm.first()
     
     return ret
-
 
 @api_view(["GET", "POST", "PATCH"])
 def scratch(request, slug=None):
@@ -71,7 +67,8 @@ def scratch(request, slug=None):
         if "target_asm" not in data:
             return Response({"error": "Missing target_asm"}, status=status.HTTP_400_BAD_REQUEST)
 
-        data["slug"] = get_random_string(length=5)
+        # TODO remove this - should be done automatically but not sure if the serializer requires it
+        data["slug"] = gen_scratch_id()
 
         asm = get_db_asm(data["target_asm"])
         del data["target_asm"]
@@ -90,8 +87,6 @@ def scratch(request, slug=None):
 
         serializer = ScratchSerializer(data=data)
         if serializer.is_valid():
-            if serializer.context:
-                serializer.original_context = serializer.context
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -156,3 +151,38 @@ def compile(request, slug):
     }
         
     return Response(response_obj)
+
+@api_view(["POST"])
+def fork(request, parent_slug):
+    required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
+
+    for param in required_params:
+        if param not in request.data:
+            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    parent_scratch = Scratch.objects.filter(slug=parent_slug).first()
+
+    if not parent_scratch:
+        return Response({"error": "Parent scratch does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # TODO validate
+    compiler = request.data["compiler"]
+    cpp_opts = request.data["cpp_opts"]
+    as_opts = request.data["as_opts"]
+    cc_opts = request.data["cc_opts"]
+    code = request.data["source_code"]
+    context = request.data["context"]
+
+    new_scratch = Scratch(
+        compiler=compiler,
+        cpp_opts=cpp_opts,
+        as_opts=as_opts,
+        cc_opts=cc_opts,
+        target_assembly=parent_scratch.target_assembly,
+        source_code=code,
+        context=context,
+        original_context=parent_scratch.original_context,
+        parent=parent_scratch,
+    )
+    new_scratch.save()
+    return Response(ScratchSerializer(new_scratch).data, status=status.HTTP_201_CREATED)

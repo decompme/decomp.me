@@ -1,3 +1,5 @@
+from django.utils.crypto import get_random_string
+from backend.coreapp.views import gen_scratch_id
 import os
 
 from django.conf import settings
@@ -10,6 +12,14 @@ def asm_objects_path():
 def compilation_objects_path():
     return os.path.join(settings.LOCAL_FILE_DIR, 'compilations')
 
+def gen_scratch_id() -> str:
+    ret = get_random_string(length=5)
+
+    if Scratch.objects.filter(id=ret).exists():
+        return gen_scratch_id()
+
+    return ret
+
 class Profile(models.Model):
     pass
 
@@ -21,6 +31,7 @@ class Asm(models.Model):
         return self.data
 
 class Assembly(models.Model):
+    hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     compiler = models.CharField(max_length=100)
     as_opts = models.TextField(max_length=1000, blank=True, null=True)
@@ -28,6 +39,7 @@ class Assembly(models.Model):
     object = models.FilePathField(path=settings.ASM_OBJECTS_PATH)
 
 class Compilation(models.Model):
+    hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     compiler = models.CharField(max_length=100)
     cpp_opts = models.TextField(max_length=1000, blank=True, null=True)
@@ -36,9 +48,10 @@ class Compilation(models.Model):
     source_code = models.TextField()
     context = models.TextField(blank=True)
     object = models.FilePathField(path=settings.COMPILATION_OBJECTS_PATH)
+    stderr = models.TextField(blank=True, null=True)
 
 class Scratch(models.Model):
-    slug = models.SlugField(primary_key=True)
+    slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     compiler = models.CharField(max_length=100)
