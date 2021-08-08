@@ -23,6 +23,7 @@
     background: #00000044;
     box-shadow: 0 2px 16px #00000022;
     border: 0;
+    color: #0AFAFA;
 
     border-top-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -38,14 +39,15 @@
 .flags {
     display: flex;
     flex-wrap: wrap;
-    gap: 1em;
+    gap: .5em;
     margin-top: 1em;
 }
 
 .flag {
+    flex-grow: 1;
     display: inline-block;
     cursor: default;
-    padding: .5em;
+    padding: .75em;
     border-radius: .5em;
 }
 
@@ -68,7 +70,20 @@
     opacity: 0.5;
 }
 
-.optimisationSelect {
+.flagSet {
+    flex-grow: 1;
+
+    display: inline-flex;
+    flex-direction: column;
+
     width: 20em;
-    margin-top: 1em;
+    border-radius: .5em;
+}
+
+.flagSetName {
+    cursor: default;
+    font-size: .8rem;
+    padding: .6em 1em;
+    padding-bottom: .2em;
+    opacity: 0.5;
 }

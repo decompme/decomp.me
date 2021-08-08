@@ -23,6 +23,7 @@
     background: transparent;
     appearance: none;
     outline: none !important;
+    padding-right: 2em;
 }
 
 .group option, .group optgroup {
@@ -34,4 +35,6 @@
     pointer-events: none;
     position: absolute;
     right: .6em;
+    top: 50%;
+    transform: translateY(-50%);
 }

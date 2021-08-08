@@ -1,12 +1,17 @@
-import { h } from "preact"
-import { useState } from "preact/hooks"
+import { h, createContext } from "preact"
+import { useState, useContext } from "preact/hooks"
+import { useLocalStorage } from "../hooks"
 
 import Select from "../Select"
-import CompilerConfigSelect from "../scratch/CompilerConfigSelect"
 
+import compilers from "./compilers"
 import styles from "./CompilerOpts.module.css"
 
-function Checkbox({ flag, description, checkFlag, setFlag }) {
+const OptsContext = createContext()
+
+export function Checkbox({ flag, description }) {
+    const { checkFlag, setFlag } = useContext(OptsContext)
+ 
     const isChecked = checkFlag(flag)
 
     return <div class={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
@@ -16,8 +21,38 @@ function Checkbox({ flag, description, checkFlag, setFlag }) {
     </div>
 }
 
+export function FlagSet({ name, children }) {
+    const { setFlag } = useContext(OptsContext)
+
+    return <div class={styles.flagSet}>
+        <div class={styles.flagSetName}>{name}</div>
+        <Select
+            onChange={event => {
+                for (const child of children) {
+                    setFlag(child.props.flag, false)
+                }
+
+                setFlag(event.target.value, true)
+            }}
+        >
+            {children}
+        </Select>
+    </div>
+}
+
+export function FlagOption({ flag, description }) {
+    const { checkFlag } = useContext(OptsContext)
+
+    return <option
+        value={flag}
+        selected={checkFlag(flag)}
+    >
+        {flag} ({description})
+    </option>
+}
+
 export default function CompilerOpts() {
-    const [compiler, setCompiler] = useState()
+    const [compiler, setCompiler] = useLocalStorage("CompilerOpts.compiler", compilers[0])
     let [ccArgs, setCcArgs] = useState("-O2")
 
     function checkFlag(flag) {
@@ -33,38 +68,28 @@ export default function CompilerOpts() {
             split = split.filter(f => f !== flag)
         }
 
-        ccArgs = split.join("").trim()
-        setCcArgs(split.join(" ").trim())
+        ccArgs = split.join(" ").trim()
+        setCcArgs(ccArgs)
     }
 
-    return <div class={styles.container}>
-        <div class={styles.row}>
-            <CompilerConfigSelect class={styles.compilerSelect} value={compiler} onChange={setCompiler} />
-            <input class={styles.textbox} type="text" value={ccArgs} onChange={e => setCcArgs(e.target.value)} />
-        </div>
+    return <OptsContext.Provider value={{ checkFlag, setFlag }}>
+        <div class={styles.container}>
+            <div class={styles.row}>
+                <Select class={styles.compilerSelect} onChange={e => setCompiler(compilers[parseInt(e.target.value)])}>
+                    {compilers.map((c, idx) => <option
+                        value={idx}
+                        selected={c.name === compiler.name}
+                    >
+                        {c.name}
+                    </option>)}
+                </Select>
 
-        <div class={styles.optimisationSelect}>
-            <Select
-                class={styles.optimisationSelect}
-                onChange={event => {
-                    setFlag("-O0", false)
-                    setFlag("-O1", false)
-                    setFlag("-O2", false)
-                    setFlag("-O3", false)
-                    setFlag(event.target.value, true)
-                    console.log(event.target.value)
-                }}
-            >
-                <option value="-O0" selected={checkFlag("-O0")}>-O0 (no optimization)</option>
-                <option value="-O1" selected={checkFlag("-O1")}>-O1 (optimize)</option>
-                <option value="-O2" selected={checkFlag("-O2")}>-O2 (optimize more)</option>
-                <option value="-O3" selected={checkFlag("-O3")}>-O3 (unsafe optimizations)</option>
-            </Select>
-        </div>
+                <input type="text" class={styles.textbox} value={ccArgs} onChange={e => setCcArgs(e.target.value)} />
+            </div>
 
-        <div class={styles.flags}>
-            <Checkbox flag="-fforce-addr" description="Load globals into a register before usage" checkFlag={checkFlag} setFlag={setFlag} />
-            <Checkbox flag="-ffreestanding" description="Assume standard library does not exist" checkFlag={checkFlag} setFlag={setFlag} />
+            <div class={styles.flags}>
+                {compiler ? <compiler.Flags /> : <Skeleton />}
+            </div>
         </div>
-    </div>
+    </OptsContext.Provider>
 }
