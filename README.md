@@ -1,9 +1,6 @@
 # decomp.me
 A collaborative decompilation and reverse engineering platform
 
-## Design
-https://docs.google.com/document/d/19SjmFkjnxYEq5CXsuwiCcXetx07Z04b0QWRgRq_WjzM/edit?usp=sharing
-
 ## Contributing
 
 ### Directory structure
