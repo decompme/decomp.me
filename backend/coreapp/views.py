@@ -119,7 +119,7 @@ def scratch(request, slug=None):
 
 @api_view(["POST"])
 def compile(request, slug):
-    required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code"]
 
     for param in required_params:
         if param not in request.data:
@@ -136,7 +136,7 @@ def compile(request, slug):
     scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
-    if not context or context.isspace():
+    if not context:
         context = scratch.context
     
     compilation, errors = CompilerWrapper.compile_code(compiler, cpp_opts, as_opts, cc_opts, code, context)
