@@ -1,9 +1,10 @@
+from coreapp import compiler_wrapper
 import subprocess
 from coreapp.models import Assembly, Compilation
 import logging
 from pathlib import Path
 
-from asm_differ.diff import Config, Display, HtmlFormatter, MIPS_SETTINGS, create_config, restrict_to_function
+from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +12,9 @@ MAX_FUNC_SIZE_LINES = 5000
 
 class AsmDifferWrapper:
     @staticmethod
-    def create_config(scratch_arch) -> Config:
+    def create_config(arch) -> Config:
         return Config(
-            arch=scratch_arch,
+            arch=arch,
             # Build/objdump options
             diff_obj=True,
             make=False,
@@ -56,7 +57,24 @@ class AsmDifferWrapper:
         return out
 
     def diff(target_assembly: Assembly, compilation: Compilation):
-        config = AsmDifferWrapper.create_config(MIPS_SETTINGS) # todo read arch from compiler config of compilation
+        compiler = compiler_wrapper.compilers[compilation.compiler]
+
+        if compiler.arch == "mips":
+            arch = MIPS_SETTINGS
+        elif compiler.arch == "aarch64":
+            arch = AARCH64_SETTINGS
+        elif compiler.arch == "ppc":
+            arch = PPC_SETTINGS
+        else:
+            logger.error("Unsupported arch: " + compiler.arch + ". Continuing assuming mips")
+            arch = MIPS_SETTINGS
+            
+        config = AsmDifferWrapper.create_config(arch)
+        
+        # Re-generate the target asm if it doesn't exist
+        if not target_assembly.object.exists():
+            compiler_wrapper.CompilerWrapper.assemble_asm(compilation.compiler, compilation.as_opts, target_assembly.source_asm, target_assembly)
+
         basedump = AsmDifferWrapper.run_objdump(target_assembly.object, config)
         mydump = AsmDifferWrapper.run_objdump(compilation.object, config)
 

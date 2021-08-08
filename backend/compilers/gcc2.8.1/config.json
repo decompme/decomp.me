@@ -1,0 +1,5 @@
+{
+    "arch": "mips",
+    "cc": "cpp $CPP_OPTS $INPUT | $COMPILER_PATH/cc1 $CC_OPTS -o - | $COMPILER_PATH/mips-nintendo-nu64-as $AS_OPTS - -o $OUTPUT",
+    "as" : "cat $INPUT | $COMPILER_PATH/mips-nintendo-nu64-as $AS_OPTS - -o $OUTPUT"
+}

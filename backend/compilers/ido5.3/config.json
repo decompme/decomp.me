@@ -1,0 +1,5 @@
+{
+    "arch": "mips",
+    "cc": "$COMPILER_PATH/cc -c $CC_OPTS -o $OUTPUT $INPUT",
+    "as" : "mips-linux-gnu-as $AS_OPTS -o $OUTPUT $INPUT"
+}
