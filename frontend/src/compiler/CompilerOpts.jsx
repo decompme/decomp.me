@@ -1,5 +1,5 @@
 import { h, createContext } from "preact"
-import { useState, useContext } from "preact/hooks"
+import { useState, useContext, useEffect } from "preact/hooks"
 import { useLocalStorage } from "../hooks"
 
 import Select from "../Select"
@@ -51,16 +51,27 @@ export function FlagOption({ flag, description }) {
     </option>
 }
 
-export default function CompilerOpts() {
+export default function CompilerOpts({ value, onChange }) {
     const [compiler, setCompiler] = useLocalStorage("CompilerOpts.compiler", compilers[0])
-    let [ccArgs, setCcArgs] = useState("-O2")
+    let [ccOpts, setCcOpts] = useState((value && value.cc_opts) || "")
+    let [asOpts, setAsOpts] = useState((value && value.as_opts) || "")
+    let [cppOpts, setCppOpts] = useState((value && value.cpp_opts) || "")
+
+    useEffect(() => {
+        onChange({
+            compiler: compiler.id,
+            cc_opts: ccOpts,
+            as_opts: asOpts,
+            cpp_opts: cppOpts,
+        })
+    }, [compiler, ccOpts, asOpts, cppOpts])
 
     function checkFlag(flag) {
-        return ccArgs.split(" ").includes(flag)
+        return ccOpts.split(" ").includes(flag)
     }
 
     function setFlag(flag, enable) {
-        let split = ccArgs.split(" ")
+        let split = ccOpts.split(" ")
 
         if (enable) {
             split.push(flag)
@@ -68,8 +79,8 @@ export default function CompilerOpts() {
             split = split.filter(f => f !== flag)
         }
 
-        ccArgs = split.join(" ").trim()
-        setCcArgs(ccArgs)
+        ccOpts = split.join(" ").trim()
+        setCcOpts(ccOpts)
     }
 
     return <OptsContext.Provider value={{ checkFlag, setFlag }}>
@@ -84,7 +95,7 @@ export default function CompilerOpts() {
                     </option>)}
                 </Select>
 
-                <input type="text" class={styles.textbox} value={ccArgs} onChange={e => setCcArgs(e.target.value)} />
+                <input type="text" class={styles.textbox} value={ccOpts} onChange={e => setCcOpts(e.target.value)} />
             </div>
 
             <div class={styles.flags}>

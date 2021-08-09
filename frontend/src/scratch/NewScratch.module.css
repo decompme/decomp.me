@@ -41,15 +41,11 @@
 
 .actions {
     display: flex;
+    gap: .5em;
     align-items: center;
     padding: var(--s2);
 }
 
 .errormsg {
     flex: 1;
-}
-
-.compilerselect {
-    padding-left: var(--s2);
-    padding-right: var(--s2);
 }

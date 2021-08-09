@@ -1,9 +1,7 @@
 .container {
-    margin: 1em; /* TEMP */
-
     border-radius: 1em;
     padding: 1.5em;
-    background: #14161a;
+    background: #22272d;
 }
 
 .row {

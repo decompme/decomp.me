@@ -2,6 +2,7 @@ import { h, Fragment } from "preact"
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
 export const name = "GCC 2.8.1"
+export const id = "gcc2.8.1"
 
 export function Flags() {
     return <>
