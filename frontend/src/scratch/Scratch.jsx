@@ -118,10 +118,7 @@ export default function Scratch() {
         }
     }
 
-    if (currentRequest === "loading" && compiler !== null) {
-        // we've loaded now, compile
-        compile()
-    }
+    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts, compiler.as_opts, compiler.cpp_opts] : [])
 
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>
