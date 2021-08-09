@@ -7,7 +7,9 @@ import json
 import logging
 import os
 from pathlib import Path
+import shlex
 import subprocess
+from tempfile import NamedTemporaryFile
 
 logger = logging.getLogger(__name__)
 
@@ -56,15 +58,13 @@ class CompilerWrapper:
             .replace("$CPP_OPTS", cpp_opts) \
             .replace("$CC_OPTS", cc_opts) \
             .replace("$AS_OPTS", as_opts)
-        compile_command = f"bash -c \"{compile_command}\""
 
         logger.debug(f"Compiling: {compile_command}")
 
         return_code = 0
 
         try:
-            # TODO sandbox
-            result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            result = subprocess.run(["bash", "-c", compile_command], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stderr = result.stderr.decode()
 
             if result.returncode != 0:
@@ -87,7 +87,6 @@ class CompilerWrapper:
             .replace("$OUTPUT", str(output_path)) \
             .replace("$COMPILER_PATH", str(compiler_path)) \
             .replace("$AS_OPTS", as_opts)
-        assemble_command = f"bash -c \"{assemble_command}\""
         # TODO sandbox
         
         logger.debug(f"Assembling: {assemble_command}")
@@ -95,7 +94,7 @@ class CompilerWrapper:
         return_code = 0
 
         try:
-            result = subprocess.run(assemble_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            result = subprocess.run(["bash", "-c", assemble_command], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stderr = result.stderr.decode()
 
             if result.returncode != 0:
@@ -113,73 +112,66 @@ class CompilerWrapper:
 
     @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str):
-        compiler_path = CompilerWrapper.base_path() / compiler
 
-        compile_cfg = compilers[compiler]
-
-        if not compiler_path.exists():
-            logger.error(f"Compiler {compiler} not found")
+        if compiler not in compilers:
+            logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
+
+        compiler_cfg = compilers[compiler]
 
         cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
         if cached_compilation:
             logger.debug(f"Compilation cache hit!")
             return (cached_compilation, cached_compilation.stderr)
 
-        temp_name = get_random_string(length=8)
-        settings.COMPILATION_OBJECTS_PATH.mkdir(exist_ok=True, parents=True)
-        code_path = settings.COMPILATION_OBJECTS_PATH / (temp_name + ".c")
-        object_path = settings.COMPILATION_OBJECTS_PATH / (temp_name + ".o")
+        with NamedTemporaryFile(mode="rb", suffix=".o") as object_file:
+            with NamedTemporaryFile(mode="w", suffix=".c") as code_file:
+                code_file.write('#line 1 "ctx.c"\n')
+                code_file.write(context)
+                code_file.write('\n')
 
-        with open(code_path, "w", newline="\n") as f:
-            f.write('#line 1 "ctx.c"\n')
-            f.write(context)
-            f.write('\n')
+                code_file.write('#line 1 "src.c"\n')
+                code_file.write(code)
+                code_file.write('\n')
 
-            f.write('#line 1 "src.c"\n')
-            f.write(code)
-            f.write('\n')
+                code_file.flush()
 
-        # Run compiler
-        compile_status, stderr = CompilerWrapper.run_compiler(
-            compile_cfg["cc"],
-            code_path,
-            object_path,
-            compiler_path,
-            cpp_opts,
-            as_opts,
-            cc_opts,
-        )
+                compiler_path = CompilerWrapper.base_path() / compiler
 
-        os.remove(code_path)
+                # Run compiler
+                compile_status, stderr = CompilerWrapper.run_compiler(
+                    compiler_cfg["cc"],
+                    Path(code_file.name),
+                    Path(object_file.name),
+                    compiler_path,
+                    cpp_opts,
+                    as_opts,
+                    cc_opts
+                )
 
-        # Compilation failed
-        if compile_status != 0:
-            if object_path.exists():
-                os.remove(object_path)
-            return (None, stderr)
-        
-        # Store Compilation to db
-        compilation = Compilation(
-            hash=hash,
-            compiler=compiler,
-            cpp_opts=cpp_opts,
-            as_opts=as_opts,
-            cc_opts=cc_opts,
-            source_code=code,
-            context=context,
-            object_path=object_path,
-            stderr=stderr
-        )
-        compilation.save()
+            # Compilation failed
+            if compile_status != 0:
+                return (None, stderr)
 
-        return (compilation, stderr)
+            # Store Compilation to db
+            compilation = Compilation(
+                hash=hash,
+                compiler=compiler,
+                cpp_opts=cpp_opts,
+                as_opts=as_opts,
+                cc_opts=cc_opts,
+                source_code=code,
+                context=context,
+                elf_object=object_file.read(),
+                stderr=stderr
+            )
+            compilation.save()
+
+            return (compilation, stderr)
 
     @staticmethod
     def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_overwrite:Assembly = None) -> Assembly:
-        compiler_path = CompilerWrapper.base_path() / compiler
-
-        if not compiler_path.exists():
+        if compiler not in compilers:
             logger.error(f"Compiler {compiler} not found")
             return "ERROR: Compiler not found"
         
@@ -191,44 +183,36 @@ class CompilerWrapper:
 
         compiler_cfg = compilers[compiler]
 
-        assemblies_path = settings.ASM_OBJECTS_PATH
-        assemblies_path.mkdir(exist_ok=True, parents=True)
-        
-        temp_name = get_random_string(length=8)
+        with NamedTemporaryFile(mode="rb", suffix=".o") as object_file:
+            with NamedTemporaryFile(mode="w", suffix=".s") as asm_file:
+                asm_file.write(ASM_MACROS + asm.data)
+                asm_file.flush()
 
-        asm_path = assemblies_path / (temp_name + ".s")
-        object_path = assemblies_path / (temp_name + ".o")
+                compiler_path = Path(CompilerWrapper.base_path() / compiler)
 
-        with open(asm_path, "w", newline="\n") as f:
-            f.write(ASM_MACROS + asm.data)
+                assemble_status, stderr = CompilerWrapper.run_assembler(
+                    compiler_cfg["as"],
+                    Path(asm_file.name),
+                    Path(object_file.name),
+                    compiler_path,
+                    as_opts
+                )
 
-        assemble_status, stderr = CompilerWrapper.run_assembler(
-            compiler_cfg["as"],
-            asm_path,
-            object_path,
-            compiler_path,
-            as_opts
-        )
+            # Assembly failed
+            if assemble_status != 0:
+                return None #f"ERROR: {assemble_status[1]}"
 
-        os.remove(asm_path)
+            if to_overwrite:
+                assembly = to_overwrite
+                assembly.elf_object = object_file.read()
+            else:
+                assembly = Assembly(
+                    hash=hash,
+                    compiler=compiler,
+                    as_opts=as_opts,
+                    source_asm=asm,
+                    elf_object=object_file.read(),
+                )
+            assembly.save()
 
-        # Assembly failed
-        if assemble_status != 0:
-            if object_path.exists():
-                os.remove(object_path)
-            return None #f"ERROR: {assemble_status[1]}"
-
-        if to_overwrite:
-            assembly = to_overwrite
-            assembly.object = object_path
-        else:
-            assembly = Assembly(
-                hash=hash,
-                compiler=compiler,
-                as_opts=as_opts,
-                source_asm=asm,
-                object=object_path,
-            )
-        assembly.save()
-
-        return assembly
+            return assembly
