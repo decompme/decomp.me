@@ -120,11 +120,8 @@ class CompilerWrapper:
 
         cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
         if cached_compilation:
-            pass # TODO
-            #logger.debug(f"Compilation cache hit!")
-            #return (cached_compilation, cached_compilation.stderr)
-
-        hash = get_random_string(10)
+            logger.debug(f"Compilation cache hit!")
+            return (cached_compilation, cached_compilation.stderr)
 
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -186,10 +183,8 @@ class CompilerWrapper:
         # Check the cache if we're not manually re-running an Assembly
         cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
         if cached_assembly:
-            pass
-            #logger.debug(f"Assembly cache hit!")
-            #return cached_assembly
-        hash = get_random_string(10)
+            logger.debug(f"Assembly cache hit!")
+            return cached_assembly
 
         compiler_cfg = compilers[compiler]
 

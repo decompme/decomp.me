@@ -73,10 +73,12 @@ class AsmDifferWrapper:
             
         config = AsmDifferWrapper.create_config(arch)
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
-        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
+        if not basedump:
+            return "Error running asm-differ on basedump"
 
-        if not basedump or not mydump:
-            return "Error running asm-differ"
+        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
+        if not mydump:
+            return "Error running asm-differ on mydump"
 
         # Remove first few junk lines from objdump output
         basedump = "\n".join(basedump.split("\n")[6:])
