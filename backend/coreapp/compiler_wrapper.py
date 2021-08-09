@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import shlex
 import subprocess
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 logger = logging.getLogger(__name__)
 
@@ -127,55 +127,56 @@ class CompilerWrapper:
 
         hash = get_random_string(10)
 
-        with NamedTemporaryFile(mode="rb", suffix=".o", delete=False) as object_file:
-            with NamedTemporaryFile(mode="w", suffix=".c", delete=False) as code_file:
-                code_file.write('#line 1 "ctx.c"\n')
-                code_file.write(context)
-                code_file.write('\n')
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            code_path = temp_path / "code.c"
+            object_path = temp_path / "object.o"
+            with code_path.open("w") as f:
+                f.write('#line 1 "ctx.c"\n')
+                f.write(context)
+                f.write('\n')
 
-                code_file.write('#line 1 "src.c"\n')
-                code_file.write(code)
-                code_file.write('\n')
+                f.write('#line 1 "src.c"\n')
+                f.write(code)
+                f.write('\n')
 
-                code_file.flush()
+            compiler_path = CompilerWrapper.base_path() / compiler
 
-                compiler_path = CompilerWrapper.base_path() / compiler
-
-                # Run compiler
-                compile_status, stderr = CompilerWrapper.run_compiler(
-                    compiler_cfg["cc"],
-                    Path(code_file.name),
-                    Path(object_file.name),
-                    compiler_path,
-                    cpp_opts,
-                    as_opts,
-                    cc_opts
-                )
-
-            # Compilation failed
-            if compile_status != 0:
-                return (None, stderr)
-
-            elf_object = object_file.read()
-            if len(elf_object) == 0:
-                logger.error("Compiler did not create an object file")
-                return (None, "ERROR: Compiler did not create an object file")
-
-            # Store Compilation to db
-            compilation = Compilation(
-                hash=hash,
-                compiler=compiler,
-                cpp_opts=cpp_opts,
-                as_opts=as_opts,
-                cc_opts=cc_opts,
-                source_code=code,
-                context=context,
-                elf_object=elf_object,
-                stderr=stderr
+            # Run compiler
+            compile_status, stderr = CompilerWrapper.run_compiler(
+                compiler_cfg["cc"],
+                code_path,
+                object_path,
+                compiler_path,
+                cpp_opts,
+                as_opts,
+                cc_opts
             )
-            compilation.save()
 
-            return (compilation, stderr)
+        # Compilation failed
+        if compile_status != 0:
+            return (None, stderr)
+
+        elf_object = Path(object_file.name).read_bytes()
+        if len(elf_object) == 0:
+            logger.error("Compiler did not create an object file")
+            return (None, "ERROR: Compiler did not create an object file")
+
+        # Store Compilation to db
+        compilation = Compilation(
+            hash=hash,
+            compiler=compiler,
+            cpp_opts=cpp_opts,
+            as_opts=as_opts,
+            cc_opts=cc_opts,
+            source_code=code,
+            context=context,
+            elf_object=elf_object,
+            stderr=stderr
+        )
+        compilation.save()
+
+        return (compilation, stderr)
 
     @staticmethod
     def assemble_asm(compiler:str, as_opts: str, asm: Asm) -> Assembly:
@@ -193,26 +194,27 @@ class CompilerWrapper:
 
         compiler_cfg = compilers[compiler]
 
-        with NamedTemporaryFile(mode="rb", suffix=".o") as object_file:
-            with NamedTemporaryFile(mode="w", suffix=".s") as asm_file:
-                asm_file.write(ASM_MACROS + asm.data)
-                asm_file.flush()
+        with TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            asm_path = temp_path / "asm.s"
+            asm_path.write_text(ASM_MACROS + asm.data)
 
-                compiler_path = Path(CompilerWrapper.base_path() / compiler)
+            object_path = temp_path / "object.o"
+            compiler_path = Path(CompilerWrapper.base_path() / compiler)
 
-                assemble_status, stderr = CompilerWrapper.run_assembler(
-                    compiler_cfg["as"],
-                    Path(asm_file.name),
-                    Path(object_file.name),
-                    compiler_path,
-                    as_opts
-                )
+            assemble_status, stderr = CompilerWrapper.run_assembler(
+                compiler_cfg["as"],
+                asm_path,
+                object_path,
+                compiler_path,
+                as_opts
+            )
 
             # Assembly failed
             if assemble_status != 0:
                 return None #f"ERROR: {assemble_status[1]}"
 
-            elf_object = object_file.read()
+            elf_object = object_path.read_bytes()
             if len(elf_object) == 0:
                 logger.error("Assembler did not create an object file")
                 return (None, "ERROR: Assembler did not create an object file")
