@@ -1,5 +1,4 @@
 from django.utils.crypto import get_random_string
-from backend.coreapp.views import gen_scratch_id
 import os
 
 from django.conf import settings

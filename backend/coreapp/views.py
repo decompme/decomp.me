@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.utils.crypto import get_random_string
 import logging
 
 import hashlib
