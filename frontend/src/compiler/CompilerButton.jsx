@@ -10,8 +10,6 @@ import styles from "./CompilerButton.module.css"
 export default function CompilerButton({ value, onChange }) {
     const [isOpen, setOpen] = useState(false)
 
-    console.log(value)
-
     const close = () => setOpen(false)
 
     const { renderLayer, triggerProps, layerProps, arrowProps } = useLayer({
@@ -24,7 +22,7 @@ export default function CompilerButton({ value, onChange }) {
     })
 
     return <>
-        <button {...triggerProps} onClick={() => setOpen(true)}>
+        <button {...triggerProps} onClick={() => setOpen(!isOpen)} style={isOpen && { color: "#fff" }}>
             <CpuIcon size={16} />
             Compiler...
         </button>

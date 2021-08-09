@@ -54,6 +54,10 @@ body {
         "main";
 }
 
+#layers {
+    z-index: 999;
+}
+
 nav {
     grid-area: nav;
 

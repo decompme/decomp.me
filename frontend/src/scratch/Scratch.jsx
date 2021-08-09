@@ -4,7 +4,7 @@ import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
-import { RepoForkedIcon } from "@primer/octicons-react"
+import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
 import { useParams } from "react-router-dom"
 
 import * as api from "../api"
@@ -16,14 +16,13 @@ import styles from "./Scratch.module.css"
 
 export default function Scratch() {
     const { slug } = useParams()
-
-    const [currentRequest, setCurrentRequest] = useState(null)
+    const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     const [compiler, setCompiler] = useState(null)
-    let [cCode, setCCode] = useState(null)
-    let [cContext, setCContext] = useState(null)
-    let [diff, setDiff] = useState(null)
-    let [log, setLog] = useState(null)
+    const [cCode, setCCode] = useState(null)
+    const [cContext, setCContext] = useState(null)
+    const [diff, setDiff] = useState(null)
+    const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
@@ -33,7 +32,7 @@ export default function Scratch() {
             return
         }
 
-        if (currentRequest) {
+        if (currentRequest === "compile") {
             console.warn("compile action already in progress")
             return
         }
@@ -86,12 +85,10 @@ export default function Scratch() {
         })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
-
-        // TODO
-        //compile()
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
+    const isCompiling = debouncedCompile.isPending() || currentRequest === "compile"
 
     // Ctrl + S to save
     useEffect(() => {
@@ -121,23 +118,25 @@ export default function Scratch() {
         }
     }
 
+    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts, compiler.as_opts, compiler.cpp_opts] : [])
+
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={500}>
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
-                    <resizer.Section minSize="4em">
+                    <resizer.Section minSize="4em" className={styles.sourceCode}>
                         <div class={styles.sectionHeader}>
                             Sourcecode
                             <span class={styles.grow}></span>
-                            <button onClick={compile} disabled={currentRequest}>
-                                Compile
+                            <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
+                                <SyncIcon size={16} /> Compile
                             </button>
                             <button
                                 onClick={save}
                                 disabled={!isYours}
                                 title={isYours ? "" : "You don't own this scratch."}
                             >
-                                Save
+                                <UploadIcon size={16} /> Save
                             </button>
                             <button
                                 disabled
