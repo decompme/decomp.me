@@ -154,14 +154,14 @@ def compile(request, slug):
     return Response(response_obj)
 
 @api_view(["POST"])
-def fork(request, parent_slug):
+def fork(request, slug):
     required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
             return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    parent_scratch = Scratch.objects.filter(slug=parent_slug).first()
+    parent_scratch = Scratch.objects.filter(slug=slug).first()
 
     if not parent_scratch:
         return Response({"error": "Parent scratch does not exist"}, status=status.HTTP_400_BAD_REQUEST)

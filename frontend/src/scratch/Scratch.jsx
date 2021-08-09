@@ -5,7 +5,7 @@ import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
 import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
-import { useParams } from "react-router-dom"
+import { useParams, useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import CompilerButton from "../compiler/CompilerButton"
@@ -16,6 +16,7 @@ import styles from "./Scratch.module.css"
 
 export default function Scratch() {
     const { slug } = useParams()
+    const history = useHistory()
     const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     const [compiler, setCompiler] = useState(null)
@@ -24,8 +25,12 @@ export default function Scratch() {
     const [diff, setDiff] = useState(null)
     const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
+    const [savedCCode, setSavedCCode] = useState(cCode)
+    const [savedCContext, setSavedCContext] = useState(cContext)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
+
+    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
@@ -41,7 +46,7 @@ export default function Scratch() {
             setCurrentRequest("compile")
             const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
                 source_code: cCode.replace(/\r\n/g, "\n"),
-                context: cContext.replace(/\r\n/g, "\n"),
+                context: cContext === savedCContext ? undefined : cContext.replace(/\r\n/g, "\n"),
                 ...compiler,
             })
 
@@ -54,10 +59,8 @@ export default function Scratch() {
 
     const save = async () => {
         if (!isYours) {
-            // TODO: implicitly fork
-            toast.error("You don't own this scratch, so you can't save over it.")
-            toast.clear
-            return
+            // Implicitly fork
+            return fork()
         }
 
         const promise = api.patch(`/scratch/${slug}`, {
@@ -66,11 +69,24 @@ export default function Scratch() {
             ...compiler,
         }).catch(error => Promise.reject(error.message))
 
-        toast.promise(promise, {
+        await toast.promise(promise, {
             loading: 'Saving...',
             success: 'Scratch saved!',
             error: 'Error saving scratch',
         })
+
+        setSavedCCode(cCode)
+        setSavedCContext(cContext)
+    }
+
+    const fork = async () => {
+        const newScratch = await api.post(`/scratch/${slug}/fork`, {
+            source_code: cCode,
+            context: cContext,
+            ...compiler,
+        })
+
+        history.push(`/scratch/${newScratch.slug}`)
     }
 
     useEffect(async () => {
@@ -131,17 +147,11 @@ export default function Scratch() {
                             <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
                                 <SyncIcon size={16} /> Compile
                             </button>
-                            <button
-                                onClick={save}
-                                disabled={!isYours}
-                                title={isYours ? "" : "You don't own this scratch."}
-                            >
+                            {isYours && <button onClick={save}>
                                 <UploadIcon size={16} /> Save
-                            </button>
-                            <button
-                                disabled
-                                title="Forking is not yet implemented"
-                            >
+                                {hasUnsavedChanges && "*"}
+                            </button>}
+                            <button onClick={fork}>
                                 <RepoForkedIcon size={16} /> Fork
                             </button>
 
