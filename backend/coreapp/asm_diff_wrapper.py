@@ -62,22 +62,17 @@ class AsmDifferWrapper:
     def diff(target_assembly: Assembly, compilation: Compilation):
         compiler = compiler_wrapper.compilers[compilation.compiler]
 
-        if compiler.arch == "mips":
+        if compiler["arch"] == "mips":
             arch = MIPS_SETTINGS
-        elif compiler.arch == "aarch64":
+        elif compiler["arch"] == "aarch64":
             arch = AARCH64_SETTINGS
-        elif compiler.arch == "ppc":
+        elif compiler["arch"] == "ppc":
             arch = PPC_SETTINGS
         else:
-            logger.error("Unsupported arch: " + compiler.arch + ". Continuing assuming mips")
+            logger.error("Unsupported arch: " + compiler["arch"] + ". Continuing assuming mips")
             arch = MIPS_SETTINGS
             
         config = AsmDifferWrapper.create_config(arch)
-        
-        # Re-generate the target asm if it doesn't exist
-        if not target_assembly.object.exists():
-            compiler_wrapper.CompilerWrapper.assemble_asm(compilation.compiler, compilation.as_opts, target_assembly.source_asm, target_assembly)
-
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
         mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
 
