@@ -4,7 +4,7 @@ import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
-import { RepoForkedIcon } from "@primer/octicons-react"
+import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
 import { useParams } from "react-router-dom"
 
 import * as api from "../api"
@@ -92,6 +92,7 @@ export default function Scratch() {
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
+    const isCompiling = debouncedCompile.isPending() || currentRequest === "compile"
 
     // Ctrl + S to save
     useEffect(() => {
@@ -125,19 +126,19 @@ export default function Scratch() {
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={500}>
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
-                    <resizer.Section minSize="4em">
+                    <resizer.Section minSize="4em" className={styles.sourceCode}>
                         <div class={styles.sectionHeader}>
                             Sourcecode
                             <span class={styles.grow}></span>
-                            <button onClick={compile} disabled={currentRequest}>
-                                Compile
+                            <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
+                                <SyncIcon size={16} /> Compile
                             </button>
                             <button
                                 onClick={save}
                                 disabled={!isYours}
                                 title={isYours ? "" : "You don't own this scratch."}
                             >
-                                Save
+                                <UploadIcon size={16} /> Save
                             </button>
                             <button
                                 disabled

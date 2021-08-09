@@ -22,7 +22,7 @@ export default function CompilerButton({ value, onChange }) {
     })
 
     return <>
-        <button {...triggerProps} onClick={() => setOpen(true)}>
+        <button {...triggerProps} onClick={() => setOpen(!isOpen)} style={isOpen && { color: "#fff" }}>
             <CpuIcon size={16} />
             Compiler...
         </button>

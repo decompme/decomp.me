@@ -17,7 +17,9 @@
     overflow: hidden;
 }
 
-.context {
+.context, .sourceCode {
+    display: flex;
+    flex-direction: column;
 }
 
 .diff {
@@ -53,6 +55,8 @@
 .diff :global(.rotation-8) { color: #39CCCC }
 
 .sectionHeader {
+    flex: 0;
+
     font-size: 1rem;
     font-weight: 600;
 
@@ -60,8 +64,8 @@
     cursor: default;
 
     height: 3em;
+    padding: .5em;
     padding-left: 1em;
-    padding-right: .5em;
     background: #2e353f;
 
     display: flex;
@@ -107,4 +111,16 @@
     flex: 1;
     overflow: auto;
     user-select: initial;
+}
+
+.compiling :global(.octicon) {
+    animation: spin 1s infinite linear;
+    animation-fill-mode: forwards;
+    transform: rotate(0deg);
+    transform-origin: 7.4px 7.7px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg) }
+    to { transform: rotate(-330deg) }
 }

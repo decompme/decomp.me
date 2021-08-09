@@ -88,7 +88,7 @@ export default function CompilerOpts({ value, onChange }) {
     return <OptsContext.Provider value={{ checkFlag, setFlag }}>
         <div class={styles.container}>
             <div class={styles.row}>
-                <Select class={styles.compilerSelect} onChange={e => setCompiler(compilers[e.target.value])}>
+                <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
                     {Object.values(compilers).map(c => <option
                         value={c.id}
                         selected={c.name === compilerComp.name}

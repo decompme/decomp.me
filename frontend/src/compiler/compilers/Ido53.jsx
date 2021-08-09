@@ -1,8 +1,8 @@
 import { h, Fragment } from "preact"
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
-export const name = "GCC 2.8.1"
-export const id = "gcc2.8.1"
+export const name = "IDO 5.3"
+export const id = "ido5.3"
 
 export function Flags() {
     return <>
@@ -18,8 +18,6 @@ export function Flags() {
             <FlagOption flag="-g2" description="Local variable tracking" />
             <FlagOption flag="-g3" description="Macro expansions" />
         </FlagSet>
-
-        <Checkbox flag="-fforce-addr" description="Load pointers into registers before use" />
 
         <Checkbox flag="-Wall" description="Enable all warning types" />
     </>
