@@ -36,6 +36,7 @@
 .targetasm {
     flex: 1;
     overflow: hidden;
+    display: flex;
 }
 
 /* hide monaco's scrollbar minimap */
