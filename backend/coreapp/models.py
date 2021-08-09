@@ -4,11 +4,13 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+# TODO: These are only kept around for the migrations that depend on them
+# They can be removed once the migrations are squashed
 def asm_objects_path():
-    return os.path.join(settings.LOCAL_FILE_DIR, 'assemblies')
+    return settings.BASE_DIR / "local_files" / "assemblies"
 
 def compilation_objects_path():
-    return os.path.join(settings.LOCAL_FILE_DIR, 'compilations')
+    return settings.BASE_DIR / "local_files" / "compilations"
 
 class Profile(models.Model):
     pass
@@ -41,14 +43,14 @@ class Assembly(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
-    object = models.FilePathField(path=asm_objects_path)
+    elf_object = models.BinaryField(blank=True)
 
 class Compilation(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     compiler_config = models.ForeignKey(CompilerConfiguration, on_delete=models.CASCADE)
     source_code = models.TextField()
     context = models.TextField(blank=True)
-    object = models.FilePathField(path=compilation_objects_path)
+    elf_object = models.BinaryField(blank=True)
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True)
