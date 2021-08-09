@@ -112,7 +112,6 @@ class CompilerWrapper:
 
     @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str):
-        compiler_path = CompilerWrapper.base_path() / compiler
 
         if compiler not in compilers:
             logger.debug(f"Compiler {compiler} not found")
@@ -136,6 +135,8 @@ class CompilerWrapper:
                 code_file.write('\n')
 
                 code_file.flush()
+
+                compiler_path = CompilerWrapper.base_path() / compiler
 
                 # Run compiler
                 compile_status, stderr = CompilerWrapper.run_compiler(
@@ -161,7 +162,7 @@ class CompilerWrapper:
                 cc_opts=cc_opts,
                 source_code=code,
                 context=context,
-                elf_object=object_file,
+                elf_object=object_file.read(),
                 stderr=stderr
             )
             compilation.save()
@@ -187,11 +188,13 @@ class CompilerWrapper:
                 asm_file.write(ASM_MACROS + asm.data)
                 asm_file.flush()
 
+                compiler_path = Path(CompilerWrapper.base_path() / compiler)
+
                 assemble_status, stderr = CompilerWrapper.run_assembler(
                     compiler_cfg["as"],
-                    asm_file.name,
-                    object_file.name,
-                    CompilerWrapper.base_path() / compiler,
+                    Path(asm_file.name),
+                    Path(object_file.name),
+                    compiler_path,
                     as_opts
                 )
 
@@ -201,14 +204,14 @@ class CompilerWrapper:
 
             if to_overwrite:
                 assembly = to_overwrite
-                assembly.elf_object = object_file
+                assembly.elf_object = object_file.read()
             else:
                 assembly = Assembly(
                     hash=hash,
                     compiler=compiler,
                     as_opts=as_opts,
                     source_asm=asm,
-                    elf_object=object_file,
+                    elf_object=object_file.read(),
                 )
             assembly.save()
 

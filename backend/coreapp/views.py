@@ -81,7 +81,9 @@ def scratch(request, slug=None):
         else:
             return Response({"error": "Error when assembling target asm"}, status=status.HTTP_400_BAD_REQUEST)
 
-        m2c_stab = M2CWrapper.decompile(asm.data)
+        context = request.data.get("context", "")
+
+        m2c_stab = M2CWrapper.decompile(asm.data, context)
         data["source_code"] = m2c_stab if m2c_stab else "void func() {}\n"
 
         serializer = ScratchSerializer(data=data)

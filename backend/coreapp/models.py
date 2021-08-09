@@ -14,7 +14,7 @@ def compilation_objects_path():
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
 
-    if Scratch.objects.filter(id=ret).exists():
+    if Scratch.objects.filter(slug=ret).exists():
         return gen_scratch_id()
 
     return ret
