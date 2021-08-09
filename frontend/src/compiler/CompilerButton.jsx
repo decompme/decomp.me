@@ -10,8 +10,6 @@ import styles from "./CompilerButton.module.css"
 export default function CompilerButton({ value, onChange }) {
     const [isOpen, setOpen] = useState(false)
 
-    console.log(value)
-
     const close = () => setOpen(false)
 
     const { renderLayer, triggerProps, layerProps, arrowProps } = useLayer({
