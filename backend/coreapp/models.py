@@ -1,15 +1,15 @@
 from django.utils.crypto import get_random_string
-import os
 
 from django.conf import settings
 from django.db import models
 
-# TODO remove these after migrations are collapsed
+# TODO: These are only kept around for the migrations that depend on them
+# They can be removed once the migrations are squashed
 def asm_objects_path():
-    return settings.ASM_OBJECTS_PATH
+    return settings.LOCAL_FILE_DIR / "assemblies"
 
 def compilation_objects_path():
-    return os.path.join(settings.LOCAL_FILE_DIR, 'compilations')
+    return settings.LOCAL_FILE_DIR / "compilations"
 
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
@@ -35,7 +35,7 @@ class Assembly(models.Model):
     compiler = models.CharField(max_length=100)
     as_opts = models.TextField(max_length=1000, blank=True, null=True)
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
-    object = models.FilePathField(path=settings.ASM_OBJECTS_PATH)
+    elf_object = models.BinaryField(blank=True)
 
 class Compilation(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
@@ -46,7 +46,7 @@ class Compilation(models.Model):
     cc_opts = models.TextField(max_length=1000, blank=True, null=True)
     source_code = models.TextField()
     context = models.TextField(blank=True)
-    object = models.FilePathField(path=settings.COMPILATION_OBJECTS_PATH)
+    elf_object = models.BinaryField(blank=True)
     stderr = models.TextField(blank=True, null=True)
 
 class Scratch(models.Model):

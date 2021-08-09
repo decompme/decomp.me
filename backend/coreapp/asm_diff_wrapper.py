@@ -2,7 +2,7 @@ from coreapp import compiler_wrapper
 import subprocess
 from coreapp.models import Assembly, Compilation
 import logging
-from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
 
@@ -36,21 +36,24 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target: Path, config: Config) -> str:
+    def run_objdump(target_data: bytes, config: Config) -> str:
         flags = ["-drz"]
-        target = target
         restrict = None # todo maybe restrict
 
-        try:
-            out = subprocess.run(
-                ["mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [target],
-                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True,
-            ).stdout
-        except subprocess.CalledProcessError as e:
-            logger.error(e.stdout)
-            logger.error(e.stderr)
-            raise e
+        with NamedTemporaryFile() as target_file:
+            target_file.write(target_data)
+            target_file.flush()
+
+            try:
+                out = subprocess.run(
+                    ["mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [target_file.name],
+                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                ).stdout
+            except subprocess.CalledProcessError as e:
+                logger.error(e.stdout)
+                logger.error(e.stderr)
+                raise e
 
         if restrict is not None:
             return restrict_to_function(out, restrict, config)
@@ -75,8 +78,8 @@ class AsmDifferWrapper:
         if not target_assembly.object.exists():
             compiler_wrapper.CompilerWrapper.assemble_asm(compilation.compiler, compilation.as_opts, target_assembly.source_asm, target_assembly)
 
-        basedump = AsmDifferWrapper.run_objdump(target_assembly.object, config)
-        mydump = AsmDifferWrapper.run_objdump(compilation.object, config)
+        basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
+        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
 
         # Remove first few junk lines from objdump output
         basedump = "\n".join(basedump.split("\n")[6:])
