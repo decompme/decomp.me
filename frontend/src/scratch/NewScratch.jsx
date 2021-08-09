@@ -5,14 +5,14 @@ import { useHistory } from "react-router-dom"
 import * as api from "../api"
 import Editor from "./Editor"
 import CompilerButton from "../compiler/CompilerButton"
-
+import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 
 export default function NewScratch() {
-    const [errorMsg, setErrorMsg] = useState("")
-    const [asm, setAsm] = useState()
-    const [context, setContext] = useState()
-    const [compiler, setCompiler] = useState(null)
+    const [errorMsg, setErrorMsg] = useState()
+    const [asm, setAsm] = useLocalStorage("NewScratch.asm")
+    const [context, setContext] = useLocalStorage("NewScratch.context")
+    const [compiler, setCompiler] = useLocalStorage("NewScratch.compiler")
     const history = useHistory()
 
     // TODO: loading state
@@ -32,7 +32,7 @@ export default function NewScratch() {
             history.push(`/scratch/${slug}`)
         } catch (error) {
             console.error(error)
-            setErrorMsg("an error occurred :/")
+            setErrorMsg(error.toString())
         }
     }
 

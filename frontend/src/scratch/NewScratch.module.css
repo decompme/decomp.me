@@ -3,13 +3,13 @@
     justify-content: center;
     align-content: center;
     height: 100%;
+    cursor: default;
 }
 
 .card {
-    border: .1em solid rgb(100, 100, 100);
-    border-radius: .6em;
-
-    background-color: #14161a;
+    border-radius: 1em;
+    background: #14161a;
+    box-shadow: 0 0.1em 8px rgba(0, 0, 0, 0.5);
 
     width: calc(var(--s1) * 40);
     height: calc(var(--s1) * 30);
@@ -20,8 +20,12 @@
 }
 
 .heading {
+    color: #fff;
+    font-size: 1.25em;
+    font-weight: 300;
+
     padding: var(--s2);
-    padding-bottom: var(--s-3);
+    padding-bottom: 0.2em;
 }
 
 .description {

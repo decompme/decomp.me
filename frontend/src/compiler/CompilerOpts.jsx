@@ -52,14 +52,16 @@ export function FlagOption({ flag, description }) {
 }
 
 export default function CompilerOpts({ value, onChange }) {
-    const [compiler, setCompiler] = useLocalStorage("CompilerOpts.compiler", compilers[0])
+    const [compiler, setCompiler] = useState((value && value.compiler) || Object.keys(compilers)[0])
     let [ccOpts, setCcOpts] = useState((value && value.cc_opts) || "")
     let [asOpts, setAsOpts] = useState((value && value.as_opts) || "")
     let [cppOpts, setCppOpts] = useState((value && value.cpp_opts) || "")
 
+    const compilerComp = compilers[compiler]
+
     useEffect(() => {
         onChange({
-            compiler: compiler.id,
+            compiler: compiler,
             cc_opts: ccOpts,
             as_opts: asOpts,
             cpp_opts: cppOpts,
@@ -86,20 +88,26 @@ export default function CompilerOpts({ value, onChange }) {
     return <OptsContext.Provider value={{ checkFlag, setFlag }}>
         <div class={styles.container}>
             <div class={styles.row}>
-                <Select class={styles.compilerSelect} onChange={e => setCompiler(compilers[parseInt(e.target.value)])}>
-                    {compilers.map((c, idx) => <option
-                        value={idx}
-                        selected={c.name === compiler.name}
+                <Select class={styles.compilerSelect} onChange={e => setCompiler(compilers[e.target.value])}>
+                    {Object.values(compilers).map(c => <option
+                        value={c.id}
+                        selected={c.name === compilerComp.name}
                     >
                         {c.name}
                     </option>)}
                 </Select>
 
-                <input type="text" class={styles.textbox} value={ccOpts} onChange={e => setCcOpts(e.target.value)} />
+                <input
+                    type="text"
+                    class={styles.textbox}
+                    value={ccOpts}
+                    placeholder="no arguments"
+                    onChange={e => setCcOpts(e.target.value)}
+                />
             </div>
 
             <div class={styles.flags}>
-                {compiler ? <compiler.Flags /> : <Skeleton />}
+                {compilerComp ? <compilerComp.Flags /> : <Skeleton />}
             </div>
         </div>
     </OptsContext.Provider>
