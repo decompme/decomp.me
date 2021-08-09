@@ -170,14 +170,14 @@ class CompilerWrapper:
             return (compilation, stderr)
 
     @staticmethod
-    def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_overwrite:Assembly = None) -> Assembly:
+    def assemble_asm(compiler:str, as_opts: str, asm: Asm) -> Assembly:
         if compiler not in compilers:
             logger.error(f"Compiler {compiler} not found")
             return "ERROR: Compiler not found"
         
         # Check the cache if we're not manually re-running an Assembly
         cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
-        if not to_overwrite and cached_assembly:
+        if cached_assembly:
             logger.debug(f"Assembly cache hit!")
             return cached_assembly
 
@@ -202,17 +202,13 @@ class CompilerWrapper:
             if assemble_status != 0:
                 return None #f"ERROR: {assemble_status[1]}"
 
-            if to_overwrite:
-                assembly = to_overwrite
-                assembly.elf_object = object_file.read()
-            else:
-                assembly = Assembly(
-                    hash=hash,
-                    compiler=compiler,
-                    as_opts=as_opts,
-                    source_asm=asm,
-                    elf_object=object_file.read(),
-                )
+            assembly = Assembly(
+                hash=hash,
+                compiler=compiler,
+                as_opts=as_opts,
+                source_asm=asm,
+                elf_object=object_file.read(),
+            )
             assembly.save()
 
             return assembly
