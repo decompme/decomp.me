@@ -112,7 +112,6 @@ class CompilerWrapper:
 
     @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str):
-
         if compiler not in compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
@@ -153,30 +152,30 @@ class CompilerWrapper:
                 cc_opts
             )
 
-        # Compilation failed
-        if compile_status != 0:
-            return (None, stderr)
+            # Compilation failed
+            if compile_status != 0:
+                return (None, stderr)
 
-        elf_object = Path(object_file.name).read_bytes()
-        if len(elf_object) == 0:
-            logger.error("Compiler did not create an object file")
-            return (None, "ERROR: Compiler did not create an object file")
+            elf_object = object_path.read_bytes()
+            if len(elf_object) == 0:
+                logger.error("Compiler did not create an object file")
+                return (None, "ERROR: Compiler did not create an object file")
 
-        # Store Compilation to db
-        compilation = Compilation(
-            hash=hash,
-            compiler=compiler,
-            cpp_opts=cpp_opts,
-            as_opts=as_opts,
-            cc_opts=cc_opts,
-            source_code=code,
-            context=context,
-            elf_object=elf_object,
-            stderr=stderr
-        )
-        compilation.save()
+            # Store Compilation to db
+            compilation = Compilation(
+                hash=hash,
+                compiler=compiler,
+                cpp_opts=cpp_opts,
+                as_opts=as_opts,
+                cc_opts=cc_opts,
+                source_code=code,
+                context=context,
+                elf_object=elf_object,
+                stderr=stderr
+            )
+            compilation.save()
 
-        return (compilation, stderr)
+            return (compilation, stderr)
 
     @staticmethod
     def assemble_asm(compiler:str, as_opts: str, asm: Asm) -> Assembly:
