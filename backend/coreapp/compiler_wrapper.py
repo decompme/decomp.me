@@ -36,11 +36,11 @@ compilers = load_compilers()
 
 def check_compilation_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
-    return Compilation.objects.filter(hash=hash).first()
+    return Compilation.objects.filter(hash=hash).first(), hash
 
 def check_assembly_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
-    return Assembly.objects.filter(hash=hash).first()
+    return Assembly.objects.filter(hash=hash).first(), hash
 
 
 class CompilerWrapper:
@@ -112,27 +112,6 @@ class CompilerWrapper:
         return (return_code, stderr)
 
     @staticmethod
-    def run_objdump(object_path: Path):
-        objdump_command = "mips-linux-gnu-objdump -m mips:4300 -drz -j .text " + str(object_path)
-
-        logger.debug(f"Objdumping: {objdump_command}")
-
-        try:
-            # TODO sandbox
-            result = subprocess.run(objdump_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-
-            if result.returncode != 0:
-                logger.error(result.stderr.decode())
-                return (4, "Non-zero error code from objdump")
-
-            output = result.stdout.decode()
-        except Exception as e:
-            logger.error(e)
-            return (5, "Exception while running objdump")
-
-        return (0, output)
-
-    @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str):
         compiler_path = CompilerWrapper.base_path() / compiler
 
@@ -142,7 +121,7 @@ class CompilerWrapper:
             logger.error(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
 
-        cached_compilation = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
+        cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
         if cached_compilation:
             logger.debug(f"Compilation cache hit!")
             return (cached_compilation, cached_compilation.stderr)
@@ -181,7 +160,17 @@ class CompilerWrapper:
             return (None, stderr)
         
         # Store Compilation to db
-        compilation = Compilation(compiler, cpp_opts, as_opts, cc_opts, code, context, object_path, stderr)
+        compilation = Compilation(
+            hash=hash,
+            compiler=compiler,
+            cpp_opts=cpp_opts,
+            as_opts=as_opts,
+            cc_opts=cc_opts,
+            source_code=code,
+            context=context,
+            object_path=object_path,
+            stderr=stderr
+        )
         compilation.save()
 
         return (compilation, stderr)
@@ -195,11 +184,10 @@ class CompilerWrapper:
             return "ERROR: Compiler not found"
         
         # Check the cache if we're not manually re-running an Assembly
-        if not to_overwrite:
-            cached_assembly = check_assembly_cache(compiler, as_opts, asm)
-            if cached_assembly:
-                logger.debug(f"Assembly cache hit!")
-                return cached_assembly
+        cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
+        if not to_overwrite and cached_assembly:
+            logger.debug(f"Assembly cache hit!")
+            return cached_assembly
 
         compiler_cfg = compilers[compiler]
 
@@ -234,8 +222,13 @@ class CompilerWrapper:
             assembly = to_overwrite
             assembly.object = object_path
         else:
-            assembly = Assembly(compiler, as_opts, source_asm=asm, object=object_path)
-
+            assembly = Assembly(
+                hash=hash,
+                compiler=compiler,
+                as_opts=as_opts,
+                source_asm=asm,
+                object=object_path,
+            )
         assembly.save()
 
         return assembly
