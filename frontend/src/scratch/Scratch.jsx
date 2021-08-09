@@ -8,7 +8,7 @@ import { RepoForkedIcon } from "@primer/octicons-react"
 import { useParams } from "react-router-dom"
 
 import * as api from "../api"
-import CompilerConfigSelect from "./CompilerConfigSelect"
+import CompilerButton from "../compiler/CompilerButton"
 import Editor from "./Editor"
 import { useLocalStorage, useSize } from "../hooks"
 
@@ -19,7 +19,7 @@ export default function Scratch() {
 
     const [currentRequest, setCurrentRequest] = useState(null)
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
-    let [compilerConfig, setCompilerConfig] = useState(null)
+    const [compiler, setCompiler] = useState(null)
     let [cCode, setCCode] = useState(null)
     let [cContext, setCContext] = useState(null)
     let [diff, setDiff] = useState(null)
@@ -29,7 +29,7 @@ export default function Scratch() {
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
 
     const compile = async () => {
-        if (compilerConfig === null || cCode === null || cContext === null) {
+        if (compiler === null || cCode === null || cContext === null) {
             return
         }
 
@@ -41,9 +41,9 @@ export default function Scratch() {
         try {
             setCurrentRequest("compile")
             const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
-                compiler_config: compilerConfig,
                 source_code: cCode.replace(/\r\n/g, "\n"),
                 context: cContext.replace(/\r\n/g, "\n"),
+                ...compiler,
             })
 
             setLog(errors)
@@ -62,9 +62,9 @@ export default function Scratch() {
         }
 
         const promise = api.patch(`/scratch/${slug}`, {
-            compiler_config: compilerConfig,
             source_code: cCode,
             context: cContext,
+            ...compiler,
         }).catch(error => Promise.reject(error.message))
 
         toast.promise(promise, {
@@ -78,14 +78,17 @@ export default function Scratch() {
         const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
 
         setIsYours(is_yours)
-        setCompilerConfig(scratch.compiler_config)
+        setCompiler({
+            compiler: scratch.compiler,
+            cc_opts: scratch.cc_opts,
+            as_opts: scratch.as_opts,
+            cpp_opts: scratch.cpp_opts,
+        })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
-        
-        compilerConfig = scratch.compiler_config
-        cContext = scratch.context
-        cCode = scratch.source_code
-        compile()
+
+        // TODO
+        //compile()
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
@@ -143,14 +146,7 @@ export default function Scratch() {
                                 <RepoForkedIcon size={16} /> Fork
                             </button>
 
-                            <CompilerConfigSelect
-                                value={compilerConfig}
-                                onChange={cc => {
-                                    compilerConfig = cc
-                                    setCompilerConfig(cc)
-                                    compile()
-                                }}
-                            />
+                            <CompilerButton value={compiler} onChange={setCompiler} />
                         </div>
 
                         <Editor
