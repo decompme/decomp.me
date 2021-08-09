@@ -16,14 +16,13 @@ import styles from "./Scratch.module.css"
 
 export default function Scratch() {
     const { slug } = useParams()
-
-    const [currentRequest, setCurrentRequest] = useState(null)
+    const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     const [compiler, setCompiler] = useState(null)
-    let [cCode, setCCode] = useState(null)
-    let [cContext, setCContext] = useState(null)
-    let [diff, setDiff] = useState(null)
-    let [log, setLog] = useState(null)
+    const [cCode, setCCode] = useState(null)
+    const [cContext, setCContext] = useState(null)
+    const [diff, setDiff] = useState(null)
+    const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
@@ -33,7 +32,7 @@ export default function Scratch() {
             return
         }
 
-        if (currentRequest) {
+        if (currentRequest === "compile") {
             console.warn("compile action already in progress")
             return
         }
@@ -86,9 +85,6 @@ export default function Scratch() {
         })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
-
-        // TODO
-        //compile()
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
@@ -120,6 +116,11 @@ export default function Scratch() {
         } else {
             r.resizeSection(1, { toSize: 0 })
         }
+    }
+
+    if (currentRequest === "loading" && compiler !== null) {
+        // we've loaded now, compile
+        compile()
     }
 
     return <div class={styles.container}>
