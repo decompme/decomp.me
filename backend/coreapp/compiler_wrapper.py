@@ -111,17 +111,18 @@ class CompilerWrapper:
         return (return_code, stderr)
 
     @staticmethod
-    def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str):
+    def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
         if compiler not in compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
 
         compiler_cfg = compilers[compiler]
 
-        cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
-        if cached_compilation:
-            logger.debug(f"Compilation cache hit!")
-            return (cached_compilation, cached_compilation.stderr)
+        if not to_regenerate:
+            cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
+            if cached_compilation:
+                logger.debug(f"Compilation cache hit!")
+                return (cached_compilation, cached_compilation.stderr)
 
         with TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -158,33 +159,37 @@ class CompilerWrapper:
                 logger.error("Compiler did not create an object file")
                 return (None, "ERROR: Compiler did not create an object file")
 
-            # Store Compilation to db
-            compilation = Compilation(
-                hash=hash,
-                compiler=compiler,
-                cpp_opts=cpp_opts,
-                as_opts=as_opts,
-                cc_opts=cc_opts,
-                source_code=code,
-                context=context,
-                elf_object=elf_object,
-                stderr=stderr
-            )
+            if to_regenerate:
+                compilation = to_regenerate
+                compilation.elf_object=elf_object
+            else:
+                compilation = Compilation(
+                    hash=hash,
+                    compiler=compiler,
+                    cpp_opts=cpp_opts,
+                    as_opts=as_opts,
+                    cc_opts=cc_opts,
+                    source_code=code,
+                    context=context,
+                    elf_object=elf_object,
+                    stderr=stderr
+                )
             compilation.save()
 
             return (compilation, stderr)
 
     @staticmethod
-    def assemble_asm(compiler:str, as_opts: str, asm: Asm) -> Assembly:
+    def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
         if compiler not in compilers:
             logger.error(f"Compiler {compiler} not found")
             return "ERROR: Compiler not found"
         
-        # Check the cache if we're not manually re-running an Assembly
-        cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
-        if cached_assembly:
-            logger.debug(f"Assembly cache hit!")
-            return cached_assembly
+        # Use the cache if we're not manually re-running an Assembly
+        if not to_regenerate:
+            cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
+            if cached_assembly:
+                logger.debug(f"Assembly cache hit!")
+                return cached_assembly
 
         compiler_cfg = compilers[compiler]
 
@@ -213,13 +218,17 @@ class CompilerWrapper:
                 logger.error("Assembler did not create an object file")
                 return (None, "ERROR: Assembler did not create an object file")
 
-            assembly = Assembly(
-                hash=hash,
-                compiler=compiler,
-                as_opts=as_opts,
-                source_asm=asm,
-                elf_object=elf_object,
-            )
+            if to_regenerate:
+                assembly = to_regenerate
+                assembly.elf_object = elf_object
+            else:
+                assembly = Assembly(
+                    hash=hash,
+                    compiler=compiler,
+                    as_opts=as_opts,
+                    source_asm=asm,
+                    elf_object=elf_object,
+                )
             assembly.save()
 
             return assembly

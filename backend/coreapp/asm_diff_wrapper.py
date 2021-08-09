@@ -72,9 +72,34 @@ class AsmDifferWrapper:
             arch = MIPS_SETTINGS
             
         config = AsmDifferWrapper.create_config(arch)
+
+        # Base
+        if len(target_assembly.elf_object) == 0:
+            logger.info("Base asm empty - attempting to regenerate")
+            compiler_wrapper.CompilerWrapper.assemble_asm(compilation.compiler, compilation.as_opts, target_assembly.source_asm, target_assembly)
+            if len(target_assembly.elf_object) == 0:
+                logger.error("Regeneration of base-asm failed")
+                return "Error: Base asm empty"
+
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
         if not basedump:
             return "Error running asm-differ on basedump"
+
+        # New
+        if len(compilation.elf_object) == 0:
+            logger.info("New asm empty - attempting to regenerate")
+            compiler_wrapper.CompilerWrapper.compile_code(
+                compilation.compiler,
+                compilation.cpp_opts,
+                compilation.as_opts,
+                compilation.cc_opts,
+                compilation.source_code,
+                compilation.context,
+                compilation
+            )
+            if len(compilation.elf_object) == 0:
+                logger.error("Regeneration of new-asm failed")
+                return "Error: New asm empty"
 
         mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
         if not mydump:
