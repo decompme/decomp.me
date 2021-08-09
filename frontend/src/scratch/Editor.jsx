@@ -41,7 +41,7 @@ export default function Editor({ forceLoading, value, onChange, padding }) {
                     wordWrap: "on",
                     padding: padding ? { top: 30, bottom: 30 } : {},
                 }}
-                defaultValue={value}
+                value={value}
                 onChange={onChange}
             />
         </div>
