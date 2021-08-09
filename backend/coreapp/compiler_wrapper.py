@@ -121,11 +121,14 @@ class CompilerWrapper:
 
         cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
         if cached_compilation:
-            logger.debug(f"Compilation cache hit!")
-            return (cached_compilation, cached_compilation.stderr)
+            pass # TODO
+            #logger.debug(f"Compilation cache hit!")
+            #return (cached_compilation, cached_compilation.stderr)
 
-        with NamedTemporaryFile(mode="rb", suffix=".o") as object_file:
-            with NamedTemporaryFile(mode="w", suffix=".c") as code_file:
+        hash = get_random_string(10)
+
+        with NamedTemporaryFile(mode="rb", suffix=".o", delete=False) as object_file:
+            with NamedTemporaryFile(mode="w", suffix=".c", delete=False) as code_file:
                 code_file.write('#line 1 "ctx.c"\n')
                 code_file.write(context)
                 code_file.write('\n')
@@ -153,6 +156,11 @@ class CompilerWrapper:
             if compile_status != 0:
                 return (None, stderr)
 
+            elf_object = object_file.read()
+            if len(elf_object) == 0:
+                logger.error("Compiler did not create an object file")
+                return (None, "ERROR: Compiler did not create an object file")
+
             # Store Compilation to db
             compilation = Compilation(
                 hash=hash,
@@ -162,7 +170,7 @@ class CompilerWrapper:
                 cc_opts=cc_opts,
                 source_code=code,
                 context=context,
-                elf_object=object_file.read(),
+                elf_object=elf_object,
                 stderr=stderr
             )
             compilation.save()
@@ -178,8 +186,10 @@ class CompilerWrapper:
         # Check the cache if we're not manually re-running an Assembly
         cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
         if cached_assembly:
-            logger.debug(f"Assembly cache hit!")
-            return cached_assembly
+            pass
+            #logger.debug(f"Assembly cache hit!")
+            #return cached_assembly
+        hash = get_random_string(10)
 
         compiler_cfg = compilers[compiler]
 
@@ -202,12 +212,17 @@ class CompilerWrapper:
             if assemble_status != 0:
                 return None #f"ERROR: {assemble_status[1]}"
 
+            elf_object = object_file.read()
+            if len(elf_object) == 0:
+                logger.error("Assembler did not create an object file")
+                return (None, "ERROR: Assembler did not create an object file")
+
             assembly = Assembly(
                 hash=hash,
                 compiler=compiler,
                 as_opts=as_opts,
                 source_asm=asm,
-                elf_object=object_file.read(),
+                elf_object=elf_object,
             )
             assembly.save()
 

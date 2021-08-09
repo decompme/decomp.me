@@ -51,9 +51,8 @@ class AsmDifferWrapper:
                     universal_newlines=True,
                 ).stdout
             except subprocess.CalledProcessError as e:
-                logger.error(e.stdout)
-                logger.error(e.stderr)
-                raise e
+                logger.error(e)
+                return None
 
         if restrict is not None:
             return restrict_to_function(out, restrict, config)
@@ -75,6 +74,9 @@ class AsmDifferWrapper:
         config = AsmDifferWrapper.create_config(arch)
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
         mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
+
+        if not basedump or not mydump:
+            return "Error running asm-differ"
 
         # Remove first few junk lines from objdump output
         basedump = "\n".join(basedump.split("\n")[6:])

@@ -27,7 +27,7 @@ class Asm(models.Model):
     data = models.TextField()
 
     def __str__(self):
-        return self.data
+        return self.data if len(self.data) < 20 else self.data[:17] + "..."
 
 class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
