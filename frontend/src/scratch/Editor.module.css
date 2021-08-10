@@ -1,4 +1,4 @@
 .monacoContainer {
-    height: 100%;
+    flex-grow: 1;
     user-select: initial;
 }

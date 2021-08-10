@@ -21,6 +21,7 @@ export default {
     ],
     alias: {
         react: "preact/compat",
+        "react-dom": "preact/compat",
     },
     optimize: {
         preload: true,

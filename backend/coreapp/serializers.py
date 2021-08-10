@@ -1,12 +1,15 @@
-from coreapp.models import CompilerConfiguration, Scratch
+from coreapp.models import Scratch
 from rest_framework import serializers
-
-class CompilerConfigurationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CompilerConfiguration
-        fields = "__all__"
 
 class ScratchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler_config", "target_assembly", "source_code", "context", "parent"]
+        fields = ["slug", "compiler", "cpp_opts", "as_opts", "cc_opts", "target_assembly", "source_code", "context", "parent"]
+
+    def create(self, validated_data):
+        scratch = Scratch.objects.create(**validated_data)
+
+        if scratch.context:
+            scratch.original_context = scratch.context
+
+        return scratch

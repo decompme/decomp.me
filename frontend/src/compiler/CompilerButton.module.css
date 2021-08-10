@@ -1,0 +1,5 @@
+.popover {
+    border-radius: 1em;
+    box-shadow: 0 2px 8px 0 #00000088;
+    max-width: 50em;
+}

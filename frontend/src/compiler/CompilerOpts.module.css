@@ -1,0 +1,87 @@
+.container {
+    border-radius: 1em;
+    padding: 1.5em;
+    background: #22272d;
+}
+
+.row {
+    display: flex;
+}
+
+.compilerSelect {
+    border-top-left-radius: .5rem;
+    border-bottom-left-radius: .5rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;;
+}
+
+.textbox {
+    flex: 1;
+
+    background: #00000044;
+    box-shadow: 0 2px 16px #00000022;
+    border: 0;
+    color: #0AFAFA;
+
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: .5rem;
+    border-bottom-right-radius: .5rem;
+
+    font-family: monospace;
+    font-size: .8rem;
+
+    padding: .6em 1em;
+}
+
+.flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5em;
+    margin-top: 1em;
+}
+
+.flag {
+    flex-grow: 1;
+    display: inline-block;
+    cursor: default;
+    padding: .75em;
+    border-radius: .5em;
+}
+
+.flag:hover {
+    background: #00000022;
+}
+
+.flag label {
+    font-size: .9rem;
+    margin-left: .5em;
+}
+
+.flag input {
+    pointer-events: none;
+}
+
+.flagDescription {
+    display: block;
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.flagSet {
+    flex-grow: 1;
+
+    display: inline-flex;
+    flex-direction: column;
+
+    width: 20em;
+    border-radius: .5em;
+}
+
+.flagSetName {
+    cursor: default;
+    font-size: .8rem;
+    padding: .6em 1em;
+    padding-bottom: .2em;
+    opacity: 0.5;
+}

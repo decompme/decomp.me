@@ -4,11 +4,11 @@ import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
-import { RepoForkedIcon } from "@primer/octicons-react"
-import { useParams } from "react-router-dom"
+import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
+import { useParams, useHistory } from "react-router-dom"
 
 import * as api from "../api"
-import CompilerConfigSelect from "./CompilerConfigSelect"
+import CompilerButton from "../compiler/CompilerButton"
 import Editor from "./Editor"
 import { useLocalStorage, useSize } from "../hooks"
 
@@ -16,24 +16,28 @@ import styles from "./Scratch.module.css"
 
 export default function Scratch() {
     const { slug } = useParams()
-
-    const [currentRequest, setCurrentRequest] = useState(null)
+    const history = useHistory()
+    const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
-    let [compilerConfig, setCompilerConfig] = useState(null)
-    let [cCode, setCCode] = useState(null)
-    let [cContext, setCContext] = useState(null)
-    let [diff, setDiff] = useState(null)
-    let [log, setLog] = useState(null)
+    const [compiler, setCompiler] = useState(null)
+    const [cCode, setCCode] = useState(null)
+    const [cContext, setCContext] = useState(null)
+    const [diff, setDiff] = useState(null)
+    const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
+    const [savedCCode, setSavedCCode] = useState(cCode)
+    const [savedCContext, setSavedCContext] = useState(cContext)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
 
+    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext
+
     const compile = async () => {
-        if (compilerConfig === null || cCode === null || cContext === null) {
+        if (compiler === null || cCode === null || cContext === null) {
             return
         }
 
-        if (currentRequest) {
+        if (currentRequest === "compile") {
             console.warn("compile action already in progress")
             return
         }
@@ -41,9 +45,9 @@ export default function Scratch() {
         try {
             setCurrentRequest("compile")
             const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
-                compiler_config: compilerConfig,
                 source_code: cCode.replace(/\r\n/g, "\n"),
-                context: cContext.replace(/\r\n/g, "\n"),
+                context: cContext === savedCContext ? undefined : cContext.replace(/\r\n/g, "\n"),
+                ...compiler,
             })
 
             setLog(errors)
@@ -55,40 +59,52 @@ export default function Scratch() {
 
     const save = async () => {
         if (!isYours) {
-            // TODO: implicitly fork
-            toast.error("You don't own this scratch, so you can't save over it.")
-            toast.clear
-            return
+            // Implicitly fork
+            return fork()
         }
 
         const promise = api.patch(`/scratch/${slug}`, {
-            compiler_config: compilerConfig,
             source_code: cCode,
             context: cContext,
+            ...compiler,
         }).catch(error => Promise.reject(error.message))
 
-        toast.promise(promise, {
+        await toast.promise(promise, {
             loading: 'Saving...',
             success: 'Scratch saved!',
             error: 'Error saving scratch',
         })
+
+        setSavedCCode(cCode)
+        setSavedCContext(cContext)
+    }
+
+    const fork = async () => {
+        const newScratch = await api.post(`/scratch/${slug}/fork`, {
+            source_code: cCode,
+            context: cContext,
+            ...compiler,
+        })
+
+        history.push(`/scratch/${newScratch.slug}`)
     }
 
     useEffect(async () => {
         const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
 
         setIsYours(is_yours)
-        setCompilerConfig(scratch.compiler_config)
+        setCompiler({
+            compiler: scratch.compiler,
+            cc_opts: scratch.cc_opts,
+            as_opts: scratch.as_opts,
+            cpp_opts: scratch.cpp_opts,
+        })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
-        
-        compilerConfig = scratch.compiler_config
-        cContext = scratch.context
-        cCode = scratch.source_code
-        compile()
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
+    const isCompiling = debouncedCompile.isPending() || currentRequest === "compile"
 
     // Ctrl + S to save
     useEffect(() => {
@@ -118,39 +134,28 @@ export default function Scratch() {
         }
     }
 
+    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts, compiler.as_opts, compiler.cpp_opts] : [])
+
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>
             <resizer.Section minSize={500}>
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
-                    <resizer.Section minSize="4em">
+                    <resizer.Section minSize="4em" className={styles.sourceCode}>
                         <div class={styles.sectionHeader}>
                             Sourcecode
                             <span class={styles.grow}></span>
-                            <button onClick={compile} disabled={currentRequest}>
-                                Compile
+                            <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
+                                <SyncIcon size={16} /> Compile
                             </button>
-                            <button
-                                onClick={save}
-                                disabled={!isYours}
-                                title={isYours ? "" : "You don't own this scratch."}
-                            >
-                                Save
-                            </button>
-                            <button
-                                disabled
-                                title="Forking is not yet implemented"
-                            >
+                            {isYours && <button onClick={save}>
+                                <UploadIcon size={16} /> Save
+                                {hasUnsavedChanges && "*"}
+                            </button>}
+                            <button onClick={fork}>
                                 <RepoForkedIcon size={16} /> Fork
                             </button>
 
-                            <CompilerConfigSelect
-                                value={compilerConfig}
-                                onChange={cc => {
-                                    compilerConfig = cc
-                                    setCompilerConfig(cc)
-                                    compile()
-                                }}
-                            />
+                            <CompilerButton value={compiler} onChange={setCompiler} />
                         </div>
 
                         <Editor

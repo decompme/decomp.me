@@ -6,6 +6,7 @@ import { MarkGithubIcon, PlusIcon } from "@primer/octicons-react"
 
 import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
+import CompilerOpts from "./compiler/CompilerOpts"
 
 export default function App() {
     return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">
@@ -34,9 +35,9 @@ export default function App() {
                         <Scratch />
                     </Route>
 
-                    <div default>
-                        Page not found :(<br />
-                    </div>
+                    <Route exact path="/test/compileropts">
+                        <CompilerOpts />
+                    </Route>
                 </Switch>
             </main>
 

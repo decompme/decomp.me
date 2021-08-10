@@ -38,6 +38,7 @@ export default function Editor({ forceLoading, value, onChange, padding }) {
                     cursorBlinking: "phase",
                     matchBrackets: "near",
                     mouseWheelZoom: true,
+                    wordWrap: "on",
                     padding: padding ? { top: 30, bottom: 30 } : {},
                 }}
                 value={value}
@@ -47,11 +48,14 @@ export default function Editor({ forceLoading, value, onChange, padding }) {
 
         <div style={{
             display: loaded ? 'none' : 'block',
-            padding: '2em',
+            paddingTop: padding ? '2em' : '0',
+            paddingBottom: padding ? '2em' : '0',
+            paddingLeft: '2em',
+            paddingRight: '2em',
             background: '#14161a',
             height: '100%',
         }}>
-            <Skeleton count={30} height={22} />
+            <Skeleton count={6} height={22} />
         </div>
     </>
 }

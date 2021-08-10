@@ -4,15 +4,15 @@ import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import Editor from "./Editor"
-import CompilerConfigSelect from "./CompilerConfigSelect"
-
+import CompilerButton from "../compiler/CompilerButton"
+import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 
 export default function NewScratch() {
-    const [errorMsg, setErrorMsg] = useState("")
-    const [asm, setAsm] = useState()
-    const [context, setContext] = useState()
-    const [compilerConfig, setCompilerConfig] = useState()
+    const [errorMsg, setErrorMsg] = useState()
+    const [asm, setAsm] = useLocalStorage("NewScratch.asm")
+    const [context, setContext] = useLocalStorage("NewScratch.context")
+    const [compiler, setCompiler] = useLocalStorage("NewScratch.compiler")
     const history = useHistory()
 
     // TODO: loading state
@@ -24,7 +24,7 @@ export default function NewScratch() {
             const { slug } = await api.post("/scratch", {
                 target_asm: asm,
                 context: context,
-                compiler_config: compilerConfig,
+                ...compiler,
             })
 
             setErrorMsg("")
@@ -32,7 +32,7 @@ export default function NewScratch() {
             history.push(`/scratch/${slug}`)
         } catch (error) {
             console.error(error)
-            setErrorMsg("an error occurred :/")
+            setErrorMsg(error.toString())
         }
     }
 
@@ -58,11 +58,8 @@ export default function NewScratch() {
                 <p class={`red ${styles.errormsg}`}>
                     {errorMsg}
                 </p>
-                <div class={styles.compilerselect}>
-                    Compiler
-                    <CompilerConfigSelect value={compilerConfig} onChange={setCompilerConfig} />
-                </div>
-                <button disabled={!asm && compilerConfig !== null} onClick={submit}>Create scratch</button>
+                <CompilerButton value={compiler} onChange={setCompiler} />
+                <button disabled={!asm && compiler !== null} onClick={submit}>Create scratch</button>
             </div>
         </div>
     </div>
