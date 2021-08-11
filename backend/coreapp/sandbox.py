@@ -47,7 +47,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         # fmt: off
         wrapper = [
             str(settings.SANDBOX_NSJAIL_BIN_PATH),
-            "--really_quiet",
             "--mode", "o",
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
@@ -61,6 +60,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         ]
         # fmt: on
 
+        if not settings.DEBUG:
+            wrapper.append("--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
         for key in env:
