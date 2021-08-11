@@ -1,7 +1,7 @@
 from coreapp import compiler_wrapper
 import subprocess
 from coreapp.models import Assembly, Compilation
-from coreapp.sandbox_wrapper import SandboxWrapper
+from coreapp.sandbox import Sandbox
 import logging
 from tempfile import NamedTemporaryFile
 
@@ -41,7 +41,7 @@ class AsmDifferWrapper:
         flags = ["-drz"]
         restrict = None # todo maybe restrict
 
-        with SandboxWrapper() as sandbox:
+        with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 

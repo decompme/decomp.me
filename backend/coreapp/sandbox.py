@@ -11,14 +11,19 @@ import contextlib
 logger = logging.getLogger(__name__)
 
 
-class SandboxWrapper(contextlib.AbstractContextManager["SandboxWrapper"]):
+class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __enter__(self):
+        self.use_jail = settings.USE_SANDBOX_JAIL
+
         tmpdir: Optional[str] = None
-        if settings.USE_SANDBOX:
-            tmpdir = str(settings.SANDBOX_CHROOT_PATH / "tmp")
+        if self.use_jail:
+            # Only use SANDBOX_TMP_PATH if USE_SANDBOX_JAIL is enabled,
+            # otherwise use the system default
+            settings.SANDBOX_TMP_PATH.mkdir(parents=True, exist_ok=True)
+            tmpdir = str(settings.SANDBOX_TMP_PATH)
+
         self.temp_dir = TemporaryDirectory(dir=tmpdir)
         self.path = Path(self.temp_dir.name)
-        self.path.chmod(0o777)
         return self
 
     def __exit__(self, *exc):
@@ -29,24 +34,21 @@ class SandboxWrapper(contextlib.AbstractContextManager["SandboxWrapper"]):
         return shlex.join(shlex.split(opts))
 
     def rewrite_path(self, path: Path) -> str:
-        if path.is_relative_to(self.path):
+        if self.use_jail and path.is_relative_to(self.path):
             path = Path("/tmp") / path.relative_to(self.path)
-        return shlex.quote(str(path))
+        return str(path)
 
-    def sandbox_command(
-        self, mounts: List[Path], env: Dict[str, str]
-    ) -> List[str]:
-        if not settings.USE_SANDBOX:
+    def sandbox_command(self, mounts: List[Path], env: Dict[str, str]) -> List[str]:
+        if not self.use_jail:
             return []
 
+        settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
         assert ":" not in str(self.path)
         # fmt: off
         wrapper = [
-            "nsjail",
-            "--quiet",
+            str(settings.SANDBOX_NSJAIL_BIN_PATH),
+            "--really_quiet",
             "--mode", "o",
-            "--user", "0:99999:1",
-            "--group", "0:99999:1",
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount_ro", "/bin",
@@ -86,8 +88,10 @@ class SandboxWrapper(contextlib.AbstractContextManager["SandboxWrapper"]):
             assert isinstance(args, list)
             command = wrapper + args
 
-        debug_env_str = " ".join(f"{key}={shlex.quote(value)}" for key, value in env.items())
-        logger.debug(f"Running: {debug_env_str} {shlex.join(command)}")
+        debug_env_str = " ".join(
+            f"{key}={shlex.quote(value)}" for key, value in env.items()
+        )
+        logger.debug(f"Sandbox Command: {debug_env_str} {shlex.join(command)}")
         return subprocess.run(
             command, capture_output=True, text=True, env=env, check=True, shell=False
         )

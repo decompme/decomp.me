@@ -1,7 +1,7 @@
 from typing import Optional
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
-from coreapp.sandbox_wrapper import SandboxWrapper
+from coreapp.sandbox import Sandbox
 from django.conf import settings
 from django.utils.crypto import get_random_string
 import json
@@ -63,7 +63,7 @@ class CompilerWrapper:
                 logger.debug(f"Compilation cache hit!")
                 return (cached_compilation, cached_compilation.stderr)
 
-        with SandboxWrapper() as sandbox:
+        with Sandbox() as sandbox:
             code_path = sandbox.path / "code.c"
             object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
@@ -81,7 +81,7 @@ class CompilerWrapper:
             try:
                 compile_proc = sandbox.run_subprocess(
                     compiler_cfg["cc"],
-                    mounts=[settings.COMPILER_BASE_PATH],
+                    mounts=[compiler_path],
                     shell=True,
                     env={
                     "PATH": "/bin:/usr/bin",
@@ -135,7 +135,7 @@ class CompilerWrapper:
 
         compiler_cfg = compilers[compiler]
 
-        with SandboxWrapper() as sandbox:
+        with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
             asm_path.write_text(ASM_MACROS + asm.data)
 
@@ -146,7 +146,7 @@ class CompilerWrapper:
             try:
                 assemble_proc = sandbox.run_subprocess(
                     compiler_cfg["as"],
-                    mounts=[settings.COMPILER_BASE_PATH],
+                    mounts=[compiler_path],
                     shell=True,
                     env={
                     "INPUT": sandbox.rewrite_path(asm_path),

@@ -31,7 +31,7 @@ services:
     - type: tmpfs
       # Use a separate tmpfs to prevent a rouge jailed process
       # from filling /tmp on the parent container
-      target: /jailtmp
+      target: /sandbox/tmp
       tmpfs:
         size: 64M
   frontend:

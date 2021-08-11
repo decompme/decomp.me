@@ -10,12 +10,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
+    SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SECURE_SSL_REDIRECT=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
     SECURE_HSTS_PRELOAD=(bool, False),
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
+    USE_SANDBOX_JAIL=(bool, True),
 )
 
 env_file = BASE_DIR / ".." / ".env"
@@ -139,6 +141,7 @@ CSRF_COOKIE_SECURE = True
 COMPILER_BASE_PATH = BASE_DIR / "compilers"
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
-USE_SANDBOX = True
-SANDBOX_CHROOT_PATH = BASE_DIR.parent / "jail"
-SANDBOX_TMP_PATH = BASE_DIR.parent / "jailtmp"
+USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
+SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
+SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
+SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"

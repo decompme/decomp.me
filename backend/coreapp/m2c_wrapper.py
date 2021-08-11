@@ -6,7 +6,7 @@ import os
 from django.utils.crypto import get_random_string
 from mips_to_c.src.main import parse_flags
 from mips_to_c.src.main import run
-from coreapp.sandbox_wrapper import SandboxWrapper
+from coreapp.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class M2CWrapper:
     def decompile(asm, context):
         random_id = get_random_string(length=8)
 
-        with SandboxWrapper() as sandbox:
+        with Sandbox() as sandbox:
             # Create temp asm file
             asm_path = sandbox.path / "asm.s"
             asm_path.write_text(asm)
