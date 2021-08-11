@@ -89,7 +89,7 @@ export default function Scratch() {
         history.push(`/scratch/${newScratch.slug}`)
         toast.success("Fork created!", {
             icon: '🍴',
-        });
+        })
     }
 
     useEffect(async () => {
