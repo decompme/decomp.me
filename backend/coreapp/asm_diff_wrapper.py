@@ -1,6 +1,7 @@
 from coreapp import compiler_wrapper
 import subprocess
 from coreapp.models import Assembly, Compilation
+from coreapp.sandbox_wrapper import SandboxWrapper
 import logging
 from tempfile import NamedTemporaryFile
 
@@ -40,20 +41,19 @@ class AsmDifferWrapper:
         flags = ["-drz"]
         restrict = None # todo maybe restrict
 
-        with NamedTemporaryFile() as target_file:
-            target_file.write(target_data)
-            target_file.flush()
+        with SandboxWrapper() as sandbox:
+            target_path = sandbox.path / "out.s"
+            target_path.write_bytes(target_data)
 
             try:
-                out = subprocess.run(
-                    ["mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [target_file.name],
-                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                ).stdout
+                objdump_proc = sandbox.run_subprocess(
+                    ["/usr/bin/mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
+                )
             except subprocess.CalledProcessError as e:
                 logger.error(e)
                 return None
 
+        out = objdump_proc.stdout
         if restrict is not None:
             return restrict_to_function(out, restrict, config)
         return out

@@ -11,6 +11,11 @@ services:
     - ./postgres:/var/lib/postgresql/data
   backend:
     build: backend
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
     environment:
       DATABASE_URL: psql://decompme:decompme@postgres:5432/decompme
       SECRET_KEY: "django-insecure-nm#!8%z$$hc0wwi#m_*l9l)=m*6gs4&o_^-e5b5vj*k05&yaqc1"
@@ -18,11 +23,21 @@ services:
       ALLOWED_HOSTS: "localhost,127.0.0.1"
     ports:
     - "8000:8000"
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
     volumes:
     - ./backend:/backend
+    - type: tmpfs
+      # Use a separate tmpfs to prevent a rouge jailed process
+      # from filling /tmp on the parent container
+      target: /jailtmp
+      tmpfs:
+        size: 64M
   frontend:
     build: frontend
     ports:
     - "8080:8080"
     volumes:
     - ./frontend:/frontend
+    - .env:/.env

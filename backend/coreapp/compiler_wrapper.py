@@ -1,6 +1,7 @@
 from typing import Optional
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
+from coreapp.sandbox_wrapper import SandboxWrapper
 from django.conf import settings
 from django.utils.crypto import get_random_string
 import json
@@ -44,71 +45,9 @@ def check_assembly_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
-
 class CompilerWrapper:
     def base_path():
         return settings.COMPILER_BASE_PATH
-
-    @staticmethod
-    def run_compiler(compile_cmd: str, input_path: Path, output_path: Path, compiler_path: Path, cpp_opts:str, as_opts: str, cc_opts: str):
-        compile_command = "set -o pipefail; " +  compile_cmd \
-            .replace("$INPUT", str(input_path)) \
-            .replace("$OUTPUT", str(output_path)) \
-            .replace("$COMPILER_PATH", str(compiler_path)) \
-            .replace("$CPP_OPTS", cpp_opts) \
-            .replace("$CC_OPTS", cc_opts) \
-            .replace("$AS_OPTS", as_opts)
-
-        logger.debug(f"Compiling: {compile_command}")
-
-        return_code = 0
-
-        try:
-            result = subprocess.run(["bash", "-c", compile_command], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stderr = result.stderr.decode()
-
-            if result.returncode != 0:
-                logger.debug("Compiler returned with a non-zero return code:\n" + result.stderr.decode())
-                return_code = 1
-        except Exception as e:
-            logger.error(e)
-            return_code = 2
-        
-        if not output_path.exists():
-            logger.error(f"Compiled object does not exist: {str(output_path)}")
-            return_code = 3
-
-        return (return_code, stderr)
-
-    @staticmethod
-    def run_assembler(assemble_cmd: str, input_path: Path, output_path: Path, compiler_path: Path, as_opts: str):
-        assemble_command = "set -o pipefail; " + assemble_cmd \
-            .replace("$INPUT", str(input_path)) \
-            .replace("$OUTPUT", str(output_path)) \
-            .replace("$COMPILER_PATH", str(compiler_path)) \
-            .replace("$AS_OPTS", as_opts)
-        # TODO sandbox
-        
-        logger.debug(f"Assembling: {assemble_command}")
-
-        return_code = 0
-
-        try:
-            result = subprocess.run(["bash", "-c", assemble_command], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stderr = result.stderr.decode()
-
-            if result.returncode != 0:
-                logger.error(stderr)
-                return_code = 1
-        except Exception as e:
-            logger.error(e)
-            return_code = 2
-        
-        if not output_path.exists():
-            logger.error(f"Assembled object does not exist: {str(output_path)}")
-            return_code = 3
-
-        return (return_code, stderr)
 
     @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
@@ -124,10 +63,9 @@ class CompilerWrapper:
                 logger.debug(f"Compilation cache hit!")
                 return (cached_compilation, cached_compilation.stderr)
 
-        with TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            code_path = temp_path / "code.c"
-            object_path = temp_path / "object.o"
+        with SandboxWrapper() as sandbox:
+            code_path = sandbox.path / "code.c"
+            object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
                 f.write('#line 1 "ctx.c"\n')
                 f.write(context)
@@ -140,22 +78,25 @@ class CompilerWrapper:
             compiler_path = CompilerWrapper.base_path() / compiler
 
             # Run compiler
-            compile_status, stderr = CompilerWrapper.run_compiler(
-                compiler_cfg["cc"],
-                code_path,
-                object_path,
-                compiler_path,
-                cpp_opts,
-                as_opts,
-                cc_opts
-            )
+            try:
+                compile_proc = sandbox.run_subprocess(
+                    compiler_cfg["cc"],
+                    mounts=[settings.COMPILER_BASE_PATH],
+                    shell=True,
+                    env={
+                    "PATH": "/bin:/usr/bin",
+                    "INPUT": sandbox.rewrite_path(code_path),
+                    "OUTPUT": sandbox.rewrite_path(object_path),
+                    "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
+                    "CPP_OPTS": sandbox.quote_options(cpp_opts),
+                    "CC_OPTS": sandbox.quote_options(cc_opts),
+                    "AS_OPTS": sandbox.quote_options(as_opts),
+                })
+            except subprocess.CalledProcessError as e:
+                # Compilation failed
+                return (None, e.stderr)
 
-            # Compilation failed
-            if compile_status != 0:
-                return (None, stderr)
-
-            elf_object = object_path.read_bytes()
-            if len(elf_object) == 0:
+            if not object_path.exists():
                 logger.error("Compiler did not create an object file")
                 return (None, "ERROR: Compiler did not create an object file")
 
@@ -163,6 +104,7 @@ class CompilerWrapper:
                 compilation = to_regenerate
                 compilation.elf_object=elf_object
             else:
+                # Store Compilation to db
                 compilation = Compilation(
                     hash=hash,
                     compiler=compiler,
@@ -171,12 +113,12 @@ class CompilerWrapper:
                     cc_opts=cc_opts,
                     source_code=code,
                     context=context,
-                    elf_object=elf_object,
-                    stderr=stderr
+                    elf_object=object_path.read_bytes(),
+                    stderr=compile_proc.stderr
                 )
             compilation.save()
 
-            return (compilation, stderr)
+            return (compilation, compile_proc.stderr)
 
     @staticmethod
     def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
@@ -193,28 +135,34 @@ class CompilerWrapper:
 
         compiler_cfg = compilers[compiler]
 
-        with TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            asm_path = temp_path / "asm.s"
+        with SandboxWrapper() as sandbox:
+            asm_path = sandbox.path / "asm.s"
             asm_path.write_text(ASM_MACROS + asm.data)
 
-            object_path = temp_path / "object.o"
+            object_path = sandbox.path / "object.o"
             compiler_path = Path(CompilerWrapper.base_path() / compiler)
 
-            assemble_status, stderr = CompilerWrapper.run_assembler(
-                compiler_cfg["as"],
-                asm_path,
-                object_path,
-                compiler_path,
-                as_opts
-            )
+            # Run assembler
+            try:
+                assemble_proc = sandbox.run_subprocess(
+                    compiler_cfg["as"],
+                    mounts=[settings.COMPILER_BASE_PATH],
+                    shell=True,
+                    env={
+                    "INPUT": sandbox.rewrite_path(asm_path),
+                    "OUTPUT": sandbox.rewrite_path(object_path),
+                    "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
+                    "AS_OPTS": sandbox.quote_options(as_opts),
+                })
+            except subprocess.CalledProcessError as e:
+                # Compilation failed
+                return (None, e.stderr)
 
             # Assembly failed
-            if assemble_status != 0:
-                return None #f"ERROR: {assemble_status[1]}"
+            if assemble_proc.returncode != 0:
+                return None #f"ERROR: {assemble_proc.stderr}"
 
-            elf_object = object_path.read_bytes()
-            if len(elf_object) == 0:
+            if not object_path.exists():
                 logger.error("Assembler did not create an object file")
                 return (None, "ERROR: Assembler did not create an object file")
 
@@ -227,7 +175,7 @@ class CompilerWrapper:
                     compiler=compiler,
                     as_opts=as_opts,
                     source_asm=asm,
-                    elf_object=elf_object,
+                    elf_object=object_path.read_bytes(),
                 )
             assembly.save()
 
