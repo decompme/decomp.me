@@ -7,6 +7,7 @@ import Editor from "./Editor"
 import CompilerButton from "../compiler/CompilerButton"
 import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
+import toast from "react-hot-toast"
 
 export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState()
@@ -30,6 +31,7 @@ export default function NewScratch() {
             setErrorMsg("")
 
             history.push(`/scratch/${slug}`)
+            toast.success("Scratch created! You may share this url")
         } catch (error) {
             console.error(error)
             setErrorMsg(error.toString())
