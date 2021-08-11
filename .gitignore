@@ -5,5 +5,6 @@ build
 .snowpack
 backend/local_files/
 postgres/
+sandbox/
 *.db
 .DS_Store
