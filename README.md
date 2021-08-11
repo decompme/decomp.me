@@ -45,6 +45,27 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+#### Sandbox Jail
+
+There is support for running subprocesses within [`nsjail`](https://github.com/google/nsjail).
+
+This is controlled by the `SANDBOX` settings, and is disabled by default in the development `.env` but is enabled inside the `backend` Docker container.
+
+
+To enable it locally outside of the Docker container:
+
+- Build or install `nsjail` locally. Example instructions for Ubuntu:
+    - `apt-get install autoconf bison flex gcc g++ git libprotobuf-dev libnl-route-3-dev libtool make pkg-config protobuf-compiler`
+    - `git clone --recursive --branch=3.0 https://github.com/google/nsjail`
+    - `cd nsjail && make`
+- Enable `unprivileged_userns_clone`
+    - Temporary: `sudo sysctl -w kernel.unprivileged_userns_clone=1`
+    - Permanent: `echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/00-local-userns.conf && sudo service procps restart
+`
+- Edit `.env`:
+    - Set `USE_SANDBOX_JAIL=on`
+    - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
+
 ### Frontend
 
 You'll need [Yarn](https://yarnpkg.com/getting-started/install) (which requires Node.js).
