@@ -23,7 +23,7 @@ def get_db_asm(request_asm) -> Asm:
         ret.save()
     else:
         ret = db_asm.first()
-    
+
     return ret
 
 @api_view(["GET", "POST", "PATCH"])
@@ -54,9 +54,9 @@ def scratch(request, slug=None):
 
         return Response({
             "scratch": ScratchSerializer(db_scratch).data,
-            "is_yours": db_scratch.owner.id == request.session.get("profile", None),   
+            "is_yours": db_scratch.owner.id == request.session.get("profile", None),
         })
-    
+
     elif request.method == "POST":
         data = request.data
 
@@ -75,11 +75,13 @@ def scratch(request, slug=None):
         compiler = request.data["compiler"]
         as_opts = request.data["as_opts"]
 
-        assembly = CompilerWrapper.assemble_asm(compiler, as_opts, asm)
+        assembly, err = CompilerWrapper.assemble_asm(compiler, as_opts, asm)
         if assembly:
             data["target_assembly"] = assembly.pk
         else:
-            return Response({"error": "Error when assembling target asm"}, status=status.HTTP_400_BAD_REQUEST)
+            error_msg = "Error when assembling target asm: %r" % err
+            logging.error(error_msg)
+            return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
 
         context = request.data.get("context", "")
 
@@ -95,7 +97,7 @@ def scratch(request, slug=None):
     elif request.method == "PATCH":
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
 
         for param in required_params:
@@ -125,7 +127,7 @@ def compile(request, slug):
     for param in required_params:
         if param not in request.data:
             return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     # TODO validate
     compiler = request.data["compiler"]
     cpp_opts = request.data["cpp_opts"]
@@ -139,7 +141,7 @@ def compile(request, slug):
     # Get the context from the backend if it's not provided
     if not context:
         context = scratch.context
-    
+
     compilation, errors = CompilerWrapper.compile_code(compiler, cpp_opts, as_opts, cc_opts, code, context)
 
     diff_output = ""
@@ -150,7 +152,7 @@ def compile(request, slug):
         "diff_output": diff_output,
         "errors": errors,
     }
-        
+
     return Response(response_obj)
 
 @api_view(["POST"])
