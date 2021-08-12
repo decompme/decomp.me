@@ -5,6 +5,23 @@ const commonOpts = {
     cache: "reload",
 }
 
+// Read the Django CSRF token, from https://docs.djangoproject.com/en/3.2/ref/csrf/#ajax
+const csrftoken = (function (name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+})("csrftoken");
+
 export async function get(url, cache = false) {
     const response = await fetch(API_BASE + url, {
         ...commonOpts,
@@ -31,6 +48,7 @@ export async function post(url, body) {
         body,
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
         },
     })
 
@@ -54,6 +72,7 @@ export async function patch(url, body) {
         body,
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
         },
     })
 
