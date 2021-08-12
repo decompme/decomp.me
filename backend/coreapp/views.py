@@ -58,7 +58,7 @@ def scratch(request, slug=None):
         })
 
     elif request.method == "POST":
-        data = request.data
+        data = request.data.copy()
 
         if slug:
             return Response({"error": "Not allowed to POST with slug"}, status=status.HTTP_400_BAD_REQUEST)
@@ -72,8 +72,8 @@ def scratch(request, slug=None):
         asm = get_db_asm(data["target_asm"])
         del data["target_asm"]
 
-        compiler = request.data["compiler"]
-        as_opts = request.data["as_opts"]
+        compiler = data["compiler"]
+        as_opts = data["as_opts"]
 
         assembly, err = CompilerWrapper.assemble_asm(compiler, as_opts, asm)
         if assembly:
@@ -83,7 +83,7 @@ def scratch(request, slug=None):
             logging.error(error_msg)
             return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
 
-        context = request.data.get("context", "")
+        context = data.get("context", "")
 
         m2c_stab = M2CWrapper.decompile(asm.data, context)
         data["source_code"] = m2c_stab if m2c_stab else "void func() {}\n"
