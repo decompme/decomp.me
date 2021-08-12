@@ -124,14 +124,14 @@ class CompilerWrapper:
     def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
         if compiler not in compilers:
             logger.error(f"Compiler {compiler} not found")
-            return "ERROR: Compiler not found"
-        
+            return (None, "ERROR: Compiler not found")
+
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
             cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit!")
-                return cached_assembly
+                return (cached_assembly, None)
 
         compiler_cfg = compilers[compiler]
 
@@ -160,7 +160,7 @@ class CompilerWrapper:
 
             # Assembly failed
             if assemble_proc.returncode != 0:
-                return None #f"ERROR: {assemble_proc.stderr}"
+                return (None, f"ERROR: {assemble_proc.stderr}")
 
             if not object_path.exists():
                 logger.error("Assembler did not create an object file")
@@ -179,4 +179,4 @@ class CompilerWrapper:
                 )
             assembly.save()
 
-            return assembly
+            return (assembly, None)
