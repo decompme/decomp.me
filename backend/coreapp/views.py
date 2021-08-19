@@ -134,12 +134,13 @@ def compile(request, slug):
     as_opts = request.data["as_opts"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
-    context = request.data["context"]
+    context = request.data.get("context", None)
 
     scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
     if not context:
+        logging.debug("No context provided, getting from backend")
         context = scratch.context
 
     compilation, errors = CompilerWrapper.compile_code(compiler, cpp_opts, as_opts, cc_opts, code, context)

@@ -145,7 +145,7 @@ export default function Scratch() {
                 <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
                     <resizer.Section minSize="4em" className={styles.sourceCode}>
                         <div class={styles.sectionHeader}>
-                            Sourcecode
+                            Source
                             <span class={styles.grow}></span>
                             <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
                                 <SyncIcon size={16} /> Compile

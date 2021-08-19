@@ -38,8 +38,8 @@ export default function Editor({ forceLoading, value, onChange, padding }) {
                     cursorBlinking: "phase",
                     matchBrackets: "near",
                     mouseWheelZoom: true,
-                    wordWrap: "on",
                     padding: padding ? { top: 30, bottom: 30 } : {},
+                    fontSize: 13
                 }}
                 value={value}
                 onChange={onChange}
