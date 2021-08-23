@@ -1,5 +1,4 @@
 {
     "arch": "mips",
-    "cc": "TOOLROOT=\"$COMPILER_DIR\" \"$COMPILER_DIR/usr/bin/cc\" -c $CC_OPTS -o \"$OUTPUT\" \"$INPUT\"",
-    "as" : "mips-linux-gnu-as $AS_OPTS -o \"$OUTPUT\" \"$INPUT\""
+    "cc": "TOOLROOT=\"$COMPILER_DIR\" \"$COMPILER_DIR/usr/bin/cc\" -c $CC_OPTS -o \"$OUTPUT\" \"$INPUT\""
 }

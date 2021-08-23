@@ -34,8 +34,15 @@ def load_compilers() -> dict:
 
     return ret
 
-compilers = load_compilers()
+def load_arches() -> dict:
+    ret = {}
 
+    ret["mips"] = "mips-linux-gnu-as $AS_OPTS -o \"$OUTPUT\" \"$INPUT\""
+
+    return ret
+
+compilers = load_compilers()
+arches = load_arches()
 
 def check_compilation_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
@@ -102,7 +109,7 @@ class CompilerWrapper:
 
             if to_regenerate:
                 compilation = to_regenerate
-                compilation.elf_object=elf_object
+                compilation.elf_object=object_path.read_bytes(),
             else:
                 # Store Compilation to db
                 compilation = Compilation(
@@ -121,37 +128,35 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(compiler:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
-        if compiler not in compilers:
-            logger.error(f"Compiler {compiler} not found")
-            return (None, "ERROR: Compiler not found")
+    def assemble_asm(arch:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
+        if arch not in arches:
+            logger.error(f"Arch {arch} not found")
+            return (None, "ERROR: arch not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
-            cached_assembly, hash = check_assembly_cache(compiler, as_opts, asm)
+            cached_assembly, hash = check_assembly_cache(arch, as_opts, asm)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit!")
                 return (cached_assembly, None)
 
-        compiler_cfg = compilers[compiler]
+        arch_cfg = arches[arch]
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
             asm_path.write_text(ASM_MACROS + asm.data)
 
             object_path = sandbox.path / "object.o"
-            compiler_path = Path(CompilerWrapper.base_path() / compiler)
 
             # Run assembler
             try:
                 assemble_proc = sandbox.run_subprocess(
-                    compiler_cfg["as"],
-                    mounts=[compiler_path],
+                    arch_cfg,
+                    mounts=[],
                     shell=True,
                     env={
                     "INPUT": sandbox.rewrite_path(asm_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
-                    "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
                     "AS_OPTS": sandbox.quote_options(as_opts),
                 })
             except subprocess.CalledProcessError as e:
@@ -168,11 +173,11 @@ class CompilerWrapper:
 
             if to_regenerate:
                 assembly = to_regenerate
-                assembly.elf_object = elf_object
+                assembly.elf_object = object_path.read_bytes()
             else:
                 assembly = Assembly(
                     hash=hash,
-                    compiler=compiler,
+                    arch=arch,
                     as_opts=as_opts,
                     source_asm=asm,
                     elf_object=object_path.read_bytes(),

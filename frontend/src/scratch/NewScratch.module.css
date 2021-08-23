@@ -30,7 +30,7 @@
 
 .description {
     padding: var(--s2);
-    padding-top: 0;
+    padding-top: var(--s-2);
 }
 
 .targetasm {

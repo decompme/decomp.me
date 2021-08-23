@@ -1,15 +1,6 @@
 from django.utils.crypto import get_random_string
 
-from django.conf import settings
 from django.db import models
-
-# TODO: These are only kept around for the migrations that depend on them
-# They can be removed once the migrations are squashed
-def asm_objects_path():
-    return settings.LOCAL_FILE_DIR / "assemblies"
-
-def compilation_objects_path():
-    return settings.LOCAL_FILE_DIR / "compilations"
 
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
@@ -32,7 +23,7 @@ class Asm(models.Model):
 class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
-    compiler = models.CharField(max_length=100)
+    arch = models.CharField(max_length=100)
     as_opts = models.TextField(max_length=1000, blank=True, null=True)
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
     elf_object = models.BinaryField(blank=True)
@@ -53,7 +44,7 @@ class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100)
+    compiler = models.CharField(max_length=100, blank=True)
     cpp_opts = models.TextField(max_length=1000, blank=True, null=True)
     as_opts = models.TextField(max_length=1000, blank=True, null=True)
     cc_opts = models.TextField(max_length=1000, blank=True, null=True)

@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import Editor from "./Editor"
-import CompilerButton from "../compiler/CompilerButton"
+import ArchButton from "../compiler/ArchButton"
 import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
@@ -13,7 +13,7 @@ export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState()
     const [asm, setAsm] = useLocalStorage("NewScratch.asm")
     const [context, setContext] = useLocalStorage("NewScratch.context")
-    const [compiler, setCompiler] = useLocalStorage("NewScratch.compiler")
+    const [arch, setArch] = useLocalStorage("NewScratch.arch")
     const history = useHistory()
 
     // TODO: loading state
@@ -21,11 +21,17 @@ export default function NewScratch() {
     const submit = async () => {
         setErrorMsg("")
         
+        // .set noreorder flag
+        let submit_asm = asm
+        if (arch["arch_opts"][".set noreorder"] === true) {
+            submit_asm = ".set noreorder\n" + submit_asm
+        }
+        
         try {
             const { slug } = await api.post("/scratch", {
-                target_asm: asm,
+                target_asm: submit_asm,
                 context: context,
-                ...compiler,
+                ...arch,
             })
 
             setErrorMsg("")
@@ -60,8 +66,8 @@ export default function NewScratch() {
                 <p class={`red ${styles.errormsg}`}>
                     {errorMsg}
                 </p>
-                <CompilerButton value={compiler} onChange={setCompiler} />
-                <button disabled={!asm && compiler !== null} onClick={submit}>Create scratch</button>
+                <ArchButton value={arch} onChange={setArch} />
+                <button disabled={!asm && arch !== null} onClick={submit}>Create scratch</button>
             </div>
         </div>
     </div>
