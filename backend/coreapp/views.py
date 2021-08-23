@@ -73,7 +73,7 @@ def scratch(request, slug=None):
         del data["target_asm"]
 
         arch = data["arch"]
-        as_opts = data["as_opts"]
+        as_opts = data.get("as_opts", "")
 
         assembly, err = CompilerWrapper.assemble_asm(arch, as_opts, asm)
         if assembly:
