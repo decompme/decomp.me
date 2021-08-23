@@ -72,10 +72,10 @@ def scratch(request, slug=None):
         asm = get_db_asm(data["target_asm"])
         del data["target_asm"]
 
-        compiler = data["compiler"]
-        as_opts = data["as_opts"]
+        arch = data["arch"]
+        as_opts = data.get("as_opts", "")
 
-        assembly, err = CompilerWrapper.assemble_asm(compiler, as_opts, asm)
+        assembly, err = CompilerWrapper.assemble_asm(arch, as_opts, asm)
         if assembly:
             data["target_assembly"] = assembly.pk
         else:
@@ -85,8 +85,12 @@ def scratch(request, slug=None):
 
         context = data.get("context", "")
 
-        m2c_stab = M2CWrapper.decompile(asm.data, context)
-        data["source_code"] = m2c_stab if m2c_stab else "void func() {}\n"
+        initial_stab = "void func() {}\n"
+        if arch == "mips":
+            initial_stab = M2CWrapper.decompile(asm.data, context)
+
+        data["source_code"] = initial_stab
+        data["compiler"] = ""
 
         serializer = ScratchSerializer(data=data)
         if serializer.is_valid():

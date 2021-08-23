@@ -3,7 +3,6 @@ import subprocess
 from coreapp.models import Assembly, Compilation
 from coreapp.sandbox import Sandbox
 import logging
-from tempfile import NamedTemporaryFile
 
 from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
 
@@ -60,15 +59,16 @@ class AsmDifferWrapper:
 
     def diff(target_assembly: Assembly, compilation: Compilation):
         compiler = compiler_wrapper.compilers[compilation.compiler]
+        compiler_arch = compiler["arch"]
 
-        if compiler["arch"] == "mips":
+        if compiler_arch == "mips":
             arch = MIPS_SETTINGS
-        elif compiler["arch"] == "aarch64":
+        elif compiler_arch == "aarch64":
             arch = AARCH64_SETTINGS
-        elif compiler["arch"] == "ppc":
+        elif compiler_arch == "ppc":
             arch = PPC_SETTINGS
         else:
-            logger.error("Unsupported arch: " + compiler["arch"] + ". Continuing assuming mips")
+            logger.error("Unsupported arch: " + compiler_arch + ". Continuing assuming mips")
             arch = MIPS_SETTINGS
             
         config = AsmDifferWrapper.create_config(arch)
@@ -76,7 +76,7 @@ class AsmDifferWrapper:
         # Base
         if len(target_assembly.elf_object) == 0:
             logger.info("Base asm empty - attempting to regenerate")
-            compiler_wrapper.CompilerWrapper.assemble_asm(compilation.compiler, compilation.as_opts, target_assembly.source_asm, target_assembly)
+            compiler_wrapper.CompilerWrapper.assemble_asm(compiler_arch, compilation.as_opts, target_assembly.source_asm, target_assembly)
             if len(target_assembly.elf_object) == 0:
                 logger.error("Regeneration of base-asm failed")
                 return "Error: Base asm empty"

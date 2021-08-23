@@ -1,5 +1,4 @@
 {
     "arch": "mips",
-    "cc": "cpp $CPP_OPTS -ffreestanding \"$INPUT\" | \"${COMPILER_DIR}/cc1\" -quiet $CC_OPTS -o - | \"${COMPILER_DIR}/mips-nintendo-nu64-as\" $AS_OPTS - -o \"$OUTPUT\"",
-    "as" : "\"${COMPILER_DIR}/mips-nintendo-nu64-as\" $AS_OPTS \"$INPUT\" -o \"$OUTPUT\""
+    "cc": "\"${COMPILER_DIR}\"/gcc -c -B \"${COMPILER_DIR}\"/ $CC_OPTS \"$INPUT\" -o \"$OUTPUT\""
 }
