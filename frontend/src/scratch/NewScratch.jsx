@@ -10,6 +10,7 @@ import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
 
 export default function NewScratch() {
+    const [awaitingResponse, setAwaitingResponse] = useState(false)
     const [errorMsg, setErrorMsg] = useState()
     const [asm, setAsm] = useLocalStorage("NewScratch.asm")
     const [context, setContext] = useLocalStorage("NewScratch.context")
@@ -20,6 +21,11 @@ export default function NewScratch() {
 
     const submit = async () => {
         setErrorMsg("")
+
+        if (awaitingResponse) {
+            console.warn("create scratch action already in progress")
+            return
+        }
         
         // .set noreorder flag
         let submit_asm = asm
@@ -28,6 +34,7 @@ export default function NewScratch() {
         }
         
         try {
+            setAwaitingResponse(true)
             const { slug } = await api.post("/scratch", {
                 target_asm: submit_asm,
                 context: context,
@@ -41,6 +48,8 @@ export default function NewScratch() {
         } catch (error) {
             console.error(error)
             setErrorMsg(error.toString())
+        } finally {
+            setAwaitingResponse(false)
         }
     }
 
@@ -67,7 +76,7 @@ export default function NewScratch() {
                     {errorMsg}
                 </p>
                 <ArchButton value={arch} onChange={setArch} />
-                <button disabled={!asm && arch !== null} onClick={submit}>Create scratch</button>
+                <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
             </div>
         </div>
     </div>
