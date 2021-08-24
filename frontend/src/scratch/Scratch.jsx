@@ -99,8 +99,6 @@ export default function Scratch() {
         setCompiler({
             compiler: scratch.compiler,
             cc_opts: scratch.cc_opts,
-            as_opts: scratch.as_opts,
-            cpp_opts: scratch.cpp_opts,
         })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
@@ -137,7 +135,7 @@ export default function Scratch() {
         }
     }
 
-    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts, compiler.as_opts, compiler.cpp_opts] : [])
+    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts] : [])
 
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>

@@ -47,15 +47,13 @@ export function FlagOption({ flag, description }) {
         value={flag}
         selected={checkFlag(flag)}
     >
-        {flag} ({description})
+        {flag} {description && `(${description})`}
     </option>
 }
 
 export default function CompilerOpts({ value, onChange }) {
     const [compiler, setCompiler] = useState((value && value.compiler) || Object.keys(compilers)[0])
     let [ccOpts, setCcOpts] = useState((value && value.cc_opts) || "")
-    let [asOpts, setAsOpts] = useState((value && value.as_opts) || "")
-    let [cppOpts, setCppOpts] = useState((value && value.cpp_opts) || "")
 
     const compilerComp = compilers[compiler]
 
@@ -63,10 +61,13 @@ export default function CompilerOpts({ value, onChange }) {
         onChange({
             compiler: compiler,
             cc_opts: ccOpts,
-            as_opts: asOpts,
-            cpp_opts: cppOpts,
         })
-    }, [compiler, ccOpts, asOpts, cppOpts])
+    }, [compiler, ccOpts])
+
+    // If the compiler has changed, reset the cc_opts to the default
+    // useEffect(() => {
+    //     setCcOpts(compilers[compiler].defaultOpts)
+    // }, [compiler])
 
     function checkFlag(flag) {
         return ccOpts.split(" ").includes(flag)

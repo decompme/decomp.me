@@ -57,7 +57,7 @@ class CompilerWrapper:
         return settings.COMPILER_BASE_PATH
 
     @staticmethod
-    def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
+    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
         if compiler not in compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
@@ -65,7 +65,7 @@ class CompilerWrapper:
         compiler_cfg = compilers[compiler]
 
         if not to_regenerate:
-            cached_compilation, hash = check_compilation_cache(compiler, cpp_opts, as_opts, cc_opts, code, context)
+            cached_compilation, hash = check_compilation_cache(compiler, cc_opts, code, context)
             if cached_compilation:
                 logger.debug(f"Compilation cache hit!")
                 return (cached_compilation, cached_compilation.stderr)
@@ -95,9 +95,7 @@ class CompilerWrapper:
                     "INPUT": sandbox.rewrite_path(code_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
-                    "CPP_OPTS": sandbox.quote_options(cpp_opts),
                     "CC_OPTS": sandbox.quote_options(cc_opts),
-                    "AS_OPTS": sandbox.quote_options(as_opts),
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
@@ -115,8 +113,6 @@ class CompilerWrapper:
                 compilation = Compilation(
                     hash=hash,
                     compiler=compiler,
-                    cpp_opts=cpp_opts,
-                    as_opts=as_opts,
                     cc_opts=cc_opts,
                     source_code=code,
                     context=context,
