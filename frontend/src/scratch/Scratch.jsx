@@ -25,12 +25,13 @@ export default function Scratch() {
     const [diff, setDiff] = useState(null)
     const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
+    const [savedCompiler, setSavedCompiler] = useState(compiler)
     const [savedCCode, setSavedCCode] = useState(cCode)
     const [savedCContext, setSavedCContext] = useState(cContext)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
 
-    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext
+    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
@@ -75,6 +76,7 @@ export default function Scratch() {
             error: 'Error saving scratch',
         })
 
+        setSavedCompiler(compiler)
         setSavedCCode(cCode)
         setSavedCContext(cContext)
     }
