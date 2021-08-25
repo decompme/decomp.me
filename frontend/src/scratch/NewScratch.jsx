@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import Editor from "./Editor"
-import ArchButton from "../compiler/ArchButton"
+import Select from "../Select"
 import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
@@ -31,7 +31,7 @@ export default function NewScratch() {
             setAwaitingResponse(true)
             const { slug } = await api.post("/scratch", {
                 target_asm: asm,
-                context: context,
+                context: context || "",
                 ...arch,
             })
 
@@ -69,7 +69,11 @@ export default function NewScratch() {
                 <p class={`red ${styles.errormsg}`}>
                     {errorMsg}
                 </p>
-                <ArchButton value={arch} onChange={setArch} />
+
+                <p>Arch:</p>
+                <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                    <option value="mips">mips</option>
+                </Select>
                 <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
             </div>
         </div>

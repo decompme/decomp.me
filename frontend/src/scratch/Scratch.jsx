@@ -38,6 +38,11 @@ export default function Scratch() {
             return
         }
 
+        if (compiler.compiler === "") {
+            setDiff("Please choose a compiler")
+            return
+        }
+
         if (currentRequest === "compile") {
             console.warn("compile action already in progress")
             return
@@ -104,6 +109,13 @@ export default function Scratch() {
         })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
+
+        setSavedCompiler({
+            compiler: scratch.compiler,
+            cc_opts: scratch.cc_opts,
+        })
+        setSavedCCode(scratch.source_code)
+        setSavedCContext(scratch.context)
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })

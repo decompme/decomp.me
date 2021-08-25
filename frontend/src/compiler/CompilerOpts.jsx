@@ -1,4 +1,4 @@
-import { h, createContext } from "preact"
+import { h, createContext, options } from "preact"
 import { useState, useContext, useEffect } from "preact/hooks"
 import { useLocalStorage } from "../hooks"
 
@@ -64,11 +64,6 @@ export default function CompilerOpts({ value, onChange }) {
         })
     }, [compiler, ccOpts])
 
-    // If the compiler has changed, reset the cc_opts to the default
-    // useEffect(() => {
-    //     setCcOpts(compilers[compiler].defaultOpts)
-    // }, [compiler])
-
     function checkFlag(flag) {
         return ccOpts.split(" ").includes(flag)
     }
@@ -105,6 +100,18 @@ export default function CompilerOpts({ value, onChange }) {
                     placeholder="no arguments"
                     onChange={e => setCcOpts(e.target.value)}
                 />
+            </div>
+
+            <div class={styles.flagSetName}>Presets</div>
+            <div class={styles.row}>
+                <Select class={styles.compilerSelect} onChange={e => setCcOpts(e.target.value)}>
+                    <option value="">-</option>
+                    {Object.keys(compilerComp.presets).map(key => <option
+                        value={compilerComp.presets[key]}
+                    >
+                        {key}
+                    </option>)}
+                </Select>
             </div>
 
             <div class={styles.flags}>

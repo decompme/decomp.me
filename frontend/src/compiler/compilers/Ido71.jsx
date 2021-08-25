@@ -3,7 +3,9 @@ import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
 export const name = "IDO 7.1"
 export const id = "ido7.1"
-export const defaultOpts = "-O2 -mips2"
+export const presets = {
+    "OOT (main)": "-O2 -mips2",
+}
 
 export function Flags() {
     return <>

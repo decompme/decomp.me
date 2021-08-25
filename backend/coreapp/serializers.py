@@ -7,7 +7,7 @@ class ScratchCreateSerializer(serializers.Serializer):
     source_code = serializers.CharField(required=False)
     arch = serializers.CharField(required=False)
     target_asm = serializers.CharField()
-    context = serializers.CharField()
+    context = serializers.CharField(allow_blank=True)
 
 
 class ScratchSerializer(serializers.ModelSerializer):
