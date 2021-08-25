@@ -176,6 +176,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cCode}
+                            valueVersion={slug}
                             forceLoading={cCode === null}
                             onChange={value => {
                                 setCCode(value)
@@ -197,6 +198,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cContext}
+                            valueVersion={slug}
                             forceLoading={cContext === null}
                             onChange={value => {
                                 setCContext(value)

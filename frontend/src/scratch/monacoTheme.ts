@@ -1,4 +1,4 @@
-{
+export default {
     "base": "vs-dark",
     "inherit": false,
     "rules": [

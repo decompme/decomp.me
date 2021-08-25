@@ -14,10 +14,8 @@ export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState()
     const [asm, setAsm] = useLocalStorage("NewScratch.asm")
     const [context, setContext] = useLocalStorage("NewScratch.context")
-    const [arch, setArch] = useLocalStorage("NewScratch.arch")
+    const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
     const history = useHistory()
-
-    // TODO: loading state
 
     const submit = async () => {
         setErrorMsg("")
@@ -55,14 +53,14 @@ export default function NewScratch() {
             </p>
 
             <div class={styles.targetasm}>
-                <Editor language="asm" value={asm} onChange={setAsm} />
+                <Editor language="asm" initialValue={asm} onChange={setAsm} />
             </div>
             
             <p class={styles.description}>
                 Include any C context (structs, definitions, etc) below:
             </p>
             <div class={styles.targetasm}>
-                <Editor language="c" value={context} onChange={setContext} />
+                <Editor language="c" initialValue={context} onChange={setContext} />
             </div>
 
             <div class={styles.actions}>
@@ -70,10 +68,9 @@ export default function NewScratch() {
                     {errorMsg}
                 </p>
 
-                <p>Arch:</p>
-                <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                {/*<Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
                     <option value="mips">mips</option>
-                </Select>
+                </Select>*/}
                 <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
             </div>
         </div>
