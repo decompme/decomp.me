@@ -40,8 +40,10 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
     })
 
     useEffect(() => {
-        model.setValue(value)
-    }, [valueVersion])
+        if (model) {
+            model.setValue(value)
+        }
+    }, [valueVersion, model])
 
     return <>
         <div ref={containerRef} style={{ display: (isLoading || forceLoading) ? 'none' : 'block' }} class={styles.monacoContainer} />
