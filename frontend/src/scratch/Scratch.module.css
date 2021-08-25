@@ -55,8 +55,6 @@
 .diff :global(.rotation-8) { color: grey }
 
 .sectionHeader {
-    flex: 0;
-
     font-size: 1rem;
     font-weight: 600;
 
