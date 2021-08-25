@@ -41,7 +41,7 @@ def load_compilers() -> dict:
 def load_arches() -> dict:
     ret = {}
 
-    ret["mips"] = "mips-linux-gnu-as $AS_OPTS -o \"$OUTPUT\" \"$INPUT\""
+    ret["mips"] = "mips-linux-gnu-as -march=vr4300 -mabi=32 -o \"$OUTPUT\" \"$INPUT\""
 
     return ret
 
