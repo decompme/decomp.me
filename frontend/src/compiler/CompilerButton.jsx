@@ -38,7 +38,7 @@ export default function CompilerButton({ value, onChange }) {
                     {...layerProps}
                 >
                     <CompilerOpts value={value} onChange={onChange} />
-                    <Arrow size={12} backgroundColor="#22272d" {...arrowProps} />
+                    <Arrow size={12} backgroundColor="#292e35" {...arrowProps} />
                 </motion.div>}
             </AnimatePresence>
         )}

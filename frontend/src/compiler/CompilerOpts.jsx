@@ -1,10 +1,10 @@
-import { h, createContext, options } from "preact"
+import { h, createContext } from "preact"
 import { useState, useContext, useEffect } from "preact/hooks"
-import { useLocalStorage } from "../hooks"
 
 import Select from "../Select"
 
 import compilers from "./compilers"
+import PresetSelect, { presets } from "./PresetSelect"
 import styles from "./CompilerOpts.module.css"
 
 const OptsContext = createContext()
@@ -52,71 +52,69 @@ export function FlagOption({ flag, description }) {
 }
 
 export default function CompilerOpts({ value, onChange }) {
-    const [compiler, setCompiler] = useState((value && value.compiler) || Object.keys(compilers)[0])
-    let [ccOpts, setCcOpts] = useState((value && value.cc_opts) || "")
-
-    const compilerComp = compilers[compiler]
+    const [compiler, setCompiler] = useState((value && value.compiler) || presets[0].compiler)
+    let [opts, setOpts] = useState((value && value.cc_opts) || presets[0].opts)
 
     useEffect(() => {
         onChange({
             compiler: compiler,
-            cc_opts: ccOpts,
+            cc_opts: opts,
         })
-    }, [compiler, ccOpts])
+    }, [compiler, opts])
 
-    function checkFlag(flag) {
-        return ccOpts.split(" ").includes(flag)
-    }
-
-    function setFlag(flag, enable) {
-        let split = ccOpts.split(" ")
-
-        if (enable) {
-            split.push(flag)
-        } else {
-            split = split.filter(f => f !== flag)
-        }
-
-        ccOpts = split.join(" ").trim()
-        setCcOpts(ccOpts)
-    }
-
-    return <OptsContext.Provider value={{ checkFlag, setFlag }}>
+    return <OptsContext.Provider value={{
+        checkFlag(flag) {
+            return opts.split(" ").includes(flag)
+        },
+    
+        setFlag(flag, enable) {
+            let split = opts.split(" ")
+    
+            if (enable) {
+                split.push(flag)
+            } else {
+                split = split.filter(f => f !== flag)
+            }
+    
+            opts = split.join(" ").trim()
+            setOpts(opts)
+        },
+    }}>
+        <div class={styles.header}>
+            Compiler Options
+            <PresetSelect compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+        </div>
         <div class={styles.container}>
-            <div class={styles.row}>
-                <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
-                    {Object.values(compilers).map(c => <option
-                        value={c.id}
-                        selected={c.name === compilerComp.name}
-                    >
-                        {c.name}
-                    </option>)}
-                </Select>
-
-                <input
-                    type="text"
-                    class={styles.textbox}
-                    value={ccOpts}
-                    placeholder="no arguments"
-                    onChange={e => setCcOpts(e.target.value)}
-                />
-            </div>
-
-            <div class={styles.flagSetName}>Presets</div>
-            <div class={styles.row}>
-                <Select class={styles.compilerSelect} onChange={e => setCcOpts(e.target.value)}>
-                    <option value="">-</option>
-                    {Object.keys(compilerComp.presets).map(key => <option
-                        value={compilerComp.presets[key]}
-                    >
-                        {key}
-                    </option>)}
-                </Select>
-            </div>
-
-            <div class={styles.flags}>
-                {compilerComp ? <compilerComp.Flags /> : <Skeleton />}
-            </div>
+            <OptsEditor compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
     </OptsContext.Provider>
+}
+
+function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
+    const compilerComp = compilers[compiler]
+
+    return <div>
+        <div class={styles.row}>
+            <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
+                {Object.values(compilers).map(c => <option
+                    value={c.id}
+                    selected={c.name === compilerComp.name}
+                >
+                    {c.name}
+                </option>)}
+            </Select>
+
+            <input
+                type="text"
+                class={styles.textbox}
+                value={opts}
+                placeholder="no arguments"
+                onChange={e => setOpts(e.target.value)}
+            />
+        </div>
+
+        <div class={styles.flags}>
+            {compiler ? <compilerComp.Flags /> : <Skeleton />}
+        </div>
+    </div>
 }
