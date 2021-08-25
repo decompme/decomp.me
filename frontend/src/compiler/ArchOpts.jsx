@@ -23,7 +23,7 @@ export function MiscCheckbox({ flag, description }) {
 export default function ArchOpts({ value, onChange }) {
     const [arch, setArch] = useState((value && value.arch) || Object.keys(arches)[0])
     const [asOpts, setAsOpts] = useState((value && value.asOpts) || "")
-    let [archOpts, setArchOpts] = useState((value && value.misc_opts) || { ".set noreorder": true })
+    let [archOpts, setArchOpts] = useState((value && value.misc_opts) || {})
 
     const archComp = arches[arch]
 
