@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -35,6 +35,7 @@ def load_compilers() -> dict:
 
     return ret
 
+
 def load_arches() -> dict:
     ret = {}
 
@@ -42,16 +43,20 @@ def load_arches() -> dict:
 
     return ret
 
-compilers = load_compilers()
-arches = load_arches()
 
-def check_compilation_cache(*args) -> Optional[Compilation]:
+_compilers = load_compilers()
+_arches = load_arches()
+
+
+def _check_compilation_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
     return Compilation.objects.filter(hash=hash).first(), hash
 
-def check_assembly_cache(*args) -> Optional[Compilation]:
+
+def _check_assembly_cache(*args) -> Optional[Compilation]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
+
 
 class CompilerWrapper:
     def base_path():
@@ -59,40 +64,63 @@ class CompilerWrapper:
 
     @staticmethod
     def arch_from_compiler(compiler: str) -> Optional[str]:
-        cfg = compilers.get(compiler)
+        cfg = _compilers.get(compiler)
         return cfg["arch"] if cfg else None
 
-    def cc_opts_from_command(compiler: str, compile_command: str) -> str:
-        cfg = compilers[compiler]
+    @staticmethod
+    def available_compilers() -> List[str]:
+        return sorted(_compilers.keys())
+
+    @staticmethod
+    def filter_cc_opts(compiler: str, cc_opts: str) -> str:
+        cfg = _compilers[compiler]
+        # Remove irrelevant flags that are part of the base compiler configs or
+        # don't affect matching, but clutter the compiler settings field.
         # TODO: use cfg for this?
-        interesting_flags = {
-            "-O",
-            "-O1",
-            "-O2",
-            "-O3",
-            "-g",
-            "-g1",
-            "-g2",
-            "-g3",
-            "-mips1",
-            "-mips2",
-            "-mips3",
-            "-fforce-addr",
+        skip_flags_with_args = {
+            "-woff",
+            "-B",
+            "-I",
+            "-D",
+            "-U",
+            "-G",
         }
-        return " ".join(
-            flag for flag in compile_command.split() if flag in interesting_flags
-        )
+        skip_flags = {
+            "-ffreestanding",
+            "-non_shared",
+            "-Xcpluscomm",
+            "-Xfullwarn",
+            "-fullwarn",
+            "-Wab,-r4300_mul",
+            "-c",
+            "-w",
+        }
+        skip_next = False
+        flags = []
+        for flag in cc_opts.split():
+            if skip_next:
+                skip_next = False
+                continue
+            if flag in skip_flags:
+                continue
+            if flag in skip_flags_with_args:
+                skip_next = True
+                continue
+            if any(flag.startswith(f) for f in skip_flags_with_args):
+                continue
+            flags.append(flag)
+        return " ".join(flags)
 
     @staticmethod
     def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
-        if compiler not in compilers:
+        if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
 
-        compiler_cfg = compilers[compiler]
+        compiler_cfg = _compilers[compiler]
 
         if not to_regenerate:
-            cached_compilation, hash = check_compilation_cache(compiler, cc_opts, code, context)
+            cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
             if cached_compilation:
                 logger.debug(f"Compilation cache hit!")
                 return (cached_compilation, cached_compilation.stderr)
@@ -152,18 +180,18 @@ class CompilerWrapper:
 
     @staticmethod
     def assemble_asm(arch: str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Tuple[Optional[Assembly], Optional[str]]:
-        if arch not in arches:
+        if arch not in _arches:
             logger.error(f"Arch {arch} not found")
             return (None, "arch not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
-            cached_assembly, hash = check_assembly_cache(arch, as_opts, asm)
+            cached_assembly, hash = _check_assembly_cache(arch, as_opts, asm)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit!")
                 return (cached_assembly, None)
 
-        arch_cfg = arches[arch]
+        arch_cfg = _arches[arch]
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"

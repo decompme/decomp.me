@@ -10,7 +10,7 @@ export const presets = [
     },
     {
         name: "OOT",
-        compiler: "ido5.3",
+        compiler: "ido7.1",
         opts: "-O2 -mips2",
     },
 ]
