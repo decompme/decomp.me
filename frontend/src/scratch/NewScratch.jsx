@@ -53,14 +53,14 @@ export default function NewScratch() {
             </p>
 
             <div class={styles.targetasm}>
-                <Editor language="asm" initialValue={asm} onChange={setAsm} />
+                <Editor language="asm" value={asm} onChange={setAsm} />
             </div>
             
             <p class={styles.description}>
                 Include any C context (structs, definitions, etc) below:
             </p>
             <div class={styles.targetasm}>
-                <Editor language="c" initialValue={context} onChange={setContext} />
+                <Editor language="c" value={context} onChange={setContext} />
             </div>
 
             <div class={styles.actions}>
