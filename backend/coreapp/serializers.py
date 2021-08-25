@@ -1,6 +1,15 @@
 from coreapp.models import Scratch
 from rest_framework import serializers
 
+class ScratchCreateSerializer(serializers.Serializer):
+    compiler = serializers.CharField(required=False)
+    compile_command = serializers.CharField(required=False)
+    source_code = serializers.CharField(required=False)
+    arch = serializers.CharField(required=False)
+    target_asm = serializers.CharField()
+    context = serializers.CharField()
+
+
 class ScratchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scratch

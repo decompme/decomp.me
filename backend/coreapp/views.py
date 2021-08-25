@@ -1,7 +1,7 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -13,18 +13,14 @@ import hashlib
 from .models import Profile, Asm, Scratch
 from coreapp.models import gen_scratch_id
 
+
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
+    asm, _ = Asm.objects.get_or_create(hash=h, defaults={
+        "data": request_asm,
+    })
+    return asm
 
-    db_asm = Asm.objects.filter(hash=h)
-
-    if not db_asm:
-        ret = Asm(hash=h, data=request_asm)
-        ret.save()
-    else:
-        ret = db_asm.first()
-
-    return ret
 
 @api_view(["GET", "POST", "PATCH"])
 def scratch(request, slug=None):
@@ -58,45 +54,60 @@ def scratch(request, slug=None):
         })
 
     elif request.method == "POST":
-        data = request.data.copy()
-
         if slug:
             return Response({"error": "Not allowed to POST with slug"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if "target_asm" not in data:
-            return Response({"error": "Missing target_asm"}, status=status.HTTP_400_BAD_REQUEST)
+        ser = ScratchCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
 
-        # TODO remove this - should be done automatically but not sure if the serializer requires it
-        data["slug"] = gen_scratch_id()
+        arch = data.get("arch")
+        compiler = data.get("compiler", "")
+        if compiler:
+            arch = CompilerWrapper.arch_from_compiler(compiler)
+            if not arch:
+                raise serializers.ValidationError("Unknown compiler")
+        elif not arch:
+            raise serializers.ValidationError("arch not provided")
 
-        asm = get_db_asm(data["target_asm"])
-        del data["target_asm"]
+        target_asm = data["target_asm"]
+        context = data["context"]
 
-        arch = data["arch"]
-        as_opts = data.get("as_opts", "")
+        asm = get_db_asm(target_asm)
 
+        as_opts = ""
         assembly, err = CompilerWrapper.assemble_asm(arch, as_opts, asm)
-        if assembly:
-            data["target_assembly"] = assembly.pk
-        else:
-            error_msg = "Error when assembling target asm: %r" % err
+        if not assembly:
+            error_msg = f"Error when assembling target asm: {err}"
             logging.error(error_msg)
             return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
 
-        context = data.get("context", "")
+        source_code = data.get("source_code")
+        if not source_code:
+            source_code = "void func() {}\n"
+            if arch == "mips":
+                source_code = M2CWrapper.decompile(asm.data, context) or source_code
 
-        initial_stab = "void func() {}\n"
-        if arch == "mips":
-            initial_stab = M2CWrapper.decompile(asm.data, context)
+        cc_opts = ""
+        compile_command = data.get("compile_command")
+        if compiler and compile_command:
+            cc_opts = CompilerWrapper.cc_opts_from_command(compiler, compile_command)
 
-        data["source_code"] = initial_stab
-        data["compiler"] = ""
+        scratch_data = {
+            "slug": gen_scratch_id(),
+            "arch": arch,
+            "compiler": compiler,
+            "cc_opts": cc_opts,
+            "as_opts": as_opts,
+            "context": context,
+            "source_code": source_code,
+            "target_assembly": assembly.pk,
+        }
 
-        serializer = ScratchSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ScratchSerializer(data=scratch_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     elif request.method == "PATCH":
         if not slug:

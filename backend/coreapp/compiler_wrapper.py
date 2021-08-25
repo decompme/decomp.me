@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -59,6 +59,32 @@ def check_assembly_cache(*args) -> Optional[Compilation]:
 class CompilerWrapper:
     def base_path():
         return settings.COMPILER_BASE_PATH
+
+    @staticmethod
+    def arch_from_compiler(compiler: str) -> Optional[str]:
+        cfg = compilers.get(compiler)
+        return cfg["arch"] if cfg else None
+
+    def cc_opts_from_command(compiler: str, compile_command: str) -> str:
+        cfg = compilers[compiler]
+        # TODO: use cfg for this?
+        interesting_flags = {
+            "-O",
+            "-O1",
+            "-O2",
+            "-O3",
+            "-g",
+            "-g1",
+            "-g2",
+            "-g3",
+            "-mips1",
+            "-mips2",
+            "-mips3",
+            "-fforce-addr",
+        }
+        return " ".join(
+            flag for flag in compile_command.split() if flag in interesting_flags
+        )
 
     @staticmethod
     def compile_code(compiler: str, cpp_opts: str, as_opts: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
@@ -132,10 +158,10 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(arch:str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Assembly:
+    def assemble_asm(arch: str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Tuple[Optional[Assembly], Optional[str]]:
         if arch not in arches:
             logger.error(f"Arch {arch} not found")
-            return (None, "ERROR: arch not found")
+            return (None, "arch not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
@@ -169,11 +195,11 @@ class CompilerWrapper:
 
             # Assembly failed
             if assemble_proc.returncode != 0:
-                return (None, f"ERROR: {assemble_proc.stderr}")
+                return (None, assemble_proc.stderr)
 
             if not object_path.exists():
                 logger.error("Assembler did not create an object file")
-                return (None, "ERROR: Assembler did not create an object file")
+                return (None, "Assembler did not create an object file")
 
             if to_regenerate:
                 assembly = to_regenerate
