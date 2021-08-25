@@ -30,7 +30,7 @@ export default function NewScratch() {
             const { slug } = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
-                ...arch,
+                arch,
             })
 
             setErrorMsg("")
