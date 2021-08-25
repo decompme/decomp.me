@@ -22,6 +22,13 @@ def get_db_asm(request_asm) -> Asm:
     return asm
 
 
+@api_view(["GET"])
+def compilers(request):
+    return Response({
+        "compiler_ids": CompilerWrapper.available_compilers(),
+    })
+
+
 @api_view(["GET", "POST", "PATCH"])
 def scratch(request, slug=None):
     """
@@ -88,10 +95,9 @@ def scratch(request, slug=None):
             if arch == "mips":
                 source_code = M2CWrapper.decompile(asm.data, context) or source_code
 
-        cc_opts = ""
-        compile_command = data.get("compile_command")
-        if compiler and compile_command:
-            cc_opts = CompilerWrapper.cc_opts_from_command(compiler, compile_command)
+        cc_opts = data.get("compiler_flags", "")
+        if compiler and cc_opts:
+            cc_opts = CompilerWrapper.filter_cc_opts(compiler, cc_opts)
 
         scratch_data = {
             "slug": gen_scratch_id(),

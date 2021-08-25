@@ -2,12 +2,12 @@ from coreapp.models import Scratch
 from rest_framework import serializers
 
 class ScratchCreateSerializer(serializers.Serializer):
-    compiler = serializers.CharField(required=False)
-    compile_command = serializers.CharField(required=False)
-    source_code = serializers.CharField(required=False)
-    arch = serializers.CharField(required=False)
-    target_asm = serializers.CharField()
-    context = serializers.CharField()
+    compiler = serializers.CharField(allow_blank=True, required=False)
+    compiler_flags = serializers.CharField(allow_blank=True, required=False)
+    source_code = serializers.CharField(allow_blank=True, required=False)
+    arch = serializers.CharField(allow_blank=True, required=False)
+    target_asm = serializers.CharField(allow_blank=True)
+    context = serializers.CharField(allow_blank=True)
 
 
 class ScratchSerializer(serializers.ModelSerializer):
