@@ -34,6 +34,8 @@ COPY requirements.txt /backend/requirements.txt
 
 RUN python3 -m pip install -r /backend/requirements.txt --no-cache-dir
 
+RUN bash /backend/compilers/download.sh
+
 COPY --from=nsjail /bin/nsjail /bin/nsjail
 
 WORKDIR /backend
