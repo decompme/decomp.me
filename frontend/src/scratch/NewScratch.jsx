@@ -27,16 +27,10 @@ export default function NewScratch() {
             return
         }
         
-        // .set noreorder flag
-        let submit_asm = asm
-        if (arch["arch_opts"][".set noreorder"] === true) {
-            submit_asm = ".set noreorder\n" + submit_asm
-        }
-        
         try {
             setAwaitingResponse(true)
             const { slug } = await api.post("/scratch", {
-                target_asm: submit_asm,
+                target_asm: asm,
                 context: context,
                 ...arch,
             })

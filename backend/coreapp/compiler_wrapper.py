@@ -14,11 +14,15 @@ from tempfile import TemporaryDirectory
 
 logger = logging.getLogger(__name__)
 
-ASM_MACROS = """.macro glabel label
+ASM_PRELUDE: str = """
+.macro glabel label
     .global \label
     .type \label, @function
     \label:
 .endm
+.set noat
+.set noreorder
+.set gp=64
 
 """
 
@@ -144,7 +148,7 @@ class CompilerWrapper:
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
-            asm_path.write_text(ASM_MACROS + asm.data)
+            asm_path.write_text(ASM_PRELUDE + asm.data)
 
             object_path = sandbox.path / "object.o"
 
