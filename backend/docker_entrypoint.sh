@@ -15,4 +15,6 @@ python /backend/manage.py migrate
 
 python /backend/manage.py loaddata /backend/db.json
 
+./backend/compilers/download.sh
+
 python /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
