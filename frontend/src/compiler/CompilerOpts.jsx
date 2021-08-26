@@ -51,7 +51,7 @@ export function FlagOption({ flag, description }) {
     </option>
 }
 
-export default function CompilerOpts({ value, onChange }) {
+export default function CompilerOpts({ value, onChange, title, isPopup }) {
     const [compiler, setCompiler] = useState((value && value.compiler) || presets[0].compiler)
     let [opts, setOpts] = useState((value && value.cc_opts) || presets[0].opts)
 
@@ -80,11 +80,11 @@ export default function CompilerOpts({ value, onChange }) {
             setOpts(opts)
         },
     }}>
-        <div class={styles.header}>
-            Compiler Options
+        <div class={styles.header} data-is-popup={isPopup}>
+            {title || "Compiler Options"}
             <PresetSelect compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
-        <div class={styles.container}>
+        <div class={styles.container} data-is-popup={isPopup}>
             <OptsEditor compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
     </OptsContext.Provider>
