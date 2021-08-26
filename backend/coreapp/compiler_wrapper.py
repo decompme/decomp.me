@@ -184,14 +184,14 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(arch: str, as_opts: str, asm: Asm, to_regenerate:Assembly = None) -> Tuple[Optional[Assembly], Optional[str]]:
+    def assemble_asm(arch: str, asm: Asm, to_regenerate:Assembly = None) -> Tuple[Optional[Assembly], Optional[str]]:
         if arch not in _arches:
             logger.error(f"Arch {arch} not found")
             return (None, "arch not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
-            cached_assembly, hash = _check_assembly_cache(arch, as_opts, asm)
+            cached_assembly, hash = _check_assembly_cache(arch, asm.data)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit!")
                 return (cached_assembly, None)
@@ -214,7 +214,6 @@ class CompilerWrapper:
                     "PATH": PATH,
                     "INPUT": sandbox.rewrite_path(asm_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
-                    "AS_OPTS": sandbox.quote_options(as_opts),
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
@@ -235,7 +234,6 @@ class CompilerWrapper:
                 assembly = Assembly(
                     hash=hash,
                     arch=arch,
-                    as_opts=as_opts,
                     source_asm=asm,
                     elf_object=object_path.read_bytes(),
                 )

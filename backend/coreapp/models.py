@@ -24,7 +24,6 @@ class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     arch = models.CharField(max_length=100)
-    as_opts = models.TextField(max_length=1000, blank=True, null=True)
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
     elf_object = models.BinaryField(blank=True)
 

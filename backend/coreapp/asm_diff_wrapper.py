@@ -80,7 +80,7 @@ class AsmDifferWrapper:
         # Base
         if len(target_assembly.elf_object) == 0:
             logger.info("Base asm empty - attempting to regenerate")
-            compiler_wrapper.CompilerWrapper.assemble_asm(compiler_arch, compilation.as_opts, target_assembly.source_asm, target_assembly)
+            compiler_wrapper.CompilerWrapper.assemble_asm(compiler_arch, target_assembly.source_asm, target_assembly)
             if len(target_assembly.elf_object) == 0:
                 logger.error("Regeneration of base-asm failed")
                 return "Error: Base asm empty"

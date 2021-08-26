@@ -82,8 +82,7 @@ def scratch(request, slug=None):
 
         asm = get_db_asm(target_asm)
 
-        as_opts = ""
-        assembly, err = CompilerWrapper.assemble_asm(arch, as_opts, asm)
+        assembly, err = CompilerWrapper.assemble_asm(arch, asm)
         if not assembly:
             error_msg = f"Error when assembling target asm: {err}"
             logging.error(error_msg)
@@ -104,7 +103,6 @@ def scratch(request, slug=None):
             "arch": arch,
             "compiler": compiler,
             "cc_opts": cc_opts,
-            "as_opts": as_opts,
             "context": context,
             "source_code": source_code,
             "target_assembly": assembly.pk,
