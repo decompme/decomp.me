@@ -23,11 +23,4 @@ export default {
         react: "preact/compat",
         "react-dom": "preact/compat",
     },
-    optimize: {
-        preload: true,
-        minify: true,
-        target: "es2019",
-        treeshake: true,
-        sourcemap: "external",
-    },
 }
