@@ -1,7 +1,8 @@
 import { h, Fragment } from "preact"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState, useRef } from "preact/hooks"
 import Skeleton from "react-loading-skeleton"
-import { useMonacoEditor } from "use-monaco"
+import MonacoEditor, { useMonaco } from "@monaco-editor/react"
+import type { editor } from "monaco-editor"
 
 import monacoTheme from "./monacoTheme"
 import { language } from "./c"
@@ -9,44 +10,54 @@ import styles from "./Editor.module.css"
 
 export default function Editor({ forceLoading, value, valueVersion, onChange, padding }) {
     const [isLoading, setIsLoading] = useState(true)
-    const { containerRef, model } = useMonacoEditor({
-        options: {
-            minimap: {
-                enabled: false,
-            },
-            scrollBeyondLastLine: false,
-            cursorBlinking: "phase",
-            matchBrackets: "near",
-            mouseWheelZoom: true,
-            padding: padding ? { top: 30, bottom: 30 } : {},
-            fontSize: 13,
-        },
-
-        language: "custom_c",
-        theme: "custom",
-
-        onLoad(monaco) {
-            monaco.editor.defineTheme("custom", monacoTheme as any)
-
-            monaco.languages.register({ id: "custom_c" })
-            monaco.languages.setMonarchTokensProvider("custom_c", language as any)
-
-            setIsLoading(false)
-        },
-
-        onChange(newValue: string) {
-            onChange(newValue)
-        },
-    })
+    const monaco = useMonaco()
+    const [model, setModel] = useState<editor.ITextModel>()
 
     useEffect(() => {
-        if (model) {
+        if (monaco) {
+            monaco.editor.defineTheme("custom", monacoTheme)
+
+            monaco.languages.register({ id: "custom_c" })
+            monaco.languages.setMonarchTokensProvider("custom_c", language)
+
+            setTimeout(() => setIsLoading(false), 0)
+        }
+    }, [monaco])
+
+    useEffect(() => {
+        if (model && value) {
+            console.info("Updating editor value because valueVersion changed")
             model.setValue(value)
         }
     }, [valueVersion, model])
 
     return <>
-        <div ref={containerRef} style={{ display: (isLoading || forceLoading) ? 'none' : 'block' }} class={styles.monacoContainer} />
+        <div style={{ display: (isLoading || forceLoading) ? 'none' : 'block' }} class={styles.monacoContainer}>
+            <MonacoEditor
+                language="custom_c"
+                theme="custom"
+                defaultValue={value}
+                options={{
+                    minimap: {
+                        enabled: false,
+                    },
+                    scrollBeyondLastLine: false,
+                    cursorBlinking: "phase",
+                    matchBrackets: "near",
+                    mouseWheelZoom: true,
+                    padding: padding ? { top: 30, bottom: 30 } : {},
+                    fontSize: 13,
+                }}
+                onMount={(editor, monaco) => {
+                    setModel(editor.getModel())
+                }}
+                onChange={(newValue: string) => {
+                    if (onChange) {
+                        onChange(newValue)
+                    }
+                }}
+            />
+        </div>
 
         <div style={{
             display: (isLoading || forceLoading) ? 'block' : 'none',

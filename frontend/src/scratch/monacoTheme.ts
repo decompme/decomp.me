@@ -1,4 +1,6 @@
-export default {
+import type { editor } from "monaco-editor"
+
+const theme: editor.IStandaloneThemeData = {
     "base": "vs-dark",
     "inherit": false,
     "rules": [
@@ -31,3 +33,5 @@ export default {
         "editorLineNumber.foreground":"#ccccff31"
     }
 }
+
+export default theme

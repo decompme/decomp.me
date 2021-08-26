@@ -15,6 +15,7 @@ import { useLocalStorage, useSize } from "../hooks"
 import styles from "./Scratch.module.css"
 
 export default function Scratch() {
+    // TODO: refactor this, this is stupidly big
     const { slug } = useParams()
     const history = useHistory()
     const [currentRequest, setCurrentRequest] = useState("loading")
@@ -30,6 +31,7 @@ export default function Scratch() {
     const [savedCContext, setSavedCContext] = useState(cContext)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
+    const [loadDate, setLoadDate] = useState(0) // maybe not needed
 
     const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
 
@@ -116,6 +118,8 @@ export default function Scratch() {
         })
         setSavedCCode(scratch.source_code)
         setSavedCContext(scratch.context)
+
+        setLoadDate(Date.now())
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
@@ -176,7 +180,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cCode}
-                            valueVersion={slug}
+                            valueVersion={slug + loadDate}
                             forceLoading={cCode === null}
                             onChange={value => {
                                 setCCode(value)
@@ -198,7 +202,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cContext}
-                            valueVersion={slug}
+                            valueVersion={slug + loadDate}
                             forceLoading={cContext === null}
                             onChange={value => {
                                 setCContext(value)
