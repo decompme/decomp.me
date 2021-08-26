@@ -191,7 +191,7 @@ class CompilerWrapper:
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
-            cached_assembly, hash = _check_assembly_cache(arch, asm.data)
+            cached_assembly, hash = _check_assembly_cache(arch, asm.hash)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit!")
                 return (cached_assembly, None)
