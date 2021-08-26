@@ -23,6 +23,8 @@ ASM_PRELUDE: str = """
 
 """
 
+PATH: str = "/bin:/usr/bin:/opt/cross:/opt/homebrew/bin"
+
 def load_compilers() -> dict:
     ret = {}
 
@@ -146,7 +148,7 @@ class CompilerWrapper:
                     mounts=[compiler_path],
                     shell=True,
                     env={
-                    "PATH": "/bin:/usr/bin",
+                    "PATH": PATH,
                     "INPUT": sandbox.rewrite_path(code_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
@@ -206,6 +208,7 @@ class CompilerWrapper:
                     mounts=[],
                     shell=True,
                     env={
+                    "PATH": PATH,
                     "INPUT": sandbox.rewrite_path(asm_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "AS_OPTS": sandbox.quote_options(as_opts),
