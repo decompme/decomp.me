@@ -3,7 +3,7 @@ from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import logging
