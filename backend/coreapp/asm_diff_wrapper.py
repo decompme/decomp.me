@@ -41,7 +41,6 @@ class AsmDifferWrapper:
     @staticmethod
     def run_objdump(target_data: bytes, config: Config) -> Optional[str]:
         flags = ["-drz"]
-        #restrict = None # todo maybe restrict
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -60,9 +59,6 @@ class AsmDifferWrapper:
                 return None
 
         out = objdump_proc.stdout
-        # todo maybe restrict
-        #if restrict is not None:
-        #    return restrict_to_function(out, restrict, config)
         return out
 
     @staticmethod
@@ -77,6 +73,7 @@ class AsmDifferWrapper:
             arch = PPC_SETTINGS
         else:
             logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
+            compiler_arch = "mips"
             arch = MIPS_SETTINGS
             
         config = AsmDifferWrapper.create_config(arch)
@@ -98,7 +95,7 @@ class AsmDifferWrapper:
             logger.info("New asm empty - attempting to regenerate")
             compiler_wrapper.CompilerWrapper.compile_code(
                 compilation.compiler,
-                compilation.cc_opts,
+                compilation.cc_opts or "",
                 compilation.source_code,
                 compilation.context,
                 compilation

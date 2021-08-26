@@ -54,12 +54,12 @@ _compilers = load_compilers()
 _arches = load_arches()
 
 
-def _check_compilation_cache(*args) -> Tuple[Optional[Compilation], str]:
+def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
     hash = util.gen_hash(args)
     return Compilation.objects.filter(hash=hash).first(), hash
 
 
-def _check_assembly_cache(*args) -> Tuple[Optional[Assembly], str]:
+def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
@@ -119,15 +119,12 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, cc_opts: Optional[str], code: str, context: str, to_regenerate: Optional[Compilation] = None):
+    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None):
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
 
         compiler_cfg = _compilers[compiler]
-
-        if cc_opts is None:
-            cc_opts = ""
 
         if not to_regenerate:
             cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
@@ -189,7 +186,7 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(arch: Optional[str], asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
+    def assemble_asm(arch: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
         if arch not in _arches:
             logger.error(f"Arch {arch} not found")
             return (None, "arch not found")
