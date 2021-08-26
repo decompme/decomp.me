@@ -7,7 +7,7 @@ import { CpuIcon } from "@primer/octicons-react"
 import CompilerOpts from "./CompilerOpts"
 import styles from "./CompilerButton.module.css"
 
-export default function CompilerButton({ value, onChange }) {
+export default function CompilerButton({ value, onChange, disabled }) {
     const [isOpen, setOpen] = useState(false)
 
     const close = () => setOpen(false)
@@ -22,7 +22,15 @@ export default function CompilerButton({ value, onChange }) {
     })
 
     return <>
-        <button {...triggerProps} onClick={() => setOpen(!isOpen)} style={isOpen && { color: "#fff" }}>
+        <button
+            {...triggerProps}
+            onClick={() => {
+                if (!disabled)
+                    setOpen(!isOpen)
+            }}
+            style={isOpen && { color: "#fff" }}
+            disabled={disabled}
+        >
             <CpuIcon size={16} />
             Compiler...
         </button>
@@ -37,7 +45,7 @@ export default function CompilerButton({ value, onChange }) {
                     transition={{ type: "spring", duration: 0.3 }}
                     {...layerProps}
                 >
-                    <CompilerOpts value={value} onChange={onChange} />
+                    <CompilerOpts isPopup={true} value={value} onChange={onChange} />
                     <Arrow size={12} backgroundColor="#292e35" {...arrowProps} />
                 </motion.div>}
             </AnimatePresence>

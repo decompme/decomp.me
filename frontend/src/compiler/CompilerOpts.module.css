@@ -19,6 +19,12 @@
     background: #22272d;
 }
 
+.header:not([data-is-popup]), .container:not([data-is-popup]) {
+    border-radius: 0;
+    background: transparent;
+    border-bottom: 1px solid #2f3136;
+}
+
 .row {
     display: flex;
 }

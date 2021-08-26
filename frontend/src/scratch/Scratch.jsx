@@ -4,11 +4,12 @@ import { useDebouncedCallback }  from "use-debounce"
 import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
-import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
+import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
 import { useParams, useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import CompilerButton from "../compiler/CompilerButton"
+import CompilerOpts from "../compiler/CompilerOpts"
 import Editor from "./Editor"
 import { useLocalStorage, useSize } from "../hooks"
 
@@ -21,6 +22,7 @@ export default function Scratch() {
     const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     const [compiler, setCompiler] = useState(null)
+    const isCompilerChosen = !(compiler && compiler.compiler === "")
     const [cCode, setCCode] = useState(null)
     const [cContext, setCContext] = useState(null)
     const [diff, setDiff] = useState(null)
@@ -40,8 +42,8 @@ export default function Scratch() {
             return
         }
 
-        if (compiler.compiler === "") {
-            setDiff("Please choose a compiler")
+        if (!isCompilerChosen) {
+            console.warn("Ignoring compile request; compiler not chosen")
             return
         }
 
@@ -163,7 +165,7 @@ export default function Scratch() {
                         <div class={styles.sectionHeader}>
                             Source
                             <span class={styles.grow}></span>
-                            <button class={isCompiling ? styles.compiling : ""} onClick={compile}>
+                            <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
                                 <SyncIcon size={16} /> Compile
                             </button>
                             {isYours && <button onClick={save}>
@@ -174,7 +176,7 @@ export default function Scratch() {
                                 <RepoForkedIcon size={16} /> Fork
                             </button>
 
-                            <CompilerButton value={compiler} onChange={setCompiler} />
+                            <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
                         </div>
 
                         <Editor
@@ -224,23 +226,46 @@ export default function Scratch() {
 
             <resizer.Section className={styles.diffSection} minSize={400}>
                 <div class={styles.sectionHeader} ref={diffSectionHeader}>
-                    Diff
-                    {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
-                        (left is target, right is your code)
-                    </span>}
+                    {isCompilerChosen && <>
+                        Diff
+                        {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
+                            (left is target, right is your code)
+                        </span>}
 
-                    <span class={styles.grow} />
-        
-                    <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
-                    <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
+                        <span class={styles.grow} />
+            
+                        <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
+                        <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
+                    </>}
                 </div>
                 <div class={styles.output}>
-                    {(diff === null && log === null) ? <Skeleton height={20} count={20} /> : <>
-                        {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
-                        <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
-                    </>}
+                    {(!isCompilerChosen) ?
+                        <ChooseACompiler onCommit={setCompiler} />
+                    : (diff === null && log === null)
+                        ?
+                            <Skeleton height={20} count={20} />
+                        : <>
+                            {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
+                            <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                        </>
+                    }
                 </div>
             </resizer.Section>
         </resizer.Container>
+    </div>
+}
+
+function ChooseACompiler({ onCommit }) {
+    const [compiler, setCompiler] = useLocalStorage("ChooseACompiler.recent")
+
+    return <div>
+        <CompilerOpts title="Choose a compiler" value={compiler} onChange={setCompiler} />
+
+        <div style={{ padding: '1em', float: 'right' }}>
+            <button onClick={() => onCommit(compiler)}>
+                Use this compiler
+                <ArrowRightIcon size={16} />
+            </button>
+        </div>
     </div>
 }
