@@ -26,6 +26,7 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
 
     useEffect(() => {
         if (model && value) {
+            console.info("Updating editor value because valueVersion changed")
             model.setValue(value)
         }
     }, [valueVersion, model])
@@ -35,6 +36,7 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
             <MonacoEditor
                 language="custom_c"
                 theme="custom"
+                defaultValue={value}
                 options={{
                     minimap: {
                         enabled: false,
