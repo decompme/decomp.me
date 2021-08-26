@@ -1,3 +1,5 @@
+import type { languages } from "monaco-editor"
+
 export const conf = {
 	comments: {
 		lineComment: '//',
@@ -6,7 +8,7 @@ export const conf = {
 	brackets: [
 		['{', '}'],
 		['[', ']'],
-		['(', ')']
+		['(', ')'],
 	],
 	autoClosingPairs: [
 		{ open: '[', close: ']' },
@@ -30,7 +32,7 @@ export const conf = {
 	}
 };
 
-export const language = {
+export const language: languages.IMonarchLanguage = {
 	defaultToken: '',
 	tokenPostfix: '.c',
 
