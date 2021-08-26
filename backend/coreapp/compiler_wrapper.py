@@ -23,7 +23,10 @@ ASM_PRELUDE: str = """
 
 """
 
-PATH: str = "/bin:/usr/bin:/opt/cross:/opt/homebrew/bin"
+if settings.USE_SANDBOX_JAIL:
+    PATH: str = "/bin:/usr/bin"
+else:
+    PATH: str = os.environ["PATH"]
 
 def load_compilers() -> dict:
     ret = {}
