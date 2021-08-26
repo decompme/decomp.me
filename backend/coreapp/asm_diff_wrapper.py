@@ -29,6 +29,7 @@ class AsmDifferWrapper:
             threeway=False,
             base_shift=0,
             skip_lines=0,
+            compress=None,
             show_branches=True,
             stop_jrra=False,
             ignore_large_imms=False,
