@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -23,12 +23,13 @@ ASM_PRELUDE: str = """
 
 """
 
+PATH: str
 if settings.USE_SANDBOX_JAIL:
-    PATH: str = "/bin:/usr/bin"
+    PATH = "/bin:/usr/bin"
 else:
-    PATH: str = os.environ["PATH"]
+    PATH = os.environ["PATH"]
 
-def load_compilers() -> dict:
+def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
 
     compiler_dirs = next(os.walk(settings.COMPILER_BASE_PATH))
@@ -41,7 +42,7 @@ def load_compilers() -> dict:
     return ret
 
 
-def load_arches() -> dict:
+def load_arches() -> Dict[str, str]:
     ret = {}
 
     ret["mips"] = "mips-linux-gnu-as -march=vr4300 -mabi=32 -o \"$OUTPUT\" \"$INPUT\""
@@ -53,18 +54,19 @@ _compilers = load_compilers()
 _arches = load_arches()
 
 
-def _check_compilation_cache(*args) -> Optional[Compilation]:
+def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
     hash = util.gen_hash(args)
     return Compilation.objects.filter(hash=hash).first(), hash
 
 
-def _check_assembly_cache(*args) -> Optional[Compilation]:
+def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
 
 class CompilerWrapper:
-    def base_path():
+    @staticmethod
+    def base_path() -> Path:
         return settings.COMPILER_BASE_PATH
 
     @staticmethod
@@ -117,7 +119,7 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Compilation = None):
+    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None):
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
@@ -184,7 +186,7 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(arch: str, asm: Asm, to_regenerate:Assembly = None) -> Tuple[Optional[Assembly], Optional[str]]:
+    def assemble_asm(arch: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
         if arch not in _arches:
             logger.error(f"Arch {arch} not found")
             return (None, "arch not found")
