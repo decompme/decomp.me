@@ -1,11 +1,10 @@
 {
     "license": "MIT",
     "scripts": {
-        "start": "snowpack dev",
-        "build": "snowpack build"
+        "start": "snowpack dev --polyfill-node",
+        "build": "snowpack build --polyfill-node"
     },
     "dependencies": {
-        "@monaco-editor/react": "^4.2.1",
         "@primer/octicons-react": "^15.0.0",
         "@react-hook/resize-observer": "^1.2.2",
         "framer-motion": "^4.1.17",
@@ -16,7 +15,8 @@
         "react-router-dom": "^5.2.0",
         "react-simple-resizer": "^2.1.0",
         "swr": "^0.5.6",
-        "use-debounce": "^7.0.0"
+        "use-debounce": "^7.0.0",
+        "use-monaco": "^0.0.40"
     },
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",

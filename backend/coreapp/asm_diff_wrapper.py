@@ -89,8 +89,6 @@ class AsmDifferWrapper:
             logger.info("New asm empty - attempting to regenerate")
             compiler_wrapper.CompilerWrapper.compile_code(
                 compilation.compiler,
-                compilation.cpp_opts,
-                compilation.as_opts,
                 compilation.cc_opts,
                 compilation.source_code,
                 compilation.context,

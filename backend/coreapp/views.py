@@ -119,7 +119,7 @@ def scratch(request, slug=None):
         if not slug:
             return Response({"error": "Missing slug"}, status=status.HTTP_400_BAD_REQUEST)
 
-        required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
+        required_params = ["compiler", "cc_opts", "source_code", "context"]
 
         for param in required_params:
             if param not in request.data:
@@ -132,8 +132,6 @@ def scratch(request, slug=None):
 
         # TODO validate
         db_scratch.compiler = request.data["compiler"]
-        db_scratch.cpp_opts = request.data["cpp_opts"]
-        db_scratch.as_opts = request.data["as_opts"]
         db_scratch.cc_opts = request.data["cc_opts"]
         db_scratch.source_code = request.data["source_code"]
         db_scratch.context = request.data["context"]
@@ -143,7 +141,7 @@ def scratch(request, slug=None):
 
 @api_view(["POST"])
 def compile(request, slug):
-    required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code"]
+    required_params = ["compiler", "cc_opts", "source_code"]
 
     for param in required_params:
         if param not in request.data:
@@ -151,8 +149,6 @@ def compile(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
-    cpp_opts = request.data["cpp_opts"]
-    as_opts = request.data["as_opts"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
     context = request.data.get("context", None)
@@ -164,7 +160,7 @@ def compile(request, slug):
         logging.debug("No context provided, getting from backend")
         context = scratch.context
 
-    compilation, errors = CompilerWrapper.compile_code(compiler, cpp_opts, as_opts, cc_opts, code, context)
+    compilation, errors = CompilerWrapper.compile_code(compiler, cc_opts, code, context)
 
     diff_output = ""
     if compilation:
@@ -179,7 +175,7 @@ def compile(request, slug):
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "cpp_opts", "as_opts", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "cc_opts", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
@@ -192,16 +188,12 @@ def fork(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
-    cpp_opts = request.data["cpp_opts"]
-    as_opts = request.data["as_opts"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
     context = request.data["context"]
 
     new_scratch = Scratch(
         compiler=compiler,
-        cpp_opts=cpp_opts,
-        as_opts=as_opts,
         cc_opts=cc_opts,
         target_assembly=parent_scratch.target_assembly,
         source_code=code,

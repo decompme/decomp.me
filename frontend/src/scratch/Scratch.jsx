@@ -25,15 +25,21 @@ export default function Scratch() {
     const [diff, setDiff] = useState(null)
     const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
+    const [savedCompiler, setSavedCompiler] = useState(compiler)
     const [savedCCode, setSavedCCode] = useState(cCode)
     const [savedCContext, setSavedCContext] = useState(cContext)
     const codeResizeContainer = useRef(null)
     const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
 
-    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext
+    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
+            return
+        }
+
+        if (compiler.compiler === "") {
+            setDiff("Please choose a compiler")
             return
         }
 
@@ -75,6 +81,7 @@ export default function Scratch() {
             error: 'Error saving scratch',
         })
 
+        setSavedCompiler(compiler)
         setSavedCCode(cCode)
         setSavedCContext(cContext)
     }
@@ -99,11 +106,16 @@ export default function Scratch() {
         setCompiler({
             compiler: scratch.compiler,
             cc_opts: scratch.cc_opts,
-            as_opts: scratch.as_opts,
-            cpp_opts: scratch.cpp_opts,
         })
         setCContext(scratch.context)
         setCCode(scratch.source_code)
+
+        setSavedCompiler({
+            compiler: scratch.compiler,
+            cc_opts: scratch.cc_opts,
+        })
+        setSavedCCode(scratch.source_code)
+        setSavedCContext(scratch.context)
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
@@ -137,7 +149,7 @@ export default function Scratch() {
         }
     }
 
-    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts, compiler.as_opts, compiler.cpp_opts] : [])
+    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts] : [])
 
     return <div class={styles.container}>
         <resizer.Container class={styles.resizer}>
@@ -164,6 +176,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cCode}
+                            valueVersion={slug}
                             forceLoading={cCode === null}
                             onChange={value => {
                                 setCCode(value)
@@ -185,6 +198,7 @@ export default function Scratch() {
                         <Editor
                             padding
                             value={cContext}
+                            valueVersion={slug}
                             forceLoading={cContext === null}
                             onChange={value => {
                                 setCContext(value)

@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
 import Editor from "./Editor"
-import ArchButton from "../compiler/ArchButton"
+import Select from "../Select"
 import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
@@ -14,10 +14,8 @@ export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState()
     const [asm, setAsm] = useLocalStorage("NewScratch.asm")
     const [context, setContext] = useLocalStorage("NewScratch.context")
-    const [arch, setArch] = useLocalStorage("NewScratch.arch")
+    const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
     const history = useHistory()
-
-    // TODO: loading state
 
     const submit = async () => {
         setErrorMsg("")
@@ -31,8 +29,8 @@ export default function NewScratch() {
             setAwaitingResponse(true)
             const { slug } = await api.post("/scratch", {
                 target_asm: asm,
-                context: context,
-                ...arch,
+                context: context || "",
+                arch,
             })
 
             setErrorMsg("")
@@ -69,7 +67,11 @@ export default function NewScratch() {
                 <p class={`red ${styles.errormsg}`}>
                     {errorMsg}
                 </p>
-                <ArchButton value={arch} onChange={setArch} />
+
+                <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                    <option value="mips">MIPS</option>
+                </Select>
+
                 <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
             </div>
         </div>

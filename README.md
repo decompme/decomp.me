@@ -23,6 +23,7 @@ All the following commands need to be run inside the virtual environment.
 Once the virtual environment is set up you can install the requirements
 ```shell
 pip install -r requirements.txt
+./tools/backend/compilers/download.sh
 ```
 
 Set up the tables needed for the database:
