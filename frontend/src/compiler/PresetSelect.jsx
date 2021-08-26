@@ -13,6 +13,11 @@ export const presets = [
         compiler: "ido7.1",
         opts: "-O2 -mips2",
     },
+    {
+        name: "MM",
+        compiler: "ido7.1",
+        opts: "-O2 -g3 -mips2",
+    },
 ]
 
 export default function PresetSelect({ compiler, opts, setCompiler, setOpts }) {
