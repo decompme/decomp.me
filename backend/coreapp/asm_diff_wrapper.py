@@ -2,6 +2,7 @@ from coreapp import compiler_wrapper
 import subprocess
 from coreapp.models import Assembly, Compilation
 from coreapp.sandbox import Sandbox
+from coreapp.compiler_wrapper import PATH
 import logging
 
 from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
@@ -46,7 +47,11 @@ class AsmDifferWrapper:
 
             try:
                 objdump_proc = sandbox.run_subprocess(
-                    ["/usr/bin/mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
+                    ["mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
+                    shell=True,
+                    env={
+                        "PATH": PATH,
+                    },
                 )
             except subprocess.CalledProcessError as e:
                 logger.error(e)

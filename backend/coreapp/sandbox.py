@@ -83,7 +83,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
 
         wrapper = self.sandbox_command(mounts, env)
         if shell:
-            assert isinstance(args, str)
+            if isinstance(args, list):
+                args = " ".join(args)
+
             command = wrapper + ["/bin/bash", "-euo", "pipefail", "-c", args]
         else:
             assert isinstance(args, list)
