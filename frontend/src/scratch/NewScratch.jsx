@@ -68,9 +68,10 @@ export default function NewScratch() {
                     {errorMsg}
                 </p>
 
-                {/*<Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
-                    <option value="mips">mips</option>
-                </Select>*/}
+                <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                    <option value="mips">MIPS</option>
+                </Select>
+
                 <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
             </div>
         </div>
