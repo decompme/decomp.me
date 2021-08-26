@@ -104,31 +104,36 @@ if __name__ == "__main__":
         "-o",
         dest="diff_obj",
         action="store_true",
-        help="Diff .o files rather than a whole binary. This makes it possible to "
-        "see symbol names. (Recommended)",
+        help="""Diff .o files rather than a whole binary. This makes it possible to
+        see symbol names. (Recommended)""",
     )
     parser.add_argument(
         "-e",
         "--elf",
         dest="diff_elf_symbol",
         metavar="SYMBOL",
-        help="Diff a given function in two ELFs, one being stripped and the other "
-        "one non-stripped. Requires objdump from binutils 2.33+.",
+        help="""Diff a given function in two ELFs, one being stripped and the other
+        one non-stripped. Requires objdump from binutils 2.33+.""",
     )
     parser.add_argument(
         "--source",
+        "-c",
+        dest="source",
         action="store_true",
-        help="Show source code (if possible). Only works with -o and -e.",
+        help="Show source code (if possible). Only works with -o or -e.",
     )
     parser.add_argument(
         "--source-old-binutils",
+        "-C",
+        dest="source_old_binutils",
         action="store_true",
         help="Tweak --source handling to make it work with binutils < 2.33. Implies --source.",
     )
     parser.add_argument(
         "--inlines",
+        dest="inlines",
         action="store_true",
-        help="Show inline function calls (if possible). Only works with -o and -e.",
+        help="Show inline function calls (if possible). Only works with -o or -e.",
     )
     parser.add_argument(
         "--base-asm",
@@ -153,17 +158,18 @@ if __name__ == "__main__":
         "-l",
         "--skip-lines",
         dest="skip_lines",
+        metavar="LINES",
         type=int,
         default=0,
-        metavar="LINES",
-        help="Skip the first N lines of output.",
+        help="Skip the first LINES lines of output.",
     )
     parser.add_argument(
         "-s",
         "--stop-jr-ra",
         dest="stop_jrra",
         action="store_true",
-        help="Stop disassembling at the first 'jr ra'. Some functions have multiple return points, so use with care!",
+        help="""Stop disassembling at the first 'jr ra'. Some functions have
+        multiple return points, so use with care!""",
     )
     parser.add_argument(
         "-i",
@@ -190,20 +196,21 @@ if __name__ == "__main__":
         "-S",
         "--base-shift",
         dest="base_shift",
+        metavar="N",
         type=str,
         default="0",
-        help="Diff position X in our img against position X + shift in the base img. "
-        'Arithmetic is allowed, so e.g. |-S "0x1234 - 0x4321"| is a reasonable '
-        "flag to pass if it is known that position 0x1234 in the base img syncs "
-        "up with position 0x4321 in our img. Not supported together with -o.",
+        help="""Diff position N in our img against position N + shift in the base img.
+        Arithmetic is allowed, so e.g. |-S "0x1234 - 0x4321"| is a reasonable
+        flag to pass if it is known that position 0x1234 in the base img syncs
+        up with position 0x4321 in our img. Not supported together with -o.""",
     )
     parser.add_argument(
         "-w",
         "--watch",
         dest="watch",
         action="store_true",
-        help="Automatically update when source/object files change. "
-        "Recommended in combination with -m.",
+        help="""Automatically update when source/object files change.
+        Recommended in combination with -m.""",
     )
     parser.add_argument(
         "-3",
@@ -211,8 +218,8 @@ if __name__ == "__main__":
         dest="threeway",
         action="store_const",
         const="prev",
-        help="Show a three-way diff between target asm, current asm, and asm "
-        "prior to -w rebuild. Requires -w.",
+        help="""Show a three-way diff between target asm, current asm, and asm
+        prior to -w rebuild. Requires -w.""",
     )
     parser.add_argument(
         "-b",
@@ -220,12 +227,13 @@ if __name__ == "__main__":
         dest="threeway",
         action="store_const",
         const="base",
-        help="Show a three-way diff between target asm, current asm, and asm "
-        "when diff.py was started. Requires -w.",
+        help="""Show a three-way diff between target asm, current asm, and asm
+        when diff.py was started. Requires -w.""",
     )
     parser.add_argument(
         "--width",
         dest="column_width",
+        metavar="COLS",
         type=int,
         default=50,
         help="Sets the width of the left and right view column.",
@@ -235,12 +243,13 @@ if __name__ == "__main__":
         dest="algorithm",
         default="levenshtein",
         choices=["levenshtein", "difflib"],
-        help="Diff algorithm to use. Levenshtein gives the minimum diff, while difflib "
-        "aims for long sections of equal opcodes. Defaults to %(default)s.",
+        help="""Diff algorithm to use. Levenshtein gives the minimum diff, while difflib
+        aims for long sections of equal opcodes. Defaults to %(default)s.""",
     )
     parser.add_argument(
         "--max-size",
         "--max-lines",
+        metavar="LINES",
         dest="max_lines",
         type=int,
         default=1024,
@@ -250,14 +259,32 @@ if __name__ == "__main__":
         "--no-pager",
         dest="no_pager",
         action="store_true",
-        help="Disable the pager; write output directly to stdout, then exit. "
-        "Incompatible with --watch.",
+        help="""Disable the pager; write output directly to stdout, then exit.
+        Incompatible with --watch.""",
     )
     parser.add_argument(
         "--format",
         choices=("color", "plain", "html"),
         default="color",
         help="Output format, default is color. --format=html implies --no-pager.",
+    )
+    parser.add_argument(
+        "-U",
+        "--compress-matching",
+        metavar="N",
+        dest="compress_matching",
+        type=int,
+        help="""Compress streaks of matching lines, leaving N lines of context
+        around non-matching parts.""",
+    )
+    parser.add_argument(
+        "-V",
+        "--compress-sameinstr",
+        metavar="N",
+        dest="compress_sameinstr",
+        type=int,
+        help="""Compress streaks of lines with same instructions (but possibly
+        different regalloc), leaving N lines of context around other parts.""",
     )
 
     # Project-specific flags, e.g. different versions/make arguments.
@@ -290,12 +317,11 @@ import time
 
 MISSING_PREREQUISITES = (
     "Missing prerequisite python module {}. "
-    "Run `python3 -m pip install --user colorama ansiwrap watchdog python-Levenshtein cxxfilt` to install prerequisites (cxxfilt only needed with --source)."
+    "Run `python3 -m pip install --user colorama watchdog python-Levenshtein cxxfilt` to install prerequisites (cxxfilt only needed with --source)."
 )
 
 try:
     from colorama import Fore, Style  # type: ignore
-    import ansiwrap  # type: ignore
     import watchdog  # type: ignore
 except ModuleNotFoundError as e:
     fail(MISSING_PREREQUISITES.format(e.name))
@@ -318,6 +344,12 @@ class ProjectSettings:
 
 
 @dataclass
+class Compress:
+    context: int
+    same_instr: bool
+
+
+@dataclass
 class Config:
     arch: "ArchSettings"
 
@@ -335,6 +367,7 @@ class Config:
     threeway: Optional[str]
     base_shift: int
     skip_lines: int
+    compress: Optional[Compress]
     show_branches: bool
     stop_jrra: bool
     ignore_large_imms: bool
@@ -372,6 +405,16 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
     else:
         raise ValueError(f"Unsupported --format: {args.format}")
 
+    compress = None
+    if args.compress_matching is not None:
+        compress = Compress(args.compress_matching, False)
+    if args.compress_sameinstr is not None:
+        if compress is not None:
+            raise ValueError(
+                "Cannot pass both --compress-matching and --compress-sameinstr"
+            )
+        compress = Compress(args.compress_sameinstr, True)
+
     return Config(
         arch=get_arch(project.arch_str),
         # Build/objdump options
@@ -389,6 +432,7 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
             args.base_shift, "Failed to parse --base-shift (-S) argument as an integer."
         ),
         skip_lines=args.skip_lines,
+        compress=compress,
         show_branches=args.show_branches,
         stop_jrra=args.stop_jrra,
         ignore_large_imms=args.ignore_large_imms,
@@ -472,14 +516,8 @@ FormatFunction = Callable[[str], Format]
 class Text:
     segments: List[Tuple[str, Format]]
 
-    def __init__(
-        self, line: Optional[str] = None, f: Format = BasicFormat.NONE
-    ) -> None:
-        self.segments = []
-        if line is not None:
-            self.segments.append((line, f))
-        elif f is not BasicFormat.NONE:
-            raise ValueError("Text constructor provided `f`, but no line to format")
+    def __init__(self, line: str = "", f: Format = BasicFormat.NONE) -> None:
+        self.segments = [(line, f)] if line else []
 
     def reformat(self, f: Format) -> "Text":
         return Text(self.plain(), f)
@@ -489,6 +527,9 @@ class Text:
 
     def __repr__(self) -> str:
         return f"<Text: {self.plain()!r}>"
+
+    def __bool__(self) -> bool:
+        return any(s for s, f in self.segments)
 
     def __str__(self) -> str:
         # Use Formatter.apply(...) instead
@@ -532,6 +573,10 @@ class Text:
             result.segments.append((chunk[i:], f))
         return result
 
+    def ljust(self, column_width: int) -> "Text":
+        length = sum(len(x) for x, _ in self.segments)
+        return self + " " * max(column_width - length, 0)
+
 
 class Formatter(abc.ABC):
     @abc.abstractmethod
@@ -541,7 +586,7 @@ class Formatter(abc.ABC):
 
     @abc.abstractmethod
     def table(
-        self, header: Optional[Tuple[str, ...]], lines: List[Tuple[str, ...]]
+        self, header: Optional[Tuple[Text, ...]], lines: List[Tuple[Text, ...]]
     ) -> str:
         """Format a multi-column table with an optional `header`"""
         ...
@@ -558,12 +603,13 @@ class PlainFormatter(Formatter):
         return chunk
 
     def table(
-        self, header: Optional[Tuple[str, ...]], lines: List[Tuple[str, ...]]
+        self, header: Optional[Tuple[Text, ...]], lines: List[Tuple[Text, ...]]
     ) -> str:
         if header:
             lines = [header] + lines
         return "\n".join(
-            "".join(x.ljust(self.column_width) for x in line) for line in lines
+            "".join(self.apply(x.ljust(self.column_width)) for x in line)
+            for line in lines
         )
 
 
@@ -578,9 +624,9 @@ class AnsiFormatter(Formatter):
         BasicFormat.DIFF_CHANGE: Fore.LIGHTBLUE_EX,
         BasicFormat.DIFF_ADD: Fore.GREEN,
         BasicFormat.DIFF_REMOVE: Fore.RED,
-        BasicFormat.SOURCE_FILENAME: Style.BRIGHT,
-        # Underline (not in colorama) + bright
-        BasicFormat.SOURCE_FUNCTION: Style.BRIGHT + "\u001b[4m",
+        BasicFormat.SOURCE_FILENAME: Style.DIM + Style.BRIGHT,
+        # Underline (not in colorama) + bright + dim
+        BasicFormat.SOURCE_FUNCTION: Style.DIM + Style.BRIGHT + "\u001b[4m",
         BasicFormat.SOURCE_OTHER: Style.DIM,
     }
 
@@ -612,19 +658,14 @@ class AnsiFormatter(Formatter):
         return f"{ansi_code}{chunk}{Style.RESET_ALL}"
 
     def table(
-        self, header: Optional[Tuple[str, ...]], lines: List[Tuple[str, ...]]
+        self, header: Optional[Tuple[Text, ...]], lines: List[Tuple[Text, ...]]
     ) -> str:
         if header:
             lines = [header] + lines
-        return "\n".join("".join(self.ansi_ljust(x) for x in line) for line in lines)
-
-    def ansi_ljust(self, s: str) -> str:
-        """Like s.ljust(width), but accounting for ANSI colors."""
-        needed: int = self.column_width - ansiwrap.ansilen(s)
-        if needed > 0:
-            return s + " " * needed
-        else:
-            return s
+        return "\n".join(
+            "".join(self.apply(x.ljust(self.column_width)) for x in line)
+            for line in lines
+        )
 
 
 @dataclass
@@ -647,12 +688,13 @@ class HtmlFormatter(Formatter):
         return f"<span class='{class_name}' {data_attr}>{chunk}</span>"
 
     def table(
-        self, header: Optional[Tuple[str, ...]], lines: List[Tuple[str, ...]]
+        self, header: Optional[Tuple[Text, ...]], lines: List[Tuple[Text, ...]]
     ) -> str:
-        def table_row(line: Tuple[str, ...], cell_el: str) -> str:
+        def table_row(line: Tuple[Text, ...], cell_el: str) -> str:
             output_row = "    <tr>"
             for cell in line:
-                output_row += f"<{cell_el}>{cell}</{cell_el}>"
+                cell_html = self.apply(cell)
+                output_row += f"<{cell_el}>{cell_html}</{cell_el}>"
             output_row += "</tr>\n"
             return output_row
 
@@ -1315,9 +1357,13 @@ def process(lines: List[str], config: Config) -> List[Line]:
         if lines and not lines[-1]:
             lines.pop()
 
+    i = 0
     output: List[Line] = []
     stop_after_delay_slot = False
-    for row in lines:
+    while i < len(lines):
+        row = lines[i]
+        i += 1
+
         if config.diff_obj and (">:" in row or not row):
             continue
 
@@ -1325,24 +1371,6 @@ def process(lines: List[str], config: Config) -> List[Line]:
             source_lines.append(row)
             continue
 
-        if "R_AARCH64_" in row:
-            # TODO: handle relocation
-            continue
-
-        if "R_MIPS_" in row:
-            # N.B. Don't transform the diff rows, they already ignore immediates
-            # if output[-1].diff_row != "<delay-slot>":
-            # output[-1] = output[-1].replace(diff_row=process_mips_reloc(row, output[-1].row_with_imm, arch))
-            new_original = process_mips_reloc(row, output[-1].original, arch)
-            output[-1] = replace(output[-1], original=new_original)
-            continue
-
-        if "R_PPC_" in row:
-            new_original = process_ppc_reloc(row, output[-1].original)
-            output[-1] = replace(output[-1], original=new_original)
-            continue
-
-        # match source lines here to avoid matching relocation lines
         if (
             config.source
             and config.source_old_binutils
@@ -1368,7 +1396,25 @@ def process(lines: List[str], config: Config) -> List[Line]:
 
         if mnemonic not in arch.instructions_with_address_immediates:
             row = re.sub(arch.re_int, lambda m: hexify_int(row, m, arch), row)
+
+        # Let 'original' be 'row' with relocations applied, while we continue
+        # transforming 'row' into a coarser version that ignores registers and
+        # immediates.
         original = row
+
+        while i < len(lines):
+            reloc_row = lines[i]
+            if "R_AARCH64_" in reloc_row:
+                # TODO: handle relocation
+                pass
+            elif "R_MIPS_" in reloc_row:
+                original = process_mips_reloc(reloc_row, original, arch)
+            elif "R_PPC_" in reloc_row:
+                original = process_ppc_reloc(reloc_row, original)
+            else:
+                break
+            i += 1
+
         normalized_original = normalizer.normalize(mnemonic, original)
         if skip_next:
             skip_next = False
@@ -1421,6 +1467,11 @@ def normalize_imms(row: str, arch: ArchSettings) -> str:
 
 def normalize_stack(row: str, arch: ArchSettings) -> str:
     return re.sub(arch.re_sprel, "addr(sp)", row)
+
+
+def imm_matches_everything(row: str, arch: ArchSettings) -> bool:
+    # (this should probably be arch-specific)
+    return "(." in row
 
 
 def split_off_branch(line: str) -> Tuple[str, str]:
@@ -1500,6 +1551,7 @@ class OutputLine:
     base: Optional[Text] = field(compare=False)
     fmt2: Text = field(compare=False)
     key2: Optional[str]
+    boring: bool = field(compare=False)
 
 
 def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
@@ -1546,12 +1598,14 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                 out2 = out2.reformat(BasicFormat.DELAY_SLOT)
             else:
                 mnemonic = line1.original.split()[0]
-                branch1 = branch2 = Text()
+                branchless1, branch1 = out1.plain(), ""
+                branchless2, branch2 = out2.plain(), ""
                 if mnemonic in arch.instructions_with_address_immediates:
-                    out1, branch1 = map(Text, split_off_branch(out1.plain()))
-                    out2, branch2 = map(Text, split_off_branch(out2.plain()))
-                branchless1 = out1.plain()
-                branchless2 = out2.plain()
+                    branchless1, branch1 = split_off_branch(branchless1)
+                    branchless2, branch2 = split_off_branch(branchless2)
+
+                out1 = Text(branchless1)
+                out2 = Text(branchless2)
                 out1, out2 = format_fields(
                     arch.re_imm, out1, out2, lambda _: BasicFormat.IMMEDIATE
                 )
@@ -1566,16 +1620,13 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                     ) - eval_line_num(line2.line_num)
                     same_relative_target = relative_target1 == relative_target2
 
-                if not same_relative_target and branch1.plain() != branch2.plain():
-                    branch1 = branch1.reformat(BasicFormat.IMMEDIATE)
-                    branch2 = branch2.reformat(BasicFormat.IMMEDIATE)
-
-                out1 += branch1
-                out2 += branch2
                 if normalize_imms(branchless1, arch) == normalize_imms(
                     branchless2, arch
                 ):
-                    if not same_relative_target:
+                    if imm_matches_everything(branchless2, arch):
+                        out1 = out1.reformat(BasicFormat.NONE)
+                        out2 = out2.reformat(BasicFormat.NONE)
+                    elif not same_relative_target:
                         # only imms differences
                         sym_color = BasicFormat.IMMEDIATE
                         line_prefix = "i"
@@ -1594,6 +1645,13 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                         out1, out2 = format_fields(arch.re_reg, out1, out2, sc1, sc2)
                         line_color1 = line_color2 = sym_color = BasicFormat.REGISTER
                         line_prefix = "r"
+
+                if same_relative_target or branch1 == branch2:
+                    branch_imm_fmt = BasicFormat.NONE
+                else:
+                    branch_imm_fmt = BasicFormat.IMMEDIATE
+                out1 += Text(branch1, branch_imm_fmt)
+                out2 += Text(branch2, branch_imm_fmt)
         elif line1 and line2:
             line_prefix = "|"
             line_color1 = line_color2 = sym_color = BasicFormat.DIFF_CHANGE
@@ -1635,7 +1693,6 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
 
         part1 = format_part(out1, line1, line_color1, bts1, sc5)
         part2 = format_part(out2, line2, line_color2, bts2, sc6)
-        key2 = line2.original if line2 else None
 
         if line2:
             for source_line in line2.source_lines:
@@ -1669,16 +1726,30 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                         None,
                         "  " + Text(source_line, line_format),
                         source_line,
+                        True,
                     )
                 )
 
+        key2 = line2.original if line2 else None
+        boring = False
+        if line_prefix == " ":
+            # Canonicalize matching lines to have an empty string as key, to
+            # ensure they are treated as the same when three-way diffing. This
+            # matters for branches that match only relatively.
+            key2 = ""
+            boring = True
+        elif config.compress and config.compress.same_instr and line_prefix in "irs":
+            boring = True
         fmt2 = Text(line_prefix, sym_color) + " " + (part2 or Text())
-        output.append(OutputLine(part1, fmt2, key2))
+        output.append(OutputLine(part1, fmt2, key2, boring))
 
     return output
 
 
 def chunk_diff(diff: List[OutputLine]) -> List[Union[List[OutputLine], OutputLine]]:
+    """Chunk a diff into an alternating list like A B A B ... A, where:
+    * A is a List[OutputLine] of insertions,
+    * B is a single non-insertion OutputLine, with .base != None."""
     cur_right: List[OutputLine] = []
     chunks: List[Union[List[OutputLine], OutputLine]] = []
     for output_line in diff:
@@ -1692,15 +1763,46 @@ def chunk_diff(diff: List[OutputLine]) -> List[Union[List[OutputLine], OutputLin
     return chunks
 
 
+def compress_matching(
+    li: List[Tuple[Tuple[Text, ...], bool]], context: int
+) -> List[Tuple[Text, ...]]:
+    ret: List[Tuple[Text, ...]] = []
+    matching_streak: List[Tuple[Text, ...]] = []
+    context = max(context, 0)
+
+    def flush_matching() -> None:
+        if len(matching_streak) <= 2 * context + 1:
+            ret.extend(matching_streak)
+        else:
+            ret.extend(matching_streak[:context])
+            skipped = len(matching_streak) - 2 * context
+            filler = Text(f"<{skipped} lines>", BasicFormat.SOURCE_OTHER)
+            columns = len(matching_streak[0])
+            ret.append(tuple([filler] + [Text()] * (columns - 1)))
+            if context > 0:
+                ret.extend(matching_streak[-context:])
+        matching_streak.clear()
+
+    for (line, matching) in li:
+        if matching:
+            matching_streak.append(line)
+        else:
+            flush_matching()
+            ret.append(line)
+
+    flush_matching()
+    return ret
+
+
 def format_diff(
     old_diff: List[OutputLine], new_diff: List[OutputLine], config: Config
-) -> Tuple[Optional[Tuple[str, ...]], List[Tuple[str, ...]]]:
+) -> Tuple[Optional[Tuple[Text, ...]], List[Tuple[Text, ...]]]:
     fmt = config.formatter
     old_chunks = chunk_diff(old_diff)
     new_chunks = chunk_diff(new_diff)
     output: List[Tuple[Text, OutputLine, OutputLine]] = []
     assert len(old_chunks) == len(new_chunks), "same target"
-    empty = OutputLine(Text(), Text(), None)
+    empty = OutputLine(Text(), Text(), None, True)
     for old_chunk, new_chunk in zip(old_chunks, new_chunks):
         if isinstance(old_chunk, list):
             assert isinstance(new_chunk, list)
@@ -1728,26 +1830,33 @@ def format_diff(
             output.append((new_chunk.base, old_chunk, new_chunk))
 
     # TODO: status line, with e.g. approximate permuter score?
-    header_line: Optional[Tuple[str, ...]]
-    diff_lines: List[Tuple[str, ...]]
+    header_line: Optional[Tuple[Text, ...]]
+    diff_lines: List[Tuple[Tuple[Text, ...], bool]]
     if config.threeway:
-        header_line = ("TARGET", "  CURRENT", "  PREVIOUS")
+        header_line = (Text("TARGET"), Text("  CURRENT"), Text("  PREVIOUS"))
         diff_lines = [
             (
-                fmt.apply(base),
-                fmt.apply(new.fmt2),
-                fmt.apply(old.fmt2) or "-" if old != new else "",
+                (
+                    base,
+                    new.fmt2,
+                    old.fmt2 or Text("-") if old != new else Text(),
+                ),
+                new.boring,
             )
             for (base, old, new) in output
         ]
     else:
         header_line = None
         diff_lines = [
-            (fmt.apply(base), fmt.apply(new.fmt2))
+            ((base, new.fmt2), new.boring)
             for (base, old, new) in output
             if base or new.key2 is not None
         ]
-    return header_line, diff_lines
+    if config.compress:
+        ret_lines = compress_matching(diff_lines, config.compress.context)
+    else:
+        ret_lines = [line for line, _ in diff_lines]
+    return header_line, ret_lines
 
 
 def debounced_fs_watch(
