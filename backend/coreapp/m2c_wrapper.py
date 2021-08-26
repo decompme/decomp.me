@@ -1,6 +1,7 @@
 import contextlib
 import io
 import logging
+from typing import Optional
 import os
 
 from django.utils.crypto import get_random_string
@@ -11,7 +12,8 @@ from coreapp.sandbox import Sandbox
 logger = logging.getLogger(__name__)
 
 class M2CWrapper:
-    def decompile(asm, context):
+    @staticmethod
+    def decompile(asm: str, context: str) -> Optional[str]:
         random_id = get_random_string(length=8)
 
         with Sandbox() as sandbox:

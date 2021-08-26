@@ -4,6 +4,7 @@ from coreapp.models import Assembly, Compilation
 from coreapp.sandbox import Sandbox
 from coreapp.compiler_wrapper import PATH
 import logging
+from typing import Optional
 
 from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
 
@@ -38,9 +39,9 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target_data: bytes, config: Config) -> str:
+    def run_objdump(target_data: bytes, config: Config) -> Optional[str]:
         flags = ["-drz"]
-        restrict = None # todo maybe restrict
+        #restrict = None # todo maybe restrict
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -59,10 +60,12 @@ class AsmDifferWrapper:
                 return None
 
         out = objdump_proc.stdout
-        if restrict is not None:
-            return restrict_to_function(out, restrict, config)
+        # todo maybe restrict
+        #if restrict is not None:
+        #    return restrict_to_function(out, restrict, config)
         return out
 
+    @staticmethod
     def diff(target_assembly: Assembly, compilation: Compilation):
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
 
@@ -73,7 +76,7 @@ class AsmDifferWrapper:
         elif compiler_arch == "ppc":
             arch = PPC_SETTINGS
         else:
-            logger.error("Unsupported arch: " + compiler_arch + ". Continuing assuming mips")
+            logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
             arch = MIPS_SETTINGS
             
         config = AsmDifferWrapper.create_config(arch)

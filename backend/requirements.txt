@@ -4,7 +4,10 @@ colorama
 cxxfilt
 django-cors-headers
 django-environ
+django-stubs
 djangorestframework
+djangorestframework-stubs
+mypy
 psycopg2
 pycparser
 python-Levenshtein
