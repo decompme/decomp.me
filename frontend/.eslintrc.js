@@ -1,13 +1,13 @@
 module.exports = {
     "parser": "@typescript-eslint/parser",
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
     ],
     "extends": [
         "eslint:recommended",
         "preact",
         "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
     ],
     "rules": {
         "semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
@@ -19,7 +19,9 @@ module.exports = {
         "array-bracket-spacing": ["error", "never"],
         "no-else-return": "off",
         "no-trailing-spaces": "error",
+        "prefer-const": ["warn", { destructuring: "all" }],
         "@typescript-eslint/explicit-module-boundary-types": "off",
-        "react/no-danger": "off"
-    }
+        "@typescript-eslint/ban-ts-comment": "off",
+        "react/no-danger": "off",
+    },
 }

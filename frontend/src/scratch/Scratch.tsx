@@ -10,7 +10,7 @@ import { useParams, useHistory } from "react-router-dom"
 import * as api from "../api"
 import Nav from "../Nav"
 import CompilerButton from "../compiler/CompilerButton"
-import CompilerOpts from "../compiler/CompilerOpts"
+import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Editor from "./Editor"
 import { useLocalStorage, useSize } from "../hooks"
 
@@ -18,7 +18,7 @@ import styles from "./Scratch.module.css"
 
 export default function Scratch() {
     // TODO: refactor this, this is stupidly big
-    const { slug } = useParams()
+    const { slug } = useParams<{ slug: string }>()
     const history = useHistory()
     const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
@@ -32,8 +32,8 @@ export default function Scratch() {
     const [savedCompiler, setSavedCompiler] = useState(compiler)
     const [savedCCode, setSavedCCode] = useState(cCode)
     const [savedCContext, setSavedCContext] = useState(cContext)
-    const codeResizeContainer = useRef(null)
-    const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize()
+    const codeResizeContainer = useRef<resizer.Container>(null)
+    const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize<HTMLDivElement>()
     const [loadDate, setLoadDate] = useState(0) // maybe not needed
 
     const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
@@ -164,18 +164,22 @@ export default function Scratch() {
         }
     }
 
-    useEffect(
-        debouncedCompile,
-        [debouncedCompile, compiler && compiler.compiler, compiler && compiler.cc_opts],
-    )
+    useEffect(() => {
+        debouncedCompile()
+    }, [debouncedCompile, compiler?.compiler, compiler?.cc_opts])
 
     return <>
         <Nav />
         <main class={styles.container}>
-            <resizer.Container class={styles.resizer}>
+            <resizer.Container className={styles.resizer}>
                 <resizer.Section minSize={500}>
-                    <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
-                        <resizer.Section minSize="4em" className={styles.sourceCode}>
+                    <resizer.Container
+                        vertical
+                        style={{ height: "100%" }}
+                        // @ts-ignore
+                        ref={codeResizeContainer}
+                    >
+                        <resizer.Section minSize={200} className={styles.sourceCode}>
                             <div class={styles.sectionHeader}>
                                 Source
                                 <span class={styles.grow} />
@@ -206,6 +210,7 @@ export default function Scratch() {
                         </resizer.Section>
 
                         <resizer.Bar
+                            size={1}
                             style={{ cursor: "row-resize" }}
                             onClick={toggleContextSection}
                         >
@@ -271,10 +276,14 @@ export default function Scratch() {
 }
 
 function ChooseACompiler({ onCommit }) {
-    const [compiler, setCompiler] = useLocalStorage("ChooseACompiler.recent")
+    const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
 
     return <div>
-        <CompilerOpts title="Choose a compiler" value={compiler} onChange={c => setCompiler(c)} />
+        <CompilerOpts
+            title="Choose a compiler"
+            value={compiler}
+            onChange={c => setCompiler(c)}
+        />
 
         <div style={{ padding: "1em", float: "right" }}>
             <button onClick={() => onCommit(compiler)}>

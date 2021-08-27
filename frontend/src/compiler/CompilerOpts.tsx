@@ -8,7 +8,12 @@ import compilers from "./compilers"
 import PresetSelect, { presets } from "./PresetSelect"
 import styles from "./CompilerOpts.module.css"
 
-const OptsContext = createContext()
+interface IOptsContext {
+    checkFlag(flag: string): boolean,
+    setFlag(flag: string, value: boolean): void,
+}
+
+const OptsContext = createContext<IOptsContext>(undefined)
 
 export function Checkbox({ flag, description }) {
     const { checkFlag, setFlag } = useContext(OptsContext)
@@ -41,7 +46,7 @@ export function FlagSet({ name, children }) {
     </div>
 }
 
-export function FlagOption({ flag, description }) {
+export function FlagOption({ flag, description }: { flag: string, description?: string }) {
     const { checkFlag } = useContext(OptsContext)
 
     return <option
@@ -52,7 +57,19 @@ export function FlagOption({ flag, description }) {
     </option>
 }
 
-export default function CompilerOpts({ value, onChange, title, isPopup }) {
+export type CompilerOptsT = {
+    compiler: string,
+    cc_opts: string,
+}
+
+export type Props = {
+    value: CompilerOptsT,
+    onChange: (value: CompilerOptsT) => void,
+    title?: string,
+    isPopup?: boolean,
+}
+
+export default function CompilerOpts({ value, onChange, title, isPopup }: Props) {
     const [compiler, setCompiler] = useState((value && value.compiler) || presets[0].compiler)
     let [opts, setOpts] = useState((value && value.cc_opts) || presets[0].opts)
 
@@ -61,14 +78,14 @@ export default function CompilerOpts({ value, onChange, title, isPopup }) {
             compiler,
             cc_opts: opts,
         })
-    }, [compiler, opts])
+    }, [compiler, onChange, opts])
 
     return <OptsContext.Provider value={{
-        checkFlag(flag) {
+        checkFlag(flag: string) {
             return opts.split(" ").includes(flag)
         },
 
-        setFlag(flag, enable) {
+        setFlag(flag: string, enable: boolean) {
             let split = opts.split(" ")
 
             if (enable) {
@@ -111,7 +128,7 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
                 class={styles.textbox}
                 value={opts}
                 placeholder="no arguments"
-                onChange={e => setOpts(e.target.value)}
+                onChange={e => setOpts((e.target as HTMLInputElement).value)}
             />
         </div>
 

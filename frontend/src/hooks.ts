@@ -1,7 +1,7 @@
 import { useState, useRef, useLayoutEffect, StateUpdater } from "preact/hooks"
 import useResizeObserver from "@react-hook/resize-observer"
 
-export function useLocalStorage<S>(key: string, initialValue: S): [S, StateUpdater<S>] {
+export function useLocalStorage<S>(key: string, initialValue: S = undefined): [S, StateUpdater<S>] {
     const [storedValue, setStoredValue] = useState(() => {
         const item = localStorage.getItem(key)
         return item ? JSON.parse(item) : initialValue
