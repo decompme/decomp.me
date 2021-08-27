@@ -5,7 +5,7 @@
         "jsxFragmentFactory": "Fragment",
         "module": "esnext",
         "moduleResolution": "node",
+        "noEmit": true,
+        "lib": ["ESNext"]
     },
-    "lib": ["ESNext"],
-    
 }

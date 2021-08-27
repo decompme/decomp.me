@@ -23,7 +23,7 @@ export default function LoginState({ onChange }: Props) {
         return <div>{error}</div>
     } else if (!data?.user) {
         // Loading...
-        return <div></div>
+        return <div />
     } else if (data?.user?.username) {
         return <UserLink username={data.user.username} />
     } else {

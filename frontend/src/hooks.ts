@@ -1,7 +1,7 @@
 import { useState, useRef, useLayoutEffect, StateUpdater } from "preact/hooks"
 import useResizeObserver from "@react-hook/resize-observer"
 
-export function useLocalStorage<S>(key: string, initialValue: object): [S, StateUpdater<S>] {
+export function useLocalStorage<S>(key: string, initialValue: S): [S, StateUpdater<S>] {
     const [storedValue, setStoredValue] = useState(() => {
         const item = localStorage.getItem(key)
         return item ? JSON.parse(item) : initialValue
@@ -19,7 +19,7 @@ export function useLocalStorage<S>(key: string, initialValue: object): [S, State
 export function useSize<T extends HTMLElement>() {
     const ref = useRef<T>()
     const [size, setSize] = useState({ width: 0, height: 0 })
-  
+
     useLayoutEffect(() => {
         setSize(ref.current.getBoundingClientRect())
     }, [ref])

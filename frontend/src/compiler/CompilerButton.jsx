@@ -17,7 +17,7 @@ export default function CompilerButton({ value, onChange, disabled }) {
         onOutsideClick: close,
         overflowContainer: false,
         auto: true,
-        placement: "bottom-end", 
+        placement: "bottom-end",
         triggerOffset: 14,
     })
 

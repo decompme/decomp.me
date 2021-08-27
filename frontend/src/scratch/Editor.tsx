@@ -1,5 +1,5 @@
 import { h, Fragment } from "preact"
-import { useEffect, useState, useRef } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
 import Skeleton from "react-loading-skeleton"
 import MonacoEditor, { useMonaco } from "@monaco-editor/react"
 import type { editor } from "monaco-editor"
@@ -29,10 +29,10 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
             console.info("Updating editor value because valueVersion changed")
             model.setValue(value)
         }
-    }, [valueVersion, model])
+    }, [valueVersion, model]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <>
-        <div style={{ display: (isLoading || forceLoading) ? 'none' : 'block' }} class={styles.monacoContainer}>
+        <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} class={styles.monacoContainer}>
             <MonacoEditor
                 language="custom_c"
                 theme="custom"
@@ -48,7 +48,7 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
                     padding: padding ? { top: 30, bottom: 30 } : {},
                     fontSize: 13,
                 }}
-                onMount={(editor, monaco) => {
+                onMount={editor => {
                     setModel(editor.getModel())
                 }}
                 onChange={(newValue: string) => {
@@ -60,13 +60,13 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
         </div>
 
         <div style={{
-            display: (isLoading || forceLoading) ? 'block' : 'none',
-            paddingTop: padding ? '2em' : '0',
-            paddingBottom: padding ? '2em' : '0',
-            paddingLeft: '2em',
-            paddingRight: '2em',
-            background: '#14161a',
-            height: '100%',
+            display: (isLoading || forceLoading) ? "block" : "none",
+            paddingTop: padding ? "2em" : "0",
+            paddingBottom: padding ? "2em" : "0",
+            paddingLeft: "2em",
+            paddingRight: "2em",
+            background: "#14161a",
+            height: "100%",
         }}>
             <Skeleton count={6} height={22} />
         </div>

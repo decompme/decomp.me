@@ -29,7 +29,7 @@ export default function NewScratch() {
             console.warn("create scratch action already in progress")
             return
         }
-        
+
         try {
             setAwaitingResponse(true)
             const { slug } = await api.post("/scratch", {
@@ -63,7 +63,7 @@ export default function NewScratch() {
                 <div class={styles.targetasm}>
                     <Editor language="asm" value={asm} onChange={setAsm} />
                 </div>
-                
+
                 <p class={styles.description}>
                     Include any C context (structs, definitions, etc) below:
                 </p>

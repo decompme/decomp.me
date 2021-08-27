@@ -65,6 +65,7 @@ export default function UserPage() {
 
 export function ScratchList({ user }: { user: api.FullUser }) {
     // TODO: needs backend
+    void user
 
     /*
     const { data: scratches, error } = useSWR<api.Scratch[]>(`/user/${user.username}/scratches`, api.get)

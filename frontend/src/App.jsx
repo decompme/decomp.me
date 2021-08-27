@@ -44,9 +44,9 @@ export default function App() {
             reverseOrder={true}
             toastOptions={{
                 style: {
-                    borderRadius: '100px',
-                    background: '#333',
-                    color: '#fff',
+                    borderRadius: "100px",
+                    background: "#333",
+                    color: "#fff",
                 },
             }}
         />

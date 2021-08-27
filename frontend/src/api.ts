@@ -1,5 +1,7 @@
 const { API_BASE } = import.meta.env
 
+type Json = Record<string, unknown>
+
 const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
@@ -8,12 +10,12 @@ const commonOpts: RequestInit = {
 // Read the Django CSRF token, from https://docs.djangoproject.com/en/3.2/ref/csrf/#ajax
 export const csrftoken = (function (name) {
     let cookieValue = null
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';')
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";")
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim()
             // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            if (cookie.substring(0, name.length + 1) === (`${name  }=`)) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
                 break
             }
@@ -49,7 +51,7 @@ export async function get(url: string, cache = false) {
     return await response.json()
 }
 
-export async function post(url: string, json: object) {
+export async function post(url: string, json: Json) {
     const body: string = JSON.stringify(json)
 
     console.info("POST", url, JSON.parse(body))
@@ -59,8 +61,8 @@ export async function post(url: string, json: object) {
         method: "POST",
         body,
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
         },
     })
 
@@ -71,7 +73,7 @@ export async function post(url: string, json: object) {
     return await response.json()
 }
 
-export async function patch(url: string, json: object) {
+export async function patch(url: string, json: Json) {
     const body = JSON.stringify(json)
 
     console.info("PATCH", url, JSON.parse(body))
@@ -81,8 +83,8 @@ export async function patch(url: string, json: object) {
         method: "PATCH",
         body,
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
         },
     })
 
@@ -90,7 +92,7 @@ export async function patch(url: string, json: object) {
         throw new ResponseError(response, await response.json())
     }
 
-    let text = await response.text()
+    const text = await response.text()
     if (!text) {
         return
     }

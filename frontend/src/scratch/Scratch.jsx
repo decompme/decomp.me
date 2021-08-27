@@ -87,9 +87,9 @@ export default function Scratch() {
         }).catch(error => Promise.reject(error.message))
 
         await toast.promise(promise, {
-            loading: 'Saving...',
-            success: 'Scratch saved!',
-            error: 'Error saving scratch',
+            loading: "Saving...",
+            success: "Scratch saved!",
+            error: "Error saving scratch",
         })
 
         setSavedCompiler(compiler)
@@ -106,29 +106,31 @@ export default function Scratch() {
 
         history.push(`/scratch/${newScratch.slug}`)
         toast.success("Fork created!", {
-            icon: '🍴',
+            icon: "🍴",
         })
     }
 
-    useEffect(async () => {
-        const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
+    useEffect(() => {
+        (async () => {
+            const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
 
-        setIsYours(is_yours)
-        setCompiler({
-            compiler: scratch.compiler,
-            cc_opts: scratch.cc_opts,
-        })
-        setCContext(scratch.context)
-        setCCode(scratch.source_code)
+            setIsYours(is_yours)
+            setCompiler({
+                compiler: scratch.compiler,
+                cc_opts: scratch.cc_opts,
+            })
+            setCContext(scratch.context)
+            setCCode(scratch.source_code)
 
-        setSavedCompiler({
-            compiler: scratch.compiler,
-            cc_opts: scratch.cc_opts,
-        })
-        setSavedCCode(scratch.source_code)
-        setSavedCContext(scratch.context)
+            setSavedCompiler({
+                compiler: scratch.compiler,
+                cc_opts: scratch.cc_opts,
+            })
+            setSavedCCode(scratch.source_code)
+            setSavedCContext(scratch.context)
 
-        setLoadDate(Date.now())
+            setLoadDate(Date.now())
+        })()
     }, [slug])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
@@ -162,7 +164,10 @@ export default function Scratch() {
         }
     }
 
-    useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts] : [])
+    useEffect(
+        debouncedCompile,
+        [debouncedCompile, compiler && compiler.compiler, compiler && compiler.cc_opts],
+    )
 
     return <>
         <Nav />
@@ -173,7 +178,7 @@ export default function Scratch() {
                         <resizer.Section minSize="4em" className={styles.sourceCode}>
                             <div class={styles.sectionHeader}>
                                 Source
-                                <span class={styles.grow}></span>
+                                <span class={styles.grow} />
                                 <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
                                     <SyncIcon size={16} /> Compile
                                 </button>
@@ -185,7 +190,7 @@ export default function Scratch() {
                                     <RepoForkedIcon size={16} /> Fork
                                 </button>
 
-                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
+                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={c => setCompiler(c)} />
                             </div>
 
                             <Editor
@@ -201,7 +206,7 @@ export default function Scratch() {
                         </resizer.Section>
 
                         <resizer.Bar
-                            style={{ cursor: 'row-resize' }}
+                            style={{ cursor: "row-resize" }}
                             onClick={toggleContextSection}
                         >
                             <div class={styles.sectionHeader}>
@@ -227,8 +232,8 @@ export default function Scratch() {
                 <resizer.Bar
                     size={1}
                     style={{
-                        cursor: 'col-resize',
-                        background: '#2e3032',
+                        cursor: "col-resize",
+                        background: "#2e3032",
                     }}
                     expandInteractiveArea={{ left: 4, right: 4 }}
                 />
@@ -242,18 +247,18 @@ export default function Scratch() {
                             </span>}
 
                             <span class={styles.grow} />
-                
+
                             <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
                             <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
                         </>}
                     </div>
                     <div class={styles.output}>
-                        {(!isCompilerChosen) ?
+                        {(!isCompilerChosen) ? <>
                             <ChooseACompiler onCommit={setCompiler} />
-                        : (diff === null && log === null)
-                            ?
+                        </> : (diff === null && log === null)
+                            ? <>
                                 <Skeleton height={20} count={20} />
-                            : <>
+                            </> : <>
                                 {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
                                 <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
                             </>
@@ -269,9 +274,9 @@ function ChooseACompiler({ onCommit }) {
     const [compiler, setCompiler] = useLocalStorage("ChooseACompiler.recent")
 
     return <div>
-        <CompilerOpts title="Choose a compiler" value={compiler} onChange={setCompiler} />
+        <CompilerOpts title="Choose a compiler" value={compiler} onChange={c => setCompiler(c)} />
 
-        <div style={{ padding: '1em', float: 'right' }}>
+        <div style={{ padding: "1em", float: "right" }}>
             <button onClick={() => onCommit(compiler)}>
                 Use this compiler
                 <ArrowRightIcon size={16} />

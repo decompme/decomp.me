@@ -28,14 +28,14 @@ export default function PresetSelect({ compiler, opts, setCompiler, setOpts }) {
             return
         }
 
-        const preset = presets[parseInt(e.target.value)]
+        const preset = presets[parseInt(e.target.value, 10)]
 
         setOpts(preset.opts)
         setCompiler(preset.compiler)
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
         {presets.map((preset, idx) =>
-            <option value={idx} selected={preset === selectedPreset}>
+            <option key={idx} value={idx} selected={preset === selectedPreset}>
                 {preset.name}
             </option>
         )}

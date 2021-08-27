@@ -1,5 +1,6 @@
 import { h, createContext } from "preact"
 import { useState, useContext, useEffect } from "preact/hooks"
+import Skeleton from "react-loading-skeleton"
 
 import Select from "../Select"
 
@@ -11,7 +12,7 @@ const OptsContext = createContext()
 
 export function Checkbox({ flag, description }) {
     const { checkFlag, setFlag } = useContext(OptsContext)
- 
+
     const isChecked = checkFlag(flag)
 
     return <div class={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
@@ -57,7 +58,7 @@ export default function CompilerOpts({ value, onChange, title, isPopup }) {
 
     useEffect(() => {
         onChange({
-            compiler: compiler,
+            compiler,
             cc_opts: opts,
         })
     }, [compiler, opts])
@@ -66,16 +67,16 @@ export default function CompilerOpts({ value, onChange, title, isPopup }) {
         checkFlag(flag) {
             return opts.split(" ").includes(flag)
         },
-    
+
         setFlag(flag, enable) {
             let split = opts.split(" ")
-    
+
             if (enable) {
                 split.push(flag)
             } else {
                 split = split.filter(f => f !== flag)
             }
-    
+
             opts = split.join(" ").trim()
             setOpts(opts)
         },
@@ -97,6 +98,7 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
         <div class={styles.row}>
             <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
                 {Object.values(compilers).map(c => <option
+                    key={c.id}
                     value={c.id}
                     selected={c.name === compilerComp.name}
                 >

@@ -29,13 +29,13 @@ export default function LoginPage() {
                 setError(error)
             })
         }
-    }, [code])
+    }, [code, history, mutate, next])
 
     return <>
         <main class={styles.container}>
             {error ? <div class={styles.card}>
                 <p class={styles.error}>
-                    Sign-in error.<br/>
+                    Sign-in error.<br />
                     {error.message}
                 </p>
                 <p>
