@@ -1,16 +1,19 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ProfileSerializer
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import logging
 
 import hashlib
+import requests
+from github3api import GitHubAPI
 
-from .models import Profile, Asm, Scratch
+from .models import Profile, Asm, Scratch, GitHubUserChangeException, GitHubUserHasExistingProfileException
 from coreapp.models import gen_scratch_id
 
 
@@ -201,3 +204,82 @@ def fork(request, slug):
     )
     new_scratch.save()
     return Response(ScratchSerializer(new_scratch).data, status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "POST"])
+def user_current(request, slug=None):
+    """
+    Get the logged-in user, or sign in with GitHub
+    """
+
+    profile = Profile.objects.filter(id=request.session.get("profile", None)).first()
+
+    if not profile:
+        profile = Profile()
+        profile.save()
+        request.session["profile"] = profile.id
+
+    # sign in
+    if request.method == "POST":
+        if not settings.GITHUB_CLIENT_ID or not settings.GITHUB_CLIENT_SECRET:
+            return Response({
+                "error": "GitHub sign-in not configured"
+            }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        required_params = ["code"]
+
+        for param in required_params:
+            if param not in request.data:
+                return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        logging.debug("Attempting GitHub oauth login")
+
+        response = requests.post(
+            "https://github.com/login/oauth/access_token",
+            json={
+                "client_id": settings.GITHUB_CLIENT_ID,
+                "client_secret": settings.GITHUB_CLIENT_SECRET,
+                "code": request.data["code"],
+            },
+            headers={ 'Accept': 'application/json' },
+        ).json()
+
+        error = response.get("error")
+        if error == None:
+            access_token = response["access_token"]
+
+            profile.github_access_token = access_token
+
+            try:
+                assert profile.load_fields_from_github(always=True)
+                logging.debug("Connected existing profile to new GitHub user")
+            except GitHubUserChangeException:
+                # The token was for a different user than the one associated with the current profile,
+                # so make a new profile for this one.
+                profile = Profile()
+                profile.github_access_token = access_token
+                assert profile.load_fields_from_github(always=True)
+                logging.debug("Connected new profile to new GitHub user")
+            except GitHubUserHasExistingProfileException as e:
+                profile = e.profile
+
+                # This isn't strictly necessary, but we might as well use the renewed access token.
+                profile.github_access_token = access_token
+                assert profile.load_fields_from_github(always=True)
+                logging.debug("Swapped to existing profile for existing GitHub user")
+
+            profile.save()
+            request.session["profile"] = profile.id
+        elif error == "bad_verification_code":
+            return Response({
+                "error": "Invalid or expired GitHub OAuth verification code",
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            raise Exception(f"Unknown GitHub login error: {error} - {response['error_description']}")
+
+    else:
+        profile.load_fields_from_github()
+        profile.save()
+
+    return Response({
+        "user": ProfileSerializer(profile).data,
+    })

@@ -1,0 +1,22 @@
+.container {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    cursor: default;
+}
+
+.container p {
+    padding-bottom: 1em;
+    line-height: 1.5;
+}
+
+.card {
+    padding: 2em;
+    border-radius: 1em;
+    background: #14161a;
+}
+
+.error {
+    color: #ff8866;
+}

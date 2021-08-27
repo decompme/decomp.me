@@ -5,7 +5,9 @@ config({ path: "../.env" })
 /** @type {import("snowpack").SnowpackUserConfig } */
 export default {
     env: {
+        DEBUG: process.env.DEBUG == "on",
         API_BASE: process.env.API_BASE,
+        GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     },
     mount: {
         public: { url: "/", static: true },

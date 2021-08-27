@@ -1,0 +1,13 @@
+.user {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5em;
+    cursor: default;
+}
+
+.avatar {
+    border-radius: 999px;
+    width: 1.5em;
+    height: 1.5em;
+}

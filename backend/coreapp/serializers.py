@@ -1,5 +1,11 @@
-from coreapp.models import Scratch
+from coreapp.models import Profile, Scratch
 from rest_framework import serializers
+
+class ProfileSerializer(serializers.ModelSerializer[Profile]):
+    class Meta:
+        model = Profile
+        fields = ["id", "username", "name", "avatar_url"]
+
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)

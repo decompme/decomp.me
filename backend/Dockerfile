@@ -41,3 +41,5 @@ COPY --from=nsjail /bin/nsjail /bin/nsjail
 WORKDIR /backend
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
+
+# TODO: nginx server to proxy-pass frontend/backend in order to preserve cookies

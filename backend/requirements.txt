@@ -12,3 +12,4 @@ psycopg2
 pycparser
 python-Levenshtein
 watchdog
+github3api

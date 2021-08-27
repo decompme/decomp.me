@@ -2,11 +2,12 @@ import { h, Fragment } from "preact"
 import { BrowserRouter as Router, Route, Switch, Link, Redirect } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"
-import { MarkGithubIcon, PlusIcon } from "@primer/octicons-react"
+import { PlusIcon } from "@primer/octicons-react"
 
 import NewScratch from "./scratch/NewScratch"
 import Scratch from "./scratch/Scratch"
-import CompilerOpts from "./compiler/CompilerOpts"
+import LoginState from "./login/LoginState"
+import GitHubOAuthCallbackHandler from "./login/GitHubOAuthCallbackHandler"
 
 export default function App() {
     return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">
@@ -16,9 +17,7 @@ export default function App() {
                     <PlusIcon size={16} /> New Scratch
                 </Link>
 
-                <a class="button" href="https://github.com/ethteck/decomp.me" target="_blank" rel="noopener noreferrer">
-                    <MarkGithubIcon size={16} /> Contribute to decomp.me on GitHub!
-                </a>
+                <LoginState />
             </nav>
 
             <main>
@@ -35,8 +34,8 @@ export default function App() {
                         <Scratch />
                     </Route>
 
-                    <Route exact path="/test/compileropts">
-                        <CompilerOpts />
+                    <Route exact path="/login">
+                        <GitHubOAuthCallbackHandler />
                     </Route>
                 </Switch>
             </main>
