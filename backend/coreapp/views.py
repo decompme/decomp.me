@@ -283,3 +283,12 @@ def user_current(request, slug=None):
     return Response({
         "user": ProfileSerializer(profile).data,
     })
+
+@api_view(["GET"])
+def user(request, username):
+    """
+    Gets a user's basic data
+    """
+
+    user = get_object_or_404(Profile, username=username)
+    return Response(ProfileSerializer(user).data)

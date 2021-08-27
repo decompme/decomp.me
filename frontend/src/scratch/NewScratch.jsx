@@ -1,8 +1,9 @@
-import { h } from "preact"
-import { useState } from "preact/hooks"
+import { h, Fragment } from "preact"
+import { useState, useEffect } from "preact/hooks"
 import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
+import Nav from "../Nav"
 import Editor from "./Editor"
 import Select from "../Select"
 import { useLocalStorage } from "../hooks"
@@ -16,6 +17,10 @@ export default function NewScratch() {
     const [context, setContext] = useLocalStorage("NewScratch.context")
     const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
     const history = useHistory()
+
+    useEffect(() => {
+        document.title = "New scratch"
+    }, [])
 
     const submit = async () => {
         setErrorMsg("")
@@ -34,6 +39,7 @@ export default function NewScratch() {
             })
 
             setErrorMsg("")
+            setAsm("") // Clear the localStorage
 
             history.push(`/scratch/${slug}`)
             toast.success("Scratch created! You may share this url")
@@ -45,35 +51,38 @@ export default function NewScratch() {
         }
     }
 
-    return <div class={styles.container}>
-        <div class={styles.card}>
-            <h1 class={`${styles.heading}`}>New Scratch</h1>
-            <p class={styles.description}>
-                Paste your function's target assembly below:
-            </p>
-
-            <div class={styles.targetasm}>
-                <Editor language="asm" value={asm} onChange={setAsm} />
-            </div>
-            
-            <p class={styles.description}>
-                Include any C context (structs, definitions, etc) below:
-            </p>
-            <div class={styles.targetasm}>
-                <Editor language="c" value={context} onChange={setContext} />
-            </div>
-
-            <div class={styles.actions}>
-                <p class={`red ${styles.errormsg}`}>
-                    {errorMsg}
+    return <>
+        <Nav />
+        <main class={styles.container}>
+            <div class={styles.card}>
+                <h1 class={`${styles.heading}`}>New scratch</h1>
+                <p class={styles.description}>
+                    Paste your function's target assembly below:
                 </p>
 
-                <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
-                    <option value="mips">MIPS</option>
-                </Select>
+                <div class={styles.targetasm}>
+                    <Editor language="asm" value={asm} onChange={setAsm} />
+                </div>
+                
+                <p class={styles.description}>
+                    Include any C context (structs, definitions, etc) below:
+                </p>
+                <div class={styles.targetasm}>
+                    <Editor language="c" value={context} onChange={setContext} />
+                </div>
 
-                <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
+                <div class={styles.actions}>
+                    <p class={`red ${styles.errormsg}`}>
+                        {errorMsg}
+                    </p>
+
+                    <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                        <option value="mips">MIPS</option>
+                    </Select>
+
+                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
+                </div>
             </div>
-        </div>
-    </div>
+        </main>
+    </>
 }

@@ -8,6 +8,7 @@ import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/oc
 import { useParams, useHistory } from "react-router-dom"
 
 import * as api from "../api"
+import Nav from "../Nav"
 import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts from "../compiler/CompilerOpts"
 import Editor from "./Editor"
@@ -36,6 +37,12 @@ export default function Scratch() {
     const [loadDate, setLoadDate] = useState(0) // maybe not needed
 
     const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
+
+    const owner = null // TODO: backend
+
+    useEffect(() => {
+        document.title = owner?.username ? `${owner?.username}'s scratch` : "Unknown scratch"
+    }, [owner?.username])
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
@@ -157,102 +164,105 @@ export default function Scratch() {
 
     useEffect(debouncedCompile, compiler ? [compiler.compiler, compiler.cc_opts] : [])
 
-    return <div class={styles.container}>
-        <resizer.Container class={styles.resizer}>
-            <resizer.Section minSize={500}>
-                <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
-                    <resizer.Section minSize="4em" className={styles.sourceCode}>
-                        <div class={styles.sectionHeader}>
-                            Source
-                            <span class={styles.grow}></span>
-                            <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
-                                <SyncIcon size={16} /> Compile
-                            </button>
-                            {isYours && <button onClick={save}>
-                                <UploadIcon size={16} /> Save
-                                {hasUnsavedChanges && "*"}
-                            </button>}
-                            <button onClick={fork}>
-                                <RepoForkedIcon size={16} /> Fork
-                            </button>
+    return <>
+        <Nav />
+        <main class={styles.container}>
+            <resizer.Container class={styles.resizer}>
+                <resizer.Section minSize={500}>
+                    <resizer.Container vertical style={{ height: "100%" }} ref={codeResizeContainer}>
+                        <resizer.Section minSize="4em" className={styles.sourceCode}>
+                            <div class={styles.sectionHeader}>
+                                Source
+                                <span class={styles.grow}></span>
+                                <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
+                                    <SyncIcon size={16} /> Compile
+                                </button>
+                                {isYours && <button onClick={save}>
+                                    <UploadIcon size={16} /> Save
+                                    {hasUnsavedChanges && "*"}
+                                </button>}
+                                <button onClick={fork}>
+                                    <RepoForkedIcon size={16} /> Fork
+                                </button>
 
-                            <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
-                        </div>
+                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
+                            </div>
 
-                        <Editor
-                            padding
-                            value={cCode}
-                            valueVersion={slug + loadDate}
-                            forceLoading={cCode === null}
-                            onChange={value => {
-                                setCCode(value)
-                                debouncedCompile()
-                            }}
-                        />
-                    </resizer.Section>
+                            <Editor
+                                padding
+                                value={cCode}
+                                valueVersion={slug + loadDate}
+                                forceLoading={cCode === null}
+                                onChange={value => {
+                                    setCCode(value)
+                                    debouncedCompile()
+                                }}
+                            />
+                        </resizer.Section>
 
-                    <resizer.Bar
-                        style={{ cursor: 'row-resize' }}
-                        onClick={toggleContextSection}
-                    >
-                        <div class={styles.sectionHeader}>
-                            Context
-                        </div>
-                    </resizer.Bar>
+                        <resizer.Bar
+                            style={{ cursor: 'row-resize' }}
+                            onClick={toggleContextSection}
+                        >
+                            <div class={styles.sectionHeader}>
+                                Context
+                            </div>
+                        </resizer.Bar>
 
-                    <resizer.Section defaultSize={0} className={styles.context}>
-                        <Editor
-                            padding
-                            value={cContext}
-                            valueVersion={slug + loadDate}
-                            forceLoading={cContext === null}
-                            onChange={value => {
-                                setCContext(value)
-                                debouncedCompile()
-                            }}
-                        />
-                    </resizer.Section>
-                </resizer.Container>
-            </resizer.Section>
+                        <resizer.Section defaultSize={0} className={styles.context}>
+                            <Editor
+                                padding
+                                value={cContext}
+                                valueVersion={slug + loadDate}
+                                forceLoading={cContext === null}
+                                onChange={value => {
+                                    setCContext(value)
+                                    debouncedCompile()
+                                }}
+                            />
+                        </resizer.Section>
+                    </resizer.Container>
+                </resizer.Section>
 
-            <resizer.Bar
-                size={1}
-                style={{
-                    cursor: 'col-resize',
-                    background: '#2e3032',
-                }}
-                expandInteractiveArea={{ left: 4, right: 4 }}
-            />
+                <resizer.Bar
+                    size={1}
+                    style={{
+                        cursor: 'col-resize',
+                        background: '#2e3032',
+                    }}
+                    expandInteractiveArea={{ left: 4, right: 4 }}
+                />
 
-            <resizer.Section className={styles.diffSection} minSize={400}>
-                <div class={styles.sectionHeader} ref={diffSectionHeader}>
-                    {isCompilerChosen && <>
-                        Diff
-                        {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
-                            (left is target, right is your code)
-                        </span>}
+                <resizer.Section className={styles.diffSection} minSize={400}>
+                    <div class={styles.sectionHeader} ref={diffSectionHeader}>
+                        {isCompilerChosen && <>
+                            Diff
+                            {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
+                                (left is target, right is your code)
+                            </span>}
 
-                        <span class={styles.grow} />
-            
-                        <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
-                        <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
-                    </>}
-                </div>
-                <div class={styles.output}>
-                    {(!isCompilerChosen) ?
-                        <ChooseACompiler onCommit={setCompiler} />
-                    : (diff === null && log === null)
-                        ?
-                            <Skeleton height={20} count={20} />
-                        : <>
-                            {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
-                            <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
-                        </>
-                    }
-                </div>
-            </resizer.Section>
-        </resizer.Container>
-    </div>
+                            <span class={styles.grow} />
+                
+                            <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
+                            <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
+                        </>}
+                    </div>
+                    <div class={styles.output}>
+                        {(!isCompilerChosen) ?
+                            <ChooseACompiler onCommit={setCompiler} />
+                        : (diff === null && log === null)
+                            ?
+                                <Skeleton height={20} count={20} />
+                            : <>
+                                {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
+                                <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                            </>
+                        }
+                    </div>
+                </resizer.Section>
+            </resizer.Container>
+        </main>
+    </>
 }
 
 function ChooseACompiler({ onCommit }) {

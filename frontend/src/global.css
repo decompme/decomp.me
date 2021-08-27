@@ -30,6 +30,7 @@ html {
     margin: 0;
     padding: 0;
     color: inherit;
+    text-decoration: inherit;
 }
 
 body {
@@ -58,18 +59,6 @@ body {
     z-index: 999;
 }
 
-nav {
-    grid-area: nav;
-
-    user-select: none;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 1em;
-}
-
 main {
     grid-area: main;
     overflow: hidden;
@@ -79,7 +68,7 @@ button, .button {
     background: #00000044;
     color: #ffffffcc;
 
-    border: 0;
+    border: 1px solid #ffffff22;
     border-radius: 0.25rem;
 
     padding: .6em 1em;
@@ -114,7 +103,7 @@ label {
     font-size: var(--s-1);
 }
 
-.white, h1, h2, h3, h4, h5, h6, a:hover, a:active, button:not([disabled]):hover {
+.white, h1, h2, h3, h4, h5, h6, button:not([disabled]):hover {
     color: #fff;
 }
 
@@ -124,8 +113,4 @@ label {
 
 ::selection {
     background: #ffffff22;
-}
-
-nav .button {
-    background: #2A2A2A;
 }

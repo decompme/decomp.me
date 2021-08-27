@@ -1,6 +1,6 @@
 const { API_BASE } = import.meta.env
 
-const commonOpts = {
+const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
 }
@@ -23,7 +23,7 @@ export const csrftoken = (function (name) {
 })("csrftoken")
 
 export class ResponseError extends Error {
-    constructor(response, responseJSON) {
+    constructor(response: Response, responseJSON) {
         super(`Server responded with HTTP status code ${response.status}`)
 
         if (responseJSON.error) {
@@ -32,11 +32,11 @@ export class ResponseError extends Error {
             this.message = responseJSON.errors.join(",")
         }
 
-        this.name = this.constructor.name
+        this.name = "ResponseError"
     }
 }
 
-export async function get(url, cache = false) {
+export async function get(url: string, cache = false) {
     const response = await fetch(API_BASE + url, {
         ...commonOpts,
         cache: cache ? "default" : "reload",
@@ -49,10 +49,8 @@ export async function get(url, cache = false) {
     return await response.json()
 }
 
-export async function post(url, body = {}) {
-    if (typeof body != "string") {
-        body = JSON.stringify(body)
-    }
+export async function post(url: string, json: object) {
+    const body: string = JSON.stringify(json)
 
     console.info("POST", url, JSON.parse(body))
 
@@ -73,10 +71,8 @@ export async function post(url, body = {}) {
     return await response.json()
 }
 
-export async function patch(url, body = {}) {
-    if (typeof body != "string") {
-        body = JSON.stringify(body)
-    }
+export async function patch(url: string, json: object) {
+    const body = JSON.stringify(json)
 
     console.info("PATCH", url, JSON.parse(body))
 
@@ -99,4 +95,14 @@ export async function patch(url, body = {}) {
         return
     }
     return JSON.parse(text)
+}
+
+export interface AnonymousUser {
+    id: number,
+}
+
+export interface FullUser extends AnonymousUser {
+    username: string,
+    name: string,
+    avatar_url: string,
 }
