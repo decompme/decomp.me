@@ -39,7 +39,7 @@ class Profile(models.Model):
     name = models.TextField(null=True)
     avatar_url = models.TextField(null=True)
 
-    def load_fields_from_github(self, always=False):
+    def load_fields_from_github(self, always=False) -> bool:
         if not self.github_access_token:
             return False
 

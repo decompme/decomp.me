@@ -13,3 +13,4 @@ pycparser
 python-Levenshtein
 watchdog
 github3api
+types-requests
