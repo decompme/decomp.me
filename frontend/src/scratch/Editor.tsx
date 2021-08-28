@@ -2,7 +2,7 @@ import { h, Fragment } from "preact"
 import { useEffect, useState } from "preact/hooks"
 import Skeleton from "react-loading-skeleton"
 import MonacoEditor, { useMonaco } from "@monaco-editor/react"
-import type { editor } from "monaco-editor"
+import { editor } from "monaco-editor"
 
 import monacoTheme from "./monacoTheme"
 import { language } from "./c"

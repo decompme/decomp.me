@@ -1,4 +1,4 @@
-import type { editor } from "monaco-editor"
+import { editor } from "monaco-editor"
 
 const theme: editor.IStandaloneThemeData = {
     "base": "vs-dark",

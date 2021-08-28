@@ -38,7 +38,7 @@ export function FlagSet({ name, children }) {
                     setFlag(child.props.flag, false)
                 }
 
-                setFlag(event.target.value, true)
+                setFlag((event.target as HTMLSelectElement).value, true)
             }}
         >
             {children}
@@ -113,7 +113,10 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
 
     return <div>
         <div class={styles.row}>
-            <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
+            <Select
+                class={styles.compilerSelect}
+                onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
+            >
                 {Object.values(compilers).map(c => <option
                     key={c.id}
                     value={c.id}

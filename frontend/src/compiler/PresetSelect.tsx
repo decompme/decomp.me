@@ -24,11 +24,11 @@ export default function PresetSelect({ compiler, opts, setCompiler, setOpts }) {
     const selectedPreset = presets.find(p => p.compiler === compiler && p.opts === opts)
 
     return <Select onChange={e => {
-        if (e.target.value === "custom") {
+        if ((e.target as HTMLSelectElement).value === "custom") {
             return
         }
 
-        const preset = presets[parseInt(e.target.value, 10)]
+        const preset = presets[parseInt((e.target as HTMLSelectElement).value, 10)]
 
         setOpts(preset.opts)
         setCompiler(preset.compiler)
