@@ -22,7 +22,7 @@ export default function Scratch() {
     const history = useHistory()
     const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
-    const [compiler, setCompiler] = useState(null)
+    const [compiler, setCompiler] = useState<CompilerOptsT>(null)
     const isCompilerChosen = !(compiler && compiler.compiler === "")
     const [cCode, setCCode] = useState(null)
     const [cContext, setCContext] = useState(null)
@@ -194,11 +194,12 @@ export default function Scratch() {
                                     <RepoForkedIcon size={16} /> Fork
                                 </button>
 
-                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={c => setCompiler(c)} />
+                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
                             </div>
 
                             <Editor
                                 padding
+                                language="c"
                                 value={cCode}
                                 valueVersion={slug + loadDate}
                                 forceLoading={cCode === null}
@@ -222,6 +223,7 @@ export default function Scratch() {
                         <resizer.Section defaultSize={0} className={styles.context}>
                             <Editor
                                 padding
+                                language="c"
                                 value={cContext}
                                 valueVersion={slug + loadDate}
                                 forceLoading={cContext === null}

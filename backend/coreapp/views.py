@@ -87,9 +87,19 @@ def scratch(request, slug=None):
 
         assembly, err = CompilerWrapper.assemble_asm(arch, asm)
         if not assembly:
-            error_msg = f"Error when assembling target asm: {err}"
-            logging.error(error_msg)
-            return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
+            errors = []
+
+            for line in err.splitlines():
+                if "asm.s:" in line:
+                    errors.append(line[line.find("asm.s:") + len(".asm.s") :].strip())
+                else:
+                    errors.append(line)
+
+            return Response({
+                "error": "as_error",
+                "error_description": "Error when assembling target asm",
+                "as_errors": errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         source_code = data.get("source_code")
         if not source_code:

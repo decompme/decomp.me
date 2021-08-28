@@ -5,10 +5,19 @@ import MonacoEditor, { useMonaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
 
 import monacoTheme from "./monacoTheme"
-import { language } from "./c"
+import * as customLangauge from "./c"
 import styles from "./Editor.module.css"
 
-export default function Editor({ forceLoading, value, valueVersion, onChange, padding }) {
+export type Props = {
+    language: "c" | "asm",
+    forceLoading?: boolean,
+    value?: string,
+    valueVersion?: string | number,
+    onChange?: (value: string) => void,
+    padding?: boolean,
+}
+
+export default function Editor({ language, forceLoading, value, valueVersion, onChange, padding }: Props) {
     const [isLoading, setIsLoading] = useState(true)
     const monaco = useMonaco()
     const [model, setModel] = useState<editor.ITextModel>()
@@ -17,12 +26,16 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
         if (monaco) {
             monaco.editor.defineTheme("custom", monacoTheme)
 
-            monaco.languages.register({ id: "custom_c" })
-            monaco.languages.setMonarchTokensProvider("custom_c", language)
+            if (language === "c") {
+                monaco.languages.register({ id: "custom_c" })
+                monaco.languages.setMonarchTokensProvider("custom_c", customLangauge.language)
+            } else if (language === "asm") {
+                // TODO? possibly not common enough
+            }
 
             setTimeout(() => setIsLoading(false), 0)
         }
-    }, [monaco])
+    }, [monaco])  // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (model && value) {
@@ -34,7 +47,7 @@ export default function Editor({ forceLoading, value, valueVersion, onChange, pa
     return <>
         <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} class={styles.monacoContainer}>
             <MonacoEditor
-                language="custom_c"
+                language={language === "c" ? "custom_c" : "custom_asm"}
                 theme="custom"
                 defaultValue={value}
                 options={{

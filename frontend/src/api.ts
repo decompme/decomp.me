@@ -25,8 +25,12 @@ export const csrftoken = (function (name) {
 })("csrftoken")
 
 export class ResponseError extends Error {
+    responseJSON: Json
+
     constructor(response: Response, responseJSON) {
         super(`Server responded with HTTP status code ${response.status}`)
+
+        this.responseJSON = responseJSON
 
         if (responseJSON.error) {
             this.message = responseJSON.error

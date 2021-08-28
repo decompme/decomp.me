@@ -78,7 +78,7 @@ export default function CompilerOpts({ value, onChange, title, isPopup }: Props)
             compiler,
             cc_opts: opts,
         })
-    }, [compiler, onChange, opts])
+    }, [compiler, opts]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {

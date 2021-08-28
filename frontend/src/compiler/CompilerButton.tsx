@@ -38,7 +38,7 @@ export default function CompilerButton({ value, onChange, disabled }) {
         {renderLayer(
             <AnimatePresence>
                 {isOpen && <motion.div
-                    class={styles.popover}
+                    className={styles.popover}
                     initial={{ y: -50, scaleX: 0.7, scaleY: 0, opacity: 0 }}
                     animate={{ y: 0, scaleX: 1, scaleY: 1, opacity: 1 }}
                     exit={{ y: -50, scaleX: 0.7, scaleY: 0, opacity: 0 }}

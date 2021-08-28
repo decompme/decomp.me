@@ -12,9 +12,9 @@ import toast from "react-hot-toast"
 
 export default function NewScratch() {
     const [awaitingResponse, setAwaitingResponse] = useState(false)
-    const [errorMsg, setErrorMsg] = useState()
-    const [asm, setAsm] = useLocalStorage("NewScratch.asm")
-    const [context, setContext] = useLocalStorage("NewScratch.context")
+    const [errorMsg, setErrorMsg] = useState("")
+    const [asm, setAsm] = useLocalStorage("NewScratch.asm", "")
+    const [context, setContext] = useLocalStorage("NewScratch.context", "")
     const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
     const history = useHistory()
 
@@ -44,8 +44,12 @@ export default function NewScratch() {
             history.push(`/scratch/${slug}`)
             toast.success("Scratch created! You may share this url")
         } catch (error) {
-            console.error(error)
-            setErrorMsg(error.toString())
+            if (error?.responseJSON.as_errors) {
+                setErrorMsg(error.responseJSON.as_errors.join("\n"))
+            } else {
+                console.error(error)
+                setErrorMsg(error.message || error.toString())
+            }
         } finally {
             setAwaitingResponse(false)
         }
@@ -61,22 +65,22 @@ export default function NewScratch() {
                 </p>
 
                 <div class={styles.targetasm}>
-                    <Editor language="asm" value={asm} onChange={setAsm} />
+                    <Editor language="asm" value={asm} onChange={v => setAsm(v)} />
                 </div>
 
                 <p class={styles.description}>
                     Include any C context (structs, definitions, etc) below:
                 </p>
                 <div class={styles.targetasm}>
-                    <Editor language="c" value={context} onChange={setContext} />
+                    <Editor language="c" value={context} onChange={v => setContext(v)} />
+                </div>
+
+                <div class={`red ${styles.errormsg}`}>
+                    {errorMsg}
                 </div>
 
                 <div class={styles.actions}>
-                    <p class={`red ${styles.errormsg}`}>
-                        {errorMsg}
-                    </p>
-
-                    <Select class={styles.compilerSelect} onChange={e => setArch(e.target.value)}>
+                    <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
                         <option value="mips">MIPS</option>
                     </Select>
 

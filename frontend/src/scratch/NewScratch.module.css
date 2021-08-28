@@ -53,5 +53,11 @@
 }
 
 .errormsg {
+    padding-left: var(--s2);
+    padding-right: var(--s2);
+    max-height: 8em;
+    overflow: auto;
     flex: 1;
+    font-family: monospace;
+    white-space: pre;
 }
