@@ -70,6 +70,9 @@ class Profile(models.Model):
             return True
         else:
             return False
+    
+    def __str__(self):
+        return self.username if self.username else str(self.id)
 
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)

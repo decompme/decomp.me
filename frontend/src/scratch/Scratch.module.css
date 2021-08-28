@@ -122,3 +122,27 @@
     from { transform: rotate(0deg) }
     to { transform: rotate(-330deg) }
 }
+
+.metadata {
+    font-size: 0.8em;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4em 1.2em;
+    gap: 1em;
+
+    color: #ffffff88;
+    cursor: default;
+}
+
+.metadata a {
+    color: #ffffffcc;
+}
+
+.metadata div {
+    display: flex;
+    gap: 1ch;
+    align-items: center;
+}

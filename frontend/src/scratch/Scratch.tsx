@@ -5,7 +5,7 @@ import * as resizer from "react-simple-resizer"
 import toast from "react-hot-toast"
 import Skeleton from "react-loading-skeleton"
 import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
-import { useParams, useHistory } from "react-router-dom"
+import { useParams, useHistory, Link } from "react-router-dom"
 
 import * as api from "../api"
 import Nav from "../Nav"
@@ -13,8 +13,19 @@ import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Editor from "./Editor"
 import { useLocalStorage, useSize } from "../hooks"
+import UserLink from "../user/UserLink"
 
 import styles from "./Scratch.module.css"
+
+function nameScratch({ owner }: { owner: api.FullUser }, isYours = false): string {
+    if (isYours) {
+        return "Your scratch"
+    } else if (owner?.name) {
+        return `${owner?.name}'s scratch`
+    } else {
+        return "Unknown scratch"
+    }
+}
 
 export default function Scratch() {
     // TODO: refactor this, this is stupidly big
@@ -29,6 +40,8 @@ export default function Scratch() {
     const [diff, setDiff] = useState(null)
     const [log, setLog] = useState(null)
     const [isYours, setIsYours] = useState(false)
+    const [owner, setOwner] = useState<api.FullUser>(undefined) // XXX: type should really be AnonymousUser
+    const [parentScratch, setParentScratch] = useState(null)
     const [savedCompiler, setSavedCompiler] = useState(compiler)
     const [savedCCode, setSavedCCode] = useState(cCode)
     const [savedCContext, setSavedCContext] = useState(cContext)
@@ -38,11 +51,13 @@ export default function Scratch() {
 
     const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
 
-    const owner = null // TODO: backend
-
     useEffect(() => {
-        document.title = owner?.username ? `${owner?.username}'s scratch` : "Unknown scratch"
-    }, [owner?.username])
+        document.title = nameScratch({ owner }, isYours)
+
+        if (hasUnsavedChanges) {
+            document.title += " (unsaved changes)"
+        }
+    }, [isYours, owner, hasUnsavedChanges])
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
@@ -115,6 +130,8 @@ export default function Scratch() {
             const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
 
             setIsYours(is_yours)
+            setOwner(scratch.owner)
+            setParentScratch(scratch.parent)
             setCompiler({
                 compiler: scratch.compiler,
                 cc_opts: scratch.cc_opts,
@@ -195,6 +212,20 @@ export default function Scratch() {
                                 </button>
 
                                 <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
+                            </div>
+
+                            <div class={styles.metadata}>
+                                {owner?.username && <div>
+                                    Author
+                                    <UserLink username={owner.username} />
+                                </div>}
+
+                                {parentScratch && <div>
+                                    Fork of
+                                    <Link to={`/scratch/${parentScratch.slug}`}>
+                                        {nameScratch(parentScratch)}
+                                    </Link>
+                                </div>}
                             </div>
 
                             <Editor

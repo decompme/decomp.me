@@ -17,10 +17,18 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     context = serializers.CharField(allow_blank=True) # type: ignore
 
 
+class ScratchMetadataSerializer(serializers.ModelSerializer[Scratch]):
+    owner = ProfileSerializer()
+
+    class Meta:
+        model = Scratch
+        fields = ["slug", "owner"]
+
+
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context", "parent"]
+        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context"]
 
     def create(self, validated_data):
         scratch = Scratch.objects.create(**validated_data)
@@ -29,3 +37,13 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             scratch.original_context = scratch.context
 
         return scratch
+
+
+# XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
+class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
+    owner = ProfileSerializer()
+    parent = ScratchMetadataSerializer()
+
+    class Meta:
+        model = Scratch
+        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context", "owner", "parent"]

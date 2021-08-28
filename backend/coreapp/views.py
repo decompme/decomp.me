@@ -1,7 +1,7 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ProfileSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, ProfileSerializer
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from rest_framework import serializers, status
@@ -59,7 +59,7 @@ def scratch(request, slug=None):
             db_scratch.save()
 
         return Response({
-            "scratch": ScratchSerializer(db_scratch).data,
+            "scratch": ScratchWithMetadataSerializer(db_scratch).data,
             "is_yours": db_scratch.owner.id == request.session.get("profile", None),
         })
 
@@ -87,11 +87,13 @@ def scratch(request, slug=None):
 
         assembly, err = CompilerWrapper.assemble_asm(arch, asm)
         if not assembly:
+            assert isinstance(err, str)
+
             errors = []
 
             for line in err.splitlines():
                 if "asm.s:" in line:
-                    errors.append(line[line.find("asm.s:") + len(".asm.s") :].strip())
+                    errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
                 else:
                     errors.append(line)
 
