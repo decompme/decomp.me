@@ -12,11 +12,16 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 ASM_PRELUDE: str = """
+.macro .late_rodata
+    .section .rodata
+.endm
+
 .macro glabel label
     .global \label
     .type \label, @function
     \label:
 .endm
+
 .set noat
 .set noreorder
 .set gp=64
