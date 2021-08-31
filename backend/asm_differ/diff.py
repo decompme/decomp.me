@@ -301,6 +301,7 @@ if __name__ == "__main__":
 
 import abc
 import ast
+from collections import Counter
 from dataclasses import dataclass, field, replace
 import difflib
 import enum
@@ -373,6 +374,14 @@ class Config:
     ignore_large_imms: bool
     ignore_addr_diffs: bool
     algorithm: str
+
+    # Score options
+    score_stack_differences = True
+    penalty_stackdiff = 1
+    penalty_regalloc = 5
+    penalty_reordering = 60
+    penalty_insertion = 100
+    penalty_deletion = 100
 
 
 def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
@@ -772,8 +781,11 @@ def eval_int(expr: str, emsg: str) -> int:
     return ret
 
 
-def eval_line_num(expr: str) -> int:
-    return int(expr.strip().replace(":", ""), 16)
+def eval_line_num(expr: str) -> Optional[int]:
+    expr = expr.strip().replace(":", "")
+    if expr == "":
+        return None
+    return int(expr, 16)
 
 
 def run_make(target: str, project: ProjectSettings) -> None:
@@ -797,6 +809,7 @@ def restrict_to_function(dump: str, fn_name: str, config: Config) -> str:
     for line in dump.split("\n"):
         if found:
             if len(out) >= config.max_function_size_lines:
+                out.append("\t\t...")
                 break
             out.append(line)
         elif search in line:
@@ -1036,8 +1049,9 @@ class DifferenceNormalizer:
 
     def normalize(self, mnemonic: str, row: str) -> str:
         """This should be called exactly once for each line."""
+        arch = self.config.arch
         row = self._normalize_arch_specific(mnemonic, row)
-        if self.config.ignore_large_imms:
+        if self.config.ignore_large_imms and mnemonic not in arch.branch_instructions:
             row = re.sub(self.config.arch.re_large_imm, "<imm>", row)
         return row
 
@@ -1060,8 +1074,8 @@ class DifferenceNormalizerAArch64(DifferenceNormalizer):
         if mnemonic != "bl":
             return row
 
-        row, _ = split_off_branch(row)
-        return row
+        row, _ = split_off_address(row)
+        return row + "<ignore>"
 
     def _normalize_adrp_differences(self, mnemonic: str, row: str) -> str:
         """Identifies ADRP + LDR/ADD pairs that are used to access the GOT and
@@ -1076,7 +1090,8 @@ class DifferenceNormalizerAArch64(DifferenceNormalizer):
         row_parts = row.split("\t", 1)
         if mnemonic == "adrp":
             self._adrp_pair_registers.add(row_parts[1].strip().split(",")[0])
-            row, _ = split_off_branch(row)
+            row, _ = split_off_address(row)
+            return row + "<ignore>"
         elif mnemonic == "ldr":
             for reg in self._adrp_pair_registers:
                 # ldr xxx, [reg]
@@ -1341,8 +1356,9 @@ class Line:
     diff_row: str
     original: str
     normalized_original: str
-    line_num: str
-    branch_target: Optional[str]
+    scorable_line: str
+    line_num: Optional[int]
+    branch_target: Optional[int]
     source_lines: List[str]
     comment: Optional[str]
 
@@ -1385,7 +1401,7 @@ def process(lines: List[str], config: Config) -> List[Line]:
         row = row.rstrip()
         tabs = row.split("\t")
         row = "\t".join(tabs[2:])
-        line_num = tabs[0].strip()
+        line_num = eval_line_num(tabs[0].strip())
 
         if "\t" in row:
             row_parts = row.split("\t", 1)
@@ -1416,28 +1432,37 @@ def process(lines: List[str], config: Config) -> List[Line]:
             i += 1
 
         normalized_original = normalizer.normalize(mnemonic, original)
+
+        scorable_line = normalized_original
+        if not config.score_stack_differences:
+            scorable_line = re.sub(arch.re_sprel, "addr(sp)", scorable_line)
+        if mnemonic in arch.branch_instructions:
+            # Replace the final argument with "<target>"
+            scorable_line = re.sub(r"[^, \t]+$", "<target>", scorable_line)
+
         if skip_next:
             skip_next = False
             row = "<delay-slot>"
             mnemonic = "<delay-slot>"
+            scorable_line = "<delay-slot>"
         if mnemonic in arch.branch_likely_instructions:
             skip_next = True
+
         row = re.sub(arch.re_reg, "<reg>", row)
         row = re.sub(arch.re_sprel, "addr(sp)", row)
         row_with_imm = row
         if mnemonic in arch.instructions_with_address_immediates:
             row = row.strip()
-            row, _ = split_off_branch(row)
+            row, _ = split_off_address(row)
             row += "<imm>"
         else:
             row = normalize_imms(row, arch)
 
         branch_target = None
         if mnemonic in arch.branch_instructions:
-            target = int(row_parts[1].strip().split(",")[-1], 16)
+            branch_target = int(row_parts[1].strip().split(",")[-1], 16)
             if mnemonic in arch.branch_likely_instructions:
-                target -= 4
-            branch_target = hex(target)[2:]
+                branch_target -= 4
 
         output.append(
             Line(
@@ -1445,6 +1470,7 @@ def process(lines: List[str], config: Config) -> List[Line]:
                 diff_row=row,
                 original=original,
                 normalized_original=normalized_original,
+                scorable_line=scorable_line,
                 line_num=line_num,
                 branch_target=branch_target,
                 source_lines=source_lines,
@@ -1474,7 +1500,8 @@ def imm_matches_everything(row: str, arch: ArchSettings) -> bool:
     return "(." in row
 
 
-def split_off_branch(line: str) -> Tuple[str, str]:
+def split_off_address(line: str) -> Tuple[str, str]:
+    """Split e.g. 'beqz $r0,1f0' into 'beqz $r0,' and '1f0'."""
     parts = line.split(",")
     if len(parts) < 2:
         parts = line.split(None, 1)
@@ -1546,6 +1573,121 @@ def diff_lines(
     return ret
 
 
+def score_diff_lines(
+    lines: List[Tuple[Optional[Line], Optional[Line]]], config: Config
+) -> int:
+    # This logic is copied from `scorer.py` from the decomp permuter project
+    # https://github.com/simonlindholm/decomp-permuter/blob/main/src/scorer.py
+    score = 0
+    deletions = []
+    insertions = []
+
+    def lo_hi_match(old: str, new: str) -> bool:
+        # TODO: Make this arch-independent, like `imm_matches_everything()`
+        old_lo = old.find("%lo")
+        old_hi = old.find("%hi")
+        new_lo = new.find("%lo")
+        new_hi = new.find("%hi")
+
+        if old_lo != -1 and new_lo != -1:
+            old_idx = old_lo
+            new_idx = new_lo
+        elif old_hi != -1 and new_hi != -1:
+            old_idx = old_hi
+            new_idx = new_hi
+        else:
+            return False
+
+        if old[:old_idx] != new[:new_idx]:
+            return False
+
+        old_inner = old[old_idx + 4 : -1]
+        new_inner = new[new_idx + 4 : -1]
+        return old_inner.startswith(".") or new_inner.startswith(".")
+
+    def diff_sameline(old: str, new: str) -> None:
+        nonlocal score
+        if old == new:
+            return
+
+        if lo_hi_match(old, new):
+            return
+
+        ignore_last_field = False
+        if config.score_stack_differences:
+            oldsp = re.search(config.arch.re_sprel, old)
+            newsp = re.search(config.arch.re_sprel, new)
+            if oldsp and newsp:
+                oldrel = int(oldsp.group(1) or "0", 0)
+                newrel = int(newsp.group(1) or "0", 0)
+                score += abs(oldrel - newrel) * config.penalty_stackdiff
+                ignore_last_field = True
+
+        # Probably regalloc difference, or signed vs unsigned
+
+        # Compare each field in order
+        newfields, oldfields = new.split(","), old.split(",")
+        if ignore_last_field:
+            newfields = newfields[:-1]
+            oldfields = oldfields[:-1]
+        for nf, of in zip(newfields, oldfields):
+            if nf != of:
+                score += config.penalty_regalloc
+        # Penalize any extra fields
+        score += abs(len(newfields) - len(oldfields)) * config.penalty_regalloc
+
+    def diff_insert(line: str) -> None:
+        # Reordering or totally different codegen.
+        # Defer this until later when we can tell.
+        insertions.append(line)
+
+    def diff_delete(line: str) -> None:
+        deletions.append(line)
+
+    # Find the end of the last long streak of matching mnemonics, if it looks
+    # like the objdump output was truncated. This is used to skip scoring
+    # misaligned lines at the end of the diff.
+    last_mismatch = -1
+    max_index = None
+    lines_were_truncated = False
+    for index, (line1, line2) in enumerate(lines):
+        if (line1 and line1.original == "...") or (line2 and line2.original == "..."):
+            lines_were_truncated = True
+        if line1 and line2 and line1.mnemonic == line2.mnemonic:
+            if index - last_mismatch >= 50:
+                max_index = index
+        else:
+            last_mismatch = index
+    if not lines_were_truncated:
+        max_index = None
+
+    for index, (line1, line2) in enumerate(lines):
+        if max_index is not None and index > max_index:
+            break
+        if line1 is None:
+            assert line2 is not None
+            diff_insert(line2.scorable_line)
+        elif line2 is None:
+            assert line1 is not None
+            diff_delete(line1.scorable_line)
+        else:
+            diff_sameline(line1.scorable_line, line2.scorable_line)
+
+    insertions_co = Counter(insertions)
+    deletions_co = Counter(deletions)
+    for item in insertions_co + deletions_co:
+        ins = insertions_co[item]
+        dels = deletions_co[item]
+        common = min(ins, dels)
+        score += (
+            (ins - common) * config.penalty_insertion
+            + (dels - common) * config.penalty_deletion
+            + config.penalty_reordering * common
+        )
+
+    return score
+
+
 @dataclass(frozen=True)
 class OutputLine:
     base: Optional[Text] = field(compare=False)
@@ -1554,7 +1696,13 @@ class OutputLine:
     boring: bool = field(compare=False)
 
 
-def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
+@dataclass(frozen=True)
+class Diff:
+    lines: List[OutputLine]
+    score: int
+
+
+def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
     if config.source:
         import cxxfilt  # type: ignore
     arch = config.arch
@@ -1570,8 +1718,8 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
     sc4 = symbol_formatter("my-stack", 4)
     sc5 = symbol_formatter("base-branch", 0)
     sc6 = symbol_formatter("my-branch", 0)
-    bts1: Set[str] = set()
-    bts2: Set[str] = set()
+    bts1: Set[int] = set()
+    bts2: Set[int] = set()
 
     if config.show_branches:
         for (lines, btset, sc) in [
@@ -1581,28 +1729,53 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
             for line in lines:
                 bt = line.branch_target
                 if bt is not None:
-                    text = f"{bt}:"
-                    btset.add(text)
-                    sc(text)
+                    btset.add(bt)
+                    sc(str(bt))
 
-    for (line1, line2) in diff_lines(lines1, lines2, config.algorithm):
+    diffed_lines = diff_lines(lines1, lines2, config.algorithm)
+    score = score_diff_lines(diffed_lines, config)
+
+    line_num_base = -1
+    line_num_offset = 0
+    line_num_2to1 = {}
+    for (line1, line2) in diffed_lines:
+        if line1 is not None and line1.line_num is not None:
+            line_num_base = line1.line_num
+            line_num_offset = 0
+        else:
+            line_num_offset += 1
+        if line2 is not None and line2.line_num is not None:
+            line_num_2to1[line2.line_num] = (line_num_base, line_num_offset)
+
+    for (line1, line2) in diffed_lines:
         line_color1 = line_color2 = sym_color = BasicFormat.NONE
         line_prefix = " "
         out1 = Text() if not line1 else Text(pad_mnemonic(line1.original))
         out2 = Text() if not line2 else Text(pad_mnemonic(line2.original))
         if line1 and line2 and line1.diff_row == line2.diff_row:
-            if line1.normalized_original == line2.normalized_original:
+            if (
+                line1.normalized_original == line2.normalized_original
+                and line2.branch_target is None
+            ):
+                # Fast path: no coloring needed. We don't include branch instructions
+                # in this case because we need to check that their targets line up in
+                # the diff, and don't just happen to have the are the same address
+                # by accident.
                 pass
             elif line1.diff_row == "<delay-slot>":
+                # Don't draw attention to differing branch-likely delay slots: they
+                # typically mirror the branch destination - 1 so the real difference
+                # is elsewhere. Still, do mark them as different to avoid confusion.
+                # No need to consider branches because delay slots can't branch.
                 out1 = out1.reformat(BasicFormat.DELAY_SLOT)
                 out2 = out2.reformat(BasicFormat.DELAY_SLOT)
             else:
                 mnemonic = line1.original.split()[0]
-                branchless1, branch1 = out1.plain(), ""
-                branchless2, branch2 = out2.plain(), ""
+                branchless1, address1 = out1.plain(), ""
+                branchless2, address2 = out2.plain(), ""
                 if mnemonic in arch.instructions_with_address_immediates:
-                    branchless1, branch1 = split_off_branch(branchless1)
-                    branchless2, branch2 = split_off_branch(branchless2)
+                    branchless1, address1 = split_off_address(branchless1)
+                    branchless2, address2 = split_off_address(branchless2)
 
                 out1 = Text(branchless1)
                 out2 = Text(branchless2)
@@ -1610,24 +1783,38 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                     arch.re_imm, out1, out2, lambda _: BasicFormat.IMMEDIATE
                 )
 
-                same_relative_target = False
-                if line1.branch_target is not None and line2.branch_target is not None:
-                    relative_target1 = eval_line_num(
-                        line1.branch_target
-                    ) - eval_line_num(line1.line_num)
-                    relative_target2 = eval_line_num(
-                        line2.branch_target
-                    ) - eval_line_num(line2.line_num)
-                    same_relative_target = relative_target1 == relative_target2
+                if line2.branch_target is not None:
+                    target = line2.branch_target
+                    line2_target = line_num_2to1.get(line2.branch_target)
+                    if line2_target is None:
+                        # If the target is outside the disassembly, extrapolate.
+                        # This only matters near the bottom.
+                        assert line2.line_num is not None
+                        line2_line = line_num_2to1[line2.line_num]
+                        line2_target = (line2_line[0] + (target - line2.line_num), 0)
+
+                    # Set the key for three-way diffing to a normalized version.
+                    norm2, norm_branch2 = split_off_address(line2.normalized_original)
+                    if norm_branch2 != "<ign>":
+                        line2.normalized_original = norm2 + str(line2_target)
+                    same_target = line2_target == (line1.branch_target, 0)
+                else:
+                    # Do a naive comparison for non-branches (e.g. function calls).
+                    same_target = address1 == address2
 
                 if normalize_imms(branchless1, arch) == normalize_imms(
                     branchless2, arch
                 ):
                     if imm_matches_everything(branchless2, arch):
+                        # ignore differences due to %lo(.rodata + ...) vs symbol
                         out1 = out1.reformat(BasicFormat.NONE)
                         out2 = out2.reformat(BasicFormat.NONE)
-                    elif not same_relative_target:
-                        # only imms differences
+                    elif line2.branch_target is not None and same_target:
+                        # same-target branch, don't color
+                        pass
+                    else:
+                        # must have an imm difference (or else we would have hit the
+                        # fast path)
                         sym_color = BasicFormat.IMMEDIATE
                         line_prefix = "i"
                 else:
@@ -1641,17 +1828,17 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                         sym_color = BasicFormat.STACK
                         line_prefix = "s"
                     else:
-                        # regs differences and maybe imms as well
+                        # reg differences and maybe imm as well
                         out1, out2 = format_fields(arch.re_reg, out1, out2, sc1, sc2)
                         line_color1 = line_color2 = sym_color = BasicFormat.REGISTER
                         line_prefix = "r"
 
-                if same_relative_target or branch1 == branch2:
-                    branch_imm_fmt = BasicFormat.NONE
+                if same_target:
+                    address_imm_fmt = BasicFormat.NONE
                 else:
-                    branch_imm_fmt = BasicFormat.IMMEDIATE
-                out1 += Text(branch1, branch_imm_fmt)
-                out2 += Text(branch2, branch_imm_fmt)
+                    address_imm_fmt = BasicFormat.IMMEDIATE
+                out1 += Text(address1, address_imm_fmt)
+                out2 += Text(address2, address_imm_fmt)
         elif line1 and line2:
             line_prefix = "|"
             line_color1 = line_color2 = sym_color = BasicFormat.DIFF_CHANGE
@@ -1675,21 +1862,22 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
             out: Text,
             line: Optional[Line],
             line_color: Format,
-            btset: Set[str],
+            btset: Set[int],
             sc: FormatFunction,
         ) -> Optional[Text]:
             if line is None:
                 return None
+            if line.line_num is None:
+                return out
             in_arrow = Text("  ")
             out_arrow = Text()
             if config.show_branches:
                 if line.line_num in btset:
-                    in_arrow = Text("~>", sc(line.line_num))
+                    in_arrow = Text("~>", sc(str(line.line_num)))
                 if line.branch_target is not None:
-                    out_arrow = " " + Text("~>", sc(line.branch_target + ":"))
-            return (
-                Text(line.line_num, line_color) + " " + in_arrow + " " + out + out_arrow
-            )
+                    out_arrow = " " + Text("~>", sc(str(line.branch_target)))
+            formatted_line_num = Text(hex(line.line_num)[2:] + ":", line_color)
+            return formatted_line_num + " " + in_arrow + " " + out + out_arrow
 
         part1 = format_part(out1, line1, line_color1, bts1, sc5)
         part2 = format_part(out2, line2, line_color2, bts2, sc6)
@@ -1730,23 +1918,21 @@ def do_diff(basedump: str, mydump: str, config: Config) -> List[OutputLine]:
                     )
                 )
 
-        key2 = line2.original if line2 else None
+        key2 = line2.normalized_original if line2 else None
         boring = False
         if line_prefix == " ":
-            # Canonicalize matching lines to have an empty string as key, to
-            # ensure they are treated as the same when three-way diffing. This
-            # matters for branches that match only relatively.
-            key2 = ""
             boring = True
         elif config.compress and config.compress.same_instr and line_prefix in "irs":
             boring = True
         fmt2 = Text(line_prefix, sym_color) + " " + (part2 or Text())
         output.append(OutputLine(part1, fmt2, key2, boring))
 
-    return output
+    return Diff(lines=output, score=score)
 
 
-def chunk_diff(diff: List[OutputLine]) -> List[Union[List[OutputLine], OutputLine]]:
+def chunk_diff_lines(
+    diff: List[OutputLine],
+) -> List[Union[List[OutputLine], OutputLine]]:
     """Chunk a diff into an alternating list like A B A B ... A, where:
     * A is a List[OutputLine] of insertions,
     * B is a single non-insertion OutputLine, with .base != None."""
@@ -1795,11 +1981,11 @@ def compress_matching(
 
 
 def format_diff(
-    old_diff: List[OutputLine], new_diff: List[OutputLine], config: Config
+    old_diff: Diff, new_diff: Diff, config: Config
 ) -> Tuple[Optional[Tuple[Text, ...]], List[Tuple[Text, ...]]]:
     fmt = config.formatter
-    old_chunks = chunk_diff(old_diff)
-    new_chunks = chunk_diff(new_diff)
+    old_chunks = chunk_diff_lines(old_diff.lines)
+    new_chunks = chunk_diff_lines(new_diff.lines)
     output: List[Tuple[Text, OutputLine, OutputLine]] = []
     assert len(old_chunks) == len(new_chunks), "same target"
     empty = OutputLine(Text(), Text(), None, True)
@@ -1833,7 +2019,11 @@ def format_diff(
     header_line: Optional[Tuple[Text, ...]]
     diff_lines: List[Tuple[Tuple[Text, ...], bool]]
     if config.threeway:
-        header_line = (Text("TARGET"), Text("  CURRENT"), Text("  PREVIOUS"))
+        header_line = (
+            Text("TARGET"),
+            Text(f"  CURRENT ({new_diff.score})"),
+            Text(f"  PREVIOUS ({old_diff.score})"),
+        )
         diff_lines = [
             (
                 (
@@ -1846,7 +2036,7 @@ def format_diff(
             for (base, old, new) in output
         ]
     else:
-        header_line = None
+        header_line = (Text("TARGET"), Text(f"  CURRENT ({new_diff.score})"))
         diff_lines = [
             ((base, new.fmt2), new.boring)
             for (base, old, new) in output
@@ -1939,7 +2129,7 @@ class Display:
     mydump: str
     config: Config
     emsg: Optional[str]
-    last_diff_output: Optional[List[OutputLine]]
+    last_diff_output: Optional[Diff]
     pending_update: Optional[Tuple[str, bool]]
     ready_queue: "queue.Queue[None]"
     watch_queue: "queue.Queue[Optional[float]]"
