@@ -87,7 +87,7 @@ class GitHubUser(models.Model):
             user = request.user
 
             # make a new user if request.user already has a github account attached
-            new_user = isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None
+            new_user = user.is_anonymous or isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None
 
             if new_user:
                 user = User.objects.create_user(
@@ -96,15 +96,15 @@ class GitHubUser(models.Model):
                     password=None,
                 )
 
-                if request.user.is_anonymous and request.user.profile is not None:
-                    user.profile = request.user.profile
+                if request.user.is_anonymous:
+                    user.profile = request.profile
                 else:
                     profile = Profile()
                     profile.save()
                     user.profile = profile
 
                 user.save()
-            
+
             assert isinstance(user, User)
 
             gh_user.user = user

@@ -49,8 +49,7 @@ def scratch(request, slug=None):
 
         if not db_scratch.owner:
             # Give ownership to this profile
-            print(request.user)
-            profile = request.user.profile
+            profile = request.profile
 
             logging.debug(f"Granting ownership of scratch {db_scratch} to {profile}")
 
@@ -138,7 +137,7 @@ def scratch(request, slug=None):
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
 
-        if db_scratch.owner and db_scratch.owner != request.user.profile:
+        if db_scratch.owner and db_scratch.owner != request.profile:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         # TODO validate
@@ -240,7 +239,7 @@ class CurrentUser(APIView):
 
             profile = Profile()
             profile.save()
-            request.user.profile = profile
+            request.profile = profile
 
         return self.get(request)
 

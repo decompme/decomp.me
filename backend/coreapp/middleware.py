@@ -15,6 +15,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 
 class Request(DRFRequest):
     user: Union[User, AnonymousUser]
+    profile: Profile
 
 def disable_csrf(get_response):
     def middleware(request: HttpRequest):
@@ -25,7 +26,7 @@ def disable_csrf(get_response):
 
 def set_user_profile(get_response):
     """
-    Makes sure that `request.user.profile` is always available, even for anonymous users.
+    Makes sure that `request.profile` is always available, even for anonymous users.
     """
 
     def middleware(request: HttpRequest):
@@ -56,6 +57,8 @@ def set_user_profile(get_response):
 
         profile.last_request_date = now()
         profile.save()
+
+        request.profile = profile
 
         return get_response(request)
     

@@ -13,5 +13,6 @@ mypy
 psycopg2
 pycparser
 python-Levenshtein
+responses
 types-requests
 watchdog
