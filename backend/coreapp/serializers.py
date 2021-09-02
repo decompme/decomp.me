@@ -39,7 +39,7 @@ def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
             "github_html_url": github.details().html_url if github else None,
         }
 
-class ProfileField(serializers.RelatedField[Profile, str, str]):
+class ProfileField(serializers.RelatedField):
     def to_representation(self, profile: Profile):
         return serialize_user(self.context["request"], profile)
 
