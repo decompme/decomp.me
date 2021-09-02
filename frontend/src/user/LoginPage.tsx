@@ -12,7 +12,7 @@ import styles from "./LoginPage.module.css"
 export default function LoginPage() {
     const { searchParams } = new URL(document.location.href)
     const code = searchParams.get("code")
-    const next = searchParams.get("next") || "/"
+    const next = searchParams.get("next")
 
     const history = useHistory()
     const [error, setError] = useState(null)
@@ -21,9 +21,13 @@ export default function LoginPage() {
     useEffect(() => {
         if (code) {
             setError(null)
-            api.post("/user", { code }).then(({ user }: { user: api.FullUser }) => {
-                mutate("/user", { user })
-                history.replace(next)
+            api.post("/user", { code }).then(({ user }: { user: api.User }) => {
+                if (next) {
+                    mutate("/user", { user })
+                    history.replace(next)
+                } else {
+                    window.close()
+                }
             }).catch(error => {
                 console.error(error)
                 setError(error)

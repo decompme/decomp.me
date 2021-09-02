@@ -1,19 +1,22 @@
+from typing import Optional
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, ProfileSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_user
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.contrib.auth import logout
 from rest_framework import serializers, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 import logging
 
 import hashlib
-import requests
-from github3api import GitHubAPI
 
-from .models import Profile, Asm, Scratch, GitHubUserChangeException, GitHubUserHasExistingProfileException
+from .models import User, Profile, Asm, Scratch
+from .github import GitHubUser
 from coreapp.models import gen_scratch_id
 
 
@@ -46,12 +49,8 @@ def scratch(request, slug=None):
 
         if not db_scratch.owner:
             # Give ownership to this profile
-            profile = Profile.objects.filter(id=request.session.get("profile", None)).first()
-
-            if not profile:
-                profile = Profile()
-                profile.save()
-                request.session["profile"] = profile.id
+            print(request.user)
+            profile = request.user.profile
 
             logging.debug(f"Granting ownership of scratch {db_scratch} to {profile}")
 
@@ -59,8 +58,7 @@ def scratch(request, slug=None):
             db_scratch.save()
 
         return Response({
-            "scratch": ScratchWithMetadataSerializer(db_scratch).data,
-            "is_yours": db_scratch.owner.id == request.session.get("profile", None),
+            "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
         })
 
     elif request.method == "POST":
@@ -140,7 +138,7 @@ def scratch(request, slug=None):
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
 
-        if db_scratch.owner and db_scratch.owner.id != request.session.get("profile", None):
+        if db_scratch.owner and db_scratch.owner != request.user.profile:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         # TODO validate
@@ -215,86 +213,36 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
-    return Response(ScratchSerializer(new_scratch).data, status=status.HTTP_201_CREATED)
+    return Response(
+        ScratchSerializer(new_scratch, context={ "request": request }).data,
+        status=status.HTTP_201_CREATED
+    )
 
-@api_view(["GET", "POST"])
-def user_current(request, slug=None):
+class CurrentUser(APIView):
     """
-    Get the logged-in user, or sign in with GitHub
+    View to access the current user profile.
     """
 
-    profile = Profile.objects.filter(id=request.session.get("profile", None)).first()
+    def get(self, request: Request):
+        return Response({
+            "user": serialize_user(request, request.user),
+        })
 
-    if not profile:
-        profile = Profile()
-        profile.save()
-        request.session["profile"] = profile.id
+    def post(self, request: Request):
+        """
+        Login if the 'code' parameter is provided. Log out otherwise.
+        """
 
-    # sign in
-    if request.method == "POST":
-        if not settings.GITHUB_CLIENT_ID or not settings.GITHUB_CLIENT_SECRET:
-            return Response({
-                "error": "GitHub sign-in not configured"
-            }, status=status.HTTP_501_NOT_IMPLEMENTED)
-
-        required_params = ["code"]
-
-        for param in required_params:
-            if param not in request.data:
-                return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
-
-        logging.debug("Attempting GitHub oauth login")
-
-        response = requests.post(
-            "https://github.com/login/oauth/access_token",
-            json={
-                "client_id": settings.GITHUB_CLIENT_ID,
-                "client_secret": settings.GITHUB_CLIENT_SECRET,
-                "code": request.data["code"],
-            },
-            headers={ 'Accept': 'application/json' },
-        ).json()
-
-        error = response.get("error")
-        if error == None:
-            access_token = response["access_token"]
-
-            profile.github_access_token = access_token
-
-            try:
-                assert profile.load_fields_from_github(always=True)
-                logging.debug("Connected existing profile to new GitHub user")
-            except GitHubUserChangeException:
-                # The token was for a different user than the one associated with the current profile,
-                # so make a new profile for this one.
-                profile = Profile()
-                profile.github_access_token = access_token
-                assert profile.load_fields_from_github(always=True)
-                logging.debug("Connected new profile to new GitHub user")
-            except GitHubUserHasExistingProfileException as e:
-                profile = e.profile
-
-                # This isn't strictly necessary, but we might as well use the renewed access token.
-                profile.github_access_token = access_token
-                assert profile.load_fields_from_github(always=True)
-                logging.debug("Swapped to existing profile for existing GitHub user")
-
-            profile.save()
-            request.session["profile"] = profile.id
-        elif error == "bad_verification_code":
-            return Response({
-                "error": "Invalid or expired GitHub OAuth verification code",
-            }, status=status.HTTP_401_UNAUTHORIZED)
+        if "code" in request.data:
+            GitHubUser.login(request, request.data["code"])
         else:
-            raise Exception(f"Unknown GitHub login error: {error} - {response['error_description']}")
+            logout(request)
 
-    else:
-        profile.load_fields_from_github()
-        profile.save()
+            profile = Profile()
+            profile.save()
+            request.user.profile = profile
 
-    return Response({
-        "user": ProfileSerializer(profile).data,
-    })
+        return self.get(request)
 
 @api_view(["GET"])
 def user(request, username):
@@ -302,5 +250,6 @@ def user(request, username):
     Gets a user's basic data
     """
 
-    user = get_object_or_404(Profile, username=username)
-    return Response(ProfileSerializer(user).data)
+    return Response({
+        "user": serialize_user(request, get_object_or_404(User, username=username)),
+    })

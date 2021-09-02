@@ -16,14 +16,15 @@ import { useLocalStorage, useSize } from "../hooks"
 import UserLink from "../user/UserLink"
 
 import styles from "./Scratch.module.css"
+import useSWR from "swr"
 
-function nameScratch({ owner }: { owner: api.FullUser }, isYours = false): string {
-    if (isYours) {
-        return "Your scratch"
+function nameScratch({ owner }: { owner: api.User }): string {
+    if (owner?.is_you) {
+        return "your scratch"
     } else if (owner?.name) {
         return `${owner?.name}'s scratch`
     } else {
-        return "Unknown scratch"
+        return "unknown scratch"
     }
 }
 
@@ -34,13 +35,12 @@ export default function Scratch() {
     const [currentRequest, setCurrentRequest] = useState("loading")
     const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
     const [compiler, setCompiler] = useState<CompilerOptsT>(null)
-    const isCompilerChosen = !(compiler && compiler.compiler === "")
+    const isCompilerChosen = compiler?.compiler !== ""
     const [cCode, setCCode] = useState(null)
     const [cContext, setCContext] = useState(null)
     const [diff, setDiff] = useState(null)
     const [log, setLog] = useState(null)
-    const [isYours, setIsYours] = useState(false)
-    const [owner, setOwner] = useState<api.FullUser>(undefined) // XXX: type should really be AnonymousUser
+    const [owner, setOwner] = useState<api.User>(undefined)
     const [parentScratch, setParentScratch] = useState(null)
     const [savedCompiler, setSavedCompiler] = useState(compiler)
     const [savedCCode, setSavedCCode] = useState(cCode)
@@ -52,12 +52,12 @@ export default function Scratch() {
     const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
 
     useEffect(() => {
-        document.title = nameScratch({ owner }, isYours)
+        document.title = nameScratch({ owner })
 
         if (hasUnsavedChanges) {
             document.title += " (unsaved changes)"
         }
-    }, [isYours, owner, hasUnsavedChanges])
+    }, [owner, hasUnsavedChanges])
 
     const compile = async () => {
         if (compiler === null || cCode === null || cContext === null) {
@@ -90,7 +90,7 @@ export default function Scratch() {
     }
 
     const save = async () => {
-        if (!isYours) {
+        if (!owner?.is_you) {
             // Implicitly fork
             return fork()
         }
@@ -127,9 +127,8 @@ export default function Scratch() {
 
     useEffect(() => {
         (async () => {
-            const { scratch, is_yours } = await api.get(`/scratch/${slug}`)
+            const { scratch } = await api.get(`/scratch/${slug}`)
 
-            setIsYours(is_yours)
             setOwner(scratch.owner)
             setParentScratch(scratch.parent)
             setCompiler({
@@ -200,18 +199,21 @@ export default function Scratch() {
                             <div class={styles.sectionHeader}>
                                 Source
                                 <span class={styles.grow} />
-                                <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
-                                    <SyncIcon size={16} /> Compile
-                                </button>
-                                {isYours && <button onClick={save}>
-                                    <UploadIcon size={16} /> Save
-                                    {hasUnsavedChanges && "*"}
-                                </button>}
-                                <button onClick={fork}>
-                                    <RepoForkedIcon size={16} /> Fork
-                                </button>
 
-                                <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
+                                {isCompilerChosen && <>
+                                    <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
+                                        <SyncIcon size={16} /> Compile
+                                    </button>
+                                    {owner?.is_you && <button onClick={save}>
+                                        <UploadIcon size={16} /> Save
+                                        {hasUnsavedChanges && "*"}
+                                    </button>}
+                                    <button onClick={fork}>
+                                        <RepoForkedIcon size={16} /> Fork
+                                    </button>
+
+                                    <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
+                                </>}
                             </div>
 
                             <div class={styles.metadata}>
@@ -222,9 +224,7 @@ export default function Scratch() {
 
                                 {parentScratch && <div>
                                     Fork of
-                                    <Link to={`/scratch/${parentScratch.slug}`}>
-                                        {nameScratch(parentScratch)}
-                                    </Link>
+                                    <ScratchLink apiUrl={parentScratch} />
                                 </div>}
                             </div>
 
@@ -325,4 +325,17 @@ function ChooseACompiler({ onCommit }) {
             </button>
         </div>
     </div>
+}
+
+function ScratchLink({ apiUrl }: { apiUrl: string }) {
+    const { data } = useSWR(apiUrl, api.get)
+    const scratch = data?.scratch
+
+    if (!scratch) {
+        return <span />
+    }
+
+    return <Link to={`/scratch/${scratch.slug}`}>
+        {nameScratch(scratch)}
+    </Link>
 }

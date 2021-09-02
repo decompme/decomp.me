@@ -8,10 +8,12 @@ import styles from "./UserLink.module.css"
 
 export type Props = {
     username: string,
+    hideYou?: boolean,
 }
 
-export default function UserCard({ username }: Props) {
-    const { data: user, error } = useSWR<api.FullUser>(`/user/${username}`, api.get)
+export default function UserCard({ username, hideYou }: Props) {
+    const { data, error } = useSWR<{ user: api.User }>(`/users/${username}`, api.get)
+    const user = data?.user
 
     if (user) {
         return <Link
@@ -19,8 +21,8 @@ export default function UserCard({ username }: Props) {
             title={`@${user.username}`}
             className={styles.user}
         >
-            <img class={styles.avatar} src={user.avatar_url} alt="User avatar" />
-            <span>{user.name}</span>
+            {user.avatar_url && <img class={styles.avatar} src={user.avatar_url} alt="User avatar" />}
+            <span>{user.name} {!hideYou && user.is_you && <i>(you)</i>}</span>
         </Link>
     } else if (error) {
         // TODO: handle error
@@ -28,7 +30,7 @@ export default function UserCard({ username }: Props) {
     } else {
         // TODO: loading state
         return <div className={styles.user}>
-            <span>@{username}</span>
+            <span>{username}</span>
         </div>
     }
 }

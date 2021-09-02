@@ -1,47 +1,65 @@
 import { h, Fragment } from "preact"
-import { useState, useEffect } from "preact/hooks"
+import { useEffect } from "preact/hooks"
 import { useParams } from "react-router-dom"
-import useSWR from "swr"
+import useSWR, { useSWRConfig } from "swr"
+import { MarkGithubIcon } from "@primer/octicons-react"
 
 import * as api from "../api"
 import Nav from "../Nav"
-import Unimplemented from "../Unimplemented"
 
 import styles from "./UserPage.module.css"
 
 export default function UserPage() {
+    const { mutate } = useSWRConfig()
     const { username } = useParams<{ username: string }>()
-    const { data: user, error } = useSWR<api.FullUser>(`/user/${username}`, api.get)
-
-    const [currentUser, setCurrentUser] = useState<api.AnonymousUser>(null)
-    const isCurrentUser = currentUser?.id === user?.id
+    const { data, error } = useSWR<{ user: api.User }>(`/users/${username}`, api.get)
+    const user = data?.user
 
     useEffect(() => {
         document.title = user?.name ? `${user.name} on decomp.me` : `${username} on decomp.me`
     }, [username, user?.name])
 
+    const signOut = () => {
+        api.post("/user", {})
+            .then(({ user }: { user: api.AnonymousUser }) => {
+                mutate("/user", { user })
+                mutate(`/users/${username}`)
+            })
+            .catch(console.error)
+    }
+
     if (user) {
         return <>
-            <Nav onUserChange={setCurrentUser} />
+            <Nav />
             <main class={styles.pageContainer}>
                 <section class={styles.userRow}>
-                    <img
+                    {user.avatar_url && <img
                         class={styles.avatar}
                         src={user.avatar_url}
                         alt="User avatar"
-                    />
+                    />}
                     <h1 class={styles.name}>
-                        <div>{user.name} </div>
-                        <a href={`https://github.com/${user.username}`} class={styles.username}>
-                            {user.username} {isCurrentUser && "(you)"}
-                        </a>
+                        <div>{user.name} {user.is_you && <i>(you)</i>}</div>
+                        <div class={styles.username}>
+                            @{user.username}
+
+                            {user.github_html_url && <a href={user.github_html_url}>
+                                <MarkGithubIcon size={24} />
+                            </a>}
+                        </div>
                     </h1>
                 </section>
 
-                <section>
+                {/*<section>
                     <h2>Scratches</h2>
                     <ScratchList user={user} />
-                </section>
+                </section>*/}
+
+                {user.is_you && <section>
+                    <button class="red" onClick={signOut}>
+                        Sign out
+                    </button>
+                </section>}
             </main>
         </>
     } else if (error) {
@@ -63,11 +81,9 @@ export default function UserPage() {
     }
 }
 
-export function ScratchList({ user }: { user: api.FullUser }) {
-    // TODO: needs backend
-    void user
-
-    /*
+// TODO: needs backend
+/*
+export function ScratchList({ user }: { user: api.User }) {
     const { data: scratches, error } = useSWR<api.Scratch[]>(`/user/${user.username}/scratches`, api.get)
 
     if (scratches) {
@@ -77,7 +93,5 @@ export function ScratchList({ user }: { user: api.FullUser }) {
             </li>)}
         </ul>
     }
-    */
-
-    return <Unimplemented issue="105" />
 }
+*/

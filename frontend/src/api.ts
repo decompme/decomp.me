@@ -43,7 +43,11 @@ export class ResponseError extends Error {
 }
 
 export async function get(url: string, cache = false) {
-    const response = await fetch(API_BASE + url, {
+    if (url.startsWith("/")) {
+        url = API_BASE + url
+    }
+
+    const response = await fetch(url, {
         ...commonOpts,
         cache: cache ? "default" : "reload",
     })
@@ -56,11 +60,15 @@ export async function get(url: string, cache = false) {
 }
 
 export async function post(url: string, json: Json) {
+    if (url.startsWith("/")) {
+        url = API_BASE + url
+    }
+
     const body: string = JSON.stringify(json)
 
     console.info("POST", url, JSON.parse(body))
 
-    const response = await fetch(API_BASE + url, {
+    const response = await fetch(url, {
         ...commonOpts,
         method: "POST",
         body,
@@ -78,11 +86,15 @@ export async function post(url: string, json: Json) {
 }
 
 export async function patch(url: string, json: Json) {
+    if (url.startsWith("/")) {
+        url = API_BASE + url
+    }
+
     const body = JSON.stringify(json)
 
     console.info("PATCH", url, JSON.parse(body))
 
-    const response = await fetch(API_BASE + url, {
+    const response = await fetch(url, {
         ...commonOpts,
         method: "PATCH",
         body,
@@ -104,11 +116,22 @@ export async function patch(url: string, json: Json) {
 }
 
 export interface AnonymousUser {
-    id: number,
+    is_you: boolean,
+    is_anonymous: true,
 }
 
-export interface FullUser extends AnonymousUser {
+export interface User {
+    is_you: boolean,
+    is_anonymous: false,
+
+    id: number,
     username: string,
     name: string,
-    avatar_url: string,
+    avatar_url: string | null,
+    github_api_url: string | null,
+    github_html_url: string | null,
+}
+
+export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
+    return user.is_anonymous
 }

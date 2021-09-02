@@ -7,11 +7,11 @@ import GitHubLoginButton from "./GitHubLoginButton"
 import UserLink from "./UserLink"
 
 export type Props = {
-    onChange?: (user: api.AnonymousUser) => void,
+    onChange?: (user: api.AnonymousUser | api.User) => void,
 }
 
 export default function LoginState({ onChange }: Props) {
-    const { data, error } = useSWR("/user", api.get)
+    const { data, error } = useSWR<{ user: api.AnonymousUser | api.User }>("/user", api.get)
 
     useEffect(() => {
         if (onChange && data?.user) {
@@ -24,8 +24,8 @@ export default function LoginState({ onChange }: Props) {
     } else if (!data?.user) {
         // Loading...
         return <div />
-    } else if (data?.user?.username) {
-        return <UserLink username={data.user.username} />
+    } else if (data?.user && !api.isAnonUser(data.user) && data.user.username) {
+        return <UserLink username={data.user.username} hideYou={true} />
     } else {
         return <GitHubLoginButton />
     }

@@ -35,10 +35,15 @@
 }
 
 .username {
-    opacity: 0.5;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+
+    color: #888;
     font-weight: 400;
 }
 
-.username:hover {
-    border-bottom: 1px dotted;
+.username a:hover {
+    color: white;
 }

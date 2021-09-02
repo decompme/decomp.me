@@ -19,6 +19,8 @@ env = environ.Env(
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
     USE_SANDBOX_JAIL=(bool, True),
+    GITHUB_CLIENT_ID=(str, ""),
+    GITHUB_CLIENT_SECRET=(str, ""),
 )
 
 env_file = BASE_DIR / ".." / ".env"
@@ -49,8 +51,9 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'coreapp.middleware.set_user_profile',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
