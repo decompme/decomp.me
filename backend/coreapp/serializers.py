@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from rest_framework import serializers
 from rest_framework.request import Request
 from typing import Union, Optional
@@ -6,9 +6,11 @@ from typing import Union, Optional
 from .models import Profile, Scratch
 from .github import GitHubUser
 
-def serialize_user(request: Request, user: Union[User, Profile]):
+def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
     if isinstance(user, Profile):
-        user: User = user.user
+        assert user.user is not None
+        user = user.user
+        assert isinstance(user, User) or isinstance(user, AnonymousUser)
 
     github: Optional[GitHubUser] = None
     try:
@@ -37,9 +39,9 @@ def serialize_user(request: Request, user: Union[User, Profile]):
             "github_html_url": github.details().html_url if github else None,
         }
 
-class UserField(serializers.RelatedField):
-    def to_representation(self, user: Union[User, Profile]):
-        return serialize_user(self.context["request"], user)
+class ProfileField(serializers.RelatedField[Profile, str, str]):
+    def to_representation(self, profile: Profile):
+        return serialize_user(self.context["request"], profile)
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)
@@ -65,7 +67,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 
 # XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
 class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
-    owner = UserField(read_only=True)
+    owner = ProfileField(read_only=True)
     parent = serializers.HyperlinkedRelatedField(
         read_only=True,
         view_name="scratch-detail",

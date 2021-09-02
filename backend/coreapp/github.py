@@ -94,6 +94,8 @@ class GitHubUser(models.Model):
                 except User.github.RelatedObjectDoesNotExist:
                     # request.user lacks a github link, so we can attach gh_user to it
                     pass
+                except AttributeError:
+                    pass
 
             if new_user:
                 user = User.objects.create_user(
