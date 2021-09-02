@@ -1,4 +1,5 @@
 Django
+PyGithub
 ansiwrap
 colorama
 cxxfilt
@@ -11,6 +12,5 @@ mypy
 psycopg2
 pycparser
 python-Levenshtein
-watchdog
-github3api
 types-requests
+watchdog

@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
+    'coreapp.middleware.disable_csrf',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'coreapp.middleware.set_user_profile',
     'django.contrib.messages.middleware.MessageMiddleware',

@@ -33,7 +33,7 @@ def serialize_user(request: Request, user: Union[User, Profile]):
             "email": user.email,
             "name": github.details().name if github else user.username,
             "avatar_url": github.details().avatar_url if github else None,
-            "github_api_url": github.github_api_url() if github else None,
+            "github_api_url": github.details().url if github else None,
             "github_html_url": github.details().html_url if github else None,
         }
 

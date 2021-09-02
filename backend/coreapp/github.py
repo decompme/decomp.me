@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.cache import cache
-from django.db import models
+from django.db import models, transaction
 from django.http import HttpRequest
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -8,7 +8,8 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from typing import Optional
-from github3api import GitHubAPI
+from github import Github
+from github.NamedUser import NamedUser
 import requests
 
 from .models import Profile
@@ -27,15 +28,6 @@ class MissingOAuthScope(APIException):
     def __init__(self, scope: str):
         super(f"The GitHub OAuth verification code was valid but lacks required scope '{scope}'.")
 
-class GitHubUserDetails:
-    def __init__(self, json):
-        self.id: int = json["id"]
-        self.username: str = json["login"]
-        self.email: Optional[str] = json["email"]
-        self.avatar_url: str = json["avatar_url"]
-        self.name: str = json["name"]
-        self.html_url: str = json["html_url"]
-
 class GitHubUser(models.Model):
     user = models.OneToOneField(
         User,
@@ -46,26 +38,23 @@ class GitHubUser(models.Model):
     github_id = models.PositiveIntegerField(unique=True, editable=False)
     access_token = models.CharField(max_length=100)
 
-    def details(self, use_cache: bool = True) -> GitHubUserDetails:
+    def details(self, use_cache: bool = True) -> NamedUser:
         cache_key = f"github_user_details:{self.github_id}"
         cached = cache.get(cache_key) if use_cache else None
 
         if cached:
             return cached
-        
-        data = GitHubAPI(bearer_token=self.access_token).get(f"/user/{self.github_id}")
-        details = GitHubUserDetails(data)
+
+        details = Github(self.access_token).get_user_by_id(self.github_id)
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
 
-    def github_api_url(self):
-        return f"https://api.github.com/user/{self.github_id}"
-
     def __str__(self):
-        return "@" + self.details().username
+        return "@" + self.details().login
 
     @staticmethod
+    @transaction.atomic
     def login(request: HttpRequest, oauth_code: str) -> "GitHubUser":
         response = requests.post(
             "https://github.com/login/oauth/access_token",
@@ -89,7 +78,7 @@ class GitHubUser(models.Model):
 
         access_token: str = response["access_token"]
 
-        details = GitHubUserDetails(GitHubAPI(bearer_token=access_token).get("/user"))
+        details = Github(access_token).get_user()
 
         try:
             gh_user = GitHubUser.objects.get(github_id=details.id)
@@ -98,20 +87,28 @@ class GitHubUser(models.Model):
             user = request.user
             new_user = request.user.is_anonymous
 
-            try:
-                request.user.github
-                new_user = True
-            except User.github.RelatedObjectDoesNotExist:
-                # request.user lacks a github link, so we can attach gh_user to it
-                pass
-            
+            if not new_user:
+                try:
+                    request.user.github
+                    new_user = True
+                except User.github.RelatedObjectDoesNotExist:
+                    # request.user lacks a github link, so we can attach gh_user to it
+                    pass
+
             if new_user:
                 user = User.objects.create_user(
-                    username=details.username,
+                    username=details.login,
                     email=details.email,
                     password=None,
                 )
-                user.profile = request.user.profile
+
+                try:
+                    user.profile = request.user.profile
+                except AttributeError:
+                    profile = Profile()
+                    profile.save()
+                    user.profile = profile
+
                 user.save()
 
             gh_user.user = user

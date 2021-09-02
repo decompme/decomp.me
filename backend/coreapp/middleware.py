@@ -4,6 +4,13 @@ from django.utils.timezone import now
 from .models import User, Profile
 import logging
 
+def disable_csrf(get_response):
+    def middleware(request: HttpRequest):
+        setattr(request, "_dont_enforce_csrf_checks", True)
+        return get_response(request)
+
+    return middleware
+
 def set_user_profile(get_response):
     """
     Makes sure that `request.user.profile` is always available, even for anonymous users.
