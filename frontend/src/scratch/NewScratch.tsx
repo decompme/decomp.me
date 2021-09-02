@@ -32,7 +32,7 @@ export default function NewScratch() {
 
         try {
             setAwaitingResponse(true)
-            const { slug } = await api.post("/scratch", {
+            const { scratch } = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
                 arch,
@@ -41,7 +41,7 @@ export default function NewScratch() {
             setErrorMsg("")
             setAsm("") // Clear the localStorage
 
-            history.push(`/scratch/${slug}`)
+            history.push(`/scratch/${scratch.slug}`)
             toast.success("Scratch created! You may share this url")
         } catch (error) {
             if (error?.responseJSON.as_errors) {

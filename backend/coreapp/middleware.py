@@ -54,6 +54,9 @@ def set_user_profile(get_response):
                 profile.save()
                 request.session["anonymous_profile_id"] = profile.id
                 logging.debug(f"New anonymous profile: {profile}")
+        
+        if profile.user is None and not request.user.is_anonymous:
+            profile.user = request.user
 
         profile.last_request_date = now()
         profile.save()

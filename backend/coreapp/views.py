@@ -2,7 +2,7 @@ from typing import Optional
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_user
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.auth import logout
@@ -123,7 +123,12 @@ def scratch(request, slug=None):
         serializer = ScratchSerializer(data=scratch_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        db_scratch = Scratch.objects.get(slug=scratch_data["slug"])
+
+        return Response({
+            "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
+        }, status=status.HTTP_201_CREATED)
 
     elif request.method == "PATCH":
         if not slug:
@@ -212,10 +217,9 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
-    return Response(
-        ScratchSerializer(new_scratch, context={ "request": request }).data,
-        status=status.HTTP_201_CREATED
-    )
+    return Response({
+        "scratch": ScratchSerializer(new_scratch, context={ "request": request }).data,
+    }, status=status.HTTP_201_CREATED)
 
 class CurrentUser(APIView):
     """
@@ -224,7 +228,7 @@ class CurrentUser(APIView):
 
     def get(self, request: Request):
         return Response({
-            "user": serialize_user(request, request.user),
+            "user": serialize_profile(request, request.profile),
         })
 
     def post(self, request: Request):
@@ -250,5 +254,5 @@ def user(request, username):
     """
 
     return Response({
-        "user": serialize_user(request, get_object_or_404(User, username=username)),
+        "user": serialize_profile(request, get_object_or_404(Profile, user__username=username)),
     })

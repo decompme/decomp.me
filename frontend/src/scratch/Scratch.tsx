@@ -113,13 +113,13 @@ export default function Scratch() {
     }
 
     const fork = async () => {
-        const newScratch = await api.post(`/scratch/${slug}/fork`, {
+        const { scratch } = await api.post(`/scratch/${slug}/fork`, {
             source_code: cCode,
             context: cContext,
             ...compiler,
         })
 
-        history.push(`/scratch/${newScratch.slug}`)
+        history.push(`/scratch/${scratch.slug}`)
         toast.success("Fork created!", {
             icon: "🍴",
         })

@@ -38,6 +38,10 @@ class GitHubUser(models.Model):
     github_id = models.PositiveIntegerField(unique=True, editable=False)
     access_token = models.CharField(max_length=100)
 
+    class Meta:
+        verbose_name = "GitHub user"
+        verbose_name_plural = "GitHub users"
+
     def details(self, use_cache: bool = True) -> NamedUser:
         cache_key = f"github_user_details:{self.github_id}"
         cached = cache.get(cache_key) if use_cache else None
@@ -87,23 +91,12 @@ class GitHubUser(models.Model):
             user = request.user
 
             # make a new user if request.user already has a github account attached
-            new_user = user.is_anonymous or isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None
-
-            if new_user:
+            if user.is_anonymous or isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None:
                 user = User.objects.create_user(
                     username=details.login,
                     email=details.email,
                     password=None,
                 )
-
-                if request.user.is_anonymous:
-                    user.profile = request.profile
-                else:
-                    profile = Profile()
-                    profile.save()
-                    user.profile = profile
-
-                user.save()
 
             assert isinstance(user, User)
 

@@ -158,3 +158,23 @@ class UserTests(APITestCase):
         # verify we are logged out
         response = self.client.get(self.current_user_url)
         self.assertEqual(response.json()["user"]["is_anonymous"], True)
+
+    @responses.activate
+    def test_own_scratch(self):
+        """
+        Create a scratch anonymously, then log in and verify that the scratch owner is your logged-in user.
+        """
+
+        response = self.client.post("/api/scratch", {
+            'arch': 'mips',
+            'context': '',
+            'target_asm': "jr $ra\nnop\n"
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        slug = response.json()["scratch"]["slug"]
+
+        self.test_github_login()
+
+        response = self.client.get(f"/api/scratch/{slug}")
+        self.assertEqual(response.json()["scratch"]["owner"]["username"], self.GITHUB_USER["login"])
+        self.assertEqual(response.json()["scratch"]["owner"]["is_you"], True)

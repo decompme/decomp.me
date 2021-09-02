@@ -1,25 +1,19 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from typing import Union, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from .models import Profile, Scratch
 from .github import GitHubUser
-from .middleware import Request, AnonymousUser
+from .middleware import Request
 
-def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
-    if isinstance(user, Profile):
-        if isinstance(user.user, User):
-            user = user.user
-        else:
-            user = AnonymousUser()
-
-    if user.is_anonymous:
+def serialize_profile(request: Request, profile: Profile):
+    if profile.user is None:
         return {
-            "is_you": user == request.user,
+            "is_you": profile == request.profile,
             "is_anonymous": True,
-            "id": user.id,
         }
     else:
+        user = profile.user
         github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
 
         return {
@@ -41,7 +35,7 @@ else:
 
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
-        return serialize_user(self.context["request"], profile)
+        return serialize_profile(self.context["request"], profile)
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)
