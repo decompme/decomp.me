@@ -27,6 +27,7 @@ jobs:
         with:
           python-version: 3.9.6
       - run: pip install -r backend/requirements.txt
+      - run: sudo apt install binutils-mips-linux-gnu
       - run: ./backend/compilers/download.sh
       - run: python backend/manage.py test backend
         env:
