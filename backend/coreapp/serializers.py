@@ -1,16 +1,17 @@
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from typing import Union, Optional, TYPE_CHECKING
 
 from .models import Profile, Scratch
 from .github import GitHubUser
-from .middleware import Request
+from .middleware import Request, AnonymousUser
 
 def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
     if isinstance(user, Profile):
-        assert user.user is not None
-        user = user.user
-        assert isinstance(user, User)
+        if isinstance(user.user, User):
+            user = user.user
+        else:
+            user = AnonymousUser()
 
     if user.is_anonymous:
         return {
