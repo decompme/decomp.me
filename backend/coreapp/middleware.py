@@ -1,8 +1,20 @@
 from django.http.request import HttpRequest
 from django.utils.timezone import now
+from django.contrib import auth
 
 from .models import User, Profile
 import logging
+from rest_framework.request import Request as DRFRequest
+from typing import Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .github import GitHubUser
+
+class AnonymousUser(auth.models.AnonymousUser):
+    profile: Profile
+
+class Request(DRFRequest):
+    user: Union[User, AnonymousUser]
 
 def disable_csrf(get_response):
     def middleware(request: HttpRequest):
@@ -22,12 +34,16 @@ def set_user_profile(get_response):
         if not request.user.is_anonymous:
             try:
                 profile = request.user.profile
-            except User.profile.RelatedObjectDoesNotExist:
+            except User.profile.RelatedObjectDoesNotExist: # type: ignore
                 pass
 
         if not profile:
+            id = request.session.get("anonymous_profile_id")
+            if not isinstance(id, int):
+                id = -1
+
             try:
-                profile = Profile.objects.get(id=request.session.get("anonymous_profile_id"))
+                profile = Profile.objects.get(id=id)
             except Profile.DoesNotExist:
                 profile = Profile()
 

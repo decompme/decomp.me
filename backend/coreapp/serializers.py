@@ -1,24 +1,16 @@
 from django.contrib.auth.models import AnonymousUser, User
 from rest_framework import serializers
-from rest_framework.request import Request
-from typing import Union, Optional
+from typing import Union, Optional, TYPE_CHECKING
 
 from .models import Profile, Scratch
 from .github import GitHubUser
+from .middleware import Request
 
 def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
     if isinstance(user, Profile):
         assert user.user is not None
         user = user.user
-        assert isinstance(user, User) or isinstance(user, AnonymousUser)
-
-    github: Optional[GitHubUser] = None
-    try:
-        github = user.github
-    except User.github.RelatedObjectDoesNotExist:
-        pass
-    except AttributeError:
-        pass
+        assert isinstance(user, User)
 
     if user.is_anonymous:
         return {
@@ -27,6 +19,8 @@ def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
             "id": user.id,
         }
     else:
+        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+
         return {
             "is_you": user == request.user,
             "is_anonymous": False,
@@ -39,7 +33,12 @@ def serialize_user(request: Request, user: Union[User, AnonymousUser, Profile]):
             "github_html_url": github.details().html_url if github else None,
         }
 
-class ProfileField(serializers.RelatedField):
+if TYPE_CHECKING:
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, str]
+else:
+    ProfileFieldBaseClass = serializers.RelatedField
+
+class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_user(self.context["request"], profile)
 
@@ -68,7 +67,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 # XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
 class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
     owner = ProfileField(read_only=True)
-    parent = serializers.HyperlinkedRelatedField(
+    parent = serializers.HyperlinkedRelatedField( # type: ignore
         read_only=True,
         view_name="scratch-detail",
         lookup_field="slug",

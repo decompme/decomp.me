@@ -10,13 +10,13 @@ from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.request import Request
 import logging
 
 import hashlib
 
 from .models import User, Profile, Asm, Scratch
 from .github import GitHubUser
+from .middleware import Request
 from coreapp.models import gen_scratch_id
 
 

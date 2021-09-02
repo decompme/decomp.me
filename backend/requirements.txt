@@ -6,6 +6,7 @@ cxxfilt
 django-cors-headers
 django-environ
 django-stubs
+django-stubs-ext
 djangorestframework
 djangorestframework-stubs
 mypy

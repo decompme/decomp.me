@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models, transaction
-from django.http import HttpRequest
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -10,6 +9,7 @@ from rest_framework.exceptions import APIException
 from typing import Optional
 from github import Github
 from github.NamedUser import NamedUser
+from .middleware import Request
 import requests
 
 from .models import Profile
@@ -55,7 +55,7 @@ class GitHubUser(models.Model):
 
     @staticmethod
     @transaction.atomic
-    def login(request: HttpRequest, oauth_code: str) -> "GitHubUser":
+    def login(request: Request, oauth_code: str) -> "GitHubUser":
         response = requests.post(
             "https://github.com/login/oauth/access_token",
             json={
@@ -85,17 +85,9 @@ class GitHubUser(models.Model):
         except GitHubUser.DoesNotExist:
             gh_user = GitHubUser()
             user = request.user
-            new_user = request.user.is_anonymous
 
-            if not new_user:
-                try:
-                    request.user.github
-                    new_user = True
-                except User.github.RelatedObjectDoesNotExist:
-                    # request.user lacks a github link, so we can attach gh_user to it
-                    pass
-                except AttributeError:
-                    pass
+            # make a new user if request.user already has a github account attached
+            new_user = isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None
 
             if new_user:
                 user = User.objects.create_user(
@@ -104,14 +96,16 @@ class GitHubUser(models.Model):
                     password=None,
                 )
 
-                try:
+                if request.user.is_anonymous and request.user.profile is not None:
                     user.profile = request.user.profile
-                except AttributeError:
+                else:
                     profile = Profile()
                     profile.save()
                     user.profile = profile
 
                 user.save()
+            
+            assert isinstance(user, User)
 
             gh_user.user = user
             gh_user.github_id = details.id
