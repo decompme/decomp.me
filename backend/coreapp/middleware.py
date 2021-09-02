@@ -58,7 +58,7 @@ def set_user_profile(get_response):
         profile.last_request_date = now()
         profile.save()
 
-        request.profile = profile
+        setattr(request, "profile", profile)
 
         return get_response(request)
     

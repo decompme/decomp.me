@@ -91,7 +91,7 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.count(), 0)
 
     @responses.activate
-    def test_github_login(self):
+    def test_github_login(self) -> None:
         """
         Ensure that a user is created upon sign-in with GitHub.
         """
