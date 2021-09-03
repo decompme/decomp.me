@@ -2,7 +2,8 @@
     "license": "MIT",
     "scripts": {
         "start": "snowpack dev --polyfill-node",
-        "build": "snowpack build --polyfill-node"
+        "build": "snowpack build --polyfill-node",
+        "lint": "tsc && eslint src --ext .js,.jsx,.ts,.tsx"
     },
     "dependencies": {
         "@monaco-editor/react": "^4.2.2",
@@ -16,17 +17,24 @@
         "react-loading-skeleton": "^2.2.0",
         "react-router-dom": "^5.2.0",
         "react-simple-resizer": "^2.1.0",
-        "swr": "^0.5.6",
+        "swr": "^1.0.0",
         "use-debounce": "^7.0.0"
     },
     "devDependencies": {
         "@prefresh/snowpack": "^3.0.0",
         "@snowpack/plugin-postcss": "^1.4.3",
+        "@types/react-router-dom": "^5.1.8",
+        "@typescript-eslint/eslint-plugin": "^4.29.3",
+        "@typescript-eslint/parser": "^4.29.3",
         "autoprefixer": "^10.3.1",
         "cssnano": "^5.0.7",
         "dotenv": "^10.0.0",
+        "eslint": "^7.32.0",
+        "eslint-config-preact": "^1.1.4",
+        "eslint-formatter-rdjson": "^1.0.5",
         "postcss": "^8.3.6",
         "postcss-scrollbar": "^0.3.0",
-        "snowpack": "^3.7.1"
+        "snowpack": "^3.7.1",
+        "typescript": "^4.4.2"
     }
 }

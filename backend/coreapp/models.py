@@ -1,6 +1,6 @@
 from django.utils.crypto import get_random_string
-
 from django.db import models
+from django.contrib.auth.models import User
 
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
@@ -11,7 +11,23 @@ def gen_scratch_id() -> str:
     return ret
 
 class Profile(models.Model):
-    pass
+    creation_date = models.DateTimeField(auto_now_add=True)
+    last_request_date = models.DateTimeField(auto_now_add=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile",
+        null=True,
+    )
+
+    def is_anonymous(self):
+        return self.user is None
+
+    def __str__(self):
+        if self.user:
+            return self.user.username
+        else:
+            return str(self.id)
 
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)

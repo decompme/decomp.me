@@ -23,7 +23,7 @@ All the following commands need to be run inside the virtual environment.
 Once the virtual environment is set up you can install the requirements
 ```shell
 pip install -r requirements.txt
-./tools/backend/compilers/download.sh
+./backend/compilers/download.sh
 ```
 
 Set up the tables needed for the database:
@@ -45,6 +45,17 @@ If you changed the database models, you'll need to make new migrations
 python manage.py makemigrations
 python manage.py migrate
 ```
+
+#### GitHub sign-in
+
+To set up GitHub integration:
+
+- [Register a new OAuth application](https://github.com/settings/applications/new)
+    - "Homepage URL" should be the URL you access the frontend on (e.g. `http://localhost:8080`)
+    - "Authorization callback URL" should be the same as the homepage URL, but with `/login` appended
+- Edit `.env`:
+    - Set `GITHUB_CLIENT_ID` to the application client ID
+    - Set `GITHUB_CLIENT_SECRET` to the application client secret (do **not** share this)
 
 #### Sandbox Jail
 

@@ -2,8 +2,11 @@ import os
 import sys
 
 from pathlib import Path
+import django_stubs_ext
 
 import environ
+
+django_stubs_ext.monkeypatch()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,6 +22,8 @@ env = environ.Env(
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
     USE_SANDBOX_JAIL=(bool, True),
+    GITHUB_CLIENT_ID=(str, ""),
+    GITHUB_CLIENT_SECRET=(str, ""),
 )
 
 env_file = BASE_DIR / ".." / ".env"
@@ -49,8 +54,10 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
+    'coreapp.middleware.disable_csrf',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'coreapp.middleware.set_user_profile',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -135,10 +142,10 @@ SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env('SECURE_HSTS_INCLUDE_SUBDOMAINS')
 SECURE_HSTS_PRELOAD=env('SECURE_HSTS_PRELOAD')
 
-SESSION_COOKIE_SAMESITE = "None" if DEBUG else "Lax"
-SESSION_COOKIE_SECURE = True
-
-CSRF_COOKIE_SECURE = True
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SECURE = True
 
 COMPILER_BASE_PATH = BASE_DIR / "compilers"
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
@@ -149,3 +156,6 @@ if sys.platform == "darwin":
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
+
+GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET")

@@ -1,0 +1,11 @@
+runner:
+  eslint:
+    cmd: cd frontend && yarn -s run eslint src --ext .js,.jsx,.ts,.tsx -f=rdjson
+    format: rdjson
+  tsc:
+    cmd: cd frontend && yarn -s run tsc
+    format: tsc
+  mypy:
+    cmd: cd backend && mypy --show-column-numbers --show-absolute-path
+    errorformat:
+    - "%f:%l:%c: %t%*[^:]: %m"

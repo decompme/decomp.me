@@ -1,5 +1,6 @@
 import { h, createContext } from "preact"
 import { useState, useContext, useEffect } from "preact/hooks"
+import Skeleton from "react-loading-skeleton"
 
 import Select from "../Select"
 
@@ -7,11 +8,16 @@ import compilers from "./compilers"
 import PresetSelect, { presets } from "./PresetSelect"
 import styles from "./CompilerOpts.module.css"
 
-const OptsContext = createContext()
+interface IOptsContext {
+    checkFlag(flag: string): boolean,
+    setFlag(flag: string, value: boolean): void,
+}
+
+const OptsContext = createContext<IOptsContext>(undefined)
 
 export function Checkbox({ flag, description }) {
     const { checkFlag, setFlag } = useContext(OptsContext)
- 
+
     const isChecked = checkFlag(flag)
 
     return <div class={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
@@ -32,7 +38,7 @@ export function FlagSet({ name, children }) {
                     setFlag(child.props.flag, false)
                 }
 
-                setFlag(event.target.value, true)
+                setFlag((event.target as HTMLSelectElement).value, true)
             }}
         >
             {children}
@@ -40,7 +46,7 @@ export function FlagSet({ name, children }) {
     </div>
 }
 
-export function FlagOption({ flag, description }) {
+export function FlagOption({ flag, description }: { flag: string, description?: string }) {
     const { checkFlag } = useContext(OptsContext)
 
     return <option
@@ -51,31 +57,43 @@ export function FlagOption({ flag, description }) {
     </option>
 }
 
-export default function CompilerOpts({ value, onChange, title, isPopup }) {
+export type CompilerOptsT = {
+    compiler: string,
+    cc_opts: string,
+}
+
+export type Props = {
+    value: CompilerOptsT,
+    onChange: (value: CompilerOptsT) => void,
+    title?: string,
+    isPopup?: boolean,
+}
+
+export default function CompilerOpts({ value, onChange, title, isPopup }: Props) {
     const [compiler, setCompiler] = useState((value && value.compiler) || presets[0].compiler)
     let [opts, setOpts] = useState((value && value.cc_opts) || presets[0].opts)
 
     useEffect(() => {
         onChange({
-            compiler: compiler,
+            compiler,
             cc_opts: opts,
         })
-    }, [compiler, opts])
+    }, [compiler, opts]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <OptsContext.Provider value={{
-        checkFlag(flag) {
+        checkFlag(flag: string) {
             return opts.split(" ").includes(flag)
         },
-    
-        setFlag(flag, enable) {
+
+        setFlag(flag: string, enable: boolean) {
             let split = opts.split(" ")
-    
+
             if (enable) {
                 split.push(flag)
             } else {
                 split = split.filter(f => f !== flag)
             }
-    
+
             opts = split.join(" ").trim()
             setOpts(opts)
         },
@@ -95,8 +113,12 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
 
     return <div>
         <div class={styles.row}>
-            <Select class={styles.compilerSelect} onChange={e => setCompiler(e.target.value)}>
+            <Select
+                class={styles.compilerSelect}
+                onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
+            >
                 {Object.values(compilers).map(c => <option
+                    key={c.id}
                     value={c.id}
                     selected={c.name === compilerComp.name}
                 >
@@ -109,7 +131,7 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
                 class={styles.textbox}
                 value={opts}
                 placeholder="no arguments"
-                onChange={e => setOpts(e.target.value)}
+                onChange={e => setOpts((e.target as HTMLInputElement).value)}
             />
         </div>
 

@@ -1,9 +1,12 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.contrib.auth import logout
 from rest_framework import serializers, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import logging
@@ -11,6 +14,8 @@ import logging
 import hashlib
 
 from .models import Profile, Asm, Scratch
+from .github import GitHubUser
+from .middleware import Request
 from coreapp.models import gen_scratch_id
 
 
@@ -43,12 +48,7 @@ def scratch(request, slug=None):
 
         if not db_scratch.owner:
             # Give ownership to this profile
-            profile = Profile.objects.filter(id=request.session.get("profile", None)).first()
-
-            if not profile:
-                profile = Profile()
-                profile.save()
-                request.session["profile"] = profile.id
+            profile = request.profile
 
             logging.debug(f"Granting ownership of scratch {db_scratch} to {profile}")
 
@@ -56,8 +56,7 @@ def scratch(request, slug=None):
             db_scratch.save()
 
         return Response({
-            "scratch": ScratchSerializer(db_scratch).data,
-            "is_yours": db_scratch.owner.id == request.session.get("profile", None),
+            "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
         })
 
     elif request.method == "POST":
@@ -84,9 +83,21 @@ def scratch(request, slug=None):
 
         assembly, err = CompilerWrapper.assemble_asm(arch, asm)
         if not assembly:
-            error_msg = f"Error when assembling target asm: {err}"
-            logging.error(error_msg)
-            return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
+            assert isinstance(err, str)
+
+            errors = []
+
+            for line in err.splitlines():
+                if "asm.s:" in line:
+                    errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
+                else:
+                    errors.append(line)
+
+            return Response({
+                "error": "as_error",
+                "error_description": "Error when assembling target asm",
+                "as_errors": errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         source_code = data.get("source_code")
         if not source_code:
@@ -111,7 +122,12 @@ def scratch(request, slug=None):
         serializer = ScratchSerializer(data=scratch_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        db_scratch = Scratch.objects.get(slug=scratch_data["slug"])
+
+        return Response({
+            "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
+        }, status=status.HTTP_201_CREATED)
 
     elif request.method == "PATCH":
         if not slug:
@@ -125,7 +141,7 @@ def scratch(request, slug=None):
 
         db_scratch = get_object_or_404(Scratch, slug=slug)
 
-        if db_scratch.owner and db_scratch.owner.id != request.session.get("profile", None):
+        if db_scratch.owner and db_scratch.owner != request.profile:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         # TODO validate
@@ -200,4 +216,53 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
-    return Response(ScratchSerializer(new_scratch).data, status=status.HTTP_201_CREATED)
+    return Response({
+        "scratch": ScratchSerializer(new_scratch, context={ "request": request }).data,
+    }, status=status.HTTP_201_CREATED)
+
+class CurrentUser(APIView):
+    """
+    View to access the current user profile.
+    """
+
+    def get(self, request: Request):
+        user = serialize_profile(request, request.profile)
+        assert user["is_you"] == True
+        return Response({
+            "user": user,
+        })
+
+    def post(self, request: Request):
+        """
+        Login if the 'code' parameter is provided. Log out otherwise.
+        """
+
+        if "code" in request.data:
+            GitHubUser.login(request, request.data["code"])
+
+            return Response({
+                "message": "Login success",
+                "user": serialize_profile(request, request.profile),
+            })
+        else:
+            logout(request)
+
+            profile = Profile()
+            profile.save()
+            request.profile = profile
+            request.session["profile_id"] = request.profile.id
+
+            return Response({
+                "message": "Logout success",
+                "user": serialize_profile(request, request.profile),
+            })
+
+@api_view(["GET"])
+def user(request, username):
+    """
+    Gets a user's basic data
+    """
+
+    return Response({
+        "user": serialize_profile(request, get_object_or_404(Profile, user__username=username)),
+    })
