@@ -1,10 +1,10 @@
 from django.urls import reverse
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 import responses
 
-from .models import Scratch, User, Profile
+from .models import Scratch, Profile
 from .github import GitHubUser
 
 class ScratchCreationTests(APITestCase):
@@ -152,12 +152,25 @@ class UserTests(APITestCase):
         response = self.client.get(self.current_user_url)
         self.assertEqual(response.json()["user"]["is_anonymous"], False)
 
-        # log out
-        self.client.post(self.current_user_url, {})
+        self.assertEqual(Profile.objects.count(), 1) # logged-in
 
-        # verify we are logged out
-        response = self.client.get(self.current_user_url)
+        # log out
+        response = self.client.post(self.current_user_url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["message"], "Logout success")
+        self.assertEqual(response.json()["user"]["is_you"], True)
         self.assertEqual(response.json()["user"]["is_anonymous"], True)
+
+        self.assertEqual(Profile.objects.count(), 2) # logged-out
+
+        for i in range(3):
+            # verify we are logged out
+            response = self.client.get(self.current_user_url)
+            self.assertEqual(response.json()["user"]["is_you"], True)
+            self.assertEqual(response.json()["user"]["is_anonymous"], True)
+
+        # all the above GETs should have used the same logged-out profile
+        self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
     def test_own_scratch(self):

@@ -18,15 +18,22 @@ API_CACHE_TIMEOUT = 60 * 60 # 1 hour
 
 class BadOAuthCode(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "Invalid or expired GitHub OAuth verification code."
     default_code = "bad_oauth_code"
+    default_detail = "Invalid or expired GitHub OAuth verification code."
 
 class MissingOAuthScope(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "bad_oauth_scope"
+    missing_scope: str
 
     def __init__(self, scope: str):
         super(f"The GitHub OAuth verification code was valid but lacks required scope '{scope}'.")
+        self.missing_scope = scope
+
+class MalformedGithubApiResponse(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_code = "malformed_github_api_response"
+    default_detail = "The GitHub API returned an malformed or unexpected response."
 
 class GitHubUser(models.Model):
     user = models.OneToOneField(
@@ -42,9 +49,9 @@ class GitHubUser(models.Model):
         verbose_name = "GitHub user"
         verbose_name_plural = "GitHub users"
 
-    def details(self, use_cache: bool = True) -> NamedUser:
+    def details(self) -> NamedUser:
         cache_key = f"github_user_details:{self.github_id}"
-        cached = cache.get(cache_key) if use_cache else None
+        cached = cache.get(cache_key)
 
         if cached:
             return cached
@@ -74,13 +81,17 @@ class GitHubUser(models.Model):
         if error == "bad_verification_code":
             raise BadOAuthCode()
         elif error:
-            raise Exception(f"GitHub login sent unknown error '{error}'")
+            raise MalformedGithubApiResponse(f"GitHub API login sent unknown error '{error}'.")
 
-        scopes = str(response["scope"]).split(",")
+        try:
+            scope_str = str(response["scope"])
+            access_token = str(response["access_token"])
+        except KeyError:
+            raise MalformedGithubApiResponse()
+
+        scopes = scope_str.split(",")
         if not "public_repo" in scopes:
             raise MissingOAuthScope("public_repo")
-
-        access_token: str = response["access_token"]
 
         details = Github(access_token).get_user()
 

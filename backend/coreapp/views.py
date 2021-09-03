@@ -1,4 +1,3 @@
-from typing import Optional
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -14,7 +13,7 @@ import logging
 
 import hashlib
 
-from .models import User, Profile, Asm, Scratch
+from .models import Profile, Asm, Scratch
 from .github import GitHubUser
 from .middleware import Request
 from coreapp.models import gen_scratch_id
@@ -227,8 +226,10 @@ class CurrentUser(APIView):
     """
 
     def get(self, request: Request):
+        user = serialize_profile(request, request.profile)
+        assert user["is_you"] == True
         return Response({
-            "user": serialize_profile(request, request.profile),
+            "user": user,
         })
 
     def post(self, request: Request):
@@ -238,14 +239,23 @@ class CurrentUser(APIView):
 
         if "code" in request.data:
             GitHubUser.login(request, request.data["code"])
+
+            return Response({
+                "message": "Login success",
+                "user": serialize_profile(request, request.profile),
+            })
         else:
             logout(request)
 
             profile = Profile()
             profile.save()
             request.profile = profile
+            request.session["profile_id"] = request.profile.id
 
-        return self.get(request)
+            return Response({
+                "message": "Logout success",
+                "user": serialize_profile(request, request.profile),
+            })
 
 @api_view(["GET"])
 def user(request, username):

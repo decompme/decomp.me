@@ -15,6 +15,7 @@ def serialize_profile(request: Request, profile: Profile):
     else:
         user = profile.user
         github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        github_details = github.details() if github else None
 
         return {
             "is_you": user == request.user,
@@ -22,10 +23,10 @@ def serialize_profile(request: Request, profile: Profile):
             "id": user.id,
             "username": user.username,
             "email": user.email,
-            "name": github.details().name if github else user.username,
-            "avatar_url": github.details().avatar_url if github else None,
-            "github_api_url": github.details().url if github else None,
-            "github_html_url": github.details().html_url if github else None,
+            "name": github_details.name if github_details else user.username,
+            "avatar_url": github_details.avatar_url if github_details else None,
+            "github_api_url": github_details.url if github_details else None,
+            "github_html_url": github_details.html_url if github_details else None,
         }
 
 if TYPE_CHECKING:
