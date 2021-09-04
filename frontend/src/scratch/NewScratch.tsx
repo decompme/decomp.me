@@ -44,7 +44,7 @@ export default function NewScratch() {
             history.push(`/scratch/${scratch.slug}`)
             toast.success("Scratch created! You may share this url")
         } catch (error) {
-            if (error?.responseJSON.as_errors) {
+            if (error?.responseJSON?.as_errors) {
                 setErrorMsg(error.responseJSON.as_errors.join("\n"))
             } else {
                 console.error(error)

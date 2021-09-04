@@ -1,166 +1,54 @@
 import { h, Fragment } from "preact"
-import { useEffect, useState, useRef } from "preact/hooks"
-import { useDebouncedCallback }  from "use-debounce"
+import { useEffect } from "preact/hooks"
 import * as resizer from "react-simple-resizer"
-import toast from "react-hot-toast"
-import Skeleton from "react-loading-skeleton"
 import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
-import { useParams, useHistory, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
+import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../api"
-import Nav from "../Nav"
 import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Editor from "./Editor"
-import { useLocalStorage, useSize } from "../hooks"
+import { useLocalStorage } from "../hooks"
 import UserLink from "../user/UserLink"
+import Diff from "../diff/Diff"
+import AsyncButton from "../AsyncButton"
 
 import styles from "./Scratch.module.css"
-import useSWR from "swr"
 
-function nameScratch({ owner }: { owner: api.User }): string {
+function nameScratch({ owner }: api.Scratch): string {
     if (owner?.is_you) {
         return "your scratch"
-    } else if (owner?.name) {
+    } else if (!api.isAnonUser(owner) && owner?.name) {
         return `${owner?.name}'s scratch`
     } else {
         return "unknown scratch"
     }
 }
 
-export default function Scratch() {
-    // TODO: refactor this, this is stupidly big
-    const { slug } = useParams<{ slug: string }>()
-    const history = useHistory()
-    const [currentRequest, setCurrentRequest] = useState("loading")
-    const [showWarnings, setShowWarnings] = useLocalStorage("logShowWarnings", false) // TODO: pass as compile flag '-wall'?
-    const [compiler, setCompiler] = useState<CompilerOptsT>(null)
-    const isCompilerChosen = compiler?.compiler !== ""
-    const [cCode, setCCode] = useState(null)
-    const [cContext, setCContext] = useState(null)
-    const [diff, setDiff] = useState(null)
-    const [log, setLog] = useState(null)
-    const [owner, setOwner] = useState<api.User>(undefined)
-    const [parentScratch, setParentScratch] = useState(null)
-    const [savedCompiler, setSavedCompiler] = useState(compiler)
-    const [savedCCode, setSavedCCode] = useState(cCode)
-    const [savedCContext, setSavedCContext] = useState(cContext)
-    const codeResizeContainer = useRef<resizer.Container>(null)
-    const { ref: diffSectionHeader, width: diffSectionHeaderWidth } = useSize<HTMLDivElement>()
-    const [loadDate, setLoadDate] = useState(0) // maybe not needed
+export type Props = {
+    slug: string,
+}
 
-    const hasUnsavedChanges = savedCCode !== cCode || savedCContext !== cContext || JSON.stringify(savedCompiler) !== JSON.stringify(compiler)
+export default function Scratch({ slug }: Props) {
+    const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(slug)
+    const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
+    const forkScratch = api.useForkScratchAndGo(scratch)
 
-    useEffect(() => {
-        document.title = nameScratch({ owner })
-
-        if (hasUnsavedChanges) {
-            document.title += " (unsaved changes)"
-        }
-    }, [owner, hasUnsavedChanges])
-
-    const compile = async () => {
-        if (compiler === null || cCode === null || cContext === null) {
-            return
-        }
-
-        if (!isCompilerChosen) {
-            console.warn("Ignoring compile request; compiler not chosen")
-            return
-        }
-
-        if (currentRequest === "compile") {
-            console.warn("compile action already in progress")
-            return
-        }
-
-        try {
-            setCurrentRequest("compile")
-            const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
-                source_code: cCode.replace(/\r\n/g, "\n"),
-                context: cContext === savedCContext ? undefined : cContext.replace(/\r\n/g, "\n"),
-                ...compiler,
-            })
-
-            setLog(errors)
-            setDiff(diff_output)
-        } finally {
-            setCurrentRequest(null)
-        }
-    }
-
-    const save = async () => {
-        if (!owner?.is_you) {
-            // Implicitly fork
-            return fork()
-        }
-
-        const promise = api.patch(`/scratch/${slug}`, {
-            source_code: cCode,
-            context: cContext,
-            ...compiler,
-        }).catch(error => Promise.reject(error.message))
-
-        await toast.promise(promise, {
-            loading: "Saving...",
-            success: "Scratch saved!",
-            error: "Error saving scratch",
-        })
-
-        setSavedCompiler(compiler)
-        setSavedCCode(cCode)
-        setSavedCContext(cContext)
-    }
-
-    const fork = async () => {
-        const { scratch } = await api.post(`/scratch/${slug}/fork`, {
-            source_code: cCode,
-            context: cContext,
-            ...compiler,
-        })
-
-        history.push(`/scratch/${scratch.slug}`)
-        toast.success("Fork created!", {
-            icon: "🍴",
+    const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
+        setScratch({
+            compiler,
+            cc_opts,
         })
     }
 
     useEffect(() => {
-        (async () => {
-            const { scratch } = await api.get(`/scratch/${slug}`)
-
-            setOwner(scratch.owner)
-            setParentScratch(scratch.parent)
-            setCompiler({
-                compiler: scratch.compiler,
-                cc_opts: scratch.cc_opts,
-            })
-            setCContext(scratch.context)
-            setCCode(scratch.source_code)
-
-            setSavedCompiler({
-                compiler: scratch.compiler,
-                cc_opts: scratch.cc_opts,
-            })
-            setSavedCCode(scratch.source_code)
-            setSavedCContext(scratch.context)
-
-            setLoadDate(Date.now())
-        })()
-    }, [slug])
-
-    const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
-    const isCompiling = debouncedCompile.isPending() || currentRequest === "compile"
-
-    // Ctrl + S to save
-    useEffect(() => {
-        const handler = event => {
+        const handler = (event: KeyboardEvent) => {
             if ((event.ctrlKey || event.metaKey) && event.key == "s") {
                 event.preventDefault()
 
-                const p = debouncedCompile()
-                if (p) {
-                    p.then(save)
+                if (!isSaved) {
+                    saveScratch()
                 }
             }
         }
@@ -169,143 +57,126 @@ export default function Scratch() {
         return () => document.removeEventListener("keydown", handler)
     })
 
-    // FIXME: doesn't seem to work
-    const toggleContextSection = () => {
-        const r = codeResizeContainer.current.getResizer()
+    useDeepCompareEffect(() => {
+        if (scratch) {
+            document.title = nameScratch(scratch)
 
-        if (r.getSectionSize(1) === 0) {
-            r.resizeSection(1, { toSize: r.getTotalSize() / 2 })
-        } else {
-            r.resizeSection(1, { toSize: 0 })
+            if (!isSaved) {
+                document.title += " (unsaved changes)"
+            }
         }
+    }, [scratch || {}, isSaved])
+
+    if (error?.status === 404) {
+        // TODO
+        return <div class={styles.container}>
+            Scratch not found
+        </div>
+    } else if (!scratch) {
+        // TODO
+        return <div class={styles.container}>
+            Loading scratch...
+        </div>
     }
 
-    useEffect(() => {
-        debouncedCompile()
-    }, [debouncedCompile, compiler?.compiler, compiler?.cc_opts])
-
-    return <>
-        <Nav />
-        <main class={styles.container}>
-            <resizer.Container className={styles.resizer}>
-                <resizer.Section minSize={500}>
-                    <resizer.Container
-                        vertical
-                        style={{ height: "100%" }}
-                        // @ts-ignore
-                        ref={codeResizeContainer}
-                    >
-                        <resizer.Section minSize={200} className={styles.sourceCode}>
-                            <div class={styles.sectionHeader}>
-                                Source
-                                <span class={styles.grow} />
-
-                                {isCompilerChosen && <>
-                                    <button class={isCompiling ? styles.compiling : ""} onClick={compile} disabled={!isCompilerChosen}>
-                                        <SyncIcon size={16} /> Compile
-                                    </button>
-                                    {owner?.is_you && <button onClick={save}>
-                                        <UploadIcon size={16} /> Save
-                                        {hasUnsavedChanges && "*"}
-                                    </button>}
-                                    <button onClick={fork}>
-                                        <RepoForkedIcon size={16} /> Fork
-                                    </button>
-
-                                    <CompilerButton disabled={!isCompilerChosen} value={compiler} onChange={setCompiler} />
-                                </>}
-                            </div>
-
-                            <div class={styles.metadata}>
-                                {owner?.username && <div>
-                                    Author
-                                    <UserLink username={owner.username} />
-                                </div>}
-
-                                {parentScratch && <div>
-                                    Fork of
-                                    <ScratchLink apiUrl={parentScratch} />
-                                </div>}
-                            </div>
-
-                            <Editor
-                                padding
-                                language="c"
-                                value={cCode}
-                                valueVersion={slug + loadDate}
-                                forceLoading={cCode === null}
-                                onChange={value => {
-                                    setCCode(value)
-                                    debouncedCompile()
-                                }}
-                            />
-                        </resizer.Section>
-
-                        <resizer.Bar
-                            size={1}
-                            style={{ cursor: "row-resize" }}
-                            onClick={toggleContextSection}
-                        >
-                            <div class={styles.sectionHeader}>
-                                Context
-                            </div>
-                        </resizer.Bar>
-
-                        <resizer.Section defaultSize={0} className={styles.context}>
-                            <Editor
-                                padding
-                                language="c"
-                                value={cContext}
-                                valueVersion={slug + loadDate}
-                                forceLoading={cContext === null}
-                                onChange={value => {
-                                    setCContext(value)
-                                    debouncedCompile()
-                                }}
-                            />
-                        </resizer.Section>
-                    </resizer.Container>
-                </resizer.Section>
-
-                <resizer.Bar
-                    size={1}
-                    style={{
-                        cursor: "col-resize",
-                        background: "#2e3032",
-                    }}
-                    expandInteractiveArea={{ left: 4, right: 4 }}
-                />
-
-                <resizer.Section className={styles.diffSection} minSize={400}>
-                    <div class={styles.sectionHeader} ref={diffSectionHeader}>
-                        {isCompilerChosen && <>
-                            Diff
-                            {diffSectionHeaderWidth > 450 && <span class={diff ? `${styles.diffExplanation} ${styles.visible}` : styles.diffExplanation}>
-                                (left is target, right is your code)
-                            </span>}
-
+    return <div class={styles.container}>
+        <resizer.Container className={styles.resizer}>
+            <resizer.Section minSize={500}>
+                <resizer.Container
+                    vertical
+                    style={{ height: "100%" }}
+                >
+                    <resizer.Section minSize={200} className={styles.sourceCode}>
+                        <div class={styles.sectionHeader}>
+                            Source
                             <span class={styles.grow} />
 
-                            <input type="checkbox" checked={showWarnings} onChange={() => setShowWarnings(!showWarnings)} name="showWarnings" />
-                            <label for="showWarnings" onClick={() => setShowWarnings(!showWarnings)}>Show warnings</label>
-                        </>}
+                            {scratch.compiler !== "" && <>
+                                <AsyncButton onPress={compile} forceLoading={isCompiling}>
+                                    <SyncIcon size={16} /> Compile
+                                </AsyncButton>
+                                <CompilerButton value={scratch} onChange={setCompilerOpts} />
+                            </>}
+                        </div>
+
+                        <div class={styles.metadata}>
+                            <div>
+                                Author
+                                <UserLink user={scratch.owner} />
+                            </div>
+
+                            {scratch.parent && <div>
+                                Fork of <ScratchLink slug={scratch.parent} />
+                            </div>}
+
+                            <div>
+                                {scratch.owner.is_you && <AsyncButton onPress={() => {
+                                    return Promise.all([
+                                        saveScratch(),
+                                        compile(),
+                                    ])
+                                }} disabled={isSaved}>
+                                    <UploadIcon size={16} /> Save
+                                </AsyncButton>}
+                                <AsyncButton onPress={forkScratch}>
+                                    <RepoForkedIcon size={16} /> Fork
+                                </AsyncButton>
+                            </div>
+                        </div>
+
+                        <Editor
+                            padding
+                            language="c"
+                            value={scratch.source_code}
+                            valueVersion={`${slug}:${version}`}
+                            onChange={value => {
+                                setScratch({ source_code: value })
+                            }}
+                        />
+                    </resizer.Section>
+
+                    <resizer.Bar
+                        size={1}
+                        style={{ cursor: "row-resize" }}
+                    >
+                        <div class={styles.sectionHeader}>
+                            Context
+                        </div>
+                    </resizer.Bar>
+
+                    <resizer.Section defaultSize={0} className={styles.context}>
+                        <Editor
+                            padding
+                            language="c"
+                            value={scratch.context}
+                            valueVersion={`${slug}:${version}`}
+                            onChange={value => {
+                                setScratch({ context: value })
+                            }}
+                        />
+                    </resizer.Section>
+                </resizer.Container>
+            </resizer.Section>
+
+            <resizer.Bar
+                size={1}
+                style={{
+                    cursor: "col-resize",
+                    background: "#2e3032",
+                }}
+                expandInteractiveArea={{ left: 4, right: 4 }}
+            />
+
+            <resizer.Section className={styles.diffSection} minSize={400}>
+                {scratch.compiler === "" ? <ChooseACompiler onCommit={setCompilerOpts} /> : <>
+                    <div class={styles.sectionHeader}>
+                        Diff
                     </div>
-                    <div class={styles.output}>
-                        {(!isCompilerChosen) ? <>
-                            <ChooseACompiler onCommit={setCompiler} />
-                        </> : (diff === null && log === null)
-                            ? <>
-                                <Skeleton height={20} count={20} />
-                            </> : <>
-                                {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
-                                <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
-                            </>
-                        }
-                    </div>
-                </resizer.Section>
-            </resizer.Container>
-        </main>
-    </>
+                    {compilation && <Diff compilation={compilation} /> /* TODO: loading spinner */}
+                </>}
+            </resizer.Section>
+        </resizer.Container>
+    </div>
 }
 
 function ChooseACompiler({ onCommit }) {
@@ -327,9 +198,8 @@ function ChooseACompiler({ onCommit }) {
     </div>
 }
 
-function ScratchLink({ apiUrl }: { apiUrl: string }) {
-    const { data } = useSWR(apiUrl, api.get)
-    const scratch = data?.scratch
+function ScratchLink({ slug }: { slug: string }) {
+    const { scratch } = api.useScratch(slug)
 
     if (!scratch) {
         return <span />

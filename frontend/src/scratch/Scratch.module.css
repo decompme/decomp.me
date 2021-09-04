@@ -22,38 +22,6 @@
     flex-direction: column;
 }
 
-.diff {
-    display: block;
-}
-
-.diff :global(table.diff),
-.log {
-    border: none;
-    font-family: monospace;
-    font-size: var(--s-1);
-    white-space: pre;
-}
-
-.diff :global(.immediate) { color: #6D6DFF }
-.diff :global(.stack) { color: #e3fc45 }
-.diff :global(.register) { color: #e3fc45 }
-.diff :global(.delay-slot) { font-weight: bold; color: #969896 }
-.diff :global(.diff-change) { color: #6D6DFF }
-.diff :global(.diff-add) { color: #45bd00 }
-.diff :global(.diff-remove) { color: #c82829 }
-.diff :global(.source-filename) { font-weight: bold }
-.diff :global(.source-function) { font-weight: bold; text-decoration: underline }
-:diff :global(.source-other) { font-style: italic }
-.diff :global(.rotation-0) { color: magenta}
-.diff :global(.rotation-1) { color: cyan }
-.diff :global(.rotation-2) { color: rgb(0, 212, 0) }
-.diff :global(.rotation-3) { color: red }
-.diff :global(.rotation-4) { color: lightyellow }
-.diff :global(.rotation-5) { color: lightpink }
-.diff :global(.rotation-6) { color: lightcyan }
-.diff :global(.rotation-7) { color: lightgreen }
-.diff :global(.rotation-8) { color: grey }
-
 .sectionHeader {
     font-size: 1rem;
     font-weight: 600;
@@ -62,8 +30,8 @@
     cursor: default;
 
     height: 3em;
-    padding: .5em;
-    padding-left: 1em;
+    padding: .5rem;
+    padding-left: 1rem;
     background: #2e353f;
 
     display: flex;
@@ -130,7 +98,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 0.4em 1.2em;
+    padding: 0.5rem;
+    padding-left: 1rem;
     gap: 1em;
 
     color: #ffffff88;
@@ -141,7 +110,7 @@
     color: #ffffffcc;
 }
 
-.metadata div {
+.metadata > div {
     display: flex;
     gap: 1ch;
     align-items: center;

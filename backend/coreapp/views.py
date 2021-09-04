@@ -180,12 +180,12 @@ def compile(request, slug):
     if compilation:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
 
-    response_obj = {
-        "diff_output": diff_output,
-        "errors": errors,
-    }
-
-    return Response(response_obj)
+    return Response({
+        "compilation": {
+            "diff_output": diff_output,
+            "errors": errors,
+        },
+    })
 
 @api_view(["POST"])
 def fork(request, slug):
