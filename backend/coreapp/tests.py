@@ -1,3 +1,5 @@
+from coreapp.compiler_wrapper import CompilerWrapper
+from django.test.testcases import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -36,6 +38,16 @@ nop"""
         response = self.client.post(self.scratch_url, scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
+
+class CompilationTests(TestCase):
+    def test_ido_line_endings(self):
+        """
+        Ensure that compilations with \r\n line endings succeed
+        """
+        compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
+        self.assertTrue(compilation != None, "The compilation result should be non-null")
+        self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation")
+
 
 class UserTests(APITestCase):
     current_user_url: str
