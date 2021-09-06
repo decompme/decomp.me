@@ -115,4 +115,4 @@ class AsmDifferWrapper:
 
         display = Display(basedump, mydump, config)
 
-        return display.run_diff()
+        return display.run_diff()[0]
