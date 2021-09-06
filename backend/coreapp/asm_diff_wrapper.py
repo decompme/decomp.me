@@ -27,7 +27,7 @@ class AsmDifferWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=HtmlFormatter(),
-            threeway=False,
+            threeway=None,
             base_shift=0,
             skip_lines=0,
             compress=None,

@@ -61,7 +61,7 @@ class CompilationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
-        slug = response.data["scratch"]["slug"]
+        slug = response.json()["scratch"]["slug"]
 
         compile_dict = {
             'slug': slug,
