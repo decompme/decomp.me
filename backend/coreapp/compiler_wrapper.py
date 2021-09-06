@@ -129,7 +129,8 @@ class CompilerWrapper:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
 
-        compiler_cfg = _compilers[compiler]
+        code = code.replace("\r\n", "\n")
+        context = context.replace("\r\n", "\n")
 
         if not to_regenerate:
             cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
@@ -154,7 +155,7 @@ class CompilerWrapper:
             # Run compiler
             try:
                 compile_proc = sandbox.run_subprocess(
-                    compiler_cfg["cc"],
+                    _compilers[compiler]["cc"],
                     mounts=[compiler_path],
                     shell=True,
                     env={
