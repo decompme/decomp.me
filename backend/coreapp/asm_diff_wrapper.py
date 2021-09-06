@@ -32,6 +32,7 @@ class AsmDifferWrapper:
             skip_lines=0,
             compress=None,
             show_branches=True,
+            show_line_numbers=False,
             stop_jrra=False,
             ignore_large_imms=False,
             ignore_addr_diffs=False,
