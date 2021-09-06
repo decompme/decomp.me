@@ -9,13 +9,6 @@ from .models import Compilation, Scratch, Profile
 from .github import GitHubUser
 
 class ScratchCreationTests(APITestCase):
-    scratch_url: str
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.scratch_url = reverse('scratch')
-
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
@@ -34,18 +27,11 @@ jr $ra
 nop"""
         }
 
-        response = self.client.post(self.scratch_url, scratch_dict)
+        response = self.client.post(reverse('scratch'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
 class CompilationTests(APITestCase):
-    scratch_url: str
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.scratch_url = reverse('scratch')
-
     def test_simple_compilation(self):
         """
         Ensure that we can run a simple compilation via the api
@@ -57,7 +43,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can create a scratch
-        response = self.client.post(self.scratch_url, scratch_dict)
+        response = self.client.post(reverse('scratch'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -71,7 +57,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(f"{self.scratch_url}/{slug}/compile", compile_dict)
+        response = self.client.post(reverse("compile_scratch", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Compilation.objects.count(), 1)
 
