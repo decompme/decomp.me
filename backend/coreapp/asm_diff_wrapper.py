@@ -63,7 +63,7 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, compilation: Compilation):
+    def diff(target_assembly: Assembly, compilation: Compilation) -> str:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
 
         if compiler_arch == "mips":
