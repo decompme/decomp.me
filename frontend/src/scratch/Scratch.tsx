@@ -173,6 +173,7 @@ export default function Scratch({ slug }: Props) {
                 {scratch.compiler === "" ? <ChooseACompiler onCommit={setCompilerOpts} /> : <>
                     <div class={styles.sectionHeader}>
                         Diff
+                        {compilation && <DiffExplanation />}
                     </div>
                     {compilation && <Diff compilation={compilation} /> /* TODO: loading spinner */}
                 </>}
@@ -210,4 +211,10 @@ function ScratchLink({ slug }: { slug: string }) {
     return <Link to={`/scratch/${scratch.slug}`}>
         {nameScratch(scratch)}
     </Link>
+}
+
+function DiffExplanation() {
+    return <span class={`${styles.diffExplanation} ${styles.visible}`}>
+        (left is target, right is your code)
+    </span>
 }
