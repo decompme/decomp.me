@@ -101,7 +101,7 @@ export default function Scratch({ slug }: Props) {
 
                         <div class={styles.metadata}>
                             <div>
-                                Author
+                                Owner
                                 <UserLink user={scratch.owner} />
                             </div>
 
