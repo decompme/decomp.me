@@ -19,7 +19,7 @@ export default function NewScratch() {
     const history = useHistory()
 
     useEffect(() => {
-        document.title = "New scratch"
+        document.title = "new scratch | decomp.me"
     }, [])
 
     const submit = async () => {

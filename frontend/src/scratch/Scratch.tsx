@@ -16,13 +16,13 @@ import AsyncButton from "../AsyncButton"
 
 import styles from "./Scratch.module.css"
 
-function nameScratch({ owner }: api.Scratch): string {
+function nameScratch({ slug, owner }: api.Scratch): string {
     if (owner?.is_you) {
         return "your scratch"
     } else if (!api.isAnonUser(owner) && owner?.name) {
         return `${owner?.name}'s scratch`
     } else {
-        return "unknown scratch"
+        return `scratch ${slug}`
     }
 }
 
@@ -64,6 +64,8 @@ export default function Scratch({ slug }: Props) {
             if (!isSaved) {
                 document.title += " (unsaved changes)"
             }
+
+            document.title += " | decomp.me"
         }
     }, [scratch || {}, isSaved])
 
