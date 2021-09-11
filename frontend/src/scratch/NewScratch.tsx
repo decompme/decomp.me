@@ -10,6 +10,8 @@ import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
 
+// TODO: use AsyncButton with custom error handler?
+
 export default function NewScratch() {
     const [awaitingResponse, setAwaitingResponse] = useState(false)
     const [errorMsg, setErrorMsg] = useState("")
@@ -75,9 +77,9 @@ export default function NewScratch() {
                     <Editor language="c" value={context} onChange={v => setContext(v)} />
                 </div>
 
-                <div class={`red ${styles.errormsg}`}>
+                {errorMsg && <div class={`red ${styles.errormsg}`}>
                     {errorMsg}
-                </div>
+                </div>}
 
                 <div class={styles.actions}>
                     <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>

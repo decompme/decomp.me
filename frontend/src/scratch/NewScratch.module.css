@@ -1,9 +1,11 @@
 .container {
-    display: grid;
+    display: flex;
     justify-content: center;
     align-content: center;
     height: 100%;
     cursor: default;
+
+    overflow: auto;
 }
 
 .card {
@@ -11,8 +13,8 @@
     background: #14161a;
     box-shadow: 0 0.1em 8px rgba(0, 0, 0, 0.5);
 
-    width: calc(var(--s1) * 40);
-    height: calc(var(--s1) * 30);
+    min-width: calc(var(--s1) * 40);
+    min-height: calc(var(--s1) * 30);
     overflow: hidden;
 
     display: flex;
