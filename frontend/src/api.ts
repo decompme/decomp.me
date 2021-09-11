@@ -213,6 +213,7 @@ export function useScratch(slugOrUrl: string): {
     useEffect(() => {
         setLocalScratch(null)
         mutate()
+        setIsSaved(true)
     }, [slugOrUrl, mutate])
 
     const setScratch = useCallback((partial: Partial<Scratch>) => {
