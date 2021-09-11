@@ -1,7 +1,7 @@
 .container {
     display: flex;
     justify-content: center;
-    align-content: center;
+    align-items: center;
     height: 100%;
     cursor: default;
 
@@ -13,8 +13,9 @@
     background: #14161a;
     box-shadow: 0 0.1em 8px rgba(0, 0, 0, 0.5);
 
-    min-width: calc(var(--s1) * 40);
-    min-height: calc(var(--s1) * 30);
+    width: calc(var(--s1) * 40);
+    max-width: 100%;
+    height: calc(var(--s1) * 30);
     overflow: hidden;
 
     display: flex;
