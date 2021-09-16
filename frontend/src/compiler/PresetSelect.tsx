@@ -21,7 +21,7 @@ export const presets = [
     {
         name: "SM64",
         compiler: "ido5.3",
-        opts: "-O0 -g -mips2",
+        opts: "-O1 -g -mips2",
     },
 ]
 
