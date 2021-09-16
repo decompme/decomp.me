@@ -9,9 +9,10 @@ from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import logging
+from typing import Any, Dict, Optional
 
 import hashlib
+import logging
 
 from .models import Profile, Asm, Scratch
 from .github import GitHubUser
@@ -176,7 +177,7 @@ def compile(request, slug):
 
     compilation, errors = CompilerWrapper.compile_code(compiler, cc_opts, code, context)
 
-    diff_output = ""
+    diff_output: Optional[Dict[str, Any]] = None
     if compilation:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
 

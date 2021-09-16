@@ -1,12 +1,13 @@
 from coreapp import compiler_wrapper
-import subprocess
 from coreapp.models import Assembly, Compilation
 from coreapp.sandbox import Sandbox
 from coreapp.compiler_wrapper import PATH
+from typing import Any, Dict, Optional
+import json
 import logging
-from typing import Optional
+import subprocess
 
-from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, Config, Display, HtmlFormatter, restrict_to_function
+from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, ArchSettings, Config, Display, JsonFormatter, restrict_to_function
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ MAX_FUNC_SIZE_LINES = 5000
 
 class AsmDifferWrapper:
     @staticmethod
-    def create_config(arch) -> Config:
+    def create_config(arch_str: str, arch: ArchSettings) -> Config:
         return Config(
             arch=arch,
             # Build/objdump options
@@ -26,13 +27,13 @@ class AsmDifferWrapper:
             max_function_size_lines=MAX_FUNC_SIZE_LINES,
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
-            formatter=HtmlFormatter(),
+            formatter=JsonFormatter(arch_str=arch_str),
             threeway=None,
             base_shift=0,
             skip_lines=0,
             compress=None,
             show_branches=True,
-            show_line_numbers=False,
+            show_line_numbers=True,
             stop_jrra=False,
             ignore_large_imms=False,
             ignore_addr_diffs=False,
@@ -41,7 +42,7 @@ class AsmDifferWrapper:
 
     @staticmethod
     def run_objdump(target_data: bytes, config: Config) -> Optional[str]:
-        flags = ["-drz"]
+        flags = ["-drzl"]
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -63,9 +64,10 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, compilation: Compilation) -> str:
+    def diff(target_assembly: Assembly, compilation: Compilation) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
 
+        # TODO: Use `diff.get_arch()` after refactoring it to throw an exception
         if compiler_arch == "mips":
             arch = MIPS_SETTINGS
         elif compiler_arch == "aarch64":
@@ -77,7 +79,7 @@ class AsmDifferWrapper:
             compiler_arch = "mips"
             arch = MIPS_SETTINGS
             
-        config = AsmDifferWrapper.create_config(arch)
+        config = AsmDifferWrapper.create_config(compiler_arch, arch)
 
         # Base
         if len(target_assembly.elf_object) == 0:
@@ -85,11 +87,11 @@ class AsmDifferWrapper:
             compiler_wrapper.CompilerWrapper.assemble_asm(compiler_arch, target_assembly.source_asm, target_assembly)
             if len(target_assembly.elf_object) == 0:
                 logger.error("Regeneration of base-asm failed")
-                return "Error: Base asm empty"
+                return {"error": "Error: Base asm empty"}
 
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
         if not basedump:
-            return "Error running asm-differ on basedump"
+            return {"error": "Error running asm-differ on basedump"}
 
         # New
         if len(compilation.elf_object) == 0:
@@ -103,11 +105,11 @@ class AsmDifferWrapper:
             )
             if len(compilation.elf_object) == 0:
                 logger.error("Regeneration of new-asm failed")
-                return "Error: New asm empty"
+                return {"error": "Error: New asm empty"}
 
         mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
         if not mydump:
-            return "Error running asm-differ on mydump"
+            return {"error": "Error running asm-differ on mydump"}
 
         # Remove first few junk lines from objdump output
         basedump = "\n".join(basedump.split("\n")[6:])
@@ -115,4 +117,8 @@ class AsmDifferWrapper:
 
         display = Display(basedump, mydump, config)
 
-        return display.run_diff()[0]
+        # TODO: It would be nice to get a python object from `run_diff()` to avoid the JSON roundtrip
+        result = json.loads(display.run_diff()[0])
+        result["error"] = None
+
+        return result

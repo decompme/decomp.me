@@ -184,6 +184,18 @@ export default function Scratch() {
         debouncedCompile()
     }, [debouncedCompile, compiler?.compiler, compiler?.cc_opts])
 
+    const formatDiffText = (texts) => {
+        return ( texts.map((t) => {
+            if (t.format == "rotation") {
+                return <span class={styles["diff-rotation-" + (t.index % 9)]}>{t.text}</span>;
+            } else if (t.format) {
+                return <span class={styles["diff-" + t.format]}>{t.text}</span>;
+            } else {
+                return <span>{t.text}</span>;
+            }
+        }) );
+    }
+
     return <>
         <Nav />
         <main class={styles.container}>
@@ -298,7 +310,25 @@ export default function Scratch() {
                                 <Skeleton height={20} count={20} />
                             </> : <>
                                 {(showWarnings || !diff) && <code class={styles.log}>{log}</code>}
-                                <code class={styles.diff} dangerouslySetInnerHTML={{ __html: diff }} />
+                                {(diff && diff.error) && <code class={styles.log}>{diff.error}</code>}
+                                {(diff && !diff.error) &&
+                                    <>
+                                        <table class={styles.diff}>
+                                            <tr>
+                                                <th>{formatDiffText(diff.header.base)}</th>
+                                                <th>{/* Line */}</th>
+                                                <th>{formatDiffText(diff.header.current)}</th>
+                                            </tr>
+                                            {diff.rows.map((row) => (
+                                                <tr>
+                                                    <td>{formatDiffText(row.base.text)}</td>
+                                                    <td><span class={styles.diffLineNumber}>{row.current.src_line}</span></td>
+                                                    <td>{formatDiffText(row.current.text)}</td>
+                                                </tr>
+                                            ))}
+                                        </table>
+                                    </>
+                                }
                             </>
                         }
                     </div>
