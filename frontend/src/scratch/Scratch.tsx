@@ -319,8 +319,8 @@ export default function Scratch() {
                                                 <th>{/* Line */}</th>
                                                 <th>{formatDiffText(diff.header.current)}</th>
                                             </tr>
-                                            {diff.rows.map((row, _i) => (
-                                                <tr>
+                                            {diff.rows.map((row, i) => (
+                                                <tr key={i}>
                                                     <td>{formatDiffText(row.base.text)}</td>
                                                     <td><span class={styles.diffLineNumber}>{row.current.src_line}</span></td>
                                                     <td>{formatDiffText(row.current.text)}</td>
