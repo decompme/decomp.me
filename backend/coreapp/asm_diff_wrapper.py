@@ -27,11 +27,12 @@ class AsmDifferWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=HtmlFormatter(),
-            threeway=False,
+            threeway=None,
             base_shift=0,
             skip_lines=0,
             compress=None,
             show_branches=True,
+            show_line_numbers=False,
             stop_jrra=False,
             ignore_large_imms=False,
             ignore_addr_diffs=False,
@@ -62,7 +63,7 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, compilation: Compilation):
+    def diff(target_assembly: Assembly, compilation: Compilation) -> str:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
 
         if compiler_arch == "mips":
@@ -114,4 +115,4 @@ class AsmDifferWrapper:
 
         display = Display(basedump, mydump, config)
 
-        return display.run_diff()
+        return display.run_diff()[0]

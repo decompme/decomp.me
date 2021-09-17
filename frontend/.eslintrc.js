@@ -20,6 +20,8 @@ module.exports = {
         "no-else-return": "off",
         "no-trailing-spaces": "error",
         "prefer-const": ["warn", { destructuring: "all" }],
+        "arrow-parens": ["error", "as-needed"],
+        "no-confusing-arrow": ["error", { allowParens: true }],
         "@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/ban-ts-comment": "off",
         "react/no-danger": "off",

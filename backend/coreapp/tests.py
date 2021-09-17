@@ -1,22 +1,16 @@
+from coreapp.compiler_wrapper import CompilerWrapper
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
-import responses
 
+import responses
 from time import sleep
 
-from .models import Scratch, Profile
+from .models import Compilation, Scratch, Profile
 from .github import GitHubUser
 
 class ScratchCreationTests(APITestCase):
-    scratch_url: str
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.scratch_url = reverse('scratch')
-
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
@@ -35,9 +29,48 @@ jr $ra
 nop"""
         }
 
-        response = self.client.post(self.scratch_url, scratch_dict)
+        response = self.client.post(reverse('scratch'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
+
+class CompilationTests(APITestCase):
+    def test_simple_compilation(self):
+        """
+        Ensure that we can run a simple compilation via the api
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'context': '',
+            'target_asm': 'glabel func_80929D04\njr $ra\nnop'
+        }
+
+        # Test that we can create a scratch
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Scratch.objects.count(), 1)
+
+        slug = response.json()["scratch"]["slug"]
+
+        compile_dict = {
+            'slug': slug,
+            'compiler': 'gcc2.8.1',
+            'cc_opts': '-mips2 -O2',
+            'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n'
+        }
+
+        # Test that we can compile a scratch
+        response = self.client.post(reverse("compile_scratch", kwargs={"slug": slug}), compile_dict)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Compilation.objects.count(), 1)
+
+    def test_ido_line_endings(self):
+        """
+        Ensure that compilations with \r\n line endings succeed
+        """
+        compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
+        self.assertTrue(compilation != None, "The compilation result should be non-null")
+        self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation")
+
 
 class UserTests(APITestCase):
     current_user_url: str
