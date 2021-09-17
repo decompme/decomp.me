@@ -35,6 +35,7 @@ def compilers(request):
     })
 
 class ScratchDetail(APIView):
+    # type-ignored due to python/mypy#7778
     def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]: # type: ignore
         scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
         if scratch:
