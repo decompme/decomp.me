@@ -39,6 +39,8 @@ Dependencies:
 - Node.js
 - [Yarn](https://yarnpkg.com/getting-started/install)
 
+---
+
 - Create a file to hold environment variables:
 ```
 touch local.env
