@@ -42,7 +42,7 @@ Dependencies:
 ---
 
 - Create a file to hold environment variables:
-```
+```shell
 touch local.env
 ```
 
@@ -64,7 +64,7 @@ yarn start
 - Access the site via [http://localhost:8080](http://localhost:8080)
 
 ### Backend
-```
+```shell
 cd backend
 ```
 
@@ -200,13 +200,13 @@ Contributions are very much welcome! We have a Discord channel in the [Zelda Dec
 ### Linting
 
 - Check frontend
-```
+```shell
 cd frontend
 yarn lint
-``
+```
 
 - Check backend
-```
+```shell
 cd backend
 mypy
 ```
