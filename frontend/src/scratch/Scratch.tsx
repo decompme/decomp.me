@@ -47,7 +47,7 @@ export default function Scratch({ slug }: Props) {
             if ((event.ctrlKey || event.metaKey) && event.key == "s") {
                 event.preventDefault()
 
-                if (!isSaved) {
+                if (!isSaved && scratch.owner.is_you) {
                     saveScratch()
                 }
             }
