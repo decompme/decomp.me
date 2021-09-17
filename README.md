@@ -195,6 +195,22 @@ To enable it locally outside of the Docker container:
 
 Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](https://discord.gg/k9gY7uCysW).
 
+### Linting
+
+- Check frontend
+```
+cd frontend
+yarn lint
+``
+
+- Check backend
+```
+cd backend
+mypy
+```
+
+Reviewdog will check for any lint problems on pull requests and let you know if there you introduced any.
+
 ### Updating the database
 
 If you modify any database models (`models.py`), you'll need to run the following to update the database:
