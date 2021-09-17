@@ -310,8 +310,11 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     useDeepCompareEffect(() => {
-        if (autoRecompile && scratch) {
-            debouncedCompile()
+        if (autoRecompile) {
+            if (scratch && scratch.compiler !== "")
+                debouncedCompile()
+            else
+                setCompilation(null)
         }
     }, [debouncedCompile, scratch, autoRecompile])
 
