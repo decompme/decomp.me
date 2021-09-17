@@ -166,6 +166,7 @@ ln -s /etc/nginx/sites-available/local.decomp.me /etc/nginx/sites-enabled/local.
 
 - Edit `local.env`:
     - Set `API_BASE=/api`
+    - Set `ALLOWED_HOSTS=local.decomp.me`
 
 - If you set up GitHub authentication, change the application URLs to `http://local.decomp.me` and `http://local.decomp.me/login`
 
