@@ -187,7 +187,7 @@ To enable it locally outside of the Docker container:
     - `cd nsjail && make`
 - Enable `unprivileged_userns_clone`
     - Temporary: `sudo sysctl -w kernel.unprivileged_userns_clone=1`
-    - Permanent: `echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/00-local-userns.conf && sudo service procps restart
+    - Permanent: `echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/00-local-userns.conf && sudo service procps restart`
 
 - Edit `local.env`:
     - Set `USE_SANDBOX_JAIL=on`
