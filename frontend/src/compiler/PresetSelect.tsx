@@ -18,6 +18,11 @@ export const presets = [
         compiler: "ido7.1",
         opts: "-O2 -g3 -mips2",
     },
+    {
+        name: "SM64",
+        compiler: "ido5.3",
+        opts: "-O1 -g -mips2",
+    },
 ]
 
 export default function PresetSelect({ compiler, opts, setCompiler, setOpts }) {
