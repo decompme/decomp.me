@@ -1,6 +1,8 @@
 import { config } from "dotenv"
 
-config({ path: "../.env" })
+for (const envFile of [".env", "local.env", "frontend.env"]) {
+    config({ path: `../${envFile}` })
+}
 
 /** @type {import("snowpack").SnowpackUserConfig } */
 export default {
@@ -22,7 +24,10 @@ export default {
         { match: "routes", src: ".*", dest: "/index.html" },
     ],
     alias: {
-        react: "preact/compat",
+        "react": "preact/compat",
         "react-dom": "preact/compat",
     },
+    devOptions: {
+        open: "none",
+    }
 }

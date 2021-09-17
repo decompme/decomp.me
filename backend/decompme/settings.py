@@ -26,10 +26,11 @@ env = environ.Env(
     GITHUB_CLIENT_SECRET=(str, ""),
 )
 
-env_file = BASE_DIR / ".." / ".env"
-if os.path.isfile(env_file):
-    with open(env_file) as f:
-        environ.Env.read_env(f)
+for env_file in [".env", "local.env", "backend.env"]:
+    env_file = BASE_DIR / ".." / env_file
+    if os.path.isfile(env_file):
+        with open(env_file) as f:
+            environ.Env.read_env(f)
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
