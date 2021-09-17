@@ -9,14 +9,16 @@ from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import logging
 
+import logging
 import hashlib
+from datetime import datetime
+from typing import Optional
 
 from .models import Profile, Asm, Scratch, gen_scratch_id
 from .github import GitHubUser
 from .middleware import Request
-from .decorators import last_modified
+from .decorators.django import condition
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -33,12 +35,21 @@ def compilers(request):
     })
 
 class ScratchDetail(APIView):
-    @last_modified(lambda self, request, slug: get_object_or_404(Scratch, slug=slug).last_updated)
+    def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]: # type: ignore
+        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+        if scratch:
+            return scratch.last_updated
+        else:
+            return None
+
+    scratch_condition = condition(last_modified_func=scratch_last_modified)
+
+    @scratch_condition
     def head(self, request: Request, slug: str):
-        # last_modified handler will 404 if the scratch doesn't exist, so we don't need to handle it here
+        get_object_or_404(Scratch, slug=slug) # for 404
         return Response()
 
-    @last_modified(lambda self, request, slug: get_object_or_404(Scratch, slug=slug).last_updated)
+    @scratch_condition
     def get(self, request: Request, slug: str):
         scratch = get_object_or_404(Scratch, slug=slug)
 

@@ -203,9 +203,10 @@ class ScratchDetailTests(APITestCase):
         })
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
 
-        return Scratch.objects.first()
+        scratch = Scratch.objects.first()
+        assert scratch is not None # assert keyword instead of self.assertIsNotNone for mypy
+        return scratch
 
     def test_404_head(self):
         """
