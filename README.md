@@ -212,8 +212,6 @@ cd backend
 mypy
 ```
 
-Reviewdog will check for any lint problems on pull requests and let you know if there you introduced any.
-
 ### Updating the database
 
 If you modify any database models (`models.py`), you'll need to run the following to update the database:
