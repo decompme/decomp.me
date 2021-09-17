@@ -5,8 +5,11 @@ A collaborative decompilation and reverse engineering website, built with React 
 ## Features
 
 🐸 Create 'scratches' to share and work on function decompilations
+
 🐸 View diffs using [asm-differ](https://github.com/simonlindholm/asm-differ)
+
 🐸 Sign in with GitHub
+
 🐸 Support for GCC and IDO compilers on MIPS
 
 ## Directory structure
