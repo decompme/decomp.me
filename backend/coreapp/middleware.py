@@ -14,9 +14,12 @@ if TYPE_CHECKING:
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile
 
-class Request(DRFRequest):
-    user: Union[User, AnonymousUser]
-    profile: Profile
+if TYPE_CHECKING:
+    class Request(DRFRequest):
+        user: Union[User, AnonymousUser]
+        profile: Profile
+else:
+    Request = DRFRequest
 
 def disable_csrf(get_response):
     def middleware(request: HttpRequest):

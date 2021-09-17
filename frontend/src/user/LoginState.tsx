@@ -25,7 +25,7 @@ export default function LoginState({ onChange }: Props) {
         // Loading...
         return <div />
     } else if (data?.user && !api.isAnonUser(data.user) && data.user.username) {
-        return <UserLink username={data.user.username} hideYou={true} />
+        return <UserLink user={data.user} hideYou={true} />
     } else {
         return <GitHubLoginButton />
     }

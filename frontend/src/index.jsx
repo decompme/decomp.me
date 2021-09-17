@@ -9,3 +9,7 @@ if (root) {
 } else {
     console.error("this shouldn't happen...")
 }
+
+if (undefined /* [snowpack] import.meta.hot */ ) {
+    undefined /* [snowpack] import.meta.hot */ .accept()
+}

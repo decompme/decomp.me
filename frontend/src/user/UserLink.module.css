@@ -3,14 +3,17 @@
     align-items: center;
     justify-content: center;
     gap: .5em;
-    cursor: pointer;
 
     border-radius: 2em;
     padding: .6em;
     padding-right: .9em;
 }
 
-.user:hover {
+.user:any-link {
+    cursor: pointer;
+}
+
+.user:any-link:hover {
     background: #ffffff11;
 }
 
