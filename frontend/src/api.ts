@@ -135,3 +135,47 @@ export interface User {
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
+
+export interface DiffResponse {
+    errors: string | null,
+    diff_output: DiffOutput,
+}
+
+export interface DiffOutput {
+    arch_str: string,
+    current_score: number,
+    error: string | null,
+    header: DiffHeader,
+    rows: DiffRow[],
+}
+
+export interface DiffHeader {
+    base: DiffText[],
+    current: DiffText[],
+    previous?: DiffText[],
+}
+
+export interface DiffRow {
+    key: string,
+    base?: DiffCell,
+    current?: DiffCell,
+    previous?: DiffCell,
+}
+
+export interface DiffCell {
+    text: DiffText[],
+    line?: number,
+    branch?: number,
+    src?: string,
+    src_comment?: string,
+    src_line?: number,
+    src_path?: string,
+}
+
+export interface DiffText {
+    text: string,
+    format?: string,
+    group?: string,
+    index?: number,
+    key?: string,
+}

@@ -38,7 +38,7 @@ export default function Scratch() {
     const isCompilerChosen = compiler?.compiler !== ""
     const [cCode, setCCode] = useState(null)
     const [cContext, setCContext] = useState(null)
-    const [diff, setDiff] = useState(null)
+    const [diff, setDiff] = useState<api.DiffOutput>(null)
     const [log, setLog] = useState(null)
     const [owner, setOwner] = useState<api.User>(undefined)
     const [parentScratch, setParentScratch] = useState(null)
@@ -76,7 +76,7 @@ export default function Scratch() {
 
         try {
             setCurrentRequest("compile")
-            const { diff_output, errors } = await api.post(`/scratch/${slug}/compile`, {
+            const { diff_output, errors } : api.DiffResponse = await api.post(`/scratch/${slug}/compile`, {
                 source_code: cCode.replace(/\r\n/g, "\n"),
                 context: cContext === savedCContext ? undefined : cContext.replace(/\r\n/g, "\n"),
                 ...compiler,
@@ -183,18 +183,6 @@ export default function Scratch() {
     useEffect(() => {
         debouncedCompile()
     }, [debouncedCompile, compiler?.compiler, compiler?.cc_opts])
-
-    const formatDiffText = (texts) => {
-        return texts.map((t) => {
-            if (t.format == "rotation") {
-                return <span class={styles[`diff-rotation-${t.index % 9}`]}>{t.text}</span>
-            } else if (t.format) {
-                return <span class={styles[`diff-${t.format}`]}>{t.text}</span>
-            } else {
-                return <span>{t.text}</span>
-            }
-        })
-    }
 
     return <>
         <Nav />
@@ -315,15 +303,15 @@ export default function Scratch() {
                                     <>
                                         <table class={styles.diff}>
                                             <tr>
-                                                <th>{formatDiffText(diff.header.base)}</th>
+                                                <th><FormatDiffText texts={diff.header.base} /></th>
                                                 <th>{/* Line */}</th>
-                                                <th>{formatDiffText(diff.header.current)}</th>
+                                                <th><FormatDiffText texts={diff.header.current} /></th>
                                             </tr>
                                             {diff.rows.map((row, i) => (
                                                 <tr key={i}>
-                                                    <td>{formatDiffText(row.base.text)}</td>
-                                                    <td><span class={styles.diffLineNumber}>{row.current.src_line}</span></td>
-                                                    <td>{formatDiffText(row.current.text)}</td>
+                                                    <td>{(row.base) && <FormatDiffText texts={row.base.text} />}</td>
+                                                    <td><span class={styles.diffLineNumber}>{(row.current) && row.current.src_line}</span></td>
+                                                    <td>{(row.current) && <FormatDiffText texts={row.current.text} />}</td>
                                                 </tr>
                                             ))}
                                         </table>
@@ -369,3 +357,18 @@ function ScratchLink({ apiUrl }: { apiUrl: string }) {
         {nameScratch(scratch)}
     </Link>
 }
+
+function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
+    return <> {
+        texts.map(t => {
+            if (t.format == "rotation") {
+                return <span class={styles[`diff-rotation-${t.index % 9}`]}>{t.text}</span>
+            } else if (t.format) {
+                return <span class={styles[`diff-${t.format}`]}>{t.text}</span>
+            } else {
+                return <span>{t.text}</span>
+            }
+        })
+    } </>
+}
+
