@@ -1,5 +1,6 @@
 {
     "eslint.workingDirectories": [
         "frontend"
-    ]
+    ],
+    "files.trimTrailingWhitespace": true,
 }

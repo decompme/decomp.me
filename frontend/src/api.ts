@@ -51,14 +51,14 @@ export class ResponseError extends Error {
     }
 }
 
-export async function get(url: string, cache = false) {
+export async function get(url: string, useCacheIfFresh = false) {
     if (url.startsWith("/")) {
         url = API_BASE + url
     }
 
     const response = await fetch(url, {
         ...commonOpts,
-        cache: cache ? "default" : "reload",
+        cache: useCacheIfFresh ? "default" : "no-cache",
     })
 
     if (!response.ok) {
