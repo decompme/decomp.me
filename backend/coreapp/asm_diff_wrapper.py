@@ -7,7 +7,7 @@ import json
 import logging
 import subprocess
 
-from asm_differ.diff import AARCH64_SETTINGS, MIPS_SETTINGS, PPC_SETTINGS, ArchSettings, Config, Display, JsonFormatter, restrict_to_function
+import asm_differ.diff as asm_differ
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ MAX_FUNC_SIZE_LINES = 5000
 
 class AsmDifferWrapper:
     @staticmethod
-    def create_config(arch_str: str, arch: ArchSettings) -> Config:
-        return Config(
+    def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
+        return asm_differ.Config(
             arch=arch,
             # Build/objdump options
             diff_obj=True,
@@ -27,7 +27,7 @@ class AsmDifferWrapper:
             max_function_size_lines=MAX_FUNC_SIZE_LINES,
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
-            formatter=JsonFormatter(arch_str=arch_str),
+            formatter=asm_differ.JsonFormatter(arch_str=arch.name),
             threeway=None,
             base_shift=0,
             skip_lines=0,
@@ -41,7 +41,7 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target_data: bytes, config: Config) -> Optional[str]:
+    def run_objdump(target_data: bytes, config: asm_differ.Config) -> Optional[str]:
         flags = ["-drzl"]
 
         with Sandbox() as sandbox:
@@ -66,25 +66,18 @@ class AsmDifferWrapper:
     @staticmethod
     def diff(target_assembly: Assembly, compilation: Compilation) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
-
-        # TODO: Use `diff.get_arch()` after refactoring it to throw an exception
-        if compiler_arch == "mips":
-            arch = MIPS_SETTINGS
-        elif compiler_arch == "aarch64":
-            arch = AARCH64_SETTINGS
-        elif compiler_arch == "ppc":
-            arch = PPC_SETTINGS
-        else:
+        try:
+            arch = asm_differ.get_arch(compiler_arch)
+        except ValueError:
             logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
-            compiler_arch = "mips"
-            arch = MIPS_SETTINGS
-            
-        config = AsmDifferWrapper.create_config(compiler_arch, arch)
+            arch = asm_differ.get_arch("mips")
+
+        config = AsmDifferWrapper.create_config(arch)
 
         # Base
         if len(target_assembly.elf_object) == 0:
             logger.info("Base asm empty - attempting to regenerate")
-            compiler_wrapper.CompilerWrapper.assemble_asm(compiler_arch, target_assembly.source_asm, target_assembly)
+            compiler_wrapper.CompilerWrapper.assemble_asm(arch.name, target_assembly.source_asm, target_assembly)
             if len(target_assembly.elf_object) == 0:
                 logger.error("Regeneration of base-asm failed")
                 return {"error": "Error: Base asm empty"}
@@ -111,11 +104,11 @@ class AsmDifferWrapper:
         if not mydump:
             return {"error": "Error running asm-differ on mydump"}
 
-        # Remove first few junk lines from objdump output
-        basedump = "\n".join(basedump.split("\n")[6:])
-        mydump = "\n".join(mydump.split("\n")[6:])
+        # Preprocess the dumps
+        basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
+        mydump = asm_differ.preprocess_objdump_out(None, compilation.elf_object, mydump)
 
-        display = Display(basedump, mydump, config)
+        display = asm_differ.Display(basedump, mydump, config)
 
         # TODO: It would be nice to get a python object from `run_diff()` to avoid the
         # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
