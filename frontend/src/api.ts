@@ -366,4 +366,3 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         error,
     }
 }
-
