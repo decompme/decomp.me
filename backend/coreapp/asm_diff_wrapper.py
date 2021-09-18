@@ -67,7 +67,7 @@ class AsmDifferWrapper:
     def diff(target_assembly: Assembly, compilation: Compilation) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
         try:
-            arch = asm_differ.get_arch(compiler_arch)
+            arch = asm_differ.get_arch(compiler_arch or "")
         except ValueError:
             logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
             arch = asm_differ.get_arch("mips")
