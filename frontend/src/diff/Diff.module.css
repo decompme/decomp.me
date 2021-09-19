@@ -4,35 +4,41 @@
     flex: 1;
 }
 
+.diff {
+    border-spacing: 1em 0;
+}
+
 .diff, .log {
     display: block;
     user-select: text;
-}
-
-.diff :global(table.diff),
-.log {
     border: none;
     font-family: monospace;
     font-size: var(--s-1);
     white-space: pre;
 }
 
-.diff :global(.immediate) { color: #6D6DFF }
-.diff :global(.stack) { color: #e3fc45 }
-.diff :global(.register) { color: #e3fc45 }
-.diff :global(.delay-slot) { font-weight: bold; color: #969896 }
-.diff :global(.diff-change) { color: #6D6DFF }
-.diff :global(.diff-add) { color: #45bd00 }
-.diff :global(.diff-remove) { color: #c82829 }
-.diff :global(.source-filename) { font-weight: bold }
-.diff :global(.source-function) { font-weight: bold; text-decoration: underline }
-:diff :global(.source-other) { font-style: italic }
-.diff :global(.rotation-0) { color: magenta}
-.diff :global(.rotation-1) { color: cyan }
-.diff :global(.rotation-2) { color: rgb(0, 212, 0) }
-.diff :global(.rotation-3) { color: red }
-.diff :global(.rotation-4) { color: lightyellow }
-.diff :global(.rotation-5) { color: lightpink }
-.diff :global(.rotation-6) { color: lightcyan }
-.diff :global(.rotation-7) { color: lightgreen }
-.diff :global(.rotation-8) { color: grey }
+.lineNumber {
+    color: grey;
+    font-size: 0.7em;
+    font-style: italic;
+}
+
+.immediate { color: #6D6DFF }
+.stack { color: #e3fc45 }
+.register { color: #e3fc45 }
+.delay_slot { font-weight: bold; color: #969896 }
+.diff_change { color: #6D6DFF }
+.diff_add { color: #45bd00 }
+.diff_remove { color: #c82829 }
+.source_filename { font-weight: bold }
+.source_function { font-weight: bold; text-decoration: underline }
+.source_other { font-style: italic }
+.rotation0 { color: magenta}
+.rotation1 { color: cyan }
+.rotation2 { color: rgb(0, 212, 0) }
+.rotation3 { color: red }
+.rotation4 { color: lightyellow }
+.rotation5 { color: lightpink }
+.rotation6 { color: lightcyan }
+.rotation7 { color: lightgreen }
+.rotation8 { color: grey }
