@@ -135,7 +135,7 @@ class CompilerWrapper:
         if not to_regenerate:
             cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
             if cached_compilation:
-                logger.debug(f"Compilation cache hit!")
+                logger.debug(f"Compilation cache hit! hash: {hash}")
                 return (cached_compilation, cached_compilation.stderr)
 
         with Sandbox() as sandbox:
@@ -201,7 +201,7 @@ class CompilerWrapper:
         if not to_regenerate:
             cached_assembly, hash = _check_assembly_cache(arch, asm.hash)
             if cached_assembly:
-                logger.debug(f"Assembly cache hit!")
+                logger.debug(f"Assembly cache hit! hash: {hash}")
                 return (cached_assembly, None)
 
         arch_cfg = _arches[arch]
