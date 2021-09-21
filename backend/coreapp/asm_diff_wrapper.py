@@ -21,8 +21,7 @@ class AsmDifferWrapper:
             # Build/objdump options
             diff_obj=True,
             make=False,
-            source=False,
-            source_old_binutils=False,
+            source_old_binutils=True,
             inlines=False,
             max_function_size_lines=MAX_FUNC_SIZE_LINES,
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
@@ -33,7 +32,8 @@ class AsmDifferWrapper:
             skip_lines=0,
             compress=None,
             show_branches=True,
-            show_line_numbers=True,
+            show_line_numbers=False,
+            show_source=False,
             stop_jrra=False,
             ignore_large_imms=False,
             ignore_addr_diffs=False,
@@ -42,7 +42,12 @@ class AsmDifferWrapper:
 
     @staticmethod
     def run_objdump(target_data: bytes, config: asm_differ.Config) -> Optional[str]:
-        flags = ["-drzl"]
+        flags = [
+            "--disassemble",
+            "--disassemble-zeroes",
+            "--line-numbers",
+            "--reloc",
+        ]
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -58,6 +63,7 @@ class AsmDifferWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 logger.error(e)
+                logger.error(e.stderr)
                 return None
 
         out = objdump_proc.stdout

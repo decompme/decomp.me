@@ -33,6 +33,7 @@
 .source_filename { font-weight: bold }
 .source_function { font-weight: bold; text-decoration: underline }
 .source_other { font-style: italic }
+.source_line_num { font-style: italic }
 .rotation0 { color: magenta}
 .rotation1 { color: cyan }
 .rotation2 { color: rgb(0, 212, 0) }
