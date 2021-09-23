@@ -259,8 +259,10 @@ export function useScratch(slugOrUrl: string): {
     const setScratch = useCallback((partial: Partial<Scratch>) => {
         const scratch = Object.assign({}, localScratch, partial)
 
-        setLocalScratch(scratch)
-        if (!dequal(scratch, savedScratch)) {
+        if (dequal(scratch, savedScratch)) {
+            setLocalScratch(savedScratch)
+        } else {
+            setLocalScratch(scratch)
             setIsSaved(false)
         }
     }, [localScratch, savedScratch])
