@@ -8,4 +8,5 @@ postgres/
 sandbox/
 *.db
 .DS_Store
+*.env
 *.log
