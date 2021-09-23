@@ -40,11 +40,13 @@ if __name__ == "__main__":
     sys.path.pop(0)
 
     try:
-        import argcomplete  # type: ignore
+        import argcomplete
     except ModuleNotFoundError:
         argcomplete = None
 
-    parser = argparse.ArgumentParser(description="Diff MIPS, PPC or AArch64 assembly.")
+    parser = argparse.ArgumentParser(
+        description="Diff MIPS, PPC, AArch64, or ARM32 assembly."
+    )
 
     start_argument = parser.add_argument(
         "start",
@@ -116,25 +118,35 @@ if __name__ == "__main__":
         one non-stripped. Requires objdump from binutils 2.33+.""",
     )
     parser.add_argument(
-        "--source",
         "-c",
-        dest="source",
+        "--source",
+        dest="show_source",
         action="store_true",
         help="Show source code (if possible). Only works with -o or -e.",
     )
     parser.add_argument(
-        "--source-old-binutils",
         "-C",
+        "--source-old-binutils",
         dest="source_old_binutils",
         action="store_true",
-        help="Tweak --source handling to make it work with binutils < 2.33. Implies --source.",
+        help="""Tweak --source handling to make it work with binutils < 2.33.
+        Implies --source.""",
     )
     parser.add_argument(
         "-L",
         "--line-numbers",
-        dest="line_numbers",
-        action="store_true",
-        help="Include column of source line numbers in output, when available",
+        dest="show_line_numbers",
+        action="store_const",
+        const=True,
+        help="""Show source line numbers in output, when available. May be enabled by
+        default depending on diff_settings.py.""",
+    )
+    parser.add_argument(
+        "--no-line-numbers",
+        dest="show_line_numbers",
+        action="store_const",
+        const=False,
+        help="Hide source line numbers in output.",
     )
     parser.add_argument(
         "--inlines",
@@ -190,7 +202,7 @@ if __name__ == "__main__":
         "--ignore-addr-diffs",
         dest="ignore_addr_diffs",
         action="store_true",
-        help="Ignore address differences. Currently only affects AArch64.",
+        help="Ignore address differences. Currently only affects AArch64 and ARM32.",
     )
     parser.add_argument(
         "-B",
@@ -308,7 +320,7 @@ if __name__ == "__main__":
 
 import abc
 import ast
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field, replace
 import difflib
 import enum
@@ -319,9 +331,11 @@ import os
 import queue
 import re
 import string
+import struct
 import subprocess
 import threading
 import time
+import traceback
 
 
 MISSING_PREREQUISITES = (
@@ -330,8 +344,8 @@ MISSING_PREREQUISITES = (
 )
 
 try:
-    from colorama import Fore, Style  # type: ignore
-    import watchdog  # type: ignore
+    from colorama import Back, Fore, Style
+    import watchdog
 except ModuleNotFoundError as e:
     fail(MISSING_PREREQUISITES.format(e.name))
 
@@ -350,6 +364,7 @@ class ProjectSettings:
     mapfile: Optional[str]
     source_directories: Optional[List[str]]
     source_extensions: List[str]
+    show_line_numbers_default: bool
 
 
 @dataclass
@@ -365,7 +380,6 @@ class Config:
     # Build/objdump options
     diff_obj: bool
     make: bool
-    source: bool
     source_old_binutils: bool
     inlines: bool
     max_function_size_lines: int
@@ -379,6 +393,7 @@ class Config:
     compress: Optional[Compress]
     show_branches: bool
     show_line_numbers: bool
+    show_source: bool
     stop_jrra: bool
     ignore_large_imms: bool
     ignore_addr_diffs: bool
@@ -409,10 +424,13 @@ def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
         objdump_executable=get_objdump_executable(settings.get("objdump_executable")),
         map_format=settings.get("map_format", "gnu"),
         mw_build_dir=settings.get("mw_build_dir", "build/"),
+        show_line_numbers_default=settings.get("show_line_numbers_default", True),
     )
 
 
 def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
+    arch = get_arch(project.arch_str)
+
     formatter: Formatter
     if args.format == "plain":
         formatter = PlainFormatter(column_width=args.column_width)
@@ -421,7 +439,7 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
     elif args.format == "html":
         formatter = HtmlFormatter()
     elif args.format == "json":
-        formatter = JsonFormatter(arch_str=project.arch_str)
+        formatter = JsonFormatter(arch_str=arch.name)
     else:
         raise ValueError(f"Unsupported --format: {args.format}")
 
@@ -435,12 +453,15 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
             )
         compress = Compress(args.compress_sameinstr, True)
 
+    show_line_numbers = args.show_line_numbers
+    if show_line_numbers is None:
+        show_line_numbers = project.show_line_numbers_default
+
     return Config(
-        arch=get_arch(project.arch_str),
+        arch=arch,
         # Build/objdump options
         diff_obj=args.diff_obj,
         make=args.make,
-        source=args.source or args.source_old_binutils,
         source_old_binutils=args.source_old_binutils,
         inlines=args.inlines,
         max_function_size_lines=args.max_lines,
@@ -454,7 +475,8 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
         skip_lines=args.skip_lines,
         compress=compress,
         show_branches=args.show_branches,
-        show_line_numbers=args.line_numbers,
+        show_line_numbers=show_line_numbers,
+        show_source=args.show_source or args.source_old_binutils,
         stop_jrra=args.stop_jrra,
         ignore_large_imms=args.ignore_large_imms,
         ignore_addr_diffs=args.ignore_addr_diffs,
@@ -485,13 +507,10 @@ def get_objdump_executable(objdump_executable: Optional[str]) -> str:
 
 
 def get_arch(arch_str: str) -> "ArchSettings":
-    if arch_str == "mips":
-        return MIPS_SETTINGS
-    if arch_str == "aarch64":
-        return AARCH64_SETTINGS
-    if arch_str == "ppc":
-        return PPC_SETTINGS
-    return fail(f"Unknown architecture: {arch_str}")
+    for settings in ARCH_SETTINGS:
+        if arch_str == settings.name:
+            return settings
+    raise ValueError(f"Unknown architecture: {arch_str}")
 
 
 BUFFER_CMD: List[str] = ["tail", "-c", str(10 ** 9)]
@@ -654,8 +673,11 @@ class PlainFormatter(Formatter):
 
 @dataclass
 class AnsiFormatter(Formatter):
-    # Underline (not in colorama)
-    STYLE_UNDERLINE = "\u001b[4m"
+    # Additional ansi escape codes not in colorama. See:
+    # https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+    STYLE_UNDERLINE = "\x1b[4m"
+    STYLE_NO_UNDERLINE = "\x1b[24m"
+    STYLE_INVERT = "\x1b[7m"
 
     BASIC_ANSI_CODES = {
         BasicFormat.NONE: "",
@@ -670,6 +692,13 @@ class AnsiFormatter(Formatter):
         BasicFormat.SOURCE_FUNCTION: Style.DIM + Style.BRIGHT + STYLE_UNDERLINE,
         BasicFormat.SOURCE_LINE_NUM: Fore.LIGHTBLACK_EX,
         BasicFormat.SOURCE_OTHER: Style.DIM,
+    }
+
+    BASIC_ANSI_CODES_UNDO = {
+        BasicFormat.NONE: "",
+        BasicFormat.SOURCE_FILENAME: Style.NORMAL,
+        BasicFormat.SOURCE_FUNCTION: Style.NORMAL + STYLE_NO_UNDERLINE,
+        BasicFormat.SOURCE_OTHER: Style.NORMAL,
     }
 
     ROTATION_ANSI_COLORS = [
@@ -689,20 +718,29 @@ class AnsiFormatter(Formatter):
     def apply_format(self, chunk: str, f: Format) -> str:
         if f == BasicFormat.NONE:
             return chunk
+        undo_ansi_code = Fore.RESET
         if isinstance(f, BasicFormat):
             ansi_code = self.BASIC_ANSI_CODES[f]
+            undo_ansi_code = self.BASIC_ANSI_CODES_UNDO.get(f, undo_ansi_code)
         elif isinstance(f, RotationFormat):
             ansi_code = self.ROTATION_ANSI_COLORS[
                 f.index % len(self.ROTATION_ANSI_COLORS)
             ]
         else:
             static_assert_unreachable(f)
-        return f"{ansi_code}{chunk}{Style.RESET_ALL}"
+        return f"{ansi_code}{chunk}{undo_ansi_code}"
 
     def table(self, meta: TableMetadata, lines: List[Tuple["OutputLine", ...]]) -> str:
-        rows = [meta.headers] + [self.outputline_texts(ls) for ls in lines]
+        rows = [(meta.headers, False)] + [
+            (self.outputline_texts(line), line[1].is_data_ref) for line in lines
+        ]
         return "\n".join(
-            "".join(self.apply(x.ljust(self.column_width)) for x in row) for row in rows
+            "".join(
+                (self.STYLE_INVERT if is_data_ref else "")
+                + self.apply(x.ljust(self.column_width))
+                for x in row
+            )
+            for (row, is_data_ref) in rows
         )
 
 
@@ -726,8 +764,9 @@ class HtmlFormatter(Formatter):
         return f"<span class='{class_name}' {data_attr}>{chunk}</span>"
 
     def table(self, meta: TableMetadata, lines: List[Tuple["OutputLine", ...]]) -> str:
-        def table_row(line: Tuple[Text, ...], cell_el: str) -> str:
-            output_row = "    <tr>"
+        def table_row(line: Tuple[Text, ...], is_data_ref: bool, cell_el: str) -> str:
+            tr_attrs = " class='data-ref'" if is_data_ref else ""
+            output_row = f"    <tr{tr_attrs}>"
             for cell in line:
                 cell_html = self.apply(cell)
                 output_row += f"<{cell_el}>{cell_html}</{cell_el}>"
@@ -736,11 +775,12 @@ class HtmlFormatter(Formatter):
 
         output = "<table class='diff'>\n"
         output += "  <thead>\n"
-        output += table_row(meta.headers, "th")
+        output += table_row(meta.headers, False, "th")
         output += "  </thead>\n"
         output += "  <tbody>\n"
         output += "".join(
-            table_row(self.outputline_texts(line), "td") for line in lines
+            table_row(self.outputline_texts(line), line[1].is_data_ref, "td")
+            for line in lines
         )
         output += "  </tbody>\n"
         output += "</table>\n"
@@ -793,6 +833,7 @@ class JsonFormatter(Formatter):
         for row in rows:
             output_row: Dict[str, Any] = {}
             output_row["key"] = row[0].key2
+            output_row["is_data_ref"] = row[1].is_data_ref
             iters = [
                 ("base", row[0].base, row[0].line1),
                 ("current", row[1].fmt2, row[1].line2),
@@ -906,28 +947,28 @@ def run_make_capture_output(
     )
 
 
-def restrict_to_function(dump: str, fn_name: str, config: Config) -> str:
-    out: List[str] = []
-    search = f"<{fn_name}>:"
-    found = False
-    for line in dump.split("\n"):
-        if found:
-            if len(out) >= config.max_function_size_lines:
-                out.append("\t\t...")
-                break
-            out.append(line)
-        elif search in line:
-            found = True
-    return "\n".join(out)
+def restrict_to_function(dump: str, fn_name: str) -> str:
+    try:
+        ind = dump.index("\n", dump.index(f"<{fn_name}>:"))
+        return dump[ind + 1 :]
+    except ValueError:
+        return ""
+
+
+def serialize_data_references(references: List[Tuple[int, int, str]]) -> str:
+    return "".join(
+        f"DATAREF {text_offset} {from_offset} {from_section}\n"
+        for (text_offset, from_offset, from_section) in references
+    )
 
 
 def maybe_get_objdump_source_flags(config: Config) -> List[str]:
     flags = []
 
-    if config.show_line_numbers or config.source:
+    if config.show_line_numbers or config.show_source:
         flags.append("--line-numbers")
 
-    if config.source:
+    if config.show_source:
         flags.append("--source")
 
         if not config.source_old_binutils:
@@ -956,8 +997,37 @@ def run_objdump(cmd: ObjdumpCommand, config: Config, project: ProjectSettings) -
             fail("** Try using --source-old-binutils instead of --source **")
         raise e
 
+    obj_data: Optional[bytes] = None
+    if config.diff_obj:
+        with open(target, "rb") as f:
+            obj_data = f.read()
+
+    return preprocess_objdump_out(restrict, obj_data, out)
+
+
+def preprocess_objdump_out(
+    restrict: Optional[str], obj_data: Optional[bytes], objdump_out: str
+) -> str:
+    """
+    Preprocess the output of objdump into a format that `process()` expects.
+    This format is suitable for saving to disk with `--write-asm`.
+
+    - Optionally filter the output to a single function (`restrict`)
+    - Otherwise, strip objdump header (7 lines)
+    - Prepend .data references ("DATAREF" lines) when working with object files
+    """
+    out = objdump_out
+
     if restrict is not None:
-        return restrict_to_function(out, restrict, config)
+        out = restrict_to_function(out, restrict)
+    else:
+        for i in range(7):
+            out = out[out.find("\n") + 1 :]
+        out = out.rstrip("\n")
+
+    if obj_data:
+        out = serialize_data_references(parse_elf_data_references(obj_data)) + out
+
     return out
 
 
@@ -995,8 +1065,6 @@ def search_map_file(
                         cands.append((cur_objfile, ram + ram_to_rom))
                 last_line = line
         except Exception as e:
-            import traceback
-
             traceback.print_exc()
             fail(f"Internal error while parsing map file")
 
@@ -1044,6 +1112,114 @@ def search_map_file(
     else:
         fail(f"Linker map format {project.map_format} unrecognised.")
     return None, None
+
+
+def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
+    e_ident = data[:16]
+    if e_ident[:4] != b"\x7FELF":
+        return []
+
+    SHT_SYMTAB = 2
+    SHT_REL = 9
+    SHT_RELA = 4
+
+    is_32bit = e_ident[4] == 1
+    is_little_endian = e_ident[5] == 1
+    str_end = "<" if is_little_endian else ">"
+    str_off = "I" if is_32bit else "Q"
+    sym_size = {"B": 1, "H": 2, "I": 4, "Q": 8}
+
+    def read(spec: str, offset: int) -> Tuple[int, ...]:
+        spec = spec.replace("P", str_off)
+        size = struct.calcsize(spec)
+        return struct.unpack(str_end + spec, data[offset : offset + size])
+
+    (
+        e_type,
+        e_machine,
+        e_version,
+        e_entry,
+        e_phoff,
+        e_shoff,
+        e_flags,
+        e_ehsize,
+        e_phentsize,
+        e_phnum,
+        e_shentsize,
+        e_shnum,
+        e_shstrndx,
+    ) = read("HHIPPPIHHHHHH", 16)
+    if e_type != 1:  # relocatable
+        return []
+    assert e_shoff != 0
+    assert e_shnum != 0  # don't support > 0xFF00 sections
+    assert e_shstrndx != 0
+
+    @dataclass
+    class Section:
+        sh_name: int
+        sh_type: int
+        sh_flags: int
+        sh_addr: int
+        sh_offset: int
+        sh_size: int
+        sh_link: int
+        sh_info: int
+        sh_addralign: int
+        sh_entsize: int
+
+    sections = [
+        Section(*read("IIPPPPIIPP", e_shoff + i * e_shentsize)) for i in range(e_shnum)
+    ]
+    shstr = sections[e_shstrndx]
+    sec_name_offs = [shstr.sh_offset + s.sh_name for s in sections]
+    sec_names = [data[offset : data.index(b"\0", offset)] for offset in sec_name_offs]
+
+    symtab_sections = [i for i in range(e_shnum) if sections[i].sh_type == SHT_SYMTAB]
+    assert len(symtab_sections) == 1
+    symtab = sections[symtab_sections[0]]
+
+    text_sections = [i for i in range(e_shnum) if sec_names[i] == b".text"]
+    assert len(text_sections) == 1
+    text_section = text_sections[0]
+
+    ret: List[Tuple[int, int, str]] = []
+    for s in sections:
+        if s.sh_type == SHT_REL or s.sh_type == SHT_RELA:
+            if s.sh_info == text_section:
+                # Skip .text -> .text references
+                continue
+            sec_name = sec_names[s.sh_info].decode("latin1")
+            sec_base = sections[s.sh_info].sh_offset
+            for i in range(0, s.sh_size, s.sh_entsize):
+                if s.sh_type == SHT_REL:
+                    r_offset, r_info = read("PP", s.sh_offset + i)
+                else:
+                    r_offset, r_info, r_addend = read("PPP", s.sh_offset + i)
+
+                if is_32bit:
+                    r_sym = r_info >> 8
+                    r_type = r_info & 0xFF
+                    sym_offset = symtab.sh_offset + symtab.sh_entsize * r_sym
+                    st_name, st_value, st_size, st_info, st_other, st_shndx = read(
+                        "IIIBBH", sym_offset
+                    )
+                else:
+                    r_sym = r_info >> 32
+                    r_type = r_info & 0xFFFFFFFF
+                    sym_offset = symtab.sh_offset + symtab.sh_entsize * r_sym
+                    st_name, st_info, st_other, st_shndx, st_value, st_size = read(
+                        "IBBHQQ", sym_offset
+                    )
+                if st_shndx == text_section:
+                    if s.sh_type == SHT_REL:
+                        if e_machine == 8 and r_type == 2:  # R_MIPS_32
+                            (r_addend,) = read("I", sec_base + r_offset)
+                        else:
+                            continue
+                    text_offset = (st_value + r_addend) & 0xFFFFFFFF
+                    ret.append((text_offset, r_offset, sec_name))
+    return ret
 
 
 def dump_elf(
@@ -1110,7 +1286,7 @@ def dump_objfile(
     if not os.path.isfile(refobjfile):
         fail(f'Please ensure an OK .o file exists at "{refobjfile}".')
 
-    objdump_flags = ["-drz"]
+    objdump_flags = ["-drz", "-j", ".text"]
     return (
         objfile,
         (objdump_flags, refobjfile, start),
@@ -1134,7 +1310,7 @@ def dump_binary(
         end_addr = eval_int(end, "End address must be an integer expression.")
     else:
         end_addr = start_addr + config.max_function_size_bytes
-    objdump_flags = ["-Dz", "-bbinary", "-EB"]
+    objdump_flags = ["-Dz", "-bbinary"] + ["-EB" if config.arch.big_endian else "-EL"]
     flags1 = [
         f"--start-address={start_addr + config.base_shift}",
         f"--stop-address={end_addr + config.base_shift}",
@@ -1213,8 +1389,26 @@ class DifferenceNormalizerAArch64(DifferenceNormalizer):
         return row
 
 
+class DifferenceNormalizerARM32(DifferenceNormalizer):
+    def __init__(self, config: Config) -> None:
+        super().__init__(config)
+
+    def _normalize_arch_specific(self, mnemonic: str, row: str) -> str:
+        if self.config.ignore_addr_diffs:
+            row = self._normalize_bl(mnemonic, row)
+        return row
+
+    def _normalize_bl(self, mnemonic: str, row: str) -> str:
+        if mnemonic != "bl":
+            return row
+
+        row, _ = split_off_address(row)
+        return row + "<ignore>"
+
+
 @dataclass
 class ArchSettings:
+    name: str
     re_int: Pattern[str]
     re_comment: Pattern[str]
     re_reg: Pattern[str]
@@ -1227,6 +1421,7 @@ class ArchSettings:
     arch_flags: List[str] = field(default_factory=list)
     branch_likely_instructions: Set[str] = field(default_factory=set)
     difference_normalizer: Type[DifferenceNormalizer] = DifferenceNormalizer
+    big_endian: Optional[bool] = True
 
 
 MIPS_BRANCH_LIKELY_INSTRUCTIONS = {
@@ -1256,6 +1451,33 @@ MIPS_BRANCH_INSTRUCTIONS = MIPS_BRANCH_LIKELY_INSTRUCTIONS.union(
         "bc1f",
     }
 )
+
+ARM32_PREFIXES = {"b", "bl"}
+ARM32_CONDS = {
+    "",
+    "eq",
+    "ne",
+    "cs",
+    "cc",
+    "mi",
+    "pl",
+    "vs",
+    "vc",
+    "hi",
+    "ls",
+    "ge",
+    "lt",
+    "gt",
+    "le",
+    "al",
+}
+ARM32_SUFFIXES = {"", ".n", ".w"}
+ARM32_BRANCH_INSTRUCTIONS = {
+    f"{prefix}{cond}{suffix}"
+    for prefix in ARM32_PREFIXES
+    for cond in ARM32_CONDS
+    for suffix in ARM32_SUFFIXES
+}
 
 AARCH64_BRANCH_INSTRUCTIONS = {
     "bl",
@@ -1308,6 +1530,7 @@ PPC_BRANCH_INSTRUCTIONS = {
 }
 
 MIPS_SETTINGS = ArchSettings(
+    name="mips",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"<.*?>"),
     re_reg=re.compile(
@@ -1322,7 +1545,30 @@ MIPS_SETTINGS = ArchSettings(
     instructions_with_address_immediates=MIPS_BRANCH_INSTRUCTIONS.union({"jal", "j"}),
 )
 
+MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
+
+ARM32_SETTINGS = ArchSettings(
+    name="arm32",
+    re_int=re.compile(r"[0-9]+"),
+    re_comment=re.compile(r"(<.*?>|//.*$)"),
+    # Includes:
+    #   - General purpose registers: r0..13
+    #   - Frame pointer registers: lr (r14), pc (r15)
+    #   - VFP/NEON registers: s0..31, d0..31, q0..15, fpscr, fpexc, fpsid
+    # SP should not be in this list.
+    re_reg=re.compile(
+        r"\$?\b([rq][0-9]|[rq]1[0-5]|pc|lr|[ds][12]?[0-9]|[ds]3[01]|fp(scr|exc|sid))\b"
+    ),
+    re_sprel=re.compile(r"sp, #-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
+    re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
+    re_imm=re.compile(r"(?<!sp, )#-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
+    branch_instructions=ARM32_BRANCH_INSTRUCTIONS,
+    instructions_with_address_immediates=ARM32_BRANCH_INSTRUCTIONS.union({"adr"}),
+    difference_normalizer=DifferenceNormalizerARM32,
+)
+
 AARCH64_SETTINGS = ArchSettings(
+    name="aarch64",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"(<.*?>|//.*$)"),
     # GPRs and FP registers: X0-X30, W0-W30, [DSHQ]0..31
@@ -1337,6 +1583,7 @@ AARCH64_SETTINGS = ArchSettings(
 )
 
 PPC_SETTINGS = ArchSettings(
+    name="ppc",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"(<.*?>|//.*$)"),
     re_reg=re.compile(r"\$?\b([rf][0-9]+)\b"),
@@ -1346,6 +1593,14 @@ PPC_SETTINGS = ArchSettings(
     branch_instructions=PPC_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=PPC_BRANCH_INSTRUCTIONS.union({"bl"}),
 )
+
+ARCH_SETTINGS = [
+    MIPS_SETTINGS,
+    MIPSEL_SETTINGS,
+    ARM32_SETTINGS,
+    AARCH64_SETTINGS,
+    PPC_SETTINGS,
+]
 
 
 def hexify_int(row: str, pat: Match[str], arch: ArchSettings) -> str:
@@ -1447,6 +1702,12 @@ def process_ppc_reloc(row: str, prev: str) -> str:
     return before + repl + after
 
 
+def process_arm_reloc(row: str, prev: str, arch: ArchSettings) -> str:
+    before, imm, after = parse_relocated_line(prev)
+    repl = row.split()[-1]
+    return before + repl + after
+
+
 def pad_mnemonic(line: str) -> str:
     if "\t" not in line:
         return line
@@ -1461,65 +1722,67 @@ class Line:
     original: str
     normalized_original: str
     scorable_line: str
-    line_num: Optional[int]
-    branch_target: Optional[int]
-    source_filename: Optional[str]
-    source_line_num: Optional[int]
-    source_lines: List[str]
-    comment: Optional[str]
+    line_num: Optional[int] = None
+    branch_target: Optional[int] = None
+    source_filename: Optional[str] = None
+    source_line_num: Optional[int] = None
+    source_lines: List[str] = field(default_factory=list)
+    comment: Optional[str] = None
 
 
-def process(lines: List[str], config: Config) -> List[Line]:
+def process(dump: str, config: Config) -> List[Line]:
     arch = config.arch
     normalizer = arch.difference_normalizer(config)
     skip_next = False
     source_lines = []
     source_filename = None
     source_line_num = None
-    if not config.diff_obj:
-        lines = lines[7:]
-        if lines and not lines[-1]:
-            lines.pop()
 
     i = 0
+    num_instr = 0
+    data_refs: Dict[int, Dict[str, List[int]]] = defaultdict(lambda: defaultdict(list))
     output: List[Line] = []
     stop_after_delay_slot = False
+    lines = dump.split("\n")
     while i < len(lines):
         row = lines[i]
         i += 1
 
-        if config.diff_obj and (">:" in row or not row):
+        if not row:
             continue
 
-        # This regex is conservative, and assumes the file path does not contain "weird"
-        # characters like colons, tabs, or angle brackets.
-        if (
-            config.show_line_numbers
-            and row
-            and re.match(
-                r"^[^ \t<>:][^\t<>:]*:[0-9]+( \(discriminator [0-9]+\))?$", row
+        if re.match(r"^[0-9a-f]+ <.*>:$", row):
+            continue
+
+        if row.startswith("DATAREF"):
+            parts = row.split(" ", 3)
+            text_offset = int(parts[1])
+            from_offset = int(parts[2])
+            from_section = parts[3]
+            data_refs[text_offset][from_section].append(from_offset)
+            continue
+
+        if config.diff_obj and num_instr >= config.max_function_size_lines:
+            output.append(
+                Line(
+                    mnemonic="...",
+                    diff_row="...",
+                    original="...",
+                    normalized_original="...",
+                    scorable_line="...",
+                )
             )
-        ):
-            source_filename, _, tail = row.rpartition(":")
-            source_line_num = int(tail.partition(" ")[0])
-            if config.source:
-                source_lines.append(row)
-            continue
+            break
 
-        if config.source and not config.source_old_binutils and (row and row[0] != " "):
+        if not re.match(r"^ +[0-9a-f]+:\t", row):
+            # This regex is conservative, and assumes the file path does not contain "weird"
+            # characters like colons, tabs, or angle brackets.
+            if re.match(
+                r"^[^ \t<>:][^\t<>:]*:[0-9]+( \(discriminator [0-9]+\))?$", row
+            ):
+                source_filename, _, tail = row.rpartition(":")
+                source_line_num = int(tail.partition(" ")[0])
             source_lines.append(row)
-            continue
-
-        if (
-            config.source
-            and config.source_old_binutils
-            and (row and not re.match(r"^ +[0-9a-f]+:\t", row))
-        ):
-            source_lines.append(row)
-            continue
-
-        # `objdump --line-numbers` includes function markers, even without `--source`
-        if config.show_line_numbers and row and re.match(r"^[^ \t]+\(\):$", row):
             continue
 
         m_comment = re.search(arch.re_comment, row)
@@ -1529,6 +1792,22 @@ def process(lines: List[str], config: Config) -> List[Line]:
         tabs = row.split("\t")
         row = "\t".join(tabs[2:])
         line_num = eval_line_num(tabs[0].strip())
+
+        if line_num in data_refs:
+            refs = data_refs[line_num]
+            ref_str = "; ".join(
+                section_name + "+" + ",".join(hex(off) for off in offs)
+                for section_name, offs in refs.items()
+            )
+            output.append(
+                Line(
+                    mnemonic="<data-ref>",
+                    diff_row="<data-ref>",
+                    original=ref_str,
+                    normalized_original=ref_str,
+                    scorable_line="<data-ref>",
+                )
+            )
 
         if "\t" in row:
             row_parts = row.split("\t", 1)
@@ -1554,6 +1833,8 @@ def process(lines: List[str], config: Config) -> List[Line]:
                 original = process_mips_reloc(reloc_row, original, arch)
             elif "R_PPC_" in reloc_row:
                 original = process_ppc_reloc(reloc_row, original)
+            elif "R_ARM_" in reloc_row:
+                original = process_arm_reloc(reloc_row, original, arch)
             else:
                 break
             i += 1
@@ -1606,6 +1887,7 @@ def process(lines: List[str], config: Config) -> List[Line]:
                 comment=comment,
             )
         )
+        num_instr += 1
         source_lines = []
 
         if config.stop_jrra and mnemonic == "jr" and row_parts[1].strip() == "ra":
@@ -1671,9 +1953,10 @@ def diff_sequences(
 
     rem1 = remap(seq1)
     rem2 = remap(seq2)
-    import Levenshtein  # type: ignore
+    import Levenshtein
 
-    return Levenshtein.opcodes(rem1, rem2)  # type: ignore
+    ret: List[Tuple[str, int, int, int, int]] = Levenshtein.opcodes(rem1, rem2)
+    return ret
 
 
 def diff_lines(
@@ -1793,14 +2076,13 @@ def score_diff_lines(
     for index, (line1, line2) in enumerate(lines):
         if max_index is not None and index > max_index:
             break
-        if line1 is None:
-            assert line2 is not None
-            diff_insert(line2.scorable_line)
-        elif line2 is None:
-            assert line1 is not None
-            diff_delete(line1.scorable_line)
-        else:
+        if line1 and line2 and line1.mnemonic == line2.mnemonic:
             diff_sameline(line1.scorable_line, line2.scorable_line)
+        else:
+            if line1:
+                diff_delete(line1.scorable_line)
+            if line2:
+                diff_insert(line2.scorable_line)
 
     insertions_co = Counter(insertions)
     deletions_co = Counter(deletions)
@@ -1823,6 +2105,7 @@ class OutputLine:
     fmt2: Text = field(compare=False)
     key2: Optional[str]
     boring: bool = field(compare=False)
+    is_data_ref: bool = field(compare=False)
     line1: Optional[Line] = field(compare=False)
     line2: Optional[Line] = field(compare=False)
 
@@ -1833,15 +2116,12 @@ class Diff:
     score: int
 
 
-def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
-    if config.source:
-        import cxxfilt  # type: ignore
+def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
+    if config.show_source:
+        import cxxfilt
     arch = config.arch
     fmt = config.formatter
     output: List[OutputLine] = []
-
-    lines1 = process(basedump.split("\n"), config)
-    lines2 = process(mydump.split("\n"), config)
 
     sc1 = symbol_formatter("base-reg", 0)
     sc2 = symbol_formatter("my-reg", 0)
@@ -1881,10 +2161,18 @@ def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
     for (line1, line2) in diffed_lines:
         line_color1 = line_color2 = sym_color = BasicFormat.NONE
         line_prefix = " "
+        is_data_ref = False
         out1 = Text() if not line1 else Text(pad_mnemonic(line1.original))
         out2 = Text() if not line2 else Text(pad_mnemonic(line2.original))
         if line1 and line2 and line1.diff_row == line2.diff_row:
-            if (
+            if line1.diff_row == "<data-ref>":
+                if line1.normalized_original != line2.normalized_original:
+                    line_prefix = "i"
+                    sym_color = BasicFormat.DIFF_CHANGE
+                    out1 = out1.reformat(sym_color)
+                    out2 = out2.reformat(sym_color)
+                is_data_ref = True
+            elif (
                 line1.normalized_original == line2.normalized_original
                 and line2.branch_target is None
             ):
@@ -1986,7 +2274,7 @@ def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
             out1 = Text()
             out2 = out2.reformat(line_color2)
 
-        if config.source and line2 and line2.comment:
+        if config.show_source and line2 and line2.comment:
             out2 += f" {line2.comment}"
 
         def format_part(
@@ -2013,7 +2301,7 @@ def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
         part1 = format_part(out1, line1, line_color1, bts1, sc5)
         part2 = format_part(out2, line2, line_color2, bts2, sc6)
 
-        if line2:
+        if config.show_source and line2:
             for source_line in line2.source_lines:
                 line_format = BasicFormat.SOURCE_OTHER
                 if config.source_old_binutils:
@@ -2047,6 +2335,7 @@ def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
                         fmt2=padding + Text(source_line, line_format),
                         key2=source_line,
                         boring=True,
+                        is_data_ref=False,
                         line1=None,
                         line2=None,
                     )
@@ -2080,6 +2369,7 @@ def do_diff(basedump: str, mydump: str, config: Config) -> Diff:
                 fmt2=fmt2,
                 key2=key2,
                 boring=boring,
+                is_data_ref=is_data_ref,
                 line1=line1,
                 line2=line2,
             )
@@ -2125,6 +2415,7 @@ def compress_matching(
                 fmt2=Text(),
                 key2=None,
                 boring=False,
+                is_data_ref=False,
                 line1=None,
                 line2=None,
             )
@@ -2165,7 +2456,7 @@ def align_diffs(
         old_chunks = chunk_diff_lines(old_diff.lines)
         new_chunks = chunk_diff_lines(new_diff.lines)
         diff_lines = []
-        empty = OutputLine(Text(), Text(), None, True, None, None)
+        empty = OutputLine(Text(), Text(), None, True, False, None, None)
         assert len(old_chunks) == len(new_chunks), "same target"
         for old_chunk, new_chunk in zip(old_chunks, new_chunks):
             if isinstance(old_chunk, list):
@@ -2217,10 +2508,10 @@ def debounced_fs_watch(
     config: Config,
     project: ProjectSettings,
 ) -> None:
-    import watchdog.events  # type: ignore
-    import watchdog.observers  # type: ignore
+    import watchdog.events
+    import watchdog.observers
 
-    class WatchEventHandler(watchdog.events.FileSystemEventHandler):  # type: ignore
+    class WatchEventHandler(watchdog.events.FileSystemEventHandler):
         def __init__(
             self, queue: "queue.Queue[float]", file_targets: List[str]
         ) -> None:
@@ -2300,7 +2591,7 @@ class Display:
 
     def __init__(self, basedump: str, mydump: str, config: Config) -> None:
         self.config = config
-        self.basedump = basedump
+        self.base_lines = process(basedump, config)
         self.mydump = mydump
         self.emsg = None
         self.last_refresh_key = None
@@ -2310,7 +2601,8 @@ class Display:
         if self.emsg is not None:
             return (self.emsg, self.emsg)
 
-        diff_output = do_diff(self.basedump, self.mydump, self.config)
+        my_lines = process(self.mydump, self.config)
+        diff_output = do_diff(self.base_lines, my_lines, self.config)
         last_diff_output = self.last_diff_output or diff_output
         if self.config.threeway != "base" or not self.last_diff_output:
             self.last_diff_output = diff_output
@@ -2318,7 +2610,10 @@ class Display:
         meta, diff_lines = align_diffs(last_diff_output, diff_output, self.config)
         diff_lines = diff_lines[self.config.skip_lines :]
         output = self.config.formatter.table(meta, diff_lines)
-        refresh_key = [[col.key2 for col in x[1:]] for x in diff_lines]
+        refresh_key = (
+            [[col.key2 for col in x[1:]] for x in diff_lines],
+            diff_output.score,
+        )
         return (output, refresh_key)
 
     def run_less(
@@ -2388,7 +2683,6 @@ class Display:
         if not error and not self.emsg and text == self.mydump:
             self.progress("Unchanged. ")
             return
-        # self.progress("Diffing... ")
         if not error:
             self.mydump = text
             self.emsg = None
@@ -2420,7 +2714,10 @@ def main() -> None:
     diff_settings.apply(settings, args)  # type: ignore
     project = create_project_settings(settings)
 
-    config = create_config(args, project)
+    try:
+        config = create_config(args, project)
+    except ValueError as e:
+        fail(str(e))
 
     if config.algorithm == "levenshtein":
         try:
@@ -2428,7 +2725,7 @@ def main() -> None:
         except ModuleNotFoundError as e:
             fail(MISSING_PREREQUISITES.format(e.name))
 
-    if config.source:
+    if config.show_source:
         try:
             import cxxfilt
         except ModuleNotFoundError as e:

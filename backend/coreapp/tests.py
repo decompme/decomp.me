@@ -3,7 +3,9 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
+
 import responses
+from time import sleep
 
 from .models import Compilation, Scratch, Profile
 from .github import GitHubUser
@@ -224,3 +226,63 @@ class UserTests(APITestCase):
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["scratch"]["owner"]["username"], self.GITHUB_USER["login"])
         self.assertEqual(response.json()["scratch"]["owner"]["is_you"], True)
+
+class ScratchDetailTests(APITestCase):
+    def make_nop_scratch(self) -> Scratch:
+        response = self.client.post(reverse("scratch"), {
+            'arch': 'mips',
+            'context': '',
+            'target_asm': "jr $ra\nnop\n",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        assert scratch is not None # assert keyword instead of self.assertIsNotNone for mypy
+        return scratch
+
+    def test_404_head(self):
+        """
+        Ensure that HEAD requests 404 correctly.
+        """
+        response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_last_modified(self):
+        """
+        Ensure that the Last-Modified header is set.
+        """
+
+        scratch = self.make_nop_scratch()
+
+        response = self.client.head(reverse("scratch-detail", args=[scratch.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assert_(response.headers.get("Last-Modified") is not None)
+
+    def test_if_modified_since(self):
+        """
+        Ensure that the If-Modified-Since header is handled.
+        """
+
+        scratch = self.make_nop_scratch()
+
+        response = self.client.head(reverse("scratch-detail", args=[scratch.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        last_modified = response.headers.get("Last-Modified")
+
+        # should be unmodified
+        response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
+        self.assertEqual(response.status_code, status.HTTP_304_NOT_MODIFIED)
+
+        # Last-Modified is only granular to the second
+        sleep(1)
+
+        # touch the scratch
+        old_last_updated = scratch.last_updated
+        scratch.slug = "newslug"
+        scratch.save()
+        self.assertNotEqual(scratch.last_updated, old_last_updated)
+
+        # should now be modified
+        response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -4,10 +4,16 @@ import { useLayer, Arrow } from "react-laag"
 import { motion, AnimatePresence } from "framer-motion"
 import { CpuIcon } from "@primer/octicons-react"
 
-import CompilerOpts from "./CompilerOpts"
+import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
 import styles from "./CompilerButton.module.css"
 
-export default function CompilerButton({ value, onChange, disabled }) {
+export type Props = {
+    value: CompilerOptsProps["value"],
+    onChange: CompilerOptsProps["onChange"],
+    disabled?: boolean,
+}
+
+export default function CompilerButton({ value, onChange, disabled }: Props) {
     const [isOpen, setOpen] = useState(false)
 
     const close = () => setOpen(false)

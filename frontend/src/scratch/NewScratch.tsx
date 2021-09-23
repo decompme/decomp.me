@@ -10,6 +10,8 @@ import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
 import toast from "react-hot-toast"
 
+// TODO: use AsyncButton with custom error handler?
+
 export default function NewScratch() {
     const [awaitingResponse, setAwaitingResponse] = useState(false)
     const [errorMsg, setErrorMsg] = useState("")
@@ -19,7 +21,7 @@ export default function NewScratch() {
     const history = useHistory()
 
     useEffect(() => {
-        document.title = "New scratch"
+        document.title = "new scratch | decomp.me"
     }, [])
 
     const submit = async () => {
@@ -44,7 +46,7 @@ export default function NewScratch() {
             history.push(`/scratch/${scratch.slug}`)
             toast.success("Scratch created! You may share this url")
         } catch (error) {
-            if (error?.responseJSON.as_errors) {
+            if (error?.responseJSON?.as_errors) {
                 setErrorMsg(error.responseJSON.as_errors.join("\n"))
             } else {
                 console.error(error)
@@ -75,9 +77,9 @@ export default function NewScratch() {
                     <Editor language="c" value={context} onChange={v => setContext(v)} />
                 </div>
 
-                <div class={`red ${styles.errormsg}`}>
+                {errorMsg && <div class={`red ${styles.errormsg}`}>
                     {errorMsg}
-                </div>
+                </div>}
 
                 <div class={styles.actions}>
                     <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>

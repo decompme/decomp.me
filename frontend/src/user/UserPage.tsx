@@ -16,7 +16,7 @@ export default function UserPage() {
     const user = data?.user
 
     useEffect(() => {
-        document.title = user?.name ? `${user.name} on decomp.me` : `${username} on decomp.me`
+        document.title = user?.name ? `${user.name} | decomp.me` : `@${username} | decomp.me`
     }, [username, user?.name])
 
     const signOut = () => {

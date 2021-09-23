@@ -4,7 +4,7 @@ import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"
 
 import NewScratchPage from "./scratch/NewScratch"
-import ScratchPage from "./scratch/Scratch"
+import ScratchPage from "./scratch/ScratchPage"
 import LoginPage from "./user/LoginPage"
 import UserPage from "./user/UserPage"
 

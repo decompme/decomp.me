@@ -92,7 +92,7 @@ button, .button {
 
 button[disabled] {
     color: #ffffff33;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 button:active, .button:active {
