@@ -2,16 +2,6 @@
 
 A collaborative decompilation and reverse engineering website, built with React and Django.
 
-## Features
-
-🐸 Create 'scratches' to share and work on function decompilations
-
-🐸 View diffs using [asm-differ](https://github.com/simonlindholm/asm-differ)
-
-🐸 Sign in with GitHub
-
-🐸 Support for GCC and IDO compilers on MIPS
-
 ## Directory structure
 ```
 frontend/
@@ -196,7 +186,7 @@ To enable it locally outside of the Docker container:
 
 ## Contributing
 
-Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](https://discord.gg/k9gY7uCysW).
+Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](http://discord.zelda64.dev).
 
 ### Linting
 
