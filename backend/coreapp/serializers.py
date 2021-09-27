@@ -46,11 +46,12 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_asm = serializers.CharField(allow_blank=True)
     # TODO: `context` should be renamed; it conflicts with Field.context
     context = serializers.CharField(allow_blank=True) # type: ignore
+    diff_label = serializers.CharField(allow_blank=True, required=False)
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context"]
+        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context", "diff_label"]
 
     def create(self, validated_data):
         scratch = Scratch.objects.create(**validated_data)

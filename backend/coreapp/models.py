@@ -63,6 +63,7 @@ class Scratch(models.Model):
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     original_context = models.TextField(blank=True)
+    diff_label = models.CharField(max_length=100, blank=True, null=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
 

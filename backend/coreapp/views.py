@@ -113,6 +113,7 @@ def create_scratch(request):
 
     target_asm = data["target_asm"]
     context = data["context"]
+    diff_label = data.get("diff_label")
 
     asm = get_db_asm(target_asm)
 
@@ -150,6 +151,7 @@ def create_scratch(request):
         "compiler": compiler,
         "cc_opts": cc_opts,
         "context": context,
+        "diff_label": diff_label,
         "source_code": source_code,
         "target_assembly": assembly.pk,
     }
@@ -189,7 +191,7 @@ def compile(request, slug):
 
     diff_output: Optional[Dict[str, Any]] = None
     if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
 
     return Response({
         "compilation": {
