@@ -72,4 +72,4 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "cc_opts", "source_code", "context", "owner", "parent"]
+        fields = ["slug", "compiler", "cc_opts", "source_code", "context", "owner", "parent", "diff_label"]

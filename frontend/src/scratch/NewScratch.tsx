@@ -1,5 +1,5 @@
 import { h, Fragment } from "preact"
-import { useState, useEffect } from "preact/hooks"
+import { useState, useEffect, useMemo } from "preact/hooks"
 import { useHistory } from "react-router-dom"
 
 import * as api from "../api"
@@ -20,6 +20,11 @@ export default function NewScratch() {
     const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
     const history = useHistory()
 
+    const label = useMemo(() => {
+        const labels = getLabels(asm)
+        return labels.length > 0 ? labels[0] : null
+    }, [asm])
+
     useEffect(() => {
         document.title = "new scratch | decomp.me"
     }, [])
@@ -38,6 +43,7 @@ export default function NewScratch() {
                 target_asm: asm,
                 context: context || "",
                 arch,
+                diff_label: label,
             })
 
             setErrorMsg("")
@@ -86,9 +92,23 @@ export default function NewScratch() {
                         <option value="mips">MIPS</option>
                     </Select>
 
-                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
+                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch {label && `for ${label}`}</button>
                 </div>
             </div>
         </main>
     </>
+}
+
+function getLabels(asm: string): string[] {
+    const lines = asm.split("\n")
+    const labels = []
+
+    for (const line of lines) {
+        const match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
+        if (match) {
+            labels.push(match[1])
+        }
+    }
+
+    return labels
 }

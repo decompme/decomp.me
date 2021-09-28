@@ -115,6 +115,10 @@ def create_scratch(request):
     context = data["context"]
     diff_label = data.get("diff_label")
 
+    assert isinstance(target_asm, str)
+    assert isinstance(context, str)
+    assert diff_label is None or isinstance(diff_label, str)
+
     asm = get_db_asm(target_asm)
 
     assembly, err = CompilerWrapper.assemble_asm(arch, asm)
@@ -137,7 +141,11 @@ def create_scratch(request):
 
     source_code = data.get("source_code")
     if not source_code:
-        source_code = "void func() {}\n"
+        if diff_label:
+            source_code = f"void {diff_label}(void) {{}}\n"
+        else:
+            source_code = "void func(void) {}\n"
+
         if arch == "mips":
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
 

@@ -238,7 +238,7 @@ class CompilerWrapper:
             # Run assembler
             try:
                 assemble_proc = sandbox.run_subprocess(
-                    arch_cfg,
+                    arch_cfg["assemble_cmd"],
                     mounts=[],
                     shell=True,
                     env={

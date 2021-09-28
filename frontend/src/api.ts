@@ -149,6 +149,7 @@ export type Scratch = {
     context: string,
     owner: AnonymousUser | User,
     parent: string | null, // URL
+    diff_label: string | null,
 }
 
 export type Compilation = {
