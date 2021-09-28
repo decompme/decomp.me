@@ -155,8 +155,8 @@ class AsmDifferWrapper:
             # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
             result = json.loads(display.run_diff()[0])
             result["error"] = None
-        except Exception as e:
-            logger.error(f"Error running asm-differ: {e}")
+        except Exception:
+            logger.exception("Error running asm-differ")
             return {"error": "Error running asm-differ"}
 
         return result
