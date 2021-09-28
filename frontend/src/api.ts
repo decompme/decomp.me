@@ -236,9 +236,13 @@ export function useScratch(slugOrUrl: string): {
     const [isSaved, setIsSaved] = useState(true)
     const [version, setVersion] = useState(0)
     const [localScratch, setLocalScratch] = useState<Scratch | null>(null)
-    const { data, error, mutate } = useSWR<{ scratch: Scratch }, ResponseError>(slugOrUrl, get, {
+    const { data, error, mutate } = useSWR<Scratch, ResponseError>(slugOrUrl, get, {
         refreshInterval: isSaved ? 5000 : 0,
-        onSuccess: ({ scratch }) => {
+        onSuccess: scratch => {
+            if (!scratch.source_code) {
+                throw new Error("Scratch returned from API has no source_code (is the API misbehaving?)")
+            }
+
             // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
             if (!localScratch || (isSaved && !dequal(scratch, localScratch))) {
                 console.info("Got updated scratch from server", scratch)
@@ -248,7 +252,7 @@ export function useScratch(slugOrUrl: string): {
         },
         onErrorRetry,
     })
-    const savedScratch = data?.scratch || null
+    const savedScratch = data || null
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
@@ -273,14 +277,14 @@ export function useScratch(slugOrUrl: string): {
         }
 
         return patch(`/scratch/${savedScratch.slug}`, {
-            // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
+            // TODO: api should support undefinedIfUnchanged on all fields
             source_code: localScratch.source_code,
             context: localScratch.context, //undefinedIfUnchanged("context"),
             compiler: localScratch.compiler,
             cc_opts: localScratch.cc_opts,
         }).then(() => {
             setIsSaved(true)
-            mutate({ scratch: localScratch }, true)
+            mutate(localScratch, true)
         }).catch(error => {
             console.error(error)
         })
@@ -299,7 +303,7 @@ export function useScratch(slugOrUrl: string): {
 }
 
 export async function forkScratch(parent: Scratch): Promise<Scratch> {
-    const { scratch } = await post(`/scratch/${parent.slug}/fork`, parent)
+    const scratch = await post(`/scratch/${parent.slug}/fork`, parent)
     return scratch
 }
 
@@ -336,7 +340,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             cc_opts: scratch.cc_opts,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
-        }).then(({ compilation }: { compilation: Compilation }) => {
+        }).then((compilation: Compilation) => {
             setCompilation(compilation)
         }).catch((error: ResponseError) => {
             setError(error)

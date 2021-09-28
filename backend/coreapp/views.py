@@ -64,9 +64,7 @@ class ScratchDetail(APIView):
             scratch.save()
 
         response = self.head(request, slug)
-        response.data = {
-            "scratch": ScratchWithMetadataSerializer(scratch, context={ "request": request }).data,
-        }
+        response.data = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
         return response
 
     def patch(self, request: Request, slug: str):
@@ -170,9 +168,10 @@ def create_scratch(request):
 
     db_scratch = Scratch.objects.get(slug=scratch_data["slug"])
 
-    return Response({
-        "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
-    }, status=status.HTTP_201_CREATED)
+    return Response(
+        ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 @api_view(["POST"])
 def compile(request, slug):
@@ -202,10 +201,8 @@ def compile(request, slug):
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
 
     return Response({
-        "compilation": {
-            "diff_output": diff_output,
-            "errors": errors,
-        },
+        "diff_output": diff_output,
+        "errors": errors,
     })
 
 @api_view(["POST"])
@@ -237,9 +234,10 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
-    return Response({
-        "scratch": ScratchSerializer(new_scratch, context={ "request": request }).data,
-    }, status=status.HTTP_201_CREATED)
+    return Response(
+        ScratchSerializer(new_scratch, context={ "request": request }).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 class CurrentUser(APIView):
     """
@@ -249,9 +247,7 @@ class CurrentUser(APIView):
     def get(self, request: Request):
         user = serialize_profile(request, request.profile)
         assert user["is_you"] == True
-        return Response({
-            "user": user,
-        })
+        return Response(user)
 
     def post(self, request: Request):
         """
@@ -261,10 +257,7 @@ class CurrentUser(APIView):
         if "code" in request.data:
             GitHubUser.login(request, request.data["code"])
 
-            return Response({
-                "message": "Login success",
-                "user": serialize_profile(request, request.profile),
-            })
+            return Response(serialize_profile(request, request.profile))
         else:
             logout(request)
 
@@ -273,10 +266,7 @@ class CurrentUser(APIView):
             request.profile = profile
             request.session["profile_id"] = request.profile.id
 
-            return Response({
-                "message": "Logout success",
-                "user": serialize_profile(request, request.profile),
-            })
+            return Response(serialize_profile(request, request.profile))
 
 @api_view(["GET"])
 def user(request, username):
@@ -284,6 +274,4 @@ def user(request, username):
     Gets a user's basic data
     """
 
-    return Response({
-        "user": serialize_profile(request, get_object_or_404(Profile, user__username=username)),
-    })
+    return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))

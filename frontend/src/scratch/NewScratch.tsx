@@ -39,7 +39,7 @@ export default function NewScratch() {
 
         try {
             setAwaitingResponse(true)
-            const { scratch } = await api.post("/scratch", {
+            const scratch: api.Scratch = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
                 arch,

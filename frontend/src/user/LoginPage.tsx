@@ -21,9 +21,9 @@ export default function LoginPage() {
     useEffect(() => {
         if (code) {
             setError(null)
-            api.post("/user", { code }).then(({ user }: { user: api.User }) => {
+            api.post("/user", { code }).then((user: api.User) => {
                 if (next) {
-                    mutate("/user", { user })
+                    mutate("/user", user)
                     history.replace(next)
                 } else {
                     window.close()

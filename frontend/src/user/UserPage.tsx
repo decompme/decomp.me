@@ -12,8 +12,8 @@ import styles from "./UserPage.module.css"
 export default function UserPage() {
     const { mutate } = useSWRConfig()
     const { username } = useParams<{ username: string }>()
-    const { data, error } = useSWR<{ user: api.User }>(`/users/${username}`, api.get)
-    const user = data?.user
+    const { data, error } = useSWR<api.User>(`/users/${username}`, api.get)
+    const user = data
 
     useEffect(() => {
         document.title = user?.name ? `${user.name} | decomp.me` : `@${username} | decomp.me`
@@ -21,8 +21,8 @@ export default function UserPage() {
 
     const signOut = () => {
         api.post("/user", {})
-            .then(({ user }: { user: api.AnonymousUser }) => {
-                mutate("/user", { user })
+            .then((user: api.AnonymousUser) => {
+                mutate("/user", user)
                 mutate(`/users/${username}`)
             })
             .catch(console.error)
