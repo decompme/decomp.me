@@ -142,9 +142,10 @@ def create_scratch(request):
     source_code = data.get("source_code")
     if not source_code:
         if diff_label:
-            source_code = f"void {diff_label}(void) {{}}\n"
+            func_name = diff_label
         else:
-            source_code = "void func(void) {}\n"
+            func_name = "func"
+        source_code = f"void {func_name}(void{{}}\n"
 
         if arch == "mips":
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
