@@ -51,6 +51,7 @@ def load_arches() -> Dict[str, str]:
     ret = {}
 
     ret["mips"] = "mips-linux-gnu-as -march=mips64 -o \"$OUTPUT\" \"$INPUT\""
+    ret["mipsel"] = "mips-linux-gnu-as -march=mips64 -o \"$OUTPUT\" \"$INPUT\""
 
     return ret
 
@@ -167,6 +168,7 @@ class CompilerWrapper:
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
+                logging.debug("Compilation failed: " + e.stderr)
                 return (None, e.stderr)
 
             if not object_path.exists():
