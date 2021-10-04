@@ -3,7 +3,6 @@ from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
-from django.conf import settings
 from django.contrib.auth import logout
 from rest_framework import serializers, status
 from rest_framework.views import APIView
@@ -31,6 +30,7 @@ def get_db_asm(request_asm) -> Asm:
 @api_view(["GET"])
 def compilers(request):
     return Response({
+        # compiler_ids is used by the permuter
         "compiler_ids": CompilerWrapper.available_compiler_ids(),
         "compilers": CompilerWrapper.available_compilers(),
     })

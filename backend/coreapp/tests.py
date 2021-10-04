@@ -65,7 +65,7 @@ class CompilationTests(APITestCase):
 
     def test_ido_line_endings(self):
         """
-        Ensure that compilations with \r\n line endings succeed
+        Ensure that compilations with \\r\\n line endings succeed
         """
         compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertTrue(compilation != None, "The compilation result should be non-null")
