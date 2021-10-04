@@ -98,8 +98,12 @@ class CompilerWrapper:
         return cfg["arch"] if cfg else None
 
     @staticmethod
+    def available_compiler_ids() -> Dict[str, Dict[str, Optional[str]]]:
+        return sorted(_compilers.keys())
+
+    @staticmethod
     def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
-        return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in sorted(_compilers.keys())}
+        return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
     @staticmethod
     def filter_cc_opts(compiler: str, cc_opts: str) -> str:

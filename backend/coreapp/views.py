@@ -31,6 +31,7 @@ def get_db_asm(request_asm) -> Asm:
 @api_view(["GET"])
 def compilers(request):
     return Response({
+        "compiler_ids": CompilerWrapper.available_compiler_ids(),
         "compilers": CompilerWrapper.available_compilers(),
     })
 
