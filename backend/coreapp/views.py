@@ -31,7 +31,7 @@ def get_db_asm(request_asm) -> Asm:
 @api_view(["GET"])
 def compilers(request):
     return Response({
-        "compiler_ids": CompilerWrapper.available_compilers(),
+        "compilers": CompilerWrapper.available_compilers(),
     })
 
 class ScratchDetail(APIView):
