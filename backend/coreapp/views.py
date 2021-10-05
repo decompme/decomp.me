@@ -137,7 +137,7 @@ def create_scratch(request):
     source_code = data.get("source_code")
     if not source_code:
         source_code = "void func() {}\n"
-        if arch == "mips":
+        if arch in ["mips", "mipsel"]:
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
 
     cc_opts = data.get("compiler_flags", "")
