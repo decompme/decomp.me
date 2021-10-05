@@ -114,7 +114,11 @@ class AsmDifferWrapper:
         basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
         mydump = asm_differ.preprocess_objdump_out(None, compilation.elf_object, mydump)
 
-        display = asm_differ.Display(basedump, mydump, config)
+        try:
+            display = asm_differ.Display(basedump, mydump, config)
+        except Exception:
+            logger.exception("Error running asm-differ")
+            return {"error": "Error running asm-differ"}
 
         try:
             # TODO: It would be nice to get a python object from `run_diff()` to avoid the
