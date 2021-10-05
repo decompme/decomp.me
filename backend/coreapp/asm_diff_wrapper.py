@@ -116,9 +116,13 @@ class AsmDifferWrapper:
 
         display = asm_differ.Display(basedump, mydump, config)
 
-        # TODO: It would be nice to get a python object from `run_diff()` to avoid the
-        # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
-        result = json.loads(display.run_diff()[0])
-        result["error"] = None
+        try:
+            # TODO: It would be nice to get a python object from `run_diff()` to avoid the
+            # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
+            result = json.loads(display.run_diff()[0])
+            result["error"] = None
+        except Exception:
+            logger.exception("Error running asm-differ")
+            return {"error": "Error running asm-differ"}
 
         return result
