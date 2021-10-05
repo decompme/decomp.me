@@ -50,8 +50,8 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 def load_arches() -> Dict[str, str]:
     ret = {}
 
-    ret["mips"] = "mips-linux-gnu-as -march=mips64 -o \"$OUTPUT\" \"$INPUT\""
-    ret["mipsel"] = "mips-linux-gnu-as -march=mips64 -o \"$OUTPUT\" \"$INPUT\""
+    ret["mips"] = "mips-linux-gnu-as -march=mips64 -mabi=64 -o \"$OUTPUT\" \"$INPUT\""
+    ret["mipsel"] = "mips-linux-gnu-as -march=mips64 -mabi=64 -o \"$OUTPUT\" \"$INPUT\""
 
     return ret
 
