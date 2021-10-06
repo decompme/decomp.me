@@ -50,7 +50,7 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 def load_arches() -> Dict[str, str]:
     ret = {}
 
-    ret["mips"] = "mips-linux-gnu-as -march=mips64 -mabi=64 -o \"$OUTPUT\" \"$INPUT\""
+    ret["mips"] = "mips-linux-gnu-as -march=vr4300 -o \"$OUTPUT\" \"$INPUT\""
     ret["mipsel"] = "mips-linux-gnu-as -march=mips64 -mabi=64 -o \"$OUTPUT\" \"$INPUT\""
 
     return ret
@@ -227,6 +227,7 @@ class CompilerWrapper:
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
+                logger.exception("Error running asm-differ")
                 return (None, e.stderr)
 
             # Assembly failed
