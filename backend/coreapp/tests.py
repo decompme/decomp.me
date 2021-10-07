@@ -1,3 +1,5 @@
+from django.test.testcases import TestCase
+from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -65,11 +67,27 @@ class CompilationTests(APITestCase):
 
     def test_ido_line_endings(self):
         """
-        Ensure that compilations with \r\n line endings succeed
+        Ensure that compilations with \\r\\n line endings succeed
         """
         compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertTrue(compilation != None, "The compilation result should be non-null")
         self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation")
+
+
+class M2CTests(TestCase):
+    """
+    Ensure that pointers are next to types (left style)
+    """
+    def test_left_pointer_style(self):
+        c_code = M2CWrapper.decompile("""
+        glabel func
+        li $t6,1
+        jr $ra
+        sw $t6,0($a0)
+        """, "")
+
+        self.assertTrue(c_code is not None, "The decompilation should not fail")
+        self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
 
 
 class UserTests(APITestCase):

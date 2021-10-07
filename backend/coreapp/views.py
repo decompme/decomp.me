@@ -3,7 +3,6 @@ from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
-from django.conf import settings
 from django.contrib.auth import logout
 from rest_framework import serializers, status
 from rest_framework.views import APIView
@@ -31,7 +30,9 @@ def get_db_asm(request_asm) -> Asm:
 @api_view(["GET"])
 def compilers(request):
     return Response({
-        "compiler_ids": CompilerWrapper.available_compilers(),
+        # compiler_ids is used by the permuter
+        "compiler_ids": CompilerWrapper.available_compiler_ids(),
+        "compilers": CompilerWrapper.available_compilers(),
     })
 
 class ScratchDetail(APIView):
@@ -140,9 +141,10 @@ def create_scratch(request):
     source_code = data.get("source_code")
     if not source_code:
         if diff_label:
-            source_code = f"void {diff_label}(void) {{}}\n"
+            func_name = diff_label
         else:
-            source_code = "void func(void) {}\n"
+            func_name = "func"
+        source_code = f"void {func_name}(void{{}}\n"
 
         if arch == "mips":
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
