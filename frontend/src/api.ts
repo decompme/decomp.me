@@ -68,6 +68,8 @@ export async function get(url: string, useCacheIfFresh = false) {
     return await response.json()
 }
 
+const getCached = (url: string) => get(url, true)
+
 export async function post(url: string, json: Json) {
     if (url.startsWith("/")) {
         url = API_BASE + url
@@ -367,5 +369,21 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         debouncedCompile,
         isCompiling: isCompileRequestPending || debouncedCompile.isPending(),
         error,
+    }
+}
+
+export function useArches(): Record<string, string> {
+    const { data, error } = useSWR<{ "arches": Record<string, string> }, ResponseError>("/compilers", getCached, {
+        refreshInterval: 0,
+        revalidateOnFocus: false,
+        onErrorRetry,
+    })
+
+    if (error) {
+        console.error("useArches error", error)
+    }
+
+    return data?.arches || {
+        "mips": "MIPS (Nintendo 64)",
     }
 }

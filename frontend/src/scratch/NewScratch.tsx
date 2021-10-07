@@ -17,8 +17,13 @@ export default function NewScratch() {
     const [errorMsg, setErrorMsg] = useState("")
     const [asm, setAsm] = useLocalStorage("NewScratch.asm", "")
     const [context, setContext] = useLocalStorage("NewScratch.context", "")
-    const [arch, setArch] = useLocalStorage("NewScratch.arch", "mips")
+    const [arch, setArch] = useState<string>()
     const history = useHistory()
+    const arches = api.useArches()
+
+    if (!arch) {
+        setArch(Object.keys(arches)[0])
+    }
 
     const label = useMemo(() => {
         const labels = getLabels(asm)
@@ -89,8 +94,7 @@ export default function NewScratch() {
 
                 <div class={styles.actions}>
                     <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
-                        <option value="mips">MIPS (Nintendo 64)</option>
-                        <option value="mipsel">MIPS (LE)</option>
+                        {Object.entries(arches).map(([id, name]) => <option value={id}>{name}</option>)}
                     </Select>
 
                     <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch {label && `for ${label}`}</button>

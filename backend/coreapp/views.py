@@ -4,6 +4,7 @@ from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -19,6 +20,8 @@ from .github import GitHubUser
 from .middleware import Request
 from .decorators.django import condition
 
+boot_time = now()
+
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
     asm, _ = Asm.objects.get_or_create(hash=h, defaults={
@@ -26,14 +29,19 @@ def get_db_asm(request_asm) -> Asm:
     })
     return asm
 
+class CompilersDetail(APIView):
+    @condition(last_modified_func=lambda request: boot_time)
+    def head(self, request: Request):
+        return Response()
 
-@api_view(["GET"])
-def compilers(request):
-    return Response({
-        # compiler_ids is used by the permuter
-        "compiler_ids": CompilerWrapper.available_compiler_ids(),
-        "compilers": CompilerWrapper.available_compilers(),
-    })
+    @condition(last_modified_func=lambda request: boot_time)
+    def get(self, request: Request):
+        return Response({
+            # compiler_ids is used by the permuter
+            "compiler_ids": CompilerWrapper.available_compiler_ids(),
+            "compilers": CompilerWrapper.available_compilers(),
+            "arches": CompilerWrapper.available_arches(),
+        })
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778

@@ -8,6 +8,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +48,28 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
     return ret
 
 
-def load_arches() -> Dict[str, Dict[str, str]]:
+@dataclass
+class Arch:
+    name: str
+    assemble_cmd: str = None
+    objdump_cmd: str = None
+    nm_cmd: str = None
+
+
+def load_arches() -> Dict[str, Arch]:
     return {
-        "mips": {
-            "assemble_cmd": 'mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
-            "objdump_cmd": "mips-linux-gnu-objdump",
-            "nm_cmd": "mips-linux-gnu-nm",
-        },
-        "mipsel": {
-            "assemble_cmd": 'mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
-            "objdump_cmd": "mips-linux-gnu-objdump",
-            "nm_cmd": "mips-linux-gnu-nm",
-        }
+        "mips": Arch(
+            "MIPS (Nintendo 64)",
+            assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+        ),
+        "mipsel": Arch(
+            "MIPS (LE)",
+            assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+        ),
     }
 
 
@@ -66,18 +77,18 @@ _compilers = load_compilers()
 _arches = load_arches()
 
 def get_assemble_cmd(arch: str) -> Optional[str]:
-    if arch in _arches and "assemble_cmd" in _arches[arch]:
-        return _arches[arch]["assemble_cmd"]
+    if arch in _arches:
+        return _arches[arch].assemble_cmd
     return None
 
 def get_nm_command(arch: str) -> Optional[str]:
-    if arch in _arches and "nm_cmd" in _arches[arch]:
-        return _arches[arch]["nm_cmd"]
+    if arch in _arches:
+        return _arches[arch].nm_cmd
     return None
 
 def get_objdump_command(arch: str) -> Optional[str]:
-    if arch in _arches and "objdump_cmd" in _arches[arch]:
-        return _arches[arch]["objdump_cmd"]
+    if arch in _arches:
+        return _arches[arch].objdump_cmd
     return None
 
 def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
@@ -107,6 +118,9 @@ class CompilerWrapper:
     @staticmethod
     def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
         return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
+
+    def available_arches() -> Dict[str, str]:
+        return {k: v.name for k, v in _arches.items()}
 
     @staticmethod
     def filter_cc_opts(compiler: str, cc_opts: str) -> str:
@@ -246,7 +260,7 @@ class CompilerWrapper:
             # Run assembler
             try:
                 assemble_proc = sandbox.run_subprocess(
-                    arch_cfg["assemble_cmd"],
+                    arch_cfg.assemble_cmd,
                     mounts=[],
                     shell=True,
                     env={
