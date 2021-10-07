@@ -35,6 +35,29 @@ nop"""
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
+    def test_n64_func(self):
+        """
+        Ensure that functions with t6/t7 registers can be assembled.
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'context': '',
+            'target_asm':
+"""
+.text
+glabel func_8019B378
+lui $t6, %hi(sOcarinaSongAppendPos)
+lbu $t6, %lo(sOcarinaSongAppendPos)($t6)
+lui $at, %hi(D_801D702C)
+jr  $ra
+sb  $t6, %lo(D_801D702C)($at)
+"""
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Scratch.objects.count(), 1)
+
 class CompilationTests(APITestCase):
     def test_simple_compilation(self):
         """

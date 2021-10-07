@@ -48,15 +48,18 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 
 
 def load_arches() -> Dict[str, Dict[str, str]]:
-    ret = {}
-
-    ret["mips"] = {
-        "assemble_cmd": "mips-linux-gnu-as -march=vr4300 -mabi=32 -o \"$OUTPUT\" \"$INPUT\"",
-        "objdump_cmd": "mips-linux-gnu-objdump",
-        "nm_cmd": "mips-linux-gnu-nm",
+    return {
+        "mips": {
+            "assemble_cmd": 'mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
+            "objdump_cmd": "mips-linux-gnu-objdump",
+            "nm_cmd": "mips-linux-gnu-nm",
+        },
+        "mipsel": {
+            "assemble_cmd": 'mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
+            "objdump_cmd": "mips-linux-gnu-objdump",
+            "nm_cmd": "mips-linux-gnu-nm",
+        }
     }
-
-    return ret
 
 
 _compilers = load_compilers()
@@ -189,6 +192,7 @@ class CompilerWrapper:
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
+                logging.debug("Compilation failed: " + e.stderr)
                 return (None, e.stderr)
 
             if not object_path.exists():
@@ -252,6 +256,7 @@ class CompilerWrapper:
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
+                logger.exception("Error running asm-differ")
                 return (None, e.stderr)
 
             # Assembly failed

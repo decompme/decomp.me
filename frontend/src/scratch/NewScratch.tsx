@@ -89,7 +89,8 @@ export default function NewScratch() {
 
                 <div class={styles.actions}>
                     <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
-                        <option value="mips">MIPS</option>
+                        <option value="mips">MIPS (Nintendo 64)</option>
+                        <option value="mipsel">MIPS (LE)</option>
                     </Select>
 
                     <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch {label && `for ${label}`}</button>
