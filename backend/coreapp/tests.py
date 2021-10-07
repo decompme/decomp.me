@@ -74,7 +74,7 @@ class CompilationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
-        slug = response.json()["scratch"]["slug"]
+        slug = response.json()["slug"]
 
         compile_dict = {
             'slug': slug,
@@ -260,13 +260,13 @@ class UserTests(APITestCase):
             'target_asm': "jr $ra\nnop\n"
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        slug = response.json()["scratch"]["slug"]
+        slug = response.json()["slug"]
 
         self.test_github_login()
 
         response = self.client.get(f"/api/scratch/{slug}")
-        self.assertEqual(response.json()["scratch"]["owner"]["username"], self.GITHUB_USER["login"])
-        self.assertEqual(response.json()["scratch"]["owner"]["is_you"], True)
+        self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
+        self.assertEqual(response.json()["owner"]["is_you"], True)
 
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
