@@ -8,12 +8,13 @@ import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
 import styles from "./CompilerButton.module.css"
 
 export type Props = {
+    arch: CompilerOptsProps["arch"],
     value: CompilerOptsProps["value"],
     onChange: CompilerOptsProps["onChange"],
     disabled?: boolean,
 }
 
-export default function CompilerButton({ value, onChange, disabled }: Props) {
+export default function CompilerButton({ arch, value, onChange, disabled }: Props) {
     const [isOpen, setOpen] = useState(false)
 
     const close = () => setOpen(false)
@@ -51,7 +52,7 @@ export default function CompilerButton({ value, onChange, disabled }: Props) {
                     transition={{ type: "spring", duration: 0.3 }}
                     {...layerProps}
                 >
-                    <CompilerOpts isPopup={true} value={value} onChange={onChange} />
+                    <CompilerOpts isPopup={true} arch={arch} value={value} onChange={onChange} />
                     <Arrow size={12} backgroundColor="#292e35" {...arrowProps} />
                 </motion.div>}
             </AnimatePresence>

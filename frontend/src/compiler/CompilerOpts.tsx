@@ -4,8 +4,8 @@ import Skeleton from "react-loading-skeleton"
 
 import Select from "../Select"
 
-import compilers from "./compilers"
-import PresetSelect, { presets } from "./PresetSelect"
+import { useCompilersForArch } from "./compilers"
+import PresetSelect, { PRESETS } from "./PresetSelect"
 import styles from "./CompilerOpts.module.css"
 
 interface IOptsContext {
@@ -63,15 +63,16 @@ export type CompilerOptsT = {
 }
 
 export type Props = {
+    arch?: string,
     value: CompilerOptsT,
     onChange: (value: CompilerOptsT) => void,
     title?: string,
     isPopup?: boolean,
 }
 
-export default function CompilerOpts({ value, onChange, title, isPopup }: Props) {
-    const [compiler, setCompiler] = useState((value && value.compiler) || presets[0].compiler)
-    let [opts, setOpts] = useState((value && value.cc_opts) || presets[0].opts)
+export default function CompilerOpts({ arch, value, onChange, title, isPopup }: Props) {
+    const [compiler, setCompiler] = useState((value && value.compiler) || PRESETS[0].compiler)
+    let [opts, setOpts] = useState((value && value.cc_opts) || PRESETS[0].opts)
 
     useEffect(() => {
         onChange({
@@ -100,16 +101,27 @@ export default function CompilerOpts({ value, onChange, title, isPopup }: Props)
     }}>
         <div class={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <PresetSelect arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
         <div class={styles.container} data-is-popup={isPopup}>
-            <OptsEditor compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <OptsEditor arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
     </OptsContext.Provider>
 }
 
-function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
-    const compilerComp = compilers[compiler]
+function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
+    arch?: string,
+    compiler: string,
+    setCompiler: (compiler: string) => void,
+    opts: string,
+    setOpts: (opts: string) => void,
+}) {
+    const compilers = useCompilersForArch(arch)
+    const compilerModule = compilers.find(c => c.id === compiler)
+
+    if (!compilerModule) {
+        console.warn("compiler not supported for arch?", compiler)
+    }
 
     return <div>
         <div class={styles.row}>
@@ -120,7 +132,7 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
                 {Object.values(compilers).map(c => <option
                     key={c.id}
                     value={c.id}
-                    selected={c.name === compilerComp.name}
+                    selected={c.id === compilerModule?.id}
                 >
                     {c.name}
                 </option>)}
@@ -136,7 +148,7 @@ function OptsEditor({ compiler, setCompiler, opts, setOpts }) {
         </div>
 
         <div class={styles.flags}>
-            {compiler ? <compilerComp.Flags /> : <Skeleton />}
+            {(compiler && compilerModule) ? <compilerModule.Flags /> : <Skeleton />}
         </div>
     </div>
 }

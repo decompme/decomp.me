@@ -387,3 +387,19 @@ export function useArches(): Record<string, string> {
         "mips": "MIPS (Nintendo 64)",
     }
 }
+
+export function useCompilers(): Record<string, { arch: string | null }> {
+    const { data, error } = useSWR("/compilers", getCached, {
+        refreshInterval: 0,
+        revalidateOnFocus: false,
+        onErrorRetry,
+    })
+
+    if (error) {
+        console.error("useCompilers error", error)
+    }
+
+    return data?.compilers || {
+        "gcc2.8.1": { "arch": "mips" },
+    }
+}

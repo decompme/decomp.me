@@ -34,6 +34,7 @@ export default function Scratch({ slug }: Props) {
     const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
+    const compilers = api.useCompilers()
 
     const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
         setScratch({
@@ -81,6 +82,8 @@ export default function Scratch({ slug }: Props) {
         </div>
     }
 
+    const arch = compilers[scratch.compiler]?.arch
+
     return <div class={styles.container}>
         <resizer.Container className={styles.resizer}>
             <resizer.Section minSize={500}>
@@ -97,7 +100,7 @@ export default function Scratch({ slug }: Props) {
                                 <AsyncButton onPress={compile} forceLoading={isCompiling}>
                                     <SyncIcon size={16} /> Compile
                                 </AsyncButton>
-                                <CompilerButton value={scratch} onChange={setCompilerOpts} />
+                                <CompilerButton arch={arch} value={scratch} onChange={setCompilerOpts} />
                             </>}
                         </div>
 

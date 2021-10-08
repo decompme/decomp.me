@@ -1,8 +1,9 @@
 import { h } from "preact"
 
 import Select from "../Select"
+import { useCompilersForArch } from "./compilers"
 
-export const presets = [
+export const PRESETS = [
     {
         name: "Paper Mario",
         compiler: "gcc2.8.1",
@@ -25,22 +26,31 @@ export const presets = [
     },
 ]
 
-export default function PresetSelect({ compiler, opts, setCompiler, setOpts }) {
-    const selectedPreset = presets.find(p => p.compiler === compiler && p.opts === opts)
+export default function PresetSelect({ arch, compiler, opts, setCompiler, setOpts }: {
+    arch: string,
+    compiler: string,
+    opts: string,
+    setCompiler: (compiler: string) => void,
+    setOpts: (opts: string) => void,
+}) {
+    const compilers = useCompilersForArch(arch)
+
+    const presets = PRESETS.filter(p => compilers.find(c => c.id === p.compiler) !== undefined)
+    const selectedPreset = PRESETS.find(p => p.compiler === compiler && p.opts === opts)
 
     return <Select onChange={e => {
         if ((e.target as HTMLSelectElement).value === "custom") {
             return
         }
 
-        const preset = presets[parseInt((e.target as HTMLSelectElement).value, 10)]
+        const preset = presets.find(p => p.name === (e.target as HTMLSelectElement).value)
 
         setOpts(preset.opts)
         setCompiler(preset.compiler)
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
-        {presets.map((preset, idx) =>
-            <option key={idx} value={idx} selected={preset === selectedPreset}>
+        {presets.map(preset =>
+            <option key={preset.name} value={preset.name} selected={preset === selectedPreset}>
                 {preset.name}
             </option>
         )}
