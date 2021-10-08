@@ -1,6 +1,7 @@
 import { h, Fragment } from "preact"
 import { useState, useEffect, useMemo } from "preact/hooks"
 import { useHistory } from "react-router-dom"
+import toast from "react-hot-toast"
 
 import * as api from "../api"
 import Nav from "../Nav"
@@ -8,7 +9,6 @@ import Editor from "./Editor"
 import Select from "../Select"
 import { useLocalStorage } from "../hooks"
 import styles from "./NewScratch.module.css"
-import toast from "react-hot-toast"
 
 // TODO: use AsyncButton with custom error handler?
 
@@ -21,14 +21,15 @@ export default function NewScratch() {
     const history = useHistory()
     const arches = api.useArches()
 
-    if (!arch) {
-        setArch(Object.keys(arches)[0])
-    }
-
-    const label = useMemo(() => {
+    const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
         return labels.length > 0 ? labels[0] : null
     }, [asm])
+    const [label, setLabel] = useState<string>("")
+
+    if (!arch) {
+        setArch(Object.keys(arches)[0])
+    }
 
     useEffect(() => {
         document.title = "new scratch | decomp.me"
@@ -48,7 +49,7 @@ export default function NewScratch() {
                 target_asm: asm,
                 context: context || "",
                 arch,
-                diff_label: label || "",
+                diff_label: label || defaultLabel || "",
             })
 
             setErrorMsg("")
@@ -97,7 +98,19 @@ export default function NewScratch() {
                         {Object.entries(arches).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
                     </Select>
 
-                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch {label && `for ${label}`}</button>
+                    <div class={styles.textbox}>
+                        <label>Label</label>
+                        <input
+                            type="text"
+                            value={label}
+                            placeholder={defaultLabel}
+                            onChange={e => setLabel((e.target as HTMLInputElement).value)}
+                        />
+                    </div>
+
+                    <span class={styles.actionspacer} />
+
+                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
                 </div>
             </div>
         </main>

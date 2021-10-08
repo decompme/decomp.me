@@ -55,6 +55,10 @@
     padding: var(--s2);
 }
 
+.actionspacer {
+    flex: 1;
+}
+
 .errormsg {
     padding-left: var(--s2);
     padding-right: var(--s2);
@@ -63,4 +67,29 @@
     flex: 1;
     font-family: monospace;
     white-space: pre;
+}
+
+.textbox {
+    background: #00000044;
+    box-shadow: 0 2px 16px #00000022;
+    border: 0;
+
+    border-radius: .5rem;
+
+    overflow: hidden;
+}
+
+.textbox * { padding: .6em 1em }
+
+.textbox label {
+    background:rgba(0, 0, 0, 0.1);
+}
+
+.textbox input {
+    background: inherit;
+    font: inherit;
+    border: 0;
+
+    font-family: monospace;
+    font-size: .8rem;
 }
