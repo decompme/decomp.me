@@ -48,7 +48,7 @@ export default function NewScratch() {
                 target_asm: asm,
                 context: context || "",
                 arch,
-                diff_label: label,
+                diff_label: label || "",
             })
 
             setErrorMsg("")
@@ -94,7 +94,7 @@ export default function NewScratch() {
 
                 <div class={styles.actions}>
                     <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
-                        {Object.entries(arches).map(([id, name]) => <option value={id}>{name}</option>)}
+                        {Object.entries(arches).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
                     </Select>
 
                     <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch {label && `for ${label}`}</button>
