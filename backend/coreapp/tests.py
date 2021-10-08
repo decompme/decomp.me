@@ -226,24 +226,23 @@ class UserTests(APITestCase):
 
         # verify we are logged in
         response = self.client.get(self.current_user_url)
-        self.assertEqual(response.json()["user"]["is_anonymous"], False)
+        self.assertEqual(response.json()["is_anonymous"], False)
 
         self.assertEqual(Profile.objects.count(), 1) # logged-in
 
         # log out
         response = self.client.post(self.current_user_url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["message"], "Logout success")
-        self.assertEqual(response.json()["user"]["is_you"], True)
-        self.assertEqual(response.json()["user"]["is_anonymous"], True)
+        self.assertEqual(response.json()["is_you"], True)
+        self.assertEqual(response.json()["is_anonymous"], True)
 
         self.assertEqual(Profile.objects.count(), 2) # logged-out
 
         for i in range(3):
             # verify we are logged out
             response = self.client.get(self.current_user_url)
-            self.assertEqual(response.json()["user"]["is_you"], True)
-            self.assertEqual(response.json()["user"]["is_anonymous"], True)
+            self.assertEqual(response.json()["is_you"], True)
+            self.assertEqual(response.json()["is_anonymous"], True)
 
         # all the above GETs should have used the same logged-out profile
         self.assertEqual(Profile.objects.count(), 2)
