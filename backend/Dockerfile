@@ -1,4 +1,4 @@
-FROM python:3.9 AS nsjail
+FROM python:3.9-buster AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
     autoconf \
@@ -21,7 +21,7 @@ RUN git clone --recursive --shallow-submodules --depth=1 --branch=3.0 "https://g
     && mv /nsjail/nsjail /bin \
     && rm -rf -- /nsjail
 
-FROM python:3.9 AS build
+FROM python:3.9-buster AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
@@ -33,8 +33,6 @@ RUN apt-get -y update && apt-get install -y \
 COPY requirements.txt /backend/requirements.txt
 
 RUN python3 -m pip install -r /backend/requirements.txt --no-cache-dir
-
-RUN bash /backend/compilers/download.sh
 
 COPY --from=nsjail /bin/nsjail /bin/nsjail
 
