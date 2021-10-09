@@ -51,9 +51,9 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 @dataclass
 class Arch:
     name: str
-    assemble_cmd: str = None
-    objdump_cmd: str = None
-    nm_cmd: str = None
+    assemble_cmd: Optional[str] = None
+    objdump_cmd: Optional[str] = None
+    nm_cmd: Optional[str] = None
 
 
 def load_arches() -> Dict[str, Arch]:
@@ -112,13 +112,14 @@ class CompilerWrapper:
         return cfg["arch"] if cfg else None
 
     @staticmethod
-    def available_compiler_ids() -> Dict[str, Dict[str, Optional[str]]]:
+    def available_compiler_ids() -> List[str]:
         return sorted(_compilers.keys())
 
     @staticmethod
     def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
         return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
+    @staticmethod
     def available_arches() -> Dict[str, str]:
         return {k: v.name for k, v in _arches.items()}
 
