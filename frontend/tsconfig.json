@@ -1,11 +1,9 @@
 {
     "compilerOptions": {
-        "jsx": "preserve",
-        "jsxFactory": "h",
-        "jsxFragmentFactory": "Fragment",
+        "jsx": "react-jsx",
         "module": "esnext",
         "moduleResolution": "node",
         "noEmit": true,
-        "lib": ["ESNext"]
+    "lib": ["ESNext", "DOM"]
     },
 }

@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useState } from "preact/hooks"
+import { useState } from "react"
 import { useLayer, Arrow } from "react-laag"
 import { motion, AnimatePresence } from "framer-motion"
 import { CpuIcon } from "@primer/octicons-react"
@@ -35,7 +34,7 @@ export default function CompilerButton({ arch, value, onChange, disabled }: Prop
                 if (!disabled)
                     setOpen(!isOpen)
             }}
-            style={isOpen && { color: "#fff" }}
+            style={isOpen ? { color: "#fff" } : {}}
             disabled={disabled}
         >
             <CpuIcon size={16} />

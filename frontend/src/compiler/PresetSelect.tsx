@@ -1,4 +1,3 @@
-import { h } from "preact"
 
 import Select from "../Select"
 import { useCompilersForArch } from "./compilers"

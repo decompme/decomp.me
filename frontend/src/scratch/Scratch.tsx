@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useEffect } from "preact/hooks"
+import { useEffect } from "react"
 import * as resizer from "react-simple-resizer"
 import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
 import { Link } from "react-router-dom"
@@ -72,19 +71,19 @@ export default function Scratch({ slug }: Props) {
 
     if (error?.status === 404) {
         // TODO
-        return <div class={styles.container}>
+        return <div className={styles.container}>
             Scratch not found
         </div>
     } else if (!scratch) {
         // TODO
-        return <div class={styles.container}>
+        return <div className={styles.container}>
             Loading scratch...
         </div>
     }
 
     const arch = compilers[scratch.compiler]?.arch
 
-    return <div class={styles.container}>
+    return <div className={styles.container}>
         <resizer.Container className={styles.resizer}>
             <resizer.Section minSize={500}>
                 <resizer.Container
@@ -92,9 +91,9 @@ export default function Scratch({ slug }: Props) {
                     style={{ height: "100%" }}
                 >
                     <resizer.Section minSize={200} className={styles.sourceCode}>
-                        <div class={styles.sectionHeader}>
+                        <div className={styles.sectionHeader}>
                             Source
-                            <span class={styles.grow} />
+                            <span className={styles.grow} />
 
                             {scratch.compiler !== "" && <>
                                 <AsyncButton onPress={compile} forceLoading={isCompiling}>
@@ -104,7 +103,7 @@ export default function Scratch({ slug }: Props) {
                             </>}
                         </div>
 
-                        <div class={styles.metadata}>
+                        <div className={styles.metadata}>
                             <div>
                                 Owner
                                 <UserLink user={scratch.owner} />
@@ -144,7 +143,7 @@ export default function Scratch({ slug }: Props) {
                         size={1}
                         style={{ cursor: "row-resize" }}
                     >
-                        <div class={styles.sectionHeader}>
+                        <div className={styles.sectionHeader}>
                             Context
                         </div>
                     </resizer.Bar>
@@ -174,7 +173,7 @@ export default function Scratch({ slug }: Props) {
 
             <resizer.Section className={styles.diffSection} minSize={400}>
                 {scratch.compiler === "" ? <ChooseACompiler onCommit={setCompilerOpts} /> : <>
-                    <div class={styles.sectionHeader}>
+                    <div className={styles.sectionHeader}>
                         Diff
                         {compilation && <DiffExplanation />}
                     </div>
@@ -217,7 +216,7 @@ function ScratchLink({ slug }: { slug: string }) {
 }
 
 function DiffExplanation() {
-    return <span class={`${styles.diffExplanation} ${styles.visible}`}>
+    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
         (left is target, right is your code)
     </span>
 }

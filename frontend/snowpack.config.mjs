@@ -16,17 +16,13 @@ export default {
         src: { url: "/dist" },
     },
     plugins: [
-        "@prefresh/snowpack",
+        "@snowpack/plugin-react-refresh",
         "@snowpack/plugin-postcss",
     ],
     routes: [
         /* Route everything to index.html */
         { match: "routes", src: ".*", dest: "/index.html" },
     ],
-    alias: {
-        "react": "preact/compat",
-        "react-dom": "preact/compat",
-    },
     devOptions: {
         open: "none",
     }

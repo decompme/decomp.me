@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "preact/hooks"
+import { useState, useCallback, useEffect } from "react"
 import useSWR, { Revalidator, RevalidatorOptions } from "swr"
 import { dequal } from "dequal/lite"
 import { useHistory } from "react-router"

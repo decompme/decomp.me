@@ -1,4 +1,3 @@
-import { h, Fragment } from "preact"
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
 export const name = "EE GCC 2.96"

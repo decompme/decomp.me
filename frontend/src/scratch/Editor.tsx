@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState } from "react"
 import Skeleton from "react-loading-skeleton"
 import MonacoEditor, { useMonaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
@@ -45,7 +44,7 @@ export default function Editor({ language, forceLoading, value, valueVersion, on
     }, [valueVersion, model]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <>
-        <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} class={styles.monacoContainer}>
+        <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} className={styles.monacoContainer}>
             <MonacoEditor
                 language={language === "c" ? "custom_c" : "custom_asm"}
                 theme="custom"

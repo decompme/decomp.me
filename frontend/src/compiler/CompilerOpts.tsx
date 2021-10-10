@@ -1,5 +1,4 @@
-import { h, createContext } from "preact"
-import { useState, useContext, useEffect } from "preact/hooks"
+import { createContext, useState, useContext, useEffect } from "react"
 import Skeleton from "react-loading-skeleton"
 
 import Select from "../Select"
@@ -20,18 +19,18 @@ export function Checkbox({ flag, description }) {
 
     const isChecked = checkFlag(flag)
 
-    return <div class={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
+    return <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
         <input type="checkbox" checked={isChecked} onChange={() => setFlag(flag, !isChecked)} />
         <label>{flag}</label>
-        <span class={styles.flagDescription}>{description}</span>
+        <span className={styles.flagDescription}>{description}</span>
     </div>
 }
 
 export function FlagSet({ name, children }) {
     const { setFlag } = useContext(OptsContext)
 
-    return <div class={styles.flagSet}>
-        <div class={styles.flagSetName}>{name}</div>
+    return <div className={styles.flagSet}>
+        <div className={styles.flagSetName}>{name}</div>
         <Select
             onChange={event => {
                 for (const child of children) {
@@ -99,11 +98,11 @@ export default function CompilerOpts({ arch, value, onChange, title, isPopup }: 
             setOpts(opts)
         },
     }}>
-        <div class={styles.header} data-is-popup={isPopup}>
+        <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
             <PresetSelect arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
-        <div class={styles.container} data-is-popup={isPopup}>
+        <div className={styles.container} data-is-popup={isPopup}>
             <OptsEditor arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
     </OptsContext.Provider>
@@ -124,9 +123,9 @@ function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
     }
 
     return <div>
-        <div class={styles.row}>
+        <div className={styles.row}>
             <Select
-                class={styles.compilerSelect}
+                className={styles.compilerSelect}
                 onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
             >
                 {Object.values(compilers).map(c => <option
@@ -140,14 +139,14 @@ function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
 
             <input
                 type="text"
-                class={styles.textbox}
+                className={styles.textbox}
                 value={opts}
                 placeholder="no arguments"
                 onChange={e => setOpts((e.target as HTMLInputElement).value)}
             />
         </div>
 
-        <div class={styles.flags}>
+        <div className={styles.flags}>
             {(compiler && compilerModule) ? <compilerModule.Flags /> : <Skeleton />}
         </div>
     </div>

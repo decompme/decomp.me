@@ -1,4 +1,3 @@
-import { h } from "preact"
 import { Link } from "react-router-dom"
 
 import * as api from "../api"
@@ -21,7 +20,7 @@ export default function UserLink({ user, hideYou }: Props) {
             title={`@${user.username}`}
             className={styles.user}
         >
-            {user.avatar_url && <img class={styles.avatar} src={user.avatar_url} alt="User avatar" />}
+            {user.avatar_url && <img className={styles.avatar} src={user.avatar_url} alt="User avatar" />}
             <span>{user.name} {!hideYou && user.is_you && <i>(you)</i>}</span>
         </Link>
     }

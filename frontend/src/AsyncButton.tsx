@@ -1,5 +1,4 @@
-import { h, ComponentChildren } from "preact"
-import { useState, useCallback } from "preact/hooks"
+import { ReactNode, useState, useCallback } from "react"
 import { useLayer, Arrow } from "react-laag"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -9,7 +8,7 @@ export type Props = {
     onPress: () => Promise<unknown>,
     forceLoading?: boolean,
     disabled?: boolean,
-    children: ComponentChildren,
+    children: ReactNode,
 }
 
 export default function AsyncButton({ onPress, disabled, forceLoading, children }: Props) {

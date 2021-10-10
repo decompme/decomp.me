@@ -1,6 +1,8 @@
-import { h, render } from "preact"
-import "preact/devtools"
+import React from "react"
+import { render } from "react-dom"
 import App from "./App.js"
+
+window.React = React
 
 const root = document.getElementById("root")
 

@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useState, useEffect } from "preact/hooks"
+import { useState, useEffect } from "react"
 import { useHistory } from "react-router-dom"
 import { useSWRConfig } from "swr"
 
@@ -36,9 +35,9 @@ export default function LoginPage() {
     }, [code, history, mutate, next])
 
     return <>
-        <main class={styles.container}>
-            {error ? <div class={styles.card}>
-                <p class={styles.error}>
+        <main className={styles.container}>
+            {error ? <div className={styles.card}>
+                <p className={styles.error}>
                     Sign-in error.<br />
                     {error.message}
                 </p>
@@ -48,7 +47,7 @@ export default function LoginPage() {
                 <GitHubLoginButton />
             </div> : code ? <>
                 Signing in...
-            </> : <div class={styles.card}>
+            </> : <div className={styles.card}>
                 <p>
                     Sign in to decomp.me
                 </p>

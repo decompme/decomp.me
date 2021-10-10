@@ -1,4 +1,3 @@
-import { h, Fragment } from "preact"
 import { useParams } from "react-router-dom"
 
 import Nav from "../Nav"

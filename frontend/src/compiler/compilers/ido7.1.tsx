@@ -1,4 +1,3 @@
-import { h, Fragment } from "preact"
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
 export const name = "IDO 7.1"

@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useEffect } from "preact/hooks"
+import { useEffect } from "react"
 import { useParams } from "react-router-dom"
 import useSWR, { useSWRConfig } from "swr"
 import { MarkGithubIcon } from "@primer/octicons-react"
@@ -31,16 +30,16 @@ export default function UserPage() {
     if (user) {
         return <>
             <Nav />
-            <main class={styles.pageContainer}>
-                <section class={styles.userRow}>
+            <main className={styles.pageContainer}>
+                <section className={styles.userRow}>
                     {user.avatar_url && <img
-                        class={styles.avatar}
+                        className={styles.avatar}
                         src={user.avatar_url}
                         alt="User avatar"
                     />}
-                    <h1 class={styles.name}>
+                    <h1 className={styles.name}>
                         <div>{user.name} {user.is_you && <i>(you)</i>}</div>
-                        <div class={styles.username}>
+                        <div className={styles.username}>
                             @{user.username}
 
                             {user.github_html_url && <a href={user.github_html_url}>
@@ -56,7 +55,7 @@ export default function UserPage() {
                 </section>*/}
 
                 {user.is_you && <section>
-                    <button class="red" onClick={signOut}>
+                    <button className="red" onClick={signOut}>
                         Sign out
                     </button>
                 </section>}
@@ -66,15 +65,15 @@ export default function UserPage() {
         // TODO: better error handling
         return <>
             <Nav />
-            <main class={styles.pageContainer}>
-                {error}
+            <main className={styles.pageContainer}>
+                {error.toString()}
             </main>
         </>
     } else {
         // TODO: skeleton
         return <>
             <Nav />
-            <main class={styles.pageContainer}>
+            <main className={styles.pageContainer}>
                 Loading...
             </main>
         </>
@@ -87,7 +86,7 @@ export function ScratchList({ user }: { user: api.User }) {
     const { data: scratches, error } = useSWR<api.Scratch[]>(`/user/${user.username}/scratches`, api.get)
 
     if (scratches) {
-        return <ul class={styles.scratchList}>
+        return <ul className={styles.scratchList}>
             {scratches.map(scratch => <li key={scratch.id}>
                 <ScratchLink scratch={scratch} />
             </li>)}

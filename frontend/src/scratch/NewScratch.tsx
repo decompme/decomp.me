@@ -1,5 +1,4 @@
-import { h, Fragment } from "preact"
-import { useState, useEffect, useMemo } from "preact/hooks"
+import { useState, useEffect, useMemo } from "react"
 import { useHistory } from "react-router-dom"
 import toast from "react-hot-toast"
 
@@ -71,34 +70,34 @@ export default function NewScratch() {
 
     return <>
         <Nav />
-        <main class={styles.container}>
-            <div class={styles.card}>
-                <h1 class={`${styles.heading}`}>New scratch</h1>
-                <p class={styles.description}>
+        <main className={styles.container}>
+            <div className={styles.card}>
+                <h1 className={`${styles.heading}`}>New scratch</h1>
+                <p className={styles.description}>
                     Paste your function's target assembly below:
                 </p>
 
-                <div class={styles.targetasm}>
+                <div className={styles.targetasm}>
                     <Editor language="asm" value={asm} onChange={v => setAsm(v)} />
                 </div>
 
-                <p class={styles.description}>
+                <p className={styles.description}>
                     Include any C context (structs, definitions, etc) below:
                 </p>
-                <div class={styles.targetasm}>
+                <div className={styles.targetasm}>
                     <Editor language="c" value={context} onChange={v => setContext(v)} />
                 </div>
 
-                {errorMsg && <div class={`red ${styles.errormsg}`}>
+                {errorMsg && <div className={`red ${styles.errormsg}`}>
                     {errorMsg}
                 </div>}
 
-                <div class={styles.actions}>
-                    <Select class={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
+                <div className={styles.actions}>
+                    <Select className={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
                         {Object.entries(arches).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
                     </Select>
 
-                    <div class={styles.textbox}>
+                    <div className={styles.textbox}>
                         <label>Label</label>
                         <input
                             type="text"
@@ -108,7 +107,7 @@ export default function NewScratch() {
                         />
                     </div>
 
-                    <span class={styles.actionspacer} />
+                    <span className={styles.actionspacer} />
 
                     <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
                 </div>

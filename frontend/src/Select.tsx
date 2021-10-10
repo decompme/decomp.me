@@ -1,21 +1,21 @@
-import { ComponentChildren, h } from "preact"
+import { ReactNode, ChangeEventHandler } from "react"
 import { ChevronDownIcon } from "@primer/octicons-react"
 
 import styles from "./Select.module.css"
 
 export type Props = {
-    class?: string,
-    onChange: h.JSX.GenericEventHandler<HTMLSelectElement>,
-    children: ComponentChildren,
+    className?: string,
+    onChange: ChangeEventHandler<HTMLSelectElement>,
+    children: ReactNode,
 }
 
-export default function Select({ onChange, children, class: className }: Props) {
-    return <div class={`${styles.group} ${className}`}>
+export default function Select({ onChange, children, className }: Props) {
+    return <div className={`${styles.group} ${className}`}>
         <select onChange={onChange}>
             {children}
         </select>
 
-        <div class={styles.icon}>
+        <div className={styles.icon}>
             <ChevronDownIcon size={16} />
         </div>
     </div>

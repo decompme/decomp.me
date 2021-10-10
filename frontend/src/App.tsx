@@ -1,4 +1,3 @@
-import { h } from "preact"
 import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"

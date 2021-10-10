@@ -1,4 +1,3 @@
-import { h } from "preact"
 import { MarkGithubIcon } from "@primer/octicons-react"
 import { useSWRConfig } from "swr"
 const { GITHUB_CLIENT_ID } = import.meta.env
@@ -22,7 +21,7 @@ export default function GitHubLoginButton() {
 
     if (GITHUB_CLIENT_ID) {
         return <a
-            class="button"
+            className="button"
             href={LOGIN_URL}
             target="_blank"
             rel="noreferrer"

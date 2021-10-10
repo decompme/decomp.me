@@ -1,4 +1,3 @@
-import { h } from "preact"
 import { Link } from "react-router-dom"
 import { PlusIcon } from "@primer/octicons-react"
 
@@ -11,8 +10,8 @@ export type Props = {
 }
 
 export default function Nav({ onUserChange }: Props) {
-    return <nav class={styles.nav}>
-        <span class={styles.logotype}>
+    return <nav className={styles.nav}>
+        <span className={styles.logotype}>
             decomp.me
         </span>
 
@@ -20,7 +19,7 @@ export default function Nav({ onUserChange }: Props) {
             <PlusIcon size={16} /> New scratch
         </Link>
 
-        <div class={styles.grow} />
+        <div className={styles.grow} />
 
         <LoginState onChange={onUserChange} />
     </nav>

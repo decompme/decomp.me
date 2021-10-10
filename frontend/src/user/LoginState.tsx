@@ -1,5 +1,4 @@
-import { h } from "preact"
-import { useEffect } from "preact/hooks"
+import { useEffect } from "react"
 import useSWR from "swr"
 
 import * as api from "../api"
@@ -20,7 +19,7 @@ export default function LoginState({ onChange }: Props) {
     }, [data, onChange])
 
     if (error) {
-        return <div>{error}</div>
+        return <div>{error.toString()}</div>
     } else if (!data) {
         // Loading...
         return <div />
