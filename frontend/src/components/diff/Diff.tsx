@@ -1,7 +1,21 @@
 
-import * as api from "../api"
+import * as api from "../../api"
 
 import styles from "./Diff.module.css"
+
+function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
+    return <> {
+        texts.map(t => {
+            if (t.format == "rotation") {
+                return <span className={styles[`rotation${t.index % 9}`]}>{t.text}</span>
+            } else if (t.format) {
+                return <span className={styles[t.format]}>{t.text}</span>
+            } else {
+                return <span>{t.text}</span>
+            }
+        })
+    } </>
+}
 
 export type Props = {
     compilation: api.Compilation,
@@ -37,18 +51,4 @@ export default function Diff({ compilation }: Props) {
             </table>
         </div>
     }
-}
-
-function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
-    return <> {
-        texts.map(t => {
-            if (t.format == "rotation") {
-                return <span className={styles[`rotation${t.index % 9}`]}>{t.text}</span>
-            } else if (t.format) {
-                return <span className={styles[t.format]}>{t.text}</span>
-            } else {
-                return <span>{t.text}</span>
-            }
-        })
-    } </>
 }

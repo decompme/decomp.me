@@ -1,9 +1,11 @@
 {
     "license": "MIT",
     "scripts": {
-        "start": "snowpack dev --polyfill-node",
-        "build": "snowpack build --polyfill-node",
-        "lint": "tsc && eslint src --ext .js,.jsx,.ts,.tsx"
+        "dev": "next dev --port 8080",
+        "build": "next build",
+        "start": "next start --port 8080",
+        "lint": "next lint",
+        "postinstall": "next telemetry disable > /dev/null"
     },
     "dependencies": {
         "@monaco-editor/react": "^4.2.2",
@@ -12,32 +14,30 @@
         "dequal": "^2.0.2",
         "framer-motion": "^4.1.17",
         "monaco-editor": "^0.27.0",
+        "next": "^11.1.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-hot-toast": "^2.1.0",
         "react-laag": "^2.0.3",
         "react-loading-skeleton": "^2.2.0",
-        "react-router-dom": "^5.2.0",
         "react-simple-resizer": "^2.1.0",
+        "sharp": "^0.29.1",
         "swr": "^1.0.0",
         "use-debounce": "^7.0.0",
         "use-deep-compare-effect": "^1.6.1"
     },
     "devDependencies": {
-        "@snowpack/plugin-postcss": "^1.4.3",
-        "@snowpack/plugin-react-refresh": "^2.5.0",
-        "@types/react-router-dom": "^5.1.8",
-        "@typescript-eslint/eslint-plugin": "^4.29.3",
-        "@typescript-eslint/parser": "^4.29.3",
+        "@next/eslint-plugin-next": "^11.1.2",
         "autoprefixer": "^10.3.1",
         "cssnano": "^5.0.7",
         "dotenv": "^10.0.0",
-        "eslint": "^7.32.0",
+        "eslint": "7",
+        "eslint-config-next": "11.1.2",
         "eslint-formatter-rdjson": "^1.0.5",
         "eslint-plugin-react": "^7.26.1",
+        "eslint-plugin-react-hooks": "^4.2.0",
         "postcss": "^8.3.6",
         "postcss-scrollbar": "^0.3.0",
-        "snowpack": "^3.8.8",
         "typescript": "^4.4.2"
     }
 }

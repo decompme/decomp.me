@@ -1,7 +1,7 @@
 module.exports = {
     plugins: [
-        require("postcss-scrollbar"),
-        require("autoprefixer"),
-        require("cssnano"),
+        "postcss-scrollbar",
+        "autoprefixer",
+        "cssnano",
     ],
 }

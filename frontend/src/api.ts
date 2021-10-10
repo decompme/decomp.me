@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from "react"
+import { useRouter } from 'next/router'
 import useSWR, { Revalidator, RevalidatorOptions } from "swr"
 import { dequal } from "dequal/lite"
-import { useHistory } from "react-router"
 import { useDebouncedCallback } from "use-debounce"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
-const { API_BASE } = import.meta.env
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE
 
 type Json = Record<string, unknown>
 
@@ -13,23 +13,6 @@ const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
 }
-
-// Read the Django CSRF token, from https://docs.djangoproject.com/en/3.2/ref/csrf/#ajax
-export const csrftoken = (function (name) {
-    let cookieValue = null
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";")
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim()
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (`${name  }=`)) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-                break
-            }
-        }
-    }
-    return cookieValue
-})("csrftoken")
 
 export class ResponseError extends Error {
     status: number
@@ -85,7 +68,6 @@ export async function post(url: string, json: Json) {
         body,
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
         },
     })
 
@@ -111,7 +93,6 @@ export async function patch(url: string, json: Json) {
         body,
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
         },
     })
 
@@ -149,7 +130,7 @@ export type Scratch = {
     cc_opts: string,
     source_code: string,
     context: string,
-    owner: AnonymousUser | User,
+    owner: AnonymousUser | User | null,
     parent: string | null, // URL
     diff_label: string | null,
 }
@@ -221,7 +202,7 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
     }
 }
 
-export function useScratch(slugOrUrl: string): {
+export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
     scratch: Readonly<Scratch> | null,
     savedScratch: Readonly<Scratch> | null,
     setScratch: (scratch: Partial<Scratch>) => void, // Update the scratch, but only locally
@@ -231,14 +212,20 @@ export function useScratch(slugOrUrl: string): {
     isSaved: boolean,
     error: ResponseError | null,
 } {
-    if (!isAbsoluteUrl(slugOrUrl)) {
-        slugOrUrl = `/scratch/${slugOrUrl}`
+    let initialValue = null
+    if (typeof slugOrUrlOrInitialValue === "object") {
+        initialValue = slugOrUrlOrInitialValue
+        slugOrUrlOrInitialValue = slugOrUrlOrInitialValue.slug
+    }
+
+    if (!isAbsoluteUrl(slugOrUrlOrInitialValue)) {
+        slugOrUrlOrInitialValue = `/scratch/${slugOrUrlOrInitialValue}`
     }
 
     const [isSaved, setIsSaved] = useState(true)
     const [version, setVersion] = useState(0)
-    const [localScratch, setLocalScratch] = useState<Scratch | null>(null)
-    const { data, error, mutate } = useSWR<Scratch, ResponseError>(slugOrUrl, get, {
+    const [localScratch, setLocalScratch] = useState<Scratch | null>(initialValue)
+    const { data, error, mutate } = useSWR<Scratch, ResponseError>(slugOrUrlOrInitialValue, get, {
         refreshInterval: isSaved ? 5000 : 0,
         onSuccess: scratch => {
             if (!scratch.source_code) {
@@ -258,10 +245,10 @@ export function useScratch(slugOrUrl: string): {
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
-        setLocalScratch(null)
+        setLocalScratch(initialValue)
         mutate()
         setIsSaved(true)
-    }, [slugOrUrl, mutate])
+    }, [slugOrUrlOrInitialValue, mutate])
 
     const setScratch = useCallback((partial: Partial<Scratch>) => {
         const scratch = Object.assign({}, localScratch, partial)
@@ -310,11 +297,11 @@ export async function forkScratch(parent: Scratch): Promise<Scratch> {
 }
 
 export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
-    const history = useHistory()
+    const router = useRouter()
 
     return async () => {
         const fork = await forkScratch(parent)
-        history.push(`/scratch/${fork.slug}`)
+        router.push(`/scratch/${fork.slug}`)
     }
 }
 

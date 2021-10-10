@@ -17,13 +17,13 @@
 .userRow {
     display: flex;
     flex-direction: row;
-    align-items: start;
+    align-items: flex-start;
     gap: 1em;
 }
 
 .avatar {
-    width: 4em;
-    height: 4em;
+    width: 64px;
+    height: 64px;
     background: #ffffff44;
     border-radius: 999px;
 }

@@ -1,4 +1,6 @@
-export const conf = {
+import { languages } from "monaco-editor"
+
+export const conf: languages.LanguageConfiguration = {
     comments: {
         lineComment: "//",
         blockComment: ["/*", "*/"]
@@ -27,10 +29,10 @@ export const conf = {
             start: new RegExp("^\\s*#pragma\\s+region\\b"),
             end: new RegExp("^\\s*#pragma\\s+endregion\\b")
         }
-    }
+    },
 }
 
-export const language = {
+export const language: languages.IMonarchLanguage = {
     defaultToken: "",
     tokenPostfix: ".c",
 
@@ -431,7 +433,7 @@ export const language = {
                     "keyword.directive.include.begin",
                     "string.include.identifier",
                     { token: "keyword.directive.include.end", next: "@pop" }
-                ]
+                ] as languages.IMonarchLanguageAction
             ],
             [
                 /(\s*)(")([^"]*)(")/,
@@ -440,7 +442,7 @@ export const language = {
                     "keyword.directive.include.begin",
                     "string.include.identifier",
                     { token: "keyword.directive.include.end", next: "@pop" }
-                ]
+                ] as languages.IMonarchLanguageAction
             ]
         ]
     }

@@ -1,15 +1,46 @@
-import { useParams } from "react-router-dom"
+import Head from "next/head"
 
-import Nav from "../../Nav"
-import Scratch from "../../scratch/Scratch"
+import * as api from "../../api"
+import Nav from "../../components/Nav"
+import Scratch, { nameScratch } from "../../components/scratch/Scratch"
 
-export default function ScratchPage() {
-    const { slug } = useParams<{ slug: string }>()
+// dynamically render all pages
+export async function getStaticPaths() {
+    return {
+        paths: [],
+        fallback: true,
+    }
+}
 
+export async function getStaticProps(context) {
+    const { slug } = context.params
+
+    try {
+        const scratch: api.Scratch = await api.get(`/scratch/${slug}?no_take_ownership`)
+
+        return {
+            props: {
+                scratch,
+            },
+            revalidate: 10,
+        }
+    } catch (error) {
+        return {
+            notFound: true,
+            revalidate: 10,
+        }
+    }
+}
+
+export default function ScratchPage({ scratch }: { scratch?: api.Scratch }) {
     return <>
+        <Head>
+            <title>{scratch ? nameScratch(scratch) : "Loading scratch"} | decomp.me</title>
+        </Head>
         <Nav />
         <main>
-            <Scratch slug={slug} />
+            {scratch && <Scratch scratch={scratch} />}
+            {scratch === undefined && <h1>Loading...</h1> /* TODO */}
         </main>
     </>
 }

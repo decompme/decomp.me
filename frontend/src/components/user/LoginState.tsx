@@ -1,7 +1,9 @@
 import { useEffect } from "react"
+
 import useSWR from "swr"
 
-import * as api from "../api"
+import * as api from "../../api"
+
 import GitHubLoginButton from "./GitHubLoginButton"
 import UserLink from "./UserLink"
 
@@ -24,7 +26,7 @@ export default function LoginState({ onChange }: Props) {
         // Loading...
         return <div />
     } else if (data && !api.isAnonUser(data) && data.username) {
-        return <UserLink user={data} hideYou={true} />
+        return <UserLink user={data} isNav={true} />
     } else {
         return <GitHubLoginButton />
     }

@@ -1,6 +1,7 @@
 import { MarkGithubIcon } from "@primer/octicons-react"
 import { useSWRConfig } from "swr"
-const { GITHUB_CLIENT_ID } = import.meta.env
+
+const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
 
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
 const SCOPES = ["public_repo"]
@@ -10,7 +11,7 @@ const LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_C
 export default function GitHubLoginButton() {
     const { mutate } = useSWRConfig()
 
-    const showLoginWindow = (evt: MouseEvent) => {
+    const showLoginWindow = (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         const win = window.open(LOGIN_URL, "Sign in with GitHub", "resizable,scrollbars,status")
         evt.preventDefault()
 

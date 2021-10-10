@@ -1,6 +1,6 @@
 # [decomp.me](https://decomp.me)
 
-A collaborative decompilation and reverse engineering website, built with React and Django.
+A collaborative decompilation and reverse engineering website, built with Next.js and Django.
 
 ## Directory structure
 ```
@@ -15,9 +15,7 @@ backend/
   decompme/      ; Main Django app
 
 .env             ; Default configuration
-local.env        ; Local configuration overrides (not checked-in)
-frontend.env     ; Frontend configuration overrides (not checked-in)
-backend.env      ; Backend configuration overrides (not checked-in)
+.env.local       ; Local configuration overrides (not checked-in)
 ```
 
 ## Setup
@@ -33,7 +31,7 @@ Dependencies:
 
 - Create a file to hold environment variables:
 ```shell
-touch local.env
+touch .env.local
 ```
 
 ### Frontend
@@ -48,7 +46,7 @@ yarn
 
 - Start the development webserver
 ```shell
-yarn start
+yarn dev
 ```
 
 - Access the site via [http://localhost:8080](http://localhost:8080)
@@ -90,8 +88,8 @@ The following setup sections are optional.
     - "Homepage URL" should be the URL you access the frontend on (e.g. `http://localhost:8080`)
     - "Authorization callback URL" should be the same as the homepage URL, but with `/login` appended
 
-- Edit `local.env`:
-    - Set `GITHUB_CLIENT_ID` to the application client ID
+- Edit `.env.local`:
+    - Set `NEXT_PUBLIC_GITHUB_CLIENT_ID` to the application client ID
     - Set `GITHUB_CLIENT_SECRET` to the application client secret (do **not** share this)
 
 ### Running inside an nginx proxy
@@ -154,8 +152,8 @@ ln -s /etc/nginx/sites-available/local.decomp.me /etc/nginx/sites-enabled/local.
 127.0.0.1	    www.local.decomp.me
 ```
 
-- Edit `local.env`:
-    - Set `API_BASE=/api`
+- Edit `.env.local`:
+    - Set `NEXT_PUBLIC_API_BASE=/api`
     - Set `ALLOWED_HOSTS=local.decomp.me`
 
 - If you set up GitHub authentication, change the application URLs to `http://local.decomp.me` and `http://local.decomp.me/login`
@@ -180,7 +178,7 @@ To enable it locally outside of the Docker container:
     - Temporary: `sudo sysctl -w kernel.unprivileged_userns_clone=1`
     - Permanent: `echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/00-local-userns.conf && sudo service procps restart`
 
-- Edit `local.env`:
+- Edit `.env.local`:
     - Set `USE_SANDBOX_JAIL=on`
     - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
 
@@ -194,6 +192,12 @@ Contributions are very much welcome! We have a Discord channel in the [Zelda Dec
 ```shell
 cd frontend
 yarn lint
+```
+
+- Autofix frontend
+```shell
+cd frontend
+yarn lint --fix
 ```
 
 - Check backend

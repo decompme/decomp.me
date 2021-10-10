@@ -1,24 +1,63 @@
 import { useEffect } from "react"
-import * as resizer from "react-simple-resizer"
+
+import Link from "next/link"
+
 import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
-import { Link } from "react-router-dom"
+import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
-import * as api from "../api"
-import CompilerButton from "../compiler/CompilerButton"
-import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
-import Editor from "./Editor"
-import { useLocalStorage } from "../hooks"
-import UserLink from "../user/UserLink"
-import Diff from "../diff/Diff"
+import * as api from "../../api"
+import CompilerButton from "../../compiler/CompilerButton"
+import CompilerOpts, { CompilerOptsT } from "../../compiler/CompilerOpts"
+import { useLocalStorage } from "../../hooks"
 import AsyncButton from "../AsyncButton"
+import Diff from "../diff/Diff"
+import UserLink from "../user/UserLink"
 
+import Editor from "./Editor"
 import styles from "./Scratch.module.css"
 
-function nameScratch({ slug, owner }: api.Scratch): string {
+function ChooseACompiler({ onCommit }: { onCommit: (opts: CompilerOptsT) => void }) {
+    const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
+
+    return <div>
+        <CompilerOpts
+            title="Choose a compiler"
+            value={compiler}
+            onChange={c => setCompiler(c)}
+        />
+
+        <div style={{ padding: "1em", float: "right" }}>
+            <button onClick={() => onCommit(compiler)}>
+                Use this compiler
+                <ArrowRightIcon size={16} />
+            </button>
+        </div>
+    </div>
+}
+
+function ScratchLink({ slug }: { slug: string }) {
+    const { scratch } = api.useScratch(slug)
+
+    if (!scratch) {
+        return <span />
+    }
+
+    return <Link href={`/scratch/${scratch.slug}`}>
+        <a>{nameScratch(scratch)}</a>
+    </Link>
+}
+
+function DiffExplanation() {
+    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
+        (left is target, right is your code)
+    </span>
+}
+
+export function nameScratch({ slug, owner }: api.Scratch): string {
     if (owner?.is_you) {
         return "your scratch"
-    } else if (!api.isAnonUser(owner) && owner?.name) {
+    } else if (owner && !api.isAnonUser(owner) && owner?.name) {
         return `${owner?.name}'s scratch`
     } else {
         return `scratch ${slug}`
@@ -26,11 +65,11 @@ function nameScratch({ slug, owner }: api.Scratch): string {
 }
 
 export type Props = {
-    slug: string,
+    scratch: api.Scratch,
 }
 
-export default function Scratch({ slug }: Props) {
-    const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(slug)
+export default function Scratch({ scratch: initialScratch }: Props) {
+    const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(initialScratch)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
     const compilers = api.useCompilers()
@@ -47,7 +86,7 @@ export default function Scratch({ slug }: Props) {
             if ((event.ctrlKey || event.metaKey) && event.key == "s") {
                 event.preventDefault()
 
-                if (!isSaved && scratch.owner.is_you) {
+                if (!isSaved && scratch.owner?.is_you) {
                     saveScratch()
                 }
             }
@@ -104,17 +143,17 @@ export default function Scratch({ slug }: Props) {
                         </div>
 
                         <div className={styles.metadata}>
-                            <div>
+                            {scratch.owner && <div>
                                 Owner
                                 <UserLink user={scratch.owner} />
-                            </div>
+                            </div>}
 
                             {scratch.parent && <div>
                                 Fork of <ScratchLink slug={scratch.parent} />
                             </div>}
 
                             <div>
-                                {scratch.owner.is_you && <AsyncButton onPress={() => {
+                                {scratch.owner?.is_you && <AsyncButton onPress={() => {
                                     return Promise.all([
                                         saveScratch(),
                                         compile(),
@@ -132,7 +171,7 @@ export default function Scratch({ slug }: Props) {
                             padding
                             language="c"
                             value={scratch.source_code}
-                            valueVersion={`${slug}:${version}`}
+                            valueVersion={`${scratch.slug}:${version}`}
                             onChange={value => {
                                 setScratch({ source_code: value })
                             }}
@@ -153,7 +192,7 @@ export default function Scratch({ slug }: Props) {
                             padding
                             language="c"
                             value={scratch.context}
-                            valueVersion={`${slug}:${version}`}
+                            valueVersion={`${scratch.slug}:${version}`}
                             onChange={value => {
                                 setScratch({ context: value })
                             }}
@@ -182,41 +221,4 @@ export default function Scratch({ slug }: Props) {
             </resizer.Section>
         </resizer.Container>
     </div>
-}
-
-function ChooseACompiler({ onCommit }) {
-    const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
-
-    return <div>
-        <CompilerOpts
-            title="Choose a compiler"
-            value={compiler}
-            onChange={c => setCompiler(c)}
-        />
-
-        <div style={{ padding: "1em", float: "right" }}>
-            <button onClick={() => onCommit(compiler)}>
-                Use this compiler
-                <ArrowRightIcon size={16} />
-            </button>
-        </div>
-    </div>
-}
-
-function ScratchLink({ slug }: { slug: string }) {
-    const { scratch } = api.useScratch(slug)
-
-    if (!scratch) {
-        return <span />
-    }
-
-    return <Link to={`/scratch/${scratch.slug}`}>
-        {nameScratch(scratch)}
-    </Link>
-}
-
-function DiffExplanation() {
-    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
-        (left is target, right is your code)
-    </span>
 }

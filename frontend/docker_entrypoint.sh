@@ -2,4 +2,4 @@
 
 yarn install --frozen-lockfile
 
-yarn start
+yarn dev

@@ -1,22 +1,23 @@
 import { useEffect } from "react"
-import { useParams } from "react-router-dom"
-import useSWR, { useSWRConfig } from "swr"
+
+import Head from "next/head"
+import Image from "next/image"
+import { useRouter } from "next/router"
+
 import { MarkGithubIcon } from "@primer/octicons-react"
+import useSWR, { useSWRConfig } from "swr"
 
-import * as api from "../api"
-import Nav from "../Nav"
+import * as api from "../../api"
+import Nav from "../../components/Nav"
 
-import styles from "./~[username].module.css"
+import styles from "./[username].module.css"
 
 export default function UserPage() {
     const { mutate } = useSWRConfig()
-    const { username } = useParams<{ username: string }>()
+    const router = useRouter()
+    const { username } = router.query
     const { data, error } = useSWR<api.User>(`/users/${username}`, api.get)
     const user = data
-
-    useEffect(() => {
-        document.title = user?.name ? `${user.name} | decomp.me` : `@${username} | decomp.me`
-    }, [username, user?.name])
 
     const signOut = () => {
         api.post("/user", {})
@@ -29,13 +30,18 @@ export default function UserPage() {
 
     if (user) {
         return <>
+            <Head>
+                <title>{user?.name ? `${user.name} | decomp.me` : `@${username} | decomp.me`}</title>
+            </Head>
             <Nav />
             <main className={styles.pageContainer}>
                 <section className={styles.userRow}>
-                    {user.avatar_url && <img
+                    {user.avatar_url && <Image
                         className={styles.avatar}
                         src={user.avatar_url}
                         alt="User avatar"
+                        width={64}
+                        height={64}
                     />}
                     <h1 className={styles.name}>
                         <div>{user.name} {user.is_you && <i>(you)</i>}</div>

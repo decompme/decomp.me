@@ -41,12 +41,16 @@ body {
     user-select: none;
 }
 
-#root {
+html, body {
+    height: 100%;
+}
+
+#__next {
     display: flex;
     height: 100vh;
 }
 
-#root > * {
+#__next > * {
     flex: 1;
     display: grid;
     grid-template-rows: auto 1fr;

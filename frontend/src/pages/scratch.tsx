@@ -1,15 +1,33 @@
-import { useState, useEffect, useMemo } from "react"
-import { useHistory } from "react-router-dom"
+import { useState, useMemo } from "react"
+
+import Head from "next/head"
+import { useRouter } from "next/router"
+
 import toast from "react-hot-toast"
 
 import * as api from "../api"
-import Nav from "../Nav"
-import Editor from "../scratch/Editor"
-import Select from "../Select"
+import Nav from "../components/Nav"
+import Editor from "../components/scratch/Editor"
+import Select from "../components/Select"
 import { useLocalStorage } from "../hooks"
+
 import styles from "./scratch.module.css"
 
 // TODO: use AsyncButton with custom error handler?
+
+function getLabels(asm: string): string[] {
+    const lines = asm.split("\n")
+    const labels = []
+
+    for (const line of lines) {
+        const match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
+        if (match) {
+            labels.push(match[1])
+        }
+    }
+
+    return labels
+}
 
 export default function NewScratch() {
     const [awaitingResponse, setAwaitingResponse] = useState(false)
@@ -17,7 +35,7 @@ export default function NewScratch() {
     const [asm, setAsm] = useLocalStorage("NewScratch.asm", "")
     const [context, setContext] = useLocalStorage("NewScratch.context", "")
     const [arch, setArch] = useState<string>()
-    const history = useHistory()
+    const router = useRouter()
     const arches = api.useArches()
 
     const defaultLabel = useMemo(() => {
@@ -29,10 +47,6 @@ export default function NewScratch() {
     if (!arch) {
         setArch(Object.keys(arches)[0])
     }
-
-    useEffect(() => {
-        document.title = "new scratch | decomp.me"
-    }, [])
 
     const submit = async () => {
         setErrorMsg("")
@@ -54,7 +68,7 @@ export default function NewScratch() {
             setErrorMsg("")
             setAsm("") // Clear the localStorage
 
-            history.push(`/scratch/${scratch.slug}`)
+            router.push(`/scratch/${scratch.slug}`)
             toast.success("Scratch created! You may share this url")
         } catch (error) {
             if (error?.responseJSON?.as_errors) {
@@ -69,12 +83,15 @@ export default function NewScratch() {
     }
 
     return <>
+        <Head>
+            <title>New Scratch | decomp.me</title>
+        </Head>
         <Nav />
         <main className={styles.container}>
             <div className={styles.card}>
                 <h1 className={`${styles.heading}`}>New scratch</h1>
                 <p className={styles.description}>
-                    Paste your function's target assembly below:
+                    Paste your function&lsquo;s target assembly below:
                 </p>
 
                 <div className={styles.targetasm}>
@@ -114,18 +131,4 @@ export default function NewScratch() {
             </div>
         </main>
     </>
-}
-
-function getLabels(asm: string): string[] {
-    const lines = asm.split("\n")
-    const labels = []
-
-    for (const line of lines) {
-        const match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
-        if (match) {
-            labels.push(match[1])
-        }
-    }
-
-    return labels
 }

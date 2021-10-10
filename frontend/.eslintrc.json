@@ -1,0 +1,47 @@
+{
+    "extends": "next/core-web-vitals",
+    "rules": {
+        "semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
+        "indent": ["error", 4],
+        "quotes": ["error", "double"],
+        "quote-props": ["error", "consistent"],
+        "brace-style": "error",
+        "object-curly-spacing": ["error", "always"],
+        "array-bracket-spacing": ["error", "never"],
+        "no-else-return": "off",
+        "no-trailing-spaces": "error",
+        "prefer-const": ["warn", { "destructuring": "all" }],
+        "arrow-parens": ["error", "as-needed"],
+        "no-confusing-arrow": ["error", { "allowParens": true }],
+        "import/newline-after-import": "error",
+        "import/no-duplicates": "error",
+        "import/first": "error",
+        "import/exports-last": "warn",
+        "import/order": [
+            "error",
+            {
+                "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object"],
+                "newlines-between": "always",
+                "pathGroups": [
+                    {
+                        "pattern": "react",
+                        "group": "builtin",
+                        "position": "before"
+                    },
+                    {
+                        "pattern": "next",
+                        "group": "builtin",
+                        "position": "after"
+                    },
+                    {
+                        "pattern": "next/*",
+                        "group": "builtin",
+                        "position": "after"
+                    }
+                ],
+                "pathGroupsExcludedImportTypes": ["react"],
+                "alphabetize": { "order": "asc", "caseInsensitive": true }
+            }
+        ]
+    }
+}

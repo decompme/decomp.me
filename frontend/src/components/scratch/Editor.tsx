@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import Skeleton from "react-loading-skeleton"
+
 import MonacoEditor, { useMonaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
+import Skeleton from "react-loading-skeleton"
 
-import monacoTheme from "./monacoTheme"
-import * as customLangauge from "./c"
+import * as customLanguage from "./c"
 import styles from "./Editor.module.css"
+import monacoTheme from "./monacoTheme"
 
 export type Props = {
     language: "c" | "asm",
@@ -27,7 +28,8 @@ export default function Editor({ language, forceLoading, value, valueVersion, on
 
             if (language === "c") {
                 monaco.languages.register({ id: "custom_c" })
-                monaco.languages.setMonarchTokensProvider("custom_c", customLangauge.language)
+                monaco.languages.setLanguageConfiguration("custom_c", customLanguage.conf)
+                monaco.languages.setMonarchTokensProvider("custom_c", customLanguage.language)
             } else if (language === "asm") {
                 // TODO? possibly not common enough
             }

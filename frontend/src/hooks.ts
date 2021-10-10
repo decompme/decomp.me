@@ -2,6 +2,10 @@ import { useState, useRef, useLayoutEffect, Dispatch } from "react"
 import useResizeObserver from "@react-hook/resize-observer"
 
 export function useLocalStorage<S>(key: string, initialValue: S = undefined): [S, Dispatch<S>] {
+    if (typeof localStorage === "undefined") {
+        return [initialValue, v => {}]
+    }
+
     const [storedValue, setStoredValue] = useState(() => {
         const item = localStorage.getItem(key)
         return item ? JSON.parse(item) : initialValue
@@ -21,7 +25,8 @@ export function useSize<T extends HTMLElement>() {
     const [size, setSize] = useState({ width: 0, height: 0 })
 
     useLayoutEffect(() => {
-        setSize(ref.current.getBoundingClientRect())
+        if (ref.current)
+            setSize(ref.current.getBoundingClientRect())
     }, [ref])
 
     useResizeObserver(ref, entry => setSize(entry.contentRect))

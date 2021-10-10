@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react"
-import { useHistory } from "react-router-dom"
+
+import { GetStaticProps } from "next"
+
+import { useRouter } from "next/router"
+
 import { useSWRConfig } from "swr"
 
-import GitHubLoginButton from "../user/GitHubLoginButton"
 import * as api from "../api"
+import GitHubLoginButton from "../components/user/GitHubLoginButton"
 
 import styles from "./login.module.css"
 
 // Handles GitHub OAuth callback
 export default function LoginPage() {
-    const { searchParams } = new URL(document.location.href)
-    const code = searchParams.get("code")
-    const next = searchParams.get("next")
-
-    const history = useHistory()
+    const router = useRouter()
     const [error, setError] = useState(null)
     const { mutate } = useSWRConfig()
+    const code = (router.query.code ?? "").toString()
+    const next = (router.query.next ?? "").toString()
 
     useEffect(() => {
         if (code) {
@@ -23,7 +25,7 @@ export default function LoginPage() {
             api.post("/user", { code }).then((user: api.User) => {
                 if (next) {
                     mutate("/user", user)
-                    history.replace(next)
+                    router.replace(next)
                 } else {
                     window.close()
                 }
@@ -32,7 +34,7 @@ export default function LoginPage() {
                 setError(error)
             })
         }
-    }, [code, history, mutate, next])
+    }, [code, router, mutate, next])
 
     return <>
         <main className={styles.container}>

@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, useEffect } from "react"
 import Skeleton from "react-loading-skeleton"
 
-import Select from "../Select"
+import Select from "../components/Select"
 
 import { useCompilersForArch } from "./compilers"
 import PresetSelect, { PRESETS } from "./PresetSelect"

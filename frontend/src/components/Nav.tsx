@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom"
+import Link from "next/link"
+
 import { PlusIcon } from "@primer/octicons-react"
 
-import LoginState, { Props as LoginStateProps } from "./user/LoginState"
-
 import styles from "./Nav.module.css"
+import LoginState, { Props as LoginStateProps } from "./user/LoginState"
 
 export type Props = {
     onUserChange?: LoginStateProps["onChange"],
@@ -15,8 +15,8 @@ export default function Nav({ onUserChange }: Props) {
             decomp.me
         </span>
 
-        <Link className={styles.link} to="/scratch">
-            <PlusIcon size={16} /> New scratch
+        <Link href="/scratch">
+            <a className={styles.link}><PlusIcon size={16} /> New scratch</a>
         </Link>
 
         <div className={styles.grow} />
