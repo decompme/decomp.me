@@ -22,11 +22,11 @@ env = environ.Env(
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
     USE_SANDBOX_JAIL=(bool, True),
-    GITHUB_CLIENT_ID=(str, ""),
+    NEXT_PUBLIC_GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
 )
 
-for stem in [".env", ".env.local"]:
+for stem in [".env.local", ".env"]:
     env_file = BASE_DIR / ".." / stem
     if os.path.isfile(env_file):
         with open(env_file) as f:
@@ -160,5 +160,5 @@ SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
 
-GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID")
-GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET")
+GITHUB_CLIENT_ID = env("NEXT_PUBLIC_GITHUB_CLIENT_ID", str)
+GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)

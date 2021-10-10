@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from "react"
-import { useRouter } from 'next/router'
-import useSWR, { Revalidator, RevalidatorOptions } from "swr"
+
+import { useRouter } from "next/router"
+
 import { dequal } from "dequal/lite"
+import useSWR, { Revalidator, RevalidatorOptions } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
@@ -12,6 +14,24 @@ type Json = Record<string, unknown>
 const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
+}
+
+function isAbsoluteUrl(maybeUrl: string): boolean {
+    return maybeUrl.startsWith("https://") || maybeUrl.startsWith("http://")
+}
+
+function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
+    if (error.status === 404) return
+    if (retryCount >= 10) return
+
+    // Retry after 5 seconds
+    setTimeout(() => revalidate({ retryCount }), 5000)
+}
+
+function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K): O[K] | undefined {
+    if (saved[key] !== local[key]) {
+        return local[key]
+    }
 }
 
 export class ResponseError extends Error {
@@ -26,6 +46,8 @@ export class ResponseError extends Error {
 
         if (responseJSON.error) {
             this.message = responseJSON.error
+        } else if (responseJSON.detail) {
+            this.message = responseJSON.detail
         } else if (responseJSON.errors) {
             this.message = responseJSON.errors.join(",")
         }
@@ -51,7 +73,7 @@ export async function get(url: string, useCacheIfFresh = false) {
     return await response.json()
 }
 
-const getCached = (url: string) => get(url, true)
+export const getCached = (url: string) => get(url, true)
 
 export async function post(url: string, json: Json) {
     if (url.startsWith("/")) {
@@ -184,24 +206,6 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
 
-function isAbsoluteUrl(maybeUrl: string): boolean {
-    return maybeUrl.startsWith("https://") || maybeUrl.startsWith("http://")
-}
-
-function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
-    if (error.status === 404) return
-    if (retryCount >= 10) return
-
-    // Retry after 5 seconds
-    setTimeout(() => revalidate({ retryCount }), 5000)
-}
-
-function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K): O[K] | undefined {
-    if (saved[key] !== local[key]) {
-        return local[key]
-    }
-}
-
 export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
     scratch: Readonly<Scratch> | null,
     savedScratch: Readonly<Scratch> | null,
@@ -248,7 +252,7 @@ export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
         setLocalScratch(initialValue)
         mutate()
         setIsSaved(true)
-    }, [slugOrUrlOrInitialValue, mutate])
+    }, [initialValue, mutate])
 
     const setScratch = useCallback((partial: Partial<Scratch>) => {
         const scratch = Object.assign({}, localScratch, partial)
