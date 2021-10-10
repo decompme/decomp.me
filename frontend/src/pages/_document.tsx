@@ -12,6 +12,8 @@ export default class MyDocument extends Document {
 
                     <link rel="shortcut icon" type="image/png" href="/frog.png" />
                     <link rel="apple-touch-icon" type="image/png" href="/frog.png" />
+
+                    <meta name="theme-color" content="#951fd9" />
                 </Head>
                 <body>
                     <Main />

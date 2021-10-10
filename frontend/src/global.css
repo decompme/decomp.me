@@ -118,3 +118,7 @@ label {
 ::selection {
     background: #ffffff22;
 }
+
+.routerProgressBar {
+    z-index: 999;
+}
