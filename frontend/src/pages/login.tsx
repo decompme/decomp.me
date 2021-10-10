@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react"
 
-import { GetStaticProps } from "next"
-
 import { useRouter } from "next/router"
 
 import { useSWRConfig } from "swr"

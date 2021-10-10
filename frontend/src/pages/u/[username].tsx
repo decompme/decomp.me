@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { GetStaticProps } from "next"
 
 import Head from "next/head"
 import Image from "next/image"
@@ -12,12 +12,41 @@ import Nav from "../../components/Nav"
 
 import styles from "./[username].module.css"
 
-export default function UserPage() {
+// dynamically render all pages
+export async function getStaticPaths() {
+    return {
+        paths: [],
+        fallback: "blocking",
+    }
+}
+
+export const getStaticProps: GetStaticProps = async context => {
+    const { username } = context.params
+
+    try {
+        const user: api.User = await api.get(`/users/${username}`)
+
+        return {
+            props: {
+                user,
+            },
+            revalidate: 10,
+        }
+    } catch (error) {
+        return {
+            notFound: true,
+            revalidate: 10,
+        }
+    }
+}
+
+export default function UserPage({ user: initialUser }: { user: api.User }) {
     const { mutate } = useSWRConfig()
     const router = useRouter()
     const { username } = router.query
-    const { data, error } = useSWR<api.User>(`/users/${username}`, api.get)
-    const user = data
+    const { data: user, error } = useSWR<api.User>(`/users/${initialUser.username}`, api.get, {
+        fallback: initialUser,
+    })
 
     const signOut = () => {
         api.post("/user", {})
@@ -28,55 +57,11 @@ export default function UserPage() {
             .catch(console.error)
     }
 
-    if (user) {
-        return <>
-            <Head>
-                <title>{user?.name ? `${user.name} | decomp.me` : `@${username} | decomp.me`}</title>
-            </Head>
-            <Nav />
-            <main className={styles.pageContainer}>
-                <section className={styles.userRow}>
-                    {user.avatar_url && <Image
-                        className={styles.avatar}
-                        src={user.avatar_url}
-                        alt="User avatar"
-                        width={64}
-                        height={64}
-                    />}
-                    <h1 className={styles.name}>
-                        <div>{user.name} {user.is_you && <i>(you)</i>}</div>
-                        <div className={styles.username}>
-                            @{user.username}
+    if (error)
+        console.error(error)
 
-                            {user.github_html_url && <a href={user.github_html_url}>
-                                <MarkGithubIcon size={24} />
-                            </a>}
-                        </div>
-                    </h1>
-                </section>
-
-                {/*<section>
-                    <h2>Scratches</h2>
-                    <ScratchList user={user} />
-                </section>*/}
-
-                {user.is_you && <section>
-                    <button className="red" onClick={signOut}>
-                        Sign out
-                    </button>
-                </section>}
-            </main>
-        </>
-    } else if (error) {
-        // TODO: better error handling
-        return <>
-            <Nav />
-            <main className={styles.pageContainer}>
-                {error.toString()}
-            </main>
-        </>
-    } else {
-        // TODO: skeleton
+    if (!user) {
+        // shouldn't show up in prod because fallback="blocking"
         return <>
             <Nav />
             <main className={styles.pageContainer}>
@@ -84,6 +69,45 @@ export default function UserPage() {
             </main>
         </>
     }
+
+    return <>
+        <Head>
+            <title>{`${user.name || user.username} | decomp.me`}</title>
+        </Head>
+        <Nav />
+        <main className={styles.pageContainer}>
+            <section className={styles.userRow}>
+                {user.avatar_url && <Image
+                    className={styles.avatar}
+                    src={user.avatar_url}
+                    alt="User avatar"
+                    width={64}
+                    height={64}
+                />}
+                <h1 className={styles.name}>
+                    <div>{user.name} {user.is_you && <i>(you)</i>}</div>
+                    <div className={styles.username}>
+                        @{user.username}
+
+                        {user.github_html_url && <a href={user.github_html_url}>
+                            <MarkGithubIcon size={24} />
+                        </a>}
+                    </div>
+                </h1>
+            </section>
+
+            {/*<section>
+                <h2>Scratches</h2>
+                <ScratchList user={user} />
+            </section>*/}
+
+            {user.is_you && <section>
+                <button className="red" onClick={signOut}>
+                    Sign out
+                </button>
+            </section>}
+        </main>
+    </>
 }
 
 // TODO: needs backend

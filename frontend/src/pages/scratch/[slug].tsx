@@ -1,3 +1,5 @@
+import { GetStaticProps } from "next"
+
 import Head from "next/head"
 
 import * as api from "../../api"
@@ -12,7 +14,7 @@ export async function getStaticPaths() {
     }
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps: GetStaticProps = async context => {
     const { slug } = context.params
 
     try {
