@@ -2,10 +2,10 @@ import { useState, useEffect } from "react"
 import { useHistory } from "react-router-dom"
 import { useSWRConfig } from "swr"
 
-import GitHubLoginButton from "./GitHubLoginButton"
+import GitHubLoginButton from "../user/GitHubLoginButton"
 import * as api from "../api"
 
-import styles from "./LoginPage.module.css"
+import styles from "./login.module.css"
 
 // Handles GitHub OAuth callback
 export default function LoginPage() {

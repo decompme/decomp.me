@@ -4,10 +4,10 @@ import toast from "react-hot-toast"
 
 import * as api from "../api"
 import Nav from "../Nav"
-import Editor from "./Editor"
+import Editor from "../scratch/Editor"
 import Select from "../Select"
 import { useLocalStorage } from "../hooks"
-import styles from "./NewScratch.module.css"
+import styles from "./scratch.module.css"
 
 // TODO: use AsyncButton with custom error handler?
 

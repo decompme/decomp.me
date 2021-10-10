@@ -2,10 +2,10 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-d
 import { Toaster } from "react-hot-toast"
 import { SkeletonTheme } from "react-loading-skeleton"
 
-import NewScratchPage from "./scratch/NewScratch"
-import ScratchPage from "./scratch/ScratchPage"
-import LoginPage from "./user/LoginPage"
-import UserPage from "./user/UserPage"
+import NewScratchPage from "./pages/scratch"
+import ScratchPage from "./pages/scratch/[slug]"
+import LoginPage from "./pages/login"
+import UserPage from "./pages/~[username]"
 
 export default function App() {
     return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">

@@ -6,7 +6,7 @@ import { MarkGithubIcon } from "@primer/octicons-react"
 import * as api from "../api"
 import Nav from "../Nav"
 
-import styles from "./UserPage.module.css"
+import styles from "./~[username].module.css"
 
 export default function UserPage() {
     const { mutate } = useSWRConfig()
