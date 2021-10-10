@@ -6,7 +6,9 @@ export default class MyDocument extends Document {
             <Html lang="en">
                 <Head>
                     <meta charSet="utf-8" />
-                    <meta name="description" content="Crowdsourced decompilation website" />
+                    <meta name="description" content="Decompile code in the browser" />
+
+                    <link rel="manifest" href="/manifest.json" />
 
                     <link rel="shortcut icon" type="image/png" href="/frog.png" />
                     <link rel="apple-touch-icon" type="image/png" href="/frog.png" />

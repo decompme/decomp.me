@@ -1,0 +1,18 @@
+{
+    "name": "decomp.me",
+    "short_name": "decomp.me",
+    "description": "Decompile code in the browser",
+    "theme_color": "#ffffff",
+    "background_color": "#0c0e12",
+    "display": "minimal-ui",
+    "orientation": "any",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "frog.png",
+            "sizes": "320x320",
+            "type": "image/png"
+        }
+    ]
+}
