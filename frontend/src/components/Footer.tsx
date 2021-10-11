@@ -5,6 +5,8 @@ import { MarkGithubIcon } from "@primer/octicons-react"
 import Discord from "./discord.svg"
 import styles from "./Footer.module.scss"
 
+const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH ?? process.env.STORYBOOK_COMMIT_HASH
+
 export default function Footer() {
     return <footer className={styles.footer}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 250">
@@ -32,9 +34,9 @@ export default function Footer() {
             </div>
 
             <div className={styles.commitHash}>
-                <Link href={`https://github.com/ethteck/decomp.me/commit/${process.env.NEXT_PUBLIC_COMMIT_HASH}`}>
+                <Link href={`https://github.com/ethteck/decomp.me/commit/${commitHash}`}>
                     <a>
-                        {process.env.NEXT_PUBLIC_COMMIT_HASH.slice(0, 7)}
+                        {commitHash.slice(0, 7)}
                     </a>
                 </Link>
             </div>

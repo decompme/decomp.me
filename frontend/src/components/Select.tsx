@@ -2,7 +2,7 @@ import { ReactNode, ChangeEventHandler } from "react"
 
 import { ChevronDownIcon } from "@primer/octicons-react"
 
-import styles from "./Select.module.css"
+import styles from "./Select.module.scss"
 
 export type Props = {
     className?: string,

@@ -1,8 +1,6 @@
-import { ReactNode, ChangeEventHandler } from "react"
-
 import { ChevronDownIcon } from "@primer/octicons-react"
 
-import styles from "./Select.module.css"
+import styles from "./Select.module.scss"
 
 export type Props = {
     options: { [key: string]: string },
@@ -12,6 +10,9 @@ export type Props = {
 }
 
 export default function Select({ options, value, onChange, className }: Props) {
+    if (!value)
+        onChange(Object.keys(options)[0])
+
     return <div className={`${styles.group} ${className}`}>
         <select
             value={value}

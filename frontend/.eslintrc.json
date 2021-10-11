@@ -43,5 +43,13 @@
                 "alphabetize": { "order": "asc", "caseInsensitive": true }
             }
         ]
-    }
+    },
+    "overrides": [
+        {
+            "files": ["*.stories.tsx"],
+            "rules": {
+                "import/exports-last": "off"
+            }
+        }
+    ]
 }

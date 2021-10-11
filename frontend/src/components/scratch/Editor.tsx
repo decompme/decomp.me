@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react"
 
 import MonacoEditor, { useMonaco } from "@monaco-editor/react"
+import classNames from "classnames"
 import { editor } from "monaco-editor"
 import Skeleton from "react-loading-skeleton"
+
 
 import * as customLanguage from "./c"
 import styles from "./Editor.module.css"
 import monacoTheme from "./monacoTheme"
 
 export type Props = {
+    className?: string,
     language: "c" | "asm",
     forceLoading?: boolean,
     value?: string,
@@ -17,7 +20,7 @@ export type Props = {
     padding?: boolean,
 }
 
-export default function Editor({ language, forceLoading, value, valueVersion, onChange, padding }: Props) {
+export default function Editor({ className, language, forceLoading, value, valueVersion, onChange, padding }: Props) {
     const [isLoading, setIsLoading] = useState(true)
     const monaco = useMonaco()
     const [model, setModel] = useState<editor.ITextModel>()
@@ -46,7 +49,7 @@ export default function Editor({ language, forceLoading, value, valueVersion, on
     }, [valueVersion, model]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <>
-        <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} className={styles.monacoContainer}>
+        <div style={{ display: (isLoading || forceLoading) ? "none" : "block" }} className={classNames(styles.monacoContainer, className)}>
             <MonacoEditor
                 language={language === "c" ? "custom_c" : "custom_asm"}
                 theme="custom"

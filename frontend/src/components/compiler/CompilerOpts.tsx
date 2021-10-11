@@ -64,7 +64,7 @@ export type CompilerOptsT = {
 
 export type Props = {
     arch?: string,
-    value: CompilerOptsT,
+    value?: CompilerOptsT,
     onChange: (value: CompilerOptsT) => void,
     title?: string,
     isPopup?: boolean,
