@@ -7,10 +7,10 @@ import { useRouter } from "next/router"
 import { MarkGithubIcon } from "@primer/octicons-react"
 import useSWR, { useSWRConfig } from "swr"
 
-import * as api from "../../api"
 import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
+import * as api from "../../lib/api"
 
 import styles from "./[username].module.css"
 

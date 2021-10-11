@@ -1,7 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import * as api from "../../api"
+import * as api from "../../lib/api"
 
 import styles from "./UserLink.module.css"
 

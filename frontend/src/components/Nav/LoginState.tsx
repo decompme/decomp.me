@@ -5,7 +5,7 @@ import Link from "next/link"
 
 import useSWR from "swr"
 
-import * as api from "../../api"
+import * as api from "../../lib/api"
 import GitHubLoginButton from "../GitHubLoginButton"
 
 import styles from "./LoginState.module.scss"

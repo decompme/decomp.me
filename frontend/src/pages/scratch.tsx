@@ -3,11 +3,11 @@ import { useEffect, useState, useMemo } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router"
 
-import * as api from "../api"
 import AsyncButton from "../components/AsyncButton"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import Select from "../components/Select2"
+import * as api from "../lib/api"
 
 import styles from "./scratch.module.scss"
 

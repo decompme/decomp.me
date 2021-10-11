@@ -1,6 +1,6 @@
 import { FunctionComponent } from "react"
 
-import * as api from "../../../api"
+import * as api from "../../../lib/api"
 
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc281 from "./gcc2.8.1"

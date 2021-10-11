@@ -1,5 +1,5 @@
 
-import * as api from "../../api"
+import * as api from "../../lib/api"
 
 import styles from "./Diff.module.css"
 

@@ -4,7 +4,7 @@ import { CpuIcon } from "@primer/octicons-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayer, Arrow } from "react-laag"
 
-import { useThemeVariable } from "../../hooks"
+import { useThemeVariable } from "../../lib/hooks"
 import Button from "../Button"
 
 import styles from "./CompilerButton.module.css"

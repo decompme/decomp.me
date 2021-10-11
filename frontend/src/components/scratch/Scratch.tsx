@@ -6,7 +6,7 @@ import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/oc
 import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
-import * as api from "../../api"
+import * as api from "../../lib/api"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerButton from "../compiler/CompilerButton"

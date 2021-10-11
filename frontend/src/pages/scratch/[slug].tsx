@@ -2,9 +2,9 @@ import { GetStaticProps } from "next"
 
 import Head from "next/head"
 
-import * as api from "../../api"
 import Nav from "../../components/Nav"
 import Scratch, { nameScratch } from "../../components/scratch/Scratch"
+import * as api from "../../lib/api"
 
 // dynamically render all pages
 export async function getStaticPaths() {
