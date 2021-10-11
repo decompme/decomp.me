@@ -196,7 +196,11 @@ To enable it locally outside of the Docker container:
 
 ## Contributing
 
-Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](http://discord.zelda64.dev).
+Contributions are very much welcome! You may want to [join our Discord server](https://discord.gg/sutqNShRRs).
+
+### Storybook
+
+Use `yarn storybook` to run a Storybook instance on [http://localhost:6006](http://localhost:6006). This is useful for testing UI components in isolation.
 
 ### Linting
 
