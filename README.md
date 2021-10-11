@@ -187,6 +187,13 @@ To enable it locally outside of the Docker container:
     - Set `USE_SANDBOX_JAIL=on`
     - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
 
+## Deployment
+
+- Backend - same as in development, just set DEBUG=true
+- Frontend - multiple options:
+    - Self-hosted - `yarn build && yarn start` with nginx proxy to filter /api/* to the backend
+    - [Deploy with Vercel](https://vercel.com/new)
+
 ## Contributing
 
 Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](http://discord.zelda64.dev).
