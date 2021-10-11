@@ -1,6 +1,6 @@
 import { config } from "dotenv"
 
-for (const envFile of [".env", "local.env", "frontend.env"]) {
+for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
 }
 

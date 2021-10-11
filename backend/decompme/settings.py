@@ -26,7 +26,7 @@ env = environ.Env(
     GITHUB_CLIENT_SECRET=(str, ""),
 )
 
-for stem in [".env", "local.env", "backend.env"]:
+for stem in [".env.local", ".env"]:
     env_file = BASE_DIR / ".." / stem
     if os.path.isfile(env_file):
         with open(env_file) as f:

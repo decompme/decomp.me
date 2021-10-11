@@ -15,9 +15,7 @@ backend/
   decompme/      ; Main Django app
 
 .env             ; Default configuration
-local.env        ; Local configuration overrides (not checked-in)
-frontend.env     ; Frontend configuration overrides (not checked-in)
-backend.env      ; Backend configuration overrides (not checked-in)
+.env.local       ; Local configuration overrides (not checked-in)
 ```
 
 ## Setup
@@ -33,7 +31,7 @@ Dependencies:
 
 - Create a file to hold environment variables:
 ```shell
-touch local.env
+touch .env.local
 ```
 
 ### Frontend
@@ -90,7 +88,7 @@ The following setup sections are optional.
     - "Homepage URL" should be the URL you access the frontend on (e.g. `http://localhost:8080`)
     - "Authorization callback URL" should be the same as the homepage URL, but with `/login` appended
 
-- Edit `local.env`:
+- Edit `.env.local`:
     - Set `GITHUB_CLIENT_ID` to the application client ID
     - Set `GITHUB_CLIENT_SECRET` to the application client secret (do **not** share this)
 
@@ -154,7 +152,7 @@ ln -s /etc/nginx/sites-available/local.decomp.me /etc/nginx/sites-enabled/local.
 127.0.0.1	    www.local.decomp.me
 ```
 
-- Edit `local.env`:
+- Edit `.env.local`:
     - Set `API_BASE=/api`
     - Set `ALLOWED_HOSTS=local.decomp.me`
 
@@ -180,7 +178,7 @@ To enable it locally outside of the Docker container:
     - Temporary: `sudo sysctl -w kernel.unprivileged_userns_clone=1`
     - Permanent: `echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.d/00-local-userns.conf && sudo service procps restart`
 
-- Edit `local.env`:
+- Edit `.env.local`:
     - Set `USE_SANDBOX_JAIL=on`
     - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
 
