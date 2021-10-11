@@ -34,7 +34,7 @@ export default function PresetSelect({ arch, compiler, opts, setCompiler, setOpt
 }) {
     const compilers = useCompilersForArch(arch)
 
-    const presets = PRESETS.filter(p => compilers.find(c => c.id === p.compiler) !== undefined)
+    const presets = PRESETS.filter(p => compilers?.find(c => c.id === p.compiler) !== undefined)
     const selectedPreset = PRESETS.find(p => p.compiler === compiler && p.opts === opts)
 
     return <Select onChange={e => {
