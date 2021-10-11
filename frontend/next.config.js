@@ -1,4 +1,5 @@
 const { config } = require("dotenv")
+const { execSync } = require("child_process")
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -6,6 +7,7 @@ for (const envFile of [".env.local", ".env"]) {
 
 process.env.NEXT_PUBLIC_API_BASE = process.env.API_BASE
 process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+process.env.NEXT_PUBLIC_COMMIT_HASH = execSync("git rev-parse HEAD").toString().trim()
 
 const withPWA = require('next-pwa')
 const runtimeCaching = require('next-pwa/cache')
