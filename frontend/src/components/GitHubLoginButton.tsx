@@ -8,7 +8,7 @@ const SCOPES = ["public_repo"]
 
 const LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${SCOPES.join("%20")}`
 
-export default function GitHubLoginButton() {
+export default function GitHubLoginButton({ label }: { label?: string }) {
     const { mutate } = useSWRConfig()
 
     const showLoginWindow = (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -28,7 +28,7 @@ export default function GitHubLoginButton() {
             rel="noreferrer"
             onClick={showLoginWindow}
         >
-            <MarkGithubIcon size={16} /> Sign in with GitHub
+            <MarkGithubIcon size={16} /> {label ?? "Sign in with GitHub"}
         </a>
     } else {
         // The backend is not configured to support GitHub login

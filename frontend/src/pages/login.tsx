@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import { useSWRConfig } from "swr"
 
 import * as api from "../api"
-import GitHubLoginButton from "../components/user/GitHubLoginButton"
+import GitHubLoginButton from "../components/GitHubLoginButton"
 
 import styles from "./login.module.css"
 

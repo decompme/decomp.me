@@ -8,6 +8,7 @@ import { MarkGithubIcon } from "@primer/octicons-react"
 import useSWR, { useSWRConfig } from "swr"
 
 import * as api from "../../api"
+import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 
 import styles from "./[username].module.css"
@@ -107,6 +108,7 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
                 </button>
             </section>}
         </main>
+        <Footer />
     </>
 }
 

@@ -1,8 +1,7 @@
 import { Toaster } from "react-hot-toast"
-import { SkeletonTheme } from "react-loading-skeleton"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    return <SkeletonTheme color="#1c1e23" highlightColor="#26292d">
+    return <>
         {children}
 
         <Toaster
@@ -16,5 +15,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 },
             }}
         />
-    </SkeletonTheme>
+    </>
 }

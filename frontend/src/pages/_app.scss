@@ -1,3 +1,39 @@
+@use "sass:color";
+
+@mixin theme($accent: color, $bg: color) {
+    $accent-light: color.scale($accent, $lightness: 50%, $saturation: 30%);
+    $accent-dark: color.scale($accent, $lightness: -40%, $saturation: -20%);
+
+    --frog-pupil: #292f33;
+    --frog-primary: #{$accent};
+    --frog-secondary: #{$accent-light};
+    --frog-nose: #{$accent-dark};
+
+    --accent: #{$accent};
+    --complement: #{color.complement($accent)};
+
+    @for $i from 1 through 20 {
+        --g#{$i * 100}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * 5%)};
+    }
+
+    $peak: 0;
+    @if color.blackness($bg) > 50% {
+        $peak: 255;
+    }
+
+    @for $i from 1 through 10 {
+        --a#{$i * 100}: #{rgba($peak, $peak, $peak, $i * 0.1)};
+    }
+}
+
+.themeGreen {
+    @include theme(#77b255, #37393e);
+}
+
+.themePlum {
+    @include theme(#951fd9, #373d3e);
+}
+
 html {
     font-size: 16px;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
@@ -34,8 +70,9 @@ html {
 }
 
 body {
-    background: #0c0e12;
-    color: rgb(201, 199, 209);
+    background: var(--g300);
+    color: var(--a800);
+
     line-height: var(--ratio);
     overflow: hidden;
     user-select: none;
@@ -47,16 +84,8 @@ html, body {
 
 #__next {
     display: flex;
+    flex-direction: column;
     height: 100vh;
-}
-
-#__next > * {
-    flex: 1;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-        "nav"
-        "main";
 }
 
 #layers {
@@ -64,8 +93,7 @@ html, body {
 }
 
 main {
-    grid-area: main;
-    overflow: hidden;
+    flex: 1;
 }
 
 button, .button {
@@ -121,4 +149,34 @@ label {
 
 .routerProgressBar {
     z-index: 999;
+}
+
+.btn {
+    border-radius: 8px;
+
+    padding: .6em 1em;
+
+    font-size: .8rem;
+
+    user-select: none;
+    appearance: none;
+    text-decoration: none;
+
+    display: inline-flex;
+    gap: .5em;
+    align-items: center;
+
+    background: #ffffff11;
+    color: #ffffffaa;
+
+    transition: color .2s ease, background .15s ease;
+
+    &.btn-ghost {
+        background: transparent;
+    }
+
+    &:hover {
+        background: #ffffff11;
+        color: #ffffffcc;
+    }
 }

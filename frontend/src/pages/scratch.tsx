@@ -11,7 +11,7 @@ import Editor from "../components/scratch/Editor"
 import Select from "../components/Select"
 import { useLocalStorage } from "../hooks"
 
-import styles from "./scratch.module.css"
+import styles from "./scratch.module.scss"
 
 // TODO: use AsyncButton with custom error handler?
 
