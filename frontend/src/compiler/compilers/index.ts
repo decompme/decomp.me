@@ -21,6 +21,9 @@ export default COMPILERS
 export function useCompilersForArch(arch?: string) {
     const serverCompilers = api.useCompilers()
 
+    if (!serverCompilers)
+        return null
+
     if (arch)
         return COMPILERS.filter(compiler => serverCompilers[compiler.id]?.arch === arch) // compiler supports this arch
     else

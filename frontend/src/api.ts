@@ -389,10 +389,9 @@ export function useArches(): Record<string, string> {
     }
 }
 
-export function useCompilers(): Record<string, { arch: string | null }> {
-    const { data, error } = useSWR("/compilers", getCached, {
+export function useCompilers(): Record<string, { arch: string | null }> | null {
+    const { data, error } = useSWR("/compilers", get, {
         refreshInterval: 0,
-        revalidateOnFocus: false,
         onErrorRetry,
     })
 
@@ -400,7 +399,5 @@ export function useCompilers(): Record<string, { arch: string | null }> {
         console.error("useCompilers error", error)
     }
 
-    return data?.compilers || {
-        "gcc2.8.1": { "arch": "mips" },
-    }
+    return data?.compilers ?? null
 }
