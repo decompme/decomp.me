@@ -2,7 +2,7 @@ import { createContext, useState, useContext, useEffect } from "react"
 
 import Skeleton from "react-loading-skeleton"
 
-import Select from "../components/Select"
+import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForArch } from "./compilers"

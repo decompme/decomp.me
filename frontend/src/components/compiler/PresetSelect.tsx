@@ -1,5 +1,6 @@
 
-import Select from "../components/Select"
+import Select from "../Select"
+
 import { useCompilersForArch } from "./compilers"
 
 export const PRESETS = [

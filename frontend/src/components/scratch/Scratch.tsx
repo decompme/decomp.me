@@ -7,10 +7,10 @@ import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../api"
-import CompilerButton from "../../compiler/CompilerButton"
-import CompilerOpts, { CompilerOptsT } from "../../compiler/CompilerOpts"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
+import CompilerButton from "../compiler/CompilerButton"
+import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Diff from "../diff/Diff"
 import UserLink from "../user/UserLink"
 

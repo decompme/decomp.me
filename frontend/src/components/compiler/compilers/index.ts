@@ -1,13 +1,11 @@
 import { FunctionComponent } from "react"
 
-import * as api from "../../api"
+import * as api from "../../../api"
 
+import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc281 from "./gcc2.8.1"
 import * as Ido53 from "./ido5.3"
 import * as Ido71 from "./ido7.1"
-import * as EeGcc296 from "./ee-gcc2.96"
-
-export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
 
 const COMPILERS: CompilerModule[] = [
     Gcc281,
@@ -15,6 +13,8 @@ const COMPILERS: CompilerModule[] = [
     Ido71,
     EeGcc296,
 ]
+
+export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
 
 export default COMPILERS
 
