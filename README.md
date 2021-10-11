@@ -1,5 +1,10 @@
 # [decomp.me](https://decomp.me)
 
+[![Discord Server][discord-badge]][discord]
+
+[discord]: https://discord.gg/sutqNShRRs
+[discord-badge]: https://img.shields.io/discord/897066363951128586?color=%237289DA&logo=discord&logoColor=ffffff
+
 A collaborative decompilation and reverse engineering website, built with Next.js and Django.
 
 ## Directory structure
