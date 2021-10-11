@@ -22,11 +22,12 @@ env = environ.Env(
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
     USE_SANDBOX_JAIL=(bool, True),
+    SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
 )
 
-for stem in [".env", "local.env", "backend.env"]:
+for stem in [".env.local", ".env"]:
     env_file = BASE_DIR / ".." / stem
     if os.path.isfile(env_file):
         with open(env_file) as f:
@@ -143,13 +144,11 @@ SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env('SECURE_HSTS_INCLUDE_SUBDOMAINS')
 SECURE_HSTS_PRELOAD=env('SECURE_HSTS_PRELOAD')
 
-SESSION_COOKIE_SECURE = True
-
+SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 if DEBUG:
     SESSION_COOKIE_SAMESITE = "None"
 else:
     SESSION_COOKIE_SAMESITE = "Lax"
-    CSRF_COOKIE_SECURE = True
 
 COMPILER_BASE_PATH = BASE_DIR / "compilers"
 LOCAL_FILE_DIR = BASE_DIR / "local_files"

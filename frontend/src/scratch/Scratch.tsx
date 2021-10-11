@@ -97,7 +97,7 @@ export default function Scratch({ slug }: Props) {
                                 <AsyncButton onPress={compile} forceLoading={isCompiling}>
                                     <SyncIcon size={16} /> Compile
                                 </AsyncButton>
-                                <CompilerButton value={scratch} onChange={setCompilerOpts} />
+                                <CompilerButton arch={scratch.arch} value={scratch} onChange={setCompilerOpts} />
                             </>}
                         </div>
 
@@ -170,7 +170,7 @@ export default function Scratch({ slug }: Props) {
             />
 
             <resizer.Section className={styles.diffSection} minSize={400}>
-                {scratch.compiler === "" ? <ChooseACompiler onCommit={setCompilerOpts} /> : <>
+                {scratch.compiler === "" ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} /> : <>
                     <div class={styles.sectionHeader}>
                         Diff
                         {compilation && <DiffExplanation />}
@@ -182,12 +182,13 @@ export default function Scratch({ slug }: Props) {
     </div>
 }
 
-function ChooseACompiler({ onCommit }) {
+function ChooseACompiler({ arch, onCommit }) {
     const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
 
     return <div>
         <CompilerOpts
             title="Choose a compiler"
+            arch={arch}
             value={compiler}
             onChange={c => setCompiler(c)}
         />

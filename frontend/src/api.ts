@@ -68,6 +68,8 @@ export async function get(url: string, useCacheIfFresh = false) {
     return await response.json()
 }
 
+const getCached = (url: string) => get(url, true)
+
 export async function post(url: string, json: Json) {
     if (url.startsWith("/")) {
         url = API_BASE + url
@@ -144,11 +146,13 @@ export interface User {
 export type Scratch = {
     slug: string,
     compiler: string,
+    arch: string,
     cc_opts: string,
     source_code: string,
     context: string,
     owner: AnonymousUser | User,
     parent: string | null, // URL
+    diff_label: string | null,
 }
 
 export type Compilation = {
@@ -235,9 +239,13 @@ export function useScratch(slugOrUrl: string): {
     const [isSaved, setIsSaved] = useState(true)
     const [version, setVersion] = useState(0)
     const [localScratch, setLocalScratch] = useState<Scratch | null>(null)
-    const { data, error, mutate } = useSWR<{ scratch: Scratch }, ResponseError>(slugOrUrl, get, {
+    const { data, error, mutate } = useSWR<Scratch, ResponseError>(slugOrUrl, get, {
         refreshInterval: isSaved ? 5000 : 0,
-        onSuccess: ({ scratch }) => {
+        onSuccess: scratch => {
+            if (!scratch.source_code) {
+                throw new Error("Scratch returned from API has no source_code (is the API misbehaving?)")
+            }
+
             // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
             if (!localScratch || (isSaved && !dequal(scratch, localScratch))) {
                 console.info("Got updated scratch from server", scratch)
@@ -247,7 +255,7 @@ export function useScratch(slugOrUrl: string): {
         },
         onErrorRetry,
     })
-    const savedScratch = data?.scratch || null
+    const savedScratch = data || null
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
@@ -272,14 +280,14 @@ export function useScratch(slugOrUrl: string): {
         }
 
         return patch(`/scratch/${savedScratch.slug}`, {
-            // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
+            // TODO: api should support undefinedIfUnchanged on all fields
             source_code: localScratch.source_code,
             context: localScratch.context, //undefinedIfUnchanged("context"),
             compiler: localScratch.compiler,
             cc_opts: localScratch.cc_opts,
         }).then(() => {
             setIsSaved(true)
-            mutate({ scratch: localScratch }, true)
+            mutate(localScratch, true)
         }).catch(error => {
             console.error(error)
         })
@@ -298,7 +306,7 @@ export function useScratch(slugOrUrl: string): {
 }
 
 export async function forkScratch(parent: Scratch): Promise<Scratch> {
-    const { scratch } = await post(`/scratch/${parent.slug}/fork`, parent)
+    const scratch = await post(`/scratch/${parent.slug}/fork`, parent)
     return scratch
 }
 
@@ -335,7 +343,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             cc_opts: scratch.cc_opts,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
-        }).then(({ compilation }: { compilation: Compilation }) => {
+        }).then((compilation: Compilation) => {
             setCompilation(compilation)
         }).catch((error: ResponseError) => {
             setError(error)
@@ -363,4 +371,33 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         isCompiling: isCompileRequestPending || debouncedCompile.isPending(),
         error,
     }
+}
+
+export function useArches(): Record<string, string> {
+    const { data, error } = useSWR<{ "arches": Record<string, string> }, ResponseError>("/compilers", getCached, {
+        refreshInterval: 0,
+        revalidateOnFocus: false,
+        onErrorRetry,
+    })
+
+    if (error) {
+        console.error("useArches error", error)
+    }
+
+    return data?.arches || {
+        "mips": "MIPS (Nintendo 64)",
+    }
+}
+
+export function useCompilers(): Record<string, { arch: string | null }> | null {
+    const { data, error } = useSWR("/compilers", get, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+
+    if (error) {
+        console.error("useCompilers error", error)
+    }
+
+    return data?.compilers ?? null
 }

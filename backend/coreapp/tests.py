@@ -1,3 +1,5 @@
+from django.test.testcases import TestCase
+from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -72,7 +74,7 @@ class CompilationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
-        slug = response.json()["scratch"]["slug"]
+        slug = response.json()["slug"]
 
         compile_dict = {
             'slug': slug,
@@ -88,11 +90,27 @@ class CompilationTests(APITestCase):
 
     def test_ido_line_endings(self):
         """
-        Ensure that compilations with \r\n line endings succeed
+        Ensure that compilations with \\r\\n line endings succeed
         """
         compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertTrue(compilation != None, "The compilation result should be non-null")
         self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation")
+
+
+class M2CTests(TestCase):
+    """
+    Ensure that pointers are next to types (left style)
+    """
+    def test_left_pointer_style(self):
+        c_code = M2CWrapper.decompile("""
+        glabel func
+        li $t6,1
+        jr $ra
+        sw $t6,0($a0)
+        """, "")
+
+        assert c_code is not None, "The decompilation should not fail" # for mypy
+        self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
 
 
 class UserTests(APITestCase):
@@ -208,24 +226,23 @@ class UserTests(APITestCase):
 
         # verify we are logged in
         response = self.client.get(self.current_user_url)
-        self.assertEqual(response.json()["user"]["is_anonymous"], False)
+        self.assertEqual(response.json()["is_anonymous"], False)
 
         self.assertEqual(Profile.objects.count(), 1) # logged-in
 
         # log out
         response = self.client.post(self.current_user_url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["message"], "Logout success")
-        self.assertEqual(response.json()["user"]["is_you"], True)
-        self.assertEqual(response.json()["user"]["is_anonymous"], True)
+        self.assertEqual(response.json()["is_you"], True)
+        self.assertEqual(response.json()["is_anonymous"], True)
 
         self.assertEqual(Profile.objects.count(), 2) # logged-out
 
         for i in range(3):
             # verify we are logged out
             response = self.client.get(self.current_user_url)
-            self.assertEqual(response.json()["user"]["is_you"], True)
-            self.assertEqual(response.json()["user"]["is_anonymous"], True)
+            self.assertEqual(response.json()["is_you"], True)
+            self.assertEqual(response.json()["is_anonymous"], True)
 
         # all the above GETs should have used the same logged-out profile
         self.assertEqual(Profile.objects.count(), 2)
@@ -242,13 +259,13 @@ class UserTests(APITestCase):
             'target_asm': "jr $ra\nnop\n"
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        slug = response.json()["scratch"]["slug"]
+        slug = response.json()["slug"]
 
         self.test_github_login()
 
         response = self.client.get(f"/api/scratch/{slug}")
-        self.assertEqual(response.json()["scratch"]["owner"]["username"], self.GITHUB_USER["login"])
-        self.assertEqual(response.json()["scratch"]["owner"]["is_you"], True)
+        self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
+        self.assertEqual(response.json()["owner"]["is_you"], True)
 
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:

@@ -8,6 +8,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +48,48 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
     return ret
 
 
-def load_arches() -> Dict[str, str]:
-    ret = {}
+@dataclass
+class Arch:
+    name: str
+    assemble_cmd: Optional[str] = None
+    objdump_cmd: Optional[str] = None
+    nm_cmd: Optional[str] = None
 
-    ret["mips"] = "mips-linux-gnu-as -march=vr4300 -o \"$OUTPUT\" \"$INPUT\""
-    ret["mipsel"] = "mips-linux-gnu-as -march=mips64 -mabi=64 -o \"$OUTPUT\" \"$INPUT\""
 
-    return ret
+def load_arches() -> Dict[str, Arch]:
+    return {
+        "mips": Arch(
+            "MIPS (Nintendo 64)",
+            assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+        ),
+        "mipsel": Arch(
+            "MIPS (LE)",
+            assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+        ),
+    }
 
 
 _compilers = load_compilers()
 _arches = load_arches()
 
+def get_assemble_cmd(arch: str) -> Optional[str]:
+    if arch in _arches:
+        return _arches[arch].assemble_cmd
+    return None
+
+def get_nm_command(arch: str) -> Optional[str]:
+    if arch in _arches:
+        return _arches[arch].nm_cmd
+    return None
+
+def get_objdump_command(arch: str) -> Optional[str]:
+    if arch in _arches:
+        return _arches[arch].objdump_cmd
+    return None
 
 def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
     hash = util.gen_hash(args)
@@ -81,8 +112,26 @@ class CompilerWrapper:
         return cfg["arch"] if cfg else None
 
     @staticmethod
-    def available_compilers() -> List[str]:
+    def available_compiler_ids() -> List[str]:
         return sorted(_compilers.keys())
+
+    @staticmethod
+    def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
+        return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
+
+    @staticmethod
+    def available_arches() -> Dict[str, str]:
+        a_set = set()
+        ret = {}
+
+        for id in CompilerWrapper.available_compiler_ids():
+            a_set.add(_compilers[id]["arch"])
+
+        for a in a_set:
+            ret[a] = _arches[a].name
+
+        return ret
+
 
     @staticmethod
     def filter_cc_opts(compiler: str, cc_opts: str) -> str:
@@ -197,7 +246,12 @@ class CompilerWrapper:
     def assemble_asm(arch: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
         if arch not in _arches:
             logger.error(f"Arch {arch} not found")
-            return (None, "arch not found")
+            return (None, f"Arch {arch} not found")
+
+        assemble_cmd = get_assemble_cmd(arch)
+        if not assemble_cmd:
+            logger.error(f"Assemble command for arch {arch} not found")
+            return (None, f"Assemble command for arch {arch} not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
@@ -217,7 +271,7 @@ class CompilerWrapper:
             # Run assembler
             try:
                 assemble_proc = sandbox.run_subprocess(
-                    arch_cfg,
+                    arch_cfg.assemble_cmd,
                     mounts=[],
                     shell=True,
                     env={

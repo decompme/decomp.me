@@ -1,11 +1,31 @@
-import * as Gcc281 from "./Gcc281"
-import * as Ido53 from "./Ido53"
-import * as Ido71 from "./Ido71"
-import * as EeGcc296 from "./EeGcc296"
+import { FunctionComponent } from "preact"
 
-export default {
-    [Gcc281.id]: Gcc281,
-    [Ido53.id]: Ido53,
-    [Ido71.id]: Ido71,
-    [EeGcc296.id]: EeGcc296,
+import * as api from "../../api"
+
+import * as Gcc281 from "./gcc2.8.1"
+import * as Ido53 from "./ido5.3"
+import * as Ido71 from "./ido7.1"
+import * as EeGcc296 from "./ee-gcc2.96"
+
+export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
+
+const COMPILERS: CompilerModule[] = [
+    Gcc281,
+    Ido53,
+    Ido71,
+    EeGcc296,
+]
+
+export default COMPILERS
+
+export function useCompilersForArch(arch?: string) {
+    const serverCompilers = api.useCompilers()
+
+    if (!serverCompilers)
+        return null
+
+    if (arch)
+        return COMPILERS.filter(compiler => serverCompilers[compiler.id]?.arch === arch) // compiler supports this arch
+    else
+        return COMPILERS.filter(compiler => serverCompilers[compiler.id] !== undefined) // server supports this compiler
 }

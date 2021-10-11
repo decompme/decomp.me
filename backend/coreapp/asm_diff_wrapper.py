@@ -41,7 +41,7 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target_data: bytes, config: asm_differ.Config) -> Optional[str]:
+    def run_objdump(target_data: bytes, config: asm_differ.Config, label: Optional[str]) -> Optional[str]:
         flags = [
             "--disassemble",
             "--disassemble-zeroes",
@@ -53,24 +53,58 @@ class AsmDifferWrapper:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            try:
-                objdump_proc = sandbox.run_subprocess(
-                    ["mips-linux-gnu-objdump"] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
-                    shell=True,
-                    env={
-                        "PATH": PATH,
-                    },
-                )
-            except subprocess.CalledProcessError as e:
-                logger.error(e)
-                logger.error(e.stderr)
+            start_addr = 0
+
+            if label:
+                nm_command = compiler_wrapper.get_nm_command(config.arch.name)
+
+                if nm_command:
+                    try:
+                        nm_proc = sandbox.run_subprocess(
+                            [nm_command] + [sandbox.rewrite_path(target_path)],
+                            shell=True,
+                            env={
+                                "PATH": PATH,
+                            },
+                        )
+                    except subprocess.CalledProcessError as e:
+                        logger.error(f"Error running nm: {e}")
+                        logger.error(e.stderr)
+
+                    if nm_proc.stdout:
+                        for line in nm_proc.stdout.splitlines():
+                            if label in line:
+                                start_addr = int(line.split()[0], 16)
+                                break
+                else:
+                    logger.error(f"No nm command for {config.arch.name}")
+
+            flags.append(f"--start-address={start_addr}")
+
+            objdump_command = compiler_wrapper.get_objdump_command(config.arch.name)
+
+            if objdump_command:
+                try:
+                    objdump_proc = sandbox.run_subprocess(
+                        [objdump_command] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
+                        shell=True,
+                        env={
+                            "PATH": PATH,
+                        },
+                    )
+                except subprocess.CalledProcessError as e:
+                    logger.error(e)
+                    logger.error(e.stderr)
+                    return None
+            else:
+                logger.error(f"No objdump command for {config.arch.name}")
                 return None
 
         out = objdump_proc.stdout
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, compilation: Compilation) -> Dict[str, Any]:
+    def diff(target_assembly: Assembly, compilation: Compilation, diff_label:Optional[str]) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
         try:
             arch = asm_differ.get_arch(compiler_arch or "")
@@ -88,7 +122,7 @@ class AsmDifferWrapper:
                 logger.error("Regeneration of base-asm failed")
                 return {"error": "Error: Base asm empty"}
 
-        basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config)
+        basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config, diff_label)
         if not basedump:
             return {"error": "Error running asm-differ on basedump"}
 
@@ -106,7 +140,7 @@ class AsmDifferWrapper:
                 logger.error("Regeneration of new-asm failed")
                 return {"error": "Error: New asm empty"}
 
-        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config)
+        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config, diff_label)
         if not mydump:
             return {"error": "Error running asm-differ on mydump"}
 

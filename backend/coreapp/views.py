@@ -3,8 +3,8 @@ from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
-from django.conf import settings
 from django.contrib.auth import logout
+from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,6 +20,8 @@ from .github import GitHubUser
 from .middleware import Request
 from .decorators.django import condition
 
+boot_time = now()
+
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
     asm, _ = Asm.objects.get_or_create(hash=h, defaults={
@@ -27,12 +29,19 @@ def get_db_asm(request_asm) -> Asm:
     })
     return asm
 
+class CompilersDetail(APIView):
+    @condition(last_modified_func=lambda request: boot_time)
+    def head(self, request: Request):
+        return Response()
 
-@api_view(["GET"])
-def compilers(request):
-    return Response({
-        "compiler_ids": CompilerWrapper.available_compilers(),
-    })
+    @condition(last_modified_func=lambda request: boot_time)
+    def get(self, request: Request):
+        return Response({
+            # compiler_ids is used by the permuter
+            "compiler_ids": CompilerWrapper.available_compiler_ids(),
+            "compilers": CompilerWrapper.available_compilers(),
+            "arches": CompilerWrapper.available_arches(),
+        })
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
@@ -64,9 +73,7 @@ class ScratchDetail(APIView):
             scratch.save()
 
         response = self.head(request, slug)
-        response.data = {
-            "scratch": ScratchWithMetadataSerializer(scratch, context={ "request": request }).data,
-        }
+        response.data = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
         return response
 
     def patch(self, request: Request, slug: str):
@@ -113,6 +120,11 @@ def create_scratch(request):
 
     target_asm = data["target_asm"]
     context = data["context"]
+    diff_label = data.get("diff_label")
+
+    assert isinstance(target_asm, str)
+    assert isinstance(context, str)
+    assert diff_label is None or isinstance(diff_label, str)
 
     asm = get_db_asm(target_asm)
 
@@ -136,7 +148,7 @@ def create_scratch(request):
 
     source_code = data.get("source_code")
     if not source_code:
-        source_code = "void func() {}\n"
+        source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         if arch in ["mips", "mipsel"]:
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
 
@@ -146,10 +158,11 @@ def create_scratch(request):
 
     scratch_data = {
         "slug": gen_scratch_id(),
-        "arch": arch,
         "compiler": compiler,
+        "arch": arch,
         "cc_opts": cc_opts,
         "context": context,
+        "diff_label": diff_label,
         "source_code": source_code,
         "target_assembly": assembly.pk,
     }
@@ -160,9 +173,10 @@ def create_scratch(request):
 
     db_scratch = Scratch.objects.get(slug=scratch_data["slug"])
 
-    return Response({
-        "scratch": ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
-    }, status=status.HTTP_201_CREATED)
+    return Response(
+        ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 @api_view(["POST"])
 def compile(request, slug):
@@ -189,18 +203,16 @@ def compile(request, slug):
 
     diff_output: Optional[Dict[str, Any]] = None
     if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation)
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
 
     return Response({
-        "compilation": {
-            "diff_output": diff_output,
-            "errors": errors,
-        },
+        "diff_output": diff_output,
+        "errors": errors,
     })
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "arch", "cc_opts", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
@@ -213,12 +225,14 @@ def fork(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
+    arch = request.data["arch"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
     context = request.data["context"]
 
     new_scratch = Scratch(
         compiler=compiler,
+        arch=arch,
         cc_opts=cc_opts,
         target_assembly=parent_scratch.target_assembly,
         source_code=code,
@@ -227,9 +241,10 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
-    return Response({
-        "scratch": ScratchSerializer(new_scratch, context={ "request": request }).data,
-    }, status=status.HTTP_201_CREATED)
+    return Response(
+        ScratchSerializer(new_scratch, context={ "request": request }).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 class CurrentUser(APIView):
     """
@@ -239,9 +254,7 @@ class CurrentUser(APIView):
     def get(self, request: Request):
         user = serialize_profile(request, request.profile)
         assert user["is_you"] == True
-        return Response({
-            "user": user,
-        })
+        return Response(user)
 
     def post(self, request: Request):
         """
@@ -251,10 +264,7 @@ class CurrentUser(APIView):
         if "code" in request.data:
             GitHubUser.login(request, request.data["code"])
 
-            return Response({
-                "message": "Login success",
-                "user": serialize_profile(request, request.profile),
-            })
+            return Response(serialize_profile(request, request.profile))
         else:
             logout(request)
 
@@ -263,10 +273,7 @@ class CurrentUser(APIView):
             request.profile = profile
             request.session["profile_id"] = request.profile.id
 
-            return Response({
-                "message": "Logout success",
-                "user": serialize_profile(request, request.profile),
-            })
+            return Response(serialize_profile(request, request.profile))
 
 @api_view(["GET"])
 def user(request, username):
@@ -274,6 +281,4 @@ def user(request, username):
     Gets a user's basic data
     """
 
-    return Response({
-        "user": serialize_profile(request, get_object_or_404(Profile, user__username=username)),
-    })
+    return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
