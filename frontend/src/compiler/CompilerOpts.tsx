@@ -119,8 +119,8 @@ function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
     const compilers = useCompilersForArch(arch)
     const compilerModule = compilers.find(c => c.id === compiler)
 
-    if (!compilerModule) {
-        console.warn("compiler not supported for arch?", compiler)
+    if (!compilerModule && compilers.length) {
+        console.warn("compiler not supported for arch?", compiler, arch)
     }
 
     return <div>
