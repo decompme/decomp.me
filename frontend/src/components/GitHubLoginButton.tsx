@@ -13,9 +13,9 @@ const LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_C
 export default function GitHubLoginButton({ label }: { label?: string }) {
     const { mutate } = useSWRConfig()
 
-    const showLoginWindow = (evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const showLoginWindow = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         const win = window.open(LOGIN_URL, "Sign in with GitHub", "resizable,scrollbars,status")
-        evt.preventDefault()
+        event.preventDefault()
 
         win.addEventListener("close", () => {
             mutate("/user")
