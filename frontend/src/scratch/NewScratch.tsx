@@ -23,7 +23,7 @@ export default function NewScratch() {
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
-        return labels.length > 0 ? labels[0] : null
+        return labels.length > 0 ? labels[labels.length - 1] : null
     }, [asm])
     const [label, setLabel] = useState<string>("")
 

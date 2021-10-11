@@ -82,7 +82,7 @@ export default function Scratch({ slug }: Props) {
         </div>
     }
 
-    const arch = compilers[scratch.compiler]?.arch
+    const arch = scratch.arch
 
     return <div class={styles.container}>
         <resizer.Container className={styles.resizer}>

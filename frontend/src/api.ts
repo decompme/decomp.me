@@ -146,6 +146,7 @@ export interface User {
 export type Scratch = {
     slug: string,
     compiler: string,
+    arch: string,
     cc_opts: string,
     source_code: string,
     context: string,
