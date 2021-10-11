@@ -89,7 +89,7 @@ The following setup sections are optional.
     - "Authorization callback URL" should be the same as the homepage URL, but with `/login` appended
 
 - Edit `.env.local`:
-    - Set `NEXT_PUBLIC_GITHUB_CLIENT_ID` to the application client ID
+    - Set `GITHUB_CLIENT_ID` to the application client ID
     - Set `GITHUB_CLIENT_SECRET` to the application client secret (do **not** share this)
 
 ### Running inside an nginx proxy
@@ -153,7 +153,7 @@ ln -s /etc/nginx/sites-available/local.decomp.me /etc/nginx/sites-enabled/local.
 ```
 
 - Edit `.env.local`:
-    - Set `NEXT_PUBLIC_API_BASE=/api`
+    - Set `API_BASE=/api`
     - Set `ALLOWED_HOSTS=local.decomp.me`
 
 - If you set up GitHub authentication, change the application URLs to `http://local.decomp.me` and `http://local.decomp.me/login`

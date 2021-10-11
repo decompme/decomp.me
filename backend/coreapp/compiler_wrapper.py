@@ -121,7 +121,17 @@ class CompilerWrapper:
 
     @staticmethod
     def available_arches() -> Dict[str, str]:
-        return {k: v.name for k, v in _arches.items()}
+        a_set = set()
+        ret = {}
+
+        for id in CompilerWrapper.available_compiler_ids():
+            a_set.add(_compilers[id]["arch"])
+
+        for a in a_set:
+            ret[a] = _arches[a].name
+
+        return ret
+
 
     @staticmethod
     def filter_cc_opts(compiler: str, cc_opts: str) -> str:

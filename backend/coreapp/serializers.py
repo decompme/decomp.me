@@ -40,9 +40,9 @@ class ProfileField(ProfileFieldBaseClass):
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)
+    arch = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
-    arch = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
     # TODO: `context` should be renamed; it conflicts with Field.context
     context = serializers.CharField(allow_blank=True) # type: ignore
@@ -51,7 +51,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "cc_opts", "target_assembly", "source_code", "context", "diff_label"]
+        fields = ["slug", "compiler", "arch", "cc_opts", "target_assembly", "source_code", "context", "diff_label"]
 
     def create(self, validated_data):
         scratch = Scratch.objects.create(**validated_data)
@@ -72,4 +72,4 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "cc_opts", "source_code", "context", "owner", "parent", "diff_label"]
+        fields = ["slug", "compiler", "arch", "cc_opts", "source_code", "context", "owner", "parent", "diff_label"]

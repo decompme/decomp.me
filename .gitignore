@@ -8,7 +8,7 @@ postgres/
 sandbox/
 *.db
 .DS_Store
-.env.local
+.env.*
 *.log
 /frontend/.next
 /frontend/.cache

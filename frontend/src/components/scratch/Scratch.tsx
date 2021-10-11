@@ -17,12 +17,16 @@ import UserLink from "../user/UserLink"
 import Editor from "./Editor"
 import styles from "./Scratch.module.css"
 
-function ChooseACompiler({ onCommit }: { onCommit: (opts: CompilerOptsT) => void }) {
+function ChooseACompiler({ arch, onCommit }: {
+    arch: string,
+    onCommit: (opts: CompilerOptsT) => void,
+}) {
     const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
 
     return <div>
         <CompilerOpts
             title="Choose a compiler"
+            arch={arch}
             value={compiler}
             onChange={c => setCompiler(c)}
         />
@@ -43,13 +47,13 @@ function ScratchLink({ slug }: { slug: string }) {
         return <span />
     }
 
-    return <Link href={`/scratch/${scratch.slug}`}>
-        <a>{nameScratch(scratch)}</a>
+    return <Link to={`/scratch/${scratch.slug}`}>
+        {nameScratch(scratch)}
     </Link>
 }
 
 function DiffExplanation() {
-    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
+    return <span class={`${styles.diffExplanation} ${styles.visible}`}>
         (left is target, right is your code)
     </span>
 }
@@ -72,7 +76,6 @@ export default function Scratch({ scratch: initialScratch }: Props) {
     const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(initialScratch)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
-    const compilers = api.useCompilers()
 
     const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
         setScratch({
@@ -120,8 +123,6 @@ export default function Scratch({ scratch: initialScratch }: Props) {
         </div>
     }
 
-    const arch = compilers[scratch.compiler]?.arch
-
     return <div className={styles.container}>
         <resizer.Container className={styles.resizer}>
             <resizer.Section minSize={500}>
@@ -138,7 +139,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                                 <AsyncButton onPress={compile} forceLoading={isCompiling}>
                                     <SyncIcon size={16} /> Compile
                                 </AsyncButton>
-                                <CompilerButton arch={arch} value={scratch} onChange={setCompilerOpts} />
+                                <CompilerButton arch={scratch.arch} value={scratch} onChange={setCompilerOpts} />
                             </>}
                         </div>
 
@@ -211,7 +212,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
             />
 
             <resizer.Section className={styles.diffSection} minSize={400}>
-                {scratch.compiler === "" ? <ChooseACompiler onCommit={setCompilerOpts} /> : <>
+                {scratch.compiler === "" ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} /> : <>
                     <div className={styles.sectionHeader}>
                         Diff
                         {compilation && <DiffExplanation />}

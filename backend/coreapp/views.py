@@ -158,8 +158,8 @@ def create_scratch(request):
 
     scratch_data = {
         "slug": gen_scratch_id(),
-        "arch": arch,
         "compiler": compiler,
+        "arch": arch,
         "cc_opts": cc_opts,
         "context": context,
         "diff_label": diff_label,
@@ -212,7 +212,7 @@ def compile(request, slug):
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "arch", "cc_opts", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
@@ -225,12 +225,14 @@ def fork(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
+    arch = request.data["arch"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
     context = request.data["context"]
 
     new_scratch = Scratch(
         compiler=compiler,
+        arch=arch,
         cc_opts=cc_opts,
         target_assembly=parent_scratch.target_assembly,
         source_code=code,
