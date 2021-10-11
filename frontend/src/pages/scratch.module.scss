@@ -1,51 +1,67 @@
+$pad: .5rem;
+
 .container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    cursor: default;
-
-    overflow: auto;
-}
-
-.card {
-    border-radius: 1em;
-    background: #14161a;
-    box-shadow: 0 0.1em 8px rgba(0, 0, 0, 0.5);
-
-    width: calc(var(--s1) * 40);
-    max-width: 100%;
-    height: calc(var(--s1) * 30);
-    overflow: hidden;
-
-    display: flex;
     flex-direction: column;
+    gap: 1em;
+
+    max-width: 40em;
+    padding: 1em;
+
+    user-select: auto;
 }
 
+.rule {
+    border: 0;
+    background: var(--g400);
+    height: 1px;
+}
 
 .heading {
-    color: #fff;
-    font-size: 1.25em;
-    font-weight: 300;
+    padding: $pad;
 
-    padding: var(--s2);
-    padding-bottom: 0.2em;
+    > h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 500;
+    }
+
+    > p {
+        color: var(--g1000);
+        font-size: .9em;
+    }
 }
 
-.description {
-    padding: var(--s2);
-    padding-top: var(--s-2);
+.label {
+    display: block;
+    margin: 0;
+    padding: $pad;
+
+    color: var(--g1700);
+    font-size: .9em;
+    font-weight: 600;
+
+    small {
+        color: var(--g1000);
+        font-size: .8em;
+    }
 }
 
-.targetasm {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
+.textInput {
+    width: 100%;
+    padding: $pad;
+
+    color: var(--g1200);
+    background: var(--g200);
+    font: .8em monospace;
+    border: 1px solid var(--g500);
+    border-radius: 4px;
 }
 
-/* hide monaco's scrollbar minimap */
-.targetasm :global(.decorationsOverviewRuler) {
-    display: none;
+.asmEditor {
+    @extend .textInput;
+    min-height: 8em;
+    resize: vertical;
 }
 
 .actions {
@@ -67,29 +83,4 @@
     flex: 1;
     font-family: monospace;
     white-space: pre;
-}
-
-.textbox {
-    background: #00000044;
-    box-shadow: 0 2px 16px #00000022;
-    border: 0;
-
-    border-radius: .5rem;
-
-    overflow: hidden;
-}
-
-.textbox * { padding: .6em 1em }
-
-.textbox label {
-    background:rgba(0, 0, 0, 0.1);
-}
-
-.textbox input {
-    background: inherit;
-    font: inherit;
-    border: 0;
-
-    font-family: monospace;
-    font-size: .8rem;
 }

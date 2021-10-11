@@ -1,10 +1,14 @@
 import { useState } from "react"
-import { useLayer, Arrow } from "react-laag"
-import { motion, AnimatePresence } from "framer-motion"
-import { CpuIcon } from "@primer/octicons-react"
 
-import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
+import { CpuIcon } from "@primer/octicons-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useLayer, Arrow } from "react-laag"
+
+import Button from "../components/Button"
+import { useThemeVariable } from "../hooks"
+
 import styles from "./CompilerButton.module.css"
+import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
 
 export type Props = {
     arch: CompilerOptsProps["arch"],
@@ -15,6 +19,8 @@ export type Props = {
 
 export default function CompilerButton({ arch, value, onChange, disabled }: Props) {
     const [isOpen, setOpen] = useState(false)
+    const arrowColor = useThemeVariable("--g300")
+    const arrowBorderColor = useThemeVariable("--g500")
 
     const close = () => setOpen(false)
 
@@ -28,18 +34,17 @@ export default function CompilerButton({ arch, value, onChange, disabled }: Prop
     })
 
     return <>
-        <button
+        <Button
             {...triggerProps}
             onClick={() => {
                 if (!disabled)
                     setOpen(!isOpen)
             }}
-            style={isOpen ? { color: "#fff" } : {}}
             disabled={disabled}
         >
             <CpuIcon size={16} />
             Compiler...
-        </button>
+        </Button>
 
         {renderLayer(
             <AnimatePresence>
@@ -52,7 +57,13 @@ export default function CompilerButton({ arch, value, onChange, disabled }: Prop
                     {...layerProps}
                 >
                     <CompilerOpts isPopup={true} arch={arch} value={value} onChange={onChange} />
-                    <Arrow size={12} backgroundColor="#292e35" {...arrowProps} />
+                    <Arrow
+                        size={12}
+                        backgroundColor={arrowColor}
+                        borderWidth={1}
+                        borderColor={arrowBorderColor}
+                        {...arrowProps}
+                    />
                 </motion.div>}
             </AnimatePresence>
         )}

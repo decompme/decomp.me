@@ -1,11 +1,12 @@
 import { createContext, useState, useContext, useEffect } from "react"
+
 import Skeleton from "react-loading-skeleton"
 
 import Select from "../components/Select"
 
+import styles from "./CompilerOpts.module.css"
 import { useCompilersForArch } from "./compilers"
 import PresetSelect, { PRESETS } from "./PresetSelect"
-import styles from "./CompilerOpts.module.css"
 
 interface IOptsContext {
     checkFlag(flag: string): boolean,
@@ -108,7 +109,7 @@ export default function CompilerOpts({ arch, value, onChange, title, isPopup }: 
     </OptsContext.Provider>
 }
 
-function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
+export function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
     arch?: string,
     compiler: string,
     setCompiler: (compiler: string) => void,

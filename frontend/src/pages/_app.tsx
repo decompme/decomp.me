@@ -1,6 +1,6 @@
 // https://nextjs.org/docs/basic-features/layouts#single-shared-layout-with-custom-app
 
-import { useLayoutEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import Head from "next/head"
 import Router from "next/router"
@@ -25,14 +25,12 @@ Router.events.on("routeChangeError", progress.finish)
 export default function MyApp({ Component, pageProps }) {
     const [themeColor, setThemeColor] = useState("#242829") // --g400 from themePlum
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const style = window.getComputedStyle(document.body)
 
         // Same color as navbar
         setThemeColor(style.getPropertyValue("--g400"))
     }, [])
-
-    console.log(themeColor)
 
     return <Layout>
         <Head>

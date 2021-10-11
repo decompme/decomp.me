@@ -32,7 +32,7 @@
     height: 3em;
     padding: .5rem;
     padding-left: 1rem;
-    background: #2e353f;
+    background: var(--g400);
 
     display: flex;
     flex-direction: row;
@@ -51,11 +51,7 @@
 
     scrollbar-color: #ffffff33 transparent;
     scrollbar-width: thin;
-    background: #14161a;
-}
-
-.diffSection .sectionHeader {
-    background: #1b1e22;
+    background: var(--g300);
 }
 
 .diffExplanation {
@@ -102,16 +98,26 @@
     padding-left: 1rem;
     gap: 1em;
 
-    color: #ffffff88;
+    color: var(--g1200);
     cursor: default;
-}
-
-.metadata a {
-    color: #ffffffcc;
 }
 
 .metadata > div {
     display: flex;
     gap: 1ch;
     align-items: center;
+}
+
+.chooseACompiler {
+    display: flex;
+    flex-direction: column;
+}
+
+.chooseACompilerActions {
+    padding: 1em;
+    align-self: center;
+}
+
+.scratchLink {
+    color: var(--g1400);
 }

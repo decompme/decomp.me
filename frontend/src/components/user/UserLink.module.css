@@ -4,17 +4,14 @@
     justify-content: center;
     gap: .5em;
 
-    border-radius: 2em;
     padding: .6em;
     padding-right: .9em;
+
+    color: var(--g1400);
 }
 
 .user:any-link {
     cursor: pointer;
-}
-
-.user:any-link:hover {
-    background: #ffffff11;
 }
 
 .avatar {

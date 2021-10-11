@@ -4,24 +4,26 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLayer, Arrow } from "react-laag"
 
 import styles from "./AsyncButton.module.css"
+import Button, { Props as ButtonProps } from "./Button"
 
-export type Props = {
-    onPress: () => Promise<unknown>,
+export interface Props extends ButtonProps {
+    onClick: () => Promise<unknown>,
     forceLoading?: boolean,
-    disabled?: boolean,
+    errorPlacement?: import("react-laag/dist/PlacementType").PlacementType,
     children: ReactNode,
 }
 
-export default function AsyncButton({ onPress, disabled, forceLoading, children }: Props) {
+export default function AsyncButton(props: Props) {
     const [isAwaitingPromise, setIsAwaitingPromise] = useState(false)
-    const isLoading = isAwaitingPromise || forceLoading
+    const isLoading = isAwaitingPromise || props.forceLoading
     const [errorMessage, setErrorMessage] = useState("")
+    const clickHandler = props.onClick
     const onClick = useCallback(() => {
-        if (!disabled || isLoading) {
+        if (!isLoading) {
             setIsAwaitingPromise(true)
             setErrorMessage("")
 
-            const promise = onPress()
+            const promise = clickHandler()
 
             if (promise instanceof Promise) {
                 promise.catch(error => {
@@ -31,26 +33,26 @@ export default function AsyncButton({ onPress, disabled, forceLoading, children 
                     setIsAwaitingPromise(false)
                 })
             } else {
-                console.error("AsyncButton onPress() must return a promise, but instead it returned", promise)
+                console.error("AsyncButton onClick() must return a promise, but instead it returned", promise)
                 setIsAwaitingPromise(false)
             }
         }
-    }, [disabled, isLoading, onPress])
+    }, [isLoading, clickHandler])
     const { triggerProps, layerProps, arrowProps, renderLayer } = useLayer({
         isOpen: errorMessage !== "",
         onOutsideClick: () => setErrorMessage(""),
-        placement: "top-center",
+        placement: props.errorPlacement ?? "top-center",
         triggerOffset: 8,
     })
 
     // TODO: prettier loading state
 
-    return <button
+    return <Button
+        {...props}
         onClick={onClick}
-        disabled={disabled}
         {...triggerProps}
     >
-        {isLoading ? "Loading..." : children}
+        {isLoading ? "Loading..." : props.children}
 
         {renderLayer(
             <AnimatePresence>
@@ -62,10 +64,10 @@ export default function AsyncButton({ onPress, disabled, forceLoading, children 
                     transition={{ type: "spring", duration: 0.2 }}
                     {...layerProps}
                 >
-                    <span>{errorMessage}</span>
+                    <pre>{errorMessage}</pre>
                     <Arrow size={12} backgroundColor="#bb4444" {...arrowProps} />
                 </motion.div>}
             </AnimatePresence>
         )}
-    </button>
+    </Button>
 }

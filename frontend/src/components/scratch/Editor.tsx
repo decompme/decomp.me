@@ -31,7 +31,7 @@ export default function Editor({ language, forceLoading, value, valueVersion, on
                 monaco.languages.setLanguageConfiguration("custom_c", customLanguage.conf)
                 monaco.languages.setMonarchTokensProvider("custom_c", customLanguage.language)
             } else if (language === "asm") {
-                // TODO? possibly not common enough
+                // TODO
             }
 
             setTimeout(() => setIsLoading(false), 0)

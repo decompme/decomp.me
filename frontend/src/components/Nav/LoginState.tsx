@@ -43,6 +43,8 @@ export default function LoginState({ onChange }: Props) {
             </a>
         </Link>
     } else {
-        return <GitHubLoginButton label="Sign in" />
+        return <div className={styles.loginContainer}>
+            <GitHubLoginButton label="Sign in" />
+        </div>
     }
 }

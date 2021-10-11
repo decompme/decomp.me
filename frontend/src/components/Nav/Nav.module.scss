@@ -1,5 +1,6 @@
 .nav {
     flex: 0;
+    width: 100%;
 
     user-select: none;
 
@@ -9,7 +10,7 @@
     flex-wrap: wrap;
     gap: .5em;
 
-    height: 48px;
+    padding: 1vh 0.5vw;
 
     background: var(--g400);
     border-bottom: 1px solid var(--g600);
@@ -26,26 +27,21 @@
     padding: 0 8px;
 
     opacity: 1.0;
-    transform: scale(1.0);
-    transition: opacity .1s ease, transform .2s ease-out;
 
     &:hover {
         opacity: 0.8;
     }
-
-    /*&:active {
-        transform: scale(0.9);
-
-        @media (prefers-reduced-motion) {
-            transform: scale(1.0);
-        }
-    }*/
 }
 
 .logo {
     @extend .item;
 
-    padding: 0 8px;
+    margin: 0 .5vw;
+    padding: 0;
+
+    svg {
+        pointer-events: none;
+    }
 
     /* Frog blinks when you load the page or stop hovering */
     &:not(:hover) {

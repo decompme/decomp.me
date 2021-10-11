@@ -8,6 +8,7 @@ import { MarkGithubIcon } from "@primer/octicons-react"
 import useSWR, { useSWRConfig } from "swr"
 
 import * as api from "../../api"
+import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 
@@ -49,13 +50,12 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
         fallback: initialUser,
     })
 
-    const signOut = () => {
+    const signOut = async () => {
         api.post("/user", {})
             .then((user: api.AnonymousUser) => {
                 mutate("/user", user)
                 mutate(`/users/${username}`)
             })
-            .catch(console.error)
     }
 
     if (error)
@@ -103,9 +103,9 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
             </section>*/}
 
             {user.is_you && <section>
-                <button className="red" onClick={signOut}>
+                <AsyncButton onClick={signOut}>
                     Sign out
-                </button>
+                </AsyncButton>
             </section>}
         </main>
         <Footer />

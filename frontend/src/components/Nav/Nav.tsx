@@ -1,7 +1,6 @@
 import Link from "next/link"
 
-import Frog from "../../../public/frog.svg"
-
+import Frog from "./frog.svg"
 import LoginState, { Props as LoginStateProps } from "./LoginState"
 import styles from "./Nav.module.scss"
 
@@ -20,7 +19,7 @@ export default function Nav({ onUserChange }: Props) {
         </Link>
 
         <Link href="/scratch">
-            <a className={styles.item}>New Scratch</a>
+            <a className={styles.item}>New scratch</a>
         </Link>
 
         <div className={styles.grow} />

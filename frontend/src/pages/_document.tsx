@@ -10,8 +10,8 @@ export default class MyDocument extends Document {
 
                     <link rel="manifest" href="/manifest.json" />
 
-                    <link rel="shortcut icon" type="image/png" href="/frog.png" />
-                    <link rel="apple-touch-icon" type="image/png" href="/frog.png" />
+                    <link rel="shortcut icon" href="/purplefrog.svg" />
+                    <link rel="apple-touch-icon" href="/purplefrog-bg.svg" />
                 </Head>
                 <body className="themePlum">
                     <Main />

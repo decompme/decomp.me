@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 import Link from "next/link"
 
@@ -9,8 +9,8 @@ import useDeepCompareEffect from "use-deep-compare-effect"
 import * as api from "../../api"
 import CompilerButton from "../../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../../compiler/CompilerOpts"
-import { useLocalStorage } from "../../hooks"
 import AsyncButton from "../AsyncButton"
+import Button from "../Button"
 import Diff from "../diff/Diff"
 import UserLink from "../user/UserLink"
 
@@ -21,9 +21,9 @@ function ChooseACompiler({ arch, onCommit }: {
     arch: string,
     onCommit: (opts: CompilerOptsT) => void,
 }) {
-    const [compiler, setCompiler] = useLocalStorage<CompilerOptsT>("ChooseACompiler.recent")
+    const [compiler, setCompiler] = useState<CompilerOptsT>()
 
-    return <div>
+    return <div className={styles.chooseACompiler}>
         <CompilerOpts
             title="Choose a compiler"
             arch={arch}
@@ -31,11 +31,11 @@ function ChooseACompiler({ arch, onCommit }: {
             onChange={c => setCompiler(c)}
         />
 
-        <div style={{ padding: "1em", float: "right" }}>
-            <button onClick={() => onCommit(compiler)}>
+        <div className={styles.chooseACompilerActions}>
+            <Button primary onClick={() => onCommit(compiler)}>
                 Use this compiler
                 <ArrowRightIcon size={16} />
-            </button>
+            </Button>
         </div>
     </div>
 }
@@ -47,24 +47,26 @@ function ScratchLink({ slug }: { slug: string }) {
         return <span />
     }
 
-    return <Link to={`/scratch/${scratch.slug}`}>
-        {nameScratch(scratch)}
+    return <Link href={`/scratch/${scratch.slug}`}>
+        <a className={styles.scratchLink}>
+            {nameScratch(scratch)}
+        </a>
     </Link>
 }
 
 function DiffExplanation() {
-    return <span class={`${styles.diffExplanation} ${styles.visible}`}>
+    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
         (left is target, right is your code)
     </span>
 }
 
 export function nameScratch({ slug, owner }: api.Scratch): string {
     if (owner?.is_you) {
-        return "your scratch"
+        return "Your Scratch"
     } else if (owner && !api.isAnonUser(owner) && owner?.name) {
-        return `${owner?.name}'s scratch`
+        return `${owner?.name}'s Scratch`
     } else {
-        return `scratch ${slug}`
+        return "Untitled Scratch"
     }
 }
 
@@ -136,7 +138,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                             <span className={styles.grow} />
 
                             {scratch.compiler !== "" && <>
-                                <AsyncButton onPress={compile} forceLoading={isCompiling}>
+                                <AsyncButton onClick={compile} forceLoading={isCompiling}>
                                     <SyncIcon size={16} /> Compile
                                 </AsyncButton>
                                 <CompilerButton arch={scratch.arch} value={scratch} onChange={setCompilerOpts} />
@@ -154,7 +156,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                             </div>}
 
                             <div>
-                                {scratch.owner?.is_you && <AsyncButton onPress={() => {
+                                {scratch.owner?.is_you && <AsyncButton onClick={() => {
                                     return Promise.all([
                                         saveScratch(),
                                         compile(),
@@ -162,7 +164,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                                 }} disabled={isSaved}>
                                     <UploadIcon size={16} /> Save
                                 </AsyncButton>}
-                                <AsyncButton onPress={forkScratch}>
+                                <AsyncButton onClick={forkScratch}>
                                     <RepoForkedIcon size={16} /> Fork
                                 </AsyncButton>
                             </div>
@@ -206,7 +208,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                 size={1}
                 style={{
                     cursor: "col-resize",
-                    background: "#2e3032",
+                    background: "var(--g600)",
                 }}
                 expandInteractiveArea={{ left: 4, right: 4 }}
             />

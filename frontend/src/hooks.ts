@@ -1,25 +1,6 @@
-import { useState, useRef, useLayoutEffect, Dispatch } from "react"
+import { useState, useRef, useLayoutEffect, useEffect } from "react"
 
 import useResizeObserver from "@react-hook/resize-observer"
-
-export function useLocalStorage<S>(key: string, initialValue: S = undefined): [S, Dispatch<S>] {
-    if (typeof localStorage === "undefined") {
-        return [initialValue, v => {}]
-    }
-
-    const [storedValue, setStoredValue] = useState(() => {
-        const item = localStorage.getItem(key)
-        return item ? JSON.parse(item) : initialValue
-    })
-
-    const setValue = (value: S) => {
-        const valueToStore = value instanceof Function ? value(storedValue) : value
-        setStoredValue(valueToStore)
-        localStorage.setItem(key, JSON.stringify(valueToStore))
-    }
-
-    return [storedValue, setValue]
-}
 
 export function useSize<T extends HTMLElement>() {
     const ref = useRef<T>()
@@ -33,4 +14,27 @@ export function useSize<T extends HTMLElement>() {
     useResizeObserver(ref, entry => setSize(entry.contentRect))
 
     return { width: size.width, height: size.height, ref }
+}
+
+export function useBeforeUnload(fn: (event: BeforeUnloadEvent) => string) {
+    const cb = useRef(fn)
+
+    useEffect(() => {
+        const onUnload = cb.current
+        window.addEventListener("beforeunload", onUnload, { capture: true })
+        return () => {
+            window.removeEventListener("beforeunload", onUnload, { capture: true })
+        }
+    }, [cb])
+}
+
+export function useThemeVariable(variable: string): string {
+    const [value, setValue] = useState<string>()
+
+    useEffect(() => {
+        const style = window.getComputedStyle(document.body)
+        setValue(style.getPropertyValue(variable))
+    }, [variable])
+
+    return value
 }

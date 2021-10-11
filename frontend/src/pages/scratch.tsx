@@ -1,19 +1,15 @@
-import { useState, useMemo } from "react"
+import { useEffect, useState, useMemo } from "react"
 
 import Head from "next/head"
 import { useRouter } from "next/router"
 
-import toast from "react-hot-toast"
-
 import * as api from "../api"
+import AsyncButton from "../components/AsyncButton"
+import Footer from "../components/Footer"
 import Nav from "../components/Nav"
-import Editor from "../components/scratch/Editor"
-import Select from "../components/Select"
-import { useLocalStorage } from "../hooks"
+import Select from "../components/Select2"
 
 import styles from "./scratch.module.scss"
-
-// TODO: use AsyncButton with custom error handler?
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n")
@@ -29,12 +25,24 @@ function getLabels(asm: string): string[] {
     return labels
 }
 
+function AsmEditor({ value, placeholder, onChange }: {
+    value: string,
+    placeholder?: string,
+    onChange: (value: string) => void,
+}) {
+    return <textarea
+        className={styles.asmEditor}
+        value={value}
+        placeholder={placeholder}
+        onChange={e => onChange(e.target.value)}
+        spellCheck={false}
+    />
+}
+
 export default function NewScratch() {
-    const [awaitingResponse, setAwaitingResponse] = useState(false)
-    const [errorMsg, setErrorMsg] = useState("")
-    const [asm, setAsm] = useLocalStorage("NewScratch.asm", "")
-    const [context, setContext] = useLocalStorage("NewScratch.context", "")
-    const [arch, setArch] = useState<string>()
+    const [asm, setAsm] = useState("")
+    const [context, setContext] = useState("")
+    const [arch, setArch] = useState("")
     const router = useRouter()
     const arches = api.useArches()
 
@@ -44,20 +52,32 @@ export default function NewScratch() {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
+    // Load fields from localStorage
+    useEffect(() => {
+        try {
+            setLabel(JSON.parse(localStorage["NewScratch.label"] ?? "\"\""))
+            setAsm(JSON.parse(localStorage["NewScratch.asm"] ?? "\"\""))
+            setContext(JSON.parse(localStorage["NewScratch.context"] ?? "\"\""))
+            setArch(JSON.parse(localStorage["NewScratch.arch"] ?? "\"\""))
+        } catch (error) {
+            console.warn("bad localStorage", error)
+        }
+    }, [])
+
+    // Update localStorage
+    useEffect(() => {
+        localStorage["NewScratch.label"] = JSON.stringify(label)
+        localStorage["NewScratch.asm"] = JSON.stringify(asm)
+        localStorage["NewScratch.context"] = JSON.stringify(context)
+        localStorage["NewScratch.arch"] = JSON.stringify(arch)
+    }, [label, asm, context, arch])
+
     if (!arch) {
         setArch(Object.keys(arches)[0])
     }
 
     const submit = async () => {
-        setErrorMsg("")
-
-        if (awaitingResponse) {
-            console.warn("create scratch action already in progress")
-            return
-        }
-
         try {
-            setAwaitingResponse(true)
             const scratch: api.Scratch = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
@@ -65,70 +85,93 @@ export default function NewScratch() {
                 diff_label: label || defaultLabel || "",
             })
 
-            setErrorMsg("")
-            setAsm("") // Clear the localStorage
+            localStorage["NewScratch.label"] = ""
+            localStorage["NewScratch.asm"] = ""
 
             router.push(`/scratch/${scratch.slug}`)
-            toast.success("Scratch created! You may share this url")
         } catch (error) {
             if (error?.responseJSON?.as_errors) {
-                setErrorMsg(error.responseJSON.as_errors.join("\n"))
+                throw new Error(error.responseJSON.as_errors.join("\n"))
             } else {
                 console.error(error)
-                setErrorMsg(error.message || error.toString())
+                throw error
             }
-        } finally {
-            setAwaitingResponse(false)
         }
     }
 
     return <>
         <Head>
-            <title>New Scratch | decomp.me</title>
+            <title>New scratch | decomp.me</title>
         </Head>
         <Nav />
         <main className={styles.container}>
-            <div className={styles.card}>
-                <h1 className={`${styles.heading}`}>New scratch</h1>
-                <p className={styles.description}>
-                    Paste your function&lsquo;s target assembly below:
+            <div className={styles.heading}>
+                <h1>Create a new scratch</h1>
+                <p>
+                    A scratch is a playground where you can work on matching
+                    a given target assembly using any compiler options you like.
                 </p>
+            </div>
 
-                <div className={styles.targetasm}>
-                    <Editor language="asm" value={asm} onChange={v => setAsm(v)} />
-                </div>
+            <hr className={styles.rule} />
 
-                <p className={styles.description}>
-                    Include any C context (structs, definitions, etc) below:
+            <div>
+                <p className={styles.label}>
+                    Architecture
                 </p>
-                <div className={styles.targetasm}>
-                    <Editor language="c" value={context} onChange={v => setContext(v)} />
-                </div>
+                {/* TODO: custom horizontal <options> */}
+                <Select
+                    options={arches}
+                    value={arch}
+                    onChange={a => setArch(a)}
+                />
+            </div>
 
-                {errorMsg && <div className={`red ${styles.errormsg}`}>
-                    {errorMsg}
-                </div>}
+            <hr className={styles.rule} />
 
-                <div className={styles.actions}>
-                    <Select className={styles.compilerSelect} onChange={e => setArch((e.target as HTMLSelectElement).value)}>
-                        {Object.entries(arches).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-                    </Select>
+            <div>
+                <label className={styles.label} htmlFor="label">
+                    Function name <small>(label as it appears in the target asm)</small>
+                </label>
+                <input
+                    name="label"
+                    type="text"
+                    value={label}
+                    placeholder={defaultLabel}
+                    onChange={e => setLabel((e.target as HTMLInputElement).value)}
+                    className={styles.textInput}
+                />
+            </div>
+            <div>
+                <p className={styles.label}>Target assembly <small>(required)</small></p>
+                <AsmEditor
+                    value={asm}
+                    onChange={v => setAsm(v)}
+                />
+            </div>
+            <div>
+                <p className={styles.label}>
+                    Context <small>(typically generated with m2ctx.py)</small>
+                </p>
+                <AsmEditor
+                    value={context}
+                    onChange={v => setContext(v)}
+                />
+            </div>
 
-                    <div className={styles.textbox}>
-                        <label>Label</label>
-                        <input
-                            type="text"
-                            value={label}
-                            placeholder={defaultLabel}
-                            onChange={e => setLabel((e.target as HTMLInputElement).value)}
-                        />
-                    </div>
+            <hr className={styles.rule} />
 
-                    <span className={styles.actionspacer} />
-
-                    <button disabled={(!asm && arch !== null) || awaitingResponse} onClick={submit}>Create scratch</button>
-                </div>
+            <div>
+                <AsyncButton
+                    primary
+                    disabled={asm.length == 0}
+                    onClick={submit}
+                    errorPlacement="right-center"
+                >
+                    Create scratch
+                </AsyncButton>
             </div>
         </main>
+        <Footer />
     </>
 }

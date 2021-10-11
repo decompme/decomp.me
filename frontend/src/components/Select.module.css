@@ -2,19 +2,17 @@
     display: inline-flex;
     position: relative;
 
-    background: #00000044;
-    color: #ffffffcc;
+    background: var(--g200);
+    color: var(--g1600);
+    border: 1px solid var(--g400);
 
-    border: 0;
-    border-radius: 0.5em;
+    border-radius: 4px;
 
     padding: .6em 1em;
 
     font-size: .8rem;
 
     user-select: none;
-
-    box-shadow: 0 2px 16px #00000022;
 }
 
 .group select {
@@ -27,8 +25,8 @@
 }
 
 .group option, .group optgroup {
-    color: white;
-    background: #14161a;
+    color: var(--g1600);
+    background: var(--g200);
 }
 
 .icon {

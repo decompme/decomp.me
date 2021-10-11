@@ -3,9 +3,12 @@
 .user {
     @extend .item;
     gap: 6px;
-    padding-right: 1em;
 }
 
 .avatar {
     border-radius: 24px;
+}
+
+.loginContainer, .user {
+    margin-right: .5em;
 }

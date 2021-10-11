@@ -1,6 +1,8 @@
 import { MarkGithubIcon } from "@primer/octicons-react"
 import { useSWRConfig } from "swr"
 
+import Button from "./Button"
+
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
 
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
@@ -21,15 +23,9 @@ export default function GitHubLoginButton({ label }: { label?: string }) {
     }
 
     if (GITHUB_CLIENT_ID) {
-        return <a
-            className="button"
-            href={LOGIN_URL}
-            target="_blank"
-            rel="noreferrer"
-            onClick={showLoginWindow}
-        >
+        return <Button onClick={showLoginWindow}>
             <MarkGithubIcon size={16} /> {label ?? "Sign in with GitHub"}
-        </a>
+        </Button>
     } else {
         // The backend is not configured to support GitHub login
         return <button disabled>

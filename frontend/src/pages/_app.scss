@@ -1,4 +1,5 @@
 @use "sass:color";
+@use "sass:math";
 
 @mixin theme($accent: color, $bg: color) {
     $accent-light: color.scale($accent, $lightness: 50%, $saturation: 30%);
@@ -12,8 +13,9 @@
     --accent: #{$accent};
     --complement: #{color.complement($accent)};
 
-    @for $i from 1 through 20 {
-        --g#{$i * 100}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * 5%)};
+    @for $i from 1 through 40 {
+        $multiplier: 2.5%;
+        --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
     }
 
     $peak: 0;
@@ -31,7 +33,7 @@
 }
 
 .themePlum {
-    @include theme(#951fd9, #373d3e);
+    @include theme(#951fd9, #292f33);
 }
 
 html {
@@ -74,8 +76,9 @@ body {
     color: var(--a800);
 
     line-height: var(--ratio);
-    overflow: hidden;
+    overflow-x: hidden;
     user-select: none;
+    position: relative;
 }
 
 html, body {
@@ -85,7 +88,9 @@ html, body {
 #__next {
     display: flex;
     flex-direction: column;
+    align-items: center;
     height: 100vh;
+    overflow-x: hidden;
 }
 
 #layers {
@@ -94,53 +99,7 @@ html, body {
 
 main {
     flex: 1;
-}
-
-button, .button {
-    background: #00000044;
-    color: #ffffffcc;
-
-    border: 1px solid #ffffff22;
-    border-radius: 0.25rem;
-
-    padding: .6em 1em;
-
-    font-size: .8rem;
-
-    user-select: none;
-    appearance: none;
-    text-decoration: none;
-
-    display: inline-flex;
-    gap: .5em;
-    align-items: center;
-
-    box-shadow: 0 2px 16px #00000022;
-}
-
-button, .button {
-    cursor: pointer;
-}
-
-button[disabled] {
-    color: #ffffff33;
-    cursor: default;
-}
-
-button:active, .button:active {
-    box-shadow: none;
-}
-
-label {
-    font-size: var(--s-1);
-}
-
-.white, h1, h2, h3, h4, h5, h6, button:not([disabled]):hover {
-    color: #fff;
-}
-
-.red {
-    color: #f34;
+    width: 100%;
 }
 
 ::selection {
@@ -149,34 +108,4 @@ label {
 
 .routerProgressBar {
     z-index: 999;
-}
-
-.btn {
-    border-radius: 8px;
-
-    padding: .6em 1em;
-
-    font-size: .8rem;
-
-    user-select: none;
-    appearance: none;
-    text-decoration: none;
-
-    display: inline-flex;
-    gap: .5em;
-    align-items: center;
-
-    background: #ffffff11;
-    color: #ffffffaa;
-
-    transition: color .2s ease, background .15s ease;
-
-    &.btn-ghost {
-        background: transparent;
-    }
-
-    &:hover {
-        background: #ffffff11;
-        color: #ffffffcc;
-    }
 }
