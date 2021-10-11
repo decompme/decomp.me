@@ -1,10 +1,12 @@
 import { ReactNode, useState, useCallback } from "react"
 
+import classNames from "classnames"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayer, Arrow } from "react-laag"
 
-import styles from "./AsyncButton.module.css"
+import styles from "./AsyncButton.module.scss"
 import Button, { Props as ButtonProps } from "./Button"
+import LoadingSpinner from "./loading.svg"
 
 export interface Props extends ButtonProps {
     onClick: () => Promise<unknown>,
@@ -45,14 +47,21 @@ export default function AsyncButton(props: Props) {
         triggerOffset: 8,
     })
 
-    // TODO: prettier loading state
-
     return <Button
         {...props}
+        className={classNames(styles.asyncBtn, props.className, {
+            [styles.isLoading]: isLoading,
+        })}
         onClick={onClick}
         {...triggerProps}
     >
-        {isLoading ? "Loading..." : props.children}
+        <div className={styles.label}>
+            {props.children}
+        </div>
+
+        <div className={styles.loading}>
+            <LoadingSpinner width="24px" />
+        </div>
 
         {renderLayer(
             <AnimatePresence>
