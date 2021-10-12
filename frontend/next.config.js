@@ -1,5 +1,10 @@
 const { config } = require("dotenv")
 const { execSync } = require("child_process")
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
+const removeImports = require("next-remove-imports")({
+    //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
+    //matchImports: "\\.(less|css|scss|sass|styl)$"
+})
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -12,7 +17,7 @@ process.env.NEXT_PUBLIC_COMMIT_HASH = execSync("git rev-parse HEAD").toString().
 const withPWA = require('next-pwa')
 const runtimeCaching = require('next-pwa/cache')
 
-module.exports = withPWA({
+module.exports = removeImports(withPWA({
     async redirects() {
         return [
             {
@@ -45,6 +50,11 @@ module.exports = withPWA({
             use: ["@svgr/webpack"],
         })
 
+        config.plugins.push(new MonacoWebpackPlugin({
+            languages: [],
+            filename: "[name].worker.[contenthash].js",
+        }))
+
         return config
     },
     images: {
@@ -55,4 +65,4 @@ module.exports = withPWA({
         runtimeCaching,
         disable: process.env.NODE_ENV === "development",
     },
-})
+}))

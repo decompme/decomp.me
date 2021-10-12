@@ -23,7 +23,7 @@ Router.events.on("routeChangeComplete", progress.finish)
 Router.events.on("routeChangeError", progress.finish)
 
 export default function MyApp({ Component, pageProps }) {
-    const [themeColor, setThemeColor] = useState("#242829") // --g400 from themePlum
+    const [themeColor, setThemeColor] = useState("#282e31") // --g400 from themePlum
 
     useEffect(() => {
         const style = window.getComputedStyle(document.body)

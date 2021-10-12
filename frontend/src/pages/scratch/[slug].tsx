@@ -2,9 +2,12 @@ import { GetStaticProps } from "next"
 
 import Head from "next/head"
 
+import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
 import Scratch, { nameScratch } from "../../components/scratch/Scratch"
 import * as api from "../../lib/api"
+
+import styles from "./[slug].module.scss"
 
 // dynamically render all pages
 export async function getStaticPaths() {
@@ -40,9 +43,9 @@ export default function ScratchPage({ scratch }: { scratch?: api.Scratch }) {
             <title>{scratch ? nameScratch(scratch) : "Loading scratch"} | decomp.me</title>
         </Head>
         <Nav />
-        <main>
+        <main className={styles.container}>
             {scratch && <Scratch scratch={scratch} />}
-            {scratch === undefined && <h1>Loading...</h1> /* TODO */}
+            {scratch === undefined && <LoadingSpinner className={styles.loading} />}
         </main>
     </>
 }

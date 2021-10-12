@@ -4,6 +4,7 @@ import Head from "next/head"
 import { useRouter } from "next/router"
 
 import AsyncButton from "../components/AsyncButton"
+import Editor from "../components/Editor"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import Select from "../components/Select2"
@@ -23,20 +24,6 @@ function getLabels(asm: string): string[] {
     }
 
     return labels
-}
-
-function AsmEditor({ value, placeholder, onChange }: {
-    value: string,
-    placeholder?: string,
-    onChange: (value: string) => void,
-}) {
-    return <textarea
-        className={styles.asmEditor}
-        value={value}
-        placeholder={placeholder}
-        onChange={e => onChange(e.target.value)}
-        spellCheck={false}
-    />
 }
 
 export default function NewScratch() {
@@ -109,7 +96,7 @@ export default function NewScratch() {
                 <h1>Create a new scratch</h1>
                 <p>
                     A scratch is a playground where you can work on matching
-                    a given target assembly using any compiler options you like.
+                    a given target function using any compiler options you like.
                 </p>
             </div>
 
@@ -142,20 +129,27 @@ export default function NewScratch() {
                     className={styles.textInput}
                 />
             </div>
-            <div>
+            <div className={styles.editorContainer}>
                 <p className={styles.label}>Target assembly <small>(required)</small></p>
-                <AsmEditor
+                <Editor
+                    className={styles.editor}
+                    language="mips"
+                    lineNumbers={false}
                     value={asm}
-                    onChange={v => setAsm(v)}
+                    onChange={setAsm}
+                    padding={10}
                 />
             </div>
-            <div>
+            <div className={styles.editorContainer}>
                 <p className={styles.label}>
                     Context <small>(typically generated with m2ctx.py)</small>
                 </p>
-                <AsmEditor
+                <Editor
+                    className={styles.editor}
+                    language="c"
                     value={context}
-                    onChange={v => setContext(v)}
+                    onChange={setContext}
+                    padding={10}
                 />
             </div>
 

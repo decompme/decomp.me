@@ -1,6 +1,7 @@
 const path = require("path")
 const { config } = require("dotenv")
 const { execSync } = require("child_process")
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -52,6 +53,11 @@ module.exports = {
             ],
             include: path.resolve(__dirname, '../src'),
         })
+
+        config.plugins.push(new MonacoWebpackPlugin({
+            languages: [],
+            filename: "[name].worker.[contenthash].js",
+        }))
 
         return config
     },

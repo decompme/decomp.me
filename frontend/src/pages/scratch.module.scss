@@ -1,5 +1,3 @@
-$pad: .5rem;
-
 .container {
     display: flex;
     flex-direction: column;
@@ -18,7 +16,7 @@ $pad: .5rem;
 }
 
 .heading {
-    padding: $pad;
+    padding: 10px;
 
     > h1 {
         color: var(--g1900);
@@ -27,15 +25,17 @@ $pad: .5rem;
     }
 
     > p {
+        padding-top: 4px;
         color: var(--g1000);
         font-size: .9em;
+        width: 50ch;
     }
 }
 
 .label {
     display: block;
     margin: 0;
-    padding: $pad;
+    padding: 10px;
 
     color: var(--g1700);
     font-size: .9em;
@@ -49,7 +49,7 @@ $pad: .5rem;
 
 .textInput {
     width: 100%;
-    padding: $pad;
+    padding: 8px 10px;
 
     color: var(--g1200);
     background: var(--g200);
@@ -58,29 +58,18 @@ $pad: .5rem;
     border-radius: 4px;
 }
 
-.asmEditor {
-    @extend .textInput;
-    min-height: 8em;
-    resize: vertical;
-}
-
-.actions {
+.editorContainer {
     display: flex;
-    gap: .5em;
-    align-items: center;
-    padding: var(--s2);
+    flex-direction: column;
+    height: 200px;
 }
 
-.actionspacer {
+.editor {
+    width: 100%;
     flex: 1;
-}
 
-.errormsg {
-    padding-left: var(--s2);
-    padding-right: var(--s2);
-    max-height: 8em;
-    overflow: auto;
-    flex: 1;
-    font-family: monospace;
-    white-space: pre;
+    background: var(--g200);
+
+    border: 1px solid var(--g500);
+    border-radius: 4px;
 }

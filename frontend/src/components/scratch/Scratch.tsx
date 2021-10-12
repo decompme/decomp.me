@@ -12,9 +12,9 @@ import Button from "../Button"
 import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Diff from "../diff/Diff"
+import Editor from "../Editor"
 import UserLink from "../user/UserLink"
 
-import Editor from "./Editor"
 import styles from "./Scratch.module.css"
 
 function ChooseACompiler({ arch, onCommit }: {
@@ -75,7 +75,7 @@ export type Props = {
 }
 
 export default function Scratch({ scratch: initialScratch }: Props) {
-    const { scratch, savedScratch, version, isSaved, setScratch, saveScratch, error } = api.useScratch(initialScratch)
+    const { scratch, savedScratch, isSaved, setScratch, saveScratch, error } = api.useScratch(initialScratch)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
 
@@ -171,13 +171,14 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                         </div>
 
                         <Editor
-                            padding
                             language="c"
                             value={scratch.source_code}
-                            valueVersion={`${scratch.slug}:${version}`}
                             onChange={value => {
                                 setScratch({ source_code: value })
                             }}
+                            lineNumbers
+                            showMargin
+                            useLoadingSpinner
                         />
                     </resizer.Section>
 
@@ -192,13 +193,13 @@ export default function Scratch({ scratch: initialScratch }: Props) {
 
                     <resizer.Section defaultSize={0} className={styles.context}>
                         <Editor
-                            padding
                             language="c"
                             value={scratch.context}
-                            valueVersion={`${scratch.slug}:${version}`}
                             onChange={value => {
                                 setScratch({ context: value })
                             }}
+                            showMargin
+                            useLoadingSpinner
                         />
                     </resizer.Section>
                 </resizer.Container>
