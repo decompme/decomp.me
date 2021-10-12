@@ -356,30 +356,22 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
 }
 
 export function useArches(): Record<string, string> {
-    const { data, error } = useSWR<{ "arches": Record<string, string> }, ResponseError>("/compilers", getCached, {
+    const { data } = useSWR<{ "arches": Record<string, string> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
+        suspense: true,
         onErrorRetry,
     })
 
-    if (error) {
-        console.error("useArches error", error)
-    }
-
-    return data?.arches || {
-        "mips": "MIPS (Nintendo 64)",
-    }
+    return data?.arches
 }
 
 export function useCompilers(): Record<string, { arch: string | null }> | null {
-    const { data, error } = useSWR("/compilers", get, {
+    const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
+        suspense: true,
         onErrorRetry,
     })
 
-    if (error) {
-        console.error("useCompilers error", error)
-    }
-
-    return data?.compilers ?? null
+    return data.compilers
 }

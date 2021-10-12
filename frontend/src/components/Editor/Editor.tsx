@@ -14,6 +14,7 @@ import getTheme from "./monacoTheme"
 const isMobile = mobile()
 
 interface Props extends MonacoEditorProps {
+    bubbleSuspense?: boolean,
     useLoadingSpinner?: boolean,
 }
 
@@ -53,9 +54,13 @@ export default function Editor(props: Props) {
             <LoadingSpinner />
         </div> : textarea
 
-        return <Suspense fallback={loading}>
-            <MonacoEditor {...props} />
-        </Suspense>
+        if (props.bubbleSuspense) {
+            return <MonacoEditor {...props} />
+        } else {
+            return <Suspense fallback={loading}>
+                <MonacoEditor {...props} />
+            </Suspense>
+        }
     } else {
         return textarea
     }

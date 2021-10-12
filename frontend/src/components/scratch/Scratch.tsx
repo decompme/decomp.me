@@ -195,7 +195,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
                             }}
                             lineNumbers
                             showMargin
-                            useLoadingSpinner
+                            bubbleSuspense
                         />
                     </resizer.Section>
 
@@ -216,9 +216,9 @@ export default function Scratch({ slug, tryClaim }: Props) {
                             onChange={value => {
                                 setScratch({ context: value })
                             }}
+                            lineNumbers
                             showMargin
-                            useLoadingSpinner
-                            lineNumbers={true}
+                            bubbleSuspense
                         />
                     </resizer.Section>
                 </resizer.Container>

@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react"
 
+import { GetStaticProps } from "next"
+
 import Head from "next/head"
 import { useRouter } from "next/router"
 
@@ -26,12 +28,21 @@ function getLabels(asm: string): string[] {
     return labels
 }
 
-export default function NewScratch() {
+export const getStaticProps: GetStaticProps = async _context => {
+    const data = await api.get("/compilers")
+
+    return {
+        props: {
+            arches: data.arches,
+        },
+    }
+}
+
+export default function NewScratch({ arches }: { arches: { [key: string]: string } }) {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [arch, setArch] = useState("")
     const router = useRouter()
-    const arches = api.useArches()
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
