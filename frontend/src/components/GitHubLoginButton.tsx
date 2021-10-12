@@ -6,7 +6,7 @@ import Button from "./Button"
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? process.env.STORYBOOK_GITHUB_CLIENT_ID
 
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
-const SCOPES = ["public_repo"]
+const SCOPES = []
 
 const LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${SCOPES.join("%20")}`
 
