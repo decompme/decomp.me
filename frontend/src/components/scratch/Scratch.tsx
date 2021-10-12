@@ -171,6 +171,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                         </div>
 
                         <Editor
+                            className={styles.editor}
                             language="c"
                             value={scratch.source_code}
                             onChange={value => {
@@ -193,6 +194,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
 
                     <resizer.Section defaultSize={0} className={styles.context}>
                         <Editor
+                            className={styles.editor}
                             language="c"
                             value={scratch.context}
                             onChange={value => {
