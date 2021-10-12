@@ -134,10 +134,11 @@ export default function NewScratch() {
                 <Editor
                     className={styles.editor}
                     language="mips"
-                    lineNumbers={false}
                     value={asm}
                     onChange={setAsm}
                     padding={10}
+                    showMargin
+                    lineNumbers
                 />
             </div>
             <div className={styles.editorContainer}>
@@ -150,6 +151,8 @@ export default function NewScratch() {
                     value={context}
                     onChange={setContext}
                     padding={10}
+                    showMargin
+                    lineNumbers
                 />
             </div>
 
