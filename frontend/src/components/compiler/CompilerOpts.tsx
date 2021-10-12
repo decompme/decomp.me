@@ -1,7 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react"
 
-import Skeleton from "react-loading-skeleton"
-
 import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
@@ -154,7 +152,7 @@ export function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
         </div>
 
         <div className={styles.flags}>
-            {(compiler && compilerModule) ? <compilerModule.Flags /> : <Skeleton />}
+            {(compiler && compilerModule) ? <compilerModule.Flags /> : <div />}
         </div>
     </div>
 }
