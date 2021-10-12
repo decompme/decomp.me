@@ -216,7 +216,7 @@ export function useScratch(slugOrUrl: string): {
 } {
     const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
     const [isSaved, setIsSaved] = useState(true)
-    const [localScratch, setLocalScratch] = useState<Scratch>()
+    const localScratch = useRef<Scratch>()
     const { data, mutate } = useSWR<Scratch>(url, get, {
         suspense: true,
         refreshInterval: isSaved ? 5000 : 0,
@@ -230,7 +230,7 @@ export function useScratch(slugOrUrl: string): {
             // because they could overwrite your own changes
             if (!localScratch || isSaved) {
                 console.info("Got updated scratch from server", scratch)
-                setLocalScratch(scratch)
+                localScratch.current = scratch
             }
         },
         onErrorRetry,
@@ -239,47 +239,47 @@ export function useScratch(slugOrUrl: string): {
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
-        setLocalScratch(undefined)
+        localScratch.current = undefined
         mutate()
         setIsSaved(true)
     }, [mutate])
 
+    const [, forceUpdate] = useState<{}>({})
     const setScratch = useCallback((partial: Partial<Scratch>) => {
-        const scratch = Object.assign({}, localScratch, partial)
-
-        setLocalScratch(scratch)
-        setIsSaved(dequal(scratch, savedScratch))
+        Object.assign(localScratch.current, partial)
+        setIsSaved(dequal(localScratch.current, savedScratch))
+        forceUpdate({}) // we changed localScratch
     }, [localScratch, savedScratch])
 
     const saveScratch = useCallback(() => {
-        if (!localScratch) {
+        if (!localScratch.current) {
             throw new Error("Cannot save scratch before it is loaded")
         }
-        if (!localScratch.owner.is_you) {
+        if (!localScratch.current.owner.is_you) {
             throw new Error("Cannot save scratch which you do not own")
         }
 
         return patch(`/scratch/${savedScratch.slug}`, {
             // TODO: api should support undefinedIfUnchanged on all fields
-            source_code: localScratch.source_code,
-            context: localScratch.context, //undefinedIfUnchanged("context"),
-            compiler: localScratch.compiler,
-            cc_opts: localScratch.cc_opts,
+            source_code: localScratch.current.source_code,
+            context: localScratch.current.context, //undefinedIfUnchanged("context"),
+            compiler: localScratch.current.compiler,
+            cc_opts: localScratch.current.cc_opts,
         }).then(() => {
             setIsSaved(true)
-            mutate(localScratch, true)
+            mutate(localScratch.current, true)
         }).catch(error => {
             console.error(error)
         })
     }, [localScratch, savedScratch, mutate])
 
-    if (!localScratch) {
+    if (!localScratch.current) {
         setIsSaved(true)
-        setLocalScratch(savedScratch)
+        localScratch.current = savedScratch
     }
 
     return {
-        scratch: localScratch ?? savedScratch,
+        scratch: localScratch.current,
         savedScratch,
         setScratch,
         saveScratch,
@@ -306,20 +306,21 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
     compile: () => Promise<void>, // no debounce
     debouncedCompile: () => Promise<void>, // with debounce
     isCompiling: boolean,
-    error: ResponseError | null,
 } {
-    const [isCompileRequestPending, setIsCompileRequestPending] = useState(false)
+    const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(null)
-    const [error, setError] = useState<ResponseError>(null)
 
     const compile = useCallback(() => {
-        if (!scratch) {
-            return
-        }
+        if (compileRequestPromise)
+            return compileRequestPromise
 
-        setIsCompileRequestPending(true)
+        if (!scratch)
+            return Promise.reject(new Error("Cannot compile without a scratch"))
 
-        return post(`/scratch/${scratch.slug}/compile`, {
+        if (!scratch.compiler)
+            return Promise.reject(new Error("Cannot compile without a scratch.compiler"))
+
+        const promise = post(`/scratch/${scratch.slug}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
             cc_opts: scratch.cc_opts,
@@ -327,13 +328,19 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
             setCompilation(compilation)
-        }).catch((error: ResponseError) => {
-            setError(error)
-            return Promise.reject(error)
         }).finally(() => {
-            setIsCompileRequestPending(false)
+            setCompileRequestPromise(null)
         })
-    }, [savedScratch, scratch])
+
+        setCompileRequestPromise(promise)
+
+        return promise
+    }, [compileRequestPromise, savedScratch, scratch])
+
+    // suspense
+    if (!compilation && compileRequestPromise) {
+        throw compileRequestPromise
+    }
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
@@ -350,8 +357,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: isCompileRequestPending || debouncedCompile.isPending(),
-        error,
+        isCompiling: !!compileRequestPromise,
     }
 }
 
