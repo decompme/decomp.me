@@ -1,5 +1,7 @@
 import { useState, useRef, useLayoutEffect, useEffect } from "react"
 
+import Router from "next/router"
+
 import useResizeObserver from "@react-hook/resize-observer"
 
 export function useSize<T extends HTMLElement>() {
@@ -16,16 +18,40 @@ export function useSize<T extends HTMLElement>() {
     return { width: size.width, height: size.height, ref }
 }
 
-export function useBeforeUnload(fn: (event: BeforeUnloadEvent) => string) {
-    const cb = useRef(fn)
+export function useWarnBeforeUnload(enabled: boolean, message: string = "Are you sure you want to leave this page?") {
+    const enabledRef = useRef(enabled)
+    const messageRef = useRef(message)
 
+    enabledRef.current = enabled
+    messageRef.current = message
+
+    // Based on code from https://github.com/vercel/next.js/issues/2476#issuecomment-563190607
     useEffect(() => {
-        const onUnload = cb.current
+        const routeChangeStart = (url: string) => {
+            if (Router.asPath !== url && enabledRef.current && !confirm(messageRef.current)) {
+                Router.events.emit("routeChangeError")
+                Router.replace(Router, Router.asPath)
+
+                // This error shows onscreen in dev but we can't do anything about it
+                throw new Error("abort route change - ignore this error")
+            }
+        }
+
+        const onUnload = (event: BeforeUnloadEvent) => {
+            if (enabledRef.current) {
+                event.preventDefault()
+                return event.returnValue = messageRef.current
+            }
+        }
+
         window.addEventListener("beforeunload", onUnload, { capture: true })
+        Router.events.on("routeChangeStart", routeChangeStart)
+
         return () => {
             window.removeEventListener("beforeunload", onUnload, { capture: true })
+            Router.events.off("routeChangeStart", routeChangeStart)
         }
-    }, [cb])
+    }, [enabledRef, messageRef])
 }
 
 export function useThemeVariable(variable: string): string {

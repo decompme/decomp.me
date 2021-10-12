@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 import Link from "next/link"
 
@@ -7,6 +7,7 @@ import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../lib/api"
+import { useWarnBeforeUnload } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerButton from "../compiler/CompilerButton"
@@ -112,6 +113,8 @@ export default function Scratch({ scratch: initialScratch }: Props) {
             document.title += " | decomp.me"
         }
     }, [scratch || {}, isSaved])
+
+    useWarnBeforeUnload(!isSaved, "You have unsaved changes. Are you sure you want to leave?")
 
     if (error?.status === 404) {
         // TODO
