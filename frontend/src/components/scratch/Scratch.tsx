@@ -200,6 +200,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                             }}
                             showMargin
                             useLoadingSpinner
+                            lineNumbers={true}
                         />
                     </resizer.Section>
                 </resizer.Container>
