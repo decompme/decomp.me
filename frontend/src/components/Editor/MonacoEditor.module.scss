@@ -4,6 +4,7 @@
 
     /* fix border-radius overflow */
     overflow: hidden;
+    & :global(.monaco-editor),
     & :global(.monaco-editor-background),
     & :global(.margin),
     & :global(.inputarea.ime-input) {
