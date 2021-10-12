@@ -18,7 +18,8 @@ interface Props extends MonacoEditorProps {
 }
 
 const MonacoEditor = isMobile ? null : dynamic(() => import("./MonacoEditor"), {
-    suspense: true, // @ts-ignore
+    // @ts-ignore
+    suspense: true,
 })
 
 // Wrapper component that asyncronously loads MonacoEditor on desktop,
