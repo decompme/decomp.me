@@ -17,7 +17,7 @@ jobs:
       - run: reviewdog -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
   django_test:
     name: django test
     runs-on: ubuntu-latest
@@ -32,3 +32,10 @@ jobs:
       - run: python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+
+  now_build:
+    name: now build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd frontend && yarn && yarn lint && yarn build
