@@ -34,8 +34,8 @@ jobs:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
   now_build:
-    name: now build
+    name: build frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd frontend && yarn && yarn lint && yarn build
+      - run: cd frontend && yarn && yarn lint && yarn build && yarn build-storybook

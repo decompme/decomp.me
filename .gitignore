@@ -14,3 +14,4 @@ sandbox/
 /frontend/.cache
 /frontend/public/sw.*
 /frontend/public/workbox-*
+/frontend/storybook-static
