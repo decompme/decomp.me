@@ -62,11 +62,11 @@ function DiffExplanation() {
 
 export function nameScratch({ slug, owner }: api.Scratch): string {
     if (owner?.is_you) {
-        return "Your Scratch"
+        return "Your scratch"
     } else if (owner && !api.isAnonUser(owner) && owner?.name) {
-        return `${owner?.name}'s Scratch`
+        return `${owner?.name}'s scratch`
     } else {
-        return "Untitled Scratch"
+        return "Untitled scratch"
     }
 }
 
