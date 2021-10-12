@@ -1,39 +1,11 @@
-@use "sass:color";
-@use "sass:math";
-
-@mixin theme($accent: color, $bg: color) {
-    $accent-light: color.scale($accent, $lightness: 50%, $saturation: 30%);
-    $accent-dark: color.scale($accent, $lightness: -40%, $saturation: -20%);
-
-    --frog-pupil: #292f33;
-    --frog-primary: #{$accent};
-    --frog-secondary: #{$accent-light};
-    --frog-nose: #{$accent-dark};
-
-    --accent: #{$accent};
-    --complement: #{color.complement($accent)};
-
-    @for $i from 1 through 40 {
-        $multiplier: 2.5%;
-        --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
-    }
-
-    $peak: 0;
-    @if color.blackness($bg) > 50% {
-        $peak: 255;
-    }
-
-    @for $i from 1 through 10 {
-        --a#{$i * 100}: #{rgba($peak, $peak, $peak, $i * 0.1)};
-    }
-}
+@use "./theme.scss" as theme;
 
 .themeGreen {
-    @include theme(#77b255, #37393e);
+    @include theme.theme(#77b255, #37393e);
 }
 
 .themePlum {
-    @include theme(#951fd9, #292f33);
+    @include theme.theme(#951fd9, #292f33);
 }
 
 html {

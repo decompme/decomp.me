@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useTransition, useRef } from "react"
 
 import { useRouter } from "next/router"
 
@@ -207,30 +207,18 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
 
-export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
-    scratch: Readonly<Scratch> | null,
+export function useScratch(slugOrUrl: string): {
+    scratch: Readonly<Scratch>,
     savedScratch: Readonly<Scratch> | null,
     setScratch: (scratch: Partial<Scratch>) => void, // Update the scratch, but only locally
     saveScratch: () => Promise<void>, // Persist the scratch to the server
-    version: number, // Increases when different data is loaded from the server
-    isLoading: boolean,
     isSaved: boolean,
-    error: ResponseError | null,
 } {
-    let initialValue = null
-    if (typeof slugOrUrlOrInitialValue === "object") {
-        initialValue = slugOrUrlOrInitialValue
-        slugOrUrlOrInitialValue = slugOrUrlOrInitialValue.slug
-    }
-
-    if (!isAbsoluteUrl(slugOrUrlOrInitialValue)) {
-        slugOrUrlOrInitialValue = `/scratch/${slugOrUrlOrInitialValue}`
-    }
-
+    const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
     const [isSaved, setIsSaved] = useState(true)
-    const [version, setVersion] = useState(0)
-    const [localScratch, setLocalScratch] = useState<Scratch | null>(initialValue)
-    const { data, error, mutate } = useSWR<Scratch, ResponseError>(slugOrUrlOrInitialValue, get, {
+    const [localScratch, setLocalScratch] = useState<Scratch>()
+    const { data, mutate } = useSWR<Scratch>(url, get, {
+        suspense: true,
         refreshInterval: isSaved ? 5000 : 0,
         onSuccess: scratch => {
             if (!scratch.source_code) {
@@ -238,22 +226,23 @@ export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
             }
 
             // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
-            if (!localScratch || (isSaved && !dequal(scratch, localScratch))) {
+            // TODO: display onscreen prompt if there are scratch updates but they arent displayed
+            // because they could overwrite your own changes
+            if (!localScratch || isSaved) {
                 console.info("Got updated scratch from server", scratch)
                 setLocalScratch(scratch)
-                setVersion(version + 1)
             }
         },
         onErrorRetry,
     })
-    const savedScratch = data || null
+    const savedScratch = data
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
-        setLocalScratch(initialValue)
+        setLocalScratch(undefined)
         mutate()
         setIsSaved(true)
-    }, [initialValue, mutate])
+    }, [mutate])
 
     const setScratch = useCallback((partial: Partial<Scratch>) => {
         const scratch = Object.assign({}, localScratch, partial)
@@ -284,15 +273,17 @@ export function useScratch(slugOrUrlOrInitialValue: string | Scratch): {
         })
     }, [localScratch, savedScratch, mutate])
 
+    if (!localScratch) {
+        setIsSaved(true)
+        setLocalScratch(savedScratch)
+    }
+
     return {
-        scratch: localScratch,
+        scratch: localScratch ?? savedScratch,
         savedScratch,
         setScratch,
         saveScratch,
-        isLoading: !data && !error,
         isSaved,
-        version,
-        error,
     }
 }
 
@@ -365,30 +356,22 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
 }
 
 export function useArches(): Record<string, string> {
-    const { data, error } = useSWR<{ "arches": Record<string, string> }, ResponseError>("/compilers", getCached, {
+    const { data } = useSWR<{ "arches": Record<string, string> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
+        suspense: true,
         onErrorRetry,
     })
 
-    if (error) {
-        console.error("useArches error", error)
-    }
-
-    return data?.arches || {
-        "mips": "MIPS (Nintendo 64)",
-    }
+    return data?.arches
 }
 
 export function useCompilers(): Record<string, { arch: string | null }> | null {
-    const { data, error } = useSWR("/compilers", get, {
+    const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
+        suspense: true,
         onErrorRetry,
     })
 
-    if (error) {
-        console.error("useCompilers error", error)
-    }
-
-    return data?.compilers ?? null
+    return data.compilers
 }

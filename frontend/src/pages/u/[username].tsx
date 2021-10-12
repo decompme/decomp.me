@@ -9,6 +9,7 @@ import useSWR, { useSWRConfig } from "swr"
 
 import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
+import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
 import * as api from "../../lib/api"
 
@@ -65,8 +66,8 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
         // shouldn't show up in prod because fallback="blocking"
         return <>
             <Nav />
-            <main className={styles.pageContainer}>
-                Loading...
+            <main className={styles.loadingPage}>
+                <LoadingSpinner width="24px" />
             </main>
         </>
     }

@@ -93,7 +93,9 @@ class CompilationTests(APITestCase):
         Ensure that compilations with \\r\\n line endings succeed
         """
         compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        self.assertTrue(compilation != None, "The compilation result should be non-null")
+        if errors:
+            print(errors)
+        self.assertIsNotNone(compilation, "The compilation result should be non-null")
         self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation")
 
 
@@ -250,7 +252,7 @@ class UserTests(APITestCase):
     @responses.activate
     def test_own_scratch(self):
         """
-        Create a scratch anonymously, then log in and verify that the scratch owner is your logged-in user.
+        Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
         """
 
         response = self.client.post("/api/scratch", {
@@ -262,6 +264,10 @@ class UserTests(APITestCase):
         slug = response.json()["slug"]
 
         self.test_github_login()
+
+        response = self.client.post(f"/api/scratch/{slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
 
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
@@ -326,3 +332,24 @@ class ScratchDetailTests(APITestCase):
         # should now be modified
         response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_double_claim(self):
+        """
+        Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
+        """
+
+        scratch = self.make_nop_scratch()
+
+        self.assertIsNone(scratch.owner)
+
+        response = self.client.post(f"/api/scratch/{scratch.slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
+        response = self.client.post(f"/api/scratch/{scratch.slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.json()["success"])
+
+        updated_scratch = Scratch.objects.first()
+        assert updated_scratch is not None
+        self.assertIsNotNone(updated_scratch.owner)

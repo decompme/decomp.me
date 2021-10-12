@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 import Link from "next/link"
 
@@ -7,6 +7,7 @@ import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../lib/api"
+import { useWarnBeforeUnload } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerButton from "../compiler/CompilerButton"
@@ -16,6 +17,8 @@ import Editor from "../Editor"
 import UserLink from "../user/UserLink"
 
 import styles from "./Scratch.module.css"
+
+let isClaiming = false
 
 function ChooseACompiler({ arch, onCommit }: {
     arch: string,
@@ -62,20 +65,21 @@ function DiffExplanation() {
 
 export function nameScratch({ slug, owner }: api.Scratch): string {
     if (owner?.is_you) {
-        return "Your Scratch"
+        return "Your scratch"
     } else if (owner && !api.isAnonUser(owner) && owner?.name) {
-        return `${owner?.name}'s Scratch`
+        return `${owner?.name}'s scratch`
     } else {
-        return "Untitled Scratch"
+        return "Untitled scratch"
     }
 }
 
 export type Props = {
-    scratch: api.Scratch,
+    slug: string,
+    tryClaim?: boolean, // note: causes page reload after claiming
 }
 
-export default function Scratch({ scratch: initialScratch }: Props) {
-    const { scratch, savedScratch, isSaved, setScratch, saveScratch, error } = api.useScratch(initialScratch)
+export default function Scratch({ slug, tryClaim }: Props) {
+    const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
 
@@ -113,16 +117,28 @@ export default function Scratch({ scratch: initialScratch }: Props) {
         }
     }, [scratch || {}, isSaved])
 
-    if (error?.status === 404) {
-        // TODO
-        return <div className={styles.container}>
-            Scratch not found
-        </div>
-    } else if (!scratch) {
-        // TODO
-        return <div className={styles.container}>
-            Loading scratch...
-        </div>
+    useWarnBeforeUnload(!isSaved, "You have unsaved changes. Are you sure you want to leave?")
+
+    // Claim the scratch
+    if (tryClaim && !savedScratch?.owner && typeof window !== "undefined") {
+        if (isClaiming) {
+            // Promise that never resolves, since the page will reload when the claim is done
+            throw new Promise(() => {})
+        }
+
+        console.log("Claiming scratch", savedScratch)
+        isClaiming = true
+
+        throw api.post(`/scratch/${scratch.slug}/claim`, {})
+            .then(({ success }) => {
+                if (!success)
+                    return Promise.reject(new Error("Scratch already claimed"))
+            })
+            .catch(console.error)
+            .then(() => {
+                // Reload the entire page
+                window.location.href = window.location.href
+            })
     }
 
     return <div className={styles.container}>
@@ -171,6 +187,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                         </div>
 
                         <Editor
+                            className={styles.editor}
                             language="c"
                             value={scratch.source_code}
                             onChange={value => {
@@ -178,7 +195,7 @@ export default function Scratch({ scratch: initialScratch }: Props) {
                             }}
                             lineNumbers
                             showMargin
-                            useLoadingSpinner
+                            bubbleSuspense
                         />
                     </resizer.Section>
 
@@ -193,13 +210,15 @@ export default function Scratch({ scratch: initialScratch }: Props) {
 
                     <resizer.Section defaultSize={0} className={styles.context}>
                         <Editor
+                            className={styles.editor}
                             language="c"
                             value={scratch.context}
                             onChange={value => {
                                 setScratch({ context: value })
                             }}
+                            lineNumbers
                             showMargin
-                            useLoadingSpinner
+                            bubbleSuspense
                         />
                     </resizer.Section>
                 </resizer.Container>

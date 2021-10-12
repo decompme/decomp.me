@@ -122,3 +122,7 @@
 .scratchLink {
     color: var(--g1400);
 }
+
+.editor {
+    background: var(--g200);
+}

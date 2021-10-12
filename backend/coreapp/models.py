@@ -70,3 +70,15 @@ class Scratch(models.Model):
 
     def __str__(self):
         return self.slug
+
+    # hash for etagging, might be better to add a field to the model that changes on every save
+    def __hash__(self):
+        return hash((
+            self.slug, self.creation_time, self.last_updated,
+            self.arch, self.compiler, self.cc_opts,
+            self.target_assembly, self.source_code,
+            self.context, self.original_context,
+            self.diff_label,
+            self.parent,
+            self.owner,
+        ))

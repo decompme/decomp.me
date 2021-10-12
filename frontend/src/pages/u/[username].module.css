@@ -46,3 +46,9 @@
 .username a:hover {
     color: white;
 }
+
+.loadingPage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

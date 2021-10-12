@@ -14,11 +14,13 @@ import getTheme from "./monacoTheme"
 const isMobile = mobile()
 
 interface Props extends MonacoEditorProps {
+    bubbleSuspense?: boolean,
     useLoadingSpinner?: boolean,
 }
 
 const MonacoEditor = isMobile ? null : dynamic(() => import("./MonacoEditor"), {
-    suspense: true, // @ts-ignore
+    // @ts-ignore
+    suspense: true,
 })
 
 // Wrapper component that asyncronously loads MonacoEditor on desktop,
@@ -52,9 +54,13 @@ export default function Editor(props: Props) {
             <LoadingSpinner />
         </div> : textarea
 
-        return <Suspense fallback={loading}>
-            <MonacoEditor {...props} />
-        </Suspense>
+        if (props.bubbleSuspense) {
+            return <MonacoEditor {...props} />
+        } else {
+            return <Suspense fallback={loading}>
+                <MonacoEditor {...props} />
+            </Suspense>
+        }
     } else {
         return textarea
     }
