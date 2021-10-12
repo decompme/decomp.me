@@ -90,8 +90,8 @@ class GitHubUser(models.Model):
             raise MalformedGithubApiResponse()
 
         scopes = scope_str.split(",")
-        if not "public_repo" in scopes:
-            raise MissingOAuthScope("public_repo")
+        #if not "public_repo" in scopes:
+        #    raise MissingOAuthScope("public_repo")
 
         details = Github(access_token).get_user()
 

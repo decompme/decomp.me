@@ -1,0 +1,14 @@
+@use "./Nav.module.scss"; // .item
+
+.user {
+    @extend .item;
+    gap: 6px;
+}
+
+.avatar {
+    border-radius: 24px;
+}
+
+.loginContainer, .user {
+    margin-right: .5em;
+}

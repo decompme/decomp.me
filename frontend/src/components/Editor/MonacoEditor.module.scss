@@ -1,0 +1,26 @@
+.container {
+    flex-grow: 1;
+    user-select: initial;
+
+    /* fix border-radius overflow */
+    overflow: hidden;
+    & :global(.monaco-editor),
+    & :global(.monaco-editor-background),
+    & :global(.margin),
+    & :global(.inputarea.ime-input) {
+        background-color: transparent !important;
+    }
+
+    /* weird box at top-left */
+    & :global(.monaco-hover) {
+        display: none;
+    }
+}
+
+.readonly {
+    cursor: text;
+
+    & :global(.cursor) {
+        display: none !important;
+    }
+}

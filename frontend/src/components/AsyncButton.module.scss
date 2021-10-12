@@ -1,0 +1,50 @@
+.errorPopup {
+    font-size: 0.8rem;
+    background: #bb4444;
+    color: var(--a800);
+    padding: 1rem;
+    border-radius: 0.4rem;
+    min-width: 6rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+}
+
+.asyncBtn {
+    position: relative;
+}
+
+.label {
+    opacity: 1;
+    transform: initial;
+    transition: opacity .1s ease, transform .1s ease;
+
+    .isLoading & {
+        opacity: 0;
+        transform:scale(0.9);
+    }
+}
+
+.loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity .1s ease, transform .2s ease;
+
+    .isLoading & {
+        opacity: initial;
+        transform: scale(1);
+    }
+}

@@ -1,0 +1,76 @@
+.nav {
+    flex: 0;
+    width: 100%;
+
+    user-select: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5em;
+
+    padding: 1vh 0.5vw;
+
+    background: var(--g400);
+    border-bottom: 1px solid var(--g600);
+
+    font-size: 90%;
+    font-weight: 600;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    padding: 0 8px;
+
+    opacity: 1.0;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.logo {
+    @extend .item;
+
+    margin: 0 .5vw;
+    padding: 0;
+
+    svg {
+        pointer-events: none;
+    }
+
+    /* Frog blinks when you load the page or stop hovering */
+    &:not(:hover) {
+        @keyframes blink {
+            0% { transform: scaleY(1.0); opacity: 1 }
+            25% { transform: scaleY(0.1); opacity: 0 }
+            50% { transform: scaleY(1.0); opacity: 1 }
+            75% { transform: scaleY(0.1); opacity: 0 }
+            100% { transform: scaleY(1.0); opacity: 1 }
+        }
+
+        :global(.frog_svg__pupilR),
+        :global(.frog_svg__pupilL),
+        :global(.frog_svg__eyeR),
+        :global(.frog_svg__eyeL) {
+            transform-origin: 0 7px;
+            animation: blink .4s 2s ease;
+
+            @media (prefers-reduced-motion) {
+                animation: none;
+            }
+        }
+    }
+}
+
+.grow {
+    flex: 1;
+}
+
+.link:hover, .linkActive {
+    opacity: 0.8;
+}

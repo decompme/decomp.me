@@ -1,0 +1,48 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-top: 2em;
+    padding-bottom: 2em;
+}
+
+.pageContainer > section {
+    max-width: 40em;
+    width: 100%;
+    padding: 1em;
+}
+
+.userRow {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1em;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    background: #ffffff44;
+    border-radius: 999px;
+}
+
+.name {
+    font-size: 1.4em;
+    font-weight: 600;
+    cursor: default;
+}
+
+.username {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+
+    color: #888;
+    font-weight: 400;
+}
+
+.username a:hover {
+    color: white;
+}

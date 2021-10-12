@@ -1,6 +1,17 @@
 {
+    "files.trimTrailingWhitespace": true,
+
+    // eslint
     "eslint.workingDirectories": [
         "frontend"
     ],
-    "files.trimTrailingWhitespace": true,
+    "eslint.format.enable": true,
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.formatOnSave": true,
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.formatOnSave": true,
+    },
 }

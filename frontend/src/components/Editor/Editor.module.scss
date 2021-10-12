@@ -1,0 +1,26 @@
+.editor {
+    flex: 1;
+
+    resize: none;
+    border: 0;
+    outline: none !important;
+
+    font-size: 12px;
+    font-family: monospace;
+    line-height: 1.5;
+
+    user-select: initial;
+}
+
+.loadingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-grow: 1;
+
+    svg {
+        width: 24px;
+        height: 24px;
+    }
+}

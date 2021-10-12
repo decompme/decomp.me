@@ -1,0 +1,75 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    max-width: 40em;
+    padding: 1em;
+
+    user-select: auto;
+}
+
+.rule {
+    border: 0;
+    background: var(--g400);
+    height: 1px;
+}
+
+.heading {
+    padding: 10px;
+
+    > h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 500;
+    }
+
+    > p {
+        padding-top: 4px;
+        color: var(--g1000);
+        font-size: .9em;
+        width: 50ch;
+    }
+}
+
+.label {
+    display: block;
+    margin: 0;
+    padding: 10px;
+
+    color: var(--g1700);
+    font-size: .9em;
+    font-weight: 600;
+
+    small {
+        color: var(--g1000);
+        font-size: .8em;
+    }
+}
+
+.textInput {
+    width: 100%;
+    padding: 8px 10px;
+
+    color: var(--g1200);
+    background: var(--g200);
+    font: .8em monospace;
+    border: 1px solid var(--g500);
+    border-radius: 4px;
+}
+
+.editorContainer {
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+}
+
+.editor {
+    width: 100%;
+    flex: 1;
+
+    background: var(--g200);
+
+    border: 1px solid var(--g500);
+    border-radius: 4px;
+}

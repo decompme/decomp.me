@@ -1,0 +1,23 @@
+{
+    "name": "decomp.me",
+    "short_name": "decomp.me",
+    "description": "Decompile code in the browser",
+    "theme_color": "#951fd9",
+    "background_color": "#292f33",
+    "display": "minimal-ui",
+    "orientation": "any",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "purplefrog.svg",
+            "sizes": "48x48 320x320",
+            "purpose": "monochrome"
+        },
+        {
+            "src": "purplefrog-bg.svg",
+            "sizes": "48x48 320x320",
+            "purpose": "maskable"
+        }
+    ]
+}

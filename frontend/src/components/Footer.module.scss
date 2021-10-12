@@ -1,0 +1,44 @@
+.footer {
+    width: 100%;
+
+    color: var(--g1400);
+    cursor: default;
+
+    svg {
+        display: block;
+    }
+}
+
+.main {
+    padding: 1em;
+
+    border-top: 1px solid var(--g300);
+    border-bottom: 1px solid var(--g300);
+    background: var(--g200);
+}
+
+.links {
+    display: flex;
+    justify-content: space-around;
+}
+
+.link {
+    display: inline-flex;
+    gap: .5em;
+    align-items: center;
+    padding: 1em;
+
+    font-weight: 600;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.commitHash {
+    text-align: center;
+    font-size: .7em;
+
+    background: var(--g200);
+    color: var(--g600);
+}

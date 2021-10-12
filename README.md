@@ -1,6 +1,11 @@
 # [decomp.me](https://decomp.me)
 
-A collaborative decompilation and reverse engineering website, built with React and Django.
+[![Discord Server][discord-badge]][discord]
+
+[discord]: https://discord.gg/sutqNShRRs
+[discord-badge]: https://img.shields.io/discord/897066363951128586?color=%237289DA&logo=discord&logoColor=ffffff
+
+A collaborative decompilation and reverse engineering website, built with Next.js and Django.
 
 ## Directory structure
 ```
@@ -46,7 +51,7 @@ yarn
 
 - Start the development webserver
 ```shell
-yarn start
+yarn dev
 ```
 
 - Access the site via [http://localhost:8080](http://localhost:8080)
@@ -182,9 +187,20 @@ To enable it locally outside of the Docker container:
     - Set `USE_SANDBOX_JAIL=on`
     - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
 
+## Deployment
+
+- Backend - same as in development, just set DEBUG=true
+- Frontend - multiple options:
+    - Self-hosted - `yarn build && yarn start` with nginx proxy to filter /api/* to the backend
+    - [Deploy with Vercel](https://vercel.com/new)
+
 ## Contributing
 
-Contributions are very much welcome! We have a Discord channel in the [Zelda Decompilation server](http://discord.zelda64.dev).
+Contributions are very much welcome! You may want to [join our Discord server](https://discord.gg/sutqNShRRs).
+
+### Storybook
+
+Use `yarn storybook` to run a Storybook instance on [http://localhost:6006](http://localhost:6006). This is useful for testing UI components in isolation.
 
 ### Linting
 
@@ -192,6 +208,12 @@ Contributions are very much welcome! We have a Discord channel in the [Zelda Dec
 ```shell
 cd frontend
 yarn lint
+```
+
+- Autofix frontend
+```shell
+cd frontend
+yarn lint --fix
 ```
 
 - Check backend

@@ -1,0 +1,112 @@
+@use "sass:color";
+@use "sass:math";
+
+@mixin theme($accent: color, $bg: color) {
+    $accent-light: color.scale($accent, $lightness: 50%, $saturation: 30%);
+    $accent-dark: color.scale($accent, $lightness: -40%, $saturation: -20%);
+
+    --frog-pupil: #292f33;
+    --frog-primary: #{$accent};
+    --frog-secondary: #{$accent-light};
+    --frog-nose: #{$accent-dark};
+
+    --accent: #{$accent};
+    --complement: #{color.complement($accent)};
+
+    @for $i from 1 through 40 {
+        $multiplier: 2.5%;
+        --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
+    }
+
+    $peak: 0;
+    @if color.blackness($bg) > 50% {
+        $peak: 255;
+    }
+
+    @for $i from 1 through 10 {
+        --a#{$i * 100}: #{rgba($peak, $peak, $peak, $i * 0.1)};
+    }
+}
+
+.themeGreen {
+    @include theme(#77b255, #37393e);
+}
+
+.themePlum {
+    @include theme(#951fd9, #292f33);
+}
+
+html {
+    font-size: 16px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+    line-height: 1.5;
+    text-rendering: optimizeQuality;
+    overflow: hidden;
+
+    --ratio: 1.25;
+    --s-5: calc(var(--s-4) / var(--ratio));
+    --s-4: calc(var(--s-3) / var(--ratio));
+    --s-3: calc(var(--s-2) / var(--ratio));
+    --s-2: calc(var(--s-1) / var(--ratio));
+    --s-1: calc(var(--s0) / var(--ratio));
+    --s0: 1rem;
+    --s1: calc(var(--s0) * var(--ratio));
+    --s2: calc(var(--s1) * var(--ratio));
+    --s3: calc(var(--s2) * var(--ratio));
+    --s4: calc(var(--s3) * var(--ratio));
+    --s5: calc(var(--s4) * var(--ratio));
+    --s6: calc(var(--s5) * var(--ratio));
+    --s7: calc(var(--s6) * var(--ratio));
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+body {
+    background: var(--g300);
+    color: var(--a800);
+
+    line-height: var(--ratio);
+    overflow-x: hidden;
+    user-select: none;
+    position: relative;
+}
+
+html, body {
+    height: 100%;
+}
+
+#__next {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+#layers {
+    z-index: 999;
+}
+
+main {
+    flex: 1;
+    width: 100%;
+}
+
+::selection {
+    background: #ffffff22;
+}
+
+.routerProgressBar {
+    z-index: 999;
+}
