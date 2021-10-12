@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 
+import type {} from "react/next"
+
 import Head from "next/head"
 import Router from "next/router"
 

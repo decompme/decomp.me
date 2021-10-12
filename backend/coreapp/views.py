@@ -52,7 +52,14 @@ class ScratchDetail(APIView):
         else:
             return None
 
-    scratch_condition = condition(last_modified_func=scratch_last_modified)
+    def scratch_etag(request: Request, slug: str) -> Optional[str]: # type: ignore
+        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+        if scratch:
+            return str(hash(scratch))
+        else:
+            return None
+
+    scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
 
     @scratch_condition
     def head(self, request: Request, slug: str):
@@ -62,16 +69,6 @@ class ScratchDetail(APIView):
     @scratch_condition
     def get(self, request: Request, slug: str):
         scratch = get_object_or_404(Scratch, slug=slug)
-
-        if not scratch.owner and request.query_params.get("no_take_ownership") is None:
-            # Give ownership to this profile
-            profile = request.profile
-
-            logging.debug(f"Granting ownership of scratch {scratch} to {profile}")
-
-            scratch.owner = profile
-            scratch.save()
-
         response = self.head(request, slug)
         response.data = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
         return response
@@ -98,6 +95,22 @@ class ScratchDetail(APIView):
         scratch.save()
 
         return self.get(request, slug)
+
+class ScratchClaim(APIView):
+    def post(self, request: Request, slug: str):
+        scratch = get_object_or_404(Scratch, slug=slug)
+
+        if scratch.owner is not None:
+            return Response({ "success": False })
+
+        profile = request.profile
+
+        logging.debug(f"Granting ownership of scratch {scratch} to {profile}")
+
+        scratch.owner = profile
+        scratch.save()
+
+        return Response({ "success": True })
 
 @api_view(["POST"])
 def create_scratch(request):

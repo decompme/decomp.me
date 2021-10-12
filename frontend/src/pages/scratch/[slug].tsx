@@ -1,3 +1,5 @@
+import { Suspense } from "react"
+
 import { GetStaticProps } from "next"
 
 import Head from "next/head"
@@ -44,8 +46,10 @@ export default function ScratchPage({ scratch }: { scratch?: api.Scratch }) {
         </Head>
         <Nav />
         <main className={styles.container}>
-            {scratch && <Scratch scratch={scratch} />}
-            {scratch === undefined && <LoadingSpinner className={styles.loading} />}
+            <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
+                {scratch && <Scratch slug={scratch.slug} tryClaim={true} />}
+                {scratch === undefined && <LoadingSpinner className={styles.loading} />}
+            </Suspense>
         </main>
     </>
 }
