@@ -30,6 +30,7 @@ C.args = {
 }
 `,
     lineNumbers: true,
+    showMargin: true,
 }
 
 export const Mips: ComponentStory<typeof MonacoEditor> = Template.bind({})
