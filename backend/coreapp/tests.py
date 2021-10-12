@@ -350,6 +350,6 @@ class ScratchDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.json()["success"])
 
-        scratch = Scratch.objects.first()
-        assert scratch is not None
-        self.assertIsNotNone(scratch.owner)
+        updated_scratch = Scratch.objects.first()
+        assert updated_scratch is not None
+        self.assertIsNotNone(updated_scratch.owner)
