@@ -86,7 +86,7 @@ export default function Editor({ value, onChange, className, showMargin, padding
             glyphMargin: !!showMargin,
             folding: !!showMargin,
             lineDecorationsWidth: padding ?? (showMargin ? 10 : 0),
-            lineNumbersMinChars: showMargin ? 5 : 0,
+            lineNumbersMinChars: showMargin ? 2 : 0,
             automaticLayout: true,
         })
         setEditorInstance(editorInstance)
@@ -130,6 +130,15 @@ export default function Editor({ value, onChange, className, showMargin, padding
     useEffect(() => {
         editorInstance?.updateOptions({ lineNumbers: lineNumbers ? "on" : "off" })
     }, [editorInstance, lineNumbers])
+
+    useEffect(() => {
+        editorInstance?.updateOptions({
+            glyphMargin: !!showMargin,
+            folding: !!showMargin,
+            lineDecorationsWidth: padding ?? (showMargin ? 10 : 0),
+            lineNumbersMinChars: showMargin ? 2 : 0,
+        })
+    }, [editorInstance, padding, showMargin])
 
     return <div
         ref={containerRef}

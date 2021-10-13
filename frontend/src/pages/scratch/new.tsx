@@ -50,6 +50,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
+    const [lineNumbers, setLineNumbers] = useState(false)
+
     // Load fields from localStorage
     useEffect(() => {
         try {
@@ -88,6 +90,7 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
 
             router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
+            setLineNumbers(true) // line numbers are likely relevant to the error
             if (error?.responseJSON?.as_errors) {
                 throw new Error(error.responseJSON.as_errors.join("\n"))
             } else {
@@ -148,8 +151,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
                     value={asm}
                     onChange={setAsm}
                     padding={10}
-                    showMargin
-                    lineNumbers
+                    showMargin={lineNumbers}
+                    lineNumbers={lineNumbers}
                 />
             </div>
             <div className={styles.editorContainer}>
@@ -162,8 +165,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
                     value={context}
                     onChange={setContext}
                     padding={10}
-                    showMargin
-                    lineNumbers
+                    showMargin={lineNumbers}
+                    lineNumbers={lineNumbers}
                 />
             </div>
 
