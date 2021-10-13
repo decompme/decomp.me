@@ -61,6 +61,10 @@
     outline: none !important;
 }
 
+.textbox::-webkit-input-placeholder {
+    color: var(--g500);
+}
+
 .flags {
     display: flex;
     flex-wrap: wrap;
