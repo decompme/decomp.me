@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 import Link from "next/link"
 
@@ -7,16 +7,20 @@ import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../lib/api"
-import { useWarnBeforeUnload } from "../../lib/hooks"
+import { useSize, useWarnBeforeUnload } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Diff from "../diff/Diff"
 import Editor from "../Editor"
+import Tabs, { Tab } from "../Tabs"
 import UserLink from "../user/UserLink"
 
 import styles from "./Scratch.module.css"
+
+const LEFT_PANE_MIN_WIDTH = 400
+const RIGHT_PANE_MIN_WIDTH = 400
 
 let isClaiming = false
 
@@ -57,10 +61,68 @@ function ScratchLink({ slug }: { slug: string }) {
     </Link>
 }
 
-function DiffExplanation() {
-    return <span className={`${styles.diffExplanation} ${styles.visible}`}>
-        (left is target, right is your code)
-    </span>
+function renderRightTabs({ compilation }: {
+    compilation?: api.Compilation,
+}): React.ReactElement<typeof Tab>[] {
+    console.log(compilation)
+    return [
+        <Tab key="diff" label="Diff">
+            {compilation && <Diff compilation={compilation} />}
+        </Tab>,
+        /*<Tab key="options" label="Options">
+            TODO
+        </Tab>,*/
+    ]
+}
+
+function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch, compile }: {
+    scratch: api.Scratch,
+    isSaved: boolean,
+    setScratch: (s: Partial<api.Scratch>) => void,
+    saveScratch: () => Promise<void>,
+    forkScratch: () => Promise<void>,
+    compile: () => Promise<void>,
+}): React.ReactElement<typeof Tab>[] {
+    return [
+        <Tab key="about" label={scratch.owner.is_you ? "Scratch settings" : "About this scratch" }>
+            <div className={styles.metadata}>
+                {scratch.owner && <div>
+                                    Owner
+                    <UserLink user={scratch.owner} />
+                </div>}
+
+                {scratch.parent && <div>
+                                    Fork of <ScratchLink slug={scratch.parent} />
+                </div>}
+            </div>
+        </Tab>,
+        <Tab key="source" label="Source code">
+            <Editor
+                className={styles.editor}
+                language="c"
+                value={scratch.source_code}
+                onChange={value => {
+                    setScratch({ source_code: value })
+                }}
+                lineNumbers
+                showMargin
+                bubbleSuspense
+            />
+        </Tab>,
+        <Tab key="context" label="Context" className={styles.context}>
+            <Editor
+                className={styles.editor}
+                language="c"
+                value={scratch.context}
+                onChange={value => {
+                    setScratch({ context: value })
+                }}
+                lineNumbers
+                showMargin
+                bubbleSuspense
+            />
+        </Tab>,
+    ]
 }
 
 export function nameScratch({ slug, owner }: api.Scratch): string {
@@ -79,15 +141,19 @@ export type Props = {
 }
 
 export default function Scratch({ slug, tryClaim }: Props) {
+    const container = useSize<HTMLDivElement>()
     const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
+    const [leftTab, setLeftTab] = useState("about")
+    const [rightTab, setRightTab] = useState("diff")
 
     const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
         setScratch({
             compiler,
             cc_opts,
         })
+        saveScratch()
     }
 
     useEffect(() => {
@@ -141,107 +207,77 @@ export default function Scratch({ slug, tryClaim }: Props) {
             })
     }
 
-    return <div className={styles.container}>
-        <resizer.Container className={styles.resizer}>
-            <resizer.Section minSize={500}>
-                <resizer.Container
-                    vertical
-                    style={{ height: "100%" }}
-                >
-                    <resizer.Section minSize={200} className={styles.sourceCode}>
-                        <div className={styles.sectionHeader}>
-                            Source
-                            <span className={styles.grow} />
+    const leftTabs = renderLeftTabs({
+        scratch,
+        isSaved,
+        setScratch,
+        saveScratch,
+        forkScratch,
+        compile,
+    })
 
-                            {scratch.compiler !== "" && <>
-                                <AsyncButton onClick={compile} forceLoading={isCompiling}>
-                                    <SyncIcon size={16} /> Compile
-                                </AsyncButton>
-                                <CompilerButton arch={scratch.arch} value={scratch} onChange={setCompilerOpts} />
-                            </>}
-                        </div>
+    const rightTabs = renderRightTabs({
+        compilation,
+    })
 
-                        <div className={styles.metadata}>
-                            {scratch.owner && <div>
-                                Owner
-                                <UserLink user={scratch.owner} />
-                            </div>}
+    return <div ref={container.ref} className={styles.container}>
+        <div className={styles.toolbar}>
+            <div className={styles.scratchName}>
+                {nameScratch(scratch)}
+            </div>
 
-                            {scratch.parent && <div>
-                                Fork of <ScratchLink slug={scratch.parent} />
-                            </div>}
+            <span className={styles.grow} />
 
-                            <div>
-                                {scratch.owner?.is_you && <AsyncButton onClick={() => {
-                                    return Promise.all([
-                                        saveScratch(),
-                                        compile(),
-                                    ])
-                                }} disabled={isSaved}>
-                                    <UploadIcon size={16} /> Save
-                                </AsyncButton>}
-                                <AsyncButton onClick={forkScratch}>
-                                    <RepoForkedIcon size={16} /> Fork
-                                </AsyncButton>
-                            </div>
-                        </div>
+            <AsyncButton onClick={compile} forceLoading={isCompiling}>
+                <SyncIcon size={16} /> Compile
+            </AsyncButton>
+            {scratch.owner?.is_you && <AsyncButton onClick={() => {
+                return Promise.all([
+                    saveScratch(),
+                    compile(),
+                ])
+            }} disabled={isSaved}>
+                <UploadIcon size={16} /> Save
+            </AsyncButton>}
+            <AsyncButton onClick={forkScratch}>
+                <RepoForkedIcon size={16} /> Fork
+            </AsyncButton>
+        </div>
 
-                        <Editor
-                            className={styles.editor}
-                            language="c"
-                            value={scratch.source_code}
-                            onChange={value => {
-                                setScratch({ source_code: value })
-                            }}
-                            lineNumbers
-                            showMargin
-                            bubbleSuspense
-                        />
-                    </resizer.Section>
+        {container.width > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
+            ? <resizer.Container className={styles.resizer}>
+                <resizer.Section minSize={LEFT_PANE_MIN_WIDTH}>
+                    <resizer.Container vertical style={{ height: "100%" }}>
+                        <Tabs activeTab={leftTab} onChange={setLeftTab}>
+                            {leftTabs}
+                        </Tabs>
+                    </resizer.Container>
+                </resizer.Section>
 
-                    <resizer.Bar
-                        size={1}
-                        style={{ cursor: "row-resize" }}
-                    >
-                        <div className={styles.sectionHeader}>
-                            Context
-                        </div>
-                    </resizer.Bar>
+                <resizer.Bar
+                    size={1}
+                    style={{
+                        cursor: "col-resize",
+                        background: "var(--a100)",
+                    }}
+                    expandInteractiveArea={{ left: 4, right: 4 }}
+                />
 
-                    <resizer.Section defaultSize={0} className={styles.context}>
-                        <Editor
-                            className={styles.editor}
-                            language="c"
-                            value={scratch.context}
-                            onChange={value => {
-                                setScratch({ context: value })
-                            }}
-                            lineNumbers
-                            showMargin
-                            bubbleSuspense
-                        />
-                    </resizer.Section>
-                </resizer.Container>
-            </resizer.Section>
-
-            <resizer.Bar
-                size={1}
-                style={{
-                    cursor: "col-resize",
-                    background: "var(--g600)",
-                }}
-                expandInteractiveArea={{ left: 4, right: 4 }}
-            />
-
-            <resizer.Section className={styles.diffSection} minSize={400}>
-                {scratch.compiler === "" ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} /> : <>
-                    <div className={styles.sectionHeader}>
-                        Diff
-                        {compilation && <DiffExplanation />}
-                    </div>
-                    {compilation && <Diff compilation={compilation} /> /* TODO: loading spinner */}
-                </>}
-            </resizer.Section>
-        </resizer.Container>
+                <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>
+                    {scratch.compiler === ""
+                        ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} />
+                        : <Tabs activeTab={rightTab} onChange={setRightTab}>
+                            {rightTabs}
+                        </Tabs>
+                    }
+                </resizer.Section>
+            </resizer.Container>
+            : (scratch.compiler === ""
+                ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} />
+                : <Tabs activeTab={leftTab} onChange={setLeftTab}>
+                    {leftTabs}
+                    {rightTabs}
+                </Tabs>
+            )}
     </div>
 }

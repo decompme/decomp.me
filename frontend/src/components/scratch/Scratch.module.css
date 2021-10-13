@@ -23,27 +23,6 @@
     flex-direction: column;
 }
 
-.sectionHeader {
-    font-size: 1rem;
-    font-weight: 600;
-
-    user-select: none;
-    cursor: default;
-
-    height: 3em;
-    padding: .5rem;
-    padding-left: 1rem;
-    background: var(--g400);
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: .25em;
-
-    box-shadow: 0 0 8px 0 #00000044;
-    z-index: 1;
-}
-
 .grow { flex: 1 }
 
 .diffSection {
@@ -52,21 +31,10 @@
 
     scrollbar-color: #ffffff33 transparent;
     scrollbar-width: thin;
-    background: var(--g300);
 }
 
 .diffExplanation {
-    opacity: 0.0;
-    transition: opacity 100ms ease-out;
-    word-wrap: no-wrap;
-}
-
-.diffExplanation.visible {
     opacity: 0.3;
-}
-
-.diffExplanation.visible:hover {
-    opacity: 1.0;
 }
 
 .output {
@@ -74,18 +42,6 @@
     flex: 1;
     overflow: auto;
     user-select: text;
-}
-
-.compiling :global(.octicon) {
-    animation: spin 1s infinite linear;
-    animation-fill-mode: forwards;
-    transform: rotate(0deg);
-    transform-origin: 7.4px 7.7px;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg) }
-    to { transform: rotate(-330deg) }
 }
 
 .metadata {
@@ -124,5 +80,23 @@
 }
 
 .editor {
-    background: var(--g200);
+    height: 100%;
+}
+
+.toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: initial;
+    gap: .25em;
+
+    height: 48px;
+    padding: 0 14px;
+
+    background: var(--g300);
+    border-bottom: 1px solid var(--a100);
+}
+
+.scratchName {
+    user-select: initial;
 }

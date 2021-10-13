@@ -1,12 +1,16 @@
-import { useState, useRef, useLayoutEffect, useEffect } from "react"
+import { useState, useRef, useLayoutEffect, useEffect, RefObject } from "react"
 
 import Router from "next/router"
 
 import useResizeObserver from "@react-hook/resize-observer"
 
-export function useSize<T extends HTMLElement>() {
+export function useSize<T extends HTMLElement>(): {
+    width: number | undefined,
+    height: number | undefined,
+    ref: RefObject<T>,
+    } {
     const ref = useRef<T>()
-    const [size, setSize] = useState({ width: 0, height: 0 })
+    const [size, setSize] = useState({ width: undefined, height: undefined })
 
     useLayoutEffect(() => {
         if (ref.current)
