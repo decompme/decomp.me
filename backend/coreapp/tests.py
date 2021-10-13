@@ -96,6 +96,29 @@ class ScratchModificationTests(APITestCase):
         assert(scratch is not None)
         self.assertEqual(scratch.score, 200)
 
+    def test_create_scratch_score(self):
+        """
+        Ensure that a scratch's score gets set upon creation.
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'compiler': 'ido7.1',
+            'context': '',
+            'target_asm': 'jr $ra\nli $v0,2',
+            'source_code': 'int func() { return 2; }'
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        self.assertIsNotNone(scratch)
+        assert(scratch is not None)
+
+        slug = scratch.slug
+
+        self.assertEqual(scratch.score, 0)
+
 
 class CompilationTests(APITestCase):
     def test_simple_compilation(self):
