@@ -26,7 +26,7 @@
 
     white-space: nowrap;
 
-    transition: border-color .1s, background .15s, color .2s;
+    transition: border-color 0.1s, background 0.15s, color 0.2s;
 
     svg {
         width: 40px;
@@ -34,10 +34,11 @@
 
         will-change: filter;
         filter: grayscale(100%);
-        transition: filter .2s;
+        transition: filter 0.2s;
     }
 
-    &:hover, &.selected {
+    &:hover,
+    &.selected {
         border-color: var(--g400);
         color: var(--g2000);
 
@@ -62,6 +63,6 @@
 }
 
 .archName {
-    font-size: .8em;
-    opacity: .6;
+    font-size: 0.8em;
+    opacity: 0.6;
 }

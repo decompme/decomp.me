@@ -24,7 +24,7 @@
 
 .link {
     display: inline-flex;
-    gap: .5em;
+    gap: 0.5em;
     align-items: center;
     padding: 1em;
 
@@ -37,7 +37,7 @@
 
 .commitHash {
     text-align: center;
-    font-size: .7em;
+    font-size: 0.7em;
 
     background: var(--g200);
     color: var(--g600);

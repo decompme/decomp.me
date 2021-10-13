@@ -1,7 +1,8 @@
 {
     "parser": "@typescript-eslint/parser",
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "css-modules"
     ],
     "extends": [
         "eslint:recommended",
@@ -83,7 +84,9 @@
         "import/export": "warn",
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
-        "import/no-unused-modules": "warn"
+        "import/no-unused-modules": "warn",
+        "css-modules/no-unused-class": "warn",
+        "css-modules/no-undef-class": "warn"
     },
     "overrides": [
         {

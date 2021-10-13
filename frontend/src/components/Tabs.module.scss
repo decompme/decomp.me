@@ -18,7 +18,7 @@
     position: relative;
 
     display: inline-flex;
-    gap: .5em;
+    gap: 0.5em;
     align-items: center;
     justify-content: center;
 
@@ -26,7 +26,7 @@
     min-width: 60px;
     height: 100%;
 
-    font-size: .8rem;
+    font-size: 0.8rem;
     font-weight: 500;
 
     user-select: none;
@@ -36,7 +36,7 @@
     background: transparent;
     border: 0;
 
-    transition: color .2s ease;
+    transition: color 0.2s ease;
 
     &:disabled {
         opacity: 0.7;
@@ -46,7 +46,8 @@
     &:not(:disabled) {
         cursor: pointer;
 
-        &:hover, &[aria-selected="true"] {
+        &:hover,
+        &[aria-selected="true"] {
             color: var(--a900);
         }
     }
@@ -97,7 +98,7 @@
         border-radius: 4px;
 
         opacity: inherit;
-        transition: opacity .1s;
+        transition: opacity 0.1s;
     }
 }
 

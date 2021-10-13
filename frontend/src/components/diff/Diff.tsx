@@ -1,3 +1,4 @@
+/* eslint css-modules/no-unused-class: off */
 
 import * as api from "../../lib/api"
 

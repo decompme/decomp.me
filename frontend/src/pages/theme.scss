@@ -6,23 +6,24 @@
     $accent-dark: color.scale($accent, $lightness: -40%, $saturation: -20%);
 
     @if color.saturation($accent) == 0% {
-        $accent-light: color.change($accent-light, $saturation: 0%)
+        $accent-light: color.change($accent-light, $saturation: 0%);
     }
 
     --frog-pupil: #292f33;
     --frog-primary: #{$accent};
     --frog-secondary: #{$accent-light};
     --frog-nose: #{$accent-dark};
-
     --accent: #{$accent};
     --complement: #{color.complement($accent)};
 
     @for $i from 1 through 40 {
         $multiplier: 2.5%;
+
         --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
     }
 
     $peak: 0;
+
     @if color.blackness($bg) > 50% {
         $peak: 255;
     }

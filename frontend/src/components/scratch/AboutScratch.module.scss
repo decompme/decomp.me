@@ -19,12 +19,12 @@
     padding: 10px;
 
     color: var(--g1000);
-    font-size: .9em;
+    font-size: 0.9em;
     font-weight: 500;
 
     small {
         color: var(--g1000);
-        font-size: .8em;
+        font-size: 0.8em;
     }
 }
 
@@ -84,9 +84,10 @@
 
     &:not(:disabled) {
         cursor: auto;
-        transition: border-color .15s;
+        transition: border-color 0.15s;
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
             border-color: var(--g300);
         }
     }

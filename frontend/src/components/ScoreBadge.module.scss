@@ -3,21 +3,22 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: .5em;
+    gap: 0.5em;
 
     min-width: 2em;
     height: 2em;
 
-    font-size: .8em;
+    font-size: 0.8em;
     font-weight: 400;
-    padding: .4em .8em;
+    padding: 0.4em 0.8em;
 
     border-radius: 999px;
     color: var(--a800);
     background: var(--a100);
 
     // circle when using icons
-    &.error, &.match {
+    &.error,
+    &.match {
         padding: 0;
     }
 

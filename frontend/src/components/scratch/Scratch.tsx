@@ -9,7 +9,7 @@ import { useSize, useWarnBeforeUnload } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
-import Diff from "../diff/Diff"
+import Diff from "../Diff"
 import Editor from "../Editor"
 import { EditorInstance } from "../Editor/MonacoEditor"
 import ScoreBadge from "../ScoreBadge"
@@ -117,7 +117,7 @@ function renderLeftTabs({ scratch, setScratch }: {
                 bubbleSuspense
             />
         </Tab>,
-        <Tab key="settings" label="Scratch settings" className={styles.scratchSettings}>
+        <Tab key="settings" label="Scratch settings">
             <CompilerOpts
                 arch={scratch.arch}
                 value={scratch}

@@ -1,7 +1,7 @@
 .popover {
     border: 1px solid var(--g500);
     border-radius: 1em;
-    box-shadow: 0 2px 8px 0 #00000088;
+    box-shadow: 0 2px 8px 0 #0008;
     max-width: 50em;
 
     z-index: 999;
