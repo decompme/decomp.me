@@ -71,12 +71,12 @@ export default function NewScratch({ serverCompilers }: {
     // Load fields from localStorage
     useEffect(() => {
         try {
-            setLabel(JSON.parse(localStorage["NewScratch.label"] ?? "\"\""))
-            setAsm(JSON.parse(localStorage["NewScratch.asm"] ?? "\"\""))
-            setContext(JSON.parse(localStorage["NewScratch.context"] ?? "\"\""))
-            setArch(JSON.parse(localStorage["NewScratch.arch"] ?? "\"\""))
-            setCompiler(JSON.parse(localStorage["NewScratch.compiler"] ?? undefined))
-            setCompilerOpts(JSON.parse(localStorage["NewScratch.compilerOpts"] ?? "\"\""))
+            setLabel(localStorage["new_scratch_label"] ?? "")
+            setAsm(localStorage["new_scratch_asm"] ?? "")
+            setContext(localStorage["new_scratch_context"] ?? "")
+            setArch(localStorage["new_scratch_arch"] ?? "")
+            setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
+            setCompilerOpts(localStorage["new_scratch_compilerOpts"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -84,12 +84,12 @@ export default function NewScratch({ serverCompilers }: {
 
     // Update localStorage
     useEffect(() => {
-        localStorage["NewScratch.label"] = JSON.stringify(label)
-        localStorage["NewScratch.asm"] = JSON.stringify(asm)
-        localStorage["NewScratch.context"] = JSON.stringify(context)
-        localStorage["NewScratch.arch"] = JSON.stringify(arch)
-        localStorage["NewScratch.compiler"] = JSON.stringify(compiler)
-        localStorage["NewScratch.compilerOpts"] = JSON.stringify(compilerOpts)
+        localStorage["new_scratch_label"] = label
+        localStorage["new_scratch_asm"] = asm
+        localStorage["new_scratch_context"] = context
+        localStorage["new_scratch_arch"] = arch
+        localStorage["new_scratch_compiler"] = compiler
+        localStorage["new_scratch_compilerOpts"] = compilerOpts
     }, [label, asm, context, arch, compiler, compilerOpts])
 
     const compilers = useCompilersForArch(arch, serverCompilers.compilers)
@@ -125,12 +125,12 @@ export default function NewScratch({ serverCompilers }: {
                 context: context || "",
                 arch,
                 compiler,
-                cc_opts: compilerOpts,
+                compiler_flags: compilerOpts,
                 diff_label: label || defaultLabel || "",
             })
 
-            localStorage["NewScratch.label"] = ""
-            localStorage["NewScratch.asm"] = ""
+            localStorage["new_scratch_label"] = ""
+            localStorage["new_scratch_asm"] = ""
 
             router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
