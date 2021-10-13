@@ -318,7 +318,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             return Promise.reject(new Error("Cannot compile without a scratch"))
 
         if (!scratch.compiler)
-            return Promise.reject(new Error("Cannot compile without a scratch.compiler"))
+            return Promise.reject(new Error("Cannot compile before a compiler is set"))
 
         const promise = post(`/scratch/${scratch.slug}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields

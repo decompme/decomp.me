@@ -7,10 +7,11 @@ import styles from "./Nav.module.scss"
 const onUserChangeNop = (_user: any) => {}
 
 export type Props = {
+    children?: React.ReactNode,
     onUserChange?: LoginStateProps["onChange"],
 }
 
-export default function Nav({ onUserChange }: Props) {
+export default function Nav({ children, onUserChange }: Props) {
     return <nav className={styles.nav}>
         <Link href="/">
             <a className={styles.logo}>
@@ -18,9 +19,9 @@ export default function Nav({ onUserChange }: Props) {
             </a>
         </Link>
 
-        <Link href="/scratch">
+        {children ?? <Link href="/scratch">
             <a className={styles.item}>New scratch</a>
-        </Link>
+        </Link>}
 
         <div className={styles.grow} />
 

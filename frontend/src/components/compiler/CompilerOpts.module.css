@@ -23,7 +23,7 @@
 .header:not([data-is-popup]), .container:not([data-is-popup]) {
     border-radius: 0;
     background: transparent;
-    border-bottom: 1px solid var(--g400);
+    /*border-bottom: 1px solid var(--g400);*/
 }
 
 .row {
