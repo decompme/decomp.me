@@ -5,11 +5,11 @@ import { GetStaticProps } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
 
+import ArchSelect from "../../components/ArchSelect"
 import AsyncButton from "../../components/AsyncButton"
 import Editor from "../../components/Editor"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
-import Select from "../../components/Select2"
 import * as api from "../../lib/api"
 
 import styles from "./new.module.scss"
@@ -120,9 +120,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
                 <p className={styles.label}>
                     Architecture
                 </p>
-                {/* TODO: custom horizontal <options> */}
-                <Select
-                    options={arches}
+                <ArchSelect
+                    arches={arches}
                     value={arch}
                     onChange={a => setArch(a)}
                 />
