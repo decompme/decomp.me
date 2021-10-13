@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -120,18 +120,19 @@ class CompilerWrapper:
         return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
     @staticmethod
-    def available_arches() -> Dict[str, str]:
-        a_set = set()
-        ret = {}
+    def available_arches() -> List[Tuple[str, str]]:
+        a_set: Set[str] = set()
+        ret = []
 
         for id in CompilerWrapper.available_compiler_ids():
             a_set.add(_compilers[id]["arch"])
 
         for a in a_set:
-            ret[a] = _arches[a].name
+            ret.append((a, _arches[a].name))
+
+        ret.sort(key=lambda x: x[0])
 
         return ret
-
 
     @staticmethod
     def filter_cc_opts(compiler: str, cc_opts: str) -> str:
