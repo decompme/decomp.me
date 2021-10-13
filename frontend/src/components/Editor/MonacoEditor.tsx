@@ -69,7 +69,7 @@ export default function Editor({ value, onChange, className, showMargin, padding
             scrollbar: {
                 alwaysConsumeMouseWheel: false,
             },
-            contextmenu: false,
+            contextmenu: true,
             //fontLigatures: true,
             //fontFamily: "Jetbrains Mono",
             readOnly: isReadOnly,
