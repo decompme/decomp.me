@@ -71,11 +71,14 @@ class ScratchModificationTests(APITestCase):
 
         response = self.client.post(reverse('scratch'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
 
-        slug = Scratch.objects.first().slug
+        scratch = Scratch.objects.first()
+        self.assertIsNotNone(scratch)
+        assert(scratch is not None)
 
-        self.assertEqual(Scratch.objects.first().score, -1)
+        slug = scratch.slug
+
+        self.assertEqual(scratch.score, -1)
 
         # Obtain ownership of the scratch
         response = self.client.post(reverse('scratch-claim', kwargs={'slug': slug}))
@@ -88,7 +91,10 @@ class ScratchModificationTests(APITestCase):
 
         response = self.client.patch(reverse('scratch-detail', kwargs={'slug': slug}), scratch_patch)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Scratch.objects.first().score, 200)
+
+        scratch = Scratch.objects.first()
+        assert(scratch is not None)
+        self.assertEqual(scratch.score, 200)
 
 
 class CompilationTests(APITestCase):
