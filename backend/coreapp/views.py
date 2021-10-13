@@ -200,7 +200,7 @@ def create_scratch(request):
 
     slug = gen_scratch_id()
 
-    name = diff_label if diff_label else slug
+    name = diff_label if diff_label else ""
 
     scratch_data = {
         "slug": slug,

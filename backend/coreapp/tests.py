@@ -115,8 +115,6 @@ class ScratchModificationTests(APITestCase):
         self.assertIsNotNone(scratch)
         assert(scratch is not None)
 
-        slug = scratch.slug
-
         self.assertEqual(scratch.score, 0)
 
 
