@@ -174,7 +174,7 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None):
+    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")

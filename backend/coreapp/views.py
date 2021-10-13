@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view
 import hashlib
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from .models import Profile, Asm, Scratch, gen_scratch_id
 from .github import GitHubUser
@@ -42,6 +42,25 @@ class CompilersDetail(APIView):
             "compilers": CompilerWrapper.available_compilers(),
             "arches": CompilerWrapper.available_arches(),
         })
+
+def compile_scratch(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Compile a scratch and save its score
+    """
+
+    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
+
+    diff_output: Optional[Dict[str, Any]] = None
+    current_score = -1
+
+    if compilation:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+        current_score = -1 if not diff_output else diff_output.get("current_score", -1)
+
+    scratch.score = current_score
+    scratch.save()
+
+    return diff_output, errors
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
@@ -74,11 +93,15 @@ class ScratchDetail(APIView):
         return response
 
     def patch(self, request: Request, slug: str):
-        required_params = ["compiler", "cc_opts", "source_code", "context"]
+        recompile_params = ["compiler", "cc_opts", "source_code", "context"]
+        valid_params = ["name", "description", *recompile_params]
+        recompile = False
 
-        for param in required_params:
-            if param not in request.data:
-                return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+        for param in request.data:
+            if param not in valid_params:
+                return Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            if param in recompile_params:
+                recompile = True
 
         scratch = get_object_or_404(Scratch, slug=slug)
 
@@ -87,12 +110,14 @@ class ScratchDetail(APIView):
             response.status_code = status.HTTP_403_FORBIDDEN
             return response
 
-        # TODO validate
-        scratch.compiler = request.data["compiler"]
-        scratch.cc_opts = request.data["cc_opts"]
-        scratch.source_code = request.data["source_code"]
-        scratch.context = request.data["context"]
+        for param in request.data:
+            if hasattr(scratch, param):
+                setattr(scratch, param, request.data[param])
+
         scratch.save()
+
+        if recompile:
+            compile_scratch(scratch)
 
         return self.get(request, slug)
 
@@ -169,8 +194,13 @@ def create_scratch(request):
     if compiler and cc_opts:
         cc_opts = CompilerWrapper.filter_cc_opts(compiler, cc_opts)
 
+    slug = gen_scratch_id()
+
+    name = diff_label if diff_label else slug
+
     scratch_data = {
-        "slug": gen_scratch_id(),
+        "slug": slug,
+        "name": name,
         "compiler": compiler,
         "arch": arch,
         "cc_opts": cc_opts,
@@ -184,10 +214,10 @@ def create_scratch(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
 
-    db_scratch = Scratch.objects.get(slug=scratch_data["slug"])
+    scratch = Scratch.objects.get(slug=scratch_data["slug"])
 
     return Response(
-        ScratchWithMetadataSerializer(db_scratch, context={ "request": request }).data,
+        ScratchWithMetadataSerializer(scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
     )
 
