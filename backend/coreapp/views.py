@@ -43,7 +43,7 @@ class CompilersDetail(APIView):
             "arches": CompilerWrapper.available_arches(),
         })
 
-def compile_scratch(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+def update_scratch_score(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """
     Compile a scratch and save its score
     """
@@ -117,7 +117,7 @@ class ScratchDetail(APIView):
         scratch.save()
 
         if recompile:
-            compile_scratch(scratch)
+            update_scratch_score(scratch)
 
         return self.get(request, slug)
 
