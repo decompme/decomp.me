@@ -5,7 +5,7 @@ import { useRouter } from "next/router"
 import useSWR, { Revalidator, RevalidatorOptions } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
+const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
 type Json = Record<string, unknown>
 

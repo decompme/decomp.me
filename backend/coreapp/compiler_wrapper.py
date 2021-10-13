@@ -39,9 +39,10 @@ else:
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
 
-    compiler_dirs = next(os.walk(settings.COMPILER_BASE_PATH))
+    compilers_base = settings.BASE_DIR / "compilers"
+    compiler_dirs = next(os.walk(compilers_base))
     for compiler_id in compiler_dirs[1]:
-        config_path = Path(settings.COMPILER_BASE_PATH / compiler_id / "config.json")
+        config_path = Path(compilers_base / compiler_id / "config.json")
         if config_path.exists():
             with open(config_path) as f:
                 ret[compiler_id] = json.load(f)

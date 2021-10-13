@@ -21,8 +21,9 @@ services:
       DATABASE_URL: psql://decompme:decompme@postgres:5432/decompme
       SECRET_KEY: "django-insecure-nm#!8%z$$hc0wwi#m_*l9l)=m*6gs4&o_^-e5b5vj*k05&yaqc1"
       DEBUG: "on"
-      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      ALLOWED_HOSTS: "backend,localhost,127.0.0.1"
       USE_SANDBOX_JAIL: "on"
+      COMPILER_BASE_PATH: /compilers
     ports:
     - "8000:8000"
     security_opt:
@@ -38,6 +39,8 @@ services:
         size: 64M
   frontend:
     build: frontend
+    environment:
+      INTERNAL_API_BASE: http://backend:8000/api
     ports:
     - "8080:8080"
     volumes:

@@ -12,7 +12,14 @@ for (const envFile of [".env.local", ".env"]) {
 
 process.env.NEXT_PUBLIC_API_BASE = process.env.API_BASE
 process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
-process.env.NEXT_PUBLIC_COMMIT_HASH = execSync("git rev-parse HEAD").toString().trim()
+let git_hash
+try {
+    git_hash = execSync("git rev-parse HEAD").toString().trim()
+} catch (error) {
+    console.log("Unable to get git hash, assume running inside Docker")
+    git_hash = "abc123"
+}
+process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
 const withPWA = require('next-pwa')
 const runtimeCaching = require('next-pwa/cache')

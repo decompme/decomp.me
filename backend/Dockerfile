@@ -36,6 +36,13 @@ RUN python3 -m pip install -r /backend/requirements.txt --no-cache-dir
 
 COPY --from=nsjail /bin/nsjail /bin/nsjail
 
+# nsjail wants to mount this so ensure it exists
+RUN mkdir -p /lib32
+
+COPY compilers/download.sh /compilers/
+
+RUN bash /compilers/download.sh
+
 WORKDIR /backend
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
