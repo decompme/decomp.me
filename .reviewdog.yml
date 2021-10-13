@@ -2,6 +2,9 @@ runner:
   eslint:
     cmd: cd frontend && yarn -s run eslint src --ext .js,.jsx,.ts,.tsx -f=rdjson
     format: rdjson
+  stylelint:
+    cmd: cd frontend && yarn -s run stylelint 'src/**/*.css' 'src/**/*.scss'
+    format: stylelint
   tsc:
     cmd: cd frontend && yarn -s run tsc
     format: tsc
