@@ -113,6 +113,8 @@ class ScratchDetail(APIView):
         for param in request.data:
             if hasattr(scratch, param):
                 setattr(scratch, param, request.data[param])
+            else:
+                Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
 
         scratch.save()
 
