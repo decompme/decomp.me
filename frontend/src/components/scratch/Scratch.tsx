@@ -145,7 +145,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
     const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
     const forkScratch = api.useForkScratchAndGo(scratch)
-    const [leftTab, setLeftTab] = useState("about")
+    const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
 
     const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
