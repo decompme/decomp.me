@@ -32,7 +32,7 @@ export const language: languages.IMonarchLanguage = {
 
     instructions: [
         "lb", "lbu", "ld", "ldl", "ldr", "lh", "lhu", "ll", "lld", "lw", "lwl", "lwr", "lwu", "sb", "sc", "scd", "sd", "sdl", "sdr", "sh", "sw", "swl", "swr", "sync", "add", "addi", "addiu", "addu", "and", "andi", "dadd", "daddi", "daddiu", "daddu", "ddiv", "ddivu", "div", "divu", "dmult", "dmultu", "dsll", "dsll32", "dsllv", "dsra", "dsra32", "dsrav", "dsrl", "dsrl32", "dsrlv", "dsub", "dsubu", "lui", "mfhi", "mflo", "mthi", "mtlo", "mult", "multu", "nor", "or", "ori", "sll", "sllv", "slt", "slti", "sltiu", "sltu", "sra", "srav", "srl", "srlv", "sub", "subu", "xor", "xori", "beq", "beql", "bgez", "bgezal", "bgezall", "bgezl", "bgtz", "bgtzl", "blez", "blezl", "bltz", "bltzal", "bltzall", "bltzl", "bne", "bnel", "j", "jal", "jalr", "jr", "break", "syscall", "teq", "teqi", "tge", "tgei", "tgeiu", "tgeu", "tlt", "tlti", "tltiu", "tltu", "tne", "tnei", "cache", "dmfc0", "dmtc0", "eret", "mfc0", "mtc0", "tlbp", "tlbr", "tlbwi", "tlbwr", "bc1f", "bc1fl", "bc1t", "bc1tl", "cfc1", "ctc1", "dmfc1", "dmtc1", "ldc1", "lwc1", "mfc1", "mtc1", "sdc1", "swc1",
-        "beqz", "bnez", "negu",
+        "beqz", "bnez", "negu", "nop",
     ],
 
     registers: [
