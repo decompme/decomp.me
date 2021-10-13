@@ -78,7 +78,6 @@ class ScratchModificationTests(APITestCase):
         self.assertEqual(Scratch.objects.first().score, -1)
 
         # Obtain ownership of the scratch
-        # TODO update when we have dedicated endpoint for claiming
         response = self.client.post(reverse('scratch-claim', kwargs={'slug': slug}))
 
         # Update the scratch's code and compiler output
