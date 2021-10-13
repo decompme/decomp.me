@@ -243,6 +243,7 @@ export function useScratch(slugOrUrl: string): {
             if (shouldGetScratchFromServer()) {
                 console.info("Got updated scratch from server", scratch)
                 setLocalScratch(scratch)
+                setIsSaved(true)
             }
         },
         onErrorRetry,
