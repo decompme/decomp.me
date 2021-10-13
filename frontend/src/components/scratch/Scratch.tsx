@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
-
-import Link from "next/link"
+import { useState, useEffect, useRef } from "react"
 
 import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
 import * as resizer from "react-simple-resizer"
@@ -14,10 +12,12 @@ import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Diff from "../diff/Diff"
 import Editor from "../Editor"
+import { EditorInstance } from "../Editor/MonacoEditor"
+import ScoreBadge from "../ScoreBadge"
 import Tabs, { Tab } from "../Tabs"
-import UserLink from "../user/UserLink"
 
-import styles from "./Scratch.module.css"
+import AboutScratch from "./AboutScratch"
+import styles from "./Scratch.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 400
 const RIGHT_PANE_MIN_WIDTH = 400
@@ -47,26 +47,18 @@ function ChooseACompiler({ arch, onCommit }: {
     </div>
 }
 
-function ScratchLink({ slug }: { slug: string }) {
-    const { scratch } = api.useScratch(slug)
-
-    if (!scratch) {
-        return <span />
-    }
-
-    return <Link href={`/scratch/${scratch.slug}`}>
-        <a className={styles.scratchLink}>
-            {nameScratch(scratch)}
-        </a>
-    </Link>
-}
-
 function renderRightTabs({ compilation }: {
     compilation?: api.Compilation,
 }): React.ReactElement<typeof Tab>[] {
-    console.log(compilation)
     return [
-        <Tab key="diff" label="Diff">
+        <Tab
+            key="diff"
+            label={<>
+                Diff
+                <ScoreBadge score={compilation?.diff_output?.current_score ?? -1} />
+            </>}
+            className={styles.diffTab}
+        >
             {compilation && <Diff compilation={compilation} />}
         </Tab>,
         /*<Tab key="options" label="Options">
@@ -75,17 +67,27 @@ function renderRightTabs({ compilation }: {
     ]
 }
 
-function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch, compile }: {
+function renderLeftTabs({ scratch, setScratch }: {
     scratch: api.Scratch,
-    isSaved: boolean,
     setScratch: (s: Partial<api.Scratch>) => void,
-    saveScratch: () => Promise<void>,
-    forkScratch: () => Promise<void>,
-    compile: () => Promise<void>,
 }): React.ReactElement<typeof Tab>[] {
+    const sourceEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
+    const contextEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
+
     return [
-        <Tab key="source" label="Source code">
+        <Tab key="about" label="About" className={styles.about}>
+            <AboutScratch
+                scratch={scratch}
+                setScratch={scratch.owner?.is_you ? setScratch : null}
+            />
+        </Tab>,
+        <Tab
+            key="source"
+            label="Source code"
+            onSelect={() => sourceEditor.current.focus()}
+        >
             <Editor
+                instanceRef={sourceEditor}
                 className={styles.editor}
                 language="c"
                 value={scratch.source_code}
@@ -97,8 +99,14 @@ function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch
                 bubbleSuspense
             />
         </Tab>,
-        <Tab key="context" label="Context" className={styles.context}>
+        <Tab
+            key="context"
+            label="Context"
+            className={styles.context}
+            onSelect={() => contextEditor.current.focus()}
+        >
             <Editor
+                instanceRef={contextEditor}
                 className={styles.editor}
                 language="c"
                 value={scratch.context}
@@ -110,29 +118,10 @@ function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch
                 bubbleSuspense
             />
         </Tab>,
-        <Tab key="about" label={scratch.owner.is_you ? "Scratch settings" : "About this scratch" }>
-            <div className={styles.metadata}>
-                {scratch.owner && <div>
-                                    Owner
-                    <UserLink user={scratch.owner} />
-                </div>}
-
-                {scratch.parent && <div>
-                                    Fork of <ScratchLink slug={scratch.parent} />
-                </div>}
-            </div>
+        <Tab key="settings" label="Scratch settings">
+            TODO
         </Tab>,
     ]
-}
-
-export function nameScratch({ slug, owner }: api.Scratch): string {
-    if (owner?.is_you) {
-        return "Your scratch"
-    } else if (owner && !api.isAnonUser(owner) && owner?.name) {
-        return `${owner?.name}'s scratch`
-    } else {
-        return "Untitled scratch"
-    }
 }
 
 export type Props = {
@@ -144,16 +133,19 @@ export default function Scratch({ slug, tryClaim }: Props) {
     const container = useSize<HTMLDivElement>()
     const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
-    const forkScratch = api.useForkScratchAndGo(scratch)
+    const forkScratch = api.useForkScratchAndGo(savedScratch, scratch)
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
+    const [isForking, setIsForking] = useState(false)
 
+    // TODO: remove once scratch.compiler is no longer nullable
     const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
         setScratch({
             compiler,
             cc_opts,
         })
-        saveScratch()
+        if (scratch.owner?.is_you)
+            saveScratch()
     }
 
     useEffect(() => {
@@ -173,7 +165,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
 
     useDeepCompareEffect(() => {
         if (scratch) {
-            document.title = nameScratch(scratch)
+            document.title = scratch.name || "Untitled scratch"
 
             if (!isSaved) {
                 document.title += " (unsaved changes)"
@@ -183,7 +175,12 @@ export default function Scratch({ slug, tryClaim }: Props) {
         }
     }, [scratch || {}, isSaved])
 
-    useWarnBeforeUnload(!isSaved, "You have unsaved changes. Are you sure you want to leave?")
+    useWarnBeforeUnload(
+        !isSaved && !isForking,
+        scratch.owner?.is_you
+            ? "You have not saved your changes to this scratch. Discard changes?"
+            : "You have edited this scratch but not saved it in a fork. Discard changes?",
+    )
 
     // Claim the scratch
     if (tryClaim && !savedScratch?.owner && typeof window !== "undefined") {
@@ -209,11 +206,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
 
     const leftTabs = renderLeftTabs({
         scratch,
-        isSaved,
         setScratch,
-        saveScratch,
-        forkScratch,
-        compile,
     })
 
     const rightTabs = renderRightTabs({
@@ -222,11 +215,16 @@ export default function Scratch({ slug, tryClaim }: Props) {
 
     return <div ref={container.ref} className={styles.container}>
         <div className={styles.toolbar}>
-            <div className={styles.scratchName}>
-                {nameScratch(scratch)}
-            </div>
-
-            <span className={styles.grow} />
+            <input
+                className={styles.scratchName}
+                type="text"
+                value={scratch.name}
+                onChange={event => setScratch({ name: event.target.value })}
+                disabled={!scratch.owner?.is_you}
+                spellCheck="false"
+                maxLength={100}
+                placeholder={"Untitled scratch"}
+            />
 
             <AsyncButton onClick={compile} forceLoading={isCompiling}>
                 <SyncIcon size={16} /> Compile
@@ -234,12 +232,15 @@ export default function Scratch({ slug, tryClaim }: Props) {
             {scratch.owner?.is_you && <AsyncButton onClick={() => {
                 return Promise.all([
                     saveScratch(),
-                    compile(),
+                    compile().catch(() => {}), // Ignore errors
                 ])
             }} disabled={isSaved}>
                 <UploadIcon size={16} /> Save
             </AsyncButton>}
-            <AsyncButton onClick={forkScratch}>
+            <AsyncButton onClick={() => {
+                setIsForking(true)
+                return forkScratch()
+            }} primary={!isSaved && !scratch.owner?.is_you}>
                 <RepoForkedIcon size={16} /> Fork
             </AsyncButton>
         </div>

@@ -5,14 +5,6 @@
     height: 100%;
 }
 
-.toolbar {
-    display: flex;
-    padding-bottom: var(--s1);
-    padding-top: var(--s1);
-    align-items: center;
-    justify-content: space-evenly;
-}
-
 .resizer {
     flex: 1;
     overflow: hidden;
@@ -88,15 +80,51 @@
     flex-direction: row;
     align-items: center;
     justify-content: initial;
-    gap: .25em;
 
-    height: 48px;
-    padding: 0 14px;
+    gap: 4px;
+    padding: 4px;
 
     background: var(--g300);
     border-bottom: 1px solid var(--a100);
+
+    @media screen and (min-width: 800px) and (min-height: 800px) {
+        gap: 8px;
+        padding: 8px;
+    }
 }
 
 .scratchName {
-    user-select: initial;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 4px 8px;
+
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    outline: none !important;
+
+    color: var(--g1800);
+
+    text-overflow: ellipsis;
+
+    transition: border-color .15s;
+
+    &:hover, &:active {
+        border-color: var(--g400);
+    }
+
+    &::-webkit-input-placeholder {
+        color: var(--g800);
+    }
+}
+
+.diffTab {
+    display: flex;
+    overflow: auto;
+}
+
+.about {
+    padding: 16px;
+    max-width: 500px;
 }

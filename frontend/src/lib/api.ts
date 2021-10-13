@@ -147,15 +147,18 @@ export interface User {
 }
 
 export type Scratch = {
+    name: string,
+    description: string,
     slug: string,
     compiler: string,
     arch: string,
     cc_opts: string,
     source_code: string,
     context: string,
-    owner: AnonymousUser | User | null,
+    owner: AnonymousUser | User | null, // null means unclaimed
     parent: string | null, // URL
     diff_label: string | null,
+    score: number, // -1 = doesn't compile
 }
 
 export type Compilation = {
@@ -216,21 +219,30 @@ export function useScratch(slugOrUrl: string): {
 } {
     const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
     const [isSaved, setIsSaved] = useState(true)
-    const localScratch = useRef<Scratch>()
+    const [localScratch, setLocalScratch] = useState<Scratch>()
+    const shouldGetScratchFromServer = useCallback(() => {
+        // This is in a useCallback so useSWR's onSuccess doesn't capture the values
+
+        if (!localScratch)
+            return true
+
+        // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
+        if (isSaved)
+            return true
+
+        return false
+    }, [localScratch, isSaved])
     const { data, mutate } = useSWR<Scratch>(url, get, {
         suspense: true,
-        refreshInterval: isSaved ? 5000 : 0,
+        refreshInterval: 5000,
         onSuccess: scratch => {
             if (!scratch.source_code) {
                 throw new Error("Scratch returned from API has no source_code (is the API misbehaving?)")
             }
 
-            // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
-            // TODO: display onscreen prompt if there are scratch updates but they arent displayed
-            // because they could overwrite your own changes
-            if (!localScratch || isSaved) {
+            if (shouldGetScratchFromServer()) {
                 console.info("Got updated scratch from server", scratch)
-                localScratch.current = scratch
+                setLocalScratch(scratch)
             }
         },
         onErrorRetry,
@@ -239,64 +251,63 @@ export function useScratch(slugOrUrl: string): {
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
-        localScratch.current = undefined
+        setLocalScratch(undefined)
         mutate()
         setIsSaved(true)
     }, [mutate])
 
-    const [, forceUpdate] = useState<{}>({})
-    const setScratch = useCallback((partial: Partial<Scratch>) => {
-        Object.assign(localScratch.current, partial)
-        setIsSaved(dequal(localScratch.current, savedScratch))
-        forceUpdate({}) // we changed localScratch
-    }, [localScratch, savedScratch])
+    const updateLocalScratch = useCallback((partial: Partial<Scratch>) => {
+        setLocalScratch(Object.assign({}, localScratch, partial))
+        setIsSaved(false)
+    }, [localScratch])
 
     const saveScratch = useCallback(() => {
-        if (!localScratch.current) {
+        if (!localScratch) {
             throw new Error("Cannot save scratch before it is loaded")
         }
-        if (!localScratch.current.owner.is_you) {
+        if (!localScratch.owner.is_you) {
             throw new Error("Cannot save scratch which you do not own")
         }
 
         return patch(`/scratch/${savedScratch.slug}`, {
-            // TODO: api should support undefinedIfUnchanged on all fields
-            source_code: localScratch.current.source_code,
-            context: localScratch.current.context, //undefinedIfUnchanged("context"),
-            compiler: localScratch.current.compiler,
-            cc_opts: localScratch.current.cc_opts,
+            source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
+            context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
+            compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
+            cc_opts: undefinedIfUnchanged(savedScratch, localScratch, "cc_opts"),
+            name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
+            description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         }).then(() => {
             setIsSaved(true)
-            mutate(localScratch.current, true)
+            mutate(localScratch, true)
         }).catch(error => {
             console.error(error)
         })
     }, [localScratch, savedScratch, mutate])
 
-    if (!localScratch.current) {
+    if (!localScratch) {
         setIsSaved(true)
-        localScratch.current = savedScratch
+        setLocalScratch(savedScratch)
     }
 
     return {
-        scratch: localScratch.current,
+        scratch: localScratch ?? savedScratch,
         savedScratch,
-        setScratch,
+        setScratch: updateLocalScratch,
         saveScratch,
         isSaved,
     }
 }
 
-export async function forkScratch(parent: Scratch): Promise<Scratch> {
-    const scratch = await post(`/scratch/${parent.slug}/fork`, parent)
+export async function forkScratch(parent: Scratch, localScratch: Partial<Scratch> = {}): Promise<Scratch> {
+    const scratch = await post(`/scratch/${parent.slug}/fork`, Object.assign({}, parent, localScratch))
     return scratch
 }
 
-export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
+export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scratch> = {}): () => Promise<void> {
     const router = useRouter()
 
     return async () => {
-        const fork = await forkScratch(parent)
+        const fork = await forkScratch(parent, localScratch)
         router.push(`/scratch/${fork.slug}`)
     }
 }
@@ -344,20 +355,27 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
-    useDeepCompareEffect(() => {
+    useEffect(() => {
         if (autoRecompile) {
             if (scratch && scratch.compiler !== "")
                 debouncedCompile()
             else
                 setCompilation(null)
         }
-    }, [debouncedCompile, scratch, autoRecompile])
+    }, [ // eslint-disable-line react-hooks/exhaustive-deps
+        debouncedCompile,
+        autoRecompile,
+
+        // fields passed to compilations
+        scratch.compiler, scratch.cc_opts,
+        scratch.source_code, scratch.context,
+    ])
 
     return {
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: !!compileRequestPromise,
+        isCompiling: !!compileRequestPromise || debouncedCompile.isPending(),
     }
 }
 

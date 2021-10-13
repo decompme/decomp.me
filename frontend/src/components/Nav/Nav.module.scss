@@ -10,13 +10,17 @@
     flex-wrap: wrap;
     gap: .5em;
 
-    padding: 1vh 0.5vw;
+    padding: 4px;
 
     background: var(--g400);
     border-bottom: 1px solid var(--g600);
 
     font-size: 90%;
     font-weight: 600;
+
+    @media screen and (min-width: 800px) and (min-height: 800px) {
+        padding: 8px;
+    }
 }
 
 .item {

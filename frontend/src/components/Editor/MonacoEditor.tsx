@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, MutableRefObject } from "react"
 
 import classNames from "classnames"
-import * as monaco from "monaco-editor"
-import { editor } from "monaco-editor"
+import { editor, languages } from "monaco-editor"
 
 import * as c from "./language/c"
 import * as mips from "./language/mips"
@@ -15,13 +14,13 @@ if (typeof window === "undefined") {
     throw new Error("Editor component does not work with SSR, use next/dynamic with { ssr: false }")
 }
 
-monaco.languages.register({ id: "decompme_c" })
-monaco.languages.setLanguageConfiguration("decompme_c", c.conf)
-monaco.languages.setMonarchTokensProvider("decompme_c", c.language)
+languages.register({ id: "decompme_c" })
+languages.setLanguageConfiguration("decompme_c", c.conf)
+languages.setMonarchTokensProvider("decompme_c", c.language)
 
-monaco.languages.register({ id: "decompme_mips" })
-monaco.languages.setLanguageConfiguration("decompme_mips", mips.conf)
-monaco.languages.setMonarchTokensProvider("decompme_mips", mips.language)
+languages.register({ id: "decompme_mips" })
+languages.setLanguageConfiguration("decompme_mips", mips.conf)
+languages.setMonarchTokensProvider("decompme_mips", mips.language)
 
 function convertLanguage(language: string) {
     if (language === "c")
@@ -32,12 +31,16 @@ function convertLanguage(language: string) {
         return "plaintext"
 }
 
+export type EditorInstance = editor.IStandaloneCodeEditor;
+
 export type Props = {
     className?: string,
 
     // This is a controlled component
     value: string,
     onChange?: (value: string) => void,
+
+    instanceRef?: MutableRefObject<editor.IStandaloneCodeEditor>,
 
     // Options
     language: "c" | "mips",
@@ -46,16 +49,16 @@ export type Props = {
     padding?: number, // css
 }
 
-export default function Editor({ value, onChange, className, showMargin, padding, language, lineNumbers }: Props) {
+export default function Editor({ value, onChange, className, showMargin, padding, language, lineNumbers, instanceRef }: Props) {
     const isReadOnly = typeof onChange === "undefined"
     const containerRef = useRef<HTMLDivElement>(null)
-    const [editor, setEditor] = useState<editor.IStandaloneCodeEditor | null>(null)
+    const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
 
     // Effect to set up the editor. This is run once when the component is mounted.
     useEffect(() => {
-        monaco.editor.defineTheme("custom", monacoTheme())
+        editor.defineTheme("custom", monacoTheme())
 
-        const editor = monaco.editor.create(containerRef.current, {
+        const editorInstance = editor.create(containerRef.current, {
             language: convertLanguage(language),
             value,
             theme: "custom",
@@ -86,9 +89,11 @@ export default function Editor({ value, onChange, className, showMargin, padding
             lineNumbersMinChars: showMargin ? 5 : 0,
             automaticLayout: true,
         })
-        setEditor(editor)
+        setEditorInstance(editorInstance)
+        if (instanceRef)
+            instanceRef.current = editorInstance
 
-        const model = editor.getModel()
+        const model = editorInstance.getModel()
         if (model) {
             model.onDidChangeContent(() => {
                 if (onChange)
@@ -98,33 +103,33 @@ export default function Editor({ value, onChange, className, showMargin, padding
             console.error("monaco editor has no model")
         }
 
-        return () => editor.dispose()
+        return () => editorInstance.dispose()
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update value.
     useEffect(() => {
-        const model = editor?.getModel()
+        const model = editorInstance?.getModel()
 
         // Only update the model value if it is different; otherwise, the
         // model state will be reset every time the user types!
         if (model && model.getValue() !== value) {
-            console.log("editor value reset")
+            console.warn("editor value reset")
             model.setValue(value)
         }
-    }, [editor, value])
+    }, [editorInstance, value])
 
     // Update language.
     useEffect(() => {
-        const model = editor?.getModel()
+        const model = editorInstance?.getModel()
 
         if (model) {
-            monaco.editor.setModelLanguage(model, convertLanguage(language))
+            editor.setModelLanguage(model, convertLanguage(language))
         }
-    }, [editor, language])
+    }, [editorInstance, language])
 
     useEffect(() => {
-        editor?.updateOptions({ lineNumbers: lineNumbers ? "on" : "off" })
-    }, [editor, lineNumbers])
+        editorInstance?.updateOptions({ lineNumbers: lineNumbers ? "on" : "off" })
+    }, [editorInstance, lineNumbers])
 
     return <div
         ref={containerRef}
@@ -154,7 +159,7 @@ export default function Editor({ value, onChange, className, showMargin, padding
                     e.stopPropagation()
 
                     if (e.shiftKey)
-                        editor?.trigger("", "editor.action.quickCommand", "")
+                        editorInstance?.trigger("", "editor.action.quickCommand", "")
                     //console.log(editor.getSupportedActions())
                 }
             }

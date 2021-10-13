@@ -39,7 +39,7 @@ export default function LoginState({ onChange }: Props) {
                     height={24}
                     priority
                 />}
-                <span>{user.name}</span>
+                {/*<span>{user.username}</span>*/}
             </a>
         </Link>
     } else {

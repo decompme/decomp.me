@@ -20,6 +20,7 @@ export type TabProps = {
     key: string, // react doesn't actually give us this as a prop, but this forces ts into requiring it
     label?: ReactNode,
     disabled?: boolean,
+    onSelect?: () => void,
 }
 
 export class Tab extends Component<TabProps> {
@@ -42,7 +43,16 @@ export class Tab extends Component<TabProps> {
                     aria-selected={ctx.activeTab === key}
                     className={styles.tabButton}
                     disabled={this.props.disabled}
-                    onClick={() => ctx.setActive(key)}
+                    onClick={() => {
+                        ctx.setActive(key)
+
+                        if (this.props.onSelect) {
+                            // run after layout
+                            setTimeout(() => {
+                                this.props.onSelect()
+                            }, 0)
+                        }
+                    }}
                     onMouseMove={event => {
                         ctx.setHover(key)
                         event.stopPropagation()
@@ -97,7 +107,7 @@ export default function Tabs<Key>({ children, activeTab, onChange, className }: 
         if (button) {
             Object.assign(bgRef.current.style, {
                 opacity: 1,
-                transform: `translateX(${button.offsetLeft}px)`,
+                transform: `translate(${button.offsetLeft}px, ${button.offsetTop}px)`,
                 width: `${button.offsetWidth}px`,
             })
         } else {

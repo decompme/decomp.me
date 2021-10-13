@@ -7,7 +7,9 @@
 
 .tabButtons {
     position: relative;
-    height: 48px;
+    min-height: 48px;
+    white-space: nowrap;
+    overflow-x: auto;
 
     border-bottom: 1px solid var(--a100);
 }
@@ -80,7 +82,7 @@
 
     transition: transform, width;
 
-    // left, width, transition-duration, opacity set by JS
+    // transform, width, transition-duration, opacity set by JS
 
     // must be separate element for a different transition-duration
     &::after {
@@ -111,4 +113,5 @@
 
 .tabPanelContent {
     flex: 1;
+    overflow: hidden;
 }
