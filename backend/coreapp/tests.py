@@ -58,6 +58,66 @@ sb  $t6, %lo(D_801D702C)($at)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
+class ScratchModificationTests(APITestCase):
+    def test_update_scratch_score(self):
+        """
+        Ensure that a scratch's score gets updated when the code changes.
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'context': '',
+            'target_asm': "jr $ra"
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        self.assertIsNotNone(scratch)
+        assert(scratch is not None)
+
+        slug = scratch.slug
+
+        self.assertEqual(scratch.score, -1)
+
+        # Obtain ownership of the scratch
+        response = self.client.post(reverse('scratch-claim', kwargs={'slug': slug}))
+
+        # Update the scratch's code and compiler output
+        scratch_patch = {
+            'source_code': "int func() { return 2; }",
+            'compiler': 'ido5.3'
+        }
+
+        response = self.client.patch(reverse('scratch-detail', kwargs={'slug': slug}), scratch_patch)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        scratch = Scratch.objects.first()
+        assert(scratch is not None)
+        self.assertEqual(scratch.score, 200)
+
+    def test_create_scratch_score(self):
+        """
+        Ensure that a scratch's score gets set upon creation.
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'compiler': 'ido7.1',
+            'context': '',
+            'target_asm': 'jr $ra\nli $v0,2',
+            'source_code': 'int func() { return 2; }'
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        self.assertIsNotNone(scratch)
+        assert(scratch is not None)
+
+        self.assertEqual(scratch.score, 0)
+
+
 class CompilationTests(APITestCase):
     def test_simple_compilation(self):
         """
@@ -84,7 +144,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("compile_scratch", kwargs={"slug": slug}), compile_dict)
+        response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Compilation.objects.count(), 1)
 

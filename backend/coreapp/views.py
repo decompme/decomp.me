@@ -43,24 +43,24 @@ class CompilersDetail(APIView):
             "arches": CompilerWrapper.available_arches(),
         })
 
-def compile_scratch(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+def update_scratch_score(scratch: Scratch):
     """
     Compile a scratch and save its score
     """
 
-    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
+    # TODO remove check once compiler can't be null
+    if scratch.compiler:
+        compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
 
-    diff_output: Optional[Dict[str, Any]] = None
-    current_score = -1
+        diff_output: Optional[Dict[str, Any]] = None
+        current_score = -1
 
-    if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
-        current_score = -1 if not diff_output else diff_output.get("current_score", -1)
+        if compilation:
+            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+            current_score = -1 if not diff_output else diff_output.get("current_score", -1)
 
-    scratch.score = current_score
-    scratch.save()
-
-    return diff_output, errors
+        scratch.score = current_score
+        scratch.save()
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
@@ -113,11 +113,13 @@ class ScratchDetail(APIView):
         for param in request.data:
             if hasattr(scratch, param):
                 setattr(scratch, param, request.data[param])
+            else:
+                Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
 
         scratch.save()
 
         if recompile:
-            compile_scratch(scratch)
+            update_scratch_score(scratch)
 
         return self.get(request, slug)
 
@@ -196,7 +198,7 @@ def create_scratch(request):
 
     slug = gen_scratch_id()
 
-    name = diff_label if diff_label else slug
+    name = diff_label if diff_label else ""
 
     scratch_data = {
         "slug": slug,
@@ -215,6 +217,8 @@ def create_scratch(request):
     serializer.save()
 
     scratch = Scratch.objects.get(slug=scratch_data["slug"])
+
+    update_scratch_score(scratch)
 
     return Response(
         ScratchWithMetadataSerializer(scratch, context={ "request": request }).data,
@@ -284,6 +288,9 @@ def fork(request, slug):
         parent=parent_scratch,
     )
     new_scratch.save()
+
+    update_scratch_score(new_scratch)
+
     return Response(
         ScratchSerializer(new_scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
