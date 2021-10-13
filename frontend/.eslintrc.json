@@ -19,6 +19,8 @@
         "array-bracket-spacing": ["error", "never"],
         "no-else-return": "off",
         "no-trailing-spaces": "error",
+        "no-multi-spaces": "error",
+        "no-multiple-empty-lines": "error",
         "comma-dangle": "off",
         "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
         "comma-spacing": "off",
@@ -76,7 +78,12 @@
                 "pathGroupsExcludedImportTypes": ["react"],
                 "alphabetize": { "order": "asc", "caseInsensitive": true }
             }
-        ]
+        ],
+        "import/no-unresolved": "error",
+        "import/export": "warn",
+        "import/no-named-as-default": "warn",
+        "import/no-named-as-default-member": "warn",
+        "import/no-unused-modules": "warn"
     },
     "overrides": [
         {
