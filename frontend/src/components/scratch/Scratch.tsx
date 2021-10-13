@@ -118,8 +118,12 @@ function renderLeftTabs({ scratch, setScratch }: {
                 bubbleSuspense
             />
         </Tab>,
-        <Tab key="settings" label="Scratch settings">
-            TODO
+        <Tab key="settings" label="Scratch settings" className={styles.scratchSettings}>
+            <CompilerOpts
+                arch={scratch.arch}
+                value={scratch}
+                onChange={setScratch}
+            />
         </Tab>,
     ]
 }

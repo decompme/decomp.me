@@ -12,7 +12,7 @@
     user-select: text;
     border: none;
     font-family: monospace;
-    font-size: var(--s-1);
+    font-size: 12px;
     white-space: pre;
     width: 100%;
 }

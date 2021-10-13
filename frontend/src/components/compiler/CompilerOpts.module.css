@@ -11,6 +11,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+
+    cursor: default;
 }
 
 .container {
@@ -55,6 +57,8 @@
     font-size: .8rem;
 
     padding: .6em 1em;
+
+    outline: none !important;
 }
 
 .flags {
@@ -70,10 +74,13 @@
     cursor: default;
     padding: .75em;
     border-radius: 12px;
+
+    border: 1px solid transparent;
 }
 
 .flag:hover {
-    background: var(--g400);
+    background: var(--g250);
+    border-color: var(--g500);
 }
 
 .flag label {
@@ -88,7 +95,7 @@
 .flagDescription {
     display: block;
     font-size: 0.8em;
-    opacity: 0.5;
+    color: var(--g800);
 }
 
 .flagSet {
@@ -106,5 +113,5 @@
     font-size: .8rem;
     padding: .6em 1em;
     padding-bottom: .2em;
-    opacity: 0.5;
+    color: var(--g800);
 }
