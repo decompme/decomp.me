@@ -1,0 +1,4 @@
+{
+    "arch": "mips",
+    "cc": "TOOLROOT=\"$COMPILER_DIR\" \"$COMPILER_DIR/usr/bin/cc\" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $CC_OPTS -o \"$OUTPUT\" \"$INPUT\""
+}

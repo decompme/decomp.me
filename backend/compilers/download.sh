@@ -17,13 +17,7 @@ curl -L "https://github.com/pmret/gcc-papermario/releases/download/master/$os.ta
 curl -L "https://github.com/pmret/binutils-papermario/releases/download/master/$os.tar.gz" | tar zx -C "$compiler_dir/gcc2.8.1"
 
 # ido5.3
-mkdir -p $compiler_dir/ido5.3/usr/lib
-curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-5.3-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido5.3/usr/lib"
-mv $compiler_dir/ido5.3/usr/lib/cc $compiler_dir/ido5.3
-mv $compiler_dir/ido5.3/usr/lib/err.english.cc $compiler_dir/ido5.3
+curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-5.3-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido5.3/"
 
 # ido7.1
-mkdir -p $compiler_dir/ido7.1/usr/lib
-curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-7.1-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido7.1/usr/lib"
-mv $compiler_dir/ido7.1/usr/lib/cc $compiler_dir/ido7.1
-mv $compiler_dir/ido7.1/usr/lib/err.english.cc $compiler_dir/ido7.1
+curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-7.1-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido7.1/"
