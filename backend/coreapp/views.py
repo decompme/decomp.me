@@ -43,7 +43,7 @@ class CompilersDetail(APIView):
             "arches": CompilerWrapper.available_arches(),
         })
 
-def update_scratch_score(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+def update_scratch_score(scratch: Scratch):
     """
     Compile a scratch and save its score
     """
@@ -61,8 +61,6 @@ def update_scratch_score(scratch: Scratch) -> Tuple[Optional[Dict[str, Any]], Op
 
         scratch.score = current_score
         scratch.save()
-
-        return diff_output, errors
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
