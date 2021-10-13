@@ -54,7 +54,7 @@ function renderRightTabs({ compilation }: {
             key="diff"
             label={<>
                 Diff
-                <ScoreBadge score={compilation?.diff_output?.current_score ?? -1} />
+                {compilation && <ScoreBadge score={compilation?.diff_output?.current_score ?? -1} />}
             </>}
             className={styles.diffTab}
         >
