@@ -95,21 +95,25 @@ export default function NewScratch({ serverCompilers }: {
     const compilers = useCompilersForArch(arch, serverCompilers.compilers)
     const compilerModule = compilers?.find(c => c.id === compiler)
 
-    if (!arch) {
+    if (!arch || Object.keys(serverCompilers.arches).indexOf(arch) === -1) {
         setArch(Object.keys(serverCompilers.arches)[0])
     }
 
     if (!compilerModule) { // We just changed architectures, probably
-        // Fall back to the first supported compiler and no opts
-        setCompiler(compilers[0].id)
-        setCompilerOpts("")
+        if (compilers.length === 0) {
+            console.warn("No compilers supported for arch", arch)
+        } else {
+            // Fall back to the first supported compiler and no opts
+            setCompiler(compilers[0].id)
+            setCompilerOpts("")
 
-        // If there is a preset that uses a supported compiler, default to it
-        for (const preset of PRESETS) {
-            if (compilers.find(c => c.id === preset.compiler)) {
-                setCompiler(preset.compiler)
-                setCompilerOpts(preset.opts)
-                break
+            // If there is a preset that uses a supported compiler, default to it
+            for (const preset of PRESETS) {
+                if (compilers.find(c => c.id === preset.compiler)) {
+                    setCompiler(preset.compiler)
+                    setCompilerOpts(preset.opts)
+                    break
+                }
             }
         }
     }
