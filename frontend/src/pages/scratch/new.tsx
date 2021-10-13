@@ -5,14 +5,14 @@ import { GetStaticProps } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
 
-import AsyncButton from "../components/AsyncButton"
-import Editor from "../components/Editor"
-import Footer from "../components/Footer"
-import Nav from "../components/Nav"
-import Select from "../components/Select2"
-import * as api from "../lib/api"
+import AsyncButton from "../../components/AsyncButton"
+import Editor from "../../components/Editor"
+import Footer from "../../components/Footer"
+import Nav from "../../components/Nav"
+import Select from "../../components/Select2"
+import * as api from "../../lib/api"
 
-import styles from "./scratch.module.scss"
+import styles from "./new.module.scss"
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n")

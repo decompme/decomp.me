@@ -22,8 +22,13 @@ module.exports = removeImports(withPWA({
         return [
             {
                 source: "/",
-                destination: "/scratch",
+                destination: "/scratch/new",
                 permanent: false,
+            },
+            {
+                source: "/scratch",
+                destination: "/scratch/new",
+                permanent: true,
             },
         ]
     },
