@@ -8,7 +8,6 @@ import * as api from "../../lib/api"
 import { useSize, useWarnBeforeUnload } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
-import CompilerButton from "../compiler/CompilerButton"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 import Diff from "../diff/Diff"
 import Editor from "../Editor"
@@ -25,8 +24,8 @@ const RIGHT_PANE_MIN_WIDTH = 400
 let isClaiming = false
 
 function ChooseACompiler({ arch, onCommit }: {
-    arch: string,
-    onCommit: (opts: CompilerOptsT) => void,
+    arch: string
+    onCommit: (opts: CompilerOptsT) => void
 }) {
     const [compiler, setCompiler] = useState<CompilerOptsT>()
 
@@ -48,7 +47,7 @@ function ChooseACompiler({ arch, onCommit }: {
 }
 
 function renderRightTabs({ compilation }: {
-    compilation?: api.Compilation,
+    compilation?: api.Compilation
 }): React.ReactElement<typeof Tab>[] {
     return [
         <Tab
@@ -68,8 +67,8 @@ function renderRightTabs({ compilation }: {
 }
 
 function renderLeftTabs({ scratch, setScratch }: {
-    scratch: api.Scratch,
-    setScratch: (s: Partial<api.Scratch>) => void,
+    scratch: api.Scratch
+    setScratch: (s: Partial<api.Scratch>) => void
 }): React.ReactElement<typeof Tab>[] {
     const sourceEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
     const contextEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
@@ -129,8 +128,8 @@ function renderLeftTabs({ scratch, setScratch }: {
 }
 
 export type Props = {
-    slug: string,
-    tryClaim?: boolean, // note: causes page reload after claiming
+    slug: string
+    tryClaim?: boolean // note: causes page reload after claiming
 }
 
 export default function Scratch({ slug, tryClaim }: Props) {
@@ -203,8 +202,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
             })
             .catch(console.error)
             .then(() => {
-                // Reload the entire page
-                window.location.href = window.location.href
+                window.location.reload()
             })
     }
 

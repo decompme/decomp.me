@@ -1,11 +1,9 @@
-import { useState, useCallback, useEffect, useTransition, useRef } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
-import { dequal } from "dequal/lite"
 import useSWR, { Revalidator, RevalidatorOptions } from "swr"
 import { useDebouncedCallback } from "use-debounce"
-import useDeepCompareEffect from "use-deep-compare-effect"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
@@ -130,79 +128,79 @@ export async function patch(url: string, json: Json) {
 }
 
 export interface AnonymousUser {
-    is_you: boolean,
-    is_anonymous: true,
+    is_you: boolean
+    is_anonymous: true
 }
 
 export interface User {
-    is_you: boolean,
-    is_anonymous: false,
+    is_you: boolean
+    is_anonymous: false
 
-    id: number,
-    username: string,
-    name: string,
-    avatar_url: string | null,
-    github_api_url: string | null,
-    github_html_url: string | null,
+    id: number
+    username: string
+    name: string
+    avatar_url: string | null
+    github_api_url: string | null
+    github_html_url: string | null
 }
 
 export type Scratch = {
-    name: string,
-    description: string,
-    slug: string,
-    compiler: string,
-    arch: string,
-    cc_opts: string,
-    source_code: string,
-    context: string,
-    owner: AnonymousUser | User | null, // null means unclaimed
-    parent: string | null, // URL
-    diff_label: string | null,
-    score: number, // -1 = doesn't compile
+    name: string
+    description: string
+    slug: string
+    compiler: string
+    arch: string
+    cc_opts: string
+    source_code: string
+    context: string
+    owner: AnonymousUser | User | null // null means unclaimed
+    parent: string | null // URL
+    diff_label: string | null
+    score: number // -1 = doesn't compile
 }
 
 export type Compilation = {
-    errors: string,
-    diff_output: DiffOutput,
+    errors: string
+    diff_output: DiffOutput
 }
 
 export type DiffOutput = {
-    arch_str: string,
-    current_score: number,
-    error: string | null,
-    header: DiffHeader,
-    rows: DiffRow[],
+    arch_str: string
+    current_score: number
+    error: string | null
+    header: DiffHeader
+    rows: DiffRow[]
 }
 
 export type DiffHeader = {
-    base: DiffText[],
-    current: DiffText[],
-    previous?: DiffText[],
+    base: DiffText[]
+    current: DiffText[]
+    previous?: DiffText[]
 }
 
 export type DiffRow = {
-    key: string,
-    base?: DiffCell,
-    current?: DiffCell,
-    previous?: DiffCell,
+    key: string
+    base?: DiffCell
+    current?: DiffCell
+    previous?: DiffCell
 }
 
 export type DiffCell = {
-    text: DiffText[],
-    line?: number,
-    branch?: number,
-    src?: string,
-    src_comment?: string,
-    src_line?: number,
-    src_path?: string,
+    text: DiffText[]
+    line?: number
+    branch?: number
+    src?: string
+    src_comment?: string
+    src_line?: number
+    src_path?: string
 }
 
 export type DiffText = {
-    text: string,
-    format?: string,
-    group?: string,
-    index?: number,
-    key?: string,
+    text: string
+    format?: string
+    group?: string
+    index?: number
+    key?: string
 }
 
 
@@ -211,11 +209,11 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
 }
 
 export function useScratch(slugOrUrl: string): {
-    scratch: Readonly<Scratch>,
-    savedScratch: Readonly<Scratch> | null,
-    setScratch: (scratch: Partial<Scratch>) => void, // Update the scratch, but only locally
-    saveScratch: () => Promise<void>, // Persist the scratch to the server
-    isSaved: boolean,
+    scratch: Readonly<Scratch>
+    savedScratch: Readonly<Scratch> | null
+    setScratch: (scratch: Partial<Scratch>) => void // Update the scratch, but only locally
+    saveScratch: () => Promise<void> // Persist the scratch to the server
+    isSaved: boolean
 } {
     const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
     const [isSaved, setIsSaved] = useState(true)
@@ -314,10 +312,10 @@ export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scrat
 }
 
 export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, autoRecompile = true): {
-    compilation: Readonly<Compilation> | null,
-    compile: () => Promise<void>, // no debounce
-    debouncedCompile: () => Promise<void>, // with debounce
-    isCompiling: boolean,
+    compilation: Readonly<Compilation> | null
+    compile: () => Promise<void> // no debounce
+    debouncedCompile: () => Promise<void> // with debounce
+    isCompiling: boolean
 } {
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(null)

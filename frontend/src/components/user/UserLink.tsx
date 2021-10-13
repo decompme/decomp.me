@@ -6,7 +6,7 @@ import * as api from "../../lib/api"
 import styles from "./UserLink.module.css"
 
 export type Props = {
-    user: api.User | api.AnonymousUser,
+    user: api.User | api.AnonymousUser
 }
 
 export default function UserLink({ user }: Props) {

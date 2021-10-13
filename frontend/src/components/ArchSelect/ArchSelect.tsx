@@ -18,10 +18,10 @@ const ARCHITECTURES = {
 }
 
 export type Props = {
-    arches: { [key: string]: string },
-    value: string,
-    className?: string,
-    onChange: (value: string) => void,
+    arches: { [key: string]: string }
+    value: string
+    className?: string
+    onChange: (value: string) => void
 }
 
 export default function ArchSelect({ arches, value, onChange, className }: Props) {

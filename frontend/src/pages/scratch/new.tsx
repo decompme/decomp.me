@@ -44,14 +44,14 @@ export const getStaticProps: GetStaticProps = async _context => {
 export default function NewScratch({ serverCompilers }: {
     serverCompilers: {
         arches: {
-            [key: string]: string,
-        },
+            [key: string]: string
+        }
         compilers: {
             [key: string]: {
-                arch: string,
-            },
-        },
-    },
+                arch: string
+            }
+        }
+    }
 }) {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")

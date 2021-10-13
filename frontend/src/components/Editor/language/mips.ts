@@ -3,14 +3,14 @@ import type { languages } from "monaco-editor"
 export const conf: languages.LanguageConfiguration = {
     comments: {
         lineComment: "#",
-        blockComment: ["/*", "*/"]
+        blockComment: ["/*", "*/"],
     },
     brackets: [
         ["(", ")"],
     ],
     autoClosingPairs: [
         { open: "(", close: ")" },
-        { open: "\"", close: "\"", notIn: ["string"] }
+        { open: "\"", close: "\"", notIn: ["string"] },
     ],
     surroundingPairs: [
         { open: "(", close: ")" },
@@ -58,18 +58,18 @@ export const language: languages.IMonarchLanguage = {
                         "jal": { token: "function" },
                         "@instructions": { token: "support.function.$0" },
                         "@keywords": { token: "keyword.$0" },
-                        "@default": "identifier"
-                    }
-                }
+                        "@default": "identifier",
+                    },
+                },
             ],
             [
                 /\$\w+/,
                 {
                     cases: {
                         "@registers": { token: "entity.name.register.$0" },
-                        "@default": "identifier"
-                    }
-                }
+                        "@default": "identifier",
+                    },
+                },
             ],
             [/%(hi|lo)/, "macro"],
             [/\.\w+/, { token: "keyword.directive" }],
@@ -96,33 +96,33 @@ export const language: languages.IMonarchLanguage = {
             // characters
             [/'[^\\']'/, "string"],
             [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
-            [/'/, "string.invalid"]
+            [/'/, "string.invalid"],
         ],
 
         whitespace: [
             [/[ \t\r\n]+/, ""],
             [/\/\*/, "comment", "@comment"],
             [/#.*\\$/, "comment", "@linecomment"],
-            [/#.*$/, "comment"]
+            [/#.*$/, "comment"],
         ],
 
         comment: [
             [/[^/*]+/, "comment"],
             [/\*\//, "comment", "@pop"],
-            [/[/*]/, "comment"]
+            [/[/*]/, "comment"],
         ],
 
         //For use with continuous line comments
         linecomment: [
             [/.*[^#]$/, "comment", "@pop"],
-            [/[^]+/, "comment"]
+            [/[^]+/, "comment"],
         ],
 
         string: [
             [/[^\\"]+/, "string"],
             [/@escapes/, "string.escape"],
             [/\\./, "string.escape.invalid"],
-            [/"/, "string", "@pop"]
+            [/"/, "string", "@pop"],
         ],
 
         raw: [
@@ -134,13 +134,13 @@ export const language: languages.IMonarchLanguage = {
                             "string.raw",
                             "string.raw.end",
                             "string.raw.end",
-                            { token: "string.raw.end", next: "@pop" }
+                            { token: "string.raw.end", next: "@pop" },
                         ],
-                        "@default": ["string.raw", "string.raw", "string.raw", "string.raw"]
-                    }
-                }
+                        "@default": ["string.raw", "string.raw", "string.raw", "string.raw"],
+                    },
+                },
             ],
-            [/.*/, "string.raw"]
+            [/.*/, "string.raw"],
         ],
 
         include: [
@@ -150,8 +150,8 @@ export const language: languages.IMonarchLanguage = {
                     "",
                     "keyword.directive.include.begin",
                     "string.include.identifier",
-                    { token: "keyword.directive.include.end", next: "@pop" }
-                ] as languages.IMonarchLanguageAction
+                    { token: "keyword.directive.include.end", next: "@pop" },
+                ] as languages.IMonarchLanguageAction,
             ],
             [
                 /(\s*)(")([^"]*)(")/,
@@ -159,9 +159,9 @@ export const language: languages.IMonarchLanguage = {
                     "",
                     "keyword.directive.include.begin",
                     "string.include.identifier",
-                    { token: "keyword.directive.include.end", next: "@pop" }
-                ] as languages.IMonarchLanguageAction
-            ]
-        ]
-    }
+                    { token: "keyword.directive.include.end", next: "@pop" },
+                ] as languages.IMonarchLanguageAction,
+            ],
+        ],
+    },
 }

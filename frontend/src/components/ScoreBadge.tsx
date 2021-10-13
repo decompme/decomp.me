@@ -4,7 +4,7 @@ import classNames from "classnames"
 import styles from "./ScoreBadge.module.scss"
 
 export type Props = {
-    score: number,
+    score: number
 }
 
 export default function ScoreBadge({ score }: Props) {

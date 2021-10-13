@@ -14,8 +14,8 @@ import getTheme from "./monacoTheme"
 const isMobile = mobile()
 
 interface Props extends MonacoEditorProps {
-    bubbleSuspense?: boolean,
-    useLoadingSpinner?: boolean,
+    bubbleSuspense?: boolean
+    useLoadingSpinner?: boolean
 }
 
 const MonacoEditor = isMobile ? null : dynamic(() => import("./MonacoEditor"), {

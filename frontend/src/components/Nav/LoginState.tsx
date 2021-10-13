@@ -11,7 +11,7 @@ import GitHubLoginButton from "../GitHubLoginButton"
 import styles from "./LoginState.module.scss"
 
 export type Props = {
-    onChange: (user: api.AnonymousUser | api.User) => void,
+    onChange: (user: api.AnonymousUser | api.User) => void
 }
 
 export default function LoginState({ onChange }: Props) {

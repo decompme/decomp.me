@@ -34,19 +34,19 @@ function convertLanguage(language: string) {
 export type EditorInstance = editor.IStandaloneCodeEditor;
 
 export type Props = {
-    className?: string,
+    className?: string
 
     // This is a controlled component
-    value: string,
-    onChange?: (value: string) => void,
+    value: string
+    onChange?: (value: string) => void
 
-    instanceRef?: MutableRefObject<editor.IStandaloneCodeEditor>,
+    instanceRef?: MutableRefObject<editor.IStandaloneCodeEditor>
 
     // Options
-    language: "c" | "mips",
-    lineNumbers?: boolean,
-    showMargin?: boolean,
-    padding?: number, // css
+    language: "c" | "mips"
+    lineNumbers?: boolean
+    showMargin?: boolean
+    padding?: number // css
 }
 
 export default function Editor({ value, onChange, className, showMargin, padding, language, lineNumbers, instanceRef }: Props) {

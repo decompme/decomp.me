@@ -7,8 +7,8 @@ import { useCompilersForArch } from "./compilers"
 import PresetSelect, { PRESETS } from "./PresetSelect"
 
 interface IOptsContext {
-    checkFlag(flag: string): boolean,
-    setFlag(flag: string, value: boolean): void,
+    checkFlag(flag: string): boolean
+    setFlag(flag: string, value: boolean): void
 }
 
 const OptsContext = createContext<IOptsContext>(undefined)
@@ -56,16 +56,16 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 }
 
 export type CompilerOptsT = {
-    compiler: string,
-    cc_opts: string,
+    compiler: string
+    cc_opts: string
 }
 
 export type Props = {
-    arch?: string,
-    value?: CompilerOptsT,
-    onChange: (value: CompilerOptsT) => void,
-    title?: string,
-    isPopup?: boolean,
+    arch?: string
+    value?: CompilerOptsT
+    onChange: (value: CompilerOptsT) => void
+    title?: string
+    isPopup?: boolean
 }
 
 export default function CompilerOpts({ arch, value, onChange, title, isPopup }: Props) {
@@ -108,11 +108,11 @@ export default function CompilerOpts({ arch, value, onChange, title, isPopup }: 
 }
 
 export function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
-    arch?: string,
-    compiler: string,
-    setCompiler: (compiler: string) => void,
-    opts: string,
-    setOpts: (opts: string) => void,
+    arch?: string
+    compiler: string
+    setCompiler: (compiler: string) => void
+    opts: string
+    setOpts: (opts: string) => void
 }) {
     const compilers = useCompilersForArch(arch)
     const compilerModule = compilers?.find(c => c.id === compiler)

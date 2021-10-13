@@ -28,11 +28,11 @@ const Button = forwardRef(function Button({
 })
 
 export type Props = {
-    children: React.ReactNode,
-    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void,
-    className?: string,
-    disabled?: boolean,
-    primary?: boolean,
+    children: React.ReactNode
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+    className?: string
+    disabled?: boolean
+    primary?: boolean
 }
 
 export default Button

@@ -3,7 +3,7 @@ import type { languages } from "monaco-editor"
 export const conf: languages.LanguageConfiguration = {
     comments: {
         lineComment: "//",
-        blockComment: ["/*", "*/"]
+        blockComment: ["/*", "*/"],
     },
     brackets: [
         ["{", "}"],
@@ -15,20 +15,20 @@ export const conf: languages.LanguageConfiguration = {
         { open: "{", close: "}" },
         { open: "(", close: ")" },
         { open: "'", close: "'", notIn: ["string", "comment"] },
-        { open: "\"", close: "\"", notIn: ["string"] }
+        { open: "\"", close: "\"", notIn: ["string"] },
     ],
     surroundingPairs: [
         { open: "{", close: "}" },
         { open: "[", close: "]" },
         { open: "(", close: ")" },
         { open: "\"", close: "\"" },
-        { open: "'", close: "'" }
+        { open: "'", close: "'" },
     ],
     folding: {
         markers: {
             start: new RegExp("^\\s*#pragma\\s+region\\b"),
-            end: new RegExp("^\\s*#pragma\\s+endregion\\b")
-        }
+            end: new RegExp("^\\s*#pragma\\s+endregion\\b"),
+        },
     },
 }
 
@@ -40,7 +40,7 @@ export const language: languages.IMonarchLanguage = {
         { token: "delimiter.curly", open: "{", close: "}" },
         { token: "delimiter.parenthesis", open: "(", close: ")" },
         { token: "delimiter.square", open: "[", close: "]" },
-        { token: "delimiter.angle", open: "<", close: ">" }
+        { token: "delimiter.angle", open: "<", close: ">" },
     ],
 
     keywords: [
@@ -309,9 +309,9 @@ export const language: languages.IMonarchLanguage = {
                     cases: {
                         "@keywords": { token: "keyword.$0" },
                         "@types": { token: "storage.type.$0" },
-                        "@default": "identifier"
-                    }
-                }
+                        "@default": "identifier",
+                    },
+                },
             ],
 
             // The preprocessor checks must be before whitespace as they check /^\s*#/ which
@@ -337,9 +337,9 @@ export const language: languages.IMonarchLanguage = {
                     cases: {
                         "@comparisonOperators": { token: "operator.comparison" },
                         "@operators": { token: "operator" },
-                        "@default": { token: "delimiter" }
-                    }
-                }
+                        "@default": { token: "delimiter" },
+                    },
+                },
             ],
 
             // numbers
@@ -361,7 +361,7 @@ export const language: languages.IMonarchLanguage = {
             // characters
             [/'[^\\']'/, "string"],
             [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
-            [/'/, "string.invalid"]
+            [/'/, "string.invalid"],
         ],
 
         whitespace: [
@@ -369,33 +369,33 @@ export const language: languages.IMonarchLanguage = {
             [/\/\*\*(?!\/)/, "comment.doc", "@doccomment"],
             [/\/\*/, "comment", "@comment"],
             [/\/\/.*\\$/, "comment", "@linecomment"],
-            [/\/\/.*$/, "comment"]
+            [/\/\/.*$/, "comment"],
         ],
 
         comment: [
             [/[^/*]+/, "comment"],
             [/\*\//, "comment", "@pop"],
-            [/[/*]/, "comment"]
+            [/[/*]/, "comment"],
         ],
 
         //For use with continuous line comments
         linecomment: [
             [/.*[^\\]$/, "comment", "@pop"],
-            [/[^]+/, "comment"]
+            [/[^]+/, "comment"],
         ],
 
         //Identical copy of comment above, except for the addition of .doc
         doccomment: [
             [/[^/*]+/, "comment.doc"],
             [/\*\//, "comment.doc", "@pop"],
-            [/[/*]/, "comment.doc"]
+            [/[/*]/, "comment.doc"],
         ],
 
         string: [
             [/[^\\"]+/, "string"],
             [/@escapes/, "string.escape"],
             [/\\./, "string.escape.invalid"],
-            [/"/, "string", "@pop"]
+            [/"/, "string", "@pop"],
         ],
 
         raw: [
@@ -407,13 +407,13 @@ export const language: languages.IMonarchLanguage = {
                             "string.raw",
                             "string.raw.end",
                             "string.raw.end",
-                            { token: "string.raw.end", next: "@pop" }
+                            { token: "string.raw.end", next: "@pop" },
                         ],
-                        "@default": ["string.raw", "string.raw", "string.raw", "string.raw"]
-                    }
-                }
+                        "@default": ["string.raw", "string.raw", "string.raw", "string.raw"],
+                    },
+                },
             ],
-            [/.*/, "string.raw"]
+            [/.*/, "string.raw"],
         ],
 
         annotation: [
@@ -422,7 +422,7 @@ export const language: languages.IMonarchLanguage = {
             [/[a-zA-Z0-9_]+/, "annotation"],
             [/[,:]/, "delimiter"],
             [/[()]/, "@brackets"],
-            [/\]\s*\]/, { token: "annotation", next: "@pop" }]
+            [/\]\s*\]/, { token: "annotation", next: "@pop" }],
         ],
 
         include: [
@@ -432,8 +432,8 @@ export const language: languages.IMonarchLanguage = {
                     "",
                     "keyword.directive.include.begin",
                     "string.include.identifier",
-                    { token: "keyword.directive.include.end", next: "@pop" }
-                ] as languages.IMonarchLanguageAction
+                    { token: "keyword.directive.include.end", next: "@pop" },
+                ] as languages.IMonarchLanguageAction,
             ],
             [
                 /(\s*)(")([^"]*)(")/,
@@ -441,9 +441,9 @@ export const language: languages.IMonarchLanguage = {
                     "",
                     "keyword.directive.include.begin",
                     "string.include.identifier",
-                    { token: "keyword.directive.include.end", next: "@pop" }
-                ] as languages.IMonarchLanguageAction
-            ]
-        ]
-    }
+                    { token: "keyword.directive.include.end", next: "@pop" },
+                ] as languages.IMonarchLanguageAction,
+            ],
+        ],
+    },
 }

@@ -20,7 +20,7 @@ function ScratchLink({ slug }: { slug: string }) {
 }
 
 export type Props = {
-    scratch: api.Scratch,
+    scratch: api.Scratch
     setScratch?: (scratch: Partial<api.Scratch>) => void
 }
 

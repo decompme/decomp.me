@@ -23,7 +23,7 @@ export default function getTheme(): editor.IStandaloneThemeData {
             { "token": "entity.other.attribute-name", "foreground": "FF4A98" },
             { "token": "support.function", "foreground": "45B8FF" },
             { "token": "storage", "foreground": "45B8FF" },
-            { "token": "macro", "foreground": "3bff6c" }
+            { "token": "macro", "foreground": "3bff6c" },
         ],
         "colors": {
             "editor.foreground": "#8599b3",
@@ -32,7 +32,7 @@ export default function getTheme(): editor.IStandaloneThemeData {
             "editor.lineHighlightBackground": "#ccccff07",
             "editorCursor.foreground": "#c9cbfc",
             "editorWhitespace.foreground": "#c9cbfc11",
-            "editorLineNumber.foreground":"#ccccff31"
-        }
+            "editorLineNumber.foreground":"#ccccff31",
+        },
     }
 }

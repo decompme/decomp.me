@@ -27,13 +27,13 @@ export const PRESETS = [
 ]
 
 export default function PresetSelect({ className, arch, compiler, opts, setCompiler, setOpts, serverCompilers }: {
-    className?: string,
-    arch: string,
-    compiler: string,
-    opts: string,
-    setCompiler: (compiler: string) => void,
-    setOpts: (opts: string) => void,
-    serverCompilers?: Record<string, { arch: string | null }>,
+    className?: string
+    arch: string
+    compiler: string
+    opts: string
+    setCompiler: (compiler: string) => void
+    setOpts: (opts: string) => void
+    serverCompilers?: Record<string, { arch: string | null }>
 }) {
     const compilers = useCompilersForArch(arch, serverCompilers)
 

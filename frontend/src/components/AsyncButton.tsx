@@ -9,10 +9,10 @@ import Button, { Props as ButtonProps } from "./Button"
 import LoadingSpinner from "./loading.svg"
 
 export interface Props extends ButtonProps {
-    onClick: () => Promise<unknown>,
-    forceLoading?: boolean,
-    errorPlacement?: import("react-laag/dist/PlacementType").PlacementType,
-    children: ReactNode,
+    onClick: () => Promise<unknown>
+    forceLoading?: boolean
+    errorPlacement?: import("react-laag/dist/PlacementType").PlacementType
+    children: ReactNode
 }
 
 export default function AsyncButton(props: Props) {

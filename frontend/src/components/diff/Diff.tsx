@@ -18,7 +18,7 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
 }
 
 export type Props = {
-    compilation: api.Compilation,
+    compilation: api.Compilation
 }
 
 export default function Diff({ compilation }: Props) {
