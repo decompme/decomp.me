@@ -6,7 +6,7 @@
     max-width: 40em;
     padding: 1em;
 
-    user-select: auto;
+    cursor: default;
 }
 
 .rule {
@@ -17,6 +17,7 @@
 
 .heading {
     padding: 10px;
+    user-select: auto;
 
     > h1 {
         color: var(--g1900);
@@ -42,8 +43,10 @@
     font-weight: 600;
 
     small {
-        color: var(--g1000);
+        color: var(--g800);
         font-size: .8em;
+        font-weight: 400;
+        padding-left: 8px;
     }
 }
 
@@ -56,6 +59,12 @@
     font: .8em monospace;
     border: 1px solid var(--g500);
     border-radius: 4px;
+
+    outline: none !important;
+
+    &::-webkit-input-placeholder {
+        color: var(--g700);
+    }
 }
 
 .editorContainer {
@@ -72,4 +81,49 @@
 
     border: 1px solid var(--g500);
     border-radius: 4px;
+}
+
+.compilerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: default;
+    user-select: none;
+
+    @media screen and (max-width: 400px) {
+        flex-direction: column;
+    }
+
+    & > div {
+        display: flex;
+        flex-direction: column;
+
+        flex: 1;
+        width: 100%;
+
+        &.compilerChoiceOr {
+            display: block;
+            flex: 0;
+            padding: 8px;
+            text-align: center;
+
+            color: var(--g500);
+            font-size: .8rem;
+
+            @media screen and (min-width: 400px) {
+                padding: 16px;
+            }
+        }
+    }
+}
+
+.compilerChoiceSelect {
+    width: 100%;
+}
+
+.compilerChoiceHeading {
+    font-size: .8rem;
+    padding: 2px 10px;
+    color: var(--g800);
 }

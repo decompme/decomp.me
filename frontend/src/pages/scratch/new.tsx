@@ -7,9 +7,12 @@ import { useRouter } from "next/router"
 
 import ArchSelect from "../../components/ArchSelect"
 import AsyncButton from "../../components/AsyncButton"
+import { useCompilersForArch } from "../../components/compiler/compilers"
+import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
+import Select from "../../components/Select2"
 import * as api from "../../lib/api"
 
 import styles from "./new.module.scss"
@@ -33,15 +36,28 @@ export const getStaticProps: GetStaticProps = async _context => {
 
     return {
         props: {
-            arches: data.arches,
+            serverCompilers: data,
         },
     }
 }
 
-export default function NewScratch({ arches }: { arches: { [key: string]: string } }) {
+export default function NewScratch({ serverCompilers }: {
+    serverCompilers: {
+        arches: {
+            [key: string]: string,
+        },
+        compilers: {
+            [key: string]: {
+                arch: string,
+            },
+        },
+    },
+}) {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [arch, setArch] = useState("")
+    const [compiler, setCompiler] = useState<string>()
+    const [compilerOpts, setCompilerOpts] = useState<string>("")
     const router = useRouter()
 
     const defaultLabel = useMemo(() => {
@@ -59,6 +75,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
             setAsm(JSON.parse(localStorage["NewScratch.asm"] ?? "\"\""))
             setContext(JSON.parse(localStorage["NewScratch.context"] ?? "\"\""))
             setArch(JSON.parse(localStorage["NewScratch.arch"] ?? "\"\""))
+            setCompiler(JSON.parse(localStorage["NewScratch.compiler"] ?? undefined))
+            setCompilerOpts(JSON.parse(localStorage["NewScratch.compilerOpts"] ?? "\"\""))
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -70,10 +88,30 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
         localStorage["NewScratch.asm"] = JSON.stringify(asm)
         localStorage["NewScratch.context"] = JSON.stringify(context)
         localStorage["NewScratch.arch"] = JSON.stringify(arch)
-    }, [label, asm, context, arch])
+        localStorage["NewScratch.compiler"] = JSON.stringify(compiler)
+        localStorage["NewScratch.compilerOpts"] = JSON.stringify(compilerOpts)
+    }, [label, asm, context, arch, compiler, compilerOpts])
+
+    const compilers = useCompilersForArch(arch, serverCompilers.compilers)
+    const compilerModule = compilers?.find(c => c.id === compiler)
 
     if (!arch) {
-        setArch(Object.keys(arches)[0])
+        setArch(Object.keys(serverCompilers.arches)[0])
+    }
+
+    if (!compilerModule) { // We just changed architectures, probably
+        // Fall back to the first supported compiler and no opts
+        setCompiler(compilers[0].id)
+        setCompilerOpts("")
+
+        // If there is a preset that uses a supported compiler, default to it
+        for (const preset of PRESETS) {
+            if (compilers.find(c => c.id === preset.compiler)) {
+                setCompiler(preset.compiler)
+                setCompilerOpts(preset.opts)
+                break
+            }
+        }
     }
 
     const submit = async () => {
@@ -82,6 +120,8 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
                 target_asm: asm,
                 context: context || "",
                 arch,
+                compiler,
+                cc_opts: compilerOpts,
                 diff_label: label || defaultLabel || "",
             })
 
@@ -121,10 +161,48 @@ export default function NewScratch({ arches }: { arches: { [key: string]: string
                     Architecture
                 </p>
                 <ArchSelect
-                    arches={arches}
+                    arches={serverCompilers.arches}
                     value={arch}
                     onChange={a => setArch(a)}
                 />
+            </div>
+
+            <div>
+                <p className={styles.label}>
+                    Compiler
+                </p>
+                <div className={styles.compilerContainer}>
+                    <div>
+                        <span className={styles.compilerChoiceHeading}>Select a compiler</span>
+                        <Select
+                            className={styles.compilerChoiceSelect}
+                            options={compilers.reduce((options, compiler) => {
+                                return {
+                                    ...options,
+                                    [compiler.id]: compiler.name,
+                                }
+                            }, {})}
+                            value={compiler}
+                            onChange={c => {
+                                setCompiler(c)
+                                setCompilerOpts("")
+                            }}
+                        />
+                    </div>
+                    <div className={styles.compilerChoiceOr}>or</div>
+                    <div>
+                        <span className={styles.compilerChoiceHeading}>Select a preset</span>
+                        <PresetSelect
+                            className={styles.compilerChoiceSelect}
+                            arch={arch}
+                            compiler={compiler}
+                            opts={compilerOpts}
+                            setCompiler={setCompiler}
+                            setOpts={setCompilerOpts}
+                            serverCompilers={serverCompilers.compilers}
+                        />
+                    </div>
+                </div>
             </div>
 
             <hr className={styles.rule} />

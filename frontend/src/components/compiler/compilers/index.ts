@@ -18,11 +18,9 @@ export type CompilerModule = { id: string, name: string, Flags: FunctionComponen
 
 export default COMPILERS
 
-export function useCompilersForArch(arch?: string) {
-    const serverCompilers = api.useCompilers()
-
+export function useCompilersForArch(arch?: string, serverCompilers?: Record<string, { arch: string | null }>) {
     if (!serverCompilers)
-        return null
+        serverCompilers = api.useCompilers()
 
     if (arch)
         return COMPILERS.filter(compiler => serverCompilers[compiler.id]?.arch === arch) // compiler supports this arch

@@ -390,7 +390,7 @@ export function useArches(): Record<string, string> {
     return data?.arches
 }
 
-export function useCompilers(): Record<string, { arch: string | null }> | null {
+export function useCompilers(): Record<string, { arch: string | null }> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
         suspense: true,
