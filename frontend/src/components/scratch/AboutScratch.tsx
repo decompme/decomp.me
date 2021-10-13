@@ -47,7 +47,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 disabled={!setScratch}
                 onChange={event => setScratch && setScratch({ description: event.target.value })}
                 maxLength={5000}
-                placeholder="Write something interesting about your scratch"
+                placeholder="Add any notes about the scratch here"
             />
         </div> : <div />}
     </div>
