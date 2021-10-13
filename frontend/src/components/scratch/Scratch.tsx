@@ -84,18 +84,6 @@ function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch
     compile: () => Promise<void>,
 }): React.ReactElement<typeof Tab>[] {
     return [
-        <Tab key="about" label={scratch.owner.is_you ? "Scratch settings" : "About this scratch" }>
-            <div className={styles.metadata}>
-                {scratch.owner && <div>
-                                    Owner
-                    <UserLink user={scratch.owner} />
-                </div>}
-
-                {scratch.parent && <div>
-                                    Fork of <ScratchLink slug={scratch.parent} />
-                </div>}
-            </div>
-        </Tab>,
         <Tab key="source" label="Source code">
             <Editor
                 className={styles.editor}
@@ -121,6 +109,18 @@ function renderLeftTabs({ scratch, isSaved, setScratch, saveScratch, forkScratch
                 showMargin
                 bubbleSuspense
             />
+        </Tab>,
+        <Tab key="about" label={scratch.owner.is_you ? "Scratch settings" : "About this scratch" }>
+            <div className={styles.metadata}>
+                {scratch.owner && <div>
+                                    Owner
+                    <UserLink user={scratch.owner} />
+                </div>}
+
+                {scratch.parent && <div>
+                                    Fork of <ScratchLink slug={scratch.parent} />
+                </div>}
+            </div>
         </Tab>,
     ]
 }
