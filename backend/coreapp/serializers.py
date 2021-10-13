@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from typing import Optional, TYPE_CHECKING
 
@@ -51,7 +50,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "arch", "cc_opts", "target_assembly", "source_code", "context", "diff_label"]
+        fields = ["slug", "name", "description", "compiler", "arch", "cc_opts", "target_assembly", "source_code", "context", "diff_label", "score"]
 
     def create(self, validated_data):
         scratch = Scratch.objects.create(**validated_data)
@@ -72,4 +71,4 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "compiler", "arch", "cc_opts", "source_code", "context", "owner", "parent", "diff_label"]
+        fields = ["slug", "name", "description", "compiler", "arch", "cc_opts", "source_code", "context", "owner", "parent", "diff_label", "score"]
