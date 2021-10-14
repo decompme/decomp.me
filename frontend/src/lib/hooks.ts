@@ -5,9 +5,9 @@ import Router from "next/router"
 import useResizeObserver from "@react-hook/resize-observer"
 
 export function useSize<T extends HTMLElement>(): {
-    width: number | undefined,
-    height: number | undefined,
-    ref: RefObject<T>,
+    width: number | undefined
+    height: number | undefined
+    ref: RefObject<T>
     } {
     const ref = useRef<T>()
     const [size, setSize] = useState({ width: undefined, height: undefined })
@@ -22,7 +22,7 @@ export function useSize<T extends HTMLElement>(): {
     return { width: size.width, height: size.height, ref }
 }
 
-export function useWarnBeforeUnload(enabled: boolean, message: string = "Are you sure you want to leave this page?") {
+export function useWarnBeforeUnload(enabled: boolean, message = "Are you sure you want to leave this page?") {
     const enabledRef = useRef(enabled)
     const messageRef = useRef(message)
 

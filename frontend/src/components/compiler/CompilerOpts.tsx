@@ -1,14 +1,14 @@
-import { createContext, useState, useContext, useEffect } from "react"
+import { createContext, useContext } from "react"
 
 import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForArch } from "./compilers"
-import PresetSelect, { PRESETS } from "./PresetSelect"
+import PresetSelect from "./PresetSelect"
 
 interface IOptsContext {
-    checkFlag(flag: string): boolean,
-    setFlag(flag: string, value: boolean): void,
+    checkFlag(flag: string): boolean
+    setFlag(flag: string, value: boolean): void
 }
 
 const OptsContext = createContext<IOptsContext>(undefined)
@@ -56,28 +56,35 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 }
 
 export type CompilerOptsT = {
-    compiler: string,
-    cc_opts: string,
+    compiler: string
+    cc_opts: string
 }
 
 export type Props = {
-    arch?: string,
-    value?: CompilerOptsT,
-    onChange: (value: CompilerOptsT) => void,
-    title?: string,
-    isPopup?: boolean,
+    arch?: string
+    value: CompilerOptsT
+    onChange: (value: CompilerOptsT) => void
+    title?: string
+    isPopup?: boolean
 }
 
 export default function CompilerOpts({ arch, value, onChange, title, isPopup }: Props) {
-    const [compiler, setCompiler] = useState((value && value.compiler) || PRESETS[0].compiler)
-    let [opts, setOpts] = useState((value && value.cc_opts) || PRESETS[0].opts)
+    const compiler = value.compiler
+    let opts = value.cc_opts
 
-    useEffect(() => {
+    const setCompiler = (compiler: string) => {
         onChange({
             compiler,
             cc_opts: opts,
         })
-    }, [compiler, opts]) // eslint-disable-line react-hooks/exhaustive-deps
+    }
+
+    const setOpts = (opts: string) => {
+        onChange({
+            compiler,
+            cc_opts: opts,
+        })
+    }
 
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
@@ -108,11 +115,11 @@ export default function CompilerOpts({ arch, value, onChange, title, isPopup }: 
 }
 
 export function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
-    arch?: string,
-    compiler: string,
-    setCompiler: (compiler: string) => void,
-    opts: string,
-    setOpts: (opts: string) => void,
+    arch?: string
+    compiler: string
+    setCompiler: (compiler: string) => void
+    opts: string
+    setOpts: (opts: string) => void
 }) {
     const compilers = useCompilersForArch(arch)
     const compilerModule = compilers?.find(c => c.id === compiler)

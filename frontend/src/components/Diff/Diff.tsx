@@ -1,3 +1,4 @@
+/* eslint css-modules/no-unused-class: off */
 
 import * as api from "../../lib/api"
 
@@ -18,7 +19,7 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
 }
 
 export type Props = {
-    compilation: api.Compilation,
+    compilation: api.Compilation
 }
 
 export default function Diff({ compilation }: Props) {

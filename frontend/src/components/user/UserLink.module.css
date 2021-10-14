@@ -1,17 +1,21 @@
 .user {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: .5em;
+    gap: 6px;
 
-    padding: .6em;
-    padding-right: .9em;
+    padding-left: 3px;
 
-    color: var(--g1400);
+    vertical-align: bottom;
 }
 
 .user:any-link {
     cursor: pointer;
+}
+
+.user:any-link:hover {
+    color: var(--g1700);
+    text-decoration: underline;
 }
 
 .avatar {

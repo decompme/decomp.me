@@ -6,7 +6,7 @@ import Head from "next/head"
 
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
-import Scratch, { nameScratch } from "../../components/scratch/Scratch"
+import Scratch from "../../components/Scratch"
 import * as api from "../../lib/api"
 
 import styles from "./[slug].module.scss"
@@ -42,7 +42,7 @@ export const getStaticProps: GetStaticProps = async context => {
 export default function ScratchPage({ scratch }: { scratch?: api.Scratch }) {
     return <>
         <Head>
-            <title>{scratch ? nameScratch(scratch) : "Loading scratch"} | decomp.me</title>
+            <title>{scratch ? scratch.name : "Scratch"} | decomp.me</title>
         </Head>
         <Nav />
         <main className={styles.container}>

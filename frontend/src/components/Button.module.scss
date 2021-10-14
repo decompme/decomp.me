@@ -1,21 +1,22 @@
 .btn {
     border-radius: 4px;
-    padding: .6em 1em;
+    padding: 0.6em 1em;
 
-    font-size: .8rem;
+    font-size: 0.8rem;
+    font-weight: 500;
 
     user-select: none;
     appearance: none;
 
     display: inline-flex;
-    gap: .5em;
+    gap: 0.5em;
     align-items: center;
 
     background: transparent;
     color: var(--a800);
     border: 1px solid var(--g500);
 
-    transition: color .2s ease, background .15s ease, border-color .15s ease;
+    transition: color 0.2s ease, background 0.15s ease, border-color 0.15s ease;
 
     &:disabled {
         opacity: 0.7;

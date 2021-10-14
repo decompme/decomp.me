@@ -11,7 +11,7 @@ import GitHubLoginButton from "../GitHubLoginButton"
 import styles from "./LoginState.module.scss"
 
 export type Props = {
-    onChange: (user: api.AnonymousUser | api.User) => void,
+    onChange: (user: api.AnonymousUser | api.User) => void
 }
 
 export default function LoginState({ onChange }: Props) {
@@ -39,11 +39,11 @@ export default function LoginState({ onChange }: Props) {
                     height={24}
                     priority
                 />}
-                <span>{user.name}</span>
+                {/*<span>{user.username}</span>*/}
             </a>
         </Link>
     } else {
-        return <div className={styles.loginContainer}>
+        return <div>
             <GitHubLoginButton label="Sign in" />
         </div>
     }

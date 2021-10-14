@@ -1,0 +1,36 @@
+.badge {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+
+    min-width: 2em;
+    height: 2em;
+
+    font-size: 0.8em;
+    font-weight: 400;
+    padding: 0.4em 0.8em;
+
+    border-radius: 999px;
+    color: var(--a800);
+    background: var(--a100);
+
+    // circle when using icons
+    &.error,
+    &.match {
+        padding: 0;
+    }
+
+    &.error {
+        background: #b93636;
+    }
+
+    &.match {
+        background: var(--accent);
+    }
+}
+
+.icon {
+    width: 1.2em;
+}

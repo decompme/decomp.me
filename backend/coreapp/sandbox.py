@@ -55,6 +55,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/lib32",
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
+            "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
             "--disable_proc",  # Needed for running inside Docker
             "--time_limit", "30",  # seconds

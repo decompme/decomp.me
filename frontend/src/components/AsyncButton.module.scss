@@ -1,6 +1,6 @@
 .errorPopup {
     font-size: 0.8rem;
-    background: #bb4444;
+    background: #b44;
     color: var(--a800);
     padding: 1rem;
     border-radius: 0.4rem;
@@ -20,11 +20,11 @@
 .label {
     opacity: 1;
     transform: initial;
-    transition: opacity .1s ease, transform .1s ease;
+    transition: opacity 0.1s ease, transform 0.1s ease;
 
     .isLoading & {
         opacity: 0;
-        transform:scale(0.9);
+        transform: scale(0.9);
     }
 }
 
@@ -41,7 +41,7 @@
 
     opacity: 0;
     transform: scale(0.9);
-    transition: opacity .1s ease, transform .2s ease;
+    transition: opacity 0.1s ease, transform 0.2s ease;
 
     .isLoading & {
         opacity: initial;

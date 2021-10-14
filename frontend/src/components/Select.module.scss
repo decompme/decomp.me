@@ -10,7 +10,7 @@
 
     padding: 8px 10px;
 
-    font-size: .8rem;
+    font-size: 0.8rem;
 
     user-select: none;
 }
@@ -24,7 +24,8 @@
     padding-right: 2em;
 }
 
-.group option, .group optgroup {
+.group option,
+.group optgroup {
     color: var(--g1600);
     background: var(--g200);
 }
@@ -32,7 +33,7 @@
 .icon {
     pointer-events: none;
     position: absolute;
-    right: .6em;
+    right: 0.6em;
     top: 50%;
     transform: translateY(-50%);
 }

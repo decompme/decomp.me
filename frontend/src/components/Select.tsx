@@ -5,9 +5,9 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 import styles from "./Select.module.scss"
 
 export type Props = {
-    className?: string,
-    onChange: ChangeEventHandler<HTMLSelectElement>,
-    children: ReactNode,
+    className?: string
+    onChange: ChangeEventHandler<HTMLSelectElement>
+    children: ReactNode
 }
 
 export default function Select({ onChange, children, className }: Props) {

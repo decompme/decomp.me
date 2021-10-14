@@ -1,0 +1,68 @@
+.container {
+    list-style: none;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.arch {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 16px;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: var(--g300);
+    color: var(--g1200);
+
+    cursor: pointer;
+    user-select: none;
+
+    white-space: nowrap;
+
+    transition: border-color 0.1s, background 0.15s, color 0.2s;
+
+    svg {
+        width: 40px;
+        height: 40px;
+
+        will-change: filter;
+        filter: grayscale(100%);
+        transition: filter 0.2s;
+    }
+
+    &:hover,
+    &.selected {
+        border-color: var(--g400);
+        color: var(--g2000);
+
+        svg {
+            filter: grayscale(0%);
+        }
+    }
+
+    &.selected {
+        background: var(--g400);
+    }
+}
+
+.labelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.consoleName {
+    font-weight: 500;
+}
+
+.archName {
+    font-size: 0.8em;
+    opacity: 0.6;
+}

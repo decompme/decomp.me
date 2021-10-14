@@ -11,10 +11,10 @@ import styles from "./CompilerButton.module.css"
 import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
 
 export type Props = {
-    arch: CompilerOptsProps["arch"],
-    value: CompilerOptsProps["value"],
-    onChange: CompilerOptsProps["onChange"],
-    disabled?: boolean,
+    arch: CompilerOptsProps["arch"]
+    value: CompilerOptsProps["value"]
+    onChange: CompilerOptsProps["onChange"]
+    disabled?: boolean
 }
 
 export default function CompilerButton({ arch, value, onChange, disabled }: Props) {

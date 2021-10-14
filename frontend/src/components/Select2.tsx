@@ -3,10 +3,10 @@ import { ChevronDownIcon } from "@primer/octicons-react"
 import styles from "./Select.module.scss"
 
 export type Props = {
-    options: { [key: string]: string },
-    value: string,
-    className?: string,
-    onChange: (value: string) => void,
+    options: { [key: string]: string }
+    value: string
+    className?: string
+    onChange: (value: string) => void
 }
 
 export default function Select({ options, value, onChange, className }: Props) {

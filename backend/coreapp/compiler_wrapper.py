@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Set, Tuple
+from collections import OrderedDict
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -38,9 +39,10 @@ else:
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
 
-    compiler_dirs = next(os.walk(settings.COMPILER_BASE_PATH))
+    compilers_base = settings.BASE_DIR / "compilers"
+    compiler_dirs = next(os.walk(compilers_base))
     for compiler_id in compiler_dirs[1]:
-        config_path = Path(settings.COMPILER_BASE_PATH / compiler_id / "config.json")
+        config_path = Path(compilers_base / compiler_id / "config.json")
         if config_path.exists():
             with open(config_path) as f:
                 ret[compiler_id] = json.load(f)
@@ -51,6 +53,7 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 @dataclass
 class Arch:
     name: str
+    description: str
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
@@ -59,13 +62,15 @@ class Arch:
 def load_arches() -> Dict[str, Arch]:
     return {
         "mips": Arch(
-            "MIPS (Nintendo 64)",
+            "Nintendo 64",
+            "MIPS (big-endian)",
             assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
         ),
         "mipsel": Arch(
-            "MIPS (LE)",
+            "PlayStation 2",
+            "MIPS (little-endian)",
             assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
@@ -120,17 +125,18 @@ class CompilerWrapper:
         return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
     @staticmethod
-    def available_arches() -> List[Tuple[str, str]]:
+    def available_arches() -> OrderedDict[str, Dict[str, str]]:
         a_set: Set[str] = set()
-        ret = []
+        ret = OrderedDict()
 
         for id in CompilerWrapper.available_compiler_ids():
             a_set.add(_compilers[id]["arch"])
 
-        for a in a_set:
-            ret.append((a, _arches[a].name))
-
-        ret.sort(key=lambda x: x[0])
+        for a in sorted(a_set):
+            ret[a] = {
+                "name": _arches[a].name,
+                "description": _arches[a].description,
+            }
 
         return ret
 

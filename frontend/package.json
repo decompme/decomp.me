@@ -4,7 +4,7 @@
         "dev": "next dev --port 8080",
         "build": "next build",
         "start": "next start --port 8080",
-        "lint": "next lint",
+        "lint": "next lint && yarn stylelint 'src/**/*.css' 'src/**/*.scss'",
         "postinstall": "next telemetry disable > /dev/null",
         "storybook": "start-storybook -p 6006 --ci",
         "build-storybook": "build-storybook"
@@ -43,6 +43,8 @@
         "@storybook/preset-scss": "^1.0.3",
         "@storybook/react": "^6.3.10",
         "@svgr/webpack": "^5.5.0",
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
         "autoprefixer": "^10.3.1",
         "babel-loader": "^8.2.2",
         "css-loader": "^6.4.0",
@@ -51,6 +53,7 @@
         "eslint": "7",
         "eslint-config-next": "11.1.2",
         "eslint-formatter-rdjson": "^1.0.5",
+        "eslint-plugin-css-modules": "^2.11.0",
         "eslint-plugin-react": "^7.26.1",
         "eslint-plugin-react-hooks": "^4.2.0",
         "monaco-editor-webpack-plugin": "^5.0.0",
@@ -61,6 +64,9 @@
         "sass-loader": "^12.1.0",
         "storybook-dark-mode": "^1.0.8",
         "style-loader": "^3.3.0",
+        "stylelint": "^13.13.1",
+        "stylelint-config-css-modules": "^2.2.0",
+        "stylelint-config-standard": "^22.0.0",
         "typescript": "^4.4.2",
         "webpack": "5"
     }

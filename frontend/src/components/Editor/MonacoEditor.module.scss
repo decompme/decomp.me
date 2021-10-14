@@ -1,9 +1,9 @@
 .container {
     flex-grow: 1;
-    user-select: initial;
 
     /* fix border-radius overflow */
     overflow: hidden;
+
     & :global(.monaco-editor),
     & :global(.monaco-editor-background),
     & :global(.margin),
@@ -14,6 +14,14 @@
     /* weird box at top-left */
     & :global(.monaco-hover) {
         display: none;
+    }
+
+    & :global(.mac .monaco-mouse-cursor-text) {
+        cursor: text !important;
+    }
+
+    & :global(.view-lines) {
+        user-select: initial;
     }
 }
 

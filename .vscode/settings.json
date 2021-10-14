@@ -14,4 +14,19 @@
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
         "editor.formatOnSave": true,
     },
+
+    // stylelint
+    "[css]": {
+        "editor.defaultFormatter": "stylelint.vscode-stylelint",
+        "editor.formatOnSave": true,
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "stylelint.vscode-stylelint",
+        "editor.formatOnSave": true,
+    },
+
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.formatOnSave": true,
+    },
 }

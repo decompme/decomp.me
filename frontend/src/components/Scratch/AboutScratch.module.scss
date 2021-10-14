@@ -1,0 +1,100 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    cursor: default;
+
+    height: 100%;
+}
+
+.rule {
+    border: 0;
+    background: var(--g300);
+    height: 1px;
+}
+
+.label {
+    display: block;
+    margin: 0;
+    padding: 10px;
+
+    color: var(--g1000);
+    font-size: 0.9em;
+    font-weight: 500;
+
+    small {
+        color: var(--g1000);
+        font-size: 0.8em;
+    }
+}
+
+.horizontalField {
+    display: flex;
+    align-items: center;
+
+    .label {
+        width: 100px;
+    }
+}
+
+.scratchLinkContainer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    color: var(--g800);
+}
+
+.scratchLink {
+    cursor: pointer;
+    color: var(--g1400);
+
+    &:hover {
+        color: var(--g1700);
+        text-decoration: underline;
+    }
+}
+
+.scratchLinkByText {
+    padding-left: 6px;
+    padding-right: 4px;
+}
+
+.textArea {
+    flex: 1;
+    padding: 10px;
+
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    outline: none !important;
+
+    color: var(--g1800);
+    resize: none;
+
+    width: 100%;
+
+    cursor: auto;
+    user-select: text;
+
+    &::-webkit-input-placeholder {
+        color: var(--g500);
+    }
+
+    &:not(:disabled) {
+        cursor: auto;
+        transition: border-color 0.15s;
+
+        &:hover,
+        &:active {
+            border-color: var(--g300);
+        }
+    }
+}
+
+.grow {
+    display: flex;
+    flex-direction: inherit;
+    flex: 1;
+}

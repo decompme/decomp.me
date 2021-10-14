@@ -87,7 +87,7 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
                     height={64}
                 />}
                 <h1 className={styles.name}>
-                    <div>{user.name} {user.is_you && <i>(you)</i>}</div>
+                    <div>{user.name}</div>
                     <div className={styles.username}>
                         @{user.username}
 

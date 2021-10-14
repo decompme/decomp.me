@@ -4,11 +4,11 @@ import Frog from "./frog.svg"
 import LoginState, { Props as LoginStateProps } from "./LoginState"
 import styles from "./Nav.module.scss"
 
-const onUserChangeNop = (_user: any) => {}
+const onUserChangeNop: LoginStateProps["onChange"] = _user => {}
 
 export type Props = {
-    children?: React.ReactNode,
-    onUserChange?: LoginStateProps["onChange"],
+    children?: React.ReactNode
+    onUserChange?: LoginStateProps["onChange"]
 }
 
 export default function Nav({ children, onUserChange }: Props) {
@@ -19,7 +19,7 @@ export default function Nav({ children, onUserChange }: Props) {
             </a>
         </Link>
 
-        {children ?? <Link href="/scratch">
+        {children ?? <Link href="/scratch/new">
             <a className={styles.item}>New scratch</a>
         </Link>}
 

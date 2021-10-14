@@ -31,6 +31,12 @@ export default function Footer() {
                         Chat on Discord
                     </a>
                 </Link>
+
+                <Link href="/credits">
+                    <a className={styles.link}>
+                        Credits
+                    </a>
+                </Link>
             </div>
 
             <div className={styles.commitHash}>
