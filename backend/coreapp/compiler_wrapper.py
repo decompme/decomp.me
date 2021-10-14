@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Set, Tuple
-from typing_extensions import OrderedDict
+from collections import OrderedDict
 from coreapp.models import Asm, Assembly, Compilation
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -125,7 +125,7 @@ class CompilerWrapper:
         return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
     @staticmethod
-    def available_arches() -> OrderedDict[str, str]:
+    def available_arches() -> OrderedDict[str, Dict[str, str]]:
         a_set: Set[str] = set()
         ret = OrderedDict()
 
