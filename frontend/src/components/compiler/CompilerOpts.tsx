@@ -62,22 +62,29 @@ export type CompilerOptsT = {
 
 export type Props = {
     arch?: string
-    value?: CompilerOptsT
+    value: CompilerOptsT
     onChange: (value: CompilerOptsT) => void
     title?: string
     isPopup?: boolean
 }
 
 export default function CompilerOpts({ arch, value, onChange, title, isPopup }: Props) {
-    const [compiler, setCompiler] = useState((value && value.compiler) || PRESETS[0].compiler)
-    let [opts, setOpts] = useState((value && value.cc_opts) || PRESETS[0].opts)
+    const compiler = value.compiler
+    let opts = value.cc_opts
 
-    useEffect(() => {
+    const setCompiler = (compiler: string) => {
         onChange({
             compiler,
             cc_opts: opts,
         })
-    }, [compiler, opts]) // eslint-disable-line react-hooks/exhaustive-deps
+    }
+
+    const setOpts = (opts: string) => {
+        onChange({
+            compiler,
+            cc_opts: opts,
+        })
+    }
 
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
