@@ -39,11 +39,11 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 class Platform:
     name: str
     description: str
-    arch: str  # required?
+    arch: str
+    asm_prelude: str
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
-    asm_prelude: Optional[str] = None
 
 def load_platforms() -> Dict[str, Platform]:
     return {

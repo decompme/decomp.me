@@ -105,7 +105,11 @@ class AsmDifferWrapper:
 
     @staticmethod
     def diff(target_assembly: Assembly, compilation: Compilation, diff_label:Optional[str]) -> Dict[str, Any]:
-        platform = compiler_wrapper.CompilerWrapper.platform_from_compiler(compilation.compiler)
+        platform = compiler_wrapper.CompilerWrapper.platform_from_compiler(compilation.compiler or "")
+        if not platform:
+            logger.error(f"Unsupported compiler: {compilation.compiler}. Continuing assuming n64")
+            platform = "n64"
+
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
         try:

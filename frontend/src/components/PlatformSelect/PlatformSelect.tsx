@@ -1,8 +1,9 @@
 import classNames from "classnames"
 
-import styles from "./PlatformSelect.module.scss"
 import LogoN64 from "./n64.svg"
+import styles from "./PlatformSelect.module.scss"
 import LogoPS2 from "./ps2.svg"
+
 
 const ICONS = {
     "n64": <LogoN64 />,
