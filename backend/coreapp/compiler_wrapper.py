@@ -53,6 +53,7 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 @dataclass
 class Arch:
     name: str
+    description: str
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
@@ -61,13 +62,15 @@ class Arch:
 def load_arches() -> Dict[str, Arch]:
     return {
         "mips": Arch(
-            "MIPS (Nintendo 64)",
+            "Nintendo 64",
+            "MIPS (big-endian)",
             assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
         ),
         "mipsel": Arch(
-            "MIPS (LE)",
+            "PlayStation 2",
+            "MIPS (little-endian)",
             assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
@@ -130,7 +133,10 @@ class CompilerWrapper:
             a_set.add(_compilers[id]["arch"])
 
         for a in sorted(a_set):
-            ret[a] = _arches[a].name
+            ret[a] = {
+                "name": _arches[a].name,
+                "description": _arches[a].description,
+            }
 
         return ret
 
