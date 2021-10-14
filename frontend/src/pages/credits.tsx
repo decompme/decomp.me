@@ -128,6 +128,11 @@ export default function CreditsPage({ maintainers, contributors }: {
                 </h3>
                 <ul>
                     <li>Octicons by GitHub</li>
+                    <li>
+                        <Link href="https://github.com/file-icons/icons">
+                            <a>file-icons/icons</a>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </main>
