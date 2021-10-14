@@ -129,7 +129,7 @@ class CompilerWrapper:
         for id in CompilerWrapper.available_compiler_ids():
             a_set.add(_compilers[id]["arch"])
 
-        for a in a_set:
+        for a in sorted(a_set):
             ret[a] = _arches[a].name
 
         return ret
