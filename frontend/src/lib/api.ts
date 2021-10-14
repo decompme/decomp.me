@@ -218,10 +218,11 @@ export function useScratch(slugOrUrl: string): {
     const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
     const [isSaved, setIsSaved] = useState(true)
     const [localScratch, setLocalScratch] = useState<Scratch>()
+    const [didSlugChange, setDidSlugChange] = useState(false)
     const shouldGetScratchFromServer = useCallback(() => {
         // This is in a useCallback so useSWR's onSuccess doesn't capture the values
 
-        if (!localScratch)
+        if (didSlugChange)
             return true
 
         // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
@@ -229,8 +230,8 @@ export function useScratch(slugOrUrl: string): {
             return true
 
         return false
-    }, [localScratch, isSaved])
-    const { data, mutate } = useSWR<Scratch>(url, get, {
+    }, [didSlugChange, isSaved])
+    const { data: savedScratch, mutate } = useSWR<Scratch>(url, get, {
         suspense: true,
         refreshInterval: 5000,
         onSuccess: scratch => {
@@ -242,23 +243,24 @@ export function useScratch(slugOrUrl: string): {
                 console.info("Got updated scratch from server", scratch)
                 setLocalScratch(scratch)
                 setIsSaved(true)
+                setDidSlugChange(false)
             }
         },
         onErrorRetry,
     })
-    const savedScratch = data
 
     // If the slug changes, forget the local scratch
     useEffect(() => {
+        setDidSlugChange(true)
         setLocalScratch(undefined)
-        mutate()
         setIsSaved(true)
-    }, [slugOrUrl, mutate])
+        mutate()
+    }, [url, mutate])
 
     const updateLocalScratch = useCallback((partial: Partial<Scratch>) => {
-        setLocalScratch(Object.assign({}, localScratch, partial))
+        setLocalScratch(Object.assign({}, savedScratch, localScratch, partial))
         setIsSaved(false)
-    }, [localScratch])
+    }, [savedScratch, localScratch])
 
     const saveScratch = useCallback(() => {
         if (!localScratch) {
@@ -283,13 +285,8 @@ export function useScratch(slugOrUrl: string): {
         })
     }, [localScratch, savedScratch, mutate])
 
-    if (!localScratch) {
-        setIsSaved(true)
-        setLocalScratch(savedScratch)
-    }
-
     return {
-        scratch: localScratch ?? savedScratch,
+        scratch: isSaved ? savedScratch : localScratch,
         savedScratch,
         setScratch: updateLocalScratch,
         saveScratch,
