@@ -1,10 +1,10 @@
-import { createContext, useState, useContext, useEffect } from "react"
+import { createContext, useContext } from "react"
 
 import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForArch } from "./compilers"
-import PresetSelect, { PRESETS } from "./PresetSelect"
+import PresetSelect from "./PresetSelect"
 
 interface IOptsContext {
     checkFlag(flag: string): boolean
