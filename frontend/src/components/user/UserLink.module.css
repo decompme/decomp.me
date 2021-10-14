@@ -4,7 +4,9 @@
     justify-content: center;
     gap: 6px;
 
-    padding: 0 6px;
+    padding-left: 3px;
+
+    vertical-align: middle;
 }
 
 .user:any-link {
