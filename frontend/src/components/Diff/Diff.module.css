@@ -1,6 +1,10 @@
 .container {
     padding: 8px;
     overflow: auto;
+    width: 100%;
+
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
 }
 
 .diff {
