@@ -253,7 +253,7 @@ export function useScratch(slugOrUrl: string): {
         setLocalScratch(undefined)
         mutate()
         setIsSaved(true)
-    }, [mutate])
+    }, [slugOrUrl, mutate])
 
     const updateLocalScratch = useCallback((partial: Partial<Scratch>) => {
         setLocalScratch(Object.assign({}, localScratch, partial))
