@@ -12,6 +12,7 @@ sandbox/
 *.log
 /frontend/.next
 /frontend/.cache
+/frontend/cache
 /frontend/public/sw.*
 /frontend/public/workbox-*
 /frontend/storybook-static

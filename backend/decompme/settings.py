@@ -25,6 +25,7 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
+    COMPILER_BASE_PATH=(str, BASE_DIR / "compilers")
 )
 
 for stem in [".env.local", ".env"]:
@@ -150,7 +151,7 @@ if DEBUG:
 else:
     SESSION_COOKIE_SAMESITE = "Lax"
 
-COMPILER_BASE_PATH = BASE_DIR / "compilers"
+COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
