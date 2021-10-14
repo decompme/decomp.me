@@ -13,28 +13,13 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-ASM_PRELUDE: str = """
-.macro .late_rodata
-    .section .rodata
-.endm
-
-.macro glabel label
-    .global \label
-    .type \label, @function
-    \label:
-.endm
-
-.set noat
-.set noreorder
-.set gp=64
-
-"""
 
 PATH: str
 if settings.USE_SANDBOX_JAIL:
     PATH = "/bin:/usr/bin"
 else:
     PATH = os.environ["PATH"]
+
 
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
@@ -51,55 +36,76 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
 
 
 @dataclass
-class Arch:
+class Platform:
     name: str
     description: str
+    arch: str  # required?
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
+    asm_prelude: Optional[str] = None
 
-
-def load_arches() -> Dict[str, Arch]:
+def load_platforms() -> Dict[str, Platform]:
     return {
-        "mips": Arch(
+        "n64": Platform(
             "Nintendo 64",
             "MIPS (big-endian)",
+            "mips",
             assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
+            asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set noat
+.set noreorder
+.set gp=64
+
+"""
         ),
-        "mipsel": Arch(
+        "ps2": Platform(
             "PlayStation 2",
             "MIPS (little-endian)",
+            "mipsel",
             assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
+            asm_prelude="""
+# FIXME
+"""
         ),
     }
 
-
 _compilers = load_compilers()
-_arches = load_arches()
+_platforms = load_platforms()
 
-def get_assemble_cmd(arch: str) -> Optional[str]:
-    if arch in _arches:
-        return _arches[arch].assemble_cmd
+
+def get_assemble_cmd(platform: str) -> Optional[str]:
+    if platform in _platforms:
+        return _platforms[platform].assemble_cmd
     return None
 
-def get_nm_command(arch: str) -> Optional[str]:
-    if arch in _arches:
-        return _arches[arch].nm_cmd
+def get_nm_command(platform: str) -> Optional[str]:
+    if platform in _platforms:
+        return _platforms[platform].nm_cmd
     return None
 
-def get_objdump_command(arch: str) -> Optional[str]:
-    if arch in _arches:
-        return _arches[arch].objdump_cmd
+def get_objdump_command(platform: str) -> Optional[str]:
+    if platform in _platforms:
+        return _platforms[platform].objdump_cmd
     return None
 
 def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
     hash = util.gen_hash(args)
     return Compilation.objects.filter(hash=hash).first(), hash
-
 
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
@@ -112,9 +118,14 @@ class CompilerWrapper:
         return settings.COMPILER_BASE_PATH
 
     @staticmethod
-    def arch_from_compiler(compiler: str) -> Optional[str]:
+    def platform_from_compiler(compiler: str) -> Optional[str]:
         cfg = _compilers.get(compiler)
-        return cfg["arch"] if cfg else None
+        return cfg["platform"] if cfg else None
+
+    @staticmethod
+    def arch_from_platform(platform: str) -> Optional[str]:
+        plt = _platforms.get(platform)
+        return plt.arch if plt else None
 
     @staticmethod
     def available_compiler_ids() -> List[str]:
@@ -122,20 +133,21 @@ class CompilerWrapper:
 
     @staticmethod
     def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
-        return {k: {"arch": CompilerWrapper.arch_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
+        return {k: {"platform": CompilerWrapper.platform_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
 
     @staticmethod
-    def available_arches() -> OrderedDict[str, Dict[str, str]]:
+    def available_platforms() -> OrderedDict[str, Dict[str, str]]:
         a_set: Set[str] = set()
         ret = OrderedDict()
 
         for id in CompilerWrapper.available_compiler_ids():
-            a_set.add(_compilers[id]["arch"])
+            a_set.add(_compilers[id]["platform"])
 
         for a in sorted(a_set):
             ret[a] = {
-                "name": _arches[a].name,
-                "description": _arches[a].description,
+                "name": _platforms[a].name,
+                "description": _platforms[a].description,
+                "arch": _platforms[a].arch,
             }
 
         return ret
@@ -250,35 +262,35 @@ class CompilerWrapper:
             return (compilation, compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(arch: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
-        if arch not in _arches:
-            logger.error(f"Arch {arch} not found")
-            return (None, f"Arch {arch} not found")
+    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
+        if platform not in _platforms:
+            logger.error(f"Platform {platform} not found")
+            return (None, f"Platform {platform} not found")
 
-        assemble_cmd = get_assemble_cmd(arch)
+        assemble_cmd = get_assemble_cmd(platform)
         if not assemble_cmd:
-            logger.error(f"Assemble command for arch {arch} not found")
-            return (None, f"Assemble command for arch {arch} not found")
+            logger.error(f"Assemble command for platform {platform} not found")
+            return (None, f"Assemble command for platform {platform} not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
-            cached_assembly, hash = _check_assembly_cache(arch, asm.hash)
+            cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit! hash: {hash}")
                 return (cached_assembly, None)
 
-        arch_cfg = _arches[arch]
+        platform_cfg = _platforms[platform]
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
-            asm_path.write_text(ASM_PRELUDE + asm.data)
+            asm_path.write_text(platform_cfg.asm_prelude + asm.data)
 
             object_path = sandbox.path / "object.o"
 
             # Run assembler
             try:
                 assemble_proc = sandbox.run_subprocess(
-                    arch_cfg.assemble_cmd,
+                    platform_cfg.assemble_cmd,
                     mounts=[],
                     shell=True,
                     env={
@@ -305,7 +317,7 @@ class CompilerWrapper:
             else:
                 assembly = Assembly(
                     hash=hash,
-                    arch=arch,
+                    arch=platform_cfg.arch,
                     source_asm=asm,
                     elf_object=object_path.read_bytes(),
                 )

@@ -3,7 +3,7 @@ import { createContext, useContext } from "react"
 import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
-import { useCompilersForArch } from "./compilers"
+import { useCompilersForPlatform } from "./compilers"
 import PresetSelect from "./PresetSelect"
 
 interface IOptsContext {
@@ -61,14 +61,14 @@ export type CompilerOptsT = {
 }
 
 export type Props = {
-    arch?: string
+    platform?: string
     value: CompilerOptsT
     onChange: (value: CompilerOptsT) => void
     title?: string
     isPopup?: boolean
 }
 
-export default function CompilerOpts({ arch, value, onChange, title, isPopup }: Props) {
+export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
     const compiler = value.compiler
     let opts = value.cc_opts
 
@@ -106,26 +106,26 @@ export default function CompilerOpts({ arch, value, onChange, title, isPopup }: 
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <PresetSelect platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
-            <OptsEditor arch={arch} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
         </div>
     </OptsContext.Provider>
 }
 
-export function OptsEditor({ arch, compiler, setCompiler, opts, setOpts }: {
-    arch?: string
+export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
+    platform?: string
     compiler: string
     setCompiler: (compiler: string) => void
     opts: string
     setOpts: (opts: string) => void
 }) {
-    const compilers = useCompilersForArch(arch)
+    const compilers = useCompilersForPlatform(platform)
     const compilerModule = compilers?.find(c => c.id === compiler)
 
     if (!compilerModule) {
-        console.warn("compiler not supported for arch", compiler, arch)
+        console.warn("compiler not supported for platform", compiler, platform)
         setCompiler(compilers[0].id)
     }
 

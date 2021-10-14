@@ -23,8 +23,8 @@ const RIGHT_PANE_MIN_WIDTH = 400
 
 let isClaiming = false
 
-function ChooseACompiler({ arch, onCommit }: {
-    arch: string
+function ChooseACompiler({ platform, onCommit }: {
+    platform: string
     onCommit: (opts: CompilerOptsT) => void
 }) {
     const [compiler, setCompiler] = useState<CompilerOptsT>()
@@ -32,7 +32,7 @@ function ChooseACompiler({ arch, onCommit }: {
     return <div className={styles.chooseACompiler}>
         <CompilerOpts
             title="Choose a compiler"
-            arch={arch}
+            platform={platform}
             value={compiler}
             onChange={c => setCompiler(c)}
         />
@@ -119,7 +119,7 @@ function renderLeftTabs({ scratch, setScratch }: {
         </Tab>,
         <Tab key="settings" label="Scratch settings">
             <CompilerOpts
-                arch={scratch.arch}
+                platform={scratch.platform}
                 value={scratch}
                 onChange={setScratch}
             />
@@ -268,7 +268,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
 
                 <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>
                     {scratch.compiler === ""
-                        ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} />
+                        ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
                         : <Tabs activeTab={rightTab} onChange={setRightTab}>
                             {rightTabs}
                         </Tabs>
@@ -276,7 +276,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
                 </resizer.Section>
             </resizer.Container>
             : (scratch.compiler === ""
-                ? <ChooseACompiler arch={scratch.arch} onCommit={setCompilerOpts} />
+                ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
                 : <Tabs activeTab={leftTab} onChange={setLeftTab}>
                     {leftTabs}
                     {rightTabs}

@@ -149,7 +149,7 @@ export type Scratch = {
     description: string
     slug: string
     compiler: string
-    arch: string
+    platform: string
     cc_opts: string
     source_code: string
     context: string
@@ -375,18 +375,18 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
     }
 }
 
-export function useArches(): Record<string, string> {
-    const { data } = useSWR<{ "arches": Record<string, string> }>("/compilers", getCached, {
+export function usePlatforms(): Record<string, string> {
+    const { data } = useSWR<{ "platforms": Record<string, string> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true,
         onErrorRetry,
     })
 
-    return data?.arches
+    return data?.platforms
 }
 
-export function useCompilers(): Record<string, { arch: string | null }> {
+export function useCompilers(): Record<string, { platform: string | null }> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
         suspense: true,

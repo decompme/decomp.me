@@ -1,7 +1,7 @@
 
 import Select from "../Select"
 
-import { useCompilersForArch } from "./compilers"
+import { useCompilersForPlatform } from "./compilers"
 
 export const PRESETS = [
     {
@@ -26,16 +26,16 @@ export const PRESETS = [
     },
 ]
 
-export default function PresetSelect({ className, arch, compiler, opts, setCompiler, setOpts, serverCompilers }: {
+export default function PresetSelect({ className, platform, compiler, opts, setCompiler, setOpts, serverCompilers }: {
     className?: string
-    arch: string
+    platform: string
     compiler: string
     opts: string
     setCompiler: (compiler: string) => void
     setOpts: (opts: string) => void
-    serverCompilers?: Record<string, { arch: string | null }>
+    serverCompilers?: Record<string, { platform: string | null }>
 }) {
-    const compilers = useCompilersForArch(arch, serverCompilers)
+    const compilers = useCompilersForPlatform(platform, serverCompilers)
 
     const presets = PRESETS.filter(p => compilers?.find(c => c.id === p.compiler) !== undefined)
     const selectedPreset = PRESETS.find(p => p.compiler === compiler && p.opts === opts)

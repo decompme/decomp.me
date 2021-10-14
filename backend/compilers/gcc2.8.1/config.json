@@ -1,4 +1,5 @@
 {
     "arch": "mips",
+    "platform": "n64",
     "cc": "\"${COMPILER_DIR}\"/gcc -G0 -c -B \"${COMPILER_DIR}\"/ $CC_OPTS \"$INPUT\" -o \"$OUTPUT\""
 }

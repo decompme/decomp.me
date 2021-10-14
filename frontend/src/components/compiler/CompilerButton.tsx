@@ -11,13 +11,13 @@ import styles from "./CompilerButton.module.css"
 import CompilerOpts, { Props as CompilerOptsProps } from "./CompilerOpts"
 
 export type Props = {
-    arch: CompilerOptsProps["arch"]
+    platform: CompilerOptsProps["platform"]
     value: CompilerOptsProps["value"]
     onChange: CompilerOptsProps["onChange"]
     disabled?: boolean
 }
 
-export default function CompilerButton({ arch, value, onChange, disabled }: Props) {
+export default function CompilerButton({ platform, value, onChange, disabled }: Props) {
     const [isOpen, setOpen] = useState(false)
     const arrowColor = useThemeVariable("--g300")
     const arrowBorderColor = useThemeVariable("--g500")
@@ -56,7 +56,7 @@ export default function CompilerButton({ arch, value, onChange, disabled }: Prop
                     transition={{ type: "spring", duration: 0.3 }}
                     {...layerProps}
                 >
-                    <CompilerOpts isPopup={true} arch={arch} value={value} onChange={onChange} />
+                    <CompilerOpts isPopup={true} platform={platform} value={value} onChange={onChange} />
                     <Arrow
                         size={12}
                         backgroundColor={arrowColor}

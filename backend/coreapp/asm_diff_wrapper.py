@@ -41,7 +41,7 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target_data: bytes, config: asm_differ.Config, label: Optional[str]) -> Optional[str]:
+    def run_objdump(target_data: bytes, platform: str, config: asm_differ.Config, label: Optional[str]) -> Optional[str]:
         flags = [
             "--disassemble",
             "--disassemble-zeroes",
@@ -56,7 +56,7 @@ class AsmDifferWrapper:
             start_addr = 0
 
             if label:
-                nm_command = compiler_wrapper.get_nm_command(config.arch.name)
+                nm_command = compiler_wrapper.get_nm_command(platform)
 
                 if nm_command:
                     try:
@@ -77,11 +77,11 @@ class AsmDifferWrapper:
                                 start_addr = int(line.split()[0], 16)
                                 break
                 else:
-                    logger.error(f"No nm command for {config.arch.name}")
+                    logger.error(f"No nm command for {platform}")
 
             flags.append(f"--start-address={start_addr}")
 
-            objdump_command = compiler_wrapper.get_objdump_command(config.arch.name)
+            objdump_command = compiler_wrapper.get_objdump_command(platform)
 
             if objdump_command:
                 try:
@@ -97,7 +97,7 @@ class AsmDifferWrapper:
                     logger.error(e.stderr)
                     return None
             else:
-                logger.error(f"No objdump command for {config.arch.name}")
+                logger.error(f"No objdump command for {platform}")
                 return None
 
         out = objdump_proc.stdout
@@ -105,7 +105,9 @@ class AsmDifferWrapper:
 
     @staticmethod
     def diff(target_assembly: Assembly, compilation: Compilation, diff_label:Optional[str]) -> Dict[str, Any]:
-        compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_compiler(compilation.compiler)
+        platform = compiler_wrapper.CompilerWrapper.platform_from_compiler(compilation.compiler)
+        compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
+
         try:
             arch = asm_differ.get_arch(compiler_arch or "")
         except ValueError:
@@ -122,7 +124,7 @@ class AsmDifferWrapper:
                 logger.error("Regeneration of base-asm failed")
                 return {"error": "Error: Base asm empty"}
 
-        basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, config, diff_label)
+        basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, platform, config, diff_label)
         if not basedump:
             return {"error": "Error running asm-differ on basedump"}
 
@@ -140,7 +142,7 @@ class AsmDifferWrapper:
                 logger.error("Regeneration of new-asm failed")
                 return {"error": "Error: New asm empty"}
 
-        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, config, diff_label)
+        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, platform, config, diff_label)
         if not mydump:
             return {"error": "Error running asm-differ on mydump"}
 
