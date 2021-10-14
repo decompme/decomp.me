@@ -1,6 +1,6 @@
 .container {
-    padding: 1rem;
-    flex: 1;
+    padding: 8px;
+    overflow: auto;
 }
 
 .diff {
