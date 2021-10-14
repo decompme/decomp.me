@@ -76,9 +76,11 @@
         color: var(--g800);
     }
 
-    &:hover,
-    &:active {
-        border-color: var(--g400);
+    &:not(:disabled) {
+        &:hover,
+        &:active {
+            border-color: var(--g400);
+        }
     }
 }
 
