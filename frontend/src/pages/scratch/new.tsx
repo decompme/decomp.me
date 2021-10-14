@@ -44,7 +44,10 @@ export const getStaticProps: GetStaticProps = async _context => {
 export default function NewScratch({ serverCompilers }: {
     serverCompilers: {
         arches: {
-            [key: string]: string
+            [key: string]: {
+                name: string
+                description: string
+            }
         }
         compilers: {
             [key: string]: {
