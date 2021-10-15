@@ -102,7 +102,7 @@ export default function NewScratch({ serverCompilers }: {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    if (!compilerModule) { // We just changed platformitectures, probably
+    if (!compilerModule) { // We just changed platforms, probably
         if (compilers.length === 0) {
             console.warn("No compilers supported for platform", platform)
         } else {
