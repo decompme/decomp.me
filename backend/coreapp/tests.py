@@ -150,7 +150,7 @@ class ScratchForkTests(APITestCase):
         response = self.client.post(reverse('scratch-fork', kwargs={'slug': slug}), fork_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        new_slug = response.data["slug"]
+        new_slug = response.json()["slug"]
 
         scratch = Scratch.objects.get(slug=slug)
         fork = Scratch.objects.get(slug=new_slug)
