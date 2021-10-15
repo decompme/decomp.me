@@ -79,7 +79,19 @@ def load_platforms() -> Dict[str, Platform]:
             objdump_cmd="mips-linux-gnu-objdump",
             nm_cmd="mips-linux-gnu-nm",
             asm_prelude="""
-# FIXME
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set noat
+.set noreorder
+
 """
         ),
     }
