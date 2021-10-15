@@ -123,7 +123,7 @@ class ScratchForkTests(APITestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
             'diff_label': 'meow',
@@ -140,7 +140,7 @@ class ScratchForkTests(APITestCase):
 
         fork_dict = {
             'compiler': 'gcc2.8.1',
-            'arch': 'mips',
+            'platform': 'n64',
             'cc_opts': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
