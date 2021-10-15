@@ -285,6 +285,7 @@ def fork(request, slug):
         source_code=code,
         context=context,
         original_context=parent_scratch.original_context,
+        diff_label=parent_scratch.diff_label,
         parent=parent_scratch,
     )
     new_scratch.save()

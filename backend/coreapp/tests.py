@@ -117,6 +117,48 @@ class ScratchModificationTests(APITestCase):
 
         self.assertEqual(scratch.score, 0)
 
+class ScratchForkTests(APITestCase):
+    def test_fork_scratch(self):
+        """
+        Ensure that a scratch's fork maintains the relevant properties of its parent
+        """
+        scratch_dict = {
+            'arch': 'mips',
+            'context': '',
+            'target_asm': 'glabel meow\njr $ra',
+            'diff_label': 'meow',
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        self.assertIsNotNone(scratch)
+        assert(scratch is not None)
+
+        slug = scratch.slug
+
+        fork_dict = {
+            'compiler': 'gcc2.8.1',
+            'arch': 'mips',
+            'cc_opts': '-O2',
+            'source_code': 'int func() { return 2; }',
+            'context': '',
+        }
+
+        # Create a fork of the scratch
+        response = self.client.post(reverse('scratch-fork', kwargs={'slug': slug}), fork_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        new_slug = response.data["slug"]
+
+        scratch = Scratch.objects.get(slug=slug)
+        fork = Scratch.objects.get(slug=new_slug)
+
+        # Make sure the diff_label carried over to the fork
+        self.assertEqual(scratch.diff_label, fork.diff_label)
+
+
 
 class CompilationTests(APITestCase):
     def test_simple_compilation(self):
