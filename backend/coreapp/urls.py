@@ -8,7 +8,7 @@ urlpatterns = [
     path('scratch/<slug:slug>', views.ScratchDetail.as_view(), name='scratch-detail'),
     path('scratch/<slug:slug>/compile', views.compile, name='scratch-compile'),
     path('scratch/<slug:slug>/claim', views.ScratchClaim.as_view(), name='scratch-claim'),
-    path('scratch/<slug:slug>/fork', views.fork, name='fork_scratch'),
+    path('scratch/<slug:slug>/fork', views.fork, name='scratch-fork'),
     path('user', views.CurrentUser.as_view(), name="current-user"),
     path('users/<slug:username>', views.user, name="user-detail"),
 ]
