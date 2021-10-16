@@ -40,8 +40,9 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
                     # allow binaries to exist outside of repo
                     binaries_path = Path(CompilerWrapper.base_path() / compiler_id)
                     logger.debug(f"Valid config found for {compiler_id}. Checking {binaries_path}...")
-                    # consider binaries present if any non-config.json file found
-                    if len(list(filter(lambda x: x.name != config_json, binaries_path.glob("*")))) > 0:
+                    # consider compiler binaries present if *any* non-config.json file is found
+                    binaries = (x for x in binaries_path.glob("*") if x.name != config_json)
+                    if next(binaries, None) != None:
                         logger.debug(f"Enabling {compiler_id}.")
                         ret[compiler_id] = config
                     else:
