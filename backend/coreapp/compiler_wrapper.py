@@ -132,7 +132,7 @@ class CompilerWrapper:
     @staticmethod
     def platform_from_compiler(compiler: str) -> Optional[str]:
         cfg = _compilers.get(compiler)
-        return cfg["platform"] if cfg else None
+        return cfg.get("platform") if cfg else None
 
     @staticmethod
     def arch_from_platform(platform: str) -> Optional[str]:
