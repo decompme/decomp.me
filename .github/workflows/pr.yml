@@ -26,9 +26,13 @@ jobs:
         with:
           python-version: 3.9
       - run: pip install -r backend/requirements.txt
+        name: Install Python dependencies
       - run: sudo apt install binutils-mips-linux-gnu
+        name: Install binutils-mips-linux-gnu
       - run: ./backend/compilers/download.sh
+        name: Download compilers
       - run: python backend/manage.py test backend
+        name: Run tests
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
@@ -37,4 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd frontend && yarn && yarn build-storybook && yarn test:ci
+      - run: cd frontend && yarn
+        name: Install dependencies
+      - run: cd frontend && yarn test:ci
+        name: Run tests
