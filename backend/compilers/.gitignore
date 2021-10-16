@@ -1,4 +1,3 @@
-*
-!gcc2.8.1
-!ido5.3
-!ido7.1
+*/**
+!*/config.json
+!download.sh

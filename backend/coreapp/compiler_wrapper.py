@@ -23,15 +23,32 @@ else:
 
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
-
+    config_json = "config.json"
     compilers_base = settings.BASE_DIR / "compilers"
     compiler_dirs = next(os.walk(compilers_base))
     for compiler_id in compiler_dirs[1]:
-        config_path = Path(compilers_base / compiler_id / "config.json")
+        config_path = Path(compilers_base / compiler_id / config_json)
         if config_path.exists():
             with open(config_path) as f:
-                ret[compiler_id] = json.load(f)
+                try:
+                    config = json.load(f)
+                except:
+                    logger.error(f"Error: Unable to parse {config_json} for {compiler_id}")
+                    continue
 
+                if "cc" in config and "platform" in config:
+                    # allow binaries to exist outside of repo
+                    binaries_path = Path(CompilerWrapper.base_path() / compiler_id)
+                    logger.debug(f"Valid config found for {compiler_id}. Checking {binaries_path}...")
+                    # consider compiler binaries present if *any* non-config.json file is found
+                    binaries = (x for x in binaries_path.glob("*") if x.name != config_json)
+                    if next(binaries, None) != None:
+                        logger.debug(f"Enabling {compiler_id}.")
+                        ret[compiler_id] = config
+                    else:
+                        logger.debug(f"No binaries for {compiler_id}, ignoring.")
+                else:
+                    logger.warning(f"Error: {compiler_id} {config_json} is missing 'cc' and/or 'platform' field(s), skipping.")
     return ret
 
 
@@ -95,10 +112,6 @@ def load_platforms() -> Dict[str, Platform]:
 """
         ),
     }
-
-_compilers = load_compilers()
-_platforms = load_platforms()
-
 
 def get_assemble_cmd(platform: str) -> Optional[str]:
     if platform in _platforms:
@@ -336,3 +349,9 @@ class CompilerWrapper:
             assembly.save()
 
             return (assembly, None)
+
+
+_compilers = load_compilers()
+logger.info(f"Found {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
+_platforms = load_platforms()
+logger.info(f"Available platform(s): {', '.join(CompilerWrapper.available_platforms().keys())}")
