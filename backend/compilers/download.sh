@@ -24,3 +24,6 @@ curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/i
 # ido7.1
 mkdir -p "$compiler_dir/ido7.1"
 curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-7.1-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido7.1"
+
+# psyq (ps1)
+curl -L "https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz" | tar zx -C "$compiler_dir"

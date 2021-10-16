@@ -24,6 +24,11 @@ export const PRESETS = [
         compiler: "ido7.1",
         opts: "-O2 -g3 -mips2",
     },
+    {
+        name: "Evo's Space Adventures",
+        compiler: "psyq4.6",
+        opts: "-O2",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setCompiler, setOpts, serverCompilers }: {

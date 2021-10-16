@@ -43,6 +43,16 @@ COPY compilers/download.sh /compilers/
 
 RUN bash /compilers/download.sh
 
+# ps1 specifics
+ARG ENABLE_PS1_SUPPORT
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+    dpkg --add-architecture i386 && apt-get update && \
+    apt-get install -y -o APT::Immediate-Configure=false \
+        dos2unix \
+        wine && \
+    curl -L https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz | \
+        tar zx -C /usr/bin --strip-components 3; fi
+
 WORKDIR /backend
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

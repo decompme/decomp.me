@@ -2,10 +2,12 @@ import classNames from "classnames"
 
 import LogoN64 from "./n64.svg"
 import styles from "./PlatformSelect.module.scss"
+import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
 
 const ICONS = {
     "n64": <LogoN64 />,
+    "ps1": <LogoPS1 />,
     "ps2": <LogoPS2 />,
 }
 
