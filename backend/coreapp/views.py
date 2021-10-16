@@ -40,7 +40,7 @@ class CompilersDetail(APIView):
             # compiler_ids is used by the permuter
             "compiler_ids": CompilerWrapper.available_compiler_ids(),
             "compilers": CompilerWrapper.available_compilers(),
-            "arches": CompilerWrapper.available_arches(),
+            "platforms": CompilerWrapper.available_platforms(),
         })
 
 def update_scratch_score(scratch: Scratch):
@@ -149,14 +149,14 @@ def create_scratch(request):
     ser.is_valid(raise_exception=True)
     data = ser.validated_data
 
-    arch = data.get("arch")
+    platform = data.get("platform")
     compiler = data.get("compiler", "")
     if compiler:
-        arch = CompilerWrapper.arch_from_compiler(compiler)
-        if not arch:
+        platform = CompilerWrapper.platform_from_compiler(compiler)
+        if not platform:
             raise serializers.ValidationError("Unknown compiler")
-    elif not arch:
-        raise serializers.ValidationError("arch not provided")
+    elif not platform:
+        raise serializers.ValidationError("platform not provided")
 
     target_asm = data["target_asm"]
     context = data["context"]
@@ -168,7 +168,7 @@ def create_scratch(request):
 
     asm = get_db_asm(target_asm)
 
-    assembly, err = CompilerWrapper.assemble_asm(arch, asm)
+    assembly, err = CompilerWrapper.assemble_asm(platform, asm)
     if not assembly:
         assert isinstance(err, str)
 
@@ -189,6 +189,7 @@ def create_scratch(request):
     source_code = data.get("source_code")
     if not source_code:
         source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
             source_code = M2CWrapper.decompile(asm.data, context) or source_code
 
@@ -204,7 +205,7 @@ def create_scratch(request):
         "slug": slug,
         "name": name,
         "compiler": compiler,
-        "arch": arch,
+        "platform": platform,
         "cc_opts": cc_opts,
         "context": context,
         "diff_label": diff_label,
@@ -259,7 +260,7 @@ def compile(request, slug):
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "arch", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "platform", "cc_opts", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
@@ -272,14 +273,14 @@ def fork(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
-    arch = request.data["arch"]
+    platform = request.data["platform"]
     cc_opts = request.data["cc_opts"]
     code = request.data["source_code"]
     context = request.data["context"]
 
     new_scratch = Scratch(
         compiler=compiler,
-        arch=arch,
+        platform=platform,
         cc_opts=cc_opts,
         target_assembly=parent_scratch.target_assembly,
         source_code=code,

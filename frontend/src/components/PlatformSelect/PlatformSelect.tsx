@@ -1,16 +1,16 @@
 import classNames from "classnames"
 
-import styles from "./ArchSelect.module.scss"
 import LogoN64 from "./n64.svg"
+import styles from "./PlatformSelect.module.scss"
 import LogoPS2 from "./ps2.svg"
 
 const ICONS = {
-    "mips": <LogoN64 />,
-    "mipsel": <LogoPS2 />,
+    "n64": <LogoN64 />,
+    "ps2": <LogoPS2 />,
 }
 
 export type Props = {
-    arches: {
+    platforms: {
         [key: string]: {
             name: string
             description: string
@@ -21,21 +21,21 @@ export type Props = {
     onChange: (value: string) => void
 }
 
-export default function ArchSelect({ arches, value, onChange, className }: Props) {
+export default function PlatformSelect({ platforms, value, onChange, className }: Props) {
     if (!value)
-        onChange("mips")
+        onChange("n64")
 
 
     return <ul className={classNames(styles.container, className)}>
-        {Object.entries(arches).map(([key, arch]) => <li
+        {Object.entries(platforms).map(([key, platform]) => <li
             key={key}
-            className={classNames(styles.arch, { [styles.selected]: value === key })}
+            className={classNames(styles.platform, { [styles.selected]: value === key })}
             onClick={() => onChange(key)}
         >
             {ICONS[key]}
             <div className={styles.labelContainer}>
-                <div className={styles.consoleName}>{arch.name}</div>
-                <div className={styles.archName}>{arch.description}</div>
+                <div className={styles.consoleName}>{platform.name}</div>
+                <div className={styles.platformName}>{platform.description}</div>
             </div>
         </li>)}
     </ul>

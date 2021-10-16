@@ -11,12 +11,11 @@ const Template: ComponentStory<typeof CompilerOpts> = args => {
     return <CompilerOpts {...args} />
 }
 
-export const AnyArch: ComponentStory<typeof CompilerOpts> = Template.bind({})
-AnyArch.args = {
+export const AnyPlatform: ComponentStory<typeof CompilerOpts> = Template.bind({})
+AnyPlatform.args = {
 }
 
-export const MipsCompilersOnly: ComponentStory<typeof CompilerOpts> = Template.bind({})
-MipsCompilersOnly.args = {
-    arch: "mips",
+export const N64CompilersOnly: ComponentStory<typeof CompilerOpts> = Template.bind({})
+N64CompilersOnly.args = {
+    platform: "n64",
 }
-

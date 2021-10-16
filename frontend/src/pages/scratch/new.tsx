@@ -5,13 +5,13 @@ import { GetStaticProps } from "next"
 import Head from "next/head"
 import { useRouter } from "next/router"
 
-import ArchSelect from "../../components/ArchSelect"
 import AsyncButton from "../../components/AsyncButton"
-import { useCompilersForArch } from "../../components/compiler/compilers"
+import { useCompilersForPlatform } from "../../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
+import PlatformSelect from "../../components/PlatformSelect"
 import Select from "../../components/Select2"
 import * as api from "../../lib/api"
 
@@ -43,7 +43,7 @@ export const getStaticProps: GetStaticProps = async _context => {
 
 export default function NewScratch({ serverCompilers }: {
     serverCompilers: {
-        arches: {
+        platforms: {
             [key: string]: {
                 name: string
                 description: string
@@ -51,14 +51,14 @@ export default function NewScratch({ serverCompilers }: {
         }
         compilers: {
             [key: string]: {
-                arch: string
+                platform: string
             }
         }
     }
 }) {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
-    const [arch, setArch] = useState("")
+    const [platform, setPlatform] = useState("")
     const [compiler, setCompiler] = useState<string>()
     const [compilerOpts, setCompilerOpts] = useState<string>("")
     const router = useRouter()
@@ -77,7 +77,7 @@ export default function NewScratch({ serverCompilers }: {
             setLabel(localStorage["new_scratch_label"] ?? "")
             setAsm(localStorage["new_scratch_asm"] ?? "")
             setContext(localStorage["new_scratch_context"] ?? "")
-            setArch(localStorage["new_scratch_arch"] ?? "")
+            setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerOpts(localStorage["new_scratch_compilerOpts"] ?? "")
         } catch (error) {
@@ -90,21 +90,21 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_label"] = label
         localStorage["new_scratch_asm"] = asm
         localStorage["new_scratch_context"] = context
-        localStorage["new_scratch_arch"] = arch
+        localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compiler
         localStorage["new_scratch_compilerOpts"] = compilerOpts
-    }, [label, asm, context, arch, compiler, compilerOpts])
+    }, [label, asm, context, platform, compiler, compilerOpts])
 
-    const compilers = useCompilersForArch(arch, serverCompilers.compilers)
+    const compilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compilerModule = compilers?.find(c => c.id === compiler)
 
-    if (!arch || Object.keys(serverCompilers.arches).indexOf(arch) === -1) {
-        setArch(Object.keys(serverCompilers.arches)[0])
+    if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
+        setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    if (!compilerModule) { // We just changed architectures, probably
+    if (!compilerModule) { // We just changed platforms, probably
         if (compilers.length === 0) {
-            console.warn("No compilers supported for arch", arch)
+            console.warn("No compilers supported for platform", platform)
         } else {
             // Fall back to the first supported compiler and no opts
             setCompiler(compilers[0].id)
@@ -126,7 +126,7 @@ export default function NewScratch({ serverCompilers }: {
             const scratch: api.Scratch = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
-                arch,
+                platform,
                 compiler,
                 compiler_flags: compilerOpts,
                 diff_label: label || defaultLabel || "",
@@ -165,12 +165,12 @@ export default function NewScratch({ serverCompilers }: {
 
             <div>
                 <p className={styles.label}>
-                    Architecture
+                    Platform
                 </p>
-                <ArchSelect
-                    arches={serverCompilers.arches}
-                    value={arch}
-                    onChange={a => setArch(a)}
+                <PlatformSelect
+                    platforms={serverCompilers.platforms}
+                    value={platform}
+                    onChange={a => setPlatform(a)}
                 />
             </div>
 
@@ -201,7 +201,7 @@ export default function NewScratch({ serverCompilers }: {
                         <span className={styles.compilerChoiceHeading}>Select a preset</span>
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
-                            arch={arch}
+                            platform={platform}
                             compiler={compiler}
                             opts={compilerOpts}
                             setCompiler={setCompiler}

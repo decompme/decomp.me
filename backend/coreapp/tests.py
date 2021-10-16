@@ -18,7 +18,7 @@ class ScratchCreationTests(APITestCase):
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm':
 """.late_rodata
@@ -40,7 +40,7 @@ nop"""
         Ensure that functions with t6/t7 registers can be assembled.
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm':
 """
@@ -64,7 +64,7 @@ class ScratchModificationTests(APITestCase):
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra"
         }
@@ -101,7 +101,7 @@ class ScratchModificationTests(APITestCase):
         Ensure that a scratch's score gets set upon creation.
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'compiler': 'ido7.1',
             'context': '',
             'target_asm': 'jr $ra\nli $v0,2',
@@ -123,7 +123,7 @@ class ScratchForkTests(APITestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
             'diff_label': 'meow',
@@ -140,7 +140,7 @@ class ScratchForkTests(APITestCase):
 
         fork_dict = {
             'compiler': 'gcc2.8.1',
-            'arch': 'mips',
+            'platform': 'n64',
             'cc_opts': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
@@ -166,7 +166,7 @@ class CompilationTests(APITestCase):
         Ensure that we can run a simple compilation via the api
         """
         scratch_dict = {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': 'glabel func_80929D04\njr $ra\nnop'
         }
@@ -359,7 +359,7 @@ class UserTests(APITestCase):
         """
 
         response = self.client.post("/api/scratch", {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra\nnop\n"
         })
@@ -379,7 +379,7 @@ class UserTests(APITestCase):
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
         response = self.client.post(reverse("scratch"), {
-            'arch': 'mips',
+            'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra\nnop\n",
         })

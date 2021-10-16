@@ -60,7 +60,7 @@ class Scratch(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     compiler = models.CharField(max_length=100, blank=True)
-    arch = models.CharField(max_length=100, blank=True)
+    platform = models.CharField(max_length=100, blank=True)
     cc_opts = models.TextField(max_length=1000, default="", blank=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
@@ -78,7 +78,7 @@ class Scratch(models.Model):
     def __hash__(self):
         return hash((
             self.slug, self.creation_time, self.last_updated,
-            self.arch, self.compiler, self.cc_opts,
+            self.platform, self.compiler, self.cc_opts,
             self.target_assembly, self.source_code,
             self.context, self.original_context,
             self.diff_label,
