@@ -1,0 +1,4 @@
+{
+    "platform": "ps2",
+    "cc": "\"${COMPILER_DIR}\"/bin/ee-gcc -c -B \"${COMPILER_DIR}\"/bin/ee- $CC_OPTS \"$INPUT\" -o \"$OUTPUT\""
+}
