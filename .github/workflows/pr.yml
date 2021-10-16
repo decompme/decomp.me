@@ -18,7 +18,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   django_test:
-    name: django test
+    name: backend tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,15 +26,22 @@ jobs:
         with:
           python-version: 3.9
       - run: pip install -r backend/requirements.txt
+        name: Install Python dependencies
       - run: sudo apt install binutils-mips-linux-gnu
+        name: Install binutils-mips-linux-gnu
       - run: ./backend/compilers/download.sh
+        name: Download compilers
       - run: python backend/manage.py test backend
+        name: Run tests
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
-  frontend_check:
-    name: check frontend
+  frontend_test:
+    name: frontend tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd frontend && yarn && yarn lint && yarn build-storybook
+      - run: cd frontend && yarn
+        name: Install dependencies
+      - run: cd frontend && yarn test:ci
+        name: Run tests
