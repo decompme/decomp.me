@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode, createContext, Component, useState, createRef, RefObject, useLayoutEffect, useRef } from "react"
+import { ReactElement, ReactNode, createContext, Component, useState, createRef, RefObject, useEffect, useRef } from "react"
 
 import classNames from "classnames"
 
@@ -103,8 +103,7 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
         _setHover(tab)
     }
 
-    // TODO: consider useEffect, see https://reactjs.org/link/uselayouteffect-ssr
-    useLayoutEffect(() => {
+    useEffect(() => {
         const button = hoverChild?.ref?.current
 
         if (button) {
