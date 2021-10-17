@@ -1,0 +1,4 @@
+{
+    "platform": "ps1",
+    "cc": "cpp -P \"$INPUT\" | unix2dos | wine ${COMPILER_DIR}/CC1PSX.EXE -quiet -G0 ${CC_OPTS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -o \"$OUTPUT\""
+}

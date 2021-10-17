@@ -43,6 +43,15 @@ COPY compilers/download.sh /compilers/
 
 RUN bash /compilers/download.sh
 
+# ps1 specifics
+ARG ENABLE_PS1_SUPPORT
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+    dpkg --add-architecture i386 && apt-get update && \
+    apt-get install -y -o APT::Immediate-Configure=false \
+        dos2unix \
+        wine; \
+    fi
+
 WORKDIR /backend
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

@@ -88,6 +88,29 @@ def load_platforms() -> Dict[str, Platform]:
 
 """
         ),
+        "ps1": Platform(
+            "PlayStation",
+            "MIPS (little-endian)",
+            "mipsel",
+            assemble_cmd='mips-linux-gnu-as -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+            asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set noat
+.set noreorder
+
+"""
+        ),
         "ps2": Platform(
             "PlayStation 2",
             "MIPS (little-endian)",
@@ -258,6 +281,7 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
                     "CC_OPTS": sandbox.quote_options(cc_opts),
+                    "WINEPREFIX": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
