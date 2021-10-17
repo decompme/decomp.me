@@ -57,6 +57,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
+            "--cwd", "/tmp",
             "--disable_proc",  # Needed for running inside Docker
             "--time_limit", "30",  # seconds
         ]
@@ -98,5 +99,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         )
         logger.debug(f"Sandbox Command: {debug_env_str} {shlex.join(command)}")
         return subprocess.run(
-            command, capture_output=True, text=True, env=env, check=True, shell=False
+            command,
+            capture_output=True,
+            text=True,
+            env=env,
+            cwd=self.path,
+            check=True,
+            shell=False,
         )
