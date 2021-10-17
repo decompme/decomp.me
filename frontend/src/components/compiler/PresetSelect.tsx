@@ -25,6 +25,11 @@ export const PRESETS = [
         opts: "-O2 -g3 -mips2",
     },
     {
+        name: "GoldenEye / Perfect Dark",
+        compiler: "ido5.3",
+        opts: "-Olimit 2000 -mips2 -O2",
+    },
+    {
         name: "Evo's Space Adventures",
         compiler: "psyq4.6",
         opts: "-O2",
