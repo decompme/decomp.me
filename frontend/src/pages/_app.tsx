@@ -37,6 +37,7 @@ export default function MyApp({ Component, pageProps }) {
     return <Layout>
         <Head>
             <meta name="theme-color" content={themeColor} />
+            <meta property="og:site_name" content="decomp.me" />
         </Head>
         <Component {...pageProps} />
     </Layout>

@@ -11,14 +11,15 @@ import styles from "./Editor.module.scss"
 import type { Props as MonacoEditorProps } from "./MonacoEditor"
 import getTheme from "./monacoTheme"
 
-const isMobile = mobile()
+// monaco-editor not supported in mobile browsers or in tests
+const useFallback = true || mobile() || typeof jest !== "undefined"
 
 interface Props extends MonacoEditorProps {
     bubbleSuspense?: boolean
     useLoadingSpinner?: boolean
 }
 
-const MonacoEditor = isMobile ? null : dynamic(() => import("./MonacoEditor"), {
+const MonacoEditor = useFallback ? null : dynamic(() => import("./MonacoEditor"), {
     // @ts-ignore
     suspense: true,
 })

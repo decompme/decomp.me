@@ -17,7 +17,7 @@ const TABS_CTX = createContext<Context>(null)
 export type TabProps = {
     children: ReactNode
     className?: string
-    key: string // react doesn't actually give us this as a prop, but this forces ts into requiring it
+    id: string
     label?: ReactNode
     disabled?: boolean
     onSelect?: () => void
@@ -27,24 +27,21 @@ export class Tab extends Component<TabProps> {
     ref = createRef<HTMLButtonElement>()
 
     render() {
-        // @ts-ignore
-        const key = this._reactInternals.key
-
         return <TABS_CTX.Consumer>
             {ctx => {
                 if (!ctx) {
                     return <div>Misplaced Tab (not in Tabs?)</div>
                 }
 
-                ctx.setTabRef(key, this.ref)
+                ctx.setTabRef(this.props.id, this.ref)
 
                 return <button
                     role="tab"
-                    aria-selected={ctx.activeTab === key}
+                    aria-selected={ctx.activeTab === this.props.id}
                     className={styles.tabButton}
                     disabled={this.props.disabled}
                     onClick={() => {
-                        ctx.setActive(key)
+                        ctx.setActive(this.props.id)
 
                         if (this.props.onSelect) {
                             // run after layout
@@ -54,12 +51,12 @@ export class Tab extends Component<TabProps> {
                         }
                     }}
                     onMouseMove={event => {
-                        ctx.setHover(key)
+                        ctx.setHover(this.props.id)
                         event.stopPropagation()
                     }}
                     ref={this.ref}
                 >
-                    {this.props.label ?? key}
+                    {this.props.label ?? this.props.id}
                 </button>
             }}
         </TABS_CTX.Consumer>
@@ -79,7 +76,7 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
     const isMovingBetweenButtons = useRef(false)
 
     const tabs: {
-        [key: string]: {
+        [id: string]: {
             el: ReactElement<typeof Tab>
             ref?: RefObject<HTMLButtonElement>
         }
@@ -89,14 +86,14 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
         for (const child of children) {
             if (Array.isArray(child)) {
                 for (const grandchild of child) {
-                    tabs[grandchild.key] = { el: grandchild }
+                    tabs[(grandchild.props as unknown as TabProps).id] = { el: grandchild }
                 }
             } else {
-                tabs[child.key] = { el: child }
+                tabs[(child.props as unknown as TabProps).id] = { el: child }
             }
         }
     } else {
-        tabs[children.key] = { el: children }
+        tabs[(children.props as unknown as TabProps).id] = { el: children }
     }
 
     const hoverChild = tabs[hover]
@@ -106,6 +103,7 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
         _setHover(tab)
     }
 
+    // TODO: consider useEffect, see https://reactjs.org/link/uselayouteffect-ssr
     useLayoutEffect(() => {
         const button = hoverChild?.ref?.current
 
@@ -132,8 +130,10 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
             setActive: onChange,
             hover,
             setHover,
-            setTabRef: (key, ref) => {
-                tabs[key].ref = ref
+            setTabRef: (id, ref) => {
+                if (tabs[id]) {
+                    tabs[id].ref = ref
+                }
             },
         }}
     >
@@ -153,15 +153,15 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
                     className={styles.tabButtonsBackground}
                 />
             </div>
-            {Object.entries(tabs).map(([key, { el }]) => {
+            {Object.entries(tabs).map(([id, { el }]) => {
                 const props = el.props as unknown as TabProps
 
                 return <div
                     role="tabpanel"
                     className={classNames(styles.tabPanel, {
-                        [styles.active]: key === activeTab,
+                        [styles.active]: id === activeTab,
                     })}
-                    key={key}
+                    key={id}
                 >
                     <div className={classNames(styles.tabPanelContent, props.className)}>
                         {props.children}

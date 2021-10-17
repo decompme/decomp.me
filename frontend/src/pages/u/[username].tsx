@@ -72,9 +72,14 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
         </>
     }
 
+    const title = [
+        user.username,
+        user.name && `(${user.name})`,
+    ].filter(Boolean).join(" ")
+
     return <>
         <Head>
-            <title>{`${user.name || user.username} | decomp.me`}</title>
+            <title>{title} | decomp.me</title>
         </Head>
         <Nav />
         <main className={styles.pageContainer}>

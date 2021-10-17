@@ -135,6 +135,8 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_label"] = ""
             localStorage["new_scratch_asm"] = ""
 
+            await api.post(`/scratch/${scratch.slug}/claim`, {})
+
             router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
             setLineNumbers(true) // line numbers are likely relevant to the error
@@ -214,6 +216,18 @@ export default function NewScratch({ serverCompilers }: {
 
             <hr className={styles.rule} />
 
+            <div className={styles.editorContainer}>
+                <p className={styles.label}>Target assembly <small>(required)</small></p>
+                <Editor
+                    className={styles.editor}
+                    language="mips"
+                    value={asm}
+                    onChange={setAsm}
+                    padding={10}
+                    showMargin={lineNumbers}
+                    lineNumbers={lineNumbers}
+                />
+            </div>
             <div>
                 <label className={styles.label} htmlFor="label">
                     Function name <small>(label as it appears in the target asm)</small>
@@ -225,18 +239,6 @@ export default function NewScratch({ serverCompilers }: {
                     placeholder={defaultLabel}
                     onChange={e => setLabel((e.target as HTMLInputElement).value)}
                     className={styles.textInput}
-                />
-            </div>
-            <div className={styles.editorContainer}>
-                <p className={styles.label}>Target assembly <small>(required)</small></p>
-                <Editor
-                    className={styles.editor}
-                    language="mips"
-                    value={asm}
-                    onChange={setAsm}
-                    padding={10}
-                    showMargin={lineNumbers}
-                    lineNumbers={lineNumbers}
                 />
             </div>
             <div className={styles.editorContainer}>

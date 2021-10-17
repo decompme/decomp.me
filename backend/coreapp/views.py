@@ -5,6 +5,7 @@ from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, Scra
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
 from django.utils.timezone import now
+from django.views.decorators.vary import vary_on_cookie
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -81,11 +82,13 @@ class ScratchDetail(APIView):
     scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
 
     @scratch_condition
+    @vary_on_cookie
     def head(self, request: Request, slug: str):
         get_object_or_404(Scratch, slug=slug) # for 404
         return Response()
 
     @scratch_condition
+    @vary_on_cookie
     def get(self, request: Request, slug: str):
         scratch = get_object_or_404(Scratch, slug=slug)
         response = self.head(request, slug)

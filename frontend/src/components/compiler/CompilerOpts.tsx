@@ -55,44 +55,24 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
     </option>
 }
 
-export type CompilerOptsT = {
-    compiler: string
-    cc_opts: string
-}
-
 export type Props = {
+    compiler: string
+    flags: string
+    onCompilerChange: (compiler: string) => void
+    onFlagsChange: (flags: string) => void
     platform?: string
-    value: CompilerOptsT
-    onChange: (value: CompilerOptsT) => void
     title?: string
     isPopup?: boolean
 }
 
-export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
-    const compiler = value.compiler
-    let opts = value.cc_opts
-
-    const setCompiler = (compiler: string) => {
-        onChange({
-            compiler,
-            cc_opts: opts,
-        })
-    }
-
-    const setOpts = (opts: string) => {
-        onChange({
-            compiler,
-            cc_opts: opts,
-        })
-    }
-
+export default function CompilerOpts({ compiler, flags, onCompilerChange, onFlagsChange, platform, title, isPopup }: Props) {
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
-            return opts.split(" ").includes(flag)
+            return flags.split(" ").includes(flag)
         },
 
         setFlag(flag: string, enable: boolean) {
-            let split = opts.split(" ")
+            let split = flags.split(" ")
 
             if (enable) {
                 split.push(flag)
@@ -100,16 +80,16 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
                 split = split.filter(f => f !== flag)
             }
 
-            opts = split.join(" ").trim()
-            setOpts(opts)
+            flags = split.join(" ").trim()
+            onFlagsChange(flags)
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <PresetSelect platform={platform} compiler={compiler} setCompiler={onCompilerChange} opts={flags} setOpts={onFlagsChange} />
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
-            <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <OptsEditor platform={platform} compiler={compiler} setCompiler={onCompilerChange} opts={flags} setOpts={onFlagsChange} />
         </div>
     </OptsContext.Provider>
 }
@@ -124,7 +104,7 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
     const compilers = useCompilersForPlatform(platform)
     const compilerModule = compilers?.find(c => c.id === compiler)
 
-    if (!compilerModule) {
+    if (!compilerModule && compilers.length > 0) {
         console.warn("compiler not supported for platform", compiler, platform)
         setCompiler(compilers[0].id)
     }

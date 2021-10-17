@@ -5,17 +5,20 @@ import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
 
-function ScratchLink({ slug }: { slug: string }) {
+function ScratchLink({ url }: { url: string }) {
+    const slug = url.split("/").pop()
     const { scratch } = api.useScratch(slug)
 
     return <span className={styles.scratchLinkContainer}>
-        <Link href={`/scratch/${scratch.slug}`}>
+        <Link href={`/scratch/${slug}`}>
             <a className={styles.scratchLink}>
-                {scratch.name || "Untitled scratch"}
+                {scratch?.name || "Untitled scratch"}
             </a>
         </Link>
-        <span className={styles.scratchLinkByText}>by</span>
-        <UserLink user={scratch.owner} />
+        {scratch?.owner && <>
+            <span className={styles.scratchLinkByText}>by</span>
+            <UserLink user={scratch.owner} />
+        </>}
     </span>
 }
 
@@ -27,13 +30,13 @@ export type Props = {
 export default function AboutScratch({ scratch, setScratch }: Props) {
     return <div className={styles.container}>
         <div>
-            <div className={styles.horizontalField}>
+            {scratch.owner && <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
                 <UserLink user={scratch.owner} />
-            </div>
-            {scratch.parent &&<div className={styles.horizontalField}>
+            </div>}
+            {scratch.parent && <div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
-                <ScratchLink slug={scratch.parent} />
+                <ScratchLink url={scratch.parent} />
             </div>}
         </div>
 

@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 
-import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
+import { RepoForkedIcon, SyncIcon, UploadIcon } from "@primer/octicons-react"
 import * as resizer from "react-simple-resizer"
-import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../lib/api"
-import { useSize, useWarnBeforeUnload } from "../../lib/hooks"
+import { useSize } from "../../lib/hooks"
 import AsyncButton from "../AsyncButton"
-import Button from "../Button"
-import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
+import CompilerOpts from "../compiler/CompilerOpts"
 import Diff from "../Diff"
 import Editor from "../Editor"
 import { EditorInstance } from "../Editor/MonacoEditor"
@@ -21,37 +19,13 @@ import styles from "./Scratch.module.scss"
 const LEFT_PANE_MIN_WIDTH = 400
 const RIGHT_PANE_MIN_WIDTH = 400
 
-let isClaiming = false
-
-function ChooseACompiler({ platform, onCommit }: {
-    platform: string
-    onCommit: (opts: CompilerOptsT) => void
-}) {
-    const [compiler, setCompiler] = useState<CompilerOptsT>()
-
-    return <div className={styles.chooseACompiler}>
-        <CompilerOpts
-            title="Choose a compiler"
-            platform={platform}
-            value={compiler}
-            onChange={c => setCompiler(c)}
-        />
-
-        <div className={styles.chooseACompilerActions}>
-            <Button primary onClick={() => onCommit(compiler)}>
-                Use this compiler
-                <ArrowRightIcon size={16} />
-            </Button>
-        </div>
-    </div>
-}
-
 function renderRightTabs({ compilation }: {
     compilation?: api.Compilation
 }): React.ReactElement<typeof Tab>[] {
     return [
         <Tab
             key="diff"
+            id="diff"
             label={<>
                 Diff
                 {compilation && <ScoreBadge score={compilation?.diff_output?.current_score ?? -1} />}
@@ -74,7 +48,7 @@ function renderLeftTabs({ scratch, setScratch }: {
     const contextEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
 
     return [
-        <Tab key="about" label="About" className={styles.about}>
+        <Tab key="about" id="about" label="About" className={styles.about}>
             <AboutScratch
                 scratch={scratch}
                 setScratch={scratch.owner?.is_you ? setScratch : null}
@@ -82,8 +56,9 @@ function renderLeftTabs({ scratch, setScratch }: {
         </Tab>,
         <Tab
             key="source"
+            id="source"
             label="Source code"
-            onSelect={() => sourceEditor.current.focus()}
+            onSelect={() => sourceEditor.current?.focus?.()}
         >
             <Editor
                 instanceRef={sourceEditor}
@@ -95,14 +70,14 @@ function renderLeftTabs({ scratch, setScratch }: {
                 }}
                 lineNumbers
                 showMargin
-                bubbleSuspense
             />
         </Tab>,
         <Tab
             key="context"
+            id="context"
             label="Context"
             className={styles.context}
-            onSelect={() => contextEditor.current.focus()}
+            onSelect={() => contextEditor.current?.focus?.()}
         >
             <Editor
                 instanceRef={contextEditor}
@@ -114,97 +89,35 @@ function renderLeftTabs({ scratch, setScratch }: {
                 }}
                 lineNumbers
                 showMargin
-                bubbleSuspense
             />
         </Tab>,
-        <Tab key="settings" label="Scratch settings">
+        <Tab key="settings" id="settings" label="Scratch settings" className={styles.settingsTab}>
             <CompilerOpts
                 platform={scratch.platform}
-                value={scratch}
-                onChange={setScratch}
+                compiler={scratch.compiler}
+                flags={scratch.cc_opts}
+                onCompilerChange={value => setScratch({ compiler: value })}
+                onFlagsChange={value => setScratch({ cc_opts: value })}
             />
         </Tab>,
     ]
 }
 
 export type Props = {
-    slug: string
-    tryClaim?: boolean // note: causes page reload after claiming
+    scratch: api.Scratch
+    isSaved?: boolean
+    onChange: (s: api.Scratch) => void
+    onSave?: () => Promise<unknown>
+    onFork?: () => Promise<unknown>
+    onClaim?: () => Promise<unknown>
 }
 
-export default function Scratch({ slug, tryClaim }: Props) {
+export default function Scratch({ scratch, onChange, isSaved, onSave, onFork, onClaim }: Props) {
+    const setScratch = (s: Partial<api.Scratch>) => onChange({ ...scratch, ...s })
     const container = useSize<HTMLDivElement>()
-    const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
-    const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
-    const forkScratch = api.useForkScratchAndGo(savedScratch, scratch)
+    const { compilation, isCompiling, compile } = api.useCompilation(scratch)
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
-    const [isForking, setIsForking] = useState(false)
-
-    // TODO: remove once scratch.compiler is no longer nullable
-    const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
-        setScratch({
-            compiler,
-            cc_opts,
-        })
-        if (scratch.owner?.is_you)
-            saveScratch()
-    }
-
-    useEffect(() => {
-        const handler = (event: KeyboardEvent) => {
-            if ((event.ctrlKey || event.metaKey) && event.key == "s") {
-                event.preventDefault()
-
-                if (!isSaved && scratch.owner?.is_you) {
-                    saveScratch()
-                }
-            }
-        }
-
-        document.addEventListener("keydown", handler)
-        return () => document.removeEventListener("keydown", handler)
-    })
-
-    useDeepCompareEffect(() => {
-        if (scratch) {
-            document.title = scratch.name || "Untitled scratch"
-
-            if (!isSaved) {
-                document.title += " (unsaved changes)"
-            }
-
-            document.title += " | decomp.me"
-        }
-    }, [scratch || {}, isSaved])
-
-    useWarnBeforeUnload(
-        !isSaved && !isForking,
-        scratch.owner?.is_you
-            ? "You have not saved your changes to this scratch. Discard changes?"
-            : "You have edited this scratch but not saved it in a fork. Discard changes?",
-    )
-
-    // Claim the scratch
-    if (tryClaim && !savedScratch?.owner && typeof window !== "undefined") {
-        if (isClaiming) {
-            // Promise that never resolves, since the page will reload when the claim is done
-            throw new Promise(() => {})
-        }
-
-        console.log("Claiming scratch", savedScratch)
-        isClaiming = true
-
-        throw api.post(`/scratch/${scratch.slug}/claim`, {})
-            .then(({ success }) => {
-                if (!success)
-                    return Promise.reject(new Error("Scratch already claimed"))
-            })
-            .catch(console.error)
-            .then(() => {
-                window.location.reload()
-            })
-    }
 
     const leftTabs = renderLeftTabs({
         scratch,
@@ -231,20 +144,36 @@ export default function Scratch({ slug, tryClaim }: Props) {
             <AsyncButton onClick={compile} forceLoading={isCompiling}>
                 <SyncIcon size={16} /> Compile
             </AsyncButton>
-            {scratch.owner?.is_you && <AsyncButton onClick={() => {
-                return Promise.all([
-                    saveScratch(),
-                    compile().catch(() => {}), // Ignore errors
-                ])
-            }} disabled={isSaved}>
-                <UploadIcon size={16} /> Save
-            </AsyncButton>}
-            <AsyncButton onClick={() => {
-                setIsForking(true)
-                return forkScratch()
-            }} primary={!isSaved && !scratch.owner?.is_you}>
+            {scratch.owner ? (
+                scratch.owner.is_you && onSave && <AsyncButton
+                    disabled={isSaved}
+                    primary={!isSaved}
+                    errorPlacement="bottom-center"
+                    onClick={() => {
+                        return Promise.all([
+                            onSave(),
+                            compile().catch(() => {}), // Ignore errors
+                        ])
+                    }}
+                >
+                    <UploadIcon size={16} /> Save
+                </AsyncButton>
+            ) : (
+                onClaim && <AsyncButton
+                    primary
+                    errorPlacement="bottom-center"
+                    onClick={onClaim}
+                >
+                    Claim as yours
+                </AsyncButton>
+            )}
+            {onFork && <AsyncButton
+                primary={!isSaved && !scratch.owner?.is_you}
+                errorPlacement="bottom-center"
+                onClick={onFork}
+            >
                 <RepoForkedIcon size={16} /> Fork
-            </AsyncButton>
+            </AsyncButton>}
         </div>
 
         {container.width > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
@@ -267,17 +196,13 @@ export default function Scratch({ slug, tryClaim }: Props) {
                 />
 
                 <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>
-                    {scratch.compiler === ""
-                        ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
-                        : <Tabs activeTab={rightTab} onChange={setRightTab}>
-                            {rightTabs}
-                        </Tabs>
-                    }
+                    <Tabs activeTab={rightTab} onChange={setRightTab}>
+                        {rightTabs}
+                    </Tabs>
                 </resizer.Section>
             </resizer.Container>
-            : (scratch.compiler === ""
-                ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
-                : <Tabs activeTab={leftTab} onChange={setLeftTab}>
+            : (
+                <Tabs activeTab={leftTab} onChange={setLeftTab}>
                     {leftTabs}
                     {rightTabs}
                 </Tabs>
