@@ -18,7 +18,7 @@ export default function Footer() {
         </svg>
         <div className={styles.main}>
             <div className={styles.links}>
-                <Link href="https://github.com/ethteck/decomp.me">
+                <Link href="https://github.com/decompme/decomp.me">
                     <a className={styles.link}>
                         <MarkGithubIcon size={24} />
                         Contribute to decomp.me
@@ -40,7 +40,7 @@ export default function Footer() {
             </div>
 
             <div className={styles.commitHash}>
-                <Link href={`https://github.com/ethteck/decomp.me/commit/${commitHash}`}>
+                <Link href={`https://github.com/decompme/decomp.me/commit/${commitHash}`}>
                     <a>
                         {commitHash.slice(0, 7)}
                     </a>
