@@ -1,0 +1,4 @@
+{
+    "platform": "gamecube",
+    "cc": "wine \"${COMPILER_DIR}/mwcceppc.exe\" -c -proc gekko -fp hard -nostdinc ${CC_OPTS} -o \"${OUTPUT}\" \"${INPUT}\""
+}

@@ -34,6 +34,11 @@ export const PRESETS = [
         compiler: "psyq4.6",
         opts: "-O2",
     },
+    {
+        name: "SpongeBob SquarePants: BfBB",
+        compiler: "mwcc2.0",
+        opts: "-g",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setCompiler, setOpts, serverCompilers }: {

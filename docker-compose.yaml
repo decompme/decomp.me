@@ -15,6 +15,7 @@ services:
       args:
         # dont install wine32 etc by default
         ENABLE_PS1_SUPPORT: "NO"
+        ENABLE_GAMECUBE_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:

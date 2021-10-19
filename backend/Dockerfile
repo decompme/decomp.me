@@ -43,13 +43,30 @@ COPY compilers/download.sh /compilers/
 
 RUN bash /compilers/download.sh
 
-# ps1 specifics
+# windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+ARG ENABLE_GAMECUBE_SUPPORT
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GAMECUBE_SUPPORT}" = "YES" ] ; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        dos2unix \
         wine; \
+    fi
+
+# ps1 specifics
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+    apt-get install -y dos2unix; \
+    fi
+
+# gamecube specifics
+RUN if [ "${ENABLE_GAMECUBE_SUPPORT}" = "YES" ] ; then \
+    wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
+        -O devkitpro.deb && \
+    echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
+    apt install -y ./devkitpro.deb && \
+    rm devkitpro.deb && \
+    dkp-pacman -Syu gamecube-dev --noconfirm && \
+    cp /opt/devkitpro/devkitPPC/bin/* /usr/bin/ && \
+    rm -rf /opt/devkitpro; \
     fi
 
 WORKDIR /backend
