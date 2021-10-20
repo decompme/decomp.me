@@ -22,5 +22,16 @@ export function Flags() {
         </FlagSet>
 
         <Checkbox flag="-g" description="Enable debug info" />
+
+        <Checkbox flag="-Cpp_exceptions off" description="-Cpp_exceptions off" />
+        <Checkbox flag="-fp_contract on" description="-fp_contract on" />
+        <Checkbox flag="-msgstyle gcc " description="-msgstyle gcc " />
+        <Checkbox flag="-maxerrors 1" description="-maxerrors 1" />
+        <Checkbox flag="-RTTI off" description="-RTTI off" />
+        <Checkbox flag="-str reuse,pool,readonly" description="-str reuse,pool,readonly" />
+        <Checkbox flag="-char unsigned" description="-char unsigned" />
+        <Checkbox flag="-enum int" description="-enum int" />
+        <Checkbox flag="-use_lmw_stmw on" description="-use_lmw_stmw on" />
+        <Checkbox flag="-inline off" description="-inline off" />
     </>
 }

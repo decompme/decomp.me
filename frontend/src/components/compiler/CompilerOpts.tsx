@@ -88,20 +88,17 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
 
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
-            return opts.split(" ").includes(flag)
+            return (" " + opts + " ").includes(" " + flag + " ")
         },
 
         setFlag(flag: string, enable: boolean) {
-            let split = opts.split(" ")
-
             if (enable) {
-                split.push(flag)
+                opts = opts + " " + flag
             } else {
-                split = split.filter(f => f !== flag)
+                opts = (" " + opts + " ").replace(" " + flag + " ", " ")
             }
 
-            opts = split.join(" ").trim()
-            setOpts(opts)
+            setOpts(opts.trim())
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
