@@ -1,7 +1,7 @@
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
-export const name = "MWCC 1.0 (Version 2.3.3 build 144)"
-export const id = "mwcc1.0"
+export const name = "2.3.3 build 144 (GC MW 1.0)"
+export const id = "mwcc_233_144"
 
 export function Flags() {
     return <>

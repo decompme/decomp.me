@@ -1,13 +1,13 @@
 import classNames from "classnames"
 
-import LogoGameCube from "./gamecube.svg"
+import LogoGCWii from "./gc_wii.svg"
 import LogoN64 from "./n64.svg"
 import styles from "./PlatformSelect.module.scss"
 import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
 
 const ICONS = {
-    "gamecube": <LogoGameCube />,
+    "gc_wii": <LogoGCWii />,
     "n64": <LogoN64 />,
     "ps1": <LogoPS1 />,
     "ps2": <LogoPS2 />,
@@ -28,7 +28,6 @@ export type Props = {
 export default function PlatformSelect({ platforms, value, onChange, className }: Props) {
     if (!value)
         onChange("n64")
-
 
     return <ul className={classNames(styles.container, className)}>
         {Object.entries(platforms).map(([key, platform]) => <li

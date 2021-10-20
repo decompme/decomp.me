@@ -134,9 +134,9 @@ def load_platforms() -> Dict[str, Platform]:
 
 """
         ),
-        "gamecube": Platform(
-            "Nintendo GameCube",
-            "PowerPC (big-endian)",
+        "gc_wii": Platform(
+            "GameCube / Wii",
+            "PPC",
             "ppc",
             assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
             objdump_cmd="powerpc-eabi-objdump",

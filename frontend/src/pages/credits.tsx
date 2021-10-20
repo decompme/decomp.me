@@ -133,6 +133,12 @@ export default function CreditsPage({ maintainers, contributors }: {
                             <a>file-icons/icons</a>
                         </Link>
                     </li>
+                    <li>CoreUI Icons by CoreUI</li>
+                    <li>
+                        <Link href="https://github.com/coreui/coreui-icons">
+                            <a>coreui/coreui-icons</a>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </main>
