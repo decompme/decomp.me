@@ -83,7 +83,7 @@ function renderLeftTabs({ scratch, setScratch }: {
         <Tab
             key="source"
             label="Source code"
-            onSelect={() => sourceEditor.current.focus()}
+            onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
         >
             <Editor
                 instanceRef={sourceEditor}
@@ -102,7 +102,7 @@ function renderLeftTabs({ scratch, setScratch }: {
             key="context"
             label="Context"
             className={styles.context}
-            onSelect={() => contextEditor.current.focus()}
+            onSelect={() => contextEditor.current && contextEditor.current.focus()}
         >
             <Editor
                 instanceRef={contextEditor}
