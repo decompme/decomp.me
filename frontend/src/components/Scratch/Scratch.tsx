@@ -142,10 +142,10 @@ export default function Scratch({ slug, tryClaim }: Props) {
     const [isForking, setIsForking] = useState(false)
 
     // TODO: remove once scratch.compiler is no longer nullable
-    const setCompilerOpts = ({ compiler, cc_opts }: CompilerOptsT) => {
+    const setCompilerOpts = ({ compiler, compiler_flags }: CompilerOptsT) => {
         setScratch({
             compiler,
-            cc_opts,
+            compiler_flags,
         })
         if (scratch.owner?.is_you)
             saveScratch()

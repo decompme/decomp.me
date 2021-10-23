@@ -50,7 +50,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "cc_opts", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
+        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
 
 # XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
 class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
@@ -63,4 +63,4 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "cc_opts", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]
+        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]

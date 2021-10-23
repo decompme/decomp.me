@@ -145,7 +145,7 @@ class ScratchForkTests(APITestCase):
         fork_dict = {
             'compiler': 'gcc2.8.1',
             'platform': 'n64',
-            'cc_opts': '-O2',
+            'compiler_flags': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
         }
@@ -186,7 +186,7 @@ class CompilationTests(APITestCase):
         compile_dict = {
             'slug': slug,
             'compiler': 'gcc2.8.1',
-            'cc_opts': '-mips2 -O2',
+            'compiler_flags': '-mips2 -O2',
             'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n'
         }
 

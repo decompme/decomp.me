@@ -150,7 +150,7 @@ export type Scratch = {
     slug: string
     compiler: string
     platform: string
-    cc_opts: string
+    compiler_flags: string
     source_code: string
     context: string
     owner: AnonymousUser | User | null // null means unclaimed
@@ -274,7 +274,7 @@ export function useScratch(slugOrUrl: string): {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
-            cc_opts: undefinedIfUnchanged(savedScratch, localScratch, "cc_opts"),
+            compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         }).then(() => {
@@ -330,7 +330,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         const promise = post(`/scratch/${scratch.slug}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
-            cc_opts: scratch.cc_opts,
+            compiler_flags: scratch.compiler_flags,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
@@ -363,7 +363,7 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         autoRecompile,
 
         // fields passed to compilations
-        scratch.compiler, scratch.cc_opts,
+        scratch.compiler, scratch.compiler_flags,
         scratch.source_code, scratch.context,
     ])
 
