@@ -40,10 +40,24 @@ if "source" in form:
         cmd.append("--allman")
     if "leftptr" in form:
         cmd.extend(["--pointer-style", "left"])
-    if "globals" not in form:
-        cmd.append("--no-emit-globals")
+    if "globals" in form:
+        value = form.getfirst("globals")
+        if value in ("all", "used", "none"):
+            cmd.extend(["--globals", value])
     if "visualize" in form:
         cmd.append("--visualize")
+    if "compiler" in form:
+        value = form.getfirst("compiler")
+        if value in ("ido", "gcc"):
+            cmd.extend(["--compiler", value])
+
+    comment_style = form.getfirst("comment_style", "multiline")
+    if "oneline" in comment_style:
+        cmd.append("--comment-style=oneline")
+    else:
+        cmd.append("--comment-style=multiline")
+    if "unaligned" in comment_style:
+        cmd.append("--comment-column=0")
 
     function = form["functionselect"].value if "functionselect" in form else "all"
     FUNCTION_ALPHABET = string.ascii_letters + string.digits + "_"
@@ -69,7 +83,8 @@ if "source" in form:
             with tempfile.NamedTemporaryFile() as f:
                 f.write(bytes(context, "utf-8"))
                 f.file.close()
-                cmd.extend(["--context", f.name])
+                # There's no need to do caching on the temporary context file
+                cmd.extend(["--no-cache", "--context", f.name])
                 res = subprocess.run(
                     cmd,
                     stdout=subprocess.PIPE,
@@ -192,6 +207,28 @@ label {
     <input type="submit" value="Decompile">
     <input type="submit" name="visualize" value="Visualize">
     <label>Function: <select name="functionselect"></select></label>
+    </label>
+    <label>Global declarations:
+    <select name="globals">
+    <option value="used">used</option>
+    <option value="all">all</option>
+    <option value="none">none</option>
+    </select>
+    </label>
+    <label>Original Compiler:
+    <select name="compiler">
+    <option value="ido">ido</option>
+    <option value="gcc">gcc</option>
+    </select>
+    </label>
+    <label>Comment style:
+    <select name="comment_style">
+    <option value="multiline">/* ... */, aligned</option>
+    <option value="multiline_unaligned">/* ... */, unaligned</option>
+    <option value="oneline">// ..., aligned</option>
+    <option value="oneline_unaligned">// ..., unaligned</option>
+    </select>
+    </label>
     <label>Use single var for:
     <select name="regvarsselect">
     <option value="none">none</option>
@@ -207,7 +244,6 @@ label {
     <label><input type="checkbox" name="nocasts">Hide type casts</label>
     <label><input type="checkbox" name="allman">Allman braces</label>
     <label><input type="checkbox" name="leftptr">* to the left</label>
-    <label><input type="checkbox" name="globals" checked>Global declarations</label>
     <label><input type="checkbox" name="noifs">Use gotos for everything</label> (to use a goto for a single branch, add "# GOTO" to the asm)
     <label><input type="checkbox" name="usesidebar">Output sidebar</label>
     <label><input type="checkbox" name="dark">Dark mode</label>
@@ -290,7 +326,7 @@ contextEl.addEventListener("change", function() {
     localStorage.mips_to_c_saved_context = contextEl.value;
 });
 document.getElementById("options").addEventListener("change", function(event) {
-    var shouldSave = ["usesidebar", "allman", "leftptr", "globals", "nocasts", "noandor", "dark", "regvarsselect", "regvars"];
+    var shouldSave = ["usesidebar", "allman", "leftptr", "globals", "nocasts", "noandor", "noifs", "dark", "regvarsselect", "regvars", "comment_style", "compiler"];
     var options = {};
     for (var key of shouldSave) {
         var el = document.getElementsByName(key)[0];
