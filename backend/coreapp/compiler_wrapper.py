@@ -201,7 +201,7 @@ class CompilerWrapper:
         return ret
 
     @staticmethod
-    def filter_cc_opts(compiler: str, cc_opts: str) -> str:
+    def filter_compiler_flags(compiler: str, compiler_flags: str) -> str:
         cfg = _compilers[compiler]
         # Remove irrelevant flags that are part of the base compiler configs or
         # don't affect matching, but clutter the compiler settings field.
@@ -226,7 +226,7 @@ class CompilerWrapper:
         }
         skip_next = False
         flags = []
-        for flag in cc_opts.split():
+        for flag in compiler_flags.split():
             if skip_next:
                 skip_next = False
                 continue
@@ -241,7 +241,7 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
+    def compile_code(compiler: str, compiler_flags: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
@@ -250,7 +250,7 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         if not to_regenerate:
-            cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
+            cached_compilation, hash = _check_compilation_cache(compiler, compiler_flags, code, context)
             if cached_compilation:
                 logger.debug(f"Compilation cache hit! hash: {hash}")
                 return (cached_compilation, cached_compilation.stderr)
@@ -280,7 +280,7 @@ class CompilerWrapper:
                     "INPUT": sandbox.rewrite_path(code_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
-                    "CC_OPTS": sandbox.quote_options(cc_opts),
+                    "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
                     "WINEPREFIX": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
@@ -300,7 +300,7 @@ class CompilerWrapper:
                 compilation = Compilation(
                     hash=hash,
                     compiler=compiler,
-                    cc_opts=cc_opts,
+                    compiler_flags=compiler_flags,
                     source_code=code,
                     context=context,
                     elf_object=object_path.read_bytes(),
