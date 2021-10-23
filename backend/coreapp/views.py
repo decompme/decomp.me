@@ -45,20 +45,16 @@ class CompilersDetail(APIView):
 
 def update_scratch_score(scratch: Scratch):
     """
-    Compile a scratch and save its score
+    Compile a scratch and save its score and max score
     """
 
     compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
 
-    diff_output: Optional[Dict[str, Any]] = None
-    current_score = -1
-
     if compilation:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
-        current_score = -1 if not diff_output else diff_output.get("current_score", -1)
-
-    scratch.score = current_score
-    scratch.save()
+        scratch.score = diff_output.get("current_score", scratch.score)
+        scratch.max_score = diff_output.get("max_score", scratch.max_score)
+        scratch.save()
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
@@ -192,7 +188,7 @@ def create_scratch(request):
         source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
-            source_code = M2CWrapper.decompile(asm.data, context) or source_code
+            source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
 
     cc_opts = data.get("compiler_flags", "")
     if compiler and cc_opts:
@@ -286,7 +282,6 @@ def fork(request, slug):
         target_assembly=parent_scratch.target_assembly,
         source_code=code,
         context=context,
-        original_context=parent_scratch.original_context,
         diff_label=parent_scratch.diff_label,
         parent=parent_scratch,
     )

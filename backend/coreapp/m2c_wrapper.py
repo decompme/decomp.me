@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class M2CWrapper:
     @staticmethod
-    def decompile(asm: str, context: str) -> Optional[str]:
+    def decompile(asm: str, context: str, compiler: str) -> Optional[str]:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
@@ -27,6 +27,10 @@ class M2CWrapper:
 
                 flags.append("--context")
                 flags.append(str(ctx_path))
+
+            # TODO have compiler family as part of compiler obj
+            if compiler in ["gcc2.8.1"]:
+                flags.append("--compiler=gcc")
 
             flags.append(str(asm_path))
             options = parse_flags(flags)
