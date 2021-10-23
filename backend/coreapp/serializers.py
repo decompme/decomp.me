@@ -38,7 +38,7 @@ class ProfileField(ProfileFieldBaseClass):
         return serialize_profile(self.context["request"], profile)
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
-    compiler = serializers.CharField(allow_blank=True, required=False)
+    compiler = serializers.CharField(allow_blank=True, required=True)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)

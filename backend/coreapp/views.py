@@ -48,19 +48,17 @@ def update_scratch_score(scratch: Scratch):
     Compile a scratch and save its score
     """
 
-    # TODO remove check once compiler can't be null
-    if scratch.compiler:
-        compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
+    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
 
-        diff_output: Optional[Dict[str, Any]] = None
-        current_score = -1
+    diff_output: Optional[Dict[str, Any]] = None
+    current_score = -1
 
-        if compilation:
-            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
-            current_score = -1 if not diff_output else diff_output.get("current_score", -1)
+    if compilation:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+        current_score = -1 if not diff_output else diff_output.get("current_score", -1)
 
-        scratch.score = current_score
-        scratch.save()
+    scratch.score = current_score
+    scratch.save()
 
 class ScratchDetail(APIView):
     # type-ignored due to python/mypy#7778
@@ -150,13 +148,16 @@ def create_scratch(request):
     data = ser.validated_data
 
     platform = data.get("platform")
-    compiler = data.get("compiler", "")
-    if compiler:
+    compiler = data.get("compiler")
+
+    if platform:
+        if CompilerWrapper.platform_from_compiler(compiler) != platform:
+            return Response({"error": "Given compiler does not support given platform"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
         platform = CompilerWrapper.platform_from_compiler(compiler)
-        if not platform:
-            raise serializers.ValidationError("Unknown compiler")
-    elif not platform:
-        raise serializers.ValidationError("platform not provided")
+
+    if not platform:
+        raise serializers.ValidationError("Unknown compiler")
 
     target_asm = data["target_asm"]
     context = data["context"]
