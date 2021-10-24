@@ -10,6 +10,11 @@ export const PRESETS = [
         opts: "-O1 -g -mips2",
     },
     {
+        name: "Mario Kart 64",
+        compiler: "ido5.3",
+        opts: "-O2 -g -mips2 -32",
+    },
+    {
         name: "Paper Mario",
         compiler: "gcc2.8.1",
         opts: "-O2 -fforce-addr",
