@@ -12,7 +12,7 @@ export const PRESETS = [
     {
         name: "Mario Kart 64",
         compiler: "ido5.3",
-        opts: "-O2 -g -mips2 -32",
+        opts: "-O2 -mips2",
     },
     {
         name: "Paper Mario",
