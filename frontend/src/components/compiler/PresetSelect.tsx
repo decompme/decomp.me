@@ -41,7 +41,7 @@ export const PRESETS = [
     },
     {
         name: "SpongeBob SquarePants: BfBB",
-        compiler: "mwcc2.0",
+        compiler: "mwcc_247_92",
         opts: "-g",
     },
 ]
