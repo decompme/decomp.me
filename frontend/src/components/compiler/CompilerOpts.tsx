@@ -97,8 +97,8 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
             } else {
                 opts = (" " + opts + " ").replace(" " + flag + " ", " ")
             }
-
-            setOpts(opts.trim())
+            opts = opts.trim()
+            setOpts(opts)
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>

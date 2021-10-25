@@ -40,9 +40,24 @@ export const PRESETS = [
         opts: "-O2",
     },
     {
+        name: "Paper Mario: TTYD",
+        compiler: "mwcc_41_60831",
+        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -enc SJIS -lang=c99 -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
+    },
+    {
+        name: "Pikmin 2",
+        compiler: "mwcc_247_107",
+        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
+    },
+    {
         name: "SpongeBob SquarePants: BfBB",
         compiler: "mwcc_247_92",
-        opts: "-g",
+        opts: "-g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+    },
+    {
+        name: "Super Monkey Ball",
+        compiler: "mwcc_233_159",
+        opts: "-Cpp_exceptions off -nodefaults -O4,p -fp fmadd -fp_contract on -enum int",
     },
 ]
 

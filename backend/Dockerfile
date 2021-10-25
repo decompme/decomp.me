@@ -39,7 +39,7 @@ COPY --from=nsjail /bin/nsjail /bin/nsjail
 # nsjail wants to mount this so ensure it exists
 RUN mkdir -p /lib32
 
-COPY compilers/download.sh /compilers/
+COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
 
@@ -59,6 +59,7 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
 
 # gc/wii specifics
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+    bash /compilers/mwcc.sh && \
     wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
         -O devkitpro.deb && \
     echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
