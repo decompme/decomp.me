@@ -59,7 +59,7 @@ class Scratch(models.Model):
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100, blank=True)
+    compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100, blank=True)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
