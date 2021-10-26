@@ -38,7 +38,7 @@ class ProfileField(ProfileFieldBaseClass):
         return serialize_profile(self.context["request"], profile)
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
-    compiler = serializers.CharField(allow_blank=True, required=False)
+    compiler = serializers.CharField(allow_blank=True, required=True)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
@@ -50,15 +50,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "cc_opts", "target_assembly", "source_code", "context", "diff_label", "score"]
-
-    def create(self, validated_data):
-        scratch = Scratch.objects.create(**validated_data)
-
-        if scratch.context:
-            scratch.original_context = scratch.context
-
-        return scratch
+        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
 
 # XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
 class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
@@ -71,4 +63,4 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "cc_opts", "source_code", "context", "owner", "parent", "diff_label", "score"]
+        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]

@@ -19,6 +19,7 @@ class ScratchCreationTests(APITestCase):
         """
         scratch_dict = {
             'platform': 'n64',
+            'compiler': 'ido7.1',
             'context': '',
             'target_asm':
 """.late_rodata
@@ -41,6 +42,7 @@ nop"""
         """
         scratch_dict = {
             'platform': 'n64',
+            'compiler': 'ido5.3',
             'context': '',
             'target_asm':
 """
@@ -64,6 +66,7 @@ class ScratchModificationTests(APITestCase):
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
+            'compiler': 'gcc2.8.1',
             'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra"
@@ -78,7 +81,7 @@ class ScratchModificationTests(APITestCase):
 
         slug = scratch.slug
 
-        self.assertEqual(scratch.score, -1)
+        self.assertGreater(scratch.score, 0)
 
         # Obtain ownership of the scratch
         response = self.client.post(reverse('scratch-claim', kwargs={'slug': slug}))
@@ -123,6 +126,7 @@ class ScratchForkTests(APITestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
+            'compiler': 'gcc2.8.1',
             'platform': 'n64',
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
@@ -141,7 +145,7 @@ class ScratchForkTests(APITestCase):
         fork_dict = {
             'compiler': 'gcc2.8.1',
             'platform': 'n64',
-            'cc_opts': '-O2',
+            'compiler_flags': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
         }
@@ -166,6 +170,7 @@ class CompilationTests(APITestCase):
         Ensure that we can run a simple compilation via the api
         """
         scratch_dict = {
+            'compiler': 'gcc2.8.1',
             'platform': 'n64',
             'context': '',
             'target_asm': 'glabel func_80929D04\njr $ra\nnop'
@@ -181,14 +186,15 @@ class CompilationTests(APITestCase):
         compile_dict = {
             'slug': slug,
             'compiler': 'gcc2.8.1',
-            'cc_opts': '-mips2 -O2',
+            'compiler_flags': '-mips2 -O2',
             'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n'
         }
 
         # Test that we can compile a scratch
         response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Compilation.objects.count(), 1)
+        # One from the initial compile, one from the explicit compile request
+        self.assertEqual(Compilation.objects.count(), 2)
 
     def test_ido_line_endings(self):
         """
@@ -212,7 +218,7 @@ class M2CTests(TestCase):
         li $t6,1
         jr $ra
         sw $t6,0($a0)
-        """, "")
+        """, "", "")
 
         assert c_code is not None, "The decompilation should not fail" # for mypy
         self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
@@ -359,6 +365,7 @@ class UserTests(APITestCase):
         """
 
         response = self.client.post("/api/scratch", {
+            'compiler': 'gcc2.8.1',
             'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra\nnop\n"
@@ -379,6 +386,7 @@ class UserTests(APITestCase):
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
         response = self.client.post(reverse("scratch"), {
+            'compiler': 'gcc2.8.1',
             'platform': 'n64',
             'context': '',
             'target_asm': "jr $ra\nnop\n",

@@ -57,7 +57,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 
 export type CompilerOptsT = {
     compiler: string
-    cc_opts: string
+    compiler_flags: string
 }
 
 export type Props = {
@@ -70,19 +70,19 @@ export type Props = {
 
 export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
     const compiler = value.compiler
-    let opts = value.cc_opts
+    let opts = value.compiler_flags
 
     const setCompiler = (compiler: string) => {
         onChange({
             compiler,
-            cc_opts: opts,
+            compiler_flags: opts,
         })
     }
 
     const setOpts = (opts: string) => {
         onChange({
             compiler,
-            cc_opts: opts,
+            compiler_flags: opts,
         })
     }
 

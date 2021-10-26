@@ -47,7 +47,7 @@ class Compilation(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     compiler = models.CharField(max_length=100)
-    cc_opts = models.TextField(max_length=1000, blank=True, null=True)
+    compiler_flags = models.TextField(max_length=1000, blank=True, null=True)
     source_code = models.TextField()
     context = models.TextField(blank=True)
     elf_object = models.BinaryField(blank=True)
@@ -59,15 +59,15 @@ class Scratch(models.Model):
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100, blank=True)
+    compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100, blank=True)
-    cc_opts = models.TextField(max_length=1000, default="", blank=True)
+    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    original_context = models.TextField(blank=True)
     diff_label = models.CharField(max_length=100, blank=True, null=True)
     score = models.IntegerField(default=-1)
+    max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -77,11 +77,13 @@ class Scratch(models.Model):
     # hash for etagging, might be better to add a field to the model that changes on every save
     def __hash__(self):
         return hash((
-            self.slug, self.creation_time, self.last_updated,
-            self.platform, self.compiler, self.cc_opts,
+            self.slug, self.name, self.description,
+            self.creation_time, self.last_updated,
+            self.platform, self.compiler, self.compiler_flags,
             self.target_assembly, self.source_code,
-            self.context, self.original_context,
+            self.context,
             self.diff_label,
+            self.score, self.max_score,
             self.parent,
             self.owner,
         ))

@@ -137,7 +137,7 @@ class AsmDifferWrapper:
             logger.info("New asm empty - attempting to regenerate")
             compiler_wrapper.CompilerWrapper.compile_code(
                 compilation.compiler,
-                compilation.cc_opts or "",
+                compilation.compiler_flags or "",
                 compilation.source_code,
                 compilation.context,
                 compilation
