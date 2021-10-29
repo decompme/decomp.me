@@ -165,6 +165,7 @@ def current_instr(instr: Instruction) -> Iterator[None]:
 
 
 def as_type(expr: "Expression", type: Type, silent: bool) -> "Expression":
+    type = type.weaken_void_ptr()
     if expr.type.unify(type):
         if silent or isinstance(expr, Literal):
             return expr
@@ -238,6 +239,7 @@ class StackInfo:
     nonzero_accesses: Set["Expression"] = field(default_factory=set)
     param_names: Dict[int, str] = field(default_factory=dict)
     stack_pointer_type: Optional[Type] = None
+    replace_first_arg: Optional[Tuple[str, Type]] = None
 
     def temp_var(self, prefix: str) -> str:
         counter = self.temp_name_counter.get(prefix, 0) + 1
@@ -258,6 +260,39 @@ class StackInfo:
         return location >= self.allocated_stack_size
 
     def add_known_param(self, offset: int, name: Optional[str], type: Type) -> None:
+        # A common pattern in C for OOP-style polymorphism involves casting a general "base" struct
+        # to a specific "class" struct, where the first member of the class struct is the base struct.
+        #
+        # For the first argument of the function, if it is a pointer to a base struct, and there
+        # exists a class struct named after the first part of the function name, assume that
+        # this pattern is being used. Internally, treat the argument as a pointer to the *class*
+        # struct, even though it is only a pointer to the *base* struct in the provided context.
+        if offset == 0 and type.is_pointer() and self.replace_first_arg is None:
+            namespace = self.function.name.partition("_")[0]
+            base_struct_type = type.get_pointer_target()
+            self_struct = self.global_info.typepool.get_struct_by_tag_name(
+                namespace, self.global_info.typemap
+            )
+            if (
+                self_struct is not None
+                and base_struct_type is not None
+                and base_struct_type.is_struct()
+            ):
+                # Check if `self_struct_type` contains a `base_struct_type` at offset 0
+                self_struct_type = Type.struct(self_struct)
+                field_path, field_type, _ = self_struct_type.get_field(
+                    offset=0, target_size=base_struct_type.get_size_bytes()
+                )
+                if (
+                    field_path is not None
+                    and field_type.unify(base_struct_type)
+                    and not self_struct_type.unify(base_struct_type)
+                ):
+                    # Success, it looks like `self_struct_type` extends `base_struct_type`.
+                    # By default, name the local var `self`, unless the argument name is `thisx` then use `this`
+                    self.replace_first_arg = (name or "_self", type)
+                    name = "this" if name == "thisx" else "self"
+                    type = Type.ptr(Type.struct(self_struct))
         if name:
             self.param_names[offset] = name
         _, arg = self.get_argument(offset)
@@ -527,8 +562,8 @@ def get_stack_info(
             size=info.allocated_stack_size,
             tag_name=stack_struct_name,
         )
-    # Mark the struct as "hidden" so we never try to use a reference to the struct itself
-    stack_struct.is_hidden = True
+    # Mark the struct as a stack struct so we never try to use a reference to the struct itself
+    stack_struct.is_stack = True
     stack_struct.new_field_prefix = "sp"
 
     # This acts as the type of the $sp register
@@ -1005,7 +1040,7 @@ class LocalVar(Expression):
         if self.path is None:
             return fallback_name
 
-        name = StructAccess.access_path_to_field_name(self.path)
+        name = StructAccess.access_path_to_field_name(self.path, fmt)
         if name.startswith("->"):
             return name[2:]
         return fallback_name
@@ -1088,7 +1123,7 @@ class StructAccess(Expression):
         ), "The first element of the field path, if present, must be an int"
 
     @classmethod
-    def access_path_to_field_name(cls, path: AccessPath) -> str:
+    def access_path_to_field_name(cls, path: AccessPath, fmt: Formatter) -> str:
         """
         Convert an access path into a dereferencing field name, like the following examples:
             - `[0, "foo", 3, "bar"]` into `"->foo[3].bar"`
@@ -1109,7 +1144,7 @@ class StructAccess(Expression):
             if isinstance(p, str):
                 output += f".{p}"
             elif isinstance(p, int):
-                output += f"[{p}]"
+                output += f"[{fmt.format_int(p)}]"
             else:
                 static_assert_unreachable(p)
         return output
@@ -1163,14 +1198,12 @@ class StructAccess(Expression):
         if field_path is not None and field_path != [0]:
             has_nonzero_access = True
         elif fmt.valid_syntax and (self.offset != 0 or has_nonzero_access):
-            offset_str = (
-                f"0x{format_hex(self.offset)}" if self.offset > 0 else f"{self.offset}"
-            )
+            offset_str = fmt.format_int(self.offset)
             return f"MIPS2C_FIELD({var.format(fmt)}, {Type.ptr(self.type).format(fmt)}, {offset_str})"
         else:
             prefix = "unk" + ("_" if fmt.coding_style.unknown_underscore else "")
             field_path = [0, prefix + format_hex(self.offset)]
-        field_name = self.access_path_to_field_name(field_path)
+        field_name = self.access_path_to_field_name(field_path, fmt)
 
         # Rewrite `(&x)->y` to `x.y` by stripping `AddressOf` & setting deref=False
         deref = True
@@ -1212,6 +1245,7 @@ class GlobalSymbol(Expression):
     type: Type
     asm_data_entry: Optional[AsmDataEntry] = None
     type_in_typemap: bool = False
+    initializer_in_typemap: bool = False
 
     def dependencies(self) -> List[Expression]:
         return []
@@ -1267,12 +1301,7 @@ class Literal(Expression):
                 prefix = f"({self.type.format(fmt)})"
             if self.type.is_unsigned():
                 suffix = "U"
-        mid = (
-            str(self.value)
-            if abs(self.value) < 10
-            else hex(self.value).upper().replace("X", "x")
-        )
-        return prefix + mid + suffix
+        return prefix + fmt.format_int(self.value) + suffix
 
     def likely_partial_offset(self) -> bool:
         return self.value % 2 ** 15 in (0, 2 ** 15 - 1) and self.value < 0x1000000
@@ -3845,7 +3874,9 @@ def translate_node_body(node: Node, regs: RegInfo, stack_info: StackInfo) -> Blo
             # Reset subroutine_args, for the next potential function call.
             subroutine_args.clear()
 
-            call: Expression = FuncCall(fn_target, func_args, fn_sig.return_type)
+            call: Expression = FuncCall(
+                fn_target, func_args, fn_sig.return_type.weaken_void_ptr()
+            )
             call = eval_once(call, emit_exactly_once=True, trivial=False, prefix="ret")
 
             # Clear out caller-save registers, for clarity and to ensure that
@@ -4097,7 +4128,12 @@ class GlobalInfo:
                 ctype = self.typemap.var_types.get(sym_name)
             if ctype is not None:
                 sym.type_in_typemap = True
+                sym.initializer_in_typemap = (
+                    sym_name in self.typemap.vars_with_initializers
+                )
                 sym.type.unify(Type.ctype(ctype, self.typemap, self.typepool))
+            elif sym_name in self.local_functions:
+                sym.type.unify(Type.function())
 
         return AddressOf(sym, type=sym.type.reference())
 
@@ -4149,9 +4185,10 @@ class GlobalInfo:
                 for field in struct_fields:
                     if isinstance(field, int):
                         # Check that all padding bytes are 0
-                        padding = read_uint(field)
-                        if padding != 0:
-                            return None
+                        for i in range(field):
+                            padding = read_uint(1)
+                            if padding != 0:
+                                return None
                     else:
                         m = for_type(field)
                         if m is None:
@@ -4188,7 +4225,7 @@ class GlobalInfo:
         while True:
             names: AbstractSet[str] = self.global_symbol_map.keys()
             if decls == Options.GlobalDeclsEnum.ALL:
-                names |= self.typemap.var_types.keys()
+                names |= self.asm_data.values.keys()
             names -= processed_names
             if not names:
                 break
@@ -4304,7 +4341,11 @@ class GlobalInfo:
                     if array_dim is None and sym.type.is_likely_float():
                         continue
 
+                # In "none" mode, do not emit any decls
                 if decls == Options.GlobalDeclsEnum.NONE:
+                    continue
+                # In modes except "all", skip the decl if the context file already had an initializer
+                if decls != Options.GlobalDeclsEnum.ALL and sym.initializer_in_typemap:
                     continue
 
                 qualifier = f"{qualifier} " if qualifier else ""

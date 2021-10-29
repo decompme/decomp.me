@@ -9,6 +9,8 @@ from .c_types import (
     Struct,
     StructUnion as CStructUnion,
     TypeMap,
+    UndefinedStructError,
+    is_unk_type,
     parse_constant_int,
     parse_function,
     parse_struct,
@@ -32,11 +34,13 @@ class TypePool:
     """
 
     unknown_field_prefix: str
+    struct_field_inference: bool
     structs: Set["StructDeclaration"] = field(default_factory=set)
     structs_by_tag_name: Dict[str, "StructDeclaration"] = field(default_factory=dict)
     structs_by_ctype: Dict[CStructUnion, "StructDeclaration"] = field(
         default_factory=dict
     )
+    warnings: List[str] = field(default_factory=list)
 
     def get_struct_for_ctype(
         self,
@@ -90,6 +94,16 @@ class TypePool:
                 tag_name not in self.structs_by_tag_name
             ), f"Duplicate tag: {tag_name}"
             self.structs_by_tag_name[tag_name] = struct
+
+    def format_type_declarations(self, fmt: Formatter) -> str:
+        decls = []
+        for struct in sorted(
+            self.structs, key=lambda s: s.tag_name or s.typedef_name or ""
+        ):
+            # Include stack structs & any struct with added fields
+            if struct.is_stack or any(not f.known for f in struct.fields):
+                decls.append(struct.format(fmt) + "\n")
+        return "\n".join(decls)
 
 
 @dataclass(eq=False)
@@ -309,6 +323,13 @@ class Type:
             return Type.ptr(data.ptr_to)
         return self
 
+    def weaken_void_ptr(self) -> "Type":
+        """If self is an explicit `void *`, return `Type.ptr()` without an target type."""
+        target = self.get_pointer_target()
+        if target is not None and target.is_void():
+            return Type.ptr()
+        return self
+
     def get_array(self) -> Tuple[Optional["Type"], Optional[int]]:
         """If self is an array, return a tuple of the inner Type & the array dimension"""
         if not self.is_array():
@@ -402,10 +423,10 @@ class Type:
                 return NO_MATCHING_FIELD
 
             # One option is to return the whole struct itself. Do not do this if the struct
-            # is marked hidden, or if `target_size` is specified and does not match.
+            # is marked as a stack struct, or if `target_size` is specified and does not match.
             possible_results: List[Type.GetFieldResult] = []
             can_return_self = False
-            if not data.struct.is_hidden and (
+            if not data.struct.is_stack and (
                 target_size is None or target_size == self.get_size_bytes()
             ):
                 possible_results.append(([], self, offset))
@@ -440,8 +461,11 @@ class Type:
                 return zero_offset_results[0]
             elif exact:
                 # Try to insert a new field into the struct at the given offset
-                # TODO Loosen this to Type.any()
-                field_type = Type.any_reg()
+                # TODO Loosen this to Type.any_field(), even for stack structs
+                if data.struct.is_stack:
+                    field_type = Type.any_reg()
+                else:
+                    field_type = Type.any_field()
                 field_name = f"{data.struct.new_field_prefix}{offset:X}"
                 new_field = data.struct.try_add_field(field_type, offset, field_name)
                 if new_field is not None:
@@ -527,7 +551,10 @@ class Type:
 
                 add_padding(field.offset)
                 field_size = field.type.get_size_bytes()
-                assert field_size is not None
+                # If any field has unknown size, we can't make an initializer
+                if field_size is None:
+                    return None
+
                 output.append(field.type)
                 position = field.offset + field_size
 
@@ -643,7 +670,7 @@ class Type:
             assert data.ptr_to is not None
             dim: Optional[ca.Constant] = None
             if data.array_dim is not None:
-                dim = ca.Constant(value=str(data.array_dim), type="")
+                dim = ca.Constant(value=fmt.format_int(data.array_dim), type="")
             return ca.ArrayDecl(
                 type=data.ptr_to._to_ctype(seen.copy(), fmt),
                 dim=dim,
@@ -693,6 +720,10 @@ class Type:
     @staticmethod
     def any_reg() -> "Type":
         return Type(TypeData(kind=TypeData.K_ANYREG))
+
+    @staticmethod
+    def any_field() -> "Type":
+        return Type(TypeData(kind=TypeData.K_ANY & ~TypeData.K_VOID))
 
     @staticmethod
     def intish() -> "Type":
@@ -945,7 +976,7 @@ class StructDeclaration:
     fields: List[StructField] = field(default_factory=list)  # sorted by `.offset`
     has_bitfields: bool = False
     is_union: bool = False
-    is_hidden: bool = False
+    is_stack: bool = False
 
     def unify(
         self,
@@ -998,6 +1029,86 @@ class StructDeclaration:
         self.fields.sort(key=lambda f: f.offset)
         return field
 
+    def format(self, fmt: Formatter) -> str:
+        """
+        Return the C representation of the struct/union.
+        NB: We don't use ca.Struct here so that we can add comments for each field.
+
+        TODO: This does not correctly handle nested anonymous structs/unions, though it
+        is possible for the user to reconstruct these by hand from the "offset" comments.
+        """
+        keyword = "union" if self.is_union else "struct"
+        decl = f"{keyword} {self.tag_name}" if self.tag_name else f"{keyword}"
+        head = f"typedef {decl} {{" if self.typedef_name else f"{decl} {{"
+        tail = f"}} {self.typedef_name};" if self.typedef_name else f"}};"
+
+        # If there are no fields or padding, return everything on one line
+        if self.size == 0 and not self.fields:
+            return fmt.with_comments(head + tail, [f"size 0x0"])
+
+        lines = []
+        lines.append(fmt.indent(head))
+        with fmt.indented():
+            offset_str_digits = len(fmt.format_hex(self.size))
+
+            def offset_comment(offset: int) -> str:
+                # Indicate the offset of the field (in hex), written to the *left* of the field
+                nonlocal offset_str_digits
+                return f"/* 0x{fmt.format_hex(offset).zfill(offset_str_digits)} */"
+
+            position = 0
+            prev_field: Optional[StructDeclaration.StructField] = None
+
+            def pad_to(offset: int, is_final: bool) -> None:
+                nonlocal position
+                if position < offset:
+                    # Fill the gap with a char array, e.g. `char pad12[0x34];`
+                    underscore = "_" if fmt.coding_style.unknown_underscore else ""
+                    name = f"pad{underscore}{fmt.format_hex(position)}"
+                    padding_size = offset - position
+
+                    comments = []
+                    # Hint if the previous field may be an array, unless this is the final field in a stack struct
+                    if prev_field is not None and not (is_final and self.is_stack):
+                        last_size = prev_field.type.get_size_bytes()
+                        if last_size and padding_size > last_size:
+                            array_dim_str = fmt.format_int(
+                                padding_size // last_size + 1
+                            )
+                            comments.append(
+                                f"maybe part of {prev_field.name}[{array_dim_str}]?"
+                            )
+
+                    lines.append(
+                        fmt.with_comments(
+                            f"{offset_comment(position)} char {name}[{fmt.format_int(padding_size)}];",
+                            comments,
+                        )
+                    )
+
+            for field in self.fields:
+                pad_to(field.offset, is_final=False)
+                field_decl = f"{offset_comment(field.offset)} {field.type.to_decl(field.name, fmt)};"
+
+                comments = []
+                # Detect if adjacent fields incorrectly overlap (the C decl will not be accurate)
+                if not self.is_union and position > field.offset:
+                    comments.append("overlap")
+                # Detect if a union field doesn't start at 0 (the C decl will not be accurate)
+                if self.is_union and field.offset != 0:
+                    comments.append("offset")
+                # Mark fields that weren't in the input TypeMap (i.e. weren't in the context)
+                if not field.known:
+                    comments.append("inferred")
+                lines.append(fmt.with_comments(field_decl, comments))
+                position = max(
+                    position, field.offset + (field.type.get_size_bytes() or 0)
+                )
+                prev_field = field
+            pad_to(self.size, is_final=True)
+        lines.append(fmt.with_comments(tail, [f"size = 0x{fmt.format_hex(self.size)}"]))
+        return "\n".join(lines)
+
     @staticmethod
     def unknown_of_size(
         typepool: TypePool, size: int, tag_name: str, align: int = 1
@@ -1026,8 +1137,6 @@ class StructDeclaration:
         if existing_struct:
             return existing_struct
 
-        struct = parse_struct(ctype, typemap)
-
         typedef_name: Optional[str] = None
         if ctype in typemap.struct_typedefs:
             typedef = typemap.struct_typedefs[ctype]
@@ -1038,17 +1147,32 @@ class StructDeclaration:
             assert isinstance(typedef.type, ca.IdentifierType)
             typedef_name = typedef.type.names[0]
 
+        try:
+            struct = parse_struct(ctype, typemap)
+            struct_fields = struct.fields
+            struct_has_bitfields = struct.has_bitfields
+            struct_size = struct.size
+            struct_align = struct.align
+        except UndefinedStructError:
+            struct_fields = {}
+            struct_has_bitfields = False
+            struct_size = 0
+            struct_align = 1
+            typepool.warnings.append(
+                f"Warning: struct {typedef_name or ctype.name} is not defined (only forward-declared)"
+            )
+
         assert (
-            struct.size % struct.align == 0
+            struct_size % struct_align == 0
         ), "struct size must be a multiple of its alignment"
 
         decl = StructDeclaration(
-            size=struct.size,
-            align=struct.align,
+            size=struct_size,
+            align=struct_align,
             tag_name=ctype.name,
             typedef_name=typedef_name,
             fields=[],
-            has_bitfields=struct.has_bitfields,
+            has_bitfields=struct_has_bitfields,
             is_union=isinstance(ctype, ca.Union),
             new_field_prefix=typepool.unknown_field_prefix,
         )
@@ -1056,8 +1180,10 @@ class StructDeclaration:
         # in case there are any self-referential fields in this struct.
         typepool.add_struct(decl, ctype)
 
-        for offset, fields in sorted(struct.fields.items()):
+        for offset, fields in sorted(struct_fields.items()):
             for field in fields:
+                if typepool.struct_field_inference and is_unk_type(field.type, typemap):
+                    continue
                 field_type = Type.ctype(field.type, typemap, typepool)
                 assert field.size == field_type.get_size_bytes(), (
                     field.size,
