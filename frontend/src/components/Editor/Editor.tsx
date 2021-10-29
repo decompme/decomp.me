@@ -12,11 +12,12 @@ import type { Props as MonacoEditorProps } from "./MonacoEditor"
 import getTheme from "./monacoTheme"
 
 // monaco-editor not supported in mobile browsers or in tests
-const useFallback = true || mobile() || typeof jest !== "undefined"
+const useFallback = mobile() || typeof jest !== "undefined"
 
 interface Props extends MonacoEditorProps {
     bubbleSuspense?: boolean
     useLoadingSpinner?: boolean
+    useTextArea?: boolean
 }
 
 const MonacoEditor = useFallback ? null : dynamic(() => import("./MonacoEditor"), {
@@ -47,7 +48,7 @@ export default function Editor(props: Props) {
         style={style}
     />
 
-    if (MonacoEditor) {
+    if (MonacoEditor && !props.useTextArea) {
         const loading = props.useLoadingSpinner ? <div
             className={classNames(styles.loadingContainer, props.className)}
             style={style}

@@ -89,6 +89,7 @@ function renderLeftTabs({ scratch, setScratch }: {
                 }}
                 lineNumbers
                 showMargin
+                useTextArea
             />
         </Tab>,
         <Tab key="settings" id="settings" label="Scratch settings" className={styles.settingsTab}>
