@@ -40,7 +40,7 @@ export type Props = {
     value: string
     onChange?: (value: string) => void
 
-    instanceRef?: MutableRefObject<editor.IStandaloneCodeEditor>
+    instanceRef?: MutableRefObject<editor.IStandaloneCodeEditor | undefined>
 
     // Options
     language: "c" | "mips"
@@ -57,6 +57,9 @@ export default function Editor({ value, onChange, className, showMargin, padding
     // Effect to set up the editor. This is run once when the component is mounted.
     useEffect(() => {
         editor.defineTheme("custom", monacoTheme())
+
+        if (!containerRef.current)
+            return
 
         const editorInstance = editor.create(containerRef.current, {
             language: convertLanguage(language),

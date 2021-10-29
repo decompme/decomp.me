@@ -46,21 +46,15 @@ class CompilersDetail(APIView):
 
 def update_scratch_score(scratch: Scratch):
     """
-    Compile a scratch and save its score
+    Compile a scratch and save its score and max score
     """
 
-    # TODO remove check once compiler can't be null
-    if scratch.compiler:
-        compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.cc_opts, scratch.source_code, scratch.context)
+    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-        diff_output: Optional[Dict[str, Any]] = None
-        current_score = -1
-
-        if compilation:
-            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
-            current_score = -1 if not diff_output else diff_output.get("current_score", -1)
-
-        scratch.score = current_score
+    if compilation:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+        scratch.score = diff_output.get("current_score", scratch.score)
+        scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
 
 class ScratchDetail(APIView):
@@ -96,7 +90,7 @@ class ScratchDetail(APIView):
         return response
 
     def patch(self, request: Request, slug: str):
-        recompile_params = ["compiler", "cc_opts", "source_code", "context"]
+        recompile_params = ["compiler", "compiler_flags", "source_code", "context"]
         valid_params = ["name", "description", *recompile_params]
         recompile = False
 
@@ -153,13 +147,16 @@ def create_scratch(request):
     data = ser.validated_data
 
     platform = data.get("platform")
-    compiler = data.get("compiler", "")
-    if compiler:
+    compiler = data.get("compiler")
+
+    if platform:
+        if CompilerWrapper.platform_from_compiler(compiler) != platform:
+            return Response({"error": "Given compiler does not support given platform"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
         platform = CompilerWrapper.platform_from_compiler(compiler)
-        if not platform:
-            raise serializers.ValidationError("Unknown compiler")
-    elif not platform:
-        raise serializers.ValidationError("platform not provided")
+
+    if not platform:
+        raise serializers.ValidationError("Unknown compiler")
 
     target_asm = data["target_asm"]
     context = data["context"]
@@ -194,11 +191,11 @@ def create_scratch(request):
         source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
-            source_code = M2CWrapper.decompile(asm.data, context) or source_code
+            source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
 
-    cc_opts = data.get("compiler_flags", "")
-    if compiler and cc_opts:
-        cc_opts = CompilerWrapper.filter_cc_opts(compiler, cc_opts)
+    compiler_flags = data.get("compiler_flags", "")
+    if compiler and compiler_flags:
+        compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
 
     slug = gen_scratch_id()
 
@@ -209,7 +206,7 @@ def create_scratch(request):
         "name": name,
         "compiler": compiler,
         "platform": platform,
-        "cc_opts": cc_opts,
+        "compiler_flags": compiler_flags,
         "context": context,
         "diff_label": diff_label,
         "source_code": source_code,
@@ -231,7 +228,7 @@ def create_scratch(request):
 
 @api_view(["POST"])
 def compile(request, slug):
-    required_params = ["compiler", "cc_opts", "source_code"]
+    required_params = ["compiler", "compiler_flags", "source_code"]
 
     for param in required_params:
         if param not in request.data:
@@ -239,7 +236,7 @@ def compile(request, slug):
 
     # TODO validate
     compiler = request.data["compiler"]
-    cc_opts = request.data["cc_opts"]
+    compiler_flags = request.data["compiler_flags"]
     code = request.data["source_code"]
     context = request.data.get("context", None)
 
@@ -250,7 +247,7 @@ def compile(request, slug):
         logging.debug("No context provided, getting from backend")
         context = scratch.context
 
-    compilation, errors = CompilerWrapper.compile_code(compiler, cc_opts, code, context)
+    compilation, errors = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
 
     diff_output: Optional[Dict[str, Any]] = None
     if compilation:
@@ -263,7 +260,7 @@ def compile(request, slug):
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "platform", "cc_opts", "source_code", "context"]
+    required_params = ["compiler", "platform", "compiler_flags", "source_code", "context"]
 
     for param in required_params:
         if param not in request.data:
@@ -277,18 +274,17 @@ def fork(request, slug):
     # TODO validate
     compiler = request.data["compiler"]
     platform = request.data["platform"]
-    cc_opts = request.data["cc_opts"]
+    compiler_flags = request.data["compiler_flags"]
     code = request.data["source_code"]
     context = request.data["context"]
 
     new_scratch = Scratch(
         compiler=compiler,
         platform=platform,
-        cc_opts=cc_opts,
+        compiler_flags=compiler_flags,
         target_assembly=parent_scratch.target_assembly,
         source_code=code,
         context=context,
-        original_context=parent_scratch.original_context,
         diff_label=parent_scratch.diff_label,
         parent=parent_scratch,
     )

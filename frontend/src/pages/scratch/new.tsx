@@ -22,7 +22,12 @@ function getLabels(asm: string): string[] {
     const labels = []
 
     for (const line of lines) {
-        const match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
+        let match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
+        if (match) {
+            labels.push(match[1])
+            continue
+        }
+        match = line.match(/^\s*\.global\s+([a-zA-Z0-9_]+)\s*$/)
         if (match) {
             labels.push(match[1])
         }

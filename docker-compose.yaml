@@ -10,7 +10,12 @@ services:
     volumes:
     - ./postgres:/var/lib/postgresql/data
   backend:
-    build: backend
+    build:
+      context: backend
+      args:
+        # dont install wine32 etc by default
+        ENABLE_PS1_SUPPORT: "NO"
+        ENABLE_GC_WII_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:

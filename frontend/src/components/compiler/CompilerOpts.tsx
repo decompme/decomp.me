@@ -11,7 +11,10 @@ interface IOptsContext {
     setFlag(flag: string, value: boolean): void
 }
 
-const OptsContext = createContext<IOptsContext>(undefined)
+const OptsContext = createContext<IOptsContext>({
+    checkFlag: () => false,
+    setFlag: () => {},
+})
 
 export function Checkbox({ flag, description }) {
     const { checkFlag, setFlag } = useContext(OptsContext)
@@ -72,12 +75,12 @@ export default function CompilerOpts({ compiler, flags, onCompilerChange, onFlag
         },
 
         setFlag(flag: string, enable: boolean) {
-            let split = flags.split(" ")
+            const split = flags.split(" ")
 
             if (enable) {
-                split.push(flag)
+                flags = flags + " " + flag
             } else {
-                split = split.filter(f => f !== flag)
+                flags = (" " + flags + " ").replace(" " + flag + " ", " ")
             }
 
             flags = split.join(" ").trim()

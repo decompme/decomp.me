@@ -13,7 +13,7 @@ const scratchJson: api.Scratch = {
     "description": "I am the description",
     "compiler": "ido5.3",
     "platform": "mips",
-    "cc_opts": "-O2 -fforce-addr",
+    "compiler_flags": "-O2 -fforce-addr",
     "source_code": "void func(void) {\n    // ...\n}",
     "context": "",
     "owner": {

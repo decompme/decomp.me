@@ -8,7 +8,7 @@ import ResponseError from "./ResponseError"
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
     if (error.status === 404) return
-    if (retryCount >= 10) return
+    if ((retryCount ?? 0) >= 10) return
 
     // Retry after 5 seconds
     setTimeout(() => revalidate({ retryCount }), 5000)
@@ -48,7 +48,7 @@ export type Scratch = {
     slug: string
     compiler: string
     platform: string
-    cc_opts: string
+    compiler_flags: string
     source_code: string
     context: string
     owner: AnonymousUser | User | null // null means unclaimed
@@ -107,7 +107,7 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
 }
 
 export function useScratch(slugOrFallbackData: string | Scratch): {
-    scratch: Readonly<Scratch>
+    scratch: Readonly<Scratch> | undefined
     save: (scratch: Scratch) => Promise<void>
     fork: (scratch: Scratch) => Promise<Scratch>
     claim: () => Promise<void>
@@ -123,11 +123,14 @@ export function useScratch(slugOrFallbackData: string | Scratch): {
     return {
         scratch: serverScratch,
         async save(scratch: Scratch) {
+            if (!serverScratch)
+                throw new Error("Cannot save scratch before it has been fetched")
+
             await patch(`/scratch/${slug}`, {
                 source_code: undefinedIfUnchanged(serverScratch, scratch, "source_code"),
                 context: undefinedIfUnchanged(serverScratch, scratch, "context"),
                 compiler: undefinedIfUnchanged(serverScratch, scratch, "compiler"),
-                cc_opts: undefinedIfUnchanged(serverScratch, scratch, "cc_opts"),
+                compiler_flags: undefinedIfUnchanged(serverScratch, scratch, "compiler_flags"),
                 name: undefinedIfUnchanged(serverScratch, scratch, "name"),
                 description: undefinedIfUnchanged(serverScratch, scratch, "description"),
             })
@@ -151,13 +154,13 @@ export function useScratch(slugOrFallbackData: string | Scratch): {
 }
 
 export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, autoRecompile = true): {
-    compilation: Readonly<Compilation> | null
+    compilation: Readonly<Compilation> | undefined
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
     isCompiling: boolean
 } {
-    const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
-    const [compilation, setCompilation] = useState<Compilation>(null)
+    const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>()
+    const [compilation, setCompilation] = useState<Compilation>()
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -172,13 +175,13 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         const promise = post(`/scratch/${scratch.slug}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
-            cc_opts: scratch.cc_opts,
+            compiler_flags: scratch.compiler_flags,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
             setCompilation(compilation)
         }).finally(() => {
-            setCompileRequestPromise(null)
+            setCompileRequestPromise(undefined)
         })
 
         setCompileRequestPromise(promise)
@@ -193,21 +196,21 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             if (scratch && scratch.compiler !== "")
                 debouncedCompile()
             else
-                setCompilation(null)
+                setCompilation(undefined)
         }
     }, [ // eslint-disable-line react-hooks/exhaustive-deps
         debouncedCompile,
         autoRecompile,
 
         // fields passed to compilations
-        scratch?.compiler, scratch?.cc_opts,
+        scratch?.compiler, scratch?.compiler_flags,
         scratch?.source_code, scratch?.context,
     ])
 
     return {
         compilation,
         compile,
-        debouncedCompile,
+        debouncedCompile: async () => debouncedCompile(),
         isCompiling: !!compileRequestPromise || debouncedCompile.isPending(),
     }
 }
@@ -220,7 +223,7 @@ export function usePlatforms(): Record<string, string> {
         onErrorRetry,
     })
 
-    return data.platforms
+    return data ? data.platforms : {}
 }
 
 export function useCompilers(): Record<string, { platform: string | null }> {
@@ -230,5 +233,5 @@ export function useCompilers(): Record<string, { platform: string | null }> {
         onErrorRetry,
     })
 
-    return data.compilers
+    return data ? data.compilers : {}
 }

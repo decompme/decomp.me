@@ -20,7 +20,7 @@ const LEFT_PANE_MIN_WIDTH = 400
 const RIGHT_PANE_MIN_WIDTH = 400
 
 function renderRightTabs({ compilation }: {
-    compilation?: api.Compilation
+    compilation: api.Compilation | undefined
 }): React.ReactElement<typeof Tab>[] {
     return [
         <Tab
@@ -51,7 +51,7 @@ function renderLeftTabs({ scratch, setScratch }: {
         <Tab key="about" id="about" label="About" className={styles.about}>
             <AboutScratch
                 scratch={scratch}
-                setScratch={scratch.owner?.is_you ? setScratch : null}
+                setScratch={scratch.owner?.is_you ? setScratch : undefined}
             />
         </Tab>,
         <Tab
@@ -93,13 +93,13 @@ function renderLeftTabs({ scratch, setScratch }: {
             />
         </Tab>,
         <Tab key="settings" id="settings" label="Scratch settings" className={styles.settingsTab}>
-            <CompilerOpts
+            {scratch.compiler && scratch.compiler_flags && <CompilerOpts
                 platform={scratch.platform}
                 compiler={scratch.compiler}
-                flags={scratch.cc_opts}
+                flags={scratch.compiler_flags}
                 onCompilerChange={value => setScratch({ compiler: value })}
-                onFlagsChange={value => setScratch({ cc_opts: value })}
-            />
+                onFlagsChange={value => setScratch({ compiler_flags: value })}
+            />}
         </Tab>,
     ]
 }
@@ -177,7 +177,7 @@ export default function Scratch({ scratch, onChange, isSaved, onSave, onFork, on
             </AsyncButton>}
         </div>
 
-        {container.width > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
+        {(container.width ?? 0) > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
             ? <resizer.Container className={styles.resizer}>
                 <resizer.Section minSize={LEFT_PANE_MIN_WIDTH}>
                     <resizer.Container vertical style={{ height: "100%" }}>

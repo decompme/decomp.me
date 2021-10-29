@@ -88,6 +88,29 @@ def load_platforms() -> Dict[str, Platform]:
 
 """
         ),
+        "ps1": Platform(
+            "PlayStation",
+            "MIPS (little-endian)",
+            "mipsel",
+            assemble_cmd='mips-linux-gnu-as -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="mips-linux-gnu-objdump",
+            nm_cmd="mips-linux-gnu-nm",
+            asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set noat
+.set noreorder
+
+"""
+        ),
         "ps2": Platform(
             "PlayStation 2",
             "MIPS (little-endian)",
@@ -109,6 +132,94 @@ def load_platforms() -> Dict[str, Platform]:
 .set noat
 .set noreorder
 
+"""
+        ),
+        "gc_wii": Platform(
+            "GameCube / Wii",
+            "PPC",
+            "ppc",
+            assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="powerpc-eabi-objdump",
+            nm_cmd="powerpc-eabi-nm",
+            asm_prelude="""
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set r0, 0
+.set r1, 1
+.set r2, 2
+.set r3, 3
+.set r4, 4
+.set r5, 5
+.set r6, 6
+.set r7, 7
+.set r8, 8
+.set r9, 9
+.set r10, 10
+.set r11, 11
+.set r12, 12
+.set r13, 13
+.set r14, 14
+.set r15, 15
+.set r16, 16
+.set r17, 17
+.set r18, 18
+.set r19, 19
+.set r20, 20
+.set r21, 21
+.set r22, 22
+.set r23, 23
+.set r24, 24
+.set r25, 25
+.set r26, 26
+.set r27, 27
+.set r28, 28
+.set r29, 29
+.set r30, 30
+.set r31, 31
+.set f0, 0
+.set f1, 1
+.set f2, 2
+.set f3, 3
+.set f4, 4
+.set f5, 5
+.set f6, 6
+.set f7, 7
+.set f8, 8
+.set f9, 9
+.set f10, 10
+.set f11, 11
+.set f12, 12
+.set f13, 13
+.set f14, 14
+.set f15, 15
+.set f16, 16
+.set f17, 17
+.set f18, 18
+.set f19, 19
+.set f20, 20
+.set f21, 21
+.set f22, 22
+.set f23, 23
+.set f24, 24
+.set f25, 25
+.set f26, 26
+.set f27, 27
+.set f28, 28
+.set f29, 29
+.set f30, 30
+.set f31, 31
+.set qr0, 0
+.set qr1, 1
+.set qr2, 2
+.set qr3, 3
+.set qr4, 4
+.set qr5, 5
+.set qr6, 6
+.set qr7, 7
 """
         ),
     }
@@ -178,7 +289,7 @@ class CompilerWrapper:
         return ret
 
     @staticmethod
-    def filter_cc_opts(compiler: str, cc_opts: str) -> str:
+    def filter_compiler_flags(compiler: str, compiler_flags: str) -> str:
         cfg = _compilers[compiler]
         # Remove irrelevant flags that are part of the base compiler configs or
         # don't affect matching, but clutter the compiler settings field.
@@ -203,7 +314,7 @@ class CompilerWrapper:
         }
         skip_next = False
         flags = []
-        for flag in cc_opts.split():
+        for flag in compiler_flags.split():
             if skip_next:
                 skip_next = False
                 continue
@@ -218,7 +329,7 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, cc_opts: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
+    def compile_code(compiler: str, compiler_flags: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
             return (None, "ERROR: Compiler not found")
@@ -227,7 +338,7 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         if not to_regenerate:
-            cached_compilation, hash = _check_compilation_cache(compiler, cc_opts, code, context)
+            cached_compilation, hash = _check_compilation_cache(compiler, compiler_flags, code, context)
             if cached_compilation:
                 logger.debug(f"Compilation cache hit! hash: {hash}")
                 return (cached_compilation, cached_compilation.stderr)
@@ -257,7 +368,9 @@ class CompilerWrapper:
                     "INPUT": sandbox.rewrite_path(code_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
-                    "CC_OPTS": sandbox.quote_options(cc_opts),
+                    "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                    "WINEPREFIX": "/tmp",
+                    "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
@@ -276,7 +389,7 @@ class CompilerWrapper:
                 compilation = Compilation(
                     hash=hash,
                     compiler=compiler,
-                    cc_opts=cc_opts,
+                    compiler_flags=compiler_flags,
                     source_code=code,
                     context=context,
                     elf_object=object_path.read_bytes(),

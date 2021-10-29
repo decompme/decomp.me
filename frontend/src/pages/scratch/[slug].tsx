@@ -31,7 +31,7 @@ function isScratchModified(local: api.Scratch, server: api.Scratch): boolean {
         "source_code",
         "context",
         "compiler",
-        "cc_opts",
+        "compiler_flags",
         "name",
         "description",
     ]

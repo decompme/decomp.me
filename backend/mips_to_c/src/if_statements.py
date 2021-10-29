@@ -107,10 +107,9 @@ class SwitchStatement:
         elif body_is_empty:
             comments.append(f"jump table: {self.jump.jump_table.symbol_name}")
         suffix = ";" if body_is_empty else " {"
-        comment = f" // {'; '.join(comments)}" if comments else ""
         lines.append(
-            fmt.indent(
-                f"switch ({format_expr(self.jump.control_expr, fmt)}){suffix}{comment}",
+            fmt.with_comments(
+                f"switch ({format_expr(self.jump.control_expr, fmt)}){suffix}", comments
             )
         )
         if not body_is_empty:
@@ -123,21 +122,30 @@ class SwitchStatement:
 @dataclass
 class SimpleStatement:
     contents: Optional[Union[str, TrStatement]]
+    comment: Optional[str] = None
     is_jump: bool = False
 
     def should_write(self) -> bool:
-        return self.contents is not None
+        return self.contents is not None or self.comment is not None
 
     def format(self, fmt: Formatter) -> str:
         if self.contents is None:
-            return ""
+            content = ""
         elif isinstance(self.contents, str):
-            return fmt.indent(self.contents)
+            content = self.contents
         else:
-            return fmt.indent(self.contents.format(fmt))
+            content = self.contents.format(fmt)
+
+        if self.comment is not None:
+            comments = [self.comment]
+        else:
+            comments = []
+
+        return fmt.with_comments(content, comments)
 
     def clear(self) -> None:
         self.contents = None
+        self.comment = None
 
 
 @dataclass
@@ -159,8 +167,8 @@ class LabelStatement:
                     case_str = f"case {case_num}"
                 else:
                     case_str = "default"
-                switch_str = f" // switch {switch}" if switch != 0 else ""
-                lines.append(fmt.indent(f"{case_str}:{switch_str}", -1))
+                comments = [f"switch {switch}"] if switch != 0 else []
+                lines.append(fmt.with_comments(f"{case_str}:", comments, indent=-1))
         if self.node in self.context.goto_nodes:
             lines.append(f"{label_for_node(self.context, self.node)}:")
         return "\n".join(lines)
@@ -222,7 +230,7 @@ class Body:
         self.statements.append(statement)
 
     def add_comment(self, contents: str) -> None:
-        self.add_statement(SimpleStatement(f"// {contents}"))
+        self.add_statement(SimpleStatement(None, comment=contents))
 
     def add_if_else(self, if_else: IfElseStatement) -> None:
         if if_else.if_body.ends_in_jump():
@@ -980,10 +988,16 @@ def get_function_text(function_info: FunctionInfo, options: Options) -> str:
     any_decl = False
 
     with fmt.indented():
-        for local_var in function_info.stack_info.local_vars[::-1]:
-            type_decl = local_var.type.to_decl(local_var.format(fmt), fmt)
-            function_lines.append(SimpleStatement(f"{type_decl};").format(fmt))
-            any_decl = True
+        local_vars = function_info.stack_info.local_vars
+        # GCC's stack is ordered low-to-high (e.g. `int sp10; int sp14;`)
+        # IDO's stack is ordered high-to-low (e.g. `int sp14; int sp10;`)
+        if options.compiler == Options.CompilerEnum.IDO:
+            local_vars.reverse()
+        for local_var in local_vars:
+            type_decl = local_var.toplevel_decl(fmt)
+            if type_decl is not None:
+                function_lines.append(SimpleStatement(f"{type_decl};").format(fmt))
+                any_decl = True
 
         # With reused temps (no longer used), we can get duplicate declarations,
         # hence the use of a set here.

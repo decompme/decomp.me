@@ -10,6 +10,11 @@ export const PRESETS = [
         opts: "-O1 -g -mips2",
     },
     {
+        name: "Mario Kart 64",
+        compiler: "ido5.3",
+        opts: "-O2 -mips2",
+    },
+    {
         name: "Paper Mario",
         compiler: "gcc2.8.1",
         opts: "-O2 -fforce-addr",
@@ -24,11 +29,26 @@ export const PRESETS = [
         compiler: "ido7.1",
         opts: "-O2 -g3 -mips2",
     },
+    {
+        name: "GoldenEye / Perfect Dark",
+        compiler: "ido5.3",
+        opts: "-Olimit 2000 -mips2 -O2",
+    },
+    {
+        name: "Evo's Space Adventures",
+        compiler: "psyq4.6",
+        opts: "-O2",
+    },
+    {
+        name: "SpongeBob SquarePants: BfBB",
+        compiler: "mwcc2.0",
+        opts: "-g",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setCompiler, setOpts, serverCompilers }: {
     className?: string
-    platform: string
+    platform?: string
     compiler: string
     opts: string
     setCompiler: (compiler: string) => void
@@ -47,8 +67,10 @@ export default function PresetSelect({ className, platform, compiler, opts, setC
 
         const preset = presets.find(p => p.name === (e.target as HTMLSelectElement).value)
 
-        setOpts(preset.opts)
-        setCompiler(preset.compiler)
+        if (preset) {
+            setOpts(preset.opts)
+            setCompiler(preset.compiler)
+        }
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
         {presets.map(preset =>

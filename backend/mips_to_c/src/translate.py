@@ -8,6 +8,7 @@ import sys
 import traceback
 import typing
 from typing import (
+    AbstractSet,
     Callable,
     DefaultDict,
     Dict,
@@ -236,6 +237,7 @@ class StackInfo:
     temp_name_counter: Dict[str, int] = field(default_factory=dict)
     nonzero_accesses: Set["Expression"] = field(default_factory=set)
     param_names: Dict[int, str] = field(default_factory=dict)
+    stack_pointer_type: Optional[Type] = None
 
     def temp_var(self, prefix: str) -> str:
         counter = self.temp_name_counter.get(prefix, 0) + 1
@@ -333,12 +335,14 @@ class StackInfo:
         elif self.in_callee_save_reg_region(location):
             # Some annoying bookkeeping instruction. To avoid
             # further special-casing, just return whatever - it won't matter.
-            return LocalVar(location, type=Type.any_reg())
+            return LocalVar(location, type=Type.any_reg(), path=None)
         else:
             # Local variable
-            return LocalVar(
-                location, type=self.unique_type_for("stack", location, Type.any_reg())
+            assert self.stack_pointer_type is not None
+            field_path, field_type, _ = self.stack_pointer_type.get_deref_field(
+                location, target_size=None
             )
+            return LocalVar(location, type=field_type, path=field_path)
 
     def maybe_get_register_var(self, reg: Register) -> Optional["RegisterVar"]:
         return self.reg_vars.get(reg)
@@ -375,7 +379,7 @@ class StackInfo:
                 f"Stack info for function {self.function.name}:",
                 f"Allocated stack size: {self.allocated_stack_size}",
                 f"Leaf? {self.is_leaf}",
-                f"Bounds of callee-saved vars region: {self.callee_save_reg_locations}",
+                f"Bounds of callee-saved vars region: {self.callee_save_reg_region}",
                 f"Location of return addr: {self.return_addr_location}",
                 f"Locations of callee save registers: {self.callee_save_reg_locations}",
             ]
@@ -503,6 +507,32 @@ def get_stack_info(
         # Subroutine arguments must be at the very bottom of the stack, so they
         # must come after the callee-saved region
         info.subroutine_arg_top = min(info.subroutine_arg_top, bottom)
+
+    # Use a struct to represent the stack layout. If the struct is provided in the context,
+    # its fields will be used for variable types & names.
+    stack_struct_name = f"_mips2c_stack_{function.name}"
+    stack_struct = global_info.typepool.get_struct_by_tag_name(
+        stack_struct_name, global_info.typemap
+    )
+    if stack_struct is not None:
+        if stack_struct.size != info.allocated_stack_size:
+            raise DecompFailure(
+                f"Function {function.name} has a provided stack type {stack_struct_name} "
+                f"with size {stack_struct.size}, but the detected stack size was "
+                f"{info.allocated_stack_size}."
+            )
+    else:
+        stack_struct = StructDeclaration.unknown_of_size(
+            global_info.typepool,
+            size=info.allocated_stack_size,
+            tag_name=stack_struct_name,
+        )
+    # Mark the struct as "hidden" so we never try to use a reference to the struct itself
+    stack_struct.is_hidden = True
+    stack_struct.new_field_prefix = "sp"
+
+    # This acts as the type of the $sp register
+    info.stack_pointer_type = Type.ptr(Type.struct(stack_struct))
 
     return info
 
@@ -965,12 +995,32 @@ class FuncCall(Expression):
 class LocalVar(Expression):
     value: int
     type: Type = field(compare=False)
+    path: Optional[AccessPath] = field(compare=False)
 
     def dependencies(self) -> List[Expression]:
         return []
 
     def format(self, fmt: Formatter) -> str:
-        return f"sp{format_hex(self.value)}"
+        fallback_name = f"unksp{format_hex(self.value)}"
+        if self.path is None:
+            return fallback_name
+
+        name = StructAccess.access_path_to_field_name(self.path)
+        if name.startswith("->"):
+            return name[2:]
+        return fallback_name
+
+    def toplevel_decl(self, fmt: Formatter) -> Optional[str]:
+        """Return a declaration for this LocalVar, if required."""
+        # If len(self.path) > 2, then this local is an inner field of another
+        # local, so it doesn't need to be declared.
+        if (
+            self.path is None
+            or len(self.path) != 2
+            or not isinstance(self.path[1], str)
+        ):
+            return None
+        return self.type.to_decl(self.path[1], fmt)
 
 
 @dataclass(frozen=True, eq=False)
@@ -1079,10 +1129,10 @@ class StructAccess(Expression):
 
         if self.field_path is None and not self.checked_late_field_path:
             var = late_unwrap(self.struct_var)
-            field_path, field_type, remaining_offset = var.type.get_deref_field(
+            field_path, field_type, _ = var.type.get_deref_field(
                 self.offset, target_size=self.target_size
             )
-            if field_path is not None and remaining_offset == 0:
+            if field_path is not None:
                 self.assert_valid_field_path(field_path)
                 self.field_path = field_path
                 self.type.unify(field_type)
@@ -1162,15 +1212,6 @@ class GlobalSymbol(Expression):
     type: Type
     asm_data_entry: Optional[AsmDataEntry] = None
     type_in_typemap: bool = False
-    # `array_dim=None` indicates that the symbol is not an array
-    # `array_dim=0` indicates that it *is* an array, but the dimension is unknown
-    # Otherwise, it is the dimension of the array.
-    #
-    # If the symbol is in the typemap, this value is populated from there.
-    # Otherwise, this defaults to `None` and is set using heuristics in
-    # `GlobalInfo.global_decls()` after the AST has been built.
-    # So, this value should not be relied on during translate.
-    array_dim: Optional[int] = None
 
     def dependencies(self) -> List[Expression]:
         return []
@@ -1897,10 +1938,8 @@ def deref(
     )
     if array_expr is not None:
         return array_expr
-    field_path, field_type, remaining_offset = var.type.get_deref_field(
-        offset, target_size=size
-    )
-    if field_path is not None and remaining_offset == 0:
+    field_path, field_type, _ = var.type.get_deref_field(offset, target_size=size)
+    if field_path is not None:
         field_type.unify(type)
         type = field_type
     else:
@@ -2290,10 +2329,10 @@ def add_imm(source: Expression, imm: Expression, stack_info: StackInfo) -> Expre
             if array_access is not None:
                 return array_access
 
-            field_path, field_type, remaining_offset = source.type.get_deref_field(
+            field_path, field_type, _ = source.type.get_deref_field(
                 imm.value, target_size=None
             )
-            if field_path is not None and remaining_offset == 0:
+            if field_path is not None:
                 return AddressOf(
                     StructAccess(
                         struct_var=source,
@@ -2635,7 +2674,7 @@ def array_access_from_add(
     else:
         # base->subarray[index]
         sub_path, sub_type, remaining_offset = base.type.get_deref_field(
-            offset, target_size=scale
+            offset, target_size=scale, exact=False
         )
         # Check if the last item in the path is `0`, which indicates the start of an array
         # If it is, remove it: it will be replaced by `[index]`
@@ -2657,11 +2696,9 @@ def array_access_from_add(
 
     # Add .field if necessary by wrapping ret in StructAccess(AddressOf(...))
     ret_ref = AddressOf(ret, type=ret.type.reference())
-    field_path, field_type, remaining_offset = ret_ref.type.get_deref_field(
+    field_path, field_type, _ = ret_ref.type.get_deref_field(
         offset, target_size=target_size
     )
-    if remaining_offset != 0:
-        field_path = None
 
     if offset != 0 or (target_size is not None and target_size != scale):
         ret = StructAccess(
@@ -4035,9 +4072,9 @@ def resolve_types_late(stack_info: StackInfo) -> None:
 class GlobalInfo:
     asm_data: AsmData
     local_functions: Set[str]
+    typemap: TypeMap
+    typepool: TypePool
     global_symbol_map: Dict[str, GlobalSymbol] = field(default_factory=dict)
-    typemap: TypeMap = field(default_factory=TypeMap)
-    typepool: TypePool = field(default_factory=TypePool)
 
     def asm_data_value(self, sym_name: str) -> Optional[AsmDataEntry]:
         return self.asm_data.values.get(sym_name)
@@ -4102,7 +4139,7 @@ class GlobalInfo:
             data.pop(0)
             return self.address_of_gsym(label)
 
-        def for_element_type(type: Type) -> Optional[str]:
+        def for_type(type: Type) -> Optional[str]:
             """Return the initializer for a single element of type `type`"""
             if type.is_struct() or type.is_array():
                 struct_fields = type.get_initializer_fields()
@@ -4116,7 +4153,7 @@ class GlobalInfo:
                         if padding != 0:
                             return None
                     else:
-                        m = for_element_type(field)
+                        m = for_type(field)
                         if m is None:
                             return None
                         members.append(m)
@@ -4140,36 +4177,25 @@ class GlobalInfo:
             # Type kinds K_FN and K_VOID do not have initializers
             return None
 
-        def for_type(type: Type, array_dim: Optional[int]) -> Optional[str]:
-            """Return the initializer for an array/variable of type `type`.
-            `array_dim` has the same meaning as `GlobalSymbol.array_dim`."""
-            if array_dim is None:
-                # Not an array
-                return for_element_type(type)
-            else:
-                elements: List[str] = []
-                for _ in range(array_dim):
-                    el = for_element_type(type)
-                    if el is None:
-                        return None
-                    elements.append(el)
-                return fmt.format_array(elements)
+        return for_type(sym.type)
 
-        return for_type(sym.type, sym.array_dim)
-
-    def global_decls(self, fmt: Formatter) -> str:
+    def global_decls(self, fmt: Formatter, decls: Options.GlobalDeclsEnum) -> str:
         # Format labels from symbol_type_map into global declarations.
         # As the initializers are formatted, this may cause more symbols
         # to be added to the global_symbol_map.
         lines = []
         processed_names: Set[str] = set()
         while True:
-            names = self.global_symbol_map.keys() - processed_names
+            names: AbstractSet[str] = self.global_symbol_map.keys()
+            if decls == Options.GlobalDeclsEnum.ALL:
+                names |= self.typemap.var_types.keys()
+            names -= processed_names
             if not names:
                 break
             for name in sorted(names):
                 processed_names.add(name)
-                sym = self.global_symbol_map[name]
+                sym = self.address_of_gsym(name).expr
+                assert isinstance(sym, GlobalSymbol)
                 data_entry = sym.asm_data_entry
 
                 # Is the label defined in this unit (in the active AsmData file(s))
@@ -4216,16 +4242,20 @@ class GlobalInfo:
                     comments.append(qualifier)
                     qualifier = ""
 
-                # Try to guess the symbol's `array_dim` if we have a data entry for it,
-                # and it does not exist in the typemap or dim is unknown.
+                # Try to guess if the symbol is an array (and if it is, its dimension) if
+                # we have a data entry for it, and the symbol is either not in the typemap
+                # or was a variable-length array there ("VLA", e.g. `int []`)
                 # (Otherwise, if the dim is provided by the typemap, we trust it.)
-                if data_entry and (not sym.type_in_typemap or sym.array_dim == 0):
-                    assert sym.array_dim is None or sym.array_dim == 0
+                element_type, array_dim = sym.type.get_array()
+                is_vla = element_type is not None and array_dim is None
+                if data_entry and (not sym.type_in_typemap or is_vla):
                     # The size of the data entry is uncertain, because of padding
                     # between sections. Generally `(max_data_size - data_size) < 16`.
                     min_data_size, max_data_size = data_entry.size_range_bytes()
                     # The size of the element type (not the size of the array type)
-                    type_size = sym.type.get_size_bytes()
+                    if element_type is None:
+                        element_type = sym.type
+                    type_size = element_type.get_size_bytes()
                     if not type_size:
                         # If we don't know the type, we can't guess the array_dim
                         pass
@@ -4249,9 +4279,13 @@ class GlobalInfo:
                                 data_size += extra_bytes
                             else:
                                 comments.append(f"extra bytes: {data_size % type_size}")
-                        if data_size // type_size > 1 or sym.array_dim == 0:
+                        if data_size // type_size > 1 or is_vla:
                             # We know it's an array
-                            sym.array_dim = max_data_size // type_size
+                            array_dim = max_data_size // type_size
+                            # NB: In general, replacing the types of Expressions can be sketchy.
+                            # However, the GlobalSymbol here came from address_of_gsym(), which
+                            # always returns a reference to the element_type.
+                            sym.type = Type.array(element_type, array_dim)
 
                 # Try to convert the data from .data/.rodata into an initializer
                 if data_entry and not data_entry.is_bss:
@@ -4267,16 +4301,22 @@ class GlobalInfo:
                     # Float & string constants are almost always inlined and can be omitted
                     if sym.is_string_constant():
                         continue
-                    if sym.array_dim is None and sym.type.is_likely_float():
+                    if array_dim is None and sym.type.is_likely_float():
                         continue
+
+                if decls == Options.GlobalDeclsEnum.NONE:
+                    continue
 
                 qualifier = f"{qualifier} " if qualifier else ""
                 value = f" = {value}" if value else ""
-                comment = f" // {'; '.join(comments)}" if comments else ""
                 lines.append(
                     (
                         sort_order,
-                        f"{qualifier}{sym.type.to_decl(name, fmt)}{value};{comment}\n",
+                        fmt.with_comments(
+                            f"{qualifier}{sym.type.to_decl(name, fmt)}{value};",
+                            comments,
+                        )
+                        + "\n",
                     )
                 )
         lines.sort()

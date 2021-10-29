@@ -43,6 +43,32 @@ COPY compilers/download.sh /compilers/
 
 RUN bash /compilers/download.sh
 
+# windows compilers need i386 wine
+ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_GC_WII_SUPPORT
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+    dpkg --add-architecture i386 && apt-get update && \
+    apt-get install -y -o APT::Immediate-Configure=false \
+        wine; \
+    fi
+
+# ps1 specifics
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+    apt-get install -y dos2unix; \
+    fi
+
+# gc/wii specifics
+RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+    wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
+        -O devkitpro.deb && \
+    echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
+    apt install -y ./devkitpro.deb && \
+    rm devkitpro.deb && \
+    dkp-pacman -Syu devkitPPC --noconfirm && \
+    cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/ && \
+    rm -rf /opt/devkitpro; \
+    fi
+
 WORKDIR /backend
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
