@@ -56,6 +56,8 @@ class Options:
     valid_syntax: bool
     global_decls: GlobalDeclsEnum
     compiler: CompilerEnum
+    structs: bool
+    struct_field_inference: bool
 
     def formatter(self) -> "Formatter":
         return Formatter(
@@ -132,3 +134,11 @@ class Formatter:
         else:
             comment = f"/* {'; '.join(comments)} */"
         return f"{base}{padding}{comment}"
+
+    def format_hex(self, val: int) -> str:
+        return format(val, "x").upper()
+
+    def format_int(self, val: int) -> str:
+        if abs(val) < 10:
+            return str(val)
+        return hex(val).upper().replace("X", "x")

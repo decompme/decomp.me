@@ -220,7 +220,6 @@ class M2CTests(TestCase):
         sw $t6,0($a0)
         """, "", "")
 
-        assert c_code is not None, "The decompilation should not fail" # for mypy
         self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
 
 

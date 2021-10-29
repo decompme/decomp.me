@@ -81,14 +81,14 @@ class Function:
 @dataclass(eq=False)
 class TypeMap:
     # Change VERSION if TypeMap changes to invalidate all preexisting caches
-    VERSION: ClassVar[int] = 1
-    _empty: ClassVar["TypeMap"]
+    VERSION: ClassVar[int] = 2
 
     cparser_scope: CParserScope = field(default_factory=dict)
     source_hash: Optional[str] = None
 
     typedefs: Dict[str, CType] = field(default_factory=dict)
     var_types: Dict[str, CType] = field(default_factory=dict)
+    vars_with_initializers: Set[str] = field(default_factory=set)
     functions: Dict[str, Function] = field(default_factory=dict)
     structs: Dict[Union[str, StructUnion], Struct] = field(default_factory=dict)
     struct_typedefs: Dict[Union[str, StructUnion], TypeDecl] = field(
@@ -190,6 +190,37 @@ def is_struct_type(type: CType, typemap: TypeMap) -> bool:
     if not isinstance(type, TypeDecl):
         return False
     return isinstance(type.type, (ca.Struct, ca.Union))
+
+
+def is_unk_type(type: CType, typemap: TypeMap) -> bool:
+    """Return True if `type` represents an unknown type, or undetermined struct padding."""
+    # Check for types matching "char unk_N[...];"
+    if (
+        isinstance(type, ArrayDecl)
+        and isinstance(type.type, TypeDecl)
+        and isinstance(type.type.type, IdentifierType)
+        and type.type.declname is not None
+        and type.type.declname.startswith("unk_")
+        and type.type.type.names == ["char"]
+    ):
+        return True
+
+    # Check for types which are typedefs starting with "UNK_",
+    # or are arrays/pointers to one of these types.
+    while True:
+        if (
+            isinstance(type, TypeDecl)
+            and isinstance(type.type, IdentifierType)
+            and len(type.type.names) == 1
+            and type.type.names[0] in typemap.typedefs
+        ):
+            if type.type.names[0].startswith("UNK_"):
+                return True
+            type = typemap.typedefs[type.type.names[0]]
+        elif isinstance(type, (PtrDecl, ArrayDecl)):
+            type = type.type
+        else:
+            return False
 
 
 def get_primitive_list(type: CType, typemap: TypeMap) -> Optional[List[str]]:
@@ -346,12 +377,18 @@ def get_struct(
         return typemap.structs.get(struct)
 
 
+class UndefinedStructError(DecompFailure):
+    pass
+
+
 def parse_struct(struct: Union[ca.Struct, ca.Union], typemap: TypeMap) -> Struct:
     existing = get_struct(struct, typemap)
     if existing:
         return existing
     if struct.decls is None:
-        raise DecompFailure(f"Tried to use struct {struct.name} before it is defined.")
+        raise UndefinedStructError(
+            f"Tried to use struct {struct.name} before it is defined (does it have a definition?)."
+        )
     ret = do_parse_struct(struct, typemap)
     if struct.name:
         typemap.structs[struct.name] = ret
@@ -669,6 +706,8 @@ def _build_typemap(source_paths: Tuple[Path, ...], use_cache: bool) -> TypeMap:
             def visit_Decl(self, decl: ca.Decl) -> None:
                 if decl.name is not None:
                     typemap.var_types[decl.name] = type_from_global_decl(decl)
+                    if decl.init is not None:
+                        typemap.vars_with_initializers.add(decl.name)
                 if not isinstance(decl.type, FuncDecl):
                     self.visit(decl.type)
 
