@@ -186,16 +186,16 @@ def create_scratch(request):
 
     source_code = data.get("source_code")
     if not source_code:
-        source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
             try:
-                source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
+                source_code = M2CWrapper.decompile(asm.data, context, compiler)
             except M2CError as e:
-                source_code = f"{e}\n{source_code}"
+                source_code = f"{e}\n{default_source_code}"
             except Exception:
                 logger.exception("Error running mips_to_c")
-                source_code = f"/* Internal error while running mips_to_c */\n{source_code}"
+                source_code = f"/* Internal error while running mips_to_c */\n{default_source_code}"
 
     compiler_flags = data.get("compiler_flags", "")
     if compiler and compiler_flags:
