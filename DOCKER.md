@@ -41,4 +41,4 @@ You can CTRL+C to stop tailing logs. If you want to stop the processes then runn
 
 ## Configuration
 
-By default the Docker `backend` image is built without PS1 support. If you wish to enable it, change `ENABLE_PS1_SUPPORT` to `YES` in the `docker-compose.yaml` and re-run the `docker-compose up --build` command.
+By default the Docker `backend` image is built without PS1 and/or GC/Wii support. They can be enabled by changing the `ENABLE_PS1_SUPPORT` and/or `ENABLE_GC_WII_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker-compose up --build` command.

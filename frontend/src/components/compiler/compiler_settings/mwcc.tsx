@@ -18,32 +18,44 @@ export function CommonMWCCFlags() {
             <FlagOption flag="-O4,s" description="Extreme optimization + space" />
         </FlagSet>
 
-        <FlagSet name="Floating Point Codegen">
-            <FlagOption flag="-fp soft" description="Software Emulation (Default)" />
-            <FlagOption flag="-fp off" description="No Floating Point" />
+        <FlagSet name="Floating point">
+            <FlagOption flag="-fp soft" description="Software emulation; default" />
+            <FlagOption flag="-fp off" description="No floating point" />
             <FlagOption flag="-fp hard" description="Hardware" />
             <FlagOption flag="-fp fmadd" description="Hardware + -fp_contract" />
         </FlagSet>
 
+        <FlagSet name="Inline options">
+            <FlagOption flag="-inline on" description="Turn on inlining for 'inline' functions; default" />
+            <FlagOption flag="-inline off" description="Turn off inlining" />
+            <FlagOption flag="-inline auto" description="Auto-inline small functions" />
+            <FlagOption flag="-inline noauto" description="Do not auto-inline; default" />
+            <FlagOption flag="-inline all" description="Turn on aggressive inlining: same as '-inline on, auto'" />
+            <FlagOption flag="-inline deferred" description="Defer inlining until end of compilation unit" />
+            <FlagOption flag="-inline level=n" description="Cased; inline functions up to 'n' levels (0-8)" />
+        </FlagSet>
+
+        <FlagSet name="String constant options">
+            <FlagOption flag="-str reuse" description="Equivalent strings are the same object; default" />
+            <FlagOption flag="-str pool" description="Pool strings into a single data object" />
+            <FlagOption flag="-str readonly" description="make all string constants read-only" />
+            <FlagOption flag="-str reuse,pool,readonly" description="Reuse + pool + readonly" />
+        </FlagSet>
+
         <Checkbox flag="-g" description="Enable debug info" />
 
-        <Checkbox flag="-align powerpc" description="-align powerpc" />
-        <Checkbox flag="-char unsigned" description="-char unsigned" />
-        <Checkbox flag="-Cpp_exceptions off" description="-Cpp_exceptions off" />
-        <Checkbox flag="-enc SJIS" description="-enc SJIS" />
-        <Checkbox flag="-enum int" description="-enum int" />
-        <Checkbox flag="-fp_contract on" description="-fp_contract on" />
-        <Checkbox flag="-inline all" description="-inline all" />
-        <Checkbox flag="-inline off" description="-inline off" />
-        <Checkbox flag="-lang=c99" description="-lang=c99" />
-        <Checkbox flag="-maxerrors 1" description="-maxerrors 1" />
-        <Checkbox flag="-msgstyle gcc" description="-msgstyle gcc" />
-        <Checkbox flag="-nodefaults" description="-nodefaults" />
-        <Checkbox flag="-rostr" description="-rostr" />
-        <Checkbox flag="-RTTI off" description="-RTTI off" />
-        <Checkbox flag="-str pool" description="-str pool" />
-        <Checkbox flag="-str reuse,pool,readonly" description="-str reuse,pool,readonly" />
-        <Checkbox flag="-use_lmw_stmw on" description="-use_lmw_stmw on" />
-
+        <Checkbox flag="-align powerpc" description="PowerPC alignment; default" />
+        <Checkbox flag="-char unsigned" description="Chars are unsigned" />
+        <Checkbox flag="-Cpp_exceptions off" description="Disable C++ exceptions" />
+        <Checkbox flag="-enc SJIS" description="Specifies SJIS source encoding" />
+        <Checkbox flag="-enum int" description="Use int-sized enums" />
+        <Checkbox flag="-fp_contract on" description="Generate fused multiply-add instructions" />
+        <Checkbox flag="-lang=c99" description="Specify source language as c99" />
+        <Checkbox flag="-maxerrors 1" description="Maximum number of errors to print (1)" />
+        <Checkbox flag="-msgstyle gcc" description="gcc error/warning message style" />
+        <Checkbox flag="-nodefaults" description="Equivalent to '-nostdinc'" />
+        <Checkbox flag="-rostr" description="Make string constants read-only" />
+        <Checkbox flag="-RTTI off" description="Disable run-time typing information (for C++)" />
+        <Checkbox flag="-use_lmw_stmw on" description="Use multiple-word load/store instructions for structure copies; default" />
     </>
 }

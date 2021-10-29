@@ -40,7 +40,7 @@ export const PRESETS = [
         opts: "-O2",
     },
     {
-        name: "Paper Mario: TTYD",
+        name: "Paper Mario: The Thousand-Year Door",
         compiler: "mwcc_41_60831",
         opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -enc SJIS -lang=c99 -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
     },
@@ -50,7 +50,7 @@ export const PRESETS = [
         opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
     },
     {
-        name: "SpongeBob SquarePants: BfBB",
+        name: "SpongeBob SquarePants: Battle for Bikini Bottom",
         compiler: "mwcc_247_92",
         opts: "-g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     },
