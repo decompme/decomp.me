@@ -1,0 +1,4 @@
+{
+    "platform": "gc_wii",
+    "cc": "wine \"${COMPILER_DIR}/mwcceppc.exe\" -c -proc gekko -nostdinc ${COMPILER_FLAGS} -o \"${OUTPUT}\" \"${INPUT}\""
+}

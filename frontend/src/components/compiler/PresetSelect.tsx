@@ -20,12 +20,12 @@ export const PRESETS = [
         opts: "-O2 -fforce-addr",
     },
     {
-        name: "Ocarina of Time",
+        name: "The Legend of Zelda: Ocarina of Time",
         compiler: "ido7.1",
         opts: "-O2 -mips2",
     },
     {
-        name: "Majora's Mask",
+        name: "The Legend of Zelda: Majora's Mask",
         compiler: "ido7.1",
         opts: "-O2 -g3 -mips2",
     },
@@ -46,7 +46,7 @@ export const PRESETS = [
     },
     {
         name: "Pikmin 2",
-        compiler: "mwcc_247_107",
+        compiler: "mwcc_247_108_pikmin2",
         opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
     },
     {
@@ -58,6 +58,11 @@ export const PRESETS = [
         name: "Super Monkey Ball",
         compiler: "mwcc_233_159",
         opts: "-Cpp_exceptions off -nodefaults -O4,p -fp fmadd -fp_contract on -enum int",
+    },
+    {
+        name: "The Legend of Zelda: Twilight Princess",
+        compiler: "mwcc_247_108_tp",
+        opts: "-Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     },
 ]
 

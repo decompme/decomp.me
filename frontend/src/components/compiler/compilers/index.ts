@@ -13,6 +13,8 @@ import * as Mwcc242b81 from "./mwcc_242_81"
 import * as Mwcc247b105 from "./mwcc_247_105"
 import * as Mwcc247b107 from "./mwcc_247_107"
 import * as Mwcc247b108 from "./mwcc_247_108"
+import * as Mwcc247b108Pikmin2 from "./mwcc_247_108_pikmin2"
+import * as Mwcc247b108Tp from "./mwcc_247_108_tp"
 import * as Mwcc247b92 from "./mwcc_247_92"
 import * as Mwcc41b60126 from "./mwcc_41_60126"
 import * as Mwcc41b60831 from "./mwcc_41_60831"
@@ -36,6 +38,8 @@ const COMPILERS: CompilerModule[] = [
     Mwcc247b105,
     Mwcc247b107,
     Mwcc247b108,
+    Mwcc247b108Pikmin2,
+    Mwcc247b108Tp,
     Mwcc247b92,
     Mwcc41b60831,
     Mwcc41b60126,
