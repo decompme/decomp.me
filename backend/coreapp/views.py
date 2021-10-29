@@ -1,5 +1,5 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.m2c_wrapper import M2CWrapper
+from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
@@ -20,6 +20,7 @@ from .github import GitHubUser
 from .middleware import Request
 from .decorators.django import condition
 
+logger = logging.getLogger(__name__)
 boot_time = now()
 
 def get_db_asm(request_asm) -> Asm:
@@ -126,7 +127,7 @@ class ScratchClaim(APIView):
 
         profile = request.profile
 
-        logging.debug(f"Granting ownership of scratch {scratch} to {profile}")
+        logger.debug(f"Granting ownership of scratch {scratch} to {profile}")
 
         scratch.owner = profile
         scratch.save()
@@ -188,7 +189,13 @@ def create_scratch(request):
         source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
-            source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
+            try:
+                source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
+            except M2CError as e:
+                source_code = f"{e}\n{source_code}"
+            except Exception:
+                logger.exception("Error running mips_to_c")
+                source_code = f"/* Internal error while running mips_to_c */\n{source_code}"
 
     compiler_flags = data.get("compiler_flags", "")
     if compiler and compiler_flags:
@@ -241,7 +248,7 @@ def compile(request, slug):
 
     # Get the context from the backend if it's not provided
     if not context:
-        logging.debug("No context provided, getting from backend")
+        logger.debug("No context provided, getting from backend")
         context = scratch.context
 
     compilation, errors = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
