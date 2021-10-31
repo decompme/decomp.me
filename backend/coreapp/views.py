@@ -4,6 +4,8 @@ from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+from django.core.validators import validate_slug
+from django.http import HttpResponse
 from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework.views import APIView
@@ -11,9 +13,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 import hashlib
+import io
+import json
 import logging
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
+import zipfile
+
 
 from .models import Profile, Asm, Scratch, gen_scratch_id
 from .github import GitHubUser
@@ -337,3 +343,29 @@ def user(request, username):
     """
 
     return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
+
+def export(request, slug):
+    # Double-check `slug` to prevent some injection attacks
+    validate_slug(slug)
+    scratch = get_object_or_404(Scratch, slug=slug)
+
+    metadata = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
+    metadata.pop("source_code")
+    metadata.pop("context")
+
+    zip_bytes = io.BytesIO()
+    with zipfile.ZipFile(zip_bytes, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_f:
+        zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
+        zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
+        zip_f.writestr("target.o", scratch.target_assembly.elf_object)
+        zip_f.writestr("code.c", scratch.source_code)
+        if scratch.context:
+            zip_f.writestr("ctx.c", scratch.context)
+
+    return HttpResponse(
+        zip_bytes.getvalue(),
+        headers = {
+            "Content-Type": "application/zip",
+            "Content-Disposition": f"attachment; filename={slug}.zip",
+        }
+    )
