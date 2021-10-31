@@ -9,7 +9,7 @@ urlpatterns = [
     path('scratch/<slug:slug>/compile', views.compile, name='scratch-compile'),
     path('scratch/<slug:slug>/claim', views.ScratchClaim.as_view(), name='scratch-claim'),
     path('scratch/<slug:slug>/fork', views.fork, name='scratch-fork'),
-    path('scratch/<slug:slug>/export', views.export, name='scratch-export'),
+    path('scratch/<slug:slug>/export', views.ScratchExport.as_view(), name='scratch-export'),
     path('user', views.CurrentUser.as_view(), name="current-user"),
     path('users/<slug:username>', views.user, name="user-detail"),
 ]

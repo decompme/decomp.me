@@ -63,24 +63,24 @@ def update_scratch_score(scratch: Scratch):
         scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
 
+
+def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+    if scratch:
+        return scratch.last_updated
+    else:
+        return None
+
+def scratch_etag(request: Request, slug: str) -> Optional[str]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+    if scratch:
+        return str(hash(scratch))
+    else:
+        return None
+
+scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
+
 class ScratchDetail(APIView):
-    # type-ignored due to python/mypy#7778
-    def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]: # type: ignore
-        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
-        if scratch:
-            return scratch.last_updated
-        else:
-            return None
-
-    def scratch_etag(request: Request, slug: str) -> Optional[str]: # type: ignore
-        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
-        if scratch:
-            return str(hash(scratch))
-        else:
-            return None
-
-    scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
-
     @scratch_condition
     def head(self, request: Request, slug: str):
         get_object_or_404(Scratch, slug=slug) # for 404
@@ -139,6 +139,45 @@ class ScratchClaim(APIView):
         scratch.save()
 
         return Response({ "success": True })
+
+class ScratchExport(APIView):
+    @scratch_condition
+    def head(self, request: Request, slug: str) -> HttpResponse:
+        validate_slug(slug)
+        get_object_or_404(Scratch, slug=slug)
+        return HttpResponse(
+            headers = {
+                "Content-Type": "application/zip",
+                "Content-Disposition": f"attachment; filename={slug}.zip",
+            }
+        )
+
+    @scratch_condition
+    def get(self, request: Request, slug: str) -> HttpResponse:
+        # Double-check `slug` to prevent some injection attacks
+        validate_slug(slug)
+        scratch = get_object_or_404(Scratch, slug=slug)
+
+        metadata = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
+        metadata.pop("source_code")
+        metadata.pop("context")
+
+        zip_bytes = io.BytesIO()
+        with zipfile.ZipFile(zip_bytes, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_f:
+            zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
+            zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
+            zip_f.writestr("target.o", scratch.target_assembly.elf_object)
+            zip_f.writestr("code.c", scratch.source_code)
+            if scratch.context:
+                zip_f.writestr("ctx.c", scratch.context)
+
+        return HttpResponse(
+            zip_bytes.getvalue(),
+            headers = {
+                "Content-Type": "application/zip",
+                "Content-Disposition": f"attachment; filename={slug}.zip",
+            }
+        )
 
 @api_view(["POST"])
 def create_scratch(request):
@@ -344,28 +383,3 @@ def user(request, username):
 
     return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
 
-def export(request, slug):
-    # Double-check `slug` to prevent some injection attacks
-    validate_slug(slug)
-    scratch = get_object_or_404(Scratch, slug=slug)
-
-    metadata = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
-    metadata.pop("source_code")
-    metadata.pop("context")
-
-    zip_bytes = io.BytesIO()
-    with zipfile.ZipFile(zip_bytes, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_f:
-        zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
-        zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
-        zip_f.writestr("target.o", scratch.target_assembly.elf_object)
-        zip_f.writestr("code.c", scratch.source_code)
-        if scratch.context:
-            zip_f.writestr("ctx.c", scratch.context)
-
-    return HttpResponse(
-        zip_bytes.getvalue(),
-        headers = {
-            "Content-Type": "application/zip",
-            "Content-Disposition": f"attachment; filename={slug}.zip",
-        }
-    )
