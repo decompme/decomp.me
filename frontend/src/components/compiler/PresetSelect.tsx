@@ -40,9 +40,29 @@ export const PRESETS = [
         opts: "-O2",
     },
     {
-        name: "SpongeBob SquarePants: BfBB",
-        compiler: "mwcc2.0",
-        opts: "-g",
+        name: "The Thousand-Year Door",
+        compiler: "mwcc_41_60831",
+        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -enc SJIS -lang=c99 -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
+    },
+    {
+        name: "Pikmin 2",
+        compiler: "mwcc_247_108_pikmin2",
+        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
+    },
+    {
+        name: "Battle for Bikini Bottom",
+        compiler: "mwcc_247_92",
+        opts: "-g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+    },
+    {
+        name: "Super Monkey Ball",
+        compiler: "mwcc_233_159",
+        opts: "-Cpp_exceptions off -nodefaults -O4,p -fp fmadd -fp_contract on -enum int",
+    },
+    {
+        name: "Twilight Princess",
+        compiler: "mwcc_247_108_tp",
+        opts: "-Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     },
 ]
 

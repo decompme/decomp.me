@@ -110,7 +110,7 @@
     display: inline-flex;
     flex-direction: column;
 
-    width: 20em;
+    min-width: 50%;
     border-radius: 0.5em;
 }
 
