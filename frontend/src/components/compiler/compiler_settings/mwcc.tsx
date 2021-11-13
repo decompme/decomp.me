@@ -44,6 +44,7 @@ export function CommonMWCCFlags() {
 
         <Checkbox flag="-g" description="Enable debug info" />
 
+        <Checkbox flag="-lang=c++" description="Enable C++ language extensions" />
         <Checkbox flag="-align powerpc" description="PowerPC alignment; default" />
         <Checkbox flag="-char unsigned" description="Chars are unsigned" />
         <Checkbox flag="-Cpp_exceptions off" description="Disable C++ exceptions" />
