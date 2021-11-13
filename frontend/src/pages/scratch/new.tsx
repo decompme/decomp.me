@@ -76,6 +76,11 @@ export default function NewScratch({ serverCompilers }: {
 
     const [lineNumbers, setLineNumbers] = useState(false)
 
+    const setPreset = (preset: { name: string, compiler: string, opts: string }) => {
+        setCompiler(preset.compiler)
+        setCompilerOpts(preset.opts)
+    }
+
     // Load fields from localStorage
     useEffect(() => {
         try {
@@ -209,8 +214,7 @@ export default function NewScratch({ serverCompilers }: {
                             platform={platform}
                             compiler={compiler}
                             opts={compilerOpts}
-                            setCompiler={setCompiler}
-                            setOpts={setCompilerOpts}
+                            setPreset={setPreset}
                             serverCompilers={serverCompilers.compilers}
                         />
                     </div>
