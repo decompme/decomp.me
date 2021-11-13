@@ -48,12 +48,12 @@ export const PRESETS = [
     {
         name: "Pikmin 2",
         compiler: "mwcc_247_108_pikmin2",
-        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
     },
     {
         name: "Battle for Bikini Bottom",
         compiler: "mwcc_247_92",
-        opts: "-g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+        opts: "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     },
     {
         name: "Super Monkey Ball",
@@ -63,7 +63,7 @@ export const PRESETS = [
     {
         name: "Twilight Princess",
         compiler: "mwcc_247_108_tp",
-        opts: "-Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
+        opts: "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     },
 ]
 
