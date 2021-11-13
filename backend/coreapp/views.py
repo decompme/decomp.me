@@ -232,6 +232,7 @@ def create_scratch(request):
     source_code = data.get("source_code")
     if not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        source_code = default_source_code
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
             try:

@@ -6,6 +6,7 @@ import Head from "next/head"
 import { useRouter } from "next/router"
 
 import AsyncButton from "../../components/AsyncButton"
+import { CompilerPreset } from "../../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
@@ -75,6 +76,11 @@ export default function NewScratch({ serverCompilers }: {
     const [label, setLabel] = useState<string>("")
 
     const [lineNumbers, setLineNumbers] = useState(false)
+
+    const setPreset = (preset: CompilerPreset) => {
+        setCompiler(preset.compiler)
+        setCompilerOpts(preset.opts)
+    }
 
     // Load fields from localStorage
     useEffect(() => {
@@ -209,8 +215,7 @@ export default function NewScratch({ serverCompilers }: {
                             platform={platform}
                             compiler={compiler}
                             opts={compilerOpts}
-                            setCompiler={setCompiler}
-                            setOpts={setCompilerOpts}
+                            setPreset={setPreset}
                             serverCompilers={serverCompilers.compilers}
                         />
                     </div>

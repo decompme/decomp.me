@@ -1,6 +1,7 @@
 
 import Select from "../Select"
 
+import { CompilerPreset } from "./CompilerOpts"
 import { useCompilersForPlatform } from "./compilers"
 
 export const PRESETS = [
@@ -66,13 +67,12 @@ export const PRESETS = [
     },
 ]
 
-export default function PresetSelect({ className, platform, compiler, opts, setCompiler, setOpts, serverCompilers }: {
+export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
     className?: string
     platform: string
     compiler: string
     opts: string
-    setCompiler: (compiler: string) => void
-    setOpts: (opts: string) => void
+    setPreset: (preset: CompilerPreset) => void
     serverCompilers?: Record<string, { platform: string | null }>
 }) {
     const compilers = useCompilersForPlatform(platform, serverCompilers)
@@ -87,8 +87,7 @@ export default function PresetSelect({ className, platform, compiler, opts, setC
 
         const preset = presets.find(p => p.name === (e.target as HTMLSelectElement).value)
 
-        setOpts(preset.opts)
-        setCompiler(preset.compiler)
+        setPreset(preset)
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
         {presets.map(preset =>

@@ -60,6 +60,12 @@ export type CompilerOptsT = {
     compiler_flags: string
 }
 
+export type CompilerPreset = {
+    name: string
+    compiler: string
+    opts: string
+}
+
 export type Props = {
     platform?: string
     value: CompilerOptsT
@@ -86,6 +92,13 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
         })
     }
 
+    const setPreset = (preset: CompilerPreset) => {
+        onChange({
+            compiler: preset.compiler,
+            compiler_flags: preset.opts,
+        })
+    }
+
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
             return (" " + opts + " ").includes(" " + flag + " ")
@@ -103,7 +116,7 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
             <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
