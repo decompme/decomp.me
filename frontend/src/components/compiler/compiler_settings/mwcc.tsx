@@ -42,9 +42,13 @@ export function CommonMWCCFlags() {
             <FlagOption flag="-str reuse,pool,readonly" description="Reuse + pool + readonly" />
         </FlagSet>
 
+        <FlagSet name="Source language">
+            <FlagOption flag="-lang=c" description="C" />
+            <FlagOption flag="-lang=c++" description="C++" />
+        </FlagSet>
+
         <Checkbox flag="-g" description="Enable debug info" />
 
-        <Checkbox flag="-lang=c++" description="Enable C++ language extensions" />
         <Checkbox flag="-align powerpc" description="PowerPC alignment; default" />
         <Checkbox flag="-char unsigned" description="Chars are unsigned" />
         <Checkbox flag="-Cpp_exceptions off" description="Disable C++ exceptions" />
