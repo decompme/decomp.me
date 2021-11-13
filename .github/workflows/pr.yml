@@ -27,13 +27,13 @@ jobs:
           python-version: 3.9
       - run: pip install -r backend/requirements.txt
         name: Install Python dependencies
+      - run: sudo apt install binutils-mips-linux-gnu libprotobuf-dev
+        name: Install dependencies
       - run: |
           git clone --recursive --branch=3.0 https://github.com/google/nsjail && cd nsjail
           make
           sudo make install
         name: Install nsjail
-      - run: sudo apt install binutils-mips-linux-gnu
-        name: Install binutils-mips-linux-gnu
       - run: ./backend/compilers/download.sh
         name: Download compilers
       - run: python backend/manage.py test backend
