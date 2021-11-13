@@ -1,6 +1,7 @@
 
 import Select from "../Select"
 
+import { CompilerPreset } from "./CompilerOpts"
 import { useCompilersForPlatform } from "./compilers"
 
 export const PRESETS = [
@@ -71,7 +72,7 @@ export default function PresetSelect({ className, platform, compiler, opts, setP
     platform: string
     compiler: string
     opts: string
-    setPreset: (preset: { name: string, compiler: string, opts: string }) => void
+    setPreset: (preset: CompilerPreset) => void
     serverCompilers?: Record<string, { platform: string | null }>
 }) {
     const compilers = useCompilersForPlatform(platform, serverCompilers)

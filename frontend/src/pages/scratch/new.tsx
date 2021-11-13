@@ -6,6 +6,7 @@ import Head from "next/head"
 import { useRouter } from "next/router"
 
 import AsyncButton from "../../components/AsyncButton"
+import { CompilerPreset } from "../../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
@@ -76,7 +77,7 @@ export default function NewScratch({ serverCompilers }: {
 
     const [lineNumbers, setLineNumbers] = useState(false)
 
-    const setPreset = (preset: { name: string, compiler: string, opts: string }) => {
+    const setPreset = (preset: CompilerPreset) => {
         setCompiler(preset.compiler)
         setCompilerOpts(preset.opts)
     }

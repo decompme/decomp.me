@@ -60,6 +60,12 @@ export type CompilerOptsT = {
     compiler_flags: string
 }
 
+export type CompilerPreset = {
+    name: string
+    compiler: string
+    opts: string
+}
+
 export type Props = {
     platform?: string
     value: CompilerOptsT
@@ -86,7 +92,7 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
         })
     }
 
-    const setPreset = (preset: { name: string, compiler: string, opts: string }) => {
+    const setPreset = (preset: CompilerPreset) => {
         onChange({
             compiler: preset.compiler,
             compiler_flags: preset.opts,
