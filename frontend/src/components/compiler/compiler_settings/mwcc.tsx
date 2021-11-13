@@ -45,6 +45,9 @@ export function CommonMWCCFlags() {
         <FlagSet name="Source language">
             <FlagOption flag="-lang=c" description="C" />
             <FlagOption flag="-lang=c++" description="C++" />
+            <FlagOption flag="-lang=c99" description="C99" />
+            <FlagOption flag="-lang=ec++" description="Embedded C++" />
+            <FlagOption flag="-lang=objc" description="Allow Objective C extensions" />
         </FlagSet>
 
         <Checkbox flag="-g" description="Enable debug info" />
@@ -55,7 +58,6 @@ export function CommonMWCCFlags() {
         <Checkbox flag="-enc SJIS" description="Specifies SJIS source encoding" />
         <Checkbox flag="-enum int" description="Use int-sized enums" />
         <Checkbox flag="-fp_contract on" description="Generate fused multiply-add instructions" />
-        <Checkbox flag="-lang=c99" description="Specify source language as c99" />
         <Checkbox flag="-maxerrors 1" description="Maximum number of errors to print (1)" />
         <Checkbox flag="-msgstyle gcc" description="gcc error/warning message style" />
         <Checkbox flag="-nodefaults" description="Equivalent to '-nostdinc'" />
