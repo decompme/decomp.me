@@ -36,6 +36,11 @@ export const PRESETS = [
         opts: "-Olimit 2000 -mips2 -O2",
     },
     {
+        name: "Mario Party 3",
+        compiler: "gcc2.7kmc",
+        opts: "-O1 -mips2",
+    },
+    {
         name: "Evo's Space Adventures",
         compiler: "psyq4.6",
         opts: "-O2",

@@ -25,6 +25,7 @@ FROM python:3.9-buster AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    gcc-mips-linux-gnu \
     libnl-route-3-200 \
     libprotobuf17 \
     netcat \
