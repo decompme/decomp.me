@@ -25,6 +25,12 @@ curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/i
 mkdir -p "$compiler_dir/ido7.1"
 curl -L "https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-7.1-recomp-$ido_os-latest.tar.gz" | tar zx -C "$compiler_dir/ido7.1"
 
+# gcc2.7kmc
+if [[ "$uname" != "Darwin" ]]; then
+    mkdir -p "$compiler_dir/gcc2.7kmc"
+    curl -L "https://github.com/Mr-Wiseguy/kmc-gcc-wrapper/releases/download/master/kmc-gcc-wrapper-ubuntu-latest.tar.gz" | tar zx -C "$compiler_dir/gcc2.7kmc"
+fi
+
 # psyq (ps1)
 if [[ "$uname" != "Darwin" ]]; then
     curl -L "https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz" | tar zx -C "$compiler_dir"
