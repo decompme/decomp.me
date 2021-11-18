@@ -371,7 +371,6 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
                     "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
-                    "WINEPREFIX": "/tmp",
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
