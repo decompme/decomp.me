@@ -132,27 +132,23 @@ class AsmDifferWrapper:
         if not basedump:
             return {"error": "Error running asm-differ on basedump"}
 
-        # New
-        if len(compilation.elf_object) == 0:
-            logger.info("New asm empty - attempting to regenerate")
-            compiler_wrapper.CompilerWrapper.compile_code(
-                compilation.compiler,
-                compilation.compiler_flags or "",
-                compilation.source_code,
-                compilation.context,
-                compilation
-            )
-            if len(compilation.elf_object) == 0:
-                logger.error("Regeneration of new-asm failed")
-                return {"error": "Error: New asm empty"}
+        comp_result = compiler_wrapper.CompilerWrapper.compile_code(
+            compilation.compiler,
+            compilation.compiler_flags or "",
+            compilation.source_code,
+            compilation.context,
+        )
+        if len(comp_result.elf_object) == 0:
+            logger.error("Creation of compilation elf_object failed")
+            return {"error": "Error: Compialtion elf_object failed"}
 
-        mydump = AsmDifferWrapper.run_objdump(compilation.elf_object, platform, config, diff_label)
+        mydump = AsmDifferWrapper.run_objdump(comp_result.elf_object, platform, config, diff_label)
         if not mydump:
             return {"error": "Error running asm-differ on mydump"}
 
         # Preprocess the dumps
         basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
-        mydump = asm_differ.preprocess_objdump_out(None, compilation.elf_object, mydump)
+        mydump = asm_differ.preprocess_objdump_out(None, comp_result.elf_object, mydump)
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

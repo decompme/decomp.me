@@ -25,7 +25,9 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
-    COMPILER_BASE_PATH=(str, BASE_DIR / "compilers")
+    COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
+
+    COMPILATION_CACHE_SIZE=(int, 100),
 )
 
 for stem in [".env.local", ".env"]:
@@ -171,3 +173,5 @@ SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
 
 GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
+
+COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)

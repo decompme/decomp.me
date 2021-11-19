@@ -17,7 +17,7 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 import zipfile
 
 
@@ -55,10 +55,10 @@ def update_scratch_score(scratch: Scratch):
     Compile a scratch and save its score and max score
     """
 
-    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+    result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-    if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+    if result.compilation:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, result.compilation, scratch.diff_label)
         scratch.score = diff_output.get("current_score", scratch.score)
         scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
@@ -297,15 +297,16 @@ def compile(request, slug):
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
-    compilation, errors = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
+    result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
+    print("Cache info123ABC:" + str(CompilerWrapper.compile_code.cache_info()))
 
     diff_output: Optional[Dict[str, Any]] = None
-    if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+    if result.compilation:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, result.compilation, scratch.diff_label)
 
     return Response({
         "diff_output": diff_output,
-        "errors": errors,
+        "errors": result.errors,
     })
 
 @api_view(["POST"])
