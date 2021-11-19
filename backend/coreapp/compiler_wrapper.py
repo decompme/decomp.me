@@ -63,6 +63,12 @@ class Platform:
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
 
+@dataclass
+class CompilationResult:
+    compilation: Optional[Compilation]
+    elf_object: bytes
+    errors: str
+
 def load_platforms() -> Dict[str, Platform]:
     return {
         "n64": Platform(
@@ -250,13 +256,6 @@ def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     return Assembly.objects.filter(hash=hash).first(), hash
 
 
-class CompilationResult:
-    def __init__(self, compilation: Optional[Compilation], elf_object: bytes, errors: str):
-        self.compilation = compilation
-        self.elf_object = elf_object
-        self.errors = errors
-
-
 class CompilerWrapper:
     @staticmethod
     def base_path() -> Path:
@@ -338,7 +337,7 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE, typed=True)
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
