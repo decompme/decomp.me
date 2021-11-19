@@ -200,12 +200,12 @@ class CompilationTests(APITestCase):
         """
         Ensure that compilations with \\r\\n line endings succeed
         """
-        compilation, errors = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
+        result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
 
-        if errors:
-            self.assertEqual(len(errors.strip()), 0, "There should be no errors or warnings for the compilation:" + errors)
+        if result.errors:
+            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
 
-        self.assertIsNotNone(compilation, "The compilation result should be non-null")
+        self.assertIsNotNone(result.compilation, "The compilation result should be non-null")
 
 
 class M2CTests(TestCase):

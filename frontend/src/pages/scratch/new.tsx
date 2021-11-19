@@ -20,7 +20,9 @@ import styles from "./new.module.scss"
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n")
-    const labels = []
+    let labels = []
+
+    const jtbl_label_regex = /L[0-9a-fA-F]{8}/
 
     for (const line of lines) {
         let match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
@@ -33,6 +35,8 @@ function getLabels(asm: string): string[] {
             labels.push(match[1])
         }
     }
+
+    labels = labels.filter(label => !jtbl_label_regex.test(label))
 
     return labels
 }
@@ -226,7 +230,7 @@ export default function NewScratch({ serverCompilers }: {
 
             <div>
                 <label className={styles.label} htmlFor="label">
-                    Function name <small>(label as it appears in the target asm)</small>
+                    Function name <small>(asm label from which the diff will begin)</small>
                 </label>
                 <input
                     name="label"
@@ -251,7 +255,7 @@ export default function NewScratch({ serverCompilers }: {
             </div>
             <div className={styles.editorContainer}>
                 <p className={styles.label}>
-                    Context <small>(typically generated with m2ctx.py)</small>
+                    Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
                 </p>
                 <Editor
                     className={styles.editor}

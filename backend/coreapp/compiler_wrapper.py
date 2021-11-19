@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
 from coreapp.models import Asm, Assembly, Compilation
@@ -79,6 +80,11 @@ def load_platforms() -> Dict[str, Platform]:
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
     \label:
 .endm
 
@@ -239,13 +245,16 @@ def get_objdump_command(platform: str) -> Optional[str]:
         return _platforms[platform].objdump_cmd
     return None
 
-def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
-    hash = util.gen_hash(args)
-    return Compilation.objects.filter(hash=hash).first(), hash
-
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
+
+
+class CompilationResult:
+    def __init__(self, compilation: Optional[Compilation], elf_object: bytes, errors: str):
+        self.compilation = compilation
+        self.elf_object = elf_object
+        self.errors = errors
 
 
 class CompilerWrapper:
@@ -329,19 +338,14 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, compiler_flags: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE, typed=True)
+    def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
-            return (None, "ERROR: Compiler not found")
+            return CompilationResult(None, b'', "ERROR: Compiler not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
-
-        if not to_regenerate:
-            cached_compilation, hash = _check_compilation_cache(compiler, compiler_flags, code, context)
-            if cached_compilation:
-                logger.debug(f"Compilation cache hit! hash: {hash}")
-                return (cached_compilation, cached_compilation.stderr)
 
         with Sandbox() as sandbox:
             code_path = sandbox.path / "code.c"
@@ -375,29 +379,22 @@ class CompilerWrapper:
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 logging.debug("Compilation failed: " + e.stderr)
-                return (None, e.stderr)
+                return CompilationResult(None, b'', e.stderr)
 
             if not object_path.exists():
                 logger.error("Compiler did not create an object file")
-                return (None, "ERROR: Compiler did not create an object file")
+                return CompilationResult(None, b'', "ERROR: Compiler did not create an object file")
 
-            if to_regenerate:
-                compilation = to_regenerate
-                compilation.elf_object=object_path.read_bytes(),
-            else:
-                # Store Compilation to db
-                compilation = Compilation(
-                    hash=hash,
-                    compiler=compiler,
-                    compiler_flags=compiler_flags,
-                    source_code=code,
-                    context=context,
-                    elf_object=object_path.read_bytes(),
-                    stderr=compile_proc.stderr
-                )
+            # Store Compilation to db
+            compilation = Compilation(
+                compiler=compiler,
+                compiler_flags=compiler_flags,
+                source_code=code,
+                context=context,
+            )
             compilation.save()
 
-            return (compilation, compile_proc.stderr)
+            return CompilationResult(compilation, object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
     def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:

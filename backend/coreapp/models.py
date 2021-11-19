@@ -44,14 +44,11 @@ class Assembly(models.Model):
     elf_object = models.BinaryField(blank=True)
 
 class Compilation(models.Model):
-    hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     compiler = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, blank=True, null=True)
     source_code = models.TextField()
     context = models.TextField(blank=True)
-    elf_object = models.BinaryField(blank=True)
-    stderr = models.TextField(blank=True, null=True)
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
