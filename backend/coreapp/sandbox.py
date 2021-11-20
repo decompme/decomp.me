@@ -63,7 +63,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "PATH=/usr/bin:/bin",
             "--env", "WINEDEBUG=-all",
-            "--env", f"WINEPREFIX=/wine",
+            "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--disable_proc",  # Needed for running inside Docker
             "--time_limit", "30",  # seconds
