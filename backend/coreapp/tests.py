@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 import responses
 from time import sleep
 
-from .models import Compilation, Scratch, Profile
+from .models import Scratch, Profile
 from .github import GitHubUser
 
 class ScratchCreationTests(APITestCase):
@@ -193,8 +193,6 @@ class CompilationTests(APITestCase):
         # Test that we can compile a scratch
         response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # One from the initial compile, one from the explicit compile request
-        self.assertEqual(Compilation.objects.count(), 2)
 
     def test_ido_line_endings(self):
         """
@@ -205,7 +203,7 @@ class CompilationTests(APITestCase):
         if result.errors:
             self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
 
-        self.assertIsNotNone(result.compilation, "The compilation result should be non-null")
+        self.assertIsNotNone(result.elf_object, "The compilation result should be non-null")
 
 
 class M2CTests(TestCase):
