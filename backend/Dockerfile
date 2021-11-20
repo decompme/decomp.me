@@ -50,10 +50,9 @@ ARG ENABLE_GC_WII_SUPPORT
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        wine; \
-    fi && \
-    mkdir -p /wine && \
-    WINEPREFIX=/wine winecfg
+        wine && \
+    WINEPREFIX=/wine winecfg; \
+    fi
 
 # ps1 specifics
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
@@ -72,6 +71,8 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/ && \
     rm -rf /opt/devkitpro; \
     fi
+
+RUN mkdir -p /wine
 
 WORKDIR /backend
 
