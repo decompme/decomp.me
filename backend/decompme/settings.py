@@ -27,7 +27,7 @@ env = environ.Env(
     GITHUB_CLIENT_SECRET=(str, ""),
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
     COMPILATION_CACHE_SIZE=(int, 100),
-    WINEPREFIX=(str, "/wine"),
+    WINEPREFIX=(str, "/tmp/wine"),
 )
 
 for stem in [".env.local", ".env"]:
