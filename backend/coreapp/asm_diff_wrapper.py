@@ -1,5 +1,5 @@
 from coreapp import compiler_wrapper
-from coreapp.models import Assembly, Compilation
+from coreapp.models import Assembly
 from coreapp.sandbox import Sandbox
 from coreapp.compiler_wrapper import PATH
 from typing import Any, Dict, Optional
@@ -104,12 +104,7 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, compilation: Compilation, diff_label:Optional[str]) -> Dict[str, Any]:
-        platform = compiler_wrapper.CompilerWrapper.platform_from_compiler(compilation.compiler or "")
-        if not platform:
-            logger.error(f"Unsupported compiler: {compilation.compiler}. Continuing assuming n64")
-            platform = "n64"
-
+    def diff(target_assembly: Assembly, platform: str, diff_label:Optional[str], compiled_elf: bytes) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
         try:
@@ -132,23 +127,17 @@ class AsmDifferWrapper:
         if not basedump:
             return {"error": "Error running asm-differ on basedump"}
 
-        comp_result = compiler_wrapper.CompilerWrapper.compile_code(
-            compilation.compiler,
-            compilation.compiler_flags or "",
-            compilation.source_code,
-            compilation.context,
-        )
-        if len(comp_result.elf_object) == 0:
+        if len(compiled_elf) == 0:
             logger.error("Creation of compilation elf_object failed")
             return {"error": "Error: Compialtion elf_object failed"}
 
-        mydump = AsmDifferWrapper.run_objdump(comp_result.elf_object, platform, config, diff_label)
+        mydump = AsmDifferWrapper.run_objdump(compiled_elf, platform, config, diff_label)
         if not mydump:
             return {"error": "Error running asm-differ on mydump"}
 
         # Preprocess the dumps
         basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
-        mydump = asm_differ.preprocess_objdump_out(None, comp_result.elf_object, mydump)
+        mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump)
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

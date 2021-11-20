@@ -57,8 +57,8 @@ def update_scratch_score(scratch: Scratch):
 
     result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-    if result.compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, result.compilation, scratch.diff_label)
+    if result.elf_object:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
         scratch.score = diff_output.get("current_score", scratch.score)
         scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
@@ -298,11 +298,10 @@ def compile(request, slug):
         context = scratch.context
 
     result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
-    print("Cache info123ABC:" + str(CompilerWrapper.compile_code.cache_info()))
 
     diff_output: Optional[Dict[str, Any]] = None
-    if result.compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, result.compilation, scratch.diff_label)
+    if result.elf_object:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
 
     return Response({
         "diff_output": diff_output,

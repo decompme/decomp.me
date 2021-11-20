@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
-from coreapp.models import Asm, Assembly, Compilation
+from coreapp.models import Asm, Assembly
 from coreapp import util
 from coreapp.sandbox import Sandbox
 from django.conf import settings
@@ -65,7 +65,6 @@ class Platform:
 
 @dataclass
 class CompilationResult:
-    compilation: Optional[Compilation]
     elf_object: bytes
     errors: str
 
@@ -341,7 +340,7 @@ class CompilerWrapper:
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
-            return CompilationResult(None, b'', "ERROR: Compiler not found")
+            return CompilationResult(b'', "ERROR: Compiler not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
@@ -378,22 +377,13 @@ class CompilerWrapper:
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 logging.debug("Compilation failed: " + e.stderr)
-                return CompilationResult(None, b'', e.stderr)
+                return CompilationResult(b'', e.stderr)
 
             if not object_path.exists():
                 logger.error("Compiler did not create an object file")
-                return CompilationResult(None, b'', "ERROR: Compiler did not create an object file")
+                return CompilationResult(b'', "ERROR: Compiler did not create an object file")
 
-            # Store Compilation to db
-            compilation = Compilation(
-                compiler=compiler,
-                compiler_flags=compiler_flags,
-                source_code=code,
-                context=context,
-            )
-            compilation.save()
-
-            return CompilationResult(compilation, object_path.read_bytes(), compile_proc.stderr)
+            return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
     def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
