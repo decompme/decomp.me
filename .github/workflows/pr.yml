@@ -62,13 +62,13 @@ jobs:
           sudo cp bin/powerpc* /usr/bin/
       - name: Run tests
         run: |-
-          mkdir -p /tmp/wine
-          winecfg
-          wine backend/compilers/mwcc_233_144/mwcceppc.exe -help
+          mkdir -p "${WINEPREFIX}"
+          wineboot --init
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
+          WINEARCH:   win32
 
   backend_test_docker:
     name: backend tests (docker)
