@@ -46,12 +46,14 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
+        assert ":" not in str(settings.WINEPREFIX)
         # fmt: off
         wrapper = [
             str(settings.SANDBOX_NSJAIL_BIN_PATH),
             "--mode", "o",
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
+            "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
             "--bindmount_ro", "/etc/fonts",
