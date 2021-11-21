@@ -63,10 +63,12 @@ jobs:
       - name: Run tests
         run: |-
           mkdir -p /tmp/wine
-          WINEARCH=win32 WINEPREFIX=/tmp/wine winecfg
+          winecfg
+          wine backend/compilers/mwcc_233_144/mwcceppc.exe -help
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+          WINEPREFIX: /tmp/wine
 
   backend_test_docker:
     name: backend tests (docker)
