@@ -62,7 +62,8 @@ jobs:
           sudo cp bin/powerpc* /usr/bin/
       - name: Run tests
         run: |-
-          WINEPREFIX=$HOME/.wine python backend/manage.py test backend
+          mkdir -p /tmp/wine
+          WINEARCH=win32 WINEPREFIX=/tmp/wine python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
