@@ -59,7 +59,9 @@ jobs:
           dkp-pacman -Syu devkitPPC --noconfirm
           cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
       - name: Run tests
-        run: python backend/manage.py test backend
+        run: |-
+          mkdir -p /tmp/wine
+          python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
