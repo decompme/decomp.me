@@ -1,4 +1,4 @@
-FROM python:3.9-buster AS nsjail
+FROM python:3.9-bullseye AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
     autoconf \
@@ -15,19 +15,22 @@ RUN apt-get -y update && apt-get install -y \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --recursive --shallow-submodules --depth=1 --branch=3.0 "https://github.com/google/nsjail" /nsjail \
+# TODO: change this when they tag a release
+RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
+    && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
+    && git submodule update \
     && make \
     && mv /nsjail/nsjail /bin \
     && rm -rf -- /nsjail
 
-FROM python:3.9-buster AS build
+FROM python:3.9-bullseye AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
     gcc-mips-linux-gnu \
     libnl-route-3-200 \
-    libprotobuf17 \
+    libprotobuf-dev \
     netcat \
     && rm -rf /var/lib/apt/lists/*
 
