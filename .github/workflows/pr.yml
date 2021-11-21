@@ -63,9 +63,7 @@ jobs:
       - name: Run tests
         run: |-
           mkdir -p "${WINEPREFIX}"
-          WINEARCH=win32 wineboot --init
           wineboot --init
-          ls -al "${WINEPREFIX}"/
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW

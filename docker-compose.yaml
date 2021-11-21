@@ -29,7 +29,6 @@ services:
       ALLOWED_HOSTS: "backend,localhost,127.0.0.1"
       USE_SANDBOX_JAIL: "on"
       COMPILER_BASE_PATH: /compilers
-      WINEPREFIX: /home/user/.wine
     ports:
     - "8000:8000"
     security_opt:
