@@ -43,6 +43,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             return []
 
         settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
+        settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
+
         assert ":" not in str(self.path)
         # fmt: off
         wrapper = [
@@ -52,12 +54,16 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
+            "--bindmount_ro", "/etc/fonts",
             "--bindmount_ro", "/lib",
             "--bindmount_ro", "/lib32",
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
+            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "PATH=/usr/bin:/bin",
+            "--env", "WINEDEBUG=-all",
+            "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--disable_proc",  # Needed for running inside Docker
             "--time_limit", "30",  # seconds

@@ -203,7 +203,15 @@ class CompilationTests(APITestCase):
         if result.errors:
             self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
 
-        self.assertIsNotNone(result.elf_object, "The compilation result should be non-null")
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+
+    def test_mwcc_wine(self):
+        """
+        Ensure that we can invoke mwcc through wine
+        """
+        result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
+
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
 
 class M2CTests(TestCase):

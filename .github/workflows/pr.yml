@@ -17,7 +17,7 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  django_test:
+  backend_test:
     name: backend tests
     runs-on: ubuntu-latest
     steps:
@@ -25,21 +25,71 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: 3.9
-      - run: pip install -r backend/requirements.txt
-        name: Install Python dependencies
-      - run: sudo apt install binutils-mips-linux-gnu libprotobuf-dev libnl-route-3-dev protobuf-compiler
-        name: Install dependencies
-      - run: |
-          git clone --recursive --branch=3.0 https://github.com/google/nsjail && cd nsjail
-          make
-          sudo cp nsjail /usr/bin/
-        name: Install nsjail
-      - run: ./backend/compilers/download.sh
-        name: Download compilers
-      - run: python backend/manage.py test backend
-        name: Run tests
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Add i386 architecture
+        run: |-
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+      - name: Install dependencies
+        run: |-
+          sudo apt install \
+            binutils-mips-linux-gnu \
+            libprotobuf-dev \
+            libnl-route-3-dev \
+            protobuf-compiler \
+            wine \
+            mesa-va-drivers- \
+            libosmesa6- \
+            mesa-vdpau-drivers-
+      - name: Install nsjail
+        run: |-
+          git clone --recursive --branch=3.0 https://github.com/google/nsjail
+          make -C nsjail
+          sudo cp nsjail/nsjail /usr/bin/
+      - name: Download compilers
+        run: |-
+          ./backend/compilers/download.sh
+          ./backend/compilers/mwcc.sh
+      - name: Install dkp dependencies
+        run: |-
+          mkdir -p bin
+          docker run \
+            -v $(pwd)/bin:/tmp/bin \
+            --entrypoint /bin/sh \
+            devkitpro/devkitppc:20210726 \
+            -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
+          sudo cp bin/powerpc* /usr/bin/
+      - name: Run tests
+        run: |-
+          mkdir -p "${WINEPREFIX}"
+          WINEARCH=win32 wineboot --init
+          wineboot --init
+          ls -al "${WINEPREFIX}"/
+          python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+          WINEPREFIX: /tmp/wine
+
+  backend_test_docker:
+    name: backend tests (docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build decompme_backend image
+        run: |-
+          docker build backend \
+            -t decompme_backend \
+            --build-arg ENABLE_GC_WII_SUPPORT=YES
+      - name: Run tests
+        run: |-
+          docker run \
+            -v $(pwd):/decomp.me \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/compilers \
+            decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
 
   frontend_test:
     name: frontend tests

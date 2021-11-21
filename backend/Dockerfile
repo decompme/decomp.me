@@ -1,4 +1,4 @@
-FROM python:3.9-buster AS nsjail
+FROM python:3.9-bullseye AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
     autoconf \
@@ -15,19 +15,22 @@ RUN apt-get -y update && apt-get install -y \
     protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --recursive --shallow-submodules --depth=1 --branch=3.0 "https://github.com/google/nsjail" /nsjail \
+# TODO: change this when they tag a release
+RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
+    && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
+    && git submodule update \
     && make \
     && mv /nsjail/nsjail /bin \
     && rm -rf -- /nsjail
 
-FROM python:3.9-buster AS build
+FROM python:3.9-bullseye AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
     gcc-mips-linux-gnu \
     libnl-route-3-200 \
-    libprotobuf17 \
+    libprotobuf-dev \
     netcat \
     && rm -rf /var/lib/apt/lists/*
 
@@ -44,13 +47,16 @@ COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
 
+RUN mkdir -p /tmp/wine
+
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        wine; \
+        wine && \
+    WINEPREFIX=/tmp/wine winecfg; \
     fi
 
 # ps1 specifics
@@ -59,16 +65,9 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     fi
 
 # gc/wii specifics
+COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
-    bash /compilers/mwcc.sh && \
-    wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
-        -O devkitpro.deb && \
-    echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
-    apt install -y ./devkitpro.deb && \
-    rm devkitpro.deb && \
-    dkp-pacman -Syu devkitPPC --noconfirm && \
-    cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/ && \
-    rm -rf /opt/devkitpro; \
+    bash /compilers/mwcc.sh; \
     fi
 
 WORKDIR /backend

@@ -26,8 +26,8 @@ env = environ.Env(
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
-
     COMPILATION_CACHE_SIZE=(int, 100),
+    WINEPREFIX=(str, "/tmp/wine"),
 )
 
 for stem in [".env.local", ".env"]:
@@ -175,3 +175,5 @@ GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
 
 COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)
+
+WINEPREFIX=Path(env("WINEPREFIX"))
