@@ -81,6 +81,7 @@ jobs:
             --build-arg ENABLE_GC_WII_SUPPORT=YES
       - name: Run tests
         run: |-
+          mkdir -p sandbox && chmod 777 sandbox
           docker run \
             -v $(pwd):/decomp.me \
             --security-opt apparmor=unconfined \
