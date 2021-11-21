@@ -63,9 +63,7 @@ jobs:
       - name: Run tests
         run: |-
           mkdir -p "${WINEPREFIX}"
-          WINEARCH=win32 wineboot --init
           wineboot --init
-          ls -al "${WINEPREFIX}"/
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
@@ -83,12 +81,14 @@ jobs:
             --build-arg ENABLE_GC_WII_SUPPORT=YES
       - name: Run tests
         run: |-
+          mkdir -p sandbox && chmod 777 sandbox
           docker run \
             -v $(pwd):/decomp.me \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
+            -e WINEPREFIX=/tmp/wine \
             decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
 
   frontend_test:
