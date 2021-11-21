@@ -44,6 +44,8 @@ COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
 
+RUN mkdir -p /tmp/wine
+
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
@@ -51,7 +53,7 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YE
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine && \
-    WINEPREFIX=/wine winecfg; \
+    WINEPREFIX=/tmp/wine winecfg; \
     fi
 
 # ps1 specifics
@@ -71,8 +73,6 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/ && \
     rm -rf /opt/devkitpro; \
     fi
-
-RUN mkdir -p /wine
 
 WORKDIR /backend
 
