@@ -55,15 +55,14 @@ jobs:
         run: |-
           mkdir -p bin
           docker run \
-            --rm -v $(pwd)/bin:/tmp/bin \
+            -v $(pwd)/bin:/tmp/bin \
             --entrypoint /bin/sh \
             devkitpro/devkitppc:20210726 \
             -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
           sudo cp bin/powerpc* /usr/bin/
       - name: Run tests
         run: |-
-          mkdir -p /tmp/wine
-          python backend/manage.py test backend
+          WINEPREFIX=$HOME/.wine python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
