@@ -87,6 +87,7 @@ jobs:
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
+            -e WINEPREFIX=/tmp/wine \
             decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
 
   frontend_test:
