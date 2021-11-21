@@ -63,7 +63,8 @@ jobs:
       - name: Run tests
         run: |-
           mkdir -p /tmp/wine
-          WINEARCH=win32 WINEPREFIX=/tmp/wine python backend/manage.py test backend
+          WINEARCH=win32 WINEPREFIX=/tmp/wine winecfg
+          python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
