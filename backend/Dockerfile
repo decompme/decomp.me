@@ -1,4 +1,14 @@
-FROM python:3.9-bullseye AS nsjail
+FROM ubuntu:21.04 as base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3 \
+    python-is-python3
+
+
+FROM base AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
     autoconf \
@@ -12,33 +22,34 @@ RUN apt-get -y update && apt-get install -y \
     libtool \
     make \
     pkg-config \
-    protobuf-compiler \
-    && rm -rf /var/lib/apt/lists/*
+    protobuf-compiler
 
 # TODO: change this when they tag a release
 RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
     && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
     && git submodule update \
-    && make \
-    && mv /nsjail/nsjail /bin \
-    && rm -rf -- /nsjail
+    && make
 
-FROM python:3.9-bullseye AS build
+
+FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    curl \
     gcc-mips-linux-gnu \
     libnl-route-3-200 \
     libprotobuf-dev \
     netcat \
+    unzip \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /backend/requirements.txt
 
-RUN python3 -m pip install -r /backend/requirements.txt --no-cache-dir
+RUN python -m pip install -r /backend/requirements.txt --no-cache-dir
 
-COPY --from=nsjail /bin/nsjail /bin/nsjail
+COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 # nsjail wants to mount this so ensure it exists
 RUN mkdir -p /lib32
@@ -47,16 +58,13 @@ COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
 
-RUN mkdir -p /tmp/wine
-
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        wine && \
-    WINEPREFIX=/tmp/wine winecfg; \
+        wine; \
     fi
 
 # ps1 specifics
@@ -71,6 +79,19 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     fi
 
 WORKDIR /backend
+
+# create a non-root user & /sandbox with correct ownership
+RUN useradd --create-home user \
+    && mkdir -p /sandbox \
+    && chown -R user:user /sandbox
+
+# switch to non-root user
+USER user
+
+# initialize wine files to /home/user/.wine
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+    wineboot --init; \
+    fi
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
