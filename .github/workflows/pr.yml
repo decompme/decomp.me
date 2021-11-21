@@ -17,7 +17,7 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  django_test:
+  backend_test:
     name: backend tests
     runs-on: ubuntu-latest
     steps:
@@ -46,6 +46,26 @@ jobs:
         name: Install dkp dependencies
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+
+  backend_test_docker:
+    name: backend tests (docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build backend -t decompme_backend --build-arg ENABLE_GC_WII_SUPPORT=YES
+        name: Build decompme_backend image
+      - run: |
+          docker run \
+          --rm -ti \
+          -v $(pwd):/decomp.me \
+          --security-opt apparmor=unconfined \
+          --security-opt seccomp=unconfined \
+          --entrypoint /bin/bash \
+          -e COMPILER_BASE_PATH=/compilers \
+          decompme_backend
+
+          cd /decomp.me
+          python backend/manage.py test backend
 
   frontend_test:
     name: frontend tests
