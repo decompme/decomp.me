@@ -29,11 +29,11 @@ jobs:
         run: pip install -r backend/requirements.txt
       - name: Add i386 architecture
         run: |-
-          dpkg --add-architecture i386
-          apt-get update
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
       - name: Install dependencies
         run: |-
-          apt install \
+          sudo apt install \
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
@@ -45,9 +45,8 @@ jobs:
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
-          cd nsjail
-          make
-          cp nsjail /usr/bin/
+          make -C nsjail
+          sudo cp nsjail/nsjail /usr/bin/
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
@@ -55,9 +54,9 @@ jobs:
       - name: Install dkp dependencies
         run: |-
           wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb
-          apt install -y ./devkitpro-pacman.amd64.deb
-          dkp-pacman -Syu devkitPPC --noconfirm
-          cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
+          sudo apt install -y ./devkitpro-pacman.amd64.deb
+          sudo dkp-pacman -Syu devkitPPC --noconfirm
+          sudo cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
       - name: Run tests
         run: |-
           mkdir -p /tmp/wine
