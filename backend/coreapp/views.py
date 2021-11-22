@@ -290,7 +290,7 @@ def compile(request, slug):
     code = request.data["source_code"]
     context = request.data.get("context", None)
 
-    scratch = Scratch.objects.get(slug=slug)
+    scratch: Scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
     if not context:
