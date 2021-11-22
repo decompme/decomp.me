@@ -3,16 +3,12 @@ import classNames from "classnames"
 
 import styles from "./ScoreBadge.module.scss"
 
-function roundPercent(num: number) {
-    return Math.round(num * 100) / 100
-}
-
 function calculateScorePercent(score: number, maxScore: number) {
     if (score > maxScore) {
         return 0
     }
 
-    return roundPercent((1 - (score / maxScore)) * 100).toFixed(2)
+    return ((1 - (score / maxScore)) * 100).toFixed(2)
 }
 
 export type Props = {
