@@ -3,24 +3,24 @@ import classNames from "classnames"
 
 import styles from "./ScoreBadge.module.scss"
 
-function round(num: number) {
-    return Math.round((num + Number.EPSILON) * 100) / 100
+function roundPercent(num: number) {
+    return Math.round(num * 100) / 100
 }
 
-function calculateScore(score: number, max_score: number) {
-    if (score > max_score) {
+function calculateScorePercent(score: number, maxScore: number) {
+    if (score > maxScore) {
         return 0
     }
 
-    return round((1 - (score / max_score)) * 100)
+    return roundPercent((1 - (score / maxScore)) * 100).toFixed(2)
 }
 
 export type Props = {
     score: number
-    max_score: number
+    maxScore: number
 }
 
-export default function ScoreBadge({ score, max_score }: Props) {
+export default function ScoreBadge({ score, maxScore }: Props) {
     if (score === -1) {
         return <div className={classNames(styles.badge, { [styles.error]: true })}>
             <AlertIcon className={styles.icon} />
@@ -31,7 +31,7 @@ export default function ScoreBadge({ score, max_score }: Props) {
         </div>
     } else {
         return <div className={styles.badge} aria-label="Score">
-            {score} ({calculateScore(score, max_score)}%)
+            {score} ({calculateScorePercent(score, maxScore)}%)
         </div>
     }
 }

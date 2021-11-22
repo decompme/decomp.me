@@ -56,7 +56,7 @@ function renderRightTabs({ compilation }: {
                 Diff
                 {compilation && <ScoreBadge
                     score={compilation?.diff_output?.current_score ?? -1}
-                    max_score={compilation?.diff_output?.max_score ?? -1} />}
+                    maxScore={compilation?.diff_output?.max_score ?? -1} />}
             </>}
             className={styles.diffTab}
         >
