@@ -3,12 +3,12 @@ import classNames from "classnames"
 
 import styles from "./ScoreBadge.module.scss"
 
-function calculateScorePercent(score: number, maxScore: number): string {
+function calculateScorePercent(score: number, maxScore: number): number {
     if (score > maxScore) {
-        return "0"
+        return 0
     }
 
-    return ((1 - (score / maxScore)) * 100).toFixed(2)
+    return ((1 - (score / maxScore)) * 100)
 }
 
 export type Props = {
@@ -27,7 +27,7 @@ export default function ScoreBadge({ score, maxScore }: Props) {
         </div>
     } else {
         return <div className={styles.badge} aria-label="Score">
-            {score} ({calculateScorePercent(score, maxScore)}%)
+            {score} ({calculateScorePercent(score, maxScore).toFixed(2)}%)
         </div>
     }
 }
