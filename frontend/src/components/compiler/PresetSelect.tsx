@@ -63,7 +63,7 @@ export const PRESETS = [
     {
         name: "Super Monkey Ball",
         compiler: "mwcc_233_159",
-        opts: "-Cpp_exceptions off -nodefaults -O4,p -fp fmadd -fp_contract on -enum int",
+        opts: "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int",
     },
     {
         name: "Twilight Princess",
