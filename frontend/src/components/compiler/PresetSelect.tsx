@@ -70,6 +70,11 @@ export const PRESETS = [
         compiler: "mwcc_247_108_tp",
         opts: "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     },
+    {
+        name: "Wii Sports",
+        compiler: "mwcc_41_60831",
+        opts: "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
