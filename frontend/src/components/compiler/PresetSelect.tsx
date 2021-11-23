@@ -73,7 +73,7 @@ export const PRESETS = [
     {
         name: "Wii Sports",
         compiler: "mwcc_41_60831",
-        opts: "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -proc gekko -fp hard -O4,p -nodefaults",
+        opts: "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
     },
 ]
 
