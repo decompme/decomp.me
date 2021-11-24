@@ -53,7 +53,7 @@ export const PRESETS = [
     {
         name: "Pikmin",
         compiler: "mwcc_233_144",
-        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -proc gekko -msgstyle gcc",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -msgstyle gcc",
     },
     {
         name: "Pikmin 2",
