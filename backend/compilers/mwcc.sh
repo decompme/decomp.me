@@ -60,12 +60,6 @@ done
 # patch compilers
 
 if [ -f "${compiler_dir}/mwcc_247_108/${mwcceppc_exe}" ]; then
-    mkdir -p "${compiler_dir}/mwcc_247_108_pikmin2"
-    cp -r "${compiler_dir}/mwcc_247_108/"* "${compiler_dir}/mwcc_247_108_pikmin2/"
-    patch "${compiler_dir}/mwcc_247_108_pikmin2/${mwcceppc_exe}" 222480 117
-fi
-
-if [ -f "${compiler_dir}/mwcc_247_108/${mwcceppc_exe}" ]; then
     mkdir -p "${compiler_dir}/mwcc_247_108_tp"
     cp -r "${compiler_dir}/mwcc_247_108/"* "${compiler_dir}/mwcc_247_108_tp/"
     patch "${compiler_dir}/mwcc_247_108_tp/${mwcceppc_exe}" 1862228 109
