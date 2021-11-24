@@ -51,8 +51,13 @@ export const PRESETS = [
         opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -enc SJIS -lang=c99 -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
     },
     {
+        name: "Pikmin",
+        compiler: "mwcc_233_144",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -msgstyle gcc",
+    },
+    {
         name: "Pikmin 2",
-        compiler: "mwcc_247_108_pikmin2",
+        compiler: "mwcc_247_107",
         opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
     },
     {
