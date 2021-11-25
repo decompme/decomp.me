@@ -31,6 +31,8 @@ jobs:
         run: |-
           sudo dpkg --add-architecture i386
           sudo apt-get update
+      - name: Install libwine
+        run: sudo apt install libwine:i386
       - name: Install dependencies
         run: |-
           sudo apt install \
@@ -38,7 +40,7 @@ jobs:
             libprotobuf-dev \
             libnl-route-3-dev \
             protobuf-compiler \
-            libwine:i386 wine wine32 \
+            wine32 \
             mesa-va-drivers- \
             libosmesa6- \
             mesa-vdpau-drivers-
