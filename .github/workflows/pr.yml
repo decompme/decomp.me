@@ -31,7 +31,6 @@ jobs:
         run: |-
           sudo dpkg --add-architecture i386
           sudo apt update
-          sudo apt upgrade
       - name: Install dependencies
         run: |-
           sudo apt install \
@@ -39,7 +38,7 @@ jobs:
             libprotobuf-dev \
             libnl-route-3-dev \
             protobuf-compiler \
-            wine32 \
+            wine \
             mesa-va-drivers- \
             libosmesa6- \
             mesa-vdpau-drivers-
