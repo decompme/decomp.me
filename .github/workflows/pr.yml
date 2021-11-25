@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |-
           sudo apt-get install libllvm12:i386
-          sudo apt install \
+          sudo apt-get install -f \
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
