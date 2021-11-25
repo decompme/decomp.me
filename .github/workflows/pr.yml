@@ -35,6 +35,7 @@ jobs:
       - name: Install libwine
         run: |-
           sudo apt install \
+          libpcre2-8-0:i386 \
           libmount1:i386 \
           libselinux1:i386 \
           libfaudio0:i386 \
