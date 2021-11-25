@@ -32,17 +32,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt update
           sudo apt upgrade
-      - name: Install libwine
-        run: |-
-          sudo apt install \
-          libpcre2-8-0:i386 \
-          libmount1:i386 \
-          libselinux1:i386 \
-          libfaudio0:i386 \
-          libglib2.0-0:i386 \
-          libgstreamer-plugins-base1.0-0:i386 \
-          libgstreamer1.0-0:i386 \
-          libwine:i386
       - name: Install dependencies
         run: |-
           sudo apt install \
