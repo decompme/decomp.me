@@ -39,7 +39,7 @@ jobs:
             libprotobuf-dev \
             libnl-route-3-dev \
             protobuf-compiler \
-            wine
+            wine wine32
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
