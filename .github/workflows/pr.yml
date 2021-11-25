@@ -27,16 +27,21 @@ jobs:
           python-version: 3.9
       - name: Install Python dependencies
         run: pip install -r backend/requirements.txt
-      - name: Add i386 architecture and install dependencies
+      - name: Install dependencies
         run: |-
-          sudo dpkg --add-architecture i386
           sudo apt update
+          sudo apt upgrade
+          sudo apt autoremove
           sudo apt install \
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
-            protobuf-compiler \
-            wine \
+            protobuf-compiler
+      - name: Wine
+        run: |-
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install wine
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
