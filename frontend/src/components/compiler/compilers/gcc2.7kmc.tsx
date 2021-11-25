@@ -8,7 +8,8 @@ export function Flags() {
         <FlagSet name="Optimization level">
             <FlagOption flag="-O0" description="No optimization" />
             <FlagOption flag="-O1" description="Some optimization" />
-            <FlagOption flag="-O2" description="Heavy optimization" />
+            <FlagOption flag="-O2" description="Standard optimization" />
+            <FlagOption flag="-O3" description="Heavy optimization" />
         </FlagSet>
 
         <FlagSet name="Debug information">
