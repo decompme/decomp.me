@@ -27,14 +27,13 @@ jobs:
           python-version: 3.9
       - name: Install Python dependencies
         run: pip install -r backend/requirements.txt
-      - name: Add i386 architecture
+      - name: Add i386 architecture and install dependencies
         run: |-
           sudo dpkg --add-architecture i386
           sudo apt-get update
-      - name: Install dependencies
-        run: |-
           sudo apt-get install libllvm12:i386
-          sudo apt-get install -f \
+          sudo apt-get upgrade
+          sudo apt-get install \
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
