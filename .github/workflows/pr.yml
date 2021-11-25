@@ -38,7 +38,7 @@ jobs:
             libprotobuf-dev \
             libnl-route-3-dev \
             protobuf-compiler \
-            wine wine32 \
+            libwine wine wine32 \
             mesa-va-drivers- \
             libosmesa6- \
             mesa-vdpau-drivers-
