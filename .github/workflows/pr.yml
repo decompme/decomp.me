@@ -41,6 +41,7 @@ jobs:
         run: |-
           sudo dpkg --add-architecture i386
           sudo apt update
+          sudo apt-get install libllvm12:i386
           sudo apt install wine
       - name: Install nsjail
         run: |-
