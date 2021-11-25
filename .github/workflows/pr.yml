@@ -30,7 +30,8 @@ jobs:
       - name: Add i386 architecture
         run: |-
           sudo dpkg --add-architecture i386
-          sudo apt-get update
+          sudo apt update
+          sudo apt upgrade
       - name: Install libwine
         run: sudo apt install libwine:i386
       - name: Install dependencies
