@@ -27,21 +27,19 @@ jobs:
           python-version: 3.9
       - name: Install Python dependencies
         run: pip install -r backend/requirements.txt
-      - name: Add i386 architecture
+      - name: Add i386 architecture and install dependencies
         run: |-
           sudo dpkg --add-architecture i386
-          sudo apt-get update
-      - name: Install dependencies
-        run: |-
-          sudo apt install \
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 86B72ED9
+          sudo add-apt-repository 'deb [arch=amd64] https://mirror.mxe.cc/repos/apt focal main'
+          sudo apt -qq update
+          sudo apt install -y --allow-downgrades libpcre2-8-0=10.34-7
+          sudo apt install -y wine
+          sudo apt-get install \
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
-            protobuf-compiler \
-            wine \
-            mesa-va-drivers- \
-            libosmesa6- \
-            mesa-vdpau-drivers-
+            protobuf-compiler
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
