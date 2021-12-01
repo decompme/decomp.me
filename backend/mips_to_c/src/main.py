@@ -131,7 +131,7 @@ def run(options: Options) -> int:
             except:
                 pass
         try:
-            global_info.global_decls(fmt, options.global_decls)
+            global_info.global_decls(fmt, options.global_decls, [])
         except:
             pass
         for info in preliminary_infos:
@@ -139,6 +139,10 @@ def run(options: Options) -> int:
                 get_function_text(info, options)
             except:
                 pass
+
+        # This operation can change struct field paths, so it is only performed
+        # after discarding all of the translated Expressions.
+        typepool.prune_structs()
 
     function_infos: List[Union[FunctionInfo, Exception]] = []
     for function, flow_graph in zip(functions, flow_graphs):
@@ -166,7 +170,11 @@ def run(options: Options) -> int:
             if type_decls:
                 print(type_decls)
 
-        global_decls = global_info.global_decls(fmt, options.global_decls)
+        global_decls = global_info.global_decls(
+            fmt,
+            options.global_decls,
+            [fn for fn in function_infos if isinstance(fn, FunctionInfo)],
+        )
         if global_decls:
             print(global_decls)
     except Exception as e:
@@ -353,10 +361,16 @@ def parse_flags(flags: List[str]) -> Options:
     group.add_argument(
         "--comment-style",
         dest="comment_style",
-        choices=["multiline", "oneline"],
+        type=CodingStyle.CommentStyle,
+        choices=list(CodingStyle.CommentStyle),
         default="multiline",
-        help='Comment formatting. "multiline" for C-style `/* ... */`, "oneline" for C++-style `// ...`. '
-        "Default: multiline",
+        help=(
+            "Comment formatting. "
+            '"multiline" for C-style `/* ... */`, '
+            '"oneline" for C++-style `// ...`, '
+            '"none" to disable comments. '
+            "Default: multiline"
+        ),
     )
     group.add_argument(
         "--comment-column",
@@ -419,6 +433,15 @@ def parse_flags(flags: List[str]) -> Options:
         help=argparse.SUPPRESS,
     )
     group.add_argument(
+        "--no-switches",
+        dest="switch_detection",
+        action="store_false",
+        help=(
+            "Disable detecting irregular switch statements from if trees. "
+            "Jump tables switches are still emitted."
+        ),
+    )
+    group.add_argument(
         "--no-andor",
         dest="andor_detection",
         action="store_false",
@@ -467,7 +490,7 @@ def parse_flags(flags: List[str]) -> Options:
         pointer_style_left=args.pointer_style == "left",
         unknown_underscore=args.unknown_underscore,
         hex_case=args.hex_case,
-        oneline_comments=args.comment_style == "oneline",
+        comment_style=args.comment_style,
         comment_column=args.comment_column,
     )
     filenames = args.filename + args.rodata_filenames
@@ -499,6 +522,7 @@ def parse_flags(flags: List[str]) -> Options:
         debug=args.debug,
         void=args.void,
         ifs=args.ifs,
+        switch_detection=args.switch_detection,
         andor_detection=args.andor_detection,
         skip_casts=args.skip_casts,
         reg_vars=reg_vars,
