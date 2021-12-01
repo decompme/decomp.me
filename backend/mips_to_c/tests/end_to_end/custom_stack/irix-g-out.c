@@ -14,13 +14,12 @@ struct _mips2c_stack_test {
 };                                                  /* size = 0x30 */
 
 ? func_00400090(s8 *);                              /* static */
-s32 test(void *arg0);                               /* static */
 
 s32 test(void *arg0) {
     s8 sp2F;
     s8 sp2C;
     s8 sp28;
-    s8 sp24;
+    s8 sp24;                                        /* compiler-managed */
     s32 sp20;
     s32 sp1C;
     s8 sp18;
@@ -41,5 +40,5 @@ s32 test(void *arg0) {
     } else {
         sp24 = &sp18;
     }
-    return sp2F + (s16) sp2C + (s32) sp28 + *(s32 *) sp24 + sp1C;
+    return sp2F + (s16) sp2C + (s32) sp28 + *sp24 + sp1C;
 }
