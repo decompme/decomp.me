@@ -55,7 +55,7 @@ class Scratch(models.Model):
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    diff_label = models.CharField(max_length=100, blank=True, null=True)
+    diff_label = models.CharField(max_length=512, blank=True, null=True)
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
