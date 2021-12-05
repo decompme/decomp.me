@@ -47,8 +47,8 @@ export const PRESETS = [
     },
     {
         name: "The Thousand-Year Door",
-        compiler: "mwcc_41_60831",
-        opts: "-nodefaults -Cpp_exceptions off -RTTI off -fp hard -enc SJIS -lang=c99 -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
+        compiler: "mwcc_247_108",
+        opts: "-fp hard -fp_contract on -enum int -str pool -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred",
     },
     {
         name: "Pikmin",
