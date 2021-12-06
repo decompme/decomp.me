@@ -8,7 +8,7 @@ patch () {
 }
 
 compiler_dir="$(dirname $(readlink -f "${BASH_SOURCE[0]}"))"
-compiler_url="https://cdn.discordapp.com/attachments/727918646525165659/806025523200393246/GC_WII_COMPILERS.zip"
+compiler_url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip"
 mwcceppc_exe="mwcceppc.exe"
 
 echo "compiler_dir is ${compiler_dir}"
@@ -17,6 +17,7 @@ declare -A GC_COMPILERS
 GC_COMPILERS["1.0"]="mwcc_233_144"
 GC_COMPILERS["1.1"]="mwcc_233_159"
 GC_COMPILERS["1.2.5"]="mwcc_233_163"
+GC_COMPILERS["1.2.5e"]="mwcc_233_163e"
 GC_COMPILERS["1.3.2"]="mwcc_242_81"
 GC_COMPILERS["2.0"]="mwcc_247_92"
 GC_COMPILERS["2.5"]="mwcc_247_105"
