@@ -10,6 +10,7 @@ import * as Ido71 from "./ido7.1"
 import * as Mwcc233b144 from "./mwcc_233_144"
 import * as Mwcc233b159 from "./mwcc_233_159"
 import * as Mwcc233b163 from "./mwcc_233_163"
+import * as Mwcc233b163e from "./mwcc_233_163e"
 import * as Mwcc242b81 from "./mwcc_242_81"
 import * as Mwcc247b105 from "./mwcc_247_105"
 import * as Mwcc247b107 from "./mwcc_247_107"
@@ -35,6 +36,7 @@ const COMPILERS: CompilerModule[] = [
     Mwcc233b144,
     Mwcc233b159,
     Mwcc233b163,
+    Mwcc233b163e,
     Mwcc242b81,
     Mwcc247b105,
     Mwcc247b107,
