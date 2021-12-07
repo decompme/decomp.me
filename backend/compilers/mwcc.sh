@@ -11,6 +11,8 @@ compiler_dir="$(dirname $(readlink -f "${BASH_SOURCE[0]}"))"
 compiler_url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip"
 mwcceppc_exe="mwcceppc.exe"
 
+frank_url="https://raw.githubusercontent.com/projectPiki/pikmin/main/tools/frank.py"
+
 echo "compiler_dir is ${compiler_dir}"
 
 declare -A GC_COMPILERS
@@ -64,4 +66,10 @@ if [ -f "${compiler_dir}/mwcc_247_108/${mwcceppc_exe}" ]; then
     mkdir -p "${compiler_dir}/mwcc_247_108_tp"
     cp -r "${compiler_dir}/mwcc_247_108/"* "${compiler_dir}/mwcc_247_108_tp/"
     patch "${compiler_dir}/mwcc_247_108_tp/${mwcceppc_exe}" 1862228 109
+fi
+
+# copy in clean 1.2.5 for frank
+if [ -f "${compiler_dir}/mwcc_233_163/${mwcceppc_exe}" ]; then
+    cp "${compiler_dir}/mwcc_233_163/${mwcceppc_exe}" "${compiler_dir}/mwcc_233_163e/mwcceppc.125.exe"
+    wget -q -O "${compiler_dir}/mwcc_233_163e/frank.py" "${frank_url}"
 fi

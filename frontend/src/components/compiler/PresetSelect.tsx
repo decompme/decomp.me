@@ -52,7 +52,7 @@ export const PRESETS = [
     },
     {
         name: "Pikmin",
-        compiler: "mwcc_233_144",
+        compiler: "mwcc_233_163e",
         opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -msgstyle gcc",
     },
     {
