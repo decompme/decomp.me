@@ -58,7 +58,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/etc/alternatives",
             "--bindmount_ro", "/etc/fonts",
             "--bindmount_ro", "/lib",
-            "--bindmount_ro", "/lib32",
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),

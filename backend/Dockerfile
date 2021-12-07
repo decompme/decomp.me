@@ -51,9 +51,6 @@ RUN python -m pip install -r /backend/requirements.txt --no-cache-dir
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-# nsjail wants to mount this so ensure it exists
-RUN mkdir -p /lib32
-
 COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
