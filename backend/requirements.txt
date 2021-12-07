@@ -13,6 +13,7 @@ mypy
 psycopg2-binary
 pycparser
 python-Levenshtein
+pytz
 responses
 types-requests
 watchdog
