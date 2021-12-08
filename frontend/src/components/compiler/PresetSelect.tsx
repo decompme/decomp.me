@@ -58,7 +58,7 @@ export const PRESETS = [
     {
         name: "Pikmin 2",
         compiler: "mwcc_247_107",
-        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -sdata 8 -sdata2 8 -msgstyle gcc",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -inline auto -sdata 8 -sdata2 8 -msgstyle gcc",
     },
     {
         name: "Battle for Bikini Bottom",
