@@ -80,6 +80,11 @@ export const PRESETS = [
         compiler: "mwcc_41_60831",
         opts: "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
     },
+    {
+        name: "Super Smash Bros. Melee",
+        compiler: "mwcc_233_163e",
+        opts: "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
