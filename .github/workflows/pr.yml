@@ -19,12 +19,7 @@ jobs:
 
   backend_test:
     name: backend tests
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - os: ubuntu-latest
-          - os: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -71,6 +66,22 @@ jobs:
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
+
+  backend_test_windows:
+    name: backend tests (windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run tests
+        run: |-
+          python backend/manage.py test backend
+        env:
+          SYSTEM_ENV: GITHUB_WORKFLOW
 
   backend_test_docker:
     name: backend tests (docker)
