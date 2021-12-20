@@ -58,6 +58,17 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
     </option>
 }
 
+export type CompilerOptsT = {
+    compiler: string
+    compiler_flags: string
+}
+
+export type CompilerPreset = {
+    name: string
+    compiler: string
+    opts: string
+}
+
 export type Props = {
     compiler: string
     flags: string
@@ -68,7 +79,31 @@ export type Props = {
     isPopup?: boolean
 }
 
-export default function CompilerOpts({ compiler, flags, onCompilerChange, onFlagsChange, platform, title, isPopup }: Props) {
+export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
+    const compiler = value.compiler
+    let opts = value.compiler_flags
+
+    const setCompiler = (compiler: string) => {
+        onChange({
+            compiler,
+            compiler_flags: opts,
+        })
+    }
+
+    const setOpts = (opts: string) => {
+        onChange({
+            compiler,
+            compiler_flags: opts,
+        })
+    }
+
+    const setPreset = (preset: CompilerPreset) => {
+        onChange({
+            compiler: preset.compiler,
+            compiler_flags: preset.opts,
+        })
+    }
+
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
             return flags.split(" ").includes(flag)
@@ -83,13 +118,13 @@ export default function CompilerOpts({ compiler, flags, onCompilerChange, onFlag
                 flags = (" " + flags + " ").replace(" " + flag + " ", " ")
             }
 
-            flags = split.join(" ").trim()
-            onFlagsChange(flags)
+            flags = flags.trim()
+            setOpts(flags)
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect platform={platform} compiler={compiler} setCompiler={onCompilerChange} opts={flags} setOpts={onFlagsChange} />
+            <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
             <OptsEditor platform={platform} compiler={compiler} setCompiler={onCompilerChange} opts={flags} setOpts={onFlagsChange} />

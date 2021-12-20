@@ -9,7 +9,7 @@ export default function getTheme(): editor.IStandaloneThemeData {
         "rules": [
             { "token": "", "foreground": "8599b3" },
             { "token": "identifier", "foreground": "8599B3" },
-            { "token": "delimiter", "foreground": "555f6e" },
+            { "token": "delimiter", "foreground": "656f7e" },
             { "token": "operator", "foreground": "7F83FF" },
             { "token": "operator.comparison", "foreground": "FF4ABA" },
             { "token": "comment", "foreground": "465173" },
@@ -32,7 +32,7 @@ export default function getTheme(): editor.IStandaloneThemeData {
             "editor.lineHighlightBackground": "#ccccff07",
             "editorCursor.foreground": "#c9cbfc",
             "editorWhitespace.foreground": "#c9cbfc11",
-            "editorLineNumber.foreground":"#ccccff31",
+            "editorLineNumber.foreground":"#ccccff60",
         },
     }
 }

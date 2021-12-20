@@ -9,9 +9,12 @@ from coreapp.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
+class M2CError(Exception):
+    pass
+
 class M2CWrapper:
     @staticmethod
-    def decompile(asm: str, context: str, compiler: str) -> Optional[str]:
+    def decompile(asm: str, context: str, compiler: str) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
@@ -35,16 +38,12 @@ class M2CWrapper:
             flags.append(str(asm_path))
             options = parse_flags(flags)
 
-            try:
-                out_string = io.StringIO()
-                with contextlib.redirect_stdout(out_string):
-                    returncode = run(options)
-                out_text = out_string.getvalue()
+            out_string = io.StringIO()
+            with contextlib.redirect_stdout(out_string):
+                returncode = run(options)
+            out_text = out_string.getvalue()
 
-                if returncode == 0:
-                    return out_text
-                else:
-                    return None
-            except Exception:
-                logger.exception("Error running mips_to_c")
-                return None
+            if returncode == 0:
+                return out_text
+            else:
+                raise M2CError(out_text)

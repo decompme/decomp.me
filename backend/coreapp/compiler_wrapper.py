@@ -1,6 +1,7 @@
+from functools import lru_cache
 from typing import Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
-from coreapp.models import Asm, Assembly, Compilation
+from coreapp.models import Asm, Assembly
 from coreapp import util
 from coreapp.sandbox import Sandbox
 from django.conf import settings
@@ -62,6 +63,11 @@ class Platform:
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
 
+@dataclass
+class CompilationResult:
+    elf_object: bytes
+    errors: str
+
 def load_platforms() -> Dict[str, Platform]:
     return {
         "n64": Platform(
@@ -79,6 +85,11 @@ def load_platforms() -> Dict[str, Platform]:
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
     \label:
 .endm
 
@@ -239,10 +250,6 @@ def get_objdump_command(platform: str) -> Optional[str]:
         return _platforms[platform].objdump_cmd
     return None
 
-def _check_compilation_cache(*args: str) -> Tuple[Optional[Compilation], str]:
-    hash = util.gen_hash(args)
-    return Compilation.objects.filter(hash=hash).first(), hash
-
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
@@ -329,19 +336,14 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def compile_code(compiler: str, compiler_flags: str, code: str, context: str, to_regenerate: Optional[Compilation] = None) -> Tuple[Optional[Compilation], Optional[str]]:
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
+    def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
             logger.debug(f"Compiler {compiler} not found")
-            return (None, "ERROR: Compiler not found")
+            return CompilationResult(b'', "ERROR: Compiler not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
-
-        if not to_regenerate:
-            cached_compilation, hash = _check_compilation_cache(compiler, compiler_flags, code, context)
-            if cached_compilation:
-                logger.debug(f"Compilation cache hit! hash: {hash}")
-                return (cached_compilation, cached_compilation.stderr)
 
         with Sandbox() as sandbox:
             code_path = sandbox.path / "code.c"
@@ -369,35 +371,18 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
                     "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
-                    "WINEPREFIX": "/tmp",
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 logging.debug("Compilation failed: " + e.stderr)
-                return (None, e.stderr)
+                return CompilationResult(b'', e.stderr)
 
             if not object_path.exists():
                 logger.error("Compiler did not create an object file")
-                return (None, "ERROR: Compiler did not create an object file")
+                return CompilationResult(b'', "ERROR: Compiler did not create an object file")
 
-            if to_regenerate:
-                compilation = to_regenerate
-                compilation.elf_object=object_path.read_bytes(),
-            else:
-                # Store Compilation to db
-                compilation = Compilation(
-                    hash=hash,
-                    compiler=compiler,
-                    compiler_flags=compiler_flags,
-                    source_code=code,
-                    context=context,
-                    elf_object=object_path.read_bytes(),
-                    stderr=compile_proc.stderr
-                )
-            compilation.save()
-
-            return (compilation, compile_proc.stderr)
+            return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
     def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:

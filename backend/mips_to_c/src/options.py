@@ -5,40 +5,47 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Union
 
 
+class ChoicesEnum(enum.Enum):
+    """A helper class that is easier to use with argparse"""
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
 @dataclass
 class CodingStyle:
+    class CommentStyle(ChoicesEnum):
+        MULTILINE = "multiline"
+        ONELINE = "oneline"
+        NONE = "none"
+
     newline_after_function: bool
     newline_after_if: bool
     newline_before_else: bool
     pointer_style_left: bool
     unknown_underscore: bool
     hex_case: bool
-    oneline_comments: bool
+    comment_style: CommentStyle
     comment_column: int
 
 
 @dataclass
 class Options:
-    class CompilerEnum(enum.Enum):
+    class CompilerEnum(ChoicesEnum):
         IDO = "ido"
         GCC = "gcc"
 
-        def __str__(self) -> str:
-            return self.value
-
-    class GlobalDeclsEnum(enum.Enum):
+    class GlobalDeclsEnum(ChoicesEnum):
         ALL = "all"
         USED = "used"
         NONE = "none"
-
-        def __str__(self) -> str:
-            return self.value
 
     filenames: List[str]
     function_indexes_or_names: List[Union[int, str]]
     debug: bool
     void: bool
     ifs: bool
+    switch_detection: bool
     andor_detection: bool
     skip_casts: bool
     reg_vars: List[str]
@@ -56,6 +63,9 @@ class Options:
     valid_syntax: bool
     global_decls: GlobalDeclsEnum
     compiler: CompilerEnum
+    structs: bool
+    struct_field_inference: bool
+    passes: int
 
     def formatter(self) -> "Formatter":
         return Formatter(
@@ -72,7 +82,7 @@ DEFAULT_CODING_STYLE: CodingStyle = CodingStyle(
     pointer_style_left=False,
     unknown_underscore=False,
     hex_case=False,
-    oneline_comments=False,
+    comment_style=CodingStyle.CommentStyle.MULTILINE,
     comment_column=52,
 )
 
@@ -103,7 +113,7 @@ class Formatter:
         # Here, "line length" is just used as a rough guideline: we aren't accounting
         # for the LHS of the assignment or any indentation.
         if not any("\n" in el or len(el) > self.line_length for el in elements):
-            output = f"{{{', '.join(elements)}}}"
+            output = f"{{ {', '.join(elements)} }}"
             if len(output) < self.line_length:
                 return output
 
@@ -121,14 +131,27 @@ class Formatter:
         """Indent `line` and append a list of `comments` joined with ';'"""
         base = self.indent(line, indent=indent)
         # If `comments` is empty; fall back to `Formatter.indent()` behavior
-        if not comments:
+        if (
+            not comments
+            or self.coding_style.comment_style == CodingStyle.CommentStyle.NONE
+        ):
             return base
+
         # Add padding to the style's `comment_column`, only if `line` is non-empty
         padding = ""
         if line:
             padding = max(1, self.coding_style.comment_column - len(base)) * " "
-        if self.coding_style.oneline_comments:
+        if self.coding_style.comment_style == CodingStyle.CommentStyle.ONELINE:
             comment = f"// {'; '.join(comments)}"
         else:
             comment = f"/* {'; '.join(comments)} */"
         return f"{base}{padding}{comment}"
+
+    def format_hex(self, val: int) -> str:
+        return format(val, "x").upper()
+
+    def format_int(self, val: int) -> str:
+        if abs(val) < 10:
+            return str(val)
+
+        return hex(val).upper().replace("X", "x")

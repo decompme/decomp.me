@@ -43,16 +43,6 @@ class Assembly(models.Model):
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
     elf_object = models.BinaryField(blank=True)
 
-class Compilation(models.Model):
-    hash = models.CharField(max_length=64, primary_key=True)
-    time = models.DateTimeField(auto_now_add=True)
-    compiler = models.CharField(max_length=100)
-    compiler_flags = models.TextField(max_length=1000, blank=True, null=True)
-    source_code = models.TextField()
-    context = models.TextField(blank=True)
-    elf_object = models.BinaryField(blank=True)
-    stderr = models.TextField(blank=True, null=True)
-
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=100, default="", blank=True)
@@ -65,7 +55,7 @@ class Scratch(models.Model):
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    diff_label = models.CharField(max_length=100, blank=True, null=True)
+    diff_label = models.CharField(max_length=512, blank=True, null=True)
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)

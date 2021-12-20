@@ -6,6 +6,7 @@ import Head from "next/head"
 import { useRouter } from "next/router"
 
 import AsyncButton from "../../components/AsyncButton"
+import { CompilerPreset } from "../../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
@@ -19,7 +20,9 @@ import styles from "./new.module.scss"
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n")
-    const labels = []
+    let labels = []
+
+    const jtbl_label_regex = /L[0-9a-fA-F]{8}/
 
     for (const line of lines) {
         let match = line.match(/^\s*glabel\s+([a-zA-Z0-9_]+)\s*$/)
@@ -32,6 +35,8 @@ function getLabels(asm: string): string[] {
             labels.push(match[1])
         }
     }
+
+    labels = labels.filter(label => !jtbl_label_regex.test(label))
 
     return labels
 }
@@ -75,6 +80,11 @@ export default function NewScratch({ serverCompilers }: {
     const [label, setLabel] = useState<string>("")
 
     const [lineNumbers, setLineNumbers] = useState(false)
+
+    const setPreset = (preset: CompilerPreset) => {
+        setCompiler(preset.compiler)
+        setCompilerOpts(preset.opts)
+    }
 
     // Load fields from localStorage
     useEffect(() => {
@@ -211,8 +221,7 @@ export default function NewScratch({ serverCompilers }: {
                             platform={platform}
                             compiler={compiler}
                             opts={compilerOpts}
-                            setCompiler={setCompiler}
-                            setOpts={setCompilerOpts}
+                            setPreset={setPreset}
                             serverCompilers={serverCompilers.compilers}
                         />
                     </div>
@@ -235,7 +244,7 @@ export default function NewScratch({ serverCompilers }: {
             </div>
             <div>
                 <label className={styles.label} htmlFor="label">
-                    Function name <small>(label as it appears in the target asm)</small>
+                    Function name <small>(asm label from which the diff will begin)</small>
                 </label>
                 <input
                     name="label"
@@ -248,7 +257,7 @@ export default function NewScratch({ serverCompilers }: {
             </div>
             <div className={styles.editorContainer}>
                 <p className={styles.label}>
-                    Context <small>(typically generated with m2ctx.py)</small>
+                    Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
                 </p>
                 <Editor
                     className={styles.editor}

@@ -1,4 +1,14 @@
-FROM python:3.9-buster AS nsjail
+FROM ubuntu:21.04 as base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3 \
+    python-is-python3
+
+
+FROM base AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
     autoconf \
@@ -12,34 +22,36 @@ RUN apt-get -y update && apt-get install -y \
     libtool \
     make \
     pkg-config \
-    protobuf-compiler \
-    && rm -rf /var/lib/apt/lists/*
+    protobuf-compiler
 
-RUN git clone --recursive --shallow-submodules --depth=1 --branch=3.0 "https://github.com/google/nsjail" /nsjail \
+# TODO: change this when they tag a release
+RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
-    && make \
-    && mv /nsjail/nsjail /bin \
-    && rm -rf -- /nsjail
+    && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
+    && git submodule update \
+    && make
 
-FROM python:3.9-buster AS build
+
+FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    curl \
+    gcc-mips-linux-gnu \
     libnl-route-3-200 \
-    libprotobuf17 \
+    libprotobuf-dev \
     netcat \
+    unzip \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /backend/requirements.txt
 
-RUN python3 -m pip install -r /backend/requirements.txt --no-cache-dir
+RUN python -m pip install -r /backend/requirements.txt --no-cache-dir
 
-COPY --from=nsjail /bin/nsjail /bin/nsjail
+COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-# nsjail wants to mount this so ensure it exists
-RUN mkdir -p /lib32
-
-COPY compilers/download.sh /compilers/
+COPY compilers/*.sh /compilers/
 
 RUN bash /compilers/download.sh
 
@@ -58,18 +70,29 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     fi
 
 # gc/wii specifics
+COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
-    wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
-        -O devkitpro.deb && \
-    echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
-    apt install -y ./devkitpro.deb && \
-    rm devkitpro.deb && \
-    dkp-pacman -Syu devkitPPC --noconfirm && \
-    cp /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/ && \
-    rm -rf /opt/devkitpro; \
+    bash /compilers/mwcc.sh; \
     fi
 
 WORKDIR /backend
+
+ENV WINEPREFIX=/tmp/wine
+
+# create a non-root user & /sandbox with correct ownership
+RUN useradd --create-home user \
+    && mkdir -p /sandbox \
+    && chown -R user:user /sandbox \
+    && mkdir -p "${WINEPREFIX}" \
+    && chown user:user "${WINEPREFIX}"
+
+# switch to non-root user
+USER user
+
+# initialize wine files to /home/user/.wine
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+    wineboot --init; \
+    fi
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 

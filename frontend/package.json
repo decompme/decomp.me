@@ -5,7 +5,7 @@
         "build": "next build",
         "start": "next start --port 8080",
         "lint": "next lint && yarn stylelint 'src/**/*.css' 'src/**/*.scss'",
-        "postinstall": "next telemetry disable > /dev/null",
+        "postinstall": "next telemetry disable",
         "storybook": "start-storybook -p 6006 --ci",
         "build-storybook": "build-storybook",
         "test": "jest --watch",

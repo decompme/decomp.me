@@ -24,6 +24,7 @@ class TestOptions:
     diff_context: int
     filter_re: Pattern[str]
     parallel: Optional[int] = None
+    extra_flags: List[str] = field(default_factory=list)
     coverage: Any = None
 
 
@@ -88,6 +89,7 @@ def decompile_and_compare(
     if test_case.flags_path is not None:
         test_flags.extend(get_test_flags(test_case.flags_path))
     test_flags.append(str(test_case.asm_file))
+    test_flags.extend(test_options.extra_flags)
     options = parse_flags(test_flags)
 
     final_contents = decompile_and_capture_output(options, test_case.brief_crashes)
@@ -212,19 +214,24 @@ def create_project_tests(
     asm_dir = base_dir / "asm"
     if "oot" in base_dir.parts:
         file_iter = find_tests_oot(asm_dir)
-        compiler = "ido"
+        base_flags = ["--compiler=ido", "--structs", "--unk-underscore"]
     elif "mm" in base_dir.parts:
         file_iter = find_tests_mm(asm_dir)
-        compiler = "ido"
+        base_flags = ["--compiler=ido", "--structs", "--unk-underscore"]
     elif "papermario" in base_dir.parts:
         file_iter = find_tests_splat(asm_dir)
-        compiler = "gcc"
+        base_flags = [
+            "--compiler=gcc",
+            "--structs",
+            "--unk-underscore",
+            "--pointer-style=left",
+        ]
 
     for file_list in file_iter:
         if not file_list:
             continue
 
-        flags = ["--compiler", compiler]
+        flags = base_flags[:]
         if context_file is not None:
             flags.extend(["--context", str(context_file)])
 
@@ -388,6 +395,11 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "extra_flags",
+        nargs=argparse.REMAINDER,
+        help="Additional arguments to pass to mips_to_c. Use `--` to separate them from run_tests's flags.",
+    )
+    parser.add_argument(
         "--project-with-context",
         metavar="DIR",
         dest="project_dirs",
@@ -436,11 +448,15 @@ if __name__ == "__main__":
     if args.should_overwrite:
         logging.info("Overwriting test output files.")
 
+    if "--" in args.extra_flags:
+        args.extra_flags.remove("--")
+
     test_options = TestOptions(
         should_overwrite=args.should_overwrite,
         diff_context=args.diff_context,
         filter_re=args.filter_re,
         parallel=args.parallel,
+        extra_flags=args.extra_flags,
         coverage=cov,
     )
     ret = main(args.project_dirs, test_options)

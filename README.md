@@ -28,7 +28,7 @@ backend/
 See [DOCKER.md](DOCKER.md) for instructions on how to run the project in a Docker container.
 
 Dependencies:
-- Python >=3.8
+- Python >=3.9
 - Node.js
 - [Yarn](https://yarnpkg.com/getting-started/install)
 
@@ -86,6 +86,17 @@ python manage.py runserver
 ---
 
 The following setup sections are optional.
+
+### Wine setup (for local development, running Windows compilers)
+- Create a wineprefix dir
+```shell
+WINEPREFIX=$HOME/.wine WINEARCH=win32 wineboot --init
+```
+
+- Add the WINEPREFIX setting to your .local.env file in the root of the repo
+```shell
+echo "WINEPREFIX=$HOME/.wine" >> .local.env
+```
 
 ### GitHub authentication
 

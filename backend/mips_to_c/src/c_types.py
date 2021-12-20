@@ -81,14 +81,14 @@ class Function:
 @dataclass(eq=False)
 class TypeMap:
     # Change VERSION if TypeMap changes to invalidate all preexisting caches
-    VERSION: ClassVar[int] = 1
-    _empty: ClassVar["TypeMap"]
+    VERSION: ClassVar[int] = 3
 
     cparser_scope: CParserScope = field(default_factory=dict)
     source_hash: Optional[str] = None
 
     typedefs: Dict[str, CType] = field(default_factory=dict)
     var_types: Dict[str, CType] = field(default_factory=dict)
+    vars_with_initializers: Set[str] = field(default_factory=set)
     functions: Dict[str, Function] = field(default_factory=dict)
     structs: Dict[Union[str, StructUnion], Struct] = field(default_factory=dict)
     struct_typedefs: Dict[Union[str, StructUnion], TypeDecl] = field(
@@ -103,7 +103,7 @@ def to_c(node: ca.Node) -> str:
 
 def basic_type(names: List[str]) -> TypeDecl:
     idtype = IdentifierType(names=names)
-    return TypeDecl(declname=None, quals=[], type=idtype)
+    return TypeDecl(declname=None, quals=[], type=idtype, align=[])
 
 
 def pointer(type: CType) -> CType:
@@ -131,7 +131,7 @@ def type_from_global_decl(decl: ca.Decl) -> CType:
         param = copy.deepcopy(param)
         param.name = None
         set_decl_name(param)
-        return ca.Typename(name=None, quals=param.quals, type=param.type)
+        return ca.Typename(name=None, quals=param.quals, type=param.type, align=[])
 
     new_params: List[Union[ca.Decl, ca.ID, ca.Typename, ca.EllipsisParam]] = [
         anonymize_param(param) if isinstance(param, ca.Decl) else param
@@ -190,6 +190,39 @@ def is_struct_type(type: CType, typemap: TypeMap) -> bool:
     if not isinstance(type, TypeDecl):
         return False
     return isinstance(type.type, (ca.Struct, ca.Union))
+
+
+def is_unk_type(type: CType, typemap: TypeMap) -> bool:
+    """Return True if `type` represents an unknown type, or undetermined struct padding."""
+    # Check for types matching "char unk_N[...];" or "char padN[...];"
+    if (
+        isinstance(type, ArrayDecl)
+        and isinstance(type.type, TypeDecl)
+        and isinstance(type.type.type, IdentifierType)
+        and type.type.declname is not None
+        and type.type.type.names == ["char"]
+    ):
+        declname = type.type.declname
+        if declname.startswith("unk_") or declname.startswith("pad"):
+            return True
+
+    # Check for types which are typedefs starting with "UNK_" or "MIPS2C_UNK",
+    # or are arrays/pointers to one of these types.
+    while True:
+        if (
+            isinstance(type, TypeDecl)
+            and isinstance(type.type, IdentifierType)
+            and len(type.type.names) == 1
+            and type.type.names[0] in typemap.typedefs
+        ):
+            type_name = type.type.names[0]
+            if type_name.startswith("UNK_") or type_name.startswith("MIPS2C_UNK"):
+                return True
+            type = typemap.typedefs[type_name]
+        elif isinstance(type, (PtrDecl, ArrayDecl)):
+            type = type.type
+        else:
+            return False
 
 
 def get_primitive_list(type: CType, typemap: TypeMap) -> Optional[List[str]]:
@@ -346,12 +379,18 @@ def get_struct(
         return typemap.structs.get(struct)
 
 
+class UndefinedStructError(DecompFailure):
+    pass
+
+
 def parse_struct(struct: Union[ca.Struct, ca.Union], typemap: TypeMap) -> Struct:
     existing = get_struct(struct, typemap)
     if existing:
         return existing
     if struct.decls is None:
-        raise DecompFailure(f"Tried to use struct {struct.name} before it is defined.")
+        raise UndefinedStructError(
+            f"Tried to use struct {struct.name} before it is defined (does it have a definition?)."
+        )
     ret = do_parse_struct(struct, typemap)
     if struct.name:
         typemap.structs[struct.name] = ret
@@ -491,7 +530,7 @@ def do_parse_struct(struct: Union[ca.Struct, ca.Union], typemap: TypeMap) -> Str
     elif struct.name and struct.name in typemap.struct_typedefs:
         ctype = typemap.struct_typedefs[struct.name]
     else:
-        ctype = TypeDecl(declname=None, quals=[], type=struct)
+        ctype = TypeDecl(declname=None, quals=[], type=struct, align=[])
 
     size = union_size if is_union else offset
     size = (size + align - 1) & -align
@@ -669,6 +708,8 @@ def _build_typemap(source_paths: Tuple[Path, ...], use_cache: bool) -> TypeMap:
             def visit_Decl(self, decl: ca.Decl) -> None:
                 if decl.name is not None:
                     typemap.var_types[decl.name] = type_from_global_decl(decl)
+                    if decl.init is not None:
+                        typemap.vars_with_initializers.add(decl.name)
                 if not isinstance(decl.type, FuncDecl):
                     self.visit(decl.type)
 
@@ -714,7 +755,7 @@ def type_to_string(type: CType, name: str = "") -> str:
             return f"{su} {type.type.name}"
         else:
             return f"anon {su}"
-    decl = ca.Decl(name, [], [], [], copy.deepcopy(type), None, None)
+    decl = ca.Decl(name, [], [], [], [], copy.deepcopy(type), None, None)
     set_decl_name(decl)
     return to_c(decl)
 

@@ -1186,8 +1186,9 @@ def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
     assert len(symtab_sections) == 1
     symtab = sections[symtab_sections[0]]
 
-    text_sections = [i for i in range(e_shnum) if sec_names[i] == b".text"]
-    assert len(text_sections) == 1
+    text_sections = [i for i in range(e_shnum) if sec_names[i] == b".text" and sections[i].sh_size != 0]
+    if len(text_sections) != 1:
+        return []
     text_section = text_sections[0]
 
     ret: List[Tuple[int, int, str]] = []
@@ -1197,6 +1198,9 @@ def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
                 # Skip .text -> .text references
                 continue
             sec_name = sec_names[s.sh_info].decode("latin1")
+            if sec_name == ".mwcats.text":
+                # Skip Metrowerks CATS Utility section
+                continue
             sec_base = sections[s.sh_info].sh_offset
             for i in range(0, s.sh_size, s.sh_entsize):
                 if s.sh_type == SHT_REL:
@@ -1329,10 +1333,22 @@ def dump_binary(
         (objdump_flags + flags2, project.myimg, None),
     )
 
+DATA_POOL_PLACEHOLDER = "DATA_POOL_PLACEHOLDER-OFFSET_{}"
+DATA_POOL_PLACEHOLDER_PATTERN = re.compile(
+    r"DATA_POOL_PLACEHOLDER-OFFSET_([a-zA-z0-9]+)"
+)
 
-class DifferenceNormalizer:
+# Example: "ldr r4, [pc, #56]    ; (4c <AddCoins+0x4c>)"
+ARM32_LOAD_POOL_PATTERN = r"(ldr\s+r([0-9]|1[0-3]),\s+\[pc,.*;\s*)(\([a-fA-F0-9]+.*\))"
+
+
+# The base class is a no-op.
+class AsmProcessor:
     def __init__(self, config: Config) -> None:
         self.config = config
+
+    def process_reloc(self, row: str, prev: str) -> str:
+        return prev
 
     def normalize(self, mnemonic: str, row: str) -> str:
         """This should be called exactly once for each line."""
@@ -1345,8 +1361,142 @@ class DifferenceNormalizer:
     def _normalize_arch_specific(self, mnemonic: str, row: str) -> str:
         return row
 
+    def post_process(self, lines: List["Line"]) -> None:
+        return
 
-class DifferenceNormalizerAArch64(DifferenceNormalizer):
+
+class AsmProcessorMIPS(AsmProcessor):
+    def process_reloc(self, row: str, prev: str) -> str:
+        arch = self.config.arch
+        if "R_MIPS_NONE" in row:
+            # GNU as emits no-op relocations immediately after real ones when
+            # assembling with -mabi=64. Return without trying to parse 'imm' as an
+            # integer.
+            return prev
+        before, imm, after = parse_relocated_line(prev)
+        repl = row.split()[-1]
+        if imm != "0":
+            # MIPS uses relocations with addends embedded in the code as immediates.
+            # If there is an immediate, show it as part of the relocation. Ideally
+            # we'd show this addend in both %lo/%hi, but annoyingly objdump's output
+            # doesn't include enough information to pair up %lo's and %hi's...
+            # TODO: handle unambiguous cases where all addends for a symbol are the
+            # same, or show "+???".
+            mnemonic = prev.split()[0]
+            if (
+                mnemonic in arch.instructions_with_address_immediates
+                and not imm.startswith("0x")
+            ):
+                imm = "0x" + imm
+            repl += "+" + imm if int(imm, 0) > 0 else imm
+        if "R_MIPS_LO16" in row:
+            repl = f"%lo({repl})"
+        elif "R_MIPS_HI16" in row:
+            # Ideally we'd pair up R_MIPS_LO16 and R_MIPS_HI16 to generate a
+            # correct addend for each, but objdump doesn't give us the order of
+            # the relocations, so we can't find the right LO16. :(
+            repl = f"%hi({repl})"
+        elif "R_MIPS_26" in row:
+            # Function calls
+            pass
+        elif "R_MIPS_PC16" in row:
+            # Branch to glabel. This gives confusing output, but there's not much
+            # we can do here.
+            pass
+        else:
+            assert False, f"unknown relocation type '{row}' for line '{prev}'"
+        return before + repl + after
+
+
+class AsmProcessorPPC(AsmProcessor):
+    def process_reloc(self, row: str, prev: str) -> str:
+        arch = self.config.arch
+        assert any(
+            r in row for r in ["R_PPC_REL24", "R_PPC_ADDR16", "R_PPC_EMB_SDA21"]
+        ), f"unknown relocation type '{row}' for line '{prev}'"
+        before, imm, after = parse_relocated_line(prev)
+        repl = row.split()[-1]
+        if "R_PPC_REL24" in row:
+            # function calls
+            pass
+        elif "R_PPC_ADDR16_HI" in row:
+            # absolute hi of addr
+            repl = f"{repl}@h"
+        elif "R_PPC_ADDR16_HA" in row:
+            # adjusted hi of addr
+            repl = f"{repl}@ha"
+        elif "R_PPC_ADDR16_LO" in row:
+            # lo of addr
+            repl = f"{repl}@l"
+        elif "R_PPC_ADDR16" in row:
+            # 16-bit absolute addr
+            if "+0x7" in repl:
+                # remove the very large addends as they are an artifact of (label-_SDA(2)_BASE_)
+                # computations and are unimportant in a diff setting.
+                if int(repl.split("+")[1], 16) > 0x70000000:
+                    repl = repl.split("+")[0]
+        elif "R_PPC_EMB_SDA21" in row:
+            # small data area
+            pass
+        return before + repl + after
+
+
+class AsmProcessorARM32(AsmProcessor):
+    def process_reloc(self, row: str, prev: str) -> str:
+        arch = self.config.arch
+        before, imm, after = parse_relocated_line(prev)
+        repl = row.split()[-1]
+        return before + repl + after
+
+    def _normalize_arch_specific(self, mnemonic: str, row: str) -> str:
+        if self.config.ignore_addr_diffs:
+            row = self._normalize_bl(mnemonic, row)
+        row = self._normalize_data_pool(row)
+        return row
+
+    def _normalize_bl(self, mnemonic: str, row: str) -> str:
+        if mnemonic != "bl":
+            return row
+
+        row, _ = split_off_address(row)
+        return row + "<ignore>"
+
+    def _normalize_data_pool(self, row: str) -> str:
+        pool_match = re.search(ARM32_LOAD_POOL_PATTERN, row)
+        if pool_match:
+            offset = pool_match.group(3).split(" ")[0][1:]
+            repl = DATA_POOL_PLACEHOLDER.format(offset)
+            return pool_match.group(1) + repl
+        return row
+
+    def post_process(self, lines: List["Line"]) -> None:
+        lines_by_line_number = {}
+        for line in lines:
+            lines_by_line_number[line.line_num] = line
+        for line in lines:
+            reloc_match = re.search(
+                DATA_POOL_PLACEHOLDER_PATTERN, line.normalized_original
+            )
+            if reloc_match is None:
+                continue
+
+            # Get value at relocation
+            reloc = reloc_match.group(0)
+            line_number = re.search(
+                DATA_POOL_PLACEHOLDER_PATTERN, reloc).group(1)
+            line_original = lines_by_line_number[int(line_number, 16)].original
+            value = line_original.split()[1]
+
+            # Replace relocation placeholder with value
+            replaced = re.sub(
+                DATA_POOL_PLACEHOLDER_PATTERN,
+                f"={value} ({line_number})",
+                line.normalized_original,
+            )
+            line.original = replaced
+
+
+class AsmProcessorAArch64(AsmProcessor):
     def __init__(self, config: Config) -> None:
         super().__init__(config)
         self._adrp_pair_registers: Set[str] = set()
@@ -1396,23 +1546,6 @@ class DifferenceNormalizerAArch64(DifferenceNormalizer):
         return row
 
 
-class DifferenceNormalizerARM32(DifferenceNormalizer):
-    def __init__(self, config: Config) -> None:
-        super().__init__(config)
-
-    def _normalize_arch_specific(self, mnemonic: str, row: str) -> str:
-        if self.config.ignore_addr_diffs:
-            row = self._normalize_bl(mnemonic, row)
-        return row
-
-    def _normalize_bl(self, mnemonic: str, row: str) -> str:
-        if mnemonic != "bl":
-            return row
-
-        row, _ = split_off_address(row)
-        return row + "<ignore>"
-
-
 @dataclass
 class ArchSettings:
     name: str
@@ -1422,12 +1555,13 @@ class ArchSettings:
     re_sprel: Pattern[str]
     re_large_imm: Pattern[str]
     re_imm: Pattern[str]
+    re_reloc: Pattern[str]
     branch_instructions: Set[str]
     instructions_with_address_immediates: Set[str]
     forbidden: Set[str] = field(default_factory=lambda: set(string.ascii_letters + "_"))
     arch_flags: List[str] = field(default_factory=list)
     branch_likely_instructions: Set[str] = field(default_factory=set)
-    difference_normalizer: Type[DifferenceNormalizer] = DifferenceNormalizer
+    proc: Type[AsmProcessor] = AsmProcessor
     big_endian: Optional[bool] = True
     delay_slot_instructions: Set[str] = field(default_factory=set)
 
@@ -1545,11 +1679,13 @@ MIPS_SETTINGS = ArchSettings(
     re_sprel=re.compile(r"(?<=,)([0-9]+|0x[0-9a-f]+)\(sp\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(sp)|%(lo|hi)\([^)]*\)"),
+    re_reloc=re.compile(r"R_MIPS_"),
     arch_flags=["-m", "mips:4300"],
     branch_likely_instructions=MIPS_BRANCH_LIKELY_INSTRUCTIONS,
     branch_instructions=MIPS_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=MIPS_BRANCH_INSTRUCTIONS.union({"jal", "j"}),
     delay_slot_instructions=MIPS_BRANCH_INSTRUCTIONS.union({"j", "jal", "jr", "jalr"}),
+    proc=AsmProcessorMIPS,
 )
 
 MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
@@ -1569,9 +1705,10 @@ ARM32_SETTINGS = ArchSettings(
     re_sprel=re.compile(r"sp, #-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(?<!sp, )#-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
+    re_reloc=re.compile(r"R_ARM_"),
     branch_instructions=ARM32_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=ARM32_BRANCH_INSTRUCTIONS.union({"adr"}),
-    difference_normalizer=DifferenceNormalizerARM32,
+    proc=AsmProcessorARM32,
 )
 
 AARCH64_SETTINGS = ArchSettings(
@@ -1584,9 +1721,10 @@ AARCH64_SETTINGS = ArchSettings(
     re_sprel=re.compile(r"sp, #-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(?<!sp, )#-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
+    re_reloc=re.compile(r"R_AARCH64_"),
     branch_instructions=AARCH64_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=AARCH64_BRANCH_INSTRUCTIONS.union({"bl", "adrp"}),
-    difference_normalizer=DifferenceNormalizerAArch64,
+    proc=AsmProcessorAArch64,
 )
 
 PPC_SETTINGS = ArchSettings(
@@ -1597,8 +1735,10 @@ PPC_SETTINGS = ArchSettings(
     re_sprel=re.compile(r"(?<=,)(-?[0-9]+|-?0x[0-9a-f]+)\(r1\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(r1)|[^@]*@(ha|h|lo)"),
+    re_reloc=re.compile(r"R_PPC_"),
     branch_instructions=PPC_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=PPC_BRANCH_INSTRUCTIONS.union({"bl"}),
+    proc=AsmProcessorPPC,
 )
 
 ARCH_SETTINGS = [
@@ -1642,84 +1782,6 @@ def parse_relocated_line(line: str) -> Tuple[str, str, str]:
     return before, imm, after
 
 
-def process_mips_reloc(row: str, prev: str, arch: ArchSettings) -> str:
-    if "R_MIPS_NONE" in row:
-        # GNU as emits no-op relocations immediately after real ones when
-        # assembling with -mabi=64. Return without trying to parse 'imm' as an
-        # integer.
-        return prev
-    before, imm, after = parse_relocated_line(prev)
-    repl = row.split()[-1]
-    if imm != "0":
-        # MIPS uses relocations with addends embedded in the code as immediates.
-        # If there is an immediate, show it as part of the relocation. Ideally
-        # we'd show this addend in both %lo/%hi, but annoyingly objdump's output
-        # doesn't include enough information to pair up %lo's and %hi's...
-        # TODO: handle unambiguous cases where all addends for a symbol are the
-        # same, or show "+???".
-        mnemonic = prev.split()[0]
-        if (
-            mnemonic in arch.instructions_with_address_immediates
-            and not imm.startswith("0x")
-        ):
-            imm = "0x" + imm
-        repl += "+" + imm if int(imm, 0) > 0 else imm
-    if "R_MIPS_LO16" in row:
-        repl = f"%lo({repl})"
-    elif "R_MIPS_HI16" in row:
-        # Ideally we'd pair up R_MIPS_LO16 and R_MIPS_HI16 to generate a
-        # correct addend for each, but objdump doesn't give us the order of
-        # the relocations, so we can't find the right LO16. :(
-        repl = f"%hi({repl})"
-    elif "R_MIPS_26" in row:
-        # Function calls
-        pass
-    elif "R_MIPS_PC16" in row:
-        # Branch to glabel. This gives confusing output, but there's not much
-        # we can do here.
-        pass
-    else:
-        assert False, f"unknown relocation type '{row}' for line '{prev}'"
-    return before + repl + after
-
-
-def process_ppc_reloc(row: str, prev: str) -> str:
-    assert any(
-        r in row for r in ["R_PPC_REL24", "R_PPC_ADDR16", "R_PPC_EMB_SDA21"]
-    ), f"unknown relocation type '{row}' for line '{prev}'"
-    before, imm, after = parse_relocated_line(prev)
-    repl = row.split()[-1]
-    if "R_PPC_REL24" in row:
-        # function calls
-        pass
-    elif "R_PPC_ADDR16_HI" in row:
-        # absolute hi of addr
-        repl = f"{repl}@h"
-    elif "R_PPC_ADDR16_HA" in row:
-        # adjusted hi of addr
-        repl = f"{repl}@ha"
-    elif "R_PPC_ADDR16_LO" in row:
-        # lo of addr
-        repl = f"{repl}@l"
-    elif "R_PPC_ADDR16" in row:
-        # 16-bit absolute addr
-        if "+0x7" in repl:
-            # remove the very large addends as they are an artifact of (label-_SDA(2)_BASE_)
-            # computations and are unimportant in a diff setting.
-            if int(repl.split("+")[1], 16) > 0x70000000:
-                repl = repl.split("+")[0]
-    elif "R_PPC_EMB_SDA21" in row:
-        # small data area
-        pass
-    return before + repl + after
-
-
-def process_arm_reloc(row: str, prev: str, arch: ArchSettings) -> str:
-    before, imm, after = parse_relocated_line(prev)
-    repl = row.split()[-1]
-    return before + repl + after
-
-
 def pad_mnemonic(line: str) -> str:
     if "\t" not in line:
         return line
@@ -1744,7 +1806,7 @@ class Line:
 
 def process(dump: str, config: Config) -> List[Line]:
     arch = config.arch
-    normalizer = arch.difference_normalizer(config)
+    processor = arch.proc(config)
     skip_next = False
     source_lines = []
     source_filename = None
@@ -1786,7 +1848,7 @@ def process(dump: str, config: Config) -> List[Line]:
             )
             break
 
-        if not re.match(r"^ +[0-9a-f]+:\t", row):
+        if not re.match(r"^\s+[0-9a-f]+:\s+", row):
             # This regex is conservative, and assumes the file path does not contain "weird"
             # characters like colons, tabs, or angle brackets.
             if re.match(
@@ -1800,10 +1862,11 @@ def process(dump: str, config: Config) -> List[Line]:
         m_comment = re.search(arch.re_comment, row)
         comment = m_comment[0] if m_comment else None
         row = re.sub(arch.re_comment, "", row)
+        line_num_str = row.split(":")[0]
         row = row.rstrip()
         tabs = row.split("\t")
         row = "\t".join(tabs[2:])
-        line_num = eval_line_num(tabs[0].strip())
+        line_num = eval_line_num(line_num_str.strip())
 
         if line_num in data_refs:
             refs = data_refs[line_num]
@@ -1838,20 +1901,13 @@ def process(dump: str, config: Config) -> List[Line]:
 
         while i < len(lines):
             reloc_row = lines[i]
-            if "R_AARCH64_" in reloc_row:
-                # TODO: handle relocation
-                pass
-            elif "R_MIPS_" in reloc_row:
-                original = process_mips_reloc(reloc_row, original, arch)
-            elif "R_PPC_" in reloc_row:
-                original = process_ppc_reloc(reloc_row, original)
-            elif "R_ARM_" in reloc_row:
-                original = process_arm_reloc(reloc_row, original, arch)
+            if re.search(arch.re_reloc, reloc_row):
+                original = processor.process_reloc(reloc_row, original)
             else:
                 break
             i += 1
 
-        normalized_original = normalizer.normalize(mnemonic, original)
+        normalized_original = processor.normalize(mnemonic, original)
 
         scorable_line = normalized_original
         if not config.score_stack_differences:
@@ -1907,6 +1963,7 @@ def process(dump: str, config: Config) -> List[Line]:
         elif stop_after_delay_slot:
             break
 
+    processor.post_process(output)
     return output
 
 

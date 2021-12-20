@@ -1,11 +1,18 @@
-# mips_to_c
+# `mips_to_c`
 Given some MIPS assembly, this program will attempt to convert it to C.
-The goal is that eventually the output will be well-formed C, and eventually after that, byte-equivalent C.
 
-Right now the decompiler is fairly functional, though it sometimes generates suboptimal code
-(especially for loops). See the `tests/` directory for some example input and output.
+The goal of this project is to support decompilation projects, which aim to write C code that yields byte-identical output when compiled with a particular build system.
+It primarily focuses on supporting popular compilers of the late 1990's.
+However, it may also work with other compilers or hand-written assembly.
 
-An online version is available at https://simonsoftware.se/other/mips_to_c.py.
+The focus of `mips_to_c` is to aid in the process of producing "matching" C source files.
+This differentiates it from other decompilation suites, such as IDA or Ghidra.
+Right now the decompiler is fairly functional, though it sometimes generates suboptimal code (especially for loops).
+
+The input is expected to match a particular assembly format, such as that produced by tools like [`mipsdisasm`](https://github.com/queueRAM/sm64tools).
+See the `tests/` directory for some example input and output.
+
+[An online version is also available](https://simonsoftware.se/other/mips_to_c.py).
 
 ## Install
 
@@ -56,6 +63,134 @@ This feature is controlled with the `--globals` option (or "Global declarations"
 - `--globals=none` disables globals entirely; only function definitions are emitted.
 - `--globals=all` includes all of the output in `used`, but also includes initializers for unreferenced symbols. This can be used to convert data/rodata files without decompiling any functions.
 
+### Specifying stack variables
+
+By default, `mips_to_c` infers the types of stack (local) variables, and names them with the `sp` prefix based on their offset.
+
+Internally, the stack is represented as a struct, so it is possible to manually specify the names & types of stack variables by providing a struct declaration in the context. `mips_to_c` looks in the context for a struct with the tag name `_mips2c_stack_<function name>` (e.g. `struct _mips2c_stack_test` for a function `test()`).
+
+The size of the stack must exactly match the detected frame size, or `mips_to_c` will return an error.
+If you run `mips_to_c` with the `--structs` option, the output will include the inferred stack declaration, which can then be edited and provided as context by re-running `mips_to_c`.
+
+#### Example
+
+Here is an example for specifying the stack for the `custom_stack` end-to-end test.
+
+First, run `mips_to_c` with the `--struct` option to get the inferred struct for the `test()` function:
+
+<details>
+    <summary><code>python3 mips_to_c.py tests/end_to_end/custom_stack/irix-o2.s -f test --struct</code></summary>
+
+```c
+struct _mips2c_stack_test {
+    /* 0x00 */ char pad0[0x20];
+    /* 0x20 */ s8 sp20;                             /* inferred */
+    /* 0x21 */ char pad21[0x3];                     /* maybe part of sp20[4]? */
+    /* 0x24 */ s32 sp24;                            /* inferred */
+    /* 0x28 */ s32 sp28;                            /* inferred */
+    /* 0x2C */ s8 sp2C;                             /* inferred */
+    /* 0x2D */ char pad2D[0x3];                     /* maybe part of sp2C[4]? */
+    /* 0x30 */ s8 sp30;                             /* inferred */
+    /* 0x31 */ char pad31[0x3];                     /* maybe part of sp30[4]? */
+    /* 0x34 */ s8 sp34;                             /* inferred */
+    /* 0x35 */ char pad35[0x2];                     /* maybe part of sp34[3]? */
+    /* 0x37 */ s8 sp37;                             /* inferred */
+};                                                  /* size = 0x38 */
+
+? func_00400090(s8 *);                              /* static */
+s32 test(void *arg0);                               /* static */
+
+s32 test(void *arg0) {
+    s8 sp37;
+    s8 sp34;
+    s8 sp30;
+    s8 sp2C;
+    s32 sp28;
+    s32 sp24;
+    s8 sp20;
+    s32 temp_t4;
+
+    func_00400090(&sp37);
+    func_00400090(&sp34);
+    func_00400090(&sp30);
+    func_00400090(&sp2C);
+    func_00400090(&sp20);
+    sp37 = arg0->unk0 + arg0->unk4;
+    sp34 = arg0->unk0 + arg0->unk8;
+    temp_t4 = arg0->unk4 + arg0->unk8;
+    sp30 = temp_t4;
+    sp20 = arg0->unk0 * sp37;
+    sp24 = arg0->unk4 * (s16) sp34;
+    sp28 = arg0->unk8 * temp_t4;
+    if (sp37 != 0) {
+        sp2C = arg0;
+    } else {
+        sp2C = &sp20;
+    }
+    return sp37 + (s16) sp34 + (s32) sp30 + *(s32 *) sp2C + sp24;
+}
+```
+</details>
+
+Now, based on the body of the `test()` function, we can make some guesses about the types of these variables, and give them more descriptive names:
+
+```c
+// Save this file as `test_context.c`
+struct Vec {
+    s32 x, y, z;
+};
+
+struct _mips2c_stack_test {
+    char pad0[0x20];
+    struct Vec vec;
+    struct Vec *vec_ptr;
+    s32 scale_z;
+    s16 scale_y;
+    char pad36[1];
+    s8 scale_x;
+}; /* size 0x38 */
+
+int test(struct Vec *vec_arg);
+```
+
+Finally, re-run `mips_to_c` with our custom stack as part of the `--context`. The `--context` option can be specified multiple times to combine files.
+
+<details>
+    <summary><code>python3 mips_to_c.py tests/end_to_end/custom_stack/irix-o2.s -f test --context test_context.c</code></summary>
+
+```c
+? func_00400090(s8 *);                              /* static */
+
+s32 test(struct Vec *vec_arg) {
+    s8 scale_x;
+    s16 scale_y;
+    s32 scale_z;
+    struct Vec *vec_ptr;
+    struct Vec vec;
+    s32 temp_t4;
+
+    func_00400090(&scale_x);
+    func_00400090((s8 *) &scale_y);
+    func_00400090((s8 *) &scale_z);
+    func_00400090((s8 *) &vec_ptr);
+    func_00400090((s8 *) &vec);
+    scale_x = vec_arg->x + vec_arg->y;
+    scale_y = vec_arg->x + vec_arg->z;
+    temp_t4 = vec_arg->y + vec_arg->z;
+    scale_z = temp_t4;
+    vec = vec_arg->x * scale_x;
+    vec.y = vec_arg->y * scale_y;
+    vec.z = vec_arg->z * temp_t4;
+    if (scale_x != 0) {
+        vec_ptr = vec_arg;
+    } else {
+        vec_ptr = &vec;
+    }
+    return scale_x + scale_y + scale_z + vec_ptr->x + vec.y;
+}
+```
+</details>
+
 ### Formatting
 
 The following options control the formatting details of the output, such as braces style or numeric format. See `./mips_to_c.py --help` for more details. 
@@ -67,7 +202,7 @@ The following options control the formatting details of the output, such as brac
 - `--pointer-style` ("`*` to the left")
 - `--unk-underscore`
 - `--hex-case`
-- `--comment-style {multiline,oneline}` ("Comment style")
+- `--comment-style {multiline,oneline,none}` ("Comment style")
 - `--comment-column N` ("Comment style")
 - `--no-casts`
 
@@ -78,6 +213,7 @@ Note: `--valid-syntax` is used to produce output that is less human-readable, bu
 There are several options to `mips_to_c` which can be used to troubleshoot poor results. Many of these options produce more "primitive" output or debugging information.
 
 - `--no-andor` ("Disable &&/||"): Disable complex conditional detection, such as `if (a && b)`. Instead, emit each part of the conditional as a separate `if` statement. Ands, ors, nots, etc. are usually represented with `goto`s.
+- `--no-switches` ("Disable irregular switch detection"): Disable "irregular" `switch` statements, where the compiler emits a single `switch` as a series of branches and/or jump tables. By default, these are coalesced into a single `switch` and marked with an `/* irregular */` comment.
 - `--gotos-only` ("Use gotos for everything"): Do not detect loops or complex conditionals. This format is close to a 1-1 translation of the assembly.
     - Note: to use a goto for a single branch, don't use this flag, but add `# GOTO` to the assembly input.
 - `--debug` ("Debug info"): include debug information inline with the code, such as basic block boundaries & labels.
@@ -99,15 +235,15 @@ python3 ./mips_to_c.py --visualize --context ctx.c -f my_fn my_asm.s > my_fn.svg
 
 There is much low-hanging fruit still. Take a look at the issues if you want to help out.
 
-We use `black` to auto-format our code. We recommend using `pre-commit` to ensure only auto-formatted code is committed. To set these up, run:
+We use `black` to auto-format our code and `mypy` for type checking. We recommend using `pre-commit` to ensure only auto-formatted code is committed. To set these up, run:
 ```bash
-pip install pre-commit black
+pip install pre-commit black mypy
 pre-commit install
 ```
 
 Your commits will then be automatically formatted per commit. You can also manually run `black` on the command-line.
 
-Type annotations are used for all Python code. `mypy mips_to_c.py` should pass without any errors.
+Type annotations are used for all Python code. `mypy` should pass without any errors.
 
 To get pretty graph visualizations, install `graphviz` using `pip` and globally on your system (e.g. `sudo apt install graphviz`), and pass the `--visualize` flag.
 

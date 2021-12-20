@@ -1,9 +1,11 @@
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.m2c_wrapper import M2CWrapper
+from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
+from django.core.validators import validate_slug
+from django.http import HttpResponse
 from django.utils.timezone import now
 from django.views.decorators.vary import vary_on_cookie
 from rest_framework import serializers, status
@@ -12,15 +14,20 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 import hashlib
+import io
+import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
+import zipfile
+
 
 from .models import Profile, Asm, Scratch, gen_scratch_id
 from .github import GitHubUser
 from .middleware import Request
 from .decorators.django import condition
 
+logger = logging.getLogger(__name__)
 boot_time = now()
 
 def get_db_asm(request_asm) -> Asm:
@@ -49,32 +56,32 @@ def update_scratch_score(scratch: Scratch):
     Compile a scratch and save its score and max score
     """
 
-    compilation, errors = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+    result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-    if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+    if result.elf_object:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
         scratch.score = diff_output.get("current_score", scratch.score)
         scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
 
+
+def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+    if scratch:
+        return scratch.last_updated
+    else:
+        return None
+
+def scratch_etag(request: Request, slug: str) -> Optional[str]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
+    if scratch:
+        return str(hash(scratch))
+    else:
+        return None
+
+scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
+
 class ScratchDetail(APIView):
-    # type-ignored due to python/mypy#7778
-    def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]: # type: ignore
-        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
-        if scratch:
-            return scratch.last_updated
-        else:
-            return None
-
-    def scratch_etag(request: Request, slug: str) -> Optional[str]: # type: ignore
-        scratch: Optional[Scratch] = Scratch.objects.filter(slug=slug).first()
-        if scratch:
-            return str(hash(scratch))
-        else:
-            return None
-
-    scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
-
     @scratch_condition
     @vary_on_cookie
     def head(self, request: Request, slug: str):
@@ -129,12 +136,51 @@ class ScratchClaim(APIView):
 
         profile = request.profile
 
-        logging.debug(f"Granting ownership of scratch {scratch} to {profile}")
+        logger.debug(f"Granting ownership of scratch {scratch} to {profile}")
 
         scratch.owner = profile
         scratch.save()
 
         return Response({ "success": True })
+
+class ScratchExport(APIView):
+    @scratch_condition
+    def head(self, request: Request, slug: str) -> HttpResponse:
+        validate_slug(slug)
+        get_object_or_404(Scratch, slug=slug)
+        return HttpResponse(
+            headers = {
+                "Content-Type": "application/zip",
+                "Content-Disposition": f"attachment; filename={slug}.zip",
+            }
+        )
+
+    @scratch_condition
+    def get(self, request: Request, slug: str) -> HttpResponse:
+        # Double-check `slug` to prevent some injection attacks
+        validate_slug(slug)
+        scratch = get_object_or_404(Scratch, slug=slug)
+
+        metadata = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
+        metadata.pop("source_code")
+        metadata.pop("context")
+
+        zip_bytes = io.BytesIO()
+        with zipfile.ZipFile(zip_bytes, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_f:
+            zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
+            zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
+            zip_f.writestr("target.o", scratch.target_assembly.elf_object)
+            zip_f.writestr("code.c", scratch.source_code)
+            if scratch.context:
+                zip_f.writestr("ctx.c", scratch.context)
+
+        return HttpResponse(
+            zip_bytes.getvalue(),
+            headers = {
+                "Content-Type": "application/zip",
+                "Content-Disposition": f"attachment; filename={slug}.zip",
+            }
+        )
 
 @api_view(["POST"])
 def create_scratch(request):
@@ -188,10 +234,17 @@ def create_scratch(request):
 
     source_code = data.get("source_code")
     if not source_code:
-        source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        source_code = default_source_code
         arch = CompilerWrapper.arch_from_platform(platform)
         if arch in ["mips", "mipsel"]:
-            source_code = M2CWrapper.decompile(asm.data, context, compiler) or source_code
+            try:
+                source_code = M2CWrapper.decompile(asm.data, context, compiler)
+            except M2CError as e:
+                source_code = f"{e}\n{default_source_code}"
+            except Exception:
+                logger.exception("Error running mips_to_c")
+                source_code = f"/* Internal error while running mips_to_c */\n{default_source_code}"
 
     compiler_flags = data.get("compiler_flags", "")
     if compiler and compiler_flags:
@@ -240,22 +293,22 @@ def compile(request, slug):
     code = request.data["source_code"]
     context = request.data.get("context", None)
 
-    scratch = Scratch.objects.get(slug=slug)
+    scratch: Scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
     if not context:
-        logging.debug("No context provided, getting from backend")
+        logger.debug("No context provided, getting from backend")
         context = scratch.context
 
-    compilation, errors = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
+    result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
 
     diff_output: Optional[Dict[str, Any]] = None
-    if compilation:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, compilation, scratch.diff_label)
+    if result.elf_object:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
 
     return Response({
         "diff_output": diff_output,
-        "errors": errors,
+        "errors": result.errors,
     })
 
 @api_view(["POST"])
@@ -333,3 +386,4 @@ def user(request, username):
     """
 
     return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
+

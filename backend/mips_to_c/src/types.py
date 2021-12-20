@@ -9,6 +9,8 @@ from .c_types import (
     Struct,
     StructUnion as CStructUnion,
     TypeMap,
+    UndefinedStructError,
+    is_unk_type,
     parse_constant_int,
     parse_function,
     parse_struct,
@@ -32,11 +34,13 @@ class TypePool:
     """
 
     unknown_field_prefix: str
+    struct_field_inference: bool
     structs: Set["StructDeclaration"] = field(default_factory=set)
     structs_by_tag_name: Dict[str, "StructDeclaration"] = field(default_factory=dict)
     structs_by_ctype: Dict[CStructUnion, "StructDeclaration"] = field(
         default_factory=dict
     )
+    warnings: List[str] = field(default_factory=list)
 
     def get_struct_for_ctype(
         self,
@@ -90,6 +94,21 @@ class TypePool:
                 tag_name not in self.structs_by_tag_name
             ), f"Duplicate tag: {tag_name}"
             self.structs_by_tag_name[tag_name] = struct
+
+    def format_type_declarations(self, fmt: Formatter) -> str:
+        decls = []
+        for struct in sorted(
+            self.structs, key=lambda s: s.tag_name or s.typedef_name or ""
+        ):
+            # Include stack structs & any struct with added fields
+            if struct.is_stack or any(not f.known for f in struct.fields):
+                decls.append(struct.format(fmt) + "\n")
+        return "\n".join(decls)
+
+    def prune_structs(self) -> None:
+        """Remove overlapping fields from all known structs"""
+        for struct in self.structs:
+            struct.prune_overlapping_fields()
 
 
 @dataclass(eq=False)
@@ -267,6 +286,9 @@ class Type:
     def is_struct(self) -> bool:
         return self.data().kind == TypeData.K_STRUCT
 
+    def is_signed(self) -> bool:
+        return self.data().sign == TypeData.SIGNED
+
     def is_unsigned(self) -> bool:
         return self.data().sign == TypeData.UNSIGNED
 
@@ -307,6 +329,13 @@ class Type:
             data = self.data()
             assert data.ptr_to is not None
             return Type.ptr(data.ptr_to)
+        return self
+
+    def weaken_void_ptr(self) -> "Type":
+        """If self is an explicit `void *`, return `Type.ptr()` without an target type."""
+        target = self.get_pointer_target()
+        if target is not None and target.is_void():
+            return Type.ptr()
         return self
 
     def get_array(self) -> Tuple[Optional["Type"], Optional[int]]:
@@ -402,10 +431,10 @@ class Type:
                 return NO_MATCHING_FIELD
 
             # One option is to return the whole struct itself. Do not do this if the struct
-            # is marked hidden, or if `target_size` is specified and does not match.
+            # is marked as a stack struct, or if `target_size` is specified and does not match.
             possible_results: List[Type.GetFieldResult] = []
             can_return_self = False
-            if not data.struct.is_hidden and (
+            if not data.struct.is_stack and (
                 target_size is None or target_size == self.get_size_bytes()
             ):
                 possible_results.append(([], self, offset))
@@ -440,10 +469,15 @@ class Type:
                 return zero_offset_results[0]
             elif exact:
                 # Try to insert a new field into the struct at the given offset
-                # TODO Loosen this to Type.any()
-                field_type = Type.any_reg()
+                # TODO Loosen this to Type.any_field(), even for stack structs
+                if data.struct.is_stack:
+                    field_type = Type.any_reg()
+                else:
+                    field_type = Type.any_field()
                 field_name = f"{data.struct.new_field_prefix}{offset:X}"
-                new_field = data.struct.try_add_field(field_type, offset, field_name)
+                new_field = data.struct.try_add_field(
+                    field_type, offset, field_name, size=target_size
+                )
                 if new_field is not None:
                     return [field_name], field_type, 0
             elif possible_results:
@@ -527,13 +561,20 @@ class Type:
 
                 add_padding(field.offset)
                 field_size = field.type.get_size_bytes()
-                assert field_size is not None
+                # If any field has unknown size, we can't make an initializer
+                if field_size is None:
+                    return None
+
                 output.append(field.type)
                 position = field.offset + field_size
 
                 # Unions only have an initializer for the first field
                 if data.struct.is_union:
                     break
+
+            # This struct has a field that goes outside of the bounds of the struct
+            if position > data.struct.size:
+                return None
 
             add_padding(data.struct.size)
             return output
@@ -545,6 +586,7 @@ class Type:
             name=name,
             type=self._to_ctype(set(), fmt),
             quals=[],
+            align=[],
             storage=[],
             funcspec=[],
             init=None,
@@ -568,7 +610,10 @@ class Type:
     def _to_ctype(self, seen: Set["TypeData"], fmt: Formatter) -> CType:
         def simple_ctype(typename: str) -> ca.TypeDecl:
             return ca.TypeDecl(
-                type=ca.IdentifierType(names=[typename]), declname=None, quals=[]
+                type=ca.IdentifierType(names=[typename]),
+                declname=None,
+                quals=[],
+                align=[],
             )
 
         unk_symbol = "MIPS2C_UNK" if fmt.valid_syntax else "?"
@@ -620,6 +665,7 @@ class Type:
                     name=param.name,
                     type=param.type._to_ctype(seen.copy(), fmt),
                     quals=[],
+                    align=[],
                     storage=[],
                     funcspec=[],
                     init=None,
@@ -643,7 +689,7 @@ class Type:
             assert data.ptr_to is not None
             dim: Optional[ca.Constant] = None
             if data.array_dim is not None:
-                dim = ca.Constant(value=str(data.array_dim), type="")
+                dim = ca.Constant(value=fmt.format_int(data.array_dim), type="")
             return ca.ArrayDecl(
                 type=data.ptr_to._to_ctype(seen.copy(), fmt),
                 dim=dim,
@@ -658,7 +704,10 @@ class Type:
             name = data.struct.tag_name or "_anonymous"
             Class = ca.Union if data.struct.is_union else ca.Struct
             return ca.TypeDecl(
-                declname=name, type=ca.Struct(name=name, decls=None), quals=[]
+                declname=name,
+                type=ca.Struct(name=name, decls=None),
+                quals=[],
+                align=[],
             )
 
         return simple_ctype(f"{sign}{size_bits}")
@@ -693,6 +742,10 @@ class Type:
     @staticmethod
     def any_reg() -> "Type":
         return Type(TypeData(kind=TypeData.K_ANYREG))
+
+    @staticmethod
+    def any_field() -> "Type":
+        return Type(TypeData(kind=TypeData.K_ANY & ~TypeData.K_VOID))
 
     @staticmethod
     def intish() -> "Type":
@@ -945,7 +998,7 @@ class StructDeclaration:
     fields: List[StructField] = field(default_factory=list)  # sorted by `.offset`
     has_bitfields: bool = False
     is_union: bool = False
-    is_hidden: bool = False
+    is_stack: bool = False
 
     def unify(
         self,
@@ -973,7 +1026,7 @@ class StructDeclaration:
         return fields
 
     def try_add_field(
-        self, type: Type, offset: int, name: str
+        self, type: Type, offset: int, name: str, size: Optional[int]
     ) -> Optional[StructField]:
         """
         Try to add a field into the struct, and return it if successful.
@@ -988,15 +1041,166 @@ class StructDeclaration:
         if not (0 <= offset < self.size):
             return None
 
-        # For now, assume that the type is only one byte wide, and do not allow
-        # the new field to overlap with any other field.
-        if self.fields_containing_offset(offset):
-            return None
+        # Do not allow the new field to overlap with any other field
+        # If there is a size we don't know, assume it is only 1 byte wide
+        size = size or 1
+        for field in self.fields:
+            field_size = field.type.get_size_bytes() or 1
+
+            # Two intervals overlap if one contains the start of the other
+            if offset <= field.offset < offset + size:
+                return None
+            if field.offset <= offset < field.offset + field_size:
+                return None
 
         field = self.StructField(type=type, offset=offset, name=name, known=False)
         self.fields.append(field)
         self.fields.sort(key=lambda f: f.offset)
         return field
+
+    def prune_overlapping_fields(self) -> None:
+        """Remove overlapping fields with `known=False` from the struct"""
+
+        # TODO: Support unions
+        if self.is_union:
+            return None
+
+        # Sort by offset, with bigger fields at the same offset first
+        self.fields.sort(key=lambda f: (f.offset, -(f.type.get_size_bytes() or 0)))
+
+        fields_to_remove: Set[StructDeclaration.StructField] = set()
+        for i, field in enumerate(self.fields):
+            # Skip fields provided by the context or marked for removal
+            if field.known or field in fields_to_remove:
+                continue
+
+            # If the size of a field (still) isn't known, assume it is 1 byte
+            field_size = field.type.get_size_bytes() or 1
+
+            conflicting_fields: List[StructDeclaration.StructField] = []
+            for f2 in self.fields[i + 1 :]:
+                assert f2.offset >= field.offset
+                # If `f2` is after the end of `field`, we're done
+                if f2.offset >= field.offset + field_size:
+                    break
+                if f2 in fields_to_remove:
+                    continue
+
+                # Now, we know `field` and `f2` overlap. Check if `f2` is a subfield of `field`.
+                offset = f2.offset - field.offset
+                sub_path, sub_type, _ = field.type.get_field(
+                    offset, target_size=f2.type.get_size_bytes()
+                )
+                if sub_path is not None and sub_type.unify(f2.type):
+                    # Remove `f2` so that accesses to `f2.offset` go through `field` instead.
+                    # Defer adding `f2` to `fields_to_remove` until we're done processing `field`.
+                    conflicting_fields.append(f2)
+                elif not f2.known and f2.type.is_int() and field.type.is_int():
+                    # Ignore overlapping inferred ints. This can happen when a load & cast is
+                    # implemented with a load of a smaller size. It would be better to detect
+                    # those cases directly; until then, the code is easier to manually fix
+                    # if we leave the overlapping fields.
+                    pass
+                else:
+                    # `field` is too big: this usually means that we incorrectly inferred
+                    # it to be a (large) struct. Reset its type to something smaller.
+                    # Although this is unlikely to produce the correct type for this field,
+                    # it helps minimize the damage done to the rest of the struct.
+                    if conflicting_fields:
+                        offset = conflicting_fields[0].offset - field.offset
+                        conflicting_fields = []
+
+                    if offset == 0:
+                        # `field` directly overlaps with another, smaller, field, so remove it
+                        conflicting_fields = [field]
+                    if offset >= 4:
+                        field.type = Type.any_reg()
+                    else:
+                        field.type = Type.int_of_size(offset * 8)
+
+                    break
+            fields_to_remove |= set(conflicting_fields)
+        self.fields = [f for f in self.fields if f not in fields_to_remove]
+
+    def format(self, fmt: Formatter) -> str:
+        """
+        Return the C representation of the struct/union.
+        NB: We don't use ca.Struct here so that we can add comments for each field.
+
+        TODO: This does not correctly handle nested anonymous structs/unions, though it
+        is possible for the user to reconstruct these by hand from the "offset" comments.
+        """
+        keyword = "union" if self.is_union else "struct"
+        decl = f"{keyword} {self.tag_name}" if self.tag_name else f"{keyword}"
+        head = f"typedef {decl} {{" if self.typedef_name else f"{decl} {{"
+        tail = f"}} {self.typedef_name};" if self.typedef_name else f"}};"
+
+        # If there are no fields or padding, return everything on one line
+        if self.size == 0 and not self.fields:
+            return fmt.with_comments(head + tail, [f"size 0x0"])
+
+        lines = []
+        lines.append(fmt.indent(head))
+        with fmt.indented():
+            offset_str_digits = len(fmt.format_hex(self.size))
+
+            def offset_comment(offset: int) -> str:
+                # Indicate the offset of the field (in hex), written to the *left* of the field
+                nonlocal offset_str_digits
+                return f"/* 0x{fmt.format_hex(offset).zfill(offset_str_digits)} */"
+
+            position = 0
+            prev_field: Optional[StructDeclaration.StructField] = None
+
+            def pad_to(offset: int, is_final: bool) -> None:
+                nonlocal position
+                if position < offset:
+                    # Fill the gap with a char array, e.g. `char pad12[0x34];`
+                    underscore = "_" if fmt.coding_style.unknown_underscore else ""
+                    name = f"pad{underscore}{fmt.format_hex(position)}"
+                    padding_size = offset - position
+
+                    comments = []
+                    # Hint if the previous field may be an array, unless this is the final field in a stack struct
+                    if prev_field is not None and not (is_final and self.is_stack):
+                        last_size = prev_field.type.get_size_bytes()
+                        if last_size and padding_size > last_size:
+                            array_dim_str = fmt.format_int(
+                                padding_size // last_size + 1
+                            )
+                            comments.append(
+                                f"maybe part of {prev_field.name}[{array_dim_str}]?"
+                            )
+
+                    lines.append(
+                        fmt.with_comments(
+                            f"{offset_comment(position)} char {name}[{fmt.format_int(padding_size)}];",
+                            comments,
+                        )
+                    )
+
+            for field in self.fields:
+                pad_to(field.offset, is_final=False)
+                field_decl = f"{offset_comment(field.offset)} {field.type.to_decl(field.name, fmt)};"
+
+                comments = []
+                # Detect if adjacent fields incorrectly overlap (the C decl will not be accurate)
+                if not self.is_union and position > field.offset:
+                    comments.append("overlap")
+                # Detect if a union field doesn't start at 0 (the C decl will not be accurate)
+                if self.is_union and field.offset != 0:
+                    comments.append("offset")
+                # Mark fields that weren't in the input TypeMap (i.e. weren't in the context)
+                if not field.known:
+                    comments.append("inferred")
+                lines.append(fmt.with_comments(field_decl, comments))
+                position = max(
+                    position, field.offset + (field.type.get_size_bytes() or 0)
+                )
+                prev_field = field
+            pad_to(self.size, is_final=True)
+        lines.append(fmt.with_comments(tail, [f"size = 0x{fmt.format_hex(self.size)}"]))
+        return "\n".join(lines)
 
     @staticmethod
     def unknown_of_size(
@@ -1026,8 +1230,6 @@ class StructDeclaration:
         if existing_struct:
             return existing_struct
 
-        struct = parse_struct(ctype, typemap)
-
         typedef_name: Optional[str] = None
         if ctype in typemap.struct_typedefs:
             typedef = typemap.struct_typedefs[ctype]
@@ -1038,17 +1240,32 @@ class StructDeclaration:
             assert isinstance(typedef.type, ca.IdentifierType)
             typedef_name = typedef.type.names[0]
 
+        try:
+            struct = parse_struct(ctype, typemap)
+            struct_fields = struct.fields
+            struct_has_bitfields = struct.has_bitfields
+            struct_size = struct.size
+            struct_align = struct.align
+        except UndefinedStructError:
+            struct_fields = {}
+            struct_has_bitfields = False
+            struct_size = 0
+            struct_align = 1
+            typepool.warnings.append(
+                f"Warning: struct {typedef_name or ctype.name} is not defined (only forward-declared)"
+            )
+
         assert (
-            struct.size % struct.align == 0
+            struct_size % struct_align == 0
         ), "struct size must be a multiple of its alignment"
 
         decl = StructDeclaration(
-            size=struct.size,
-            align=struct.align,
+            size=struct_size,
+            align=struct_align,
             tag_name=ctype.name,
             typedef_name=typedef_name,
             fields=[],
-            has_bitfields=struct.has_bitfields,
+            has_bitfields=struct_has_bitfields,
             is_union=isinstance(ctype, ca.Union),
             new_field_prefix=typepool.unknown_field_prefix,
         )
@@ -1056,8 +1273,10 @@ class StructDeclaration:
         # in case there are any self-referential fields in this struct.
         typepool.add_struct(decl, ctype)
 
-        for offset, fields in sorted(struct.fields.items()):
+        for offset, fields in sorted(struct_fields.items()):
             for field in fields:
+                if typepool.struct_field_inference and is_unk_type(field.type, typemap):
+                    continue
                 field_type = Type.ctype(field.type, typemap, typepool)
                 assert field.size == field_type.get_size_bytes(), (
                     field.size,

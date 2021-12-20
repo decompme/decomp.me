@@ -23,14 +23,14 @@
 }
 
 .lineNumber {
-    color: grey;
-    font-size: 0.7em;
+    color: rgb(140, 140, 140);
+    font-size: 0.9em;
     font-style: italic;
 }
 
 .immediate { color: #6d6dff; }
-.stack { color: #e3fc45; }
-.register { color: #e3fc45; }
+.stack { color: #abc501; }
+.register { color: #aa8b00; }
 
 .delay_slot {
     font-weight: bold;
@@ -53,7 +53,7 @@
 .rotation1 { color: cyan; }
 .rotation2 { color: rgb(0, 212, 0); }
 .rotation3 { color: red; }
-.rotation4 { color: lightyellow; }
+.rotation4 { color: rgb(103, 106, 255); }
 .rotation5 { color: lightpink; }
 .rotation6 { color: lightcyan; }
 .rotation7 { color: lightgreen; }
