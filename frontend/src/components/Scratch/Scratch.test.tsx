@@ -1,7 +1,6 @@
 import React from "react"
 
-import { act, render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { act, render } from "@testing-library/react"
 
 import * as api from "../../lib/api"
 
