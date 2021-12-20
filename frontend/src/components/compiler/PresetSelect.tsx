@@ -85,6 +85,16 @@ export const PRESETS = [
         compiler: "mwcc_233_163e",
         opts: "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
     },
+    {
+        name: "Super Paper Mario (DOL)",
+        compiler: "mwcc_41_60831",
+        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4"
+    },
+    {
+        name: "Super Paper Mario (REL)",
+        compiler: "mwcc_41_60831",
+        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares"
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
