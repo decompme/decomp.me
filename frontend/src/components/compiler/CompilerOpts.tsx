@@ -79,39 +79,18 @@ export type Props = {
     isPopup?: boolean
 }
 
-export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
-    const compiler = value.compiler
-    let opts = value.compiler_flags
-
-    const setCompiler = (compiler: string) => {
-        onChange({
-            compiler,
-            compiler_flags: opts,
-        })
-    }
-
-    const setOpts = (opts: string) => {
-        onChange({
-            compiler,
-            compiler_flags: opts,
-        })
-    }
-
+export default function CompilerOpts({ platform, flags, compiler, onCompilerChange, onFlagsChange, title, isPopup }: Props) {
     const setPreset = (preset: CompilerPreset) => {
-        onChange({
-            compiler: preset.compiler,
-            compiler_flags: preset.opts,
-        })
+        onCompilerChange(preset.compiler)
+        onFlagsChange(preset.opts)
     }
 
     return <OptsContext.Provider value={{
         checkFlag(flag: string) {
-            return flags.split(" ").includes(flag)
+            return (" " + flags + " ").includes(" " + flag + " ")
         },
 
         setFlag(flag: string, enable: boolean) {
-            const split = flags.split(" ")
-
             if (enable) {
                 flags = flags + " " + flag
             } else {
@@ -119,12 +98,12 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
             }
 
             flags = flags.trim()
-            setOpts(flags)
+            onFlagsChange(flags)
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
             {title || "Compiler Options"}
-            <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
+            <PresetSelect platform={platform} compiler={compiler} opts={flags} setPreset={setPreset} />
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
             <OptsEditor platform={platform} compiler={compiler} setCompiler={onCompilerChange} opts={flags} setOpts={onFlagsChange} />
