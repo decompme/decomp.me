@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
+from unittest import skipIf
 
 import responses
 from time import sleep
@@ -12,7 +13,17 @@ from time import sleep
 from .models import Scratch, Profile
 from .github import GitHubUser
 
+def onlyIfCompilerAvailable(*compiler_ids: str):
+    available = CompilerWrapper.available_compiler_ids()
+
+    for id in compiler_ids:
+        if id not in available:
+            return skipIf(True, f"Compiler {id} not available")
+
+    return skipIf(False, "")
+
 class ScratchCreationTests(APITestCase):
+    @onlyIfCompilerAvailable('ido7.1')
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
@@ -36,6 +47,7 @@ nop"""
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
+    @onlyIfCompilerAvailable('ido5.3')
     def test_n64_func(self):
         """
         Ensure that functions with t6/t7 registers can be assembled.
@@ -61,6 +73,7 @@ sb  $t6, %lo(D_801D702C)($at)
         self.assertEqual(Scratch.objects.count(), 1)
 
 class ScratchModificationTests(APITestCase):
+    @onlyIfCompilerAvailable('gcc2.8.1', 'ido5.3')
     def test_update_scratch_score(self):
         """
         Ensure that a scratch's score gets updated when the code changes.
@@ -99,6 +112,7 @@ class ScratchModificationTests(APITestCase):
         assert(scratch is not None)
         self.assertEqual(scratch.score, 200)
 
+    @onlyIfCompilerAvailable('ido7.1')
     def test_create_scratch_score(self):
         """
         Ensure that a scratch's score gets set upon creation.
@@ -121,6 +135,7 @@ class ScratchModificationTests(APITestCase):
         self.assertEqual(scratch.score, 0)
 
 class ScratchForkTests(APITestCase):
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_fork_scratch(self):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
@@ -165,6 +180,7 @@ class ScratchForkTests(APITestCase):
 
 
 class CompilationTests(APITestCase):
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_simple_compilation(self):
         """
         Ensure that we can run a simple compilation via the api
@@ -194,6 +210,7 @@ class CompilationTests(APITestCase):
         response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @onlyIfCompilerAvailable('ido5.3')
     def test_ido_line_endings(self):
         """
         Ensure that compilations with \\r\\n line endings succeed
@@ -205,6 +222,7 @@ class CompilationTests(APITestCase):
 
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
+    @onlyIfCompilerAvailable('mwcc_247_92')
     def test_mwcc_wine(self):
         """
         Ensure that we can invoke mwcc through wine
@@ -364,6 +382,7 @@ class UserTests(APITestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_own_scratch(self):
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
@@ -410,6 +429,7 @@ class ScratchDetailTests(APITestCase):
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_last_modified(self):
         """
         Ensure that the Last-Modified header is set.
@@ -421,6 +441,7 @@ class ScratchDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_(response.headers.get("Last-Modified") is not None)
 
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_if_modified_since(self):
         """
         Ensure that the If-Modified-Since header is handled.
@@ -449,6 +470,7 @@ class ScratchDetailTests(APITestCase):
         response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_double_claim(self):
         """
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
