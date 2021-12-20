@@ -20,7 +20,7 @@ def onlyIfCompilerAvailable(*compiler_ids: str):
         if id not in available:
             return skipIf(True, f"Compiler {id} not available")
 
-    return lambda func: func
+    return skipIf(False, "")
 
 class ScratchCreationTests(APITestCase):
     @onlyIfCompilerAvailable('ido7.1')
@@ -408,7 +408,6 @@ class UserTests(APITestCase):
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
 class ScratchDetailTests(APITestCase):
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def make_nop_scratch(self) -> Scratch:
         response = self.client.post(reverse("scratch"), {
             'compiler': 'gcc2.8.1',
