@@ -88,12 +88,12 @@ export const PRESETS = [
     {
         name: "Super Paper Mario (DOL)",
         compiler: "mwcc_41_60831",
-        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4"
+        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
     },
     {
         name: "Super Paper Mario (REL)",
         compiler: "mwcc_41_60831",
-        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares"
+        opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     },
 ]
 
