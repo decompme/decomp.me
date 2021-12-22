@@ -300,7 +300,7 @@ def compile(request, slug):
     try:
         result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
     except CompilationError as e:
-        return APIException(str(e), status.HTTP_400_BAD_REQUEST)
+        return APIException(str(e), code=str(status.HTTP_400_BAD_REQUEST))
 
     diff_output: Optional[Dict[str, Any]] = None
     if result.elf_object:
