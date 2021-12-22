@@ -1,4 +1,4 @@
 {
     "platform": "gc_wii",
-    "cc": "wine \"${COMPILER_DIR}/mwcceppc.125.exe\" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o \"${OUTPUT}.1\" \"${INPUT}\" && wine \"${COMPILER_DIR}/mwcceppc.exe\" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o \"${OUTPUT}.2\" \"${INPUT}\" && python3 \"${COMPILER_DIR}/frank.py\" \"${OUTPUT}.1\" \"${OUTPUT}.2\" \"${OUTPUT}\""
+    "cc": "${WINE} \"${COMPILER_DIR}/mwcceppc.125.exe\" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o \"${OUTPUT}.1\" \"${INPUT}\" && ${WINE} \"${COMPILER_DIR}/mwcceppc.exe\" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o \"${OUTPUT}.2\" \"${INPUT}\" && python3 \"${COMPILER_DIR}/frank.py\" \"${OUTPUT}.1\" \"${OUTPUT}.2\" \"${OUTPUT}\""
 }
