@@ -95,6 +95,11 @@ export const PRESETS = [
         compiler: "mwcc_41_60831",
         opts: "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     },
+    {
+        name: "Super Mario Galaxy",
+        compiler: "mwcc_41_60126",
+        opts: "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -align powerpc -enum int",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
