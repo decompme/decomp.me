@@ -1,6 +1,7 @@
-from coreapp.asm_diff_wrapper import AsmDifferWrapper
+from rest_framework.exceptions import APIException
+from coreapp.asm_diff_wrapper import AsmDifferWrapper, DiffError, ObjdumpError
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
-from coreapp.compiler_wrapper import CompilerWrapper
+from coreapp.compiler_wrapper import AssemblyError, CompilationError, CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
@@ -211,13 +212,12 @@ def create_scratch(request):
 
     asm = get_db_asm(target_asm)
 
-    assembly, err = CompilerWrapper.assemble_asm(platform, asm)
-    if not assembly:
-        assert isinstance(err, str)
-
+    try:
+        assembly = CompilerWrapper.assemble_asm(platform, asm)
+    except AssemblyError as e:
         errors = []
 
-        for line in err.splitlines():
+        for line in e.message.splitlines():
             if "asm.s:" in line:
                 errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:
@@ -297,11 +297,23 @@ def compile(request, slug):
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
-    result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
+    try:
+        result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
+    except CompilationError as e:
+        return APIException(str(e), status.HTTP_400_BAD_REQUEST)
 
     diff_output: Optional[Dict[str, Any]] = None
     if result.elf_object:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+        try:
+            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+        except AssemblyError as e:
+            return APIException(str(e))
+        except DiffError as e:
+            return APIException(str(e))
+        except ObjdumpError as e:
+            return APIException(str(e))
+        except CompilationError as e:
+            return APIException(str(e))
 
     return Response({
         "diff_output": diff_output,

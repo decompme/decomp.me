@@ -1,7 +1,7 @@
 from coreapp import compiler_wrapper
 from coreapp.models import Assembly
 from coreapp.sandbox import Sandbox
-from coreapp.compiler_wrapper import PATH
+from coreapp.compiler_wrapper import PATH, AssemblyError, CompilationError
 from typing import Any, Dict, Optional
 import json
 import logging
@@ -12,6 +12,14 @@ import asm_differ.diff as asm_differ
 logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 5000
+
+class DiffError(Exception):
+    def __init__(self, message: str):
+        super().__init__(f"Diff error: {message}")
+
+class ObjdumpError(Exception):
+    def __init__(self, message: str):
+        super().__init__(f"Objdump error: {message}")
 
 class AsmDifferWrapper:
     @staticmethod
@@ -41,7 +49,7 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def run_objdump(target_data: bytes, platform: str, config: asm_differ.Config, label: Optional[str]) -> Optional[str]:
+    def run_objdump(target_data: bytes, platform: str, config: asm_differ.Config, label: Optional[str]) -> str:
         flags = [
             "--disassemble",
             "--disassemble-zeroes",
@@ -68,8 +76,7 @@ class AsmDifferWrapper:
                             },
                         )
                     except subprocess.CalledProcessError as e:
-                        logger.error(f"Error running nm: {e}")
-                        logger.error(e.stderr)
+                        raise ObjdumpError(f"Error running nm: {str(e)}")
 
                     if nm_proc.stdout:
                         for line in nm_proc.stdout.splitlines():
@@ -77,7 +84,7 @@ class AsmDifferWrapper:
                                 start_addr = int(line.split()[0], 16)
                                 break
                 else:
-                    logger.error(f"No nm command for {platform}")
+                    raise ObjdumpError(f"No nm command for {platform}")
 
             flags.append(f"--start-address={start_addr}")
 
@@ -93,12 +100,9 @@ class AsmDifferWrapper:
                         },
                     )
                 except subprocess.CalledProcessError as e:
-                    logger.error(e)
-                    logger.error(e.stderr)
-                    return None
+                    raise ObjdumpError(f"Error running objdump: {str(e)}")
             else:
-                logger.error(f"No objdump command for {platform}")
-                return None
+                raise ObjdumpError(f"No objdump command for {platform}")
 
         out = objdump_proc.stdout
         return out
@@ -120,20 +124,18 @@ class AsmDifferWrapper:
             logger.info("Base asm empty - attempting to regenerate")
             compiler_wrapper.CompilerWrapper.assemble_asm(arch.name, target_assembly.source_asm, target_assembly)
             if len(target_assembly.elf_object) == 0:
-                logger.error("Regeneration of base-asm failed")
-                return {"error": "Error: Base asm empty"}
+                raise AssemblyError("Regeneration of base-asm failed: base asm empty")
 
         basedump = AsmDifferWrapper.run_objdump(target_assembly.elf_object, platform, config, diff_label)
         if not basedump:
-            return {"error": "Error running asm-differ on basedump"}
+            raise ObjdumpError("Error running objdump on base")
 
         if len(compiled_elf) == 0:
-            logger.error("Creation of compilation elf_object failed")
-            return {"error": "Error: Compialtion elf_object failed"}
+            raise CompilationError("Compilation of code for diff failed")
 
         mydump = AsmDifferWrapper.run_objdump(compiled_elf, platform, config, diff_label)
         if not mydump:
-            return {"error": "Error running asm-differ on mydump"}
+            raise ObjdumpError("Error running objdump on new")
 
         # Preprocess the dumps
         basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
@@ -141,17 +143,15 @@ class AsmDifferWrapper:
 
         try:
             display = asm_differ.Display(basedump, mydump, config)
-        except Exception:
-            logger.exception("Error running asm-differ")
-            return {"error": "Error running asm-differ"}
+        except Exception as e:
+            raise DiffError(f"Error running asm-differ: {str(e)}")
 
         try:
             # TODO: It would be nice to get a python object from `run_diff()` to avoid the
             # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
             result = json.loads(display.run_diff()[0])
             result["error"] = None
-        except Exception:
-            logger.exception("Error running asm-differ")
-            return {"error": "Error running asm-differ"}
+        except Exception as e:
+            raise DiffError(f"Error running asm-differ: {str(e)}")
 
         return result

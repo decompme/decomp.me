@@ -254,6 +254,15 @@ def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
+class CompilationError(Exception):
+    def __init__(self, message: str):
+        super().__init__(f"Compilation error: {message}")
+
+class AssemblyError(Exception):
+    def __init__(self, message: str):
+        self.message: str = message
+
+        super().__init__(f"Assembly error: {message}")
 
 class CompilerWrapper:
     @staticmethod
@@ -339,8 +348,7 @@ class CompilerWrapper:
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
-            logger.debug(f"Compiler {compiler} not found")
-            return CompilationResult(b'', "ERROR: Compiler not found")
+            raise CompilationError("Compiler not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
@@ -374,33 +382,28 @@ class CompilerWrapper:
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
-                # Compilation failed
-                logging.debug("Compilation failed: " + e.stderr)
-                return CompilationResult(b'', e.stderr)
+                raise CompilationError(e.stderr)
 
             if not object_path.exists():
-                logger.error("Compiler did not create an object file")
-                return CompilationResult(b'', "ERROR: Compiler did not create an object file")
+                raise CompilationError("Compiler did not create an object file")
 
             return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
+    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Assembly:
         if platform not in _platforms:
-            logger.error(f"Platform {platform} not found")
-            return (None, f"Platform {platform} not found")
+            raise AssemblyError(f"Platform {platform} not found")
 
         assemble_cmd = get_assemble_cmd(platform)
         if not assemble_cmd:
-            logger.error(f"Assemble command for platform {platform} not found")
-            return (None, f"Assemble command for platform {platform} not found")
+            raise AssemblyError(f"Assemble command for platform {platform} not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
             cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit! hash: {hash}")
-                return (cached_assembly, None)
+                return cached_assembly
 
         platform_cfg = _platforms[platform]
 
@@ -422,17 +425,14 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                 })
             except subprocess.CalledProcessError as e:
-                # Compilation failed
-                logger.exception("Error running asm-differ")
-                return (None, e.stderr)
+                raise AssemblyError(f"Error running assembler: {e.stderr}")
 
             # Assembly failed
             if assemble_proc.returncode != 0:
-                return (None, assemble_proc.stderr)
+                raise AssemblyError(f"Assembler failed with error code {assemble_proc.returncode}")
 
             if not object_path.exists():
-                logger.error("Assembler did not create an object file")
-                return (None, "Assembler did not create an object file")
+                raise AssemblyError("Assembler did not create an object file")
 
             if to_regenerate:
                 assembly = to_regenerate
@@ -446,7 +446,7 @@ class CompilerWrapper:
                 )
             assembly.save()
 
-            return (assembly, None)
+            return assembly
 
 
 _compilers = load_compilers()
