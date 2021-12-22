@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef } from "react"
 
-import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon } from "@primer/octicons-react"
+import { useRouter } from "next/router"
+
+import { RepoForkedIcon, SyncIcon, UploadIcon, ArrowRightIcon, ArrowLeftIcon } from "@primer/octicons-react"
+import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
 import useDeepCompareEffect from "use-deep-compare-effect"
 
 import * as api from "../../lib/api"
 import { useSize, useWarnBeforeUnload } from "../../lib/hooks"
+import { getFinishedTrainings, getNextScenario, getPriorScenario, getScenarioDescriptionFromSlug, getScenarioNameFromSlug } from "../../lib/training"
 import AsyncButton from "../AsyncButton"
 import Button from "../Button"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
@@ -71,9 +75,31 @@ function renderRightTabs({ compilation }: {
 function renderLeftTabs({ scratch, setScratch }: {
     scratch: api.Scratch
     setScratch: (s: Partial<api.Scratch>) => void
-}): React.ReactElement<typeof Tab>[] {
+}, trainingMode: boolean): React.ReactElement<typeof Tab>[] {
     const sourceEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
     const contextEditor = useRef<EditorInstance>() // eslint-disable-line react-hooks/rules-of-hooks
+
+    const sourceCodeTab = <Tab
+        key="source"
+        label="Source code"
+        onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
+    >
+        <Editor
+            instanceRef={sourceEditor}
+            className={styles.editor}
+            language="c"
+            value={scratch.source_code}
+            onChange={value => {
+                setScratch({ source_code: value })
+            }}
+            lineNumbers
+            showMargin
+            bubbleSuspense
+        />
+    </Tab>
+
+    if (trainingMode)
+        return [sourceCodeTab]
 
     return [
         <Tab key="about" label="About" className={styles.about}>
@@ -82,24 +108,7 @@ function renderLeftTabs({ scratch, setScratch }: {
                 setScratch={scratch.owner?.is_you ? setScratch : null}
             />
         </Tab>,
-        <Tab
-            key="source"
-            label="Source code"
-            onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
-        >
-            <Editor
-                instanceRef={sourceEditor}
-                className={styles.editor}
-                language="c"
-                value={scratch.source_code}
-                onChange={value => {
-                    setScratch({ source_code: value })
-                }}
-                lineNumbers
-                showMargin
-                bubbleSuspense
-            />
-        </Tab>,
+        sourceCodeTab,
         <Tab
             key="context"
             label="Context"
@@ -131,10 +140,12 @@ function renderLeftTabs({ scratch, setScratch }: {
 
 export type Props = {
     slug: string
+    onMatch?: (slug: string) => void
     tryClaim?: boolean // note: causes page reload after claiming
+    trainingMode?: boolean
 }
 
-export default function Scratch({ slug, tryClaim }: Props) {
+export default function Scratch({ slug, onMatch = () => {}, tryClaim, trainingMode = false }: Props) {
     const container = useSize<HTMLDivElement>()
     const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, savedScratch, true)
@@ -142,6 +153,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
     const [isForking, setIsForking] = useState(false)
+    const router = useRouter()
 
     // TODO: remove once scratch.compiler is no longer nullable
     const setCompilerOpts = ({ compiler, compiler_flags }: CompilerOptsT) => {
@@ -180,8 +192,14 @@ export default function Scratch({ slug, tryClaim }: Props) {
         }
     }, [scratch || {}, isSaved])
 
+    useDeepCompareEffect(() => {
+        if (compilation?.diff_output?.current_score === 0) {
+            onMatch(slug)
+        }
+    }, [compilation || {}])
+
     useWarnBeforeUnload(
-        !isSaved && !isForking,
+        !isSaved && !isForking && !trainingMode,
         scratch.owner?.is_you
             ? "You have not saved your changes to this scratch. Discard changes?"
             : "You have edited this scratch but not saved it in a fork. Discard changes?",
@@ -211,7 +229,7 @@ export default function Scratch({ slug, tryClaim }: Props) {
     const leftTabs = renderLeftTabs({
         scratch,
         setScratch,
-    })
+    }, trainingMode)
 
     const rightTabs = renderRightTabs({
         compilation,
@@ -219,21 +237,54 @@ export default function Scratch({ slug, tryClaim }: Props) {
 
     return <div ref={container.ref} className={styles.container}>
         <div className={styles.toolbar}>
-            <input
-                className={styles.scratchName}
-                type="text"
-                value={scratch.name}
-                onChange={event => setScratch({ name: event.target.value })}
-                disabled={!scratch.owner?.is_you}
-                spellCheck="false"
-                maxLength={100}
-                placeholder={"Untitled scratch"}
-            />
+            {trainingMode ?
+                <div className={classNames(styles.trainingScratchHeaderContainer, getFinishedTrainings().includes(slug) ? styles.completed : undefined)}>
+                    <div className={styles.trainingScratchHeader}>
+                        {getScenarioNameFromSlug(slug)}
+                    </div>
+                    <div className={classNames(styles.trainingScratchHeader, styles.trainingScratchHeaderDescription)}>
+                        {getScenarioDescriptionFromSlug(slug)}
+                    </div>
+                    <div className={styles.trainingScratchButtonList}>
+                        <Button disabled={!getPriorScenario(slug)} onClick={() => {
+                            const priorSlug = getPriorScenario(slug)?.slug
 
-            <AsyncButton onClick={compile} forceLoading={isCompiling}>
-                <SyncIcon size={16} /> Compile
-            </AsyncButton>
-            {scratch.owner?.is_you && <AsyncButton onClick={() => {
+                            if (priorSlug)
+                                router.push(`/training/${priorSlug}`)
+                        }}>
+                            <ArrowLeftIcon size={16} /> Prior scenario
+                        </Button>
+                        <AsyncButton onClick={compile} forceLoading={isCompiling}>
+                            <SyncIcon size={16} /> Compile
+                        </AsyncButton>
+                        <Button disabled={!getNextScenario(slug)} onClick={() => {
+                            const nextSlug = getNextScenario(slug)?.slug
+
+                            if (nextSlug)
+                                router.push(`/training/${nextSlug}`)
+                        }}>
+                            Next scenario <ArrowRightIcon size={16} />
+                        </Button>
+                    </div>
+                </div> :
+                <>
+                    <input
+                        className={styles.scratchName}
+                        type="text"
+                        value={scratch.name}
+                        onChange={event => setScratch({ name: event.target.value })}
+                        disabled={!scratch.owner?.is_you}
+                        spellCheck="false"
+                        maxLength={100}
+                        placeholder={"Untitled scratch"}
+                    />
+                    <AsyncButton onClick={compile} forceLoading={isCompiling}>
+                        <SyncIcon size={16} /> Compile
+                    </AsyncButton>
+                </>
+            }
+
+            {(!trainingMode && scratch.owner?.is_you) && <AsyncButton onClick={() => {
                 return Promise.all([
                     saveScratch(),
                     compile().catch(() => {}), // Ignore errors
@@ -241,12 +292,12 @@ export default function Scratch({ slug, tryClaim }: Props) {
             }} disabled={isSaved}>
                 <UploadIcon size={16} /> Save
             </AsyncButton>}
-            <AsyncButton onClick={() => {
+            {!trainingMode && <AsyncButton onClick={() => {
                 setIsForking(true)
                 return forkScratch()
             }} primary={!isSaved && !scratch.owner?.is_you}>
                 <RepoForkedIcon size={16} /> Fork
-            </AsyncButton>
+            </AsyncButton> }
         </div>
 
         {container.width > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
