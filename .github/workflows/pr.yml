@@ -79,6 +79,7 @@ jobs:
         run: pip install -r backend/requirements.txt
       - name: Run tests
         run: |-
+          echo USE_SANDBOX_JAIL=off > .env
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
