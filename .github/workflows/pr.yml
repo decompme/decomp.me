@@ -142,7 +142,7 @@ jobs:
           docker build backend \
             -t decompme_backend \
             --build-arg ENABLE_GC_WII_SUPPORT=YES \
-            --build-arg ENABLE_PS1_SUPPORT=YES \
+            --build-arg ENABLE_PS1_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
