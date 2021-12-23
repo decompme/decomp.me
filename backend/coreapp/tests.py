@@ -72,6 +72,21 @@ sb  $t6, %lo(D_801D702C)($at)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
+    def test_dummy_platform(self):
+        """
+        Ensure that we can create scratches with the dummy platform and compiler
+        """
+        scratch_dict = {
+            'platform': 'dummy',
+            'compiler': 'dummy',
+            'context': 'typedef unsigned char u8;',
+            'target_asm': 'this is some test asm',
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Scratch.objects.count(), 1)
+
 class ScratchModificationTests(APITestCase):
     @onlyIfCompilerAvailable('gcc2.8.1', 'ido5.3')
     def test_update_scratch_score(self):
@@ -406,6 +421,7 @@ class UserTests(APITestCase):
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
         self.assertEqual(response.json()["owner"]["is_you"], True)
+
 
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:

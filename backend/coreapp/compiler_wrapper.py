@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
+from coreapp.error import AssemblyError, CompilationError
 from coreapp.models import Asm, Assembly
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -270,15 +271,6 @@ def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
-class CompilationError(Exception):
-    def __init__(self, message: str):
-        super().__init__(f"Compilation error: {message}")
-
-class AssemblyError(Exception):
-    def __init__(self, message: str):
-        self.message: str = message
-
-        super().__init__(f"Assembly error: {message}")
 
 class CompilerWrapper:
     @staticmethod
@@ -363,6 +355,9 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
+        if compiler == "dummy":
+            return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
+
         if compiler not in _compilers:
             raise CompilationError(f"Compiler {compiler} not found")
 
@@ -399,7 +394,7 @@ class CompilerWrapper:
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
-                raise CompilationError(e.stderr)
+                raise CompilationError.from_subprocess_error(e)
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
@@ -429,6 +424,16 @@ class CompilerWrapper:
 
         platform_cfg = _platforms[platform]
 
+        if platform == "dummy":
+            assembly = Assembly(
+                hash=hash,
+                arch=platform_cfg.arch,
+                source_asm=asm,
+                elf_object=f"assembled({asm.data})".encode("UTF-8")
+            )
+            assembly.save()
+            return assembly
+
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
             asm_path.write_text(platform_cfg.asm_prelude + asm.data)
@@ -447,7 +452,7 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                 })
             except subprocess.CalledProcessError as e:
-                raise AssemblyError(f"Error running assembler: {e.stderr}")
+                raise AssemblyError.from_subprocess_error(e)
 
             # Assembly failed
             if assemble_proc.returncode != 0:
@@ -467,7 +472,6 @@ class CompilerWrapper:
                     elf_object=object_path.read_bytes(),
                 )
             assembly.save()
-
             return assembly
 
 

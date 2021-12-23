@@ -1,7 +1,8 @@
 from rest_framework.exceptions import APIException
-from coreapp.asm_diff_wrapper import AsmDifferWrapper, DiffError, ObjdumpError
+from coreapp.error import AssemblyError, CompilationError, DiffError, ObjdumpError
+from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
-from coreapp.compiler_wrapper import AssemblyError, CompilationError, CompilerWrapper
+from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer
 from django.shortcuts import get_object_or_404
 from django.core.validators import validate_slug
@@ -196,7 +197,7 @@ def create_scratch(request):
     except AssemblyError as e:
         errors = []
 
-        for line in e.message.splitlines():
+        for line in e.stderr.splitlines():
             if "asm.s:" in line:
                 errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:
@@ -279,12 +280,12 @@ def compile(request, slug):
     try:
         result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
     except CompilationError as e:
-        return APIException(str(e), code=str(status.HTTP_400_BAD_REQUEST))
+        raise APIException(e.stderr)
 
     try:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
     except (AssemblyError, DiffError, ObjdumpError, CompilationError) as e:
-        return APIException(str(e))
+        raise APIException(e.stderr)
 
     return Response({
         "diff_output": diff_output,

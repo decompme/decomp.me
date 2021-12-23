@@ -1,7 +1,8 @@
+from coreapp.error import AssemblyError, DiffError, NmError, ObjdumpError
 from coreapp import compiler_wrapper
 from coreapp.models import Assembly
 from coreapp.sandbox import Sandbox
-from coreapp.compiler_wrapper import PATH, AssemblyError, CompilationError
+from coreapp.compiler_wrapper import PATH
 from typing import Any, Dict, Optional
 import json
 import logging
@@ -13,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 5000
 
-class DiffError(Exception):
-    def __init__(self, message: str):
-        super().__init__(f"Diff error: {message}")
+# class DiffError(Exception):
+#     def __init__(self, message: str):
+#         super().__init__(f"Diff error: {message}")
 
-class ObjdumpError(Exception):
-    def __init__(self, message: str):
-        super().__init__(f"Objdump error: {message}")
+# class ObjdumpError(Exception):
+#     def __init__(self, message: str):
+#         super().__init__(f"Objdump error: {message}")
 
 class AsmDifferWrapper:
     @staticmethod
@@ -76,7 +77,7 @@ class AsmDifferWrapper:
                             },
                         )
                     except subprocess.CalledProcessError as e:
-                        raise ObjdumpError(f"Error running nm: {str(e)}")
+                        raise NmError.from_process_error(e)
 
                     if nm_proc.stdout:
                         for line in nm_proc.stdout.splitlines():
@@ -84,7 +85,7 @@ class AsmDifferWrapper:
                                 start_addr = int(line.split()[0], 16)
                                 break
                 else:
-                    raise ObjdumpError(f"No nm command for {platform}")
+                    raise NmError(f"No nm command for {platform}")
 
             flags.append(f"--start-address={start_addr}")
 
@@ -100,7 +101,7 @@ class AsmDifferWrapper:
                         },
                     )
                 except subprocess.CalledProcessError as e:
-                    raise ObjdumpError(f"Error running objdump: {str(e)}")
+                    raise ObjdumpError.from_process_error(e)
             else:
                 raise ObjdumpError(f"No objdump command for {platform}")
 
@@ -134,9 +135,6 @@ class AsmDifferWrapper:
         if not basedump:
             raise ObjdumpError("Error running objdump on base")
 
-        if len(compiled_elf) == 0:
-            raise CompilationError("Compilation of code for diff failed")
-
         mydump = AsmDifferWrapper.run_objdump(compiled_elf, platform, config, diff_label)
         if not mydump:
             raise ObjdumpError("Error running objdump on new")
@@ -148,7 +146,7 @@ class AsmDifferWrapper:
         try:
             display = asm_differ.Display(basedump, mydump, config)
         except Exception as e:
-            raise DiffError(f"Error running asm-differ: {str(e)}")
+            raise DiffError(f"Error running asm-differ: {e}")
 
         try:
             # TODO: It would be nice to get a python object from `run_diff()` to avoid the
@@ -156,6 +154,6 @@ class AsmDifferWrapper:
             result = json.loads(display.run_diff()[0])
             result["error"] = None
         except Exception as e:
-            raise DiffError(f"Error running asm-differ: {str(e)}")
+            raise DiffError(f"Error running asm-differ: {e}")
 
         return result
