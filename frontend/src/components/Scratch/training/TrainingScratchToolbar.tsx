@@ -11,6 +11,13 @@ import styles from "../Scratch.module.scss"
 
 import trainingStyles from "./TrainingScratch.module.scss"
 
+function goToSlug(router, slug: string, goTo: "next" | "prior") {
+    const temp = (goTo === "next" ? getNextScenario(slug) : getPriorScenario(slug))?.slug
+
+    if (temp)
+        router.push(`/training/${temp}`)
+}
+
 export type Props = {
     slug: string
     isCompiling: boolean
@@ -33,23 +40,13 @@ export default function TrainingScratchToolbar({ slug, isCompiling, compile }: P
                     {getScenarioDescriptionFromSlug(slug)}
                 </div>
                 <div className={trainingStyles.trainingScratchButtonList}>
-                    <Button disabled={!getPriorScenario(slug)} onClick={() => {
-                        const priorSlug = getPriorScenario(slug)?.slug
-
-                        if (priorSlug)
-                            router.push(`/training/${priorSlug}`)
-                    }}>
+                    <Button disabled={!getPriorScenario(slug)} onClick={() => goToSlug(router, slug, "prior")}>
                         <ArrowLeftIcon size={16} /> Prior scenario
                     </Button>
                     <AsyncButton onClick={compile} forceLoading={isCompiling}>
                         <SyncIcon size={16} /> Compile
                     </AsyncButton>
-                    <Button disabled={!getNextScenario(slug)} onClick={() => {
-                        const nextSlug = getNextScenario(slug)?.slug
-
-                        if (nextSlug)
-                            router.push(`/training/${nextSlug}`)
-                    }}>
+                    <Button disabled={!getNextScenario(slug)} onClick={() => goToSlug(router, slug, "next")}>
                             Next scenario <ArrowRightIcon size={16} />
                     </Button>
                 </div>
