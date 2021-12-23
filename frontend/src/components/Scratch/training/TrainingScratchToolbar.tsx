@@ -9,6 +9,8 @@ import Button from "../../Button"
 import ScoreBadge from "../../ScoreBadge"
 import styles from "../Scratch.module.scss"
 
+import trainingStyles from "./TrainingScratch.module.scss"
+
 export type Props = {
     slug: string
     isCompiling: boolean
@@ -20,17 +22,17 @@ export default function TrainingScratchToolbar({ slug, isCompiling, compile }: P
 
     return (
         <div className={styles.toolbar}>
-            <div className={styles.trainingScratchHeaderContainer}>
-                <div className={styles.trainingScratchHeader}>
+            <div className={trainingStyles.trainingScratchHeaderContainer}>
+                <div className={trainingStyles.trainingScratchHeader}>
                     {getScenarioNameFromSlug(slug)}
-                    <div className={styles.finishedContainer}>
+                    <div className={trainingStyles.finishedContainer}>
                         {getFinishedTrainings().includes(slug) && <ScoreBadge score={0} maxScore={0} />}
                     </div>
                 </div>
-                <div className={classNames(styles.trainingScratchHeader, styles.trainingScratchHeaderDescription)}>
+                <div className={classNames(trainingStyles.trainingScratchHeader, trainingStyles.trainingScratchHeaderDescription)}>
                     {getScenarioDescriptionFromSlug(slug)}
                 </div>
-                <div className={styles.trainingScratchButtonList}>
+                <div className={trainingStyles.trainingScratchButtonList}>
                     <Button disabled={!getPriorScenario(slug)} onClick={() => {
                         const priorSlug = getPriorScenario(slug)?.slug
 

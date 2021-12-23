@@ -1,0 +1,52 @@
+.trainingScratchHeaderContainer {
+    flex: 1;
+
+    &.completed {
+        background-color: green;
+    }
+}
+.finishedContainer {
+    display: flex;
+    align-items: center;
+    margin-left: 7px;
+    font-size: 20px;
+    line-height: 32px;
+}
+.trainingScratchHeader {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    font-size: 32px;
+
+    color: var(--g1800);
+    text-overflow: ellipsis;
+
+    &.trainingScratchHeaderDescription {
+        font-size: 20px;
+        color: var(--g1400);
+        margin-bottom: 20px;
+    }
+}
+
+.trainingScratchButtonList {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.diffTab {
+    display: flex;
+    overflow: auto;
+}
+
+.about {
+    padding: 16px;
+    max-width: 500px;
+}
