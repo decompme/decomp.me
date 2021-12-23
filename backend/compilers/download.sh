@@ -37,4 +37,5 @@ if [[ "$uname" != "Darwin" ]]; then
     curl -L "https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz" | tar zx -C $compiler_dir/psyq4.1 usr/local/bin/mips-elf-as --strip-components 3
     cp $compiler_dir/psyq4.1/mips-elf-as $compiler_dir/psyq4.3/mips-elf-as
     cp $compiler_dir/psyq4.1/mips-elf-as $compiler_dir/psyq4.6/mips-elf-as
+    find . -name "CC1PSX.EXE" | xargs chmod +x
 fi

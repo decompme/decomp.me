@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
+from platform import uname
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,12 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
+WINE: str
+if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
+    logger.info("WSL detected & nsjail disabled: wine not required.")
+    WINE = ""
+else:
+    WINE = "wine"
 
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
@@ -367,6 +374,7 @@ class CompilerWrapper:
                     shell=True,
                     env={
                     "PATH": PATH,
+                    "WINE": WINE,
                     "INPUT": sandbox.rewrite_path(code_path),
                     "OUTPUT": sandbox.rewrite_path(object_path),
                     "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
