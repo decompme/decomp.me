@@ -283,13 +283,7 @@ def compile(request, slug):
 
     try:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-    except AssemblyError as e:
-        return APIException(str(e))
-    except DiffError as e:
-        return APIException(str(e))
-    except ObjdumpError as e:
-        return APIException(str(e))
-    except CompilationError as e:
+    except (AssemblyError, DiffError, ObjdumpError, CompilationError) as e:
         return APIException(str(e))
 
     return Response({
