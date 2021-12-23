@@ -69,7 +69,7 @@ jobs:
           WINEPREFIX: /tmp/wine
 
   backend_test_windows:
-    name: backend tests (windows, native)
+    name: backend tests (windows)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -83,44 +83,6 @@ jobs:
           python backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
-
-  backend_test_wsl:
-    name: backend tests (windows, wsl)
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: wsl-bash {0}
-    steps:
-      - name: Set git to use LF
-        shell: cmd
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-      - uses: actions/checkout@v2
-      - uses: Vampire/setup-wsl@v1
-      - name: Install dependencies
-        run: |-
-          apt-get update
-          apt-get install -y \
-            binutils-mips-linux-gnu \
-            curl \
-            dos2unix \
-            git \
-            python3-pip \
-            python3.9 \
-            unzip \
-            wget
-      - name: Install Python dependencies
-        run: python3.9 -m pip install -r backend/requirements.txt
-      - name: Download compilers
-        run: |-
-          ./backend/compilers/download.sh
-          find . -name "*.exe" -or -name "*.EXE" | xargs chmod +x
-          for f in $(find . -name "lmgr326b.dll"); do mv "$f" "$(dirname $f)/LMGR326B.dll" ; done
-      - name: Run tests
-        run: |-
-          mkdir -p /tmp/wine
-          SYSTEM_ENV=GITHUB_WORKFLOW USE_SANDBOX_JAIL=0 python3.9 backend/manage.py test backend
 
   backend_test_docker:
     name: backend tests (docker)
