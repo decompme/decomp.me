@@ -39,7 +39,8 @@ jobs:
             binutils-mips-linux-gnu \
             libprotobuf-dev \
             libnl-route-3-dev \
-            protobuf-compiler
+            protobuf-compiler \
+            unix2dos
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
@@ -93,7 +94,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: Vampire/setup-wsl@v1
       - name: Install dependencies
-        shell: wsl-bash {0}
         run: |-
           apt-get update
           apt-get install -y \
@@ -113,6 +113,7 @@ jobs:
             protobuf-compiler \
             python3-pip \
             python3.9 \
+            unix2dos \
             unzip \
             wget
       - name: Install Python dependencies
@@ -140,7 +141,8 @@ jobs:
         run: |-
           docker build backend \
             -t decompme_backend \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES
+            --build-arg ENABLE_GC_WII_SUPPORT=YES \
+            --build-arg ENABLE_PS1_SUPPORT=YES \
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
