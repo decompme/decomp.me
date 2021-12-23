@@ -120,9 +120,12 @@ jobs:
         run: python3.9 -m pip install -r backend/requirements.txt
       - name: Install nsjail
         run: |-
-          git clone --recursive --branch=3.0 https://github.com/google/nsjail
-          make -C nsjail
-          cp nsjail/nsjail /usr/bin/
+          git clone --recursive --shallow-submodules "https://github.com/google/nsjail"
+          cd nsjail
+          git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e
+          git submodule update
+          make
+          cp nsjail /usr/bin/
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
