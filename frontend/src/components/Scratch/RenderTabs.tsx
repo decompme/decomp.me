@@ -32,8 +32,8 @@ export enum RightScratchTab {
 }
 
 /**
- * Renders the left tabs of the scratch
- * @param {Array<LeftScratchTab>} [filter=undefined] The tabs you want to render
+ * Returns the left tabs of the scratch
+ * @param {Array<LeftScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Left tabs of scratch
  */
 export function renderLeftTabs({ scratch, setScratch }: {
@@ -106,8 +106,8 @@ export function renderLeftTabs({ scratch, setScratch }: {
 }
 
 /**
- * Renders the right tabs of the scratch
- * @param {Array<RightScratchTab>} [filter=undefined] The tabs you want to render
+ * Returns the right tabs of the scratch
+ * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
 export function renderRightTabs({ compilation }: {
