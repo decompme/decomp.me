@@ -394,7 +394,7 @@ class CompilerWrapper:
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
-                raise CompilationError.from_subprocess_error(e)
+                raise CompilationError.from_process_error(e)
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
@@ -452,7 +452,7 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                 })
             except subprocess.CalledProcessError as e:
-                raise AssemblyError.from_subprocess_error(e)
+                raise AssemblyError.from_process_error(e)
 
             # Assembly failed
             if assemble_proc.returncode != 0:
