@@ -1,16 +1,15 @@
 import os
-import platform
 import sys
-
 from pathlib import Path
-import django_stubs_ext
+from platform import uname
 
+import django_stubs_ext
 import environ
 
 django_stubs_ext.monkeypatch()
 
 def in_wsl() -> bool:
-    return "microsoft" in os.uname().release.lower()
+    return "microsoft" in uname().release.lower()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
