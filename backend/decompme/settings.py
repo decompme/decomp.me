@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 
 from pathlib import Path
@@ -7,6 +8,9 @@ import django_stubs_ext
 import environ
 
 django_stubs_ext.monkeypatch()
+
+def in_wsl() -> bool:
+    return "microsoft" in os.uname().release.lower()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -165,7 +169,7 @@ COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
-if sys.platform == "darwin":
+if sys.platform == "darwin" or (sys.platform == "win32" and not in_wsl()):
     USE_SANDBOX_JAIL = False
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
