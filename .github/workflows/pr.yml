@@ -102,35 +102,16 @@ jobs:
         run: |-
           apt-get update
           apt-get install -y \
-            autoconf \
             binutils-mips-linux-gnu \
-            bison \
             curl \
             dos2unix \
-            flex \
-            g++ \
-            gcc \
             git \
-            libnl-route-3-dev \
-            libprotobuf-dev \
-            libtool \
-            make \
-            pkg-config \
-            protobuf-compiler \
             python3-pip \
             python3.9 \
             unzip \
             wget
       - name: Install Python dependencies
         run: python3.9 -m pip install -r backend/requirements.txt
-      - name: Install nsjail
-        run: |-
-          git clone --recursive --shallow-submodules "https://github.com/google/nsjail"
-          cd nsjail
-          git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e
-          git submodule update
-          make
-          cp nsjail /bin/
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
@@ -139,6 +120,7 @@ jobs:
           python3.9 backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+          USE_SANDBOX_JAIL: off
 
   backend_test_docker:
     name: backend tests (docker)
