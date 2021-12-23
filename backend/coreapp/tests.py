@@ -22,6 +22,7 @@ def onlyIfCompilerAvailable(*compiler_ids: str):
 
     return skipIf(False, "")
 
+
 class ScratchCreationTests(APITestCase):
     @onlyIfCompilerAvailable('ido7.1')
     def test_accept_late_rodata(self):
@@ -71,6 +72,7 @@ sb  $t6, %lo(D_801D702C)($at)
         response = self.client.post(reverse('scratch'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
+
 
 class ScratchModificationTests(APITestCase):
     @onlyIfCompilerAvailable('gcc2.8.1', 'ido5.3')
@@ -134,6 +136,7 @@ class ScratchModificationTests(APITestCase):
 
         self.assertEqual(scratch.score, 0)
 
+
 class ScratchForkTests(APITestCase):
     @onlyIfCompilerAvailable('gcc2.8.1')
     def test_fork_scratch(self):
@@ -176,7 +179,6 @@ class ScratchForkTests(APITestCase):
 
         # Make sure the diff_label carried over to the fork
         self.assertEqual(scratch.diff_label, fork.diff_label)
-
 
 
 class CompilationTests(APITestCase):
@@ -227,7 +229,24 @@ class CompilationTests(APITestCase):
         """
         Ensure that we can invoke mwcc through wine
         """
-        result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
+        result = CompilerWrapper.compile_code(
+            "mwcc_247_92",
+            "-str reuse -inline on -fp off -O0",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n")
+
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+
+    @onlyIfCompilerAvailable('psyq4.6')
+    def test_psyq_compiler(self):
+        """
+        Ensure we can execute a Windows binary (via wine or natively as appropriate)
+        """
+        result = CompilerWrapper.compile_code(
+            "psyq4.6",
+            "-O2",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n")
 
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
@@ -406,6 +425,7 @@ class UserTests(APITestCase):
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
         self.assertEqual(response.json()["owner"]["is_you"], True)
+
 
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:

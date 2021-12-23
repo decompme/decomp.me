@@ -98,13 +98,17 @@ jobs:
           apt-get update
           apt-get install -y \
             binutils-mips-linux-gnu \
+            curl \
+            git \
             libprotobuf-dev \
             libnl-route-3-dev \
             protobuf-compiler \
             python3.9 \
-            python3-pip
+            python3-pip \
+            unzip \
+            wget
       - name: Install Python dependencies
-        run: pip install -r backend/requirements.txt
+        run: python3.9 -m pip install -r backend/requirements.txt
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
@@ -113,19 +117,9 @@ jobs:
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
-          ./backend/compilers/mwcc.sh
-      - name: Install dkp dependencies
-        run: |-
-          mkdir -p bin
-          docker run \
-            -v $(pwd)/bin:/tmp/bin \
-            --entrypoint /bin/sh \
-            devkitpro/devkitppc:20210726 \
-            -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
-          cp bin/powerpc* /usr/bin/
       - name: Run tests
         run: |-
-          python backend/manage.py test backend
+          python3.9 backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
