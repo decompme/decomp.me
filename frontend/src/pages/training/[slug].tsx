@@ -6,7 +6,7 @@ import Head from "next/head"
 
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
-import Scratch from "../../components/Scratch"
+import TrainingScratch from "../../components/Scratch/training/TrainingScratch"
 import * as api from "../../lib/api"
 import { addFinishedTraining } from "../../lib/training"
 
@@ -52,7 +52,7 @@ export default function TrainingScratchPage({ scratch }: { scratch?: api.Scratch
         <Nav />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
-                {scratch && <Scratch onMatch={onMatch} slug={scratch.slug} tryClaim={true} trainingMode />}
+                {scratch && <TrainingScratch onMatch={() => onMatch(scratch.slug)} slug={scratch.slug} tryClaim={true} />}
                 {scratch === undefined && <LoadingSpinner className={styles.loading} />}
             </Suspense>
         </main>
