@@ -23,7 +23,7 @@ else:
     PATH = os.environ["PATH"]
 
 WINE: str
-if "microsoft-standard" in uname().release:
+if "microsoft" in uname().release.lower():
     logger.info("WSL detected, wine not required.")
     WINE = ""
 else:
