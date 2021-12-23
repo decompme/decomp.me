@@ -134,12 +134,15 @@ jobs:
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
+          find . -name "*.exe" -or -name "*.EXE" | xargs chmod +x
+          for f in $(find . -name "lmgr326b.dll"); do mv "$f" "$(dirname $f)/LMGR326B.dll" ; done
       - name: Run tests
         run: |-
           mkdir -p /tmp/wine
           python3.9 backend/manage.py test backend
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
+          USE_SANDBOX_JAIL: 0
 
   backend_test_docker:
     name: backend tests (docker)

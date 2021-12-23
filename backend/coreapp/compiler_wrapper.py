@@ -23,8 +23,8 @@ else:
     PATH = os.environ["PATH"]
 
 WINE: str
-if "microsoft" in uname().release.lower():
-    logger.info("WSL detected, wine not required.")
+if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
+    logger.info("WSL detected & nsjail disabled: wine not required.")
     WINE = ""
 else:
     WINE = "wine"
