@@ -111,6 +111,10 @@ class AsmDifferWrapper:
     def diff(target_assembly: Assembly, platform: str, diff_label:Optional[str], compiled_elf: bytes) -> Dict[str, Any]:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
+        if compiler_arch == "dummy":
+            # Todo produce diff for dummy
+            return {}
+
         try:
             arch = asm_differ.get_arch(compiler_arch or "")
         except ValueError:

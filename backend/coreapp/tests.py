@@ -55,7 +55,7 @@ nop"""
         scratch_dict = {
             'platform': 'n64',
             'compiler': 'ido5.3',
-            'context': '',
+            'context': 'typedef unsigned char u8;',
             'target_asm':
 """
 .text
@@ -141,7 +141,7 @@ class ScratchForkTests(APITestCase):
         """
         scratch_dict = {
             'compiler': 'dummy',
-            'platform': 'n64',
+            'platform': 'dummy',
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
             'diff_label': 'meow',
@@ -158,7 +158,7 @@ class ScratchForkTests(APITestCase):
 
         fork_dict = {
             'compiler': 'dummy',
-            'platform': 'n64',
+            'platform': 'dummy',
             'compiler_flags': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
@@ -216,10 +216,7 @@ class CompilationTests(APITestCase):
         """
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
 
-        if result.errors:
-            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
-
-        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+        self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
 
     @onlyIfCompilerAvailable('mwcc_247_92')
     def test_mwcc_wine(self):
@@ -228,7 +225,12 @@ class CompilationTests(APITestCase):
         """
         result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
 
-        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+    def test_dummy_compiler(self):
+        """
+        Ensure basic functionality works for the dummy compiler
+        """
+
+        result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
 
 
 class M2CTests(TestCase):
@@ -388,7 +390,7 @@ class UserTests(APITestCase):
 
         response = self.client.post("/api/scratch", {
             'compiler': 'dummy',
-            'platform': 'n64',
+            'platform': 'dummy',
             'context': '',
             'target_asm': "jr $ra\nnop\n"
         })
@@ -409,7 +411,7 @@ class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
         response = self.client.post(reverse("scratch"), {
             'compiler': 'dummy',
-            'platform': 'n64',
+            'platform': 'dummy',
             'context': '',
             'target_asm': "jr $ra\nnop\n",
         })

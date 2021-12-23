@@ -12,8 +12,6 @@ from github.NamedUser import NamedUser
 from .middleware import Request
 import requests
 
-from .models import Profile
-
 API_CACHE_TIMEOUT = 60 * 60 # 1 hour
 
 class BadOAuthCode(APIException):

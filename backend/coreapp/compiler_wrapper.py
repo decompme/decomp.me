@@ -70,6 +70,15 @@ class CompilationResult:
 
 def load_platforms() -> Dict[str, Platform]:
     return {
+        "dummy": Platform(
+            "Dummy System",
+            "DMY",
+            "dummy",
+            assemble_cmd='echo \"assembled("$INPUT")\" > "$OUTPUT"',
+            objdump_cmd="echo",
+            nm_cmd="echo",
+            asm_prelude="",
+        ),
         "n64": Platform(
             "Nintendo 64",
             "MIPS (big-endian)",
@@ -386,6 +395,11 @@ class CompilerWrapper:
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
+
+            object_bytes = object_path.read_bytes()
+
+            if not object_bytes:
+                raise CompilationError("Compiler created an empty object file")
 
             return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 

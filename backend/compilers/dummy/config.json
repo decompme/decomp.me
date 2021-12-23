@@ -1,4 +1,4 @@
 {
-    "platform": "n64",
+    "platform": "dummy",
     "cc": "echo 'Compiled \"$INPUT\"!' > \"$OUTPUT\""
 }

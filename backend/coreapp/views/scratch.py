@@ -2,12 +2,10 @@ from rest_framework.exceptions import APIException
 from coreapp.asm_diff_wrapper import AsmDifferWrapper, DiffError, ObjdumpError
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import AssemblyError, CompilationError, CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import logout
 from django.core.validators import validate_slug
 from django.http import HttpResponse
-from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,17 +16,14 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
 import zipfile
 
-
-from .models import Profile, Asm, Scratch, gen_scratch_id
-from .github import GitHubUser
-from .middleware import Request
-from .decorators.django import condition
+from ..models import Asm, Scratch, gen_scratch_id
+from ..middleware import Request
+from ..decorators.django import condition
 
 logger = logging.getLogger(__name__)
-boot_time = now()
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -37,32 +32,16 @@ def get_db_asm(request_asm) -> Asm:
     })
     return asm
 
-class CompilersDetail(APIView):
-    @condition(last_modified_func=lambda request: boot_time)
-    def head(self, request: Request):
-        return Response()
-
-    @condition(last_modified_func=lambda request: boot_time)
-    def get(self, request: Request):
-        return Response({
-            # compiler_ids is used by the permuter
-            "compiler_ids": CompilerWrapper.available_compiler_ids(),
-            "compilers": CompilerWrapper.available_compilers(),
-            "platforms": CompilerWrapper.available_platforms(),
-        })
-
 def update_scratch_score(scratch: Scratch):
     """
     Compile a scratch and save its score and max score
     """
 
     result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
-
-    if result.elf_object:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-        scratch.score = diff_output.get("current_score", scratch.score)
-        scratch.max_score = diff_output.get("max_score", scratch.max_score)
-        scratch.save()
+    diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+    scratch.score = diff_output.get("current_score", scratch.score)
+    scratch.max_score = diff_output.get("max_score", scratch.max_score)
+    scratch.save()
 
 
 def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]:
@@ -195,7 +174,7 @@ def create_scratch(request):
 
     if platform:
         if CompilerWrapper.platform_from_compiler(compiler) != platform:
-            return Response({"error": "Given compiler does not support given platform"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
     else:
         platform = CompilerWrapper.platform_from_compiler(compiler)
 
@@ -293,7 +272,7 @@ def compile(request, slug):
     scratch: Scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
-    if not context:
+    if context == None:
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
@@ -302,18 +281,16 @@ def compile(request, slug):
     except CompilationError as e:
         return APIException(str(e), code=str(status.HTTP_400_BAD_REQUEST))
 
-    diff_output: Optional[Dict[str, Any]] = None
-    if result.elf_object:
-        try:
-            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-        except AssemblyError as e:
-            return APIException(str(e))
-        except DiffError as e:
-            return APIException(str(e))
-        except ObjdumpError as e:
-            return APIException(str(e))
-        except CompilationError as e:
-            return APIException(str(e))
+    try:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+    except AssemblyError as e:
+        return APIException(str(e))
+    except DiffError as e:
+        return APIException(str(e))
+    except ObjdumpError as e:
+        return APIException(str(e))
+    except CompilationError as e:
+        return APIException(str(e))
 
     return Response({
         "diff_output": diff_output,
@@ -358,41 +335,3 @@ def fork(request, slug):
         ScratchSerializer(new_scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
     )
-
-class CurrentUser(APIView):
-    """
-    View to access the current user profile.
-    """
-
-    def get(self, request: Request):
-        user = serialize_profile(request, request.profile)
-        assert user["is_you"] == True
-        return Response(user)
-
-    def post(self, request: Request):
-        """
-        Login if the 'code' parameter is provided. Log out otherwise.
-        """
-
-        if "code" in request.data:
-            GitHubUser.login(request, request.data["code"])
-
-            return Response(serialize_profile(request, request.profile))
-        else:
-            logout(request)
-
-            profile = Profile()
-            profile.save()
-            request.profile = profile
-            request.session["profile_id"] = request.profile.id
-
-            return Response(serialize_profile(request, request.profile))
-
-@api_view(["GET"])
-def user(request, username):
-    """
-    Gets a user's basic data
-    """
-
-    return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
-
