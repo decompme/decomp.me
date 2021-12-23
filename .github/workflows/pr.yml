@@ -130,7 +130,7 @@ jobs:
           git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e
           git submodule update
           make
-          cp nsjail /usr/bin/
+          cp nsjail /bin/
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
