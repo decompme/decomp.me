@@ -61,7 +61,6 @@ for key in "${!WII_COMPILERS[@]}"; do
 done
 
 # patch compilers
-
 if [ -f "${compiler_dir}/mwcc_247_108/${mwcceppc_exe}" ]; then
     mkdir -p "${compiler_dir}/mwcc_247_108_tp"
     cp -r "${compiler_dir}/mwcc_247_108/"* "${compiler_dir}/mwcc_247_108_tp/"
@@ -73,3 +72,11 @@ if [ -f "${compiler_dir}/mwcc_233_163/${mwcceppc_exe}" ]; then
     cp "${compiler_dir}/mwcc_233_163/${mwcceppc_exe}" "${compiler_dir}/mwcc_233_163e/mwcceppc.125.exe"
     wget -q -O "${compiler_dir}/mwcc_233_163e/frank.py" "${frank_url}"
 fi
+
+# set executable bit to allow WSL without wine
+find . -name "${mwcceppc_exe}" | xargs chmod +x
+
+# WSL is case sensitive without wine
+for dll in $(find ${compiler_dir} -name "lmgr326b.dll"); do
+    mv "$dll" "$(dirname $dll)/LMGR326B.dll"
+done
