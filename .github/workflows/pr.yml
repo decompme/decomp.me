@@ -97,14 +97,22 @@ jobs:
         run: |-
           apt-get update
           apt-get install -y \
+            autoconf \
             binutils-mips-linux-gnu \
+            bison \
             curl \
+            flex \
+            g++ \
+            gcc \
             git \
-            libprotobuf-dev \
             libnl-route-3-dev \
+            libprotobuf-dev \
+            libtool \
+            make \
+            pkg-config \
             protobuf-compiler \
-            python3.9 \
             python3-pip \
+            python3.9 \
             unzip \
             wget
       - name: Install Python dependencies
