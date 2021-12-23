@@ -37,10 +37,10 @@ jobs:
           sudo apt install -y wine
           sudo apt-get install \
             binutils-mips-linux-gnu \
+            dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
-            protobuf-compiler \
-            unix2dos
+            protobuf-compiler
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.0 https://github.com/google/nsjail
@@ -101,6 +101,7 @@ jobs:
             binutils-mips-linux-gnu \
             bison \
             curl \
+            dos2unix \
             flex \
             g++ \
             gcc \
@@ -113,7 +114,6 @@ jobs:
             protobuf-compiler \
             python3-pip \
             python3.9 \
-            unix2dos \
             unzip \
             wget
       - name: Install Python dependencies
