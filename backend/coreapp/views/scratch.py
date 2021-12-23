@@ -272,7 +272,7 @@ def compile(request, slug):
     scratch: Scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
-    if context == None:
+    if context is None:
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
