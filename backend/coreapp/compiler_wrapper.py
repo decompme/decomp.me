@@ -357,7 +357,7 @@ class CompilerWrapper:
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler not in _compilers:
-            raise CompilationError("Compiler not found")
+            raise CompilationError(f"Compiler {compiler} not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")

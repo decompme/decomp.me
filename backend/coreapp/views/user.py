@@ -3,10 +3,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from backend.coreapp.middleware import Request
-from backend.coreapp.models import Profile
+from coreapp.middleware import Request
+from coreapp.models import Profile
 
-from backend.coreapp.serializers import serialize_profile
+from coreapp.serializers import serialize_profile
 from ..github import GitHubUser
 
 class CurrentUser(APIView):
