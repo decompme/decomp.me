@@ -24,7 +24,7 @@ export default function LoginState({ onChange }: Props) {
     }, [user, onChange])
 
     if (error) {
-        return <div>{error}</div>
+        throw error
     } else if (!user) {
         // Loading...
         return <div />
