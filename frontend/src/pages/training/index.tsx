@@ -17,6 +17,15 @@ import styles from "./index.module.scss"
 
 const capitalizeFirstLetter = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
+// Remove when training is done
+Training.getStaticProps = ({ res }) => {
+    if (res) {
+        res.statusCode = 404
+        res.end("Not found")
+        return
+    }
+}
+
 export const getStaticProps: GetStaticProps = async _context => {
     const data = await api.get("/compilers")
 

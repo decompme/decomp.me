@@ -23,9 +23,9 @@ export default function Nav({ children, onUserChange }: Props) {
             <Link href="/scratch/new">
                 <a className={styles.item}>New scratch</a>
             </Link>
-            <Link href="/training">
+            {/* Add back when training is done: (<Link href="/training">
                 <a className={styles.item}>Training</a>
-            </Link>
+            </Link>) */}
         </>}
 
         <div className={styles.grow} />

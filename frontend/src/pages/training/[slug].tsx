@@ -12,6 +12,15 @@ import { addFinishedTraining } from "../../lib/training"
 
 import styles from "./[slug].module.scss"
 
+// Remove when training is done
+TrainingScratchPage.getStaticProps = ({ res }) => {
+    if (res) {
+        res.statusCode = 404
+        res.end("Not found")
+        return
+    }
+}
+
 function onMatch(slug: string) {
     addFinishedTraining(slug)
 }
