@@ -59,7 +59,7 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
                 else:
                     logger.warning(f"Error: {compiler_id} {config_json} is missing 'cc' and/or 'platform' field(s), skipping.")
 
-    if not settings.DEBUG:
+    if settings.PROD:
         ret.pop("dummy", None)
     return ret
 

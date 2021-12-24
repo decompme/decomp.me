@@ -16,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
+    PROD=(bool, True),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SECURE_SSL_REDIRECT=(bool, False),
@@ -41,6 +42,7 @@ for stem in [".env.local", ".env"]:
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
+PROD = env('PROD')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
