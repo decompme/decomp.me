@@ -5,6 +5,7 @@
         background-color: green;
     }
 }
+
 .finishedContainer {
     display: flex;
     align-items: center;
@@ -12,6 +13,7 @@
     font-size: 20px;
     line-height: 32px;
 }
+
 .trainingScratchHeader {
     display: flex;
     justify-content: center;
@@ -39,14 +41,4 @@
     width: 100%;
     gap: 10px;
     margin-bottom: 10px;
-}
-
-.diffTab {
-    display: flex;
-    overflow: auto;
-}
-
-.about {
-    padding: 16px;
-    max-width: 500px;
 }

@@ -7,7 +7,7 @@ import { CompilerOptsT } from "../compiler/CompilerOpts"
 import Tabs, { Tab } from "../Tabs"
 
 import ChooseACompiler from "./ChooseACompiler"
-import styles from "./Scratch.module.scss"
+import styles from "./ScratchBody.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 400
 const RIGHT_PANE_MIN_WIDTH = 400

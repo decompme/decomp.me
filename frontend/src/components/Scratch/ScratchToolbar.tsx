@@ -7,7 +7,7 @@ import AsyncButton from "../AsyncButton"
 
 import CompileScratchButton from "./buttons/CompileScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
-import styles from "./Scratch.module.scss"
+import styles from "./ScratchToolbar.module.scss"
 
 export type Props = {
     isCompiling: boolean

@@ -5,7 +5,7 @@ import { ArrowRightIcon } from "@primer/octicons-react"
 import Button from "../Button"
 import CompilerOpts, { CompilerOptsT } from "../compiler/CompilerOpts"
 
-import styles from "./Scratch.module.scss"
+import styles from "./ChooseACompiler.module.scss"
 
 export default function ChooseACompiler({ platform, onCommit }: {
     platform: string

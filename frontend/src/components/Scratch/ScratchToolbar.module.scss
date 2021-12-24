@@ -1,0 +1,47 @@
+
+.toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: initial;
+
+    gap: 4px;
+    padding: 4px;
+
+    background: var(--g300);
+    border-bottom: 1px solid var(--a100);
+
+    @media screen and (min-width: 800px) and (min-height: 800px) {
+        gap: 8px;
+        padding: 8px;
+    }
+}
+
+.scratchName {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 4px 8px;
+
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    outline: none !important;
+
+    color: var(--g1800);
+
+    text-overflow: ellipsis;
+
+    transition: border-color 0.15s;
+
+    &::-webkit-input-placeholder {
+        color: var(--g800);
+    }
+
+    &:not(:disabled) {
+        &:hover,
+        &:active {
+            border-color: var(--g400);
+        }
+    }
+}

@@ -9,7 +9,7 @@ import ScoreBadge from "../ScoreBadge"
 import { Tab } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
-import styles from "./Scratch.module.scss"
+import styles from "./renderTabs.module.scss"
 
 type ScratchTab = LeftScratchTab | RightScratchTab
 
