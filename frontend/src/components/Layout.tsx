@@ -1,8 +1,12 @@
 import { Toaster } from "react-hot-toast"
 
+import ErrorBoundary from "./ErrorBoundary"
+
 export default function Layout({ children }: { children: React.ReactNode }) {
     return <>
-        {children}
+        <ErrorBoundary>
+            {children}
+        </ErrorBoundary>
 
         <Toaster
             position="bottom-center"
