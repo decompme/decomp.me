@@ -133,8 +133,15 @@ class AsmDifferWrapper:
             raise ObjdumpError("Error running objdump on new")
 
         # Preprocess the dumps
-        basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
-        mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump)
+        try:
+            basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
+        except Exception as e:
+            raise DiffError(f"Error preprocessing base dump: {e}")
+
+        try:
+            mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump)
+        except Exception as e:
+            raise DiffError(f"Error preprocessing new dump: {e}")
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

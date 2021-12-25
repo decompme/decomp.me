@@ -14,7 +14,7 @@ def custom_exception_handler(exc, context):
         response = Response(
             data = {
                 "code": exc.SUBPROCESS_NAME,
-                "detail": exc.stderr,
+                "detail": exc.msg,
             }, status = HTTP_400_BAD_REQUEST
         )
 
@@ -23,11 +23,14 @@ def custom_exception_handler(exc, context):
 
 class SubprocessError(Exception):
     SUBPROCESS_NAME: ClassVar[str] = "Subprocess"
+    msg: str
     stdout: str
     stderr: str
 
     def __init__(self, message: str):
-        super().__init__(f"{self.SUBPROCESS_NAME} error: {message}")
+        self.msg = f"{self.SUBPROCESS_NAME} error: {message}"
+
+        super().__init__(self.msg)
         self.stdout = ""
         self.stderr = ""
 
@@ -36,6 +39,7 @@ class SubprocessError(Exception):
         error = SubprocessError(f"{ex.cmd[0]} returned {ex.returncode}")
         error.stdout = ex.stdout
         error.stderr = ex.stderr
+        error.msg = ex.stderr
         return error
 
 
@@ -44,11 +48,11 @@ class DiffError(SubprocessError):
 
 
 class ObjdumpError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Objdump"
+    SUBPROCESS_NAME: ClassVar[str] = "objdump"
 
 
 class NmError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Nm"
+    SUBPROCESS_NAME: ClassVar[str] = "nm"
 
 
 class CompilationError(SubprocessError):
@@ -68,6 +72,6 @@ class AssemblyError(SubprocessError):
                 error_lines.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:
                 error_lines.append(line)
-        error.stderr = "\n".join(error_lines)
+        error.msg = "\n".join(error_lines)
 
         return error
