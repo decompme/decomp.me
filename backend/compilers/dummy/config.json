@@ -1,4 +1,0 @@
-{
-    "platform": "dummy",
-    "cc": "echo 'Compiled \"$INPUT\"!' > \"$OUTPUT\""
-}
