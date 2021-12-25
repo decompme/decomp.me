@@ -230,7 +230,9 @@ class CompilationTests(APITestCase):
         Ensure that compilations with \\r\\n line endings succeed
         """
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
+        if result.errors:
+            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
     @onlyIfCompilerAvailable('mwcc_247_92')
     def test_mwcc_wine(self):
@@ -238,7 +240,7 @@ class CompilationTests(APITestCase):
         Ensure that we can invoke mwcc through wine
         """
         result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        self.assertIsNotNone(result.elf_object, "The compilation should result in a non-null elf_object")
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
     def test_dummy_compiler(self):
         """
@@ -246,7 +248,9 @@ class CompilationTests(APITestCase):
         """
 
         result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
-        self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
+        if result.errors:
+            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
 
 class M2CTests(TestCase):

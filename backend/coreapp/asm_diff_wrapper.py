@@ -14,13 +14,6 @@ logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 5000
 
-# class DiffError(Exception):
-#     def __init__(self, message: str):
-#         super().__init__(f"Diff error: {message}")
-
-# class ObjdumpError(Exception):
-#     def __init__(self, message: str):
-#         super().__init__(f"Objdump error: {message}")
 
 class AsmDifferWrapper:
     @staticmethod
