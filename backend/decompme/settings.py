@@ -16,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
+    DJANGO_LOG_LEVEL=(str, "INFO"),
     DUMMY_COMPILER=(bool, True),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
@@ -42,6 +43,7 @@ for stem in [".env.local", ".env"]:
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
+DJANGO_LOG_LEVEL = env('DJANGO_LOG_LEVEL')
 DUMMY_COMPILER = env('DUMMY_COMPILER')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
@@ -160,7 +162,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': DJANGO_LOG_LEVEL,
             'propagate': False,
         },
     },
