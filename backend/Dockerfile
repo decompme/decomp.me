@@ -53,8 +53,6 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY compilers/*.sh /compilers/
 
-COPY compilers/dummy /compilers/dummy
-
 RUN bash /compilers/download.sh
 
 # windows compilers need i386 wine
