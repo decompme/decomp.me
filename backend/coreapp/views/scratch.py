@@ -1,5 +1,5 @@
 from rest_framework.exceptions import APIException
-from coreapp.error import AssemblyError, CompilationError, DiffError, ObjdumpError
+from coreapp.error import SubprocessError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -17,7 +17,7 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 import zipfile
 
 from ..models import Asm, Scratch, gen_scratch_id
@@ -39,10 +39,12 @@ def update_scratch_score(scratch: Scratch):
     """
 
     result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
-    diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-    scratch.score = diff_output.get("current_score", scratch.score)
-    scratch.max_score = diff_output.get("max_score", scratch.max_score)
-    scratch.save()
+
+    if result.elf_object:
+        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+        scratch.score = diff_output.get("current_score", scratch.score)
+        scratch.max_score = diff_output.get("max_score", scratch.max_score)
+        scratch.save()
 
 
 def scratch_last_modified(request: Request, slug: str) -> Optional[datetime]:
@@ -81,7 +83,7 @@ class ScratchDetail(APIView):
 
         for param in request.data:
             if param not in valid_params:
-                return Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+                raise APIException({"error": f"Invalid parameter: {param}"})
             if param in recompile_params:
                 recompile = True
 
@@ -96,7 +98,7 @@ class ScratchDetail(APIView):
             if hasattr(scratch, param):
                 setattr(scratch, param, request.data[param])
             else:
-                Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+                raise APIException({"error": f"Invalid parameter: {param}"})
 
         scratch.save()
 
@@ -192,22 +194,7 @@ def create_scratch(request):
 
     asm = get_db_asm(target_asm)
 
-    try:
-        assembly = CompilerWrapper.assemble_asm(platform, asm)
-    except AssemblyError as e:
-        errors = []
-
-        for line in e.stderr.splitlines():
-            if "asm.s:" in line:
-                errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
-            else:
-                errors.append(line)
-
-        return Response({
-            "error": "as_error",
-            "error_description": "Error when assembling target asm",
-            "as_errors": errors,
-        }, status=status.HTTP_400_BAD_REQUEST)
+    assembly = CompilerWrapper.assemble_asm(platform, asm)
 
     source_code = data.get("source_code")
     if not source_code:
@@ -262,7 +249,7 @@ def compile(request, slug):
 
     for param in required_params:
         if param not in request.data:
-            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException({"error": f"Missing parameter: {param}"})
 
     # TODO validate
     compiler = request.data["compiler"]
@@ -277,15 +264,11 @@ def compile(request, slug):
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
-    try:
-        result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
-    except CompilationError as e:
-        raise APIException(e.stderr)
+    result = CompilerWrapper.compile_code(compiler, compiler_flags, code, context)
 
-    try:
+    diff_output: Optional[Dict[str, Any]] = None
+    if result.elf_object:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-    except (AssemblyError, DiffError, ObjdumpError, CompilationError) as e:
-        raise APIException(e.stderr)
 
     return Response({
         "diff_output": diff_output,
@@ -298,12 +281,12 @@ def fork(request, slug):
 
     for param in required_params:
         if param not in request.data:
-            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException({"error": f"Missing parameter: {param}"})
 
     parent_scratch = Scratch.objects.filter(slug=slug).first()
 
     if not parent_scratch:
-        return Response({"error": "Parent scratch does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        raise APIException({"error": "Parent scratch does not exist"})
 
     # TODO validate
     compiler = request.data["compiler"]

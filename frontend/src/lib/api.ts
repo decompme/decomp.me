@@ -35,21 +35,15 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
 export class ResponseError extends Error {
     status: number
     responseJSON: Json
+    code: string
 
     constructor(response: Response, responseJSON) {
         super(`Server responded with HTTP status code ${response.status}`)
 
         this.status = response.status
         this.responseJSON = responseJSON
-
-        if (responseJSON.error) {
-            this.message = responseJSON.error
-        } else if (responseJSON.detail) {
-            this.message = responseJSON.detail
-        } else if (responseJSON.errors) {
-            this.message = responseJSON.errors.join(",")
-        }
-
+        this.code = responseJSON.code
+        this.message = responseJSON.detail
         this.name = "ResponseError"
     }
 }

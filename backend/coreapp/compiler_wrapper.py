@@ -397,7 +397,9 @@ class CompilerWrapper:
                     "MWCIncludes": "/tmp",
                 })
             except subprocess.CalledProcessError as e:
-                raise CompilationError.from_process_error(e)
+                # Compilation failed
+                logging.debug("Compilation failed: " + e.stderr)
+                return CompilationResult(b'', e.stderr)
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")

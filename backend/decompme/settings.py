@@ -72,6 +72,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'coreapp.error.custom_exception_handler',
+}
+
 ROOT_URLCONF = 'decompme.urls'
 
 TEMPLATES = [

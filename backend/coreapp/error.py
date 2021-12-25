@@ -1,6 +1,24 @@
-from typing import ClassVar
-
 from subprocess import CalledProcessError
+from typing import ClassVar
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
+
+from rest_framework.views import exception_handler
+
+def custom_exception_handler(exc, context):
+    # Call REST framework's default exception handler first,
+    # to get the standard error response.
+    response = exception_handler(exc, context)
+
+    if isinstance(exc, SubprocessError):
+        response = Response(
+            data = {
+                "code": exc.SUBPROCESS_NAME,
+                "detail": exc.stderr,
+            }, status = HTTP_400_BAD_REQUEST
+        )
+
+    return response
 
 
 class SubprocessError(Exception):
@@ -20,17 +38,36 @@ class SubprocessError(Exception):
         error.stderr = ex.stderr
         return error
 
+
 class DiffError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Diff"
+
 
 class ObjdumpError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Objdump"
 
+
 class NmError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Nm"
+
 
 class CompilationError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
 
+
 class AssemblyError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
+
+    @staticmethod
+    def from_process_error(ex: CalledProcessError) -> "SubprocessError":
+        error = super(AssemblyError, AssemblyError).from_process_error(ex)
+
+        error_lines = []
+        for line in ex.stderr.splitlines():
+            if "asm.s:" in line:
+                error_lines.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
+            else:
+                error_lines.append(line)
+        error.stderr = "\n".join(error_lines)
+
+        return error
