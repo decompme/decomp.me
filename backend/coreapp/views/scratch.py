@@ -1,12 +1,12 @@
+from rest_framework.exceptions import APIException
+from coreapp.error import SubprocessError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, serialize_profile
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import logout
 from django.core.validators import validate_slug
 from django.http import HttpResponse
-from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,14 +20,11 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 import zipfile
 
-
-from .models import Profile, Asm, Scratch, gen_scratch_id
-from .github import GitHubUser
-from .middleware import Request
-from .decorators.django import condition
+from ..models import Asm, Scratch, gen_scratch_id
+from ..middleware import Request
+from ..decorators.django import condition
 
 logger = logging.getLogger(__name__)
-boot_time = now()
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -35,20 +32,6 @@ def get_db_asm(request_asm) -> Asm:
         "data": request_asm,
     })
     return asm
-
-class CompilersDetail(APIView):
-    @condition(last_modified_func=lambda request: boot_time)
-    def head(self, request: Request):
-        return Response()
-
-    @condition(last_modified_func=lambda request: boot_time)
-    def get(self, request: Request):
-        return Response({
-            # compiler_ids is used by the permuter
-            "compiler_ids": CompilerWrapper.available_compiler_ids(),
-            "compilers": CompilerWrapper.available_compilers(),
-            "platforms": CompilerWrapper.available_platforms(),
-        })
 
 def update_scratch_score(scratch: Scratch):
     """
@@ -100,7 +83,7 @@ class ScratchDetail(APIView):
 
         for param in request.data:
             if param not in valid_params:
-                return Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+                raise APIException({"error": f"Invalid parameter: {param}"})
             if param in recompile_params:
                 recompile = True
 
@@ -115,7 +98,7 @@ class ScratchDetail(APIView):
             if hasattr(scratch, param):
                 setattr(scratch, param, request.data[param])
             else:
-                Response({"error": f"Invalid parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+                raise APIException({"error": f"Invalid parameter: {param}"})
 
         scratch.save()
 
@@ -194,7 +177,7 @@ def create_scratch(request):
 
     if platform:
         if CompilerWrapper.platform_from_compiler(compiler) != platform:
-            return Response({"error": "Given compiler does not support given platform"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
     else:
         platform = CompilerWrapper.platform_from_compiler(compiler)
 
@@ -211,23 +194,7 @@ def create_scratch(request):
 
     asm = get_db_asm(target_asm)
 
-    assembly, err = CompilerWrapper.assemble_asm(platform, asm)
-    if not assembly:
-        assert isinstance(err, str)
-
-        errors = []
-
-        for line in err.splitlines():
-            if "asm.s:" in line:
-                errors.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
-            else:
-                errors.append(line)
-
-        return Response({
-            "error": "as_error",
-            "error_description": "Error when assembling target asm",
-            "as_errors": errors,
-        }, status=status.HTTP_400_BAD_REQUEST)
+    assembly = CompilerWrapper.assemble_asm(platform, asm)
 
     source_code = data.get("source_code")
     if not source_code:
@@ -282,7 +249,7 @@ def compile(request, slug):
 
     for param in required_params:
         if param not in request.data:
-            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException({"error": f"Missing parameter: {param}"})
 
     # TODO validate
     compiler = request.data["compiler"]
@@ -293,7 +260,7 @@ def compile(request, slug):
     scratch: Scratch = Scratch.objects.get(slug=slug)
 
     # Get the context from the backend if it's not provided
-    if not context:
+    if context is None:
         logger.debug("No context provided, getting from backend")
         context = scratch.context
 
@@ -314,12 +281,12 @@ def fork(request, slug):
 
     for param in required_params:
         if param not in request.data:
-            return Response({"error": f"Missing parameter: {param}"}, status=status.HTTP_400_BAD_REQUEST)
+            raise APIException({"error": f"Missing parameter: {param}"})
 
     parent_scratch = Scratch.objects.filter(slug=slug).first()
 
     if not parent_scratch:
-        return Response({"error": "Parent scratch does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        raise APIException({"error": "Parent scratch does not exist"})
 
     # TODO validate
     compiler = request.data["compiler"]
@@ -346,41 +313,3 @@ def fork(request, slug):
         ScratchSerializer(new_scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
     )
-
-class CurrentUser(APIView):
-    """
-    View to access the current user profile.
-    """
-
-    def get(self, request: Request):
-        user = serialize_profile(request, request.profile)
-        assert user["is_you"] == True
-        return Response(user)
-
-    def post(self, request: Request):
-        """
-        Login if the 'code' parameter is provided. Log out otherwise.
-        """
-
-        if "code" in request.data:
-            GitHubUser.login(request, request.data["code"])
-
-            return Response(serialize_profile(request, request.profile))
-        else:
-            logout(request)
-
-            profile = Profile()
-            profile.save()
-            request.profile = profile
-            request.session["profile_id"] = request.profile.id
-
-            return Response(serialize_profile(request, request.profile))
-
-@api_view(["GET"])
-def user(request, username):
-    """
-    Gets a user's basic data
-    """
-
-    return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
-

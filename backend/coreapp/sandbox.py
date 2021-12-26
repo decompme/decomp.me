@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, Optional, List, Union
+from typing import Dict, Optional, List, Union
 from django.conf import settings
 import logging
 import os

@@ -1,9 +1,9 @@
 import os
 import sys
-
 from pathlib import Path
-import django_stubs_ext
+from platform import uname
 
+import django_stubs_ext
 import environ
 
 django_stubs_ext.monkeypatch()
@@ -13,6 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
+    DJANGO_LOG_LEVEL=(str, "INFO"),
+    DUMMY_COMPILER=(bool, False),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SECURE_SSL_REDIRECT=(bool, False),
@@ -38,6 +40,8 @@ for stem in [".env.local", ".env"]:
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
+DJANGO_LOG_LEVEL = env('DJANGO_LOG_LEVEL')
+DUMMY_COMPILER = env('DUMMY_COMPILER')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
@@ -66,6 +70,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'coreapp.error.custom_exception_handler',
+}
 
 ROOT_URLCONF = 'decompme.urls'
 
@@ -148,6 +156,13 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': DJANGO_LOG_LEVEL,
+            'propagate': False,
+        },
+    },
 }
 
 SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
@@ -165,7 +180,7 @@ COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
-if sys.platform == "darwin":
+if sys.platform in ["darwin", "win32"]:
     USE_SANDBOX_JAIL = False
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"

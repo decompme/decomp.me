@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
+from coreapp.error import AssemblyError, CompilationError
 from coreapp.models import Asm, Assembly
 from coreapp import util
 from coreapp.sandbox import Sandbox
@@ -57,6 +58,12 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
                         logger.debug(f"No binaries for {compiler_id}, ignoring.")
                 else:
                     logger.warning(f"Error: {compiler_id} {config_json} is missing 'cc' and/or 'platform' field(s), skipping.")
+
+    if settings.DUMMY_COMPILER:
+        ret["dummy"] = {
+            "platform": "dummy",
+            "cc": ""
+        }
     return ret
 
 
@@ -77,6 +84,15 @@ class CompilationResult:
 
 def load_platforms() -> Dict[str, Platform]:
     return {
+        "dummy": Platform(
+            "Dummy System",
+            "DMY",
+            "dummy",
+            assemble_cmd='echo \"assembled("$INPUT")\" > "$OUTPUT"',
+            objdump_cmd="echo",
+            nm_cmd="echo",
+            asm_prelude="",
+        ),
         "n64": Platform(
             "Nintendo 64",
             "MIPS (big-endian)",
@@ -345,9 +361,11 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
+        if compiler == "dummy":
+            return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
+
         if compiler not in _compilers:
-            logger.debug(f"Compiler {compiler} not found")
-            return CompilationResult(b'', "ERROR: Compiler not found")
+            raise CompilationError(f"Compiler {compiler} not found")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
@@ -387,30 +405,42 @@ class CompilerWrapper:
                 return CompilationResult(b'', e.stderr)
 
             if not object_path.exists():
-                logger.error("Compiler did not create an object file")
-                return CompilationResult(b'', "ERROR: Compiler did not create an object file")
+                raise CompilationError("Compiler did not create an object file")
+
+            object_bytes = object_path.read_bytes()
+
+            if not object_bytes:
+                raise CompilationError("Compiler created an empty object file")
 
             return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Tuple[Optional[Assembly], Optional[str]]:
+    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Assembly:
         if platform not in _platforms:
-            logger.error(f"Platform {platform} not found")
-            return (None, f"Platform {platform} not found")
+            raise AssemblyError(f"Platform {platform} not found")
 
         assemble_cmd = get_assemble_cmd(platform)
         if not assemble_cmd:
-            logger.error(f"Assemble command for platform {platform} not found")
-            return (None, f"Assemble command for platform {platform} not found")
+            raise AssemblyError(f"Assemble command for platform {platform} not found")
 
         # Use the cache if we're not manually re-running an Assembly
         if not to_regenerate:
             cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
             if cached_assembly:
                 logger.debug(f"Assembly cache hit! hash: {hash}")
-                return (cached_assembly, None)
+                return cached_assembly
 
         platform_cfg = _platforms[platform]
+
+        if platform == "dummy":
+            assembly = Assembly(
+                hash=hash,
+                arch=platform_cfg.arch,
+                source_asm=asm,
+                elf_object=f"assembled({asm.data})".encode("UTF-8")
+            )
+            assembly.save()
+            return assembly
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
@@ -430,17 +460,14 @@ class CompilerWrapper:
                     "OUTPUT": sandbox.rewrite_path(object_path),
                 })
             except subprocess.CalledProcessError as e:
-                # Compilation failed
-                logger.exception("Error running asm-differ")
-                return (None, e.stderr)
+                raise AssemblyError.from_process_error(e)
 
             # Assembly failed
             if assemble_proc.returncode != 0:
-                return (None, assemble_proc.stderr)
+                raise AssemblyError(f"Assembler failed with error code {assemble_proc.returncode}")
 
             if not object_path.exists():
-                logger.error("Assembler did not create an object file")
-                return (None, "Assembler did not create an object file")
+                raise AssemblyError("Assembler did not create an object file")
 
             if to_regenerate:
                 assembly = to_regenerate
@@ -453,8 +480,7 @@ class CompilerWrapper:
                     elf_object=object_path.read_bytes(),
                 )
             assembly.save()
-
-            return (assembly, None)
+            return assembly
 
 
 _compilers = load_compilers()

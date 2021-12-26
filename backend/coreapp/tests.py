@@ -55,7 +55,7 @@ nop"""
         scratch_dict = {
             'platform': 'n64',
             'compiler': 'ido5.3',
-            'context': '',
+            'context': 'typedef unsigned char u8;',
             'target_asm':
 """
 .text
@@ -66,6 +66,21 @@ lui $at, %hi(D_801D702C)
 jr  $ra
 sb  $t6, %lo(D_801D702C)($at)
 """
+        }
+
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Scratch.objects.count(), 1)
+
+    def test_dummy_platform(self):
+        """
+        Ensure that we can create scratches with the dummy platform and compiler
+        """
+        scratch_dict = {
+            'platform': 'dummy',
+            'compiler': 'dummy',
+            'context': 'typedef unsigned char u8;',
+            'target_asm': 'this is some test asm',
         }
 
         response = self.client.post(reverse('scratch'), scratch_dict)
@@ -135,14 +150,13 @@ class ScratchModificationTests(APITestCase):
         self.assertEqual(scratch.score, 0)
 
 class ScratchForkTests(APITestCase):
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_fork_scratch(self):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
+            'compiler': 'dummy',
+            'platform': 'dummy',
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
             'diff_label': 'meow',
@@ -158,8 +172,8 @@ class ScratchForkTests(APITestCase):
         slug = scratch.slug
 
         fork_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
+            'compiler': 'dummy',
+            'platform': 'dummy',
             'compiler_flags': '-O2',
             'source_code': 'int func() { return 2; }',
             'context': '',
@@ -216,10 +230,8 @@ class CompilationTests(APITestCase):
         Ensure that compilations with \\r\\n line endings succeed
         """
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
-
         if result.errors:
             self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
-
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
     @onlyIfCompilerAvailable('mwcc_247_92')
@@ -228,7 +240,16 @@ class CompilationTests(APITestCase):
         Ensure that we can invoke mwcc through wine
         """
         result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
+        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
+    def test_dummy_compiler(self):
+        """
+        Ensure basic functionality works for the dummy compiler
+        """
+
+        result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
+        if result.errors:
+            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
 
@@ -382,15 +403,14 @@ class UserTests(APITestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_own_scratch(self):
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
         """
 
         response = self.client.post("/api/scratch", {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
+            'compiler': 'dummy',
+            'platform': 'dummy',
             'context': '',
             'target_asm': "jr $ra\nnop\n"
         })
@@ -407,11 +427,12 @@ class UserTests(APITestCase):
         self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
+
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
         response = self.client.post(reverse("scratch"), {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
+            'compiler': 'dummy',
+            'platform': 'dummy',
             'context': '',
             'target_asm': "jr $ra\nnop\n",
         })
@@ -429,7 +450,6 @@ class ScratchDetailTests(APITestCase):
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_last_modified(self):
         """
         Ensure that the Last-Modified header is set.
@@ -441,7 +461,6 @@ class ScratchDetailTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_(response.headers.get("Last-Modified") is not None)
 
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_if_modified_since(self):
         """
         Ensure that the If-Modified-Since header is handled.
@@ -470,7 +489,6 @@ class ScratchDetailTests(APITestCase):
         response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @onlyIfCompilerAvailable('gcc2.8.1')
     def test_double_claim(self):
         """
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
