@@ -1,0 +1,18 @@
+.context {
+    display: flex;
+    flex-direction: column;
+}
+
+.editor {
+    height: 100%;
+}
+
+.diffTab {
+    display: flex;
+    overflow: auto;
+}
+
+.about {
+    padding: 16px;
+    max-width: 500px;
+}

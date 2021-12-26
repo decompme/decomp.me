@@ -1,0 +1,182 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    max-width: 50em;
+    padding: 1em;
+
+    cursor: default;
+}
+
+.rule {
+    border: 0;
+    background: var(--g400);
+    height: 1px;
+}
+
+.heading {
+    padding: 10px;
+    user-select: auto;
+
+    > h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 500;
+    }
+
+    > p {
+        padding-top: 4px;
+        color: var(--g1000);
+        font-size: 0.9em;
+        max-width: 50ch;
+    }
+}
+
+.label {
+    display: block;
+    margin: 0;
+    padding: 10px;
+
+    color: var(--g1700);
+    font-size: 0.9em;
+    font-weight: 600;
+
+    small {
+        color: var(--g800);
+        font-size: 0.8em;
+        font-weight: 400;
+        padding-left: 8px;
+    }
+}
+
+.trainingContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 30px;
+    width: 60em;
+    align-self: center;
+    margin-top: 20px;
+
+    @media screen and (max-width: 1000px) {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.trainingColumn {
+    flex: 1;
+}
+
+.trainingColumn.chapters {
+    flex: 0.5;
+}
+
+/* EVERYTHING BELOW IS DERIVED FROM PLATFORMSELECT */
+
+.scenarioContainer {
+    list-style: none;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    width: 100%;
+}
+
+.scenario {
+    flex: 1;
+    flex-basis: 100%;
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 16px;
+
+    border: 1px solid var(--g400);
+    border-radius: 6px;
+    background: var(--g300);
+    color: var(--g1200);
+
+    cursor: pointer;
+    user-select: none;
+
+    white-space: nowrap;
+
+    transition: border-color 0.1s, background 0.15s, color 0.2s;
+
+    svg {
+        width: 40px;
+        height: 40px;
+
+        will-change: filter;
+        filter: grayscale(100%);
+        transition: filter 0.2s;
+    }
+
+    &:hover,
+    &.selected {
+        color: var(--g2000);
+        background: var(--g400);
+
+        svg {
+            filter: grayscale(0%);
+        }
+    }
+
+    &.selected {
+        background: var(--g400);
+    }
+}
+
+.scenarioFinished {
+    background: darkgreen;
+    color: white;
+
+    &:hover,
+    &.selected {
+        background: green;
+    }
+}
+
+.labelContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.scenarioTitle {
+    font-weight: 500;
+}
+
+.scenarioDescription {
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+.scenarioLabel {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+
+    /*
+    &.easy {
+        color: lightgreen;
+    }
+    &.intermediate {
+        color: orange;
+    }
+    &.advanced {
+        color: lightsalmon;
+    }
+    */
+}

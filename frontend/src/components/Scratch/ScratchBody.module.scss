@@ -1,0 +1,12 @@
+.resizer {
+    flex: 1;
+    overflow: hidden;
+}
+
+.diffSection {
+    display: flex;
+    flex-direction: column;
+
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
+}
