@@ -4,12 +4,12 @@ import * as api from "../../../lib/api"
 import { useSize } from "../../../lib/hooks"
 import useScratchDocumentTitle from "../hooks/useScratchDocumentTitle"
 import { LeftScratchTab, renderLeftTabs, renderRightTabs } from "../renderTabs"
-import styles from "../Scratch.module.scss"
 import ScratchBody from "../ScratchBody"
 import setCompilerOptsFunction from "../util/setCompilerOpts"
 import tryClaimScratch from "../util/tryClaimScratch"
 
 import useOnMatch from "./hooks/useOnMatch"
+import styles from "./TrainingScratch.module.scss"
 import TrainingScratchToolbar from "./TrainingScratchToolbar"
 
 let isClaiming = false

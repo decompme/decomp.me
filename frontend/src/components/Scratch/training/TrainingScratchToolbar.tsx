@@ -7,9 +7,8 @@ import { getFinishedTrainings, getNextScenario, getPriorScenario, getScenarioDes
 import AsyncButton from "../../AsyncButton"
 import Button from "../../Button"
 import ScoreBadge from "../../ScoreBadge"
-import styles from "../Scratch.module.scss"
 
-import trainingStyles from "./TrainingScratch.module.scss"
+import styles from "./TrainingScratchToolbar.module.scss"
 
 function goToSlug(router, slug: string, goTo: "next" | "prior") {
     const temp = (goTo === "next" ? getNextScenario(slug) : getPriorScenario(slug))?.slug
@@ -29,17 +28,17 @@ export default function TrainingScratchToolbar({ slug, isCompiling, compile }: P
 
     return (
         <div className={styles.toolbar}>
-            <div className={trainingStyles.trainingScratchHeaderContainer}>
-                <div className={trainingStyles.trainingScratchHeader}>
+            <div className={styles.trainingScratchHeaderContainer}>
+                <div className={styles.trainingScratchHeader}>
                     {getScenarioNameFromSlug(slug)}
-                    <div className={trainingStyles.finishedContainer}>
+                    <div className={styles.finishedContainer}>
                         {getFinishedTrainings().includes(slug) && <ScoreBadge score={0} maxScore={0} />}
                     </div>
                 </div>
-                <div className={classNames(trainingStyles.trainingScratchHeader, trainingStyles.trainingScratchHeaderDescription)}>
+                <div className={classNames(styles.trainingScratchHeader, styles.trainingScratchHeaderDescription)}>
                     {getScenarioDescriptionFromSlug(slug)}
                 </div>
-                <div className={trainingStyles.trainingScratchButtonList}>
+                <div className={styles.trainingScratchButtonList}>
                     <Button disabled={!getPriorScenario(slug)} onClick={() => goToSlug(router, slug, "prior")}>
                         <ArrowLeftIcon size={16} /> Prior scenario
                     </Button>
