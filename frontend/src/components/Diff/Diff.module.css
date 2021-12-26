@@ -50,9 +50,12 @@
 }
 
 .lineNumber {
-    color: rgb(140, 140, 140);
-    font-size: 0.9em;
-    font-style: italic;
+    display: inline-block;
+
+    color: var(--a300);
+
+    min-width: 3ch;
+    text-align: right;
 }
 
 .immediate { color: #6d6dff; }

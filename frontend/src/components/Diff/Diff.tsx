@@ -50,9 +50,9 @@ export default function Diff({ compilation }: Props) {
                     <div key={i} className={styles.row}>
                         <div className={styles.column}>
                             {row.base && <FormatDiffText texts={row.base.text} />}
-                            <span className={styles.lineNumber}>{(row.current) && row.current.src_line}</span>
                         </div>
                         <div className={styles.column}>
+                            {typeof row.current?.src_line != "undefined" && <span className={styles.lineNumber}>{row.current.src_line}</span>}
                             {row.current && <FormatDiffText texts={row.current.text} />}
                         </div>
                         {threeWay && <div className={styles.column}>
