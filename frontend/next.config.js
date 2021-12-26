@@ -1,10 +1,7 @@
-const { config } = require("dotenv")
 const { execSync } = require("child_process")
+
+const { config } = require("dotenv")
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
-const removeImports = require("next-remove-imports")({
-    //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
-    //matchImports: "\\.(less|css|scss|sass|styl)$"
-})
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -21,8 +18,12 @@ try {
 }
 process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
-const withPWA = require('next-pwa')
-const runtimeCaching = require('next-pwa/cache')
+const withPWA = require("next-pwa")
+const runtimeCaching = require("next-pwa/cache")
+const removeImports = require("next-remove-imports")({
+    //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
+    //matchImports: "\\.(less|css|scss|sass|styl)$"
+})
 
 module.exports = removeImports(withPWA({
     async redirects() {
@@ -37,6 +38,12 @@ module.exports = removeImports(withPWA({
                 destination: "/scratch/new",
                 permanent: true,
             },
+            // TEMP
+            {
+                source: "/training",
+                destination: "/scratch/new",
+                permanent: false,
+            },
         ]
     },
     async rewrites() {
@@ -49,7 +56,7 @@ module.exports = removeImports(withPWA({
                 headers: [
                     {
                         key: "X-DNS-Prefetch-Control",
-                        value: "on"
+                        value: "on",
                     },
 
                 ],
