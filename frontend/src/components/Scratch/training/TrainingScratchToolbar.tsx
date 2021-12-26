@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { SyncIcon, ArrowRightIcon, ArrowLeftIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import { getFinishedTrainings, getNextScenario, getPriorScenario, getScenarioDescriptionFromSlug, getScenarioNameFromSlug } from "../../../lib/training"
+import { getNextScenario, getPriorScenario, getScenarioDescriptionFromSlug, getScenarioNameFromSlug, useFinishedTraining } from "../../../lib/training"
 import AsyncButton from "../../AsyncButton"
 import Button from "../../Button"
 import ScoreBadge from "../../ScoreBadge"
@@ -25,6 +25,7 @@ export type Props = {
 
 export default function TrainingScratchToolbar({ slug, isCompiling, compile }: Props) {
     const router = useRouter()
+    const [finishedTraining] = useFinishedTraining()
 
     return (
         <div className={styles.toolbar}>
@@ -32,7 +33,7 @@ export default function TrainingScratchToolbar({ slug, isCompiling, compile }: P
                 <div className={styles.trainingScratchHeader}>
                     {getScenarioNameFromSlug(slug)}
                     <div className={styles.finishedContainer}>
-                        {getFinishedTrainings().includes(slug) && <ScoreBadge score={0} maxScore={0} />}
+                        {finishedTraining.includes(slug) && <ScoreBadge score={0} maxScore={0} />}
                     </div>
                 </div>
                 <div className={classNames(styles.trainingScratchHeader, styles.trainingScratchHeaderDescription)}>

@@ -11,7 +11,7 @@ import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 import PlatformSelect from "../../components/PlatformSelect"
 import * as api from "../../lib/api"
-import { getFinishedTrainings, TRAINING_DATA } from "../../lib/training"
+import { TRAINING_DATA, useFinishedTraining } from "../../lib/training"
 
 import styles from "./index.module.scss"
 
@@ -44,6 +44,7 @@ export default function Training({ serverCompilers }: {
 }) {
     const [platform, setPlatform] = useState("")
     const [selectedChapter, setSelectedChapter] = useState(undefined)
+    const [finishedTraining] = useFinishedTraining()
     const router = useRouter()
 
     const loadScenario = async (scratchSlug: string) => {
@@ -99,7 +100,6 @@ export default function Training({ serverCompilers }: {
                                     <div className={styles.scenarioTitle}>{chapter.name}</div>
                                     <div className={styles.scenarioDescription}>{chapter.description}</div>
                                     {(() => {
-                                        const finishedTraining = getFinishedTrainings()
                                         const finishedScenarios = chapter.scenarios
                                             ?.filter(scenario => finishedTraining.find(finished => scenario.slug === finished))
                                             .length ?? 0
@@ -123,7 +123,6 @@ export default function Training({ serverCompilers }: {
                     </p>
                     <ul className={styles.scenarioContainer}>
                         {(() => {
-                            const finishedTraining = getFinishedTrainings()
                             return selectedChapter?.scenarios?.map((scenario, i) =>
                                 <li
                                     key={i}

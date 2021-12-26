@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react"
+
+import { singletonHook } from "react-singleton-hook"
+
 interface Platform {
     name: string
     chapters: Array<Chapter>
@@ -72,25 +76,30 @@ export const getScenarioNameFromSlug = (slug: string) => getScenarioFromSlug(slu
 export const getScenarioDescriptionFromSlug = (slug: string) => getScenarioFromSlug(slug)?.description
 export const getPriorScenario = (currentSlug: string) => getAdjacentScenarios(currentSlug)[0]
 export const getNextScenario = (currentSlug: string) => getAdjacentScenarios(currentSlug)[1]
-export const getFinishedTrainings = (): Array<string> => {
-    try {
-        return JSON.parse(localStorage.getItem("finished_training")) ?? []
-    } catch (e) {
-        return []
+
+export const useFinishedTraining = singletonHook([[], undefined, undefined, undefined], (): [string[], (slug: string) => boolean, (slug: string) => void, (slug: string) => void] => {
+    const [finishedTraining, setFinishedTraining] = useState([])
+
+    useEffect(() => {
+        try {
+            setFinishedTraining(JSON.parse(localStorage.getItem("finished_training")) ?? [])
+        // eslint-disable-next-line no-empty
+        } catch (e) {}
+    }, [])
+
+    const hasFinishedTraining = (slug: string) => finishedTraining.includes(slug)
+    const addFinishedTraining = (slug: string) => {
+        const newValue = finishedTraining.includes(slug) ? finishedTraining : [...finishedTraining, slug]
+
+        localStorage.setItem("finished_training", JSON.stringify(newValue))
+        setFinishedTraining(newValue)
     }
-}
-export const hasFinishedTraining = (slug: string) => getFinishedTrainings().includes(slug)
-export const addFinishedTraining = (slug: string) => {
-    const finishedTrainings = getFinishedTrainings()
-    if (!finishedTrainings.includes(slug)) {
-        finishedTrainings.push(slug)
+    const removeFinishedTraining = (slug: string) => {
+        const newValue = finishedTraining.filter(temp => temp !== slug)
+
+        localStorage.setItem("finished_training", JSON.stringify(newValue))
+        setFinishedTraining(newValue)
     }
 
-    localStorage.setItem("finished_training", JSON.stringify(finishedTrainings))
-}
-export const removeFinishedTraining = (slug: string) => {
-    let finishedTrainings = getFinishedTrainings()
-    finishedTrainings = finishedTrainings.filter(temp => temp !== slug)
-
-    localStorage.setItem("finished_training", JSON.stringify(finishedTrainings))
-}
+    return [finishedTraining, hasFinishedTraining, addFinishedTraining, removeFinishedTraining]
+})

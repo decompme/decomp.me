@@ -8,13 +8,9 @@ import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
 import TrainingScratch from "../../components/Scratch/training/TrainingScratch"
 import * as api from "../../lib/api"
-import { addFinishedTraining } from "../../lib/training"
+import { useFinishedTraining } from "../../lib/training"
 
 import styles from "./[slug].module.scss"
-
-function onMatch(slug: string) {
-    addFinishedTraining(slug)
-}
 
 // dynamically render all pages
 export async function getStaticPaths() {
@@ -45,6 +41,8 @@ export const getStaticProps: GetStaticProps = async context => {
 }
 
 export default function TrainingScratchPage({ scratch }: { scratch?: api.Scratch }) {
+    const [,,addFinishedTraining] = useFinishedTraining()
+
     return <>
         <Head>
             <title>{scratch ? scratch.name : "Training"} | decomp.me</title>
@@ -52,7 +50,7 @@ export default function TrainingScratchPage({ scratch }: { scratch?: api.Scratch
         <Nav />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
-                {scratch && <TrainingScratch onMatch={() => onMatch(scratch.slug)} slug={scratch.slug} tryClaim={true} />}
+                {scratch && <TrainingScratch onMatch={() => addFinishedTraining(scratch.slug)} slug={scratch.slug} tryClaim={true} />}
                 {scratch === undefined && <LoadingSpinner className={styles.loading} />}
             </Suspense>
         </main>
