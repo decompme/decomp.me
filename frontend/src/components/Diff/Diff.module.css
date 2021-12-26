@@ -1,17 +1,4 @@
-.container {
-    padding: 8px;
-    overflow: auto;
-    width: 100%;
-
-    scrollbar-color: #fff3 transparent;
-    scrollbar-width: thin;
-}
-
-.diff {
-    border-spacing: 1em 0;
-}
-
-.diff,
+.container,
 .log {
     display: block;
     user-select: text;
@@ -20,6 +7,43 @@
     font-size: 12px;
     white-space: pre;
     width: 100%;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.column {
+    flex: 1;
+    min-width: 190px;
+    padding: 0 4px;
+}
+
+.header {
+    text-align: center;
+}
+
+.header .column {
+    padding: 4px;
+}
+
+.body {
+    flex: 1;
+    overflow: auto;
+    padding-bottom: 1em;
 }
 
 .lineNumber {
