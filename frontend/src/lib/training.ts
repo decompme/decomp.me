@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 
 import { singletonHook } from "react-singleton-hook"
+import useSWR from "swr"
+
+import * as api from "./api"
 
 interface Platform {
     name: string
@@ -81,26 +84,43 @@ export const useFinishedTraining = singletonHook(
     [[], undefined, undefined, undefined],
     (): [string[], (slug: string) => boolean, (slug: string) => void, (slug: string) => void] => {
         const [finishedTraining, setFinishedTraining] = useState([])
+        const { data: user, error } = useSWR<api.AnonymousUser | api.User>("/user", api.get)
+        const loggedIn = user && !api.isAnonUser(user) && user.username
 
         useEffect(() => {
             try {
-                setFinishedTraining(JSON.parse(localStorage.getItem("finished_training")) ?? [])
+                if (error)
+                    throw error
+
+                if (loggedIn) {
+                    api.get("/finished_training").then(value => setFinishedTraining(JSON.parse(value) ?? []))
+                } else {
+                    setFinishedTraining(JSON.parse(localStorage.getItem("finished_training")) ?? [])
+                }
             // eslint-disable-next-line no-empty
             } catch (e) {}
-        }, [])
+        }, [loggedIn, error])
 
         const hasFinishedTraining = (slug: string) => finishedTraining.includes(slug)
         const addFinishedTraining = (slug: string) => {
             const newValue = finishedTraining.includes(slug) ? finishedTraining : [...finishedTraining, slug]
 
-            localStorage.setItem("finished_training", JSON.stringify(newValue))
-            setFinishedTraining(newValue)
+            if (loggedIn) {
+                api.get("/finished_training/add/" + slug).then(() => setFinishedTraining(newValue))
+            } else {
+                localStorage.setItem("finished_training", JSON.stringify(newValue))
+                setFinishedTraining(newValue)
+            }
         }
         const removeFinishedTraining = (slug: string) => {
             const newValue = finishedTraining.filter(temp => temp !== slug)
 
-            localStorage.setItem("finished_training", JSON.stringify(newValue))
-            setFinishedTraining(newValue)
+            if (loggedIn) {
+                api.get("/finished_training/remove/" + slug).then(() => setFinishedTraining(newValue))
+            } else {
+                localStorage.setItem("finished_training", JSON.stringify(newValue))
+                setFinishedTraining(newValue)
+            }
         }
 
         return [finishedTraining, hasFinishedTraining, addFinishedTraining, removeFinishedTraining]
