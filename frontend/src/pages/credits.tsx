@@ -12,12 +12,17 @@ const MAINTAINER_USERNAMES = ["nanaian", "ethteck"]
 const CONTRIBUTOR_USERNAMES = [
     "zbanks",
     "simonlindholm",
+    "mkst",
+    "FluentCoding",
     "TGEnigma",
     "octorock",
-    "mkst",
     "JoshDuMan",
     "Henny022",
     "AngheloAlf",
+    "EpochFlame",
+    "SeekyCt",
+    "Trevor89",
+    "MegaMech",
 ]
 
 type Contributor = {
