@@ -77,3 +77,7 @@ class Scratch(models.Model):
             self.parent,
             self.owner,
         ))
+
+class FinishedTraining(models.Model):
+    slug = models.SlugField()
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)

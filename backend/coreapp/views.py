@@ -21,7 +21,7 @@ from typing import Any, Dict, Optional
 import zipfile
 
 
-from .models import Profile, Asm, Scratch, gen_scratch_id
+from .models import FinishedTraining, Profile, Asm, Scratch, gen_scratch_id
 from .github import GitHubUser
 from .middleware import Request
 from .decorators.django import condition
@@ -384,3 +384,34 @@ def user(request, username):
 
     return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
 
+@api_view(["GET"])
+def finished_training(request: Request):
+    """
+    Gets the finished training scenarios
+    """
+
+    return Response(FinishedTraining.objects.filter(profile=request.profile).values_list('slug', flat=True))
+
+@api_view(["GET"])
+def finished_training_add(request: Request, slug):
+    """
+    Adds a slug to the list of the finished training scenarios
+    """
+
+    FinishedTraining.objects.get_or_create(
+        slug=slug,
+        defaults={'profile': request.profile}
+    )
+    return Response()
+
+@api_view(["GET"])
+def finished_training_remove(request: Request, slug):
+    """
+    Removes a slug from the list of the finished training scenarios
+    """
+
+    finished_training_record: Optional[FinishedTraining] = FinishedTraining.objects.filter(profile=request.profile, slug=slug).first()
+    if finished_training_record is not None:
+        finished_training_record.delete()
+
+    return Response()
