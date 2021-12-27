@@ -73,9 +73,13 @@ class AsmDifferWrapper:
                         raise NmError.from_process_error(e)
 
                     if nm_proc.stdout:
+                        # e.g.
+                        # 00000000 T osEepromRead
+                        #          U osMemSize
                         for line in nm_proc.stdout.splitlines():
-                            if label in line:
-                                start_addr = int(line.split()[0], 16)
+                            nm_line = line.split()
+                            if len(nm_line) == 3 and label == nm_line[2]:
+                                start_addr = int(nm_line[0], 16)
                                 break
                 else:
                     raise NmError(f"No nm command for {platform}")
