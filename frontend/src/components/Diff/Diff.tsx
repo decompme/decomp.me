@@ -20,6 +20,25 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
+function DiffColumn({ diff, prop }: {
+    diff: api.DiffOutput
+    prop: keyof api.DiffRow & keyof api.DiffHeader
+}) {
+    return <div className={styles.column}>
+        <div className={classNames(styles.row, styles.header)}>
+            <FormatDiffText texts={diff.header[prop]} />
+        </div>
+        <div className={styles.body}>
+            {diff.rows.map((row, i) => (
+                <div key={i} className={styles.row}>
+                    {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
+                    {row[prop] && <FormatDiffText texts={row[prop].text} />}
+                </div>
+            ))}
+        </div>
+    </div>
+}
+
 export type Props = {
     compilation: api.Compilation
 }
@@ -34,33 +53,9 @@ export default function Diff({ compilation }: Props) {
     } else {
         const threeWay = !!diff.header.previous
         return <div className={styles.container}>
-            <div className={classNames(styles.row, styles.header)}>
-                <div className={styles.column}>
-                    <FormatDiffText texts={diff.header.base} />
-                </div>
-                <div className={styles.column}>
-                    <FormatDiffText texts={diff.header.current} />
-                </div>
-                {threeWay && <div className={styles.column}>
-                    <FormatDiffText texts={diff.header.previous} />
-                </div>}
-            </div>
-            <div className={styles.body}>
-                {diff.rows.map((row, i) => (
-                    <div key={i} className={styles.row}>
-                        <div className={styles.column}>
-                            {row.base && <FormatDiffText texts={row.base.text} />}
-                        </div>
-                        <div className={styles.column}>
-                            {typeof row.current?.src_line != "undefined" && <span className={styles.lineNumber}>{row.current.src_line}</span>}
-                            {row.current && <FormatDiffText texts={row.current.text} />}
-                        </div>
-                        {threeWay && <div className={styles.column}>
-                            {row.previous && <FormatDiffText texts={row.previous.text} />}
-                        </div>}
-                    </div>
-                ))}
-            </div>
+            <DiffColumn diff={diff} prop="base" />
+            <DiffColumn diff={diff} prop="current" />
+            {threeWay && <DiffColumn diff={diff} prop="previous" />}
         </div>
     }
 }

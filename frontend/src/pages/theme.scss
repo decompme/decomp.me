@@ -28,7 +28,7 @@
         $peak: 255;
     }
 
-    @for $i from 1 through 10 {
-        --a#{$i * 100}: #{rgba($peak, $peak, $peak, $i * 0.1)};
+    @for $i from 1 through 20 {
+        --a#{$i * 50}: #{rgba($peak, $peak, $peak, $i * 0.05)};
     }
 }
