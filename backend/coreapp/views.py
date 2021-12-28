@@ -402,7 +402,8 @@ def finished_training_add(request: Request, slug):
         slug=slug,
         defaults={'profile': request.profile}
     )
-    return Response()
+
+    return Response({ "success": True })
 
 @api_view(["GET"])
 def finished_training_remove(request: Request, slug):
@@ -414,4 +415,4 @@ def finished_training_remove(request: Request, slug):
     if finished_training_record is not None:
         finished_training_record.delete()
 
-    return Response()
+    return Response({ "success": True })

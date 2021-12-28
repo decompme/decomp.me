@@ -93,7 +93,7 @@ export const useFinishedTraining = singletonHook(
                     throw error
 
                 if (loggedIn) {
-                    api.get("/finished_training").then(value => setFinishedTraining(JSON.parse(value) ?? []))
+                    api.get("/finished_training").then((value: Array<string>) => setFinishedTraining(value ?? []))
                 } else {
                     setFinishedTraining(JSON.parse(localStorage.getItem("finished_training")) ?? [])
                 }
@@ -102,21 +102,23 @@ export const useFinishedTraining = singletonHook(
         }, [loggedIn, error])
 
         const hasFinishedTraining = (slug: string) => finishedTraining.includes(slug)
-        const addFinishedTraining = (slug: string) => {
+        const addFinishedTraining = async (slug: string) => {
             const newValue = finishedTraining.includes(slug) ? finishedTraining : [...finishedTraining, slug]
 
             if (loggedIn) {
-                api.get("/finished_training/add/" + slug).then(() => setFinishedTraining(newValue))
+                await api.get("/finished_training/add/" + slug)
+                setFinishedTraining(newValue)
             } else {
                 localStorage.setItem("finished_training", JSON.stringify(newValue))
                 setFinishedTraining(newValue)
             }
         }
-        const removeFinishedTraining = (slug: string) => {
+        const removeFinishedTraining = async (slug: string) => {
             const newValue = finishedTraining.filter(temp => temp !== slug)
 
             if (loggedIn) {
-                api.get("/finished_training/remove/" + slug).then(() => setFinishedTraining(newValue))
+                await api.get("/finished_training/remove/" + slug)
+                setFinishedTraining(newValue)
             } else {
                 localStorage.setItem("finished_training", JSON.stringify(newValue))
                 setFinishedTraining(newValue)
