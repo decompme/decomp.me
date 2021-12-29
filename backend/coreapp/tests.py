@@ -224,6 +224,42 @@ class CompilationTests(APITestCase):
         response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @onlyIfCompilerAvailable('gcc2.8.1')
+    def test_giant_compilation(self):
+        """
+        Ensure that we can compile a giant file
+        """
+        scratch_dict = {
+            'compiler': 'gcc2.8.1',
+            'platform': 'n64',
+            'context': '',
+            'target_asm': 'glabel func_80929D04\njr $ra\nnop'
+        }
+
+        # Test that we can create a scratch
+        response = self.client.post(reverse('scratch'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Scratch.objects.count(), 1)
+
+        slug = response.json()["slug"]
+
+        context = ""
+        for i in range(25000):
+            context += "extern int test_symbol_to_be_used_in_a_test;\n"
+
+        compile_dict = {
+            'slug': slug,
+            'compiler': 'gcc2.8.1',
+            'compiler_flags': '-mips2 -O2',
+            'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n',
+            'context': context,
+        }
+
+        # Test that we can compile a scratch
+        response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["errors"]), 0)
+
     @onlyIfCompilerAvailable('ido5.3')
     def test_ido_line_endings(self):
         """
