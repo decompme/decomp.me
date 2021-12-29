@@ -1,12 +1,16 @@
-.container,
+.body,
 .log {
-    display: block;
     user-select: text;
-    border: none;
     font-family: monospace;
     font-size: 12px;
     white-space: pre;
+}
+
+.log {
+    display: block;
+    padding: 1em;
     width: 100%;
+    border: none;
 }
 
 .container {
@@ -36,20 +40,29 @@
 
 .row {
     padding: 0 4px;
+    height: 1.25em;
 }
 
 .header {
-    display: block;
-    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    height: 3em;
+    padding: 0 1em;
 
     position: sticky;
     top: 0;
 
+    font-size: 0.8rem;
+    font-weight: 500;
     color: var(--g1200);
-    user-select: none;
     border-bottom: 1px solid var(--a50);
 
     backdrop-filter: blur(10px);
+
+    user-select: none;
+    cursor: default;
 }
 
 @supports not (backdrop-filter: blur(10px)) {
