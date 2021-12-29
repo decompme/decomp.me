@@ -67,8 +67,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
-            "--disable_proc",  # Needed for running inside Docker
+            "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
+            "--disable_proc",  # Needed for running inside Docker
         ]
         # fmt: on
 

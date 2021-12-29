@@ -258,7 +258,8 @@ class CompilationTests(APITestCase):
         # Test that we can compile a scratch
         response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data["errors"]), 0)
+
+        self.assertEqual(len(response.json()["errors"]), 0)
 
     @onlyIfCompilerAvailable('ido5.3')
     def test_ido_line_endings(self):
