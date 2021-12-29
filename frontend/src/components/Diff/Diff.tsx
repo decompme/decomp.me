@@ -20,13 +20,14 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
-function DiffColumn({ diff, prop }: {
+function DiffColumn({ diff, prop, header }: {
     diff: api.DiffOutput
     prop: keyof api.DiffRow & keyof api.DiffHeader
+    header: string
 }) {
     return <div className={styles.column}>
         <div className={classNames(styles.row, styles.header)}>
-            <FormatDiffText texts={diff.header[prop]} />
+            {header}
         </div>
         <div className={styles.body}>
             {diff.rows.map((row, i) => (
@@ -53,9 +54,9 @@ export default function Diff({ compilation }: Props) {
     } else {
         const threeWay = !!diff.header.previous
         return <div className={styles.container}>
-            <DiffColumn diff={diff} prop="base" />
-            <DiffColumn diff={diff} prop="current" />
-            {threeWay && <DiffColumn diff={diff} prop="previous" />}
+            <DiffColumn diff={diff} prop="base" header="Target" />
+            <DiffColumn diff={diff} prop="current" header="Current" />
+            {threeWay && <DiffColumn diff={diff} prop="previous" header="Saved" />}
         </div>
     }
 }
