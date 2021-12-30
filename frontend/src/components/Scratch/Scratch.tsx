@@ -3,21 +3,19 @@ import { useState } from "react"
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
 
-import { renderLeftTabs, renderRightTabs } from "./renderTabs"
+import { useLeftTabs, useRightTabs } from "./renderTabs"
 import styles from "./Scratch.module.scss"
 import ScratchBody from "./ScratchBody"
 import ScratchToolbar from "./ScratchToolbar"
 import setCompilerOptsFunction from "./util/setCompilerOpts"
 
 export type Props = {
-    scratch: api.Scratch
-    isSaved: boolean
+    scratch: Readonly<api.Scratch>
     onChange: (scratch: Partial<api.Scratch>) => void
 }
 
 export default function Scratch({
     scratch,
-    isSaved,
     onChange: setScratch,
 }: Props) {
     const container = useSize<HTMLDivElement>()
@@ -27,17 +25,16 @@ export default function Scratch({
     //const forkScratch = api.useForkScratchAndGo(savedScratch, scratch)
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
-    const [isForking, setIsForking] = useState(false)
 
     const saveScratch = api.useSaveScratch(scratch)
     const setCompilerOpts = setCompilerOptsFunction({ scratch, setScratch, saveScratch })
 
-    const leftTabs = renderLeftTabs({
+    const leftTabs = useLeftTabs({
         scratch,
         setScratch,
     })
 
-    const rightTabs = renderRightTabs({
+    const rightTabs = useRightTabs({
         compilation,
     })
 
@@ -45,9 +42,7 @@ export default function Scratch({
         <ScratchToolbar
             compile={compile}
             isCompiling={isCompiling}
-            isSaved={isSaved}
             scratch={scratch}
-            setIsForking={setIsForking}
             setScratch={setScratch}
         />
         <ScratchBody

@@ -16,8 +16,8 @@ const scratchJson: api.Scratch = {
     "source_code": "void func(void) {\n    // ...\n}",
     "context": "",
     "owner": {
-        "is_you": true,
         "is_anonymous": true,
+        "id": 0,
     },
     "parent": null,
     "diff_label": "",

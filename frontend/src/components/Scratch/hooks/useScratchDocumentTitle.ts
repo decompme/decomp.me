@@ -1,22 +1,19 @@
-import useDeepCompareEffect from "use-deep-compare-effect"
+import * as api from "../../../lib/api"
 
-import { Scratch } from "../../../lib/api"
+export default function useScratchDocumentTitle(scratch: api.Scratch): string {
+    const isSaved = api.useIsScratchSaved(scratch)
 
-export type Props = {
-    scratch: Scratch
-    isSaved: boolean
-}
+    let title = scratch?.name || "Untitled scratch"
 
-export default function useScratchDocumentTitle({ scratch, isSaved }: Props) {
-    useDeepCompareEffect(() => {
-        if (scratch) {
-            document.title = scratch.name || "Untitled scratch"
+    if (!isSaved) {
+        title += " (unsaved changes)"
+    }
 
-            if (!isSaved) {
-                document.title += " (unsaved changes)"
-            }
+    title += " | decomp.me"
 
-            document.title += " | decomp.me"
-        }
-    }, [scratch || {}, isSaved])
+    if (typeof document !== "undefined") {
+        document.title = title
+    }
+
+    return title
 }

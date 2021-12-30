@@ -8,8 +8,9 @@ from .middleware import Request
 def serialize_profile(request: Request, profile: Profile):
     if profile.user is None:
         return {
-            "is_you": profile == request.profile,
+            "is_you": profile == request.profile, # TODO(#245): remove
             "is_anonymous": True,
+            "id": profile.id,
         }
     else:
         user = profile.user
@@ -17,7 +18,7 @@ def serialize_profile(request: Request, profile: Profile):
         github_details = github.details() if github else None
 
         return {
-            "is_you": user == request.user,
+            "is_you": user == request.user, # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
             "username": user.username,

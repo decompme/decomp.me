@@ -14,9 +14,11 @@ const commonOpts: RequestInit = {
     cache: "reload",
 }
 
+/*
 function isAbsoluteUrl(maybeUrl: string): boolean {
     return maybeUrl.startsWith("https://") || maybeUrl.startsWith("http://")
 }
+*/
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
     if (error.status === 404) return
@@ -122,14 +124,12 @@ export async function patch(url: string, json: Json) {
 }
 
 export interface AnonymousUser {
-    is_you: boolean
     is_anonymous: true
+    id: number
 }
 
 export interface User {
-    is_you: boolean
     is_anonymous: false
-
     id: number
     username: string
     name: string
@@ -203,90 +203,20 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
 
-export function useScratch(slugOrUrl: string): {
-    scratch: Readonly<Scratch>
-    savedScratch: Readonly<Scratch> | null
-    setScratch: (scratch: Partial<Scratch>) => void // Update the scratch, but only locally
-    saveScratch: () => Promise<void> // Persist the scratch to the server
-    isSaved: boolean
-} {
-    const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
-    const [isSaved, setIsSaved] = useState(true)
-    const [localScratch, setLocalScratch] = useState<Scratch>()
-    const [didSlugChange, setDidSlugChange] = useState(false)
-    const shouldGetScratchFromServer = useCallback(() => {
-        // This is in a useCallback so useSWR's onSuccess doesn't capture the values
+export function useThisUser(): User | AnonymousUser | undefined {
+    const { data: user, error } = useSWR<AnonymousUser | User>("/user", get)
 
-        if (didSlugChange)
-            return true
-
-        // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
-        if (isSaved)
-            return true
-
-        return false
-    }, [didSlugChange, isSaved])
-    const { data: savedScratch, mutate } = useSWR<Scratch>(url, get, {
-        suspense: true,
-        refreshInterval: 5000,
-        onSuccess: scratch => {
-            if (!scratch.source_code) {
-                throw new Error("Scratch returned from API has no source_code (is the API misbehaving?)")
-            }
-
-            if (shouldGetScratchFromServer()) {
-                console.info("Got updated scratch from server", scratch)
-                setLocalScratch(scratch)
-                setIsSaved(true)
-                setDidSlugChange(false)
-            }
-        },
-        onErrorRetry,
-    })
-
-    // If the slug changes, forget the local scratch
-    useEffect(() => {
-        setDidSlugChange(true)
-        setLocalScratch(undefined)
-        setIsSaved(true)
-        mutate()
-    }, [url, mutate])
-
-    const updateLocalScratch = useCallback((partial: Partial<Scratch>) => {
-        setLocalScratch((previous: Scratch) => Object.assign({}, savedScratch, previous, partial))
-        setIsSaved(false)
-    }, [savedScratch])
-
-    const saveScratch = useCallback(() => {
-        if (!localScratch) {
-            throw new Error("Cannot save scratch before it is loaded")
-        }
-        if (!localScratch.owner.is_you) {
-            throw new Error("Cannot save scratch which you do not own")
-        }
-
-        return patch(`/scratch/${savedScratch.slug}`, {
-            source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
-            context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
-            compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
-            compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
-            name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
-            description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
-        }).then(() => {
-            setIsSaved(true)
-            mutate(localScratch, true)
-        }).catch(error => {
-            console.error(error)
-        })
-    }, [localScratch, savedScratch, mutate])
-
-    return {
-        scratch: isSaved ? savedScratch : localScratch,
-        savedScratch,
-        setScratch: updateLocalScratch,
-        saveScratch,
-        isSaved,
+    if (error) {
+        throw error
     }
+
+    return user
+}
+
+export function useUserIsYou(): (user: User | AnonymousUser | undefined) => boolean {
+    const you = useThisUser()
+
+    return user => you && user && you.id === user.id && you.is_anonymous === user.is_anonymous
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {
@@ -303,12 +233,13 @@ export function useSavedScratch(scratch: Scratch): Scratch {
 export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
     const slug = localScratch.slug
     const savedScratch = useSavedScratch(localScratch)
+    const userIsYou = useUserIsYou()
 
     const saveScratch = useCallback(async () => {
         if (!localScratch) {
             throw new Error("Cannot save scratch before it is loaded")
         }
-        if (!localScratch.owner.is_you) {
+        if (!userIsYou(localScratch.owner)) {
             throw new Error("Cannot save scratch which you do not own")
         }
 
@@ -322,7 +253,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
         })
 
         await mutate(`/scratch/${slug}`, localScratch, true)
-    }, [localScratch, slug, savedScratch])
+    }, [localScratch, slug, savedScratch, userIsYou])
 
     return saveScratch
 }

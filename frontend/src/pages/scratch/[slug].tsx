@@ -6,6 +6,7 @@ import Head from "next/head"
 
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
+import Scratch from "../../components/Scratch"
 import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
 import useScratchDocumentTitle from "../../components/Scratch/hooks/useScratchDocumentTitle"
 import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
@@ -43,15 +44,14 @@ export const getStaticProps: GetStaticProps = async context => {
 
 export default function ScratchPage({ initialScratch }: { initialScratch: api.Scratch }) {
     const [scratch, setScratch] = useState(initialScratch)
-    const [isSaved, setIsSaved] = useState(false)
 
     useSaveShortcut(scratch)
-    useScratchDocumentTitle(scratch)
+    const title = useScratchDocumentTitle(scratch)
     useWarnBeforeScratchUnload(scratch)
 
     return <>
         <Head>
-            <title>{scratch.name || "Untitled scratch"} | decomp.me</title>
+            <title>{title}</title>
             <meta name="description" content={`Score: ${scratch.score}`} />
         </Head>
         <Nav />
@@ -59,10 +59,10 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch
                     scratch={scratch}
-                    isSaved={isSaved}
                     onChange={partial => {
-                        setScratch({ ...scratch, ...partial })
-                        setIsSaved(false)
+                        setScratch(scratch => {
+                            return { ...scratch, ...partial }
+                        })
                     }}
                 />
             </Suspense>
