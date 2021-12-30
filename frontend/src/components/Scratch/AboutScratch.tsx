@@ -1,12 +1,25 @@
 import Link from "next/link"
 
+import useSWR from "swr"
+
 import * as api from "../../lib/api"
+import LoadingSpinner from "../loading.svg"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
 
-function ScratchLink({ slug }: { slug: string }) {
-    const { scratch } = api.useScratch(slug)
+function ScratchLink({ url }: { url: string }) {
+    const { data: scratch, error } = useSWR<api.Scratch>(url, api.get)
+
+    if (error) {
+        throw error
+    }
+
+    if (!scratch) {
+        return <span className={styles.scratchLinkContainer}>
+            <LoadingSpinner height={18} />
+        </span>
+    }
 
     return <span className={styles.scratchLinkContainer}>
         <Link href={`/scratch/${scratch.slug}`}>
@@ -33,7 +46,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
             </div>
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
-                <ScratchLink slug={scratch.parent} />
+                <ScratchLink url={scratch.parent} />
             </div>}
         </div>
 
