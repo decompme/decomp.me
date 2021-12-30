@@ -2,6 +2,7 @@ import { ReactElement, ReactNode, createContext, Component, useState, createRef,
 
 import classNames from "classnames"
 
+import ErrorBoundary from "./ErrorBoundary"
 import styles from "./Tabs.module.scss"
 
 type Context = {
@@ -164,7 +165,9 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
                     key={key}
                 >
                     <div className={classNames(styles.tabPanelContent, props.className)}>
-                        {props.children}
+                        <ErrorBoundary>
+                            {props.children}
+                        </ErrorBoundary>
                     </div>
                 </div>
             })}
