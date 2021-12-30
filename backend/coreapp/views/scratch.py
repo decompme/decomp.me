@@ -189,11 +189,11 @@ def create_scratch(request):
 
     target_asm = data["target_asm"]
     context = data["context"]
-    diff_label = data.get("diff_label")
+    diff_label = data.get("diff_label", "")
 
     assert isinstance(target_asm, str)
     assert isinstance(context, str)
-    assert diff_label is None or isinstance(diff_label, str)
+    assert isinstance(diff_label, str)
 
     asm = get_db_asm(target_asm)
 
@@ -219,7 +219,7 @@ def create_scratch(request):
 
     slug = gen_scratch_id()
 
-    name = diff_label if diff_label else ""
+    name = data.get("name", diff_label)
 
     scratch_data = {
         "slug": slug,
@@ -299,6 +299,7 @@ def fork(request, slug):
     context = request.data["context"]
 
     new_scratch = Scratch(
+        name=parent_scratch.name,
         compiler=compiler,
         platform=platform,
         compiler_flags=compiler_flags,

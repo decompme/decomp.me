@@ -160,6 +160,7 @@ class ScratchForkTests(APITestCase):
             'context': '',
             'target_asm': 'glabel meow\njr $ra',
             'diff_label': 'meow',
+            'name': 'cat scratch',
         }
 
         response = self.client.post(reverse('scratch'), scratch_dict)
@@ -191,6 +192,8 @@ class ScratchForkTests(APITestCase):
         # Make sure the diff_label carried over to the fork
         self.assertEqual(scratch.diff_label, fork.diff_label)
 
+        # Make sure the name carried over to the fork
+        self.assertEqual(scratch.name, fork.name)
 
 
 class CompilationTests(APITestCase):
