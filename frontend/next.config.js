@@ -39,11 +39,11 @@ module.exports = removeImports(withPWA({
                 permanent: true,
             },
             // TEMP
-            {
-                source: "/training",
-                destination: "/scratch/new",
-                permanent: false,
-            },
+            // {
+            //     source: "/training",
+            //     destination: "/scratch/new",
+            //     permanent: false,
+            // },
         ]
     },
     async rewrites() {
