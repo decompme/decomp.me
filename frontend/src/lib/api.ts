@@ -5,6 +5,8 @@ import { useRouter } from "next/router"
 import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
+import { ignoreNextWarnBeforeUnload } from "./hooks"
+
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
 type Json = Record<string, unknown>
@@ -282,6 +284,8 @@ export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scrat
 
     return async () => {
         const fork = await forkScratch(parent, localScratch)
+
+        ignoreNextWarnBeforeUnload()
         await router.push(`/scratch/${fork.slug}`)
     }
 }
