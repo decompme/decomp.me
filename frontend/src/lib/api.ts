@@ -2,8 +2,10 @@ import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
-import useSWR, { Revalidator, RevalidatorOptions } from "swr"
+import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
+
+import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
@@ -14,9 +16,11 @@ const commonOpts: RequestInit = {
     cache: "reload",
 }
 
+/*
 function isAbsoluteUrl(maybeUrl: string): boolean {
     return maybeUrl.startsWith("https://") || maybeUrl.startsWith("http://")
 }
+*/
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
     if (error.status === 404) return
@@ -122,14 +126,12 @@ export async function patch(url: string, json: Json) {
 }
 
 export interface AnonymousUser {
-    is_you: boolean
     is_anonymous: true
+    id: number
 }
 
 export interface User {
-    is_you: boolean
     is_anonymous: false
-
     id: number
     username: string
     name: string
@@ -203,94 +205,77 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
 
-export function useScratch(slugOrUrl: string): {
-    scratch: Readonly<Scratch>
-    savedScratch: Readonly<Scratch> | null
-    setScratch: (scratch: Partial<Scratch>) => void // Update the scratch, but only locally
-    saveScratch: () => Promise<void> // Persist the scratch to the server
-    isSaved: boolean
-} {
-    const url = isAbsoluteUrl(slugOrUrl) ?slugOrUrl : `/scratch/${slugOrUrl}`
-    const [isSaved, setIsSaved] = useState(true)
-    const [localScratch, setLocalScratch] = useState<Scratch>()
-    const [didSlugChange, setDidSlugChange] = useState(false)
-    const shouldGetScratchFromServer = useCallback(() => {
-        // This is in a useCallback so useSWR's onSuccess doesn't capture the values
+export function useThisUser(): User | AnonymousUser | undefined {
+    const { data: user, error } = useSWR<AnonymousUser | User>("/user", get)
 
-        if (didSlugChange)
-            return true
+    if (error) {
+        throw error
+    }
 
-        // Only update localScratch if there aren't unsaved changes (otherwise, data loss could occur)
-        if (isSaved)
-            return true
+    return user
+}
 
-        return false
-    }, [didSlugChange, isSaved])
-    const { data: savedScratch, mutate } = useSWR<Scratch>(url, get, {
-        suspense: true,
-        refreshInterval: 5000,
-        onSuccess: scratch => {
-            if (!scratch.source_code) {
-                throw new Error("Scratch returned from API has no source_code (is the API misbehaving?)")
-            }
+export function useUserIsYou(): (user: User | AnonymousUser | undefined) => boolean {
+    const you = useThisUser()
 
-            if (shouldGetScratchFromServer()) {
-                console.info("Got updated scratch from server", scratch)
-                setLocalScratch(scratch)
-                setIsSaved(true)
-                setDidSlugChange(false)
-            }
-        },
-        onErrorRetry,
+    return user => you && user && you.id === user.id && you.is_anonymous === user.is_anonymous
+}
+
+export function useSavedScratch(scratch: Scratch): Scratch {
+    const { data: savedScratch, error } = useSWR(`/scratch/${scratch.slug}`, get, {
+        fallbackData: scratch, // No loading state, just use the local scratch
     })
 
-    // If the slug changes, forget the local scratch
-    useEffect(() => {
-        setDidSlugChange(true)
-        setLocalScratch(undefined)
-        setIsSaved(true)
-        mutate()
-    }, [url, mutate])
+    if (error)
+        throw error
 
-    const updateLocalScratch = useCallback((partial: Partial<Scratch>) => {
-        setLocalScratch((previous: Scratch) => Object.assign({}, savedScratch, previous, partial))
-        setIsSaved(false)
-    }, [savedScratch])
+    return savedScratch
+}
 
-    const saveScratch = useCallback(() => {
+export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
+    const slug = localScratch.slug
+    const savedScratch = useSavedScratch(localScratch)
+    const userIsYou = useUserIsYou()
+
+    const saveScratch = useCallback(async () => {
         if (!localScratch) {
             throw new Error("Cannot save scratch before it is loaded")
         }
-        if (!localScratch.owner.is_you) {
+        if (!userIsYou(localScratch.owner)) {
             throw new Error("Cannot save scratch which you do not own")
         }
 
-        return patch(`/scratch/${savedScratch.slug}`, {
+        await patch(`/scratch/${slug}`, {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
-        }).then(() => {
-            setIsSaved(true)
-            mutate(localScratch, true)
-        }).catch(error => {
-            console.error(error)
         })
-    }, [localScratch, savedScratch, mutate])
 
-    return {
-        scratch: isSaved ? savedScratch : localScratch,
-        savedScratch,
-        setScratch: updateLocalScratch,
-        saveScratch,
-        isSaved,
-    }
+        await mutate(`/scratch/${slug}`, localScratch, true)
+    }, [localScratch, slug, savedScratch, userIsYou])
+
+    return saveScratch
+}
+
+export async function claimScratch(scratch: Scratch): Promise<void> {
+    const { success } = await post(`/scratch/${scratch.slug}/claim`, {})
+    const user = await get("/user")
+
+    if (!success)
+        throw new Error("Scratch already claimed")
+
+    await mutate(`/scratch/${scratch.slug}`, {
+        ...scratch,
+        owner: user,
+    })
 }
 
 export async function forkScratch(parent: Scratch, localScratch: Partial<Scratch> = {}): Promise<Scratch> {
     const scratch = await post(`/scratch/${parent.slug}/fork`, Object.assign({}, parent, localScratch))
+    await claimScratch(scratch)
     return scratch
 }
 
@@ -299,16 +284,32 @@ export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scrat
 
     return async () => {
         const fork = await forkScratch(parent, localScratch)
-        router.push(`/scratch/${fork.slug}`)
+
+        ignoreNextWarnBeforeUnload()
+        await router.push(`/scratch/${fork.slug}`)
     }
 }
 
-export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, autoRecompile = true): {
+export function useIsScratchSaved(scratch: Scratch): boolean {
+    const saved = useSavedScratch(scratch)
+
+    return (
+        scratch.name === saved.name &&
+        scratch.description === saved.description &&
+        scratch.compiler === saved.compiler &&
+        scratch.compiler_flags === saved.compiler_flags &&
+        scratch.source_code === saved.source_code &&
+        scratch.context === saved.context
+    )
+}
+
+export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
     isCompiling: boolean
 } {
+    const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(null)
 
@@ -341,11 +342,6 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
         return promise
     }, [compileRequestPromise, savedScratch, scratch])
 
-    // suspense
-    if (!compilation && compileRequestPromise) {
-        throw compileRequestPromise
-    }
-
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     useEffect(() => {
@@ -376,7 +372,7 @@ export function usePlatforms(): Record<string, string> {
     const { data } = useSWR<{ "platforms": Record<string, string> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
-        suspense: true,
+        suspense: true, // TODO: remove
         onErrorRetry,
     })
 
@@ -386,7 +382,7 @@ export function usePlatforms(): Record<string, string> {
 export function useCompilers(): Record<string, { platform: string | null }> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
-        suspense: true,
+        suspense: true, // TODO: remove
         onErrorRetry,
     })
 

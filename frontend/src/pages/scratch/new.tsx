@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from "react"
 
 import { GetStaticProps } from "next"
 
-import Head from "next/head"
 import { useRouter } from "next/router"
 
 import AsyncButton from "../../components/AsyncButton"
@@ -12,6 +11,7 @@ import PresetSelect, { PRESETS } from "../../components/compiler/PresetSelect"
 import Editor from "../../components/Editor"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
+import PageTitle from "../../components/PageTitle"
 import PlatformSelect from "../../components/PlatformSelect"
 import Select from "../../components/Select2"
 import * as api from "../../lib/api"
@@ -150,7 +150,9 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_label"] = ""
             localStorage["new_scratch_asm"] = ""
 
-            router.push(`/scratch/${scratch.slug}`)
+            await api.claimScratch(scratch)
+
+            await router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
             setLineNumbers(true) // line numbers are likely relevant to the error
             console.error(error)
@@ -159,9 +161,7 @@ export default function NewScratch({ serverCompilers }: {
     }
 
     return <>
-        <Head>
-            <title>New scratch | decomp.me</title>
-        </Head>
+        <PageTitle title="New scratch" />
         <Nav />
         <main className={styles.container}>
             <div className={styles.heading}>

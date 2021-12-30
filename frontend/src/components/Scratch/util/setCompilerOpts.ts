@@ -8,13 +8,12 @@ export type Props = {
 }
 
 // TODO: remove once scratch.compiler is no longer nullable
-export default function setCompilerOptsFunction({ scratch, setScratch, saveScratch }: Props) {
+export default function setCompilerOptsFunction({ setScratch, saveScratch }: Props) {
     return ({ compiler, compiler_flags }: CompilerOptsT) => {
         setScratch({
             compiler,
             compiler_flags,
         })
-        if (scratch.owner?.is_you)
-            saveScratch()
+        saveScratch()
     }
 }

@@ -4,6 +4,8 @@ import Router from "next/router"
 
 import useResizeObserver from "@react-hook/resize-observer"
 
+const shouldIgnoreNextWarnBeforeUnload = { current: false } // ref
+
 export function useSize<T extends HTMLElement>(): {
     width: number | undefined
     height: number | undefined
@@ -22,6 +24,10 @@ export function useSize<T extends HTMLElement>(): {
     return { width: size.width, height: size.height, ref }
 }
 
+export function ignoreNextWarnBeforeUnload() {
+    shouldIgnoreNextWarnBeforeUnload.current = true
+}
+
 export function useWarnBeforeUnload(enabled: boolean, message = "Are you sure you want to leave this page?") {
     const enabledRef = useRef(enabled)
     const messageRef = useRef(message)
@@ -32,7 +38,9 @@ export function useWarnBeforeUnload(enabled: boolean, message = "Are you sure yo
     // Based on code from https://github.com/vercel/next.js/issues/2476#issuecomment-563190607
     useEffect(() => {
         const routeChangeStart = (url: string) => {
-            if (Router.asPath !== url && enabledRef.current && !confirm(messageRef.current)) {
+            if (Router.asPath !== url && enabledRef.current && !shouldIgnoreNextWarnBeforeUnload.current && !confirm(messageRef.current)) {
+                shouldIgnoreNextWarnBeforeUnload.current = false
+
                 Router.events.emit("routeChangeError")
                 Router.replace(Router, Router.asPath)
 

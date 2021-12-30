@@ -1,21 +1,24 @@
 import { useEffect } from "react"
 
-import { Scratch } from "../../../lib/api"
+import * as api from "../../../lib/api"
 
-export type Props = {
-    isSaved: boolean
-    scratch: Scratch
-    saveScratch: () => Promise<void>
-}
+export default function useSaveShortcut(scratch: api.Scratch) {
+    const saveScratch = api.useSaveScratch(scratch)
+    const forkScratch = api.useForkScratchAndGo(scratch)
+    const userIsYou = api.useUserIsYou()
 
-export default function useSaveShortcut({ isSaved, scratch, saveScratch }: Props) {
     useEffect(() => {
-        const handler = (event: KeyboardEvent) => {
+        const handler = async (event: KeyboardEvent) => {
             if ((event.ctrlKey || event.metaKey) && event.key == "s") {
                 event.preventDefault()
 
-                if (!isSaved && scratch.owner?.is_you) {
-                    saveScratch()
+                if (!scratch.owner) {
+                    await api.claimScratch(scratch)
+                    await saveScratch()
+                } else if (userIsYou(scratch.owner)) {
+                    await saveScratch()
+                } else {
+                    await forkScratch()
                 }
             }
         }

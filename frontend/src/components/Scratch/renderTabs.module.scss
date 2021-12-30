@@ -15,4 +15,9 @@
 .about {
     padding: 16px;
     max-width: 500px;
+    overflow: auto;
+}
+
+.settings {
+    overflow: auto;
 }

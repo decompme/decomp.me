@@ -12,16 +12,14 @@ import type { Props as MonacoEditorProps } from "./MonacoEditor"
 import getTheme from "./monacoTheme"
 
 const isMobile = mobile()
+const isSSR = typeof window === "undefined"
 
 interface Props extends MonacoEditorProps {
     bubbleSuspense?: boolean
     useLoadingSpinner?: boolean
 }
 
-const MonacoEditor = isMobile ? null : dynamic(() => import("./MonacoEditor"), {
-    // @ts-ignore
-    suspense: true,
-})
+const MonacoEditor = (isSSR || isMobile) ? null : dynamic(() => import("./MonacoEditor"))
 
 // Wrapper component that asyncronously loads MonacoEditor on desktop,
 // falling back to a simple textarea on mobile

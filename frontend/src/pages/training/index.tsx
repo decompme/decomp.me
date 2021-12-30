@@ -2,13 +2,13 @@ import { useEffect, useState } from "react"
 
 import { GetStaticProps } from "next"
 
-import Head from "next/head"
 import { useRouter } from "next/router"
 
 import classNames from "classnames"
 
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
+import PageTitle from "../../components/PageTitle"
 import PlatformSelect from "../../components/PlatformSelect"
 import * as api from "../../lib/api"
 import { getFinishedTrainings, TRAINING_DATA } from "../../lib/training"
@@ -55,9 +55,7 @@ export default function Training({ serverCompilers }: {
     }, [platform])
 
     return <>
-        <Head>
-            <title>Training | decomp.me</title>
-        </Head>
+        <PageTitle title="Training" />
         <Nav />
         <main className={styles.container}>
             <div className={styles.heading}>

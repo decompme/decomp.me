@@ -1,28 +1,28 @@
-import { Dispatch, SetStateAction } from "react"
+import * as api from "../../lib/api"
 
-import { RepoForkedIcon } from "@primer/octicons-react"
-
-import { Scratch } from "../../lib/api"
-import AsyncButton from "../AsyncButton"
-
+import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
+import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
 import styles from "./ScratchToolbar.module.scss"
 
 export type Props = {
     isCompiling: boolean
     compile: () => Promise<void>
-    forkScratch: () => Promise<void>
-    setIsForking: Dispatch<SetStateAction<boolean>>
-    scratch: Readonly<Scratch>
-    setScratch: (scratch: Partial<Scratch>) => void
-    saveScratch: () => Promise<void>
-    isSaved: boolean
+    scratch: Readonly<api.Scratch>
+    setScratch: (scratch: Partial<api.Scratch>) => void
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, forkScratch, setIsForking, scratch, setScratch, saveScratch, isSaved,
+    isCompiling, compile, scratch, setScratch,
 }: Props) {
+    const userIsYou = api.useUserIsYou()
+    const isSSR = typeof window === "undefined"
+
+    if (isSSR) {
+        return <div className={styles.toolbar} />
+    }
+
     return (
         <div className={styles.toolbar}>
             <input
@@ -30,19 +30,15 @@ export default function ScratchToolbar({
                 type="text"
                 value={scratch.name}
                 onChange={event => setScratch({ name: event.target.value })}
-                disabled={!scratch.owner?.is_you}
+                disabled={!userIsYou(scratch.owner)}
                 spellCheck="false"
                 maxLength={100}
                 placeholder={"Untitled scratch"}
             />
             <CompileScratchButton compile={compile} isCompiling={isCompiling} />
-            <SaveScratchButton compile={compile} isSaved={isSaved} saveScratch={saveScratch} scratch={scratch} />
-            <AsyncButton onClick={() => {
-                setIsForking(true)
-                return forkScratch()
-            }} primary={!isSaved && !scratch.owner?.is_you}>
-                <RepoForkedIcon size={16} /> Fork
-            </AsyncButton>
+            {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
+            {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
+            <ForkScratchButton scratch={scratch} />
         </div>
     )
 }

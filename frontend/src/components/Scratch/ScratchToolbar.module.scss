@@ -1,9 +1,10 @@
-
 .toolbar {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: initial;
+
+    min-height: 43px; // SSR has no buttons
 
     gap: 4px;
     padding: 4px;
@@ -35,13 +36,19 @@
     transition: border-color 0.15s;
 
     &::-webkit-input-placeholder {
-        color: var(--g800);
+        color: var(--g1800);
+        transition: color 0.15s;
     }
 
     &:not(:disabled) {
         &:hover,
-        &:active {
+        &:active,
+        &:focus {
             border-color: var(--g400);
+
+            &::-webkit-input-placeholder {
+                color: var(--g800);
+            }
         }
     }
 }
