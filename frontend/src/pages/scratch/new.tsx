@@ -153,12 +153,8 @@ export default function NewScratch({ serverCompilers }: {
             router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
             setLineNumbers(true) // line numbers are likely relevant to the error
-            if (error?.responseJSON?.as_errors) {
-                throw new Error(error.responseJSON.as_errors.join("\n"))
-            } else {
-                console.error(error)
-                throw error
-            }
+            console.error(error)
+            throw error
         }
     }
 

@@ -155,7 +155,7 @@ export type Scratch = {
 
 export type Compilation = {
     errors: string
-    diff_output: DiffOutput
+    diff_output: DiffOutput | null
 }
 
 export type DiffOutput = {
@@ -332,6 +332,8 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
             setCompilation(compilation)
         }).finally(() => {
             setCompileRequestPromise(null)
+        }).catch(error => {
+            setCompilation({ "errors": error.responseJSON.detail, "diff_output": null })
         })
 
         setCompileRequestPromise(promise)

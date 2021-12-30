@@ -402,7 +402,7 @@ class CompilerWrapper:
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 logging.debug("Compilation failed: " + e.stderr)
-                return CompilationResult(b'', e.stderr)
+                raise CompilationError(e.stderr)
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")

@@ -1,5 +1,5 @@
 from rest_framework.exceptions import APIException
-from coreapp.error import SubprocessError
+from coreapp.error import CompilationError, SubprocessError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -38,7 +38,10 @@ def update_scratch_score(scratch: Scratch):
     Compile a scratch and save its score and max score
     """
 
-    result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+    try:
+        result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+    except CompilationError:
+        return
 
     if result.elf_object:
         diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
