@@ -421,7 +421,7 @@ export function usePlatforms(): Record<string, string> {
     const { data } = useSWR<{ "platforms": Record<string, string> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
-        suspense: true,
+        suspense: true, // TODO: remove
         onErrorRetry,
     })
 
@@ -431,7 +431,7 @@ export function usePlatforms(): Record<string, string> {
 export function useCompilers(): Record<string, { platform: string | null }> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
-        suspense: true,
+        suspense: true, // TODO: remove
         onErrorRetry,
     })
 
