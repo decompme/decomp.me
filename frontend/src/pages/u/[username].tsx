@@ -1,6 +1,5 @@
 import { GetStaticProps } from "next"
 
-import Head from "next/head"
 import Image from "next/image"
 import { useRouter } from "next/router"
 
@@ -11,6 +10,7 @@ import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
+import PageTitle from "../../components/PageTitle"
 import * as api from "../../lib/api"
 
 import styles from "./[username].module.css"
@@ -50,6 +50,7 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
     const { data: user, error } = useSWR<api.User>(`/users/${initialUser.username}`, api.get, {
         fallback: initialUser,
     })
+    const userIsYou = api.useUserIsYou()
 
     const signOut = async () => {
         api.post("/user", {})
@@ -73,9 +74,7 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
     }
 
     return <>
-        <Head>
-            <title>{`${user.name || user.username} | decomp.me`}</title>
-        </Head>
+        <PageTitle title={user.name || user.username} />
         <Nav />
         <main className={styles.pageContainer}>
             <section className={styles.userRow}>
@@ -103,7 +102,7 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
                 <ScratchList user={user} />
             </section>*/}
 
-            {user.is_you && <section>
+            {userIsYou(user) && <section>
                 <AsyncButton onClick={signOut}>
                     Sign out
                 </AsyncButton>

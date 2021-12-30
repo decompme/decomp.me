@@ -2,17 +2,31 @@ import { Suspense, useState } from "react"
 
 import { GetStaticProps } from "next"
 
-import Head from "next/head"
-
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
+import PageTitle from "../../components/PageTitle"
 import Scratch from "../../components/Scratch"
 import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
-import useScratchDocumentTitle from "../../components/Scratch/hooks/useScratchDocumentTitle"
 import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
 import * as api from "../../lib/api"
 
 import styles from "./[slug].module.scss"
+
+function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
+    const isSaved = api.useIsScratchSaved(scratch)
+
+    let title = scratch.name || "Untitled scratch"
+    if (!isSaved)
+        title += " (unsaved)"
+
+    let description = `Score: ${scratch.score}`
+    if (scratch.score === 0)
+        description += " (matching!)"
+    if (scratch.description)
+        description += `\n\n${scratch.description}`
+
+    return <PageTitle title={title} description={description} />
+}
 
 // dynamically render all pages
 export async function getStaticPaths() {
@@ -46,14 +60,10 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
     const [scratch, setScratch] = useState(initialScratch)
 
     useSaveShortcut(scratch)
-    const title = useScratchDocumentTitle(scratch)
     useWarnBeforeScratchUnload(scratch)
 
     return <>
-        <Head>
-            <title>{title}</title>
-            <meta name="description" content={`Score: ${scratch.score}`} />
-        </Head>
+        <ScratchPageTitle scratch={scratch} />
         <Nav />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
