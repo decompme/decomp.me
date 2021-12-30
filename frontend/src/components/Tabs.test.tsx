@@ -9,10 +9,10 @@ describe("Tabs", () => {
     it("renders all panels", () => {
         const onChange = jest.fn()
         render(<Tabs activeTab="tab 1" onChange={onChange}>
-            <Tab key="tab 1">
+            <Tab key="tab 1" tabKey="tab 1">
                 Tab 1 panel
             </Tab>
-            <Tab key="tab 2">
+            <Tab key="tab 2" tabKey="tab 2">
                 Tab 2 panel
             </Tab>
         </Tabs>)
@@ -24,10 +24,10 @@ describe("Tabs", () => {
     it("triggers onChange when you click a tab", () => {
         const onChange = jest.fn()
         render(<Tabs activeTab="tab 1" onChange={onChange}>
-            <Tab key="tab 1">
+            <Tab key="tab 1" tabKey="tab 1">
                 Tab 1 panel
             </Tab>
-            <Tab key="tab 2">
+            <Tab key="tab 2" tabKey="tab 2">
                 Tab 2 panel
             </Tab>
         </Tabs>)

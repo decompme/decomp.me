@@ -9,8 +9,8 @@ import Tabs, { Tab } from "../Tabs"
 import ChooseACompiler from "./ChooseACompiler"
 import styles from "./ScratchBody.module.scss"
 
-const LEFT_PANE_MIN_WIDTH = 400
-const RIGHT_PANE_MIN_WIDTH = 400
+const LEFT_PANE_MIN_WIDTH = 100
+const RIGHT_PANE_MIN_WIDTH = 100
 
 export type Props = {
     container: {width: number | undefined, height: number | undefined, ref: RefObject<HTMLDivElement>}
@@ -51,7 +51,7 @@ export default function ScratchBody({
                     cursor: "col-resize",
                     background: "var(--a100)",
                 }}
-                expandInteractiveArea={{ left: 4, right: 4 }}
+                expandInteractiveArea={{ left: 2, right: 2 }}
             />
 
             <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>

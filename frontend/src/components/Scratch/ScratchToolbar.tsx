@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from "react"
 
 import { RepoForkedIcon } from "@primer/octicons-react"
 
-import { Scratch } from "../../lib/api"
+import { Scratch, useSaveScratch } from "../../lib/api"
 import AsyncButton from "../AsyncButton"
 
 import CompileScratchButton from "./buttons/CompileScratchButton"
@@ -12,17 +12,18 @@ import styles from "./ScratchToolbar.module.scss"
 export type Props = {
     isCompiling: boolean
     compile: () => Promise<void>
-    forkScratch: () => Promise<void>
+    onFork?: () => Promise<void>
     setIsForking: Dispatch<SetStateAction<boolean>>
     scratch: Readonly<Scratch>
     setScratch: (scratch: Partial<Scratch>) => void
-    saveScratch: () => Promise<void>
     isSaved: boolean
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, forkScratch, setIsForking, scratch, setScratch, saveScratch, isSaved,
+    isCompiling, compile, scratch, setScratch, isSaved,
 }: Props) {
+    const forkScratch = async () => {} // TODO
+
     return (
         <div className={styles.toolbar}>
             <input
@@ -36,11 +37,8 @@ export default function ScratchToolbar({
                 placeholder={"Untitled scratch"}
             />
             <CompileScratchButton compile={compile} isCompiling={isCompiling} />
-            <SaveScratchButton compile={compile} isSaved={isSaved} saveScratch={saveScratch} scratch={scratch} />
-            <AsyncButton onClick={() => {
-                setIsForking(true)
-                return forkScratch()
-            }} primary={!isSaved && !scratch.owner?.is_you}>
+            <SaveScratchButton compile={compile} scratch={scratch} />
+            <AsyncButton onClick={forkScratch} primary={!isSaved && !scratch.owner?.is_you}>
                 <RepoForkedIcon size={16} /> Fork
             </AsyncButton>
         </div>

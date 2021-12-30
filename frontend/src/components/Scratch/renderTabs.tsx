@@ -21,8 +21,8 @@ function renderTabs(tabs: {[i: number]: JSX.Element}, filter?: Array<ScratchTab>
 }
 
 export enum LeftScratchTab {
-    SOURCE_CODE,
     ABOUT,
+    SOURCE_CODE,
     CONTEXT,
     SETTINGS,
 }
@@ -47,6 +47,7 @@ export function renderLeftTabs({ scratch, setScratch }: {
         [LeftScratchTab.SOURCE_CODE]: (
             <Tab
                 key="source"
+                tabKey="source"
                 label="Source code"
                 onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
             >
@@ -65,7 +66,7 @@ export function renderLeftTabs({ scratch, setScratch }: {
             </Tab>
         ),
         [LeftScratchTab.ABOUT]: (
-            <Tab key="about" label="About" className={styles.about}>
+            <Tab key="about" tabKey="about" label="About" className={styles.about}>
                 <AboutScratch
                     scratch={scratch}
                     setScratch={scratch.owner?.is_you ? setScratch : null}
@@ -75,6 +76,7 @@ export function renderLeftTabs({ scratch, setScratch }: {
         [LeftScratchTab.CONTEXT]: (
             <Tab
                 key="context"
+                tabKey="context"
                 label="Context"
                 className={styles.context}
                 onSelect={() => contextEditor.current && contextEditor.current.focus()}
@@ -94,7 +96,7 @@ export function renderLeftTabs({ scratch, setScratch }: {
             </Tab>
         ),
         [LeftScratchTab.SETTINGS]: (
-            <Tab key="settings" label="Scratch settings">
+            <Tab key="settings" tabKey="settings" label="Scratch settings">
                 <CompilerOpts
                     platform={scratch.platform}
                     value={scratch}
@@ -117,6 +119,7 @@ export function renderRightTabs({ compilation }: {
         [RightScratchTab.DIFF]: (
             <Tab
                 key="diff"
+                tabKey="diff"
                 label={<>
                     Diff
                     {compilation && <ScoreBadge

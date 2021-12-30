@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
-import useSWR, { Revalidator, RevalidatorOptions } from "swr"
+import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
@@ -289,6 +289,44 @@ export function useScratch(slugOrUrl: string): {
     }
 }
 
+export function useSavedScratch(scratch: Scratch): Scratch {
+    const { data: savedScratch, error } = useSWR(`/scratch/${scratch.slug}`, get, {
+        fallbackData: scratch, // No loading state, just use the local scratch
+    })
+
+    if (error)
+        throw error
+
+    return savedScratch
+}
+
+export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
+    const slug = localScratch.slug
+    const savedScratch = useSavedScratch(localScratch)
+
+    const saveScratch = useCallback(async () => {
+        if (!localScratch) {
+            throw new Error("Cannot save scratch before it is loaded")
+        }
+        if (!localScratch.owner.is_you) {
+            throw new Error("Cannot save scratch which you do not own")
+        }
+
+        await patch(`/scratch/${slug}`, {
+            source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
+            context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
+            compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
+            compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
+            name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
+            description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
+        })
+
+        await mutate(`/scratch/${slug}`, localScratch, true)
+    }, [localScratch, slug, savedScratch])
+
+    return saveScratch
+}
+
 export async function forkScratch(parent: Scratch, localScratch: Partial<Scratch> = {}): Promise<Scratch> {
     const scratch = await post(`/scratch/${parent.slug}/fork`, Object.assign({}, parent, localScratch))
     return scratch
@@ -303,12 +341,26 @@ export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scrat
     }
 }
 
-export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, autoRecompile = true): {
+export function useIsScratchSaved(scratch: Scratch): boolean {
+    const saved = useSavedScratch(scratch)
+
+    return (
+        scratch.name === saved.name &&
+        scratch.description === saved.description &&
+        scratch.compiler === saved.compiler &&
+        scratch.compiler_flags === saved.compiler_flags &&
+        scratch.source_code === saved.source_code &&
+        scratch.context === saved.context
+    )
+}
+
+export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
     isCompiling: boolean
 } {
+    const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(null)
 
@@ -338,11 +390,6 @@ export function useCompilation(scratch: Scratch | null, savedScratch?: Scratch, 
 
         return promise
     }, [compileRequestPromise, savedScratch, scratch])
-
-    // suspense
-    if (!compilation && compileRequestPromise) {
-        throw compileRequestPromise
-    }
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
