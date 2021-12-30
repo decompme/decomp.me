@@ -1,6 +1,6 @@
 import { Suspense, useState } from "react"
 
-import { GetStaticProps } from "next"
+import { GetServerSideProps } from "next"
 
 import { useSWRConfig } from "swr"
 
@@ -30,30 +30,21 @@ function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     return <PageTitle title={title} description={description} />
 }
 
-// dynamically render all pages
-export async function getStaticPaths() {
-    return {
-        paths: [],
-        fallback: "blocking",
-    }
-}
-
-export const getStaticProps: GetStaticProps = async context => {
+export const getServerSideProps: GetServerSideProps = async context => {
     const { slug } = context.params
 
     try {
+        // TODO: pass along context.req.cookies
         const initialScratch: api.Scratch = await api.get(`/scratch/${slug}`)
 
         return {
             props: {
                 initialScratch,
             },
-            revalidate: 10,
         }
     } catch (error) {
         return {
             notFound: true,
-            revalidate: 10,
         }
     }
 }

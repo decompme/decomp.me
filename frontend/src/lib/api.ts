@@ -273,17 +273,17 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     })
 }
 
-export async function forkScratch(parent: Scratch, localScratch: Partial<Scratch> = {}): Promise<Scratch> {
-    const scratch = await post(`/scratch/${parent.slug}/fork`, Object.assign({}, parent, localScratch))
+export async function forkScratch(parent: Scratch): Promise<Scratch> {
+    const scratch = await post(`/scratch/${parent.slug}/fork`, parent)
     await claimScratch(scratch)
     return scratch
 }
 
-export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scratch> = {}): () => Promise<void> {
+export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
     const router = useRouter()
 
     return async () => {
-        const fork = await forkScratch(parent, localScratch)
+        const fork = await forkScratch(parent)
 
         ignoreNextWarnBeforeUnload()
         await router.push(`/scratch/${fork.slug}`)
