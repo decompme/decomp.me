@@ -8,6 +8,7 @@ export type Props = {
     setIsClaiming: (value: boolean) => void
 }
 
+// TODO: remove
 export default function tryClaimScratch({ tryClaim, scratch, savedScratch, isClaiming, setIsClaiming }) {
     // Claim the scratch
     if (tryClaim && !savedScratch?.owner && typeof window !== "undefined") {

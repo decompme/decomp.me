@@ -1,6 +1,10 @@
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
 import { GetStaticProps } from "next"
+
+import { useRouter } from "next/router"
+
+import { useSWRConfig } from "swr"
 
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
@@ -61,6 +65,16 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
 
     useSaveShortcut(scratch)
     useWarnBeforeScratchUnload(scratch)
+
+    // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`
+    if (scratch.slug !== initialScratch.slug)
+        setScratch(initialScratch)
+
+    // If the SWR cache scratch owner changes (i.e. scratch was claimed), update local scratch owner
+    const { cache } = useSWRConfig()
+    const cached = cache.get(`/scratch/${scratch.slug}`) as api.Scratch
+    if (!scratch.owner && cached?.owner)
+        setScratch(scratch => ({ ...scratch, owner: cached.owner }))
 
     return <>
         <ScratchPageTitle scratch={scratch} />

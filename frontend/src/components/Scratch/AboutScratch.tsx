@@ -7,6 +7,7 @@ import LoadingSpinner from "../loading.svg"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
+import ClaimScratchButton from "./buttons/ClaimScratchButton"
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<api.Scratch>(url, api.get)
@@ -27,8 +28,10 @@ function ScratchLink({ url }: { url: string }) {
                 {scratch.name || "Untitled scratch"}
             </a>
         </Link>
-        <span className={styles.scratchLinkByText}>by</span>
-        <UserLink user={scratch.owner} />
+        {scratch.owner && <>
+            <span className={styles.scratchLinkByText}>by</span>
+            <UserLink user={scratch.owner} />
+        </>}
     </span>
 }
 
@@ -42,7 +45,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
         <div>
             <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
-                <UserLink user={scratch.owner} />
+                {scratch.owner ? <UserLink user={scratch.owner} /> : <ClaimScratchButton scratch={scratch} />}
             </div>
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
@@ -63,5 +66,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 placeholder="Add any notes about the scratch here"
             />
         </div> : <div />}
+
+        {process.env.NODE_ENV === "development" && <pre>{JSON.stringify(scratch, null, 4)}</pre>}
     </div>
 }

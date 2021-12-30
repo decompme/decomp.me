@@ -8,14 +8,17 @@ export default function useSaveShortcut(scratch: api.Scratch) {
     const userIsYou = api.useUserIsYou()
 
     useEffect(() => {
-        const handler = (event: KeyboardEvent) => {
+        const handler = async (event: KeyboardEvent) => {
             if ((event.ctrlKey || event.metaKey) && event.key == "s") {
                 event.preventDefault()
 
-                if (userIsYou(scratch.owner)) {
-                    saveScratch()
+                if (!scratch.owner) {
+                    await api.claimScratch(scratch)
+                    await saveScratch()
+                } else if (userIsYou(scratch.owner)) {
+                    await saveScratch()
                 } else {
-                    forkScratch()
+                    await forkScratch()
                 }
             }
         }

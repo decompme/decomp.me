@@ -20,9 +20,11 @@ export type Props = {
 }
 
 export default function UserLink({ user }: Props) {
+    const userIsYou = api.useUserIsYou()
+
     if (api.isAnonUser(user)) {
         return <a className={styles.user}>
-            <span>{user.is_you ? "You" : "Anonymous" }</span>
+            <span>{userIsYou(user) ? "You" : "Anonymous"} (not signed in)</span>
         </a>
     } else {
         return <Link href={`/u/${user.username}`}>

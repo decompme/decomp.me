@@ -258,8 +258,22 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
     return saveScratch
 }
 
+export async function claimScratch(scratch: Scratch): Promise<void> {
+    const { success } = await post(`/scratch/${scratch.slug}/claim`, {})
+    const user = await get("/user")
+
+    if (!success)
+        throw new Error("Scratch already claimed")
+
+    await mutate(`/scratch/${scratch.slug}`, {
+        ...scratch,
+        owner: user,
+    })
+}
+
 export async function forkScratch(parent: Scratch, localScratch: Partial<Scratch> = {}): Promise<Scratch> {
     const scratch = await post(`/scratch/${parent.slug}/fork`, Object.assign({}, parent, localScratch))
+    await claimScratch(scratch)
     return scratch
 }
 
@@ -268,7 +282,7 @@ export function useForkScratchAndGo(parent: Scratch, localScratch: Partial<Scrat
 
     return async () => {
         const fork = await forkScratch(parent, localScratch)
-        router.push(`/scratch/${fork.slug}`)
+        await router.push(`/scratch/${fork.slug}`)
     }
 }
 

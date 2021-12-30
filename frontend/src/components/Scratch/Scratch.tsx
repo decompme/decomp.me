@@ -20,9 +20,8 @@ export default function Scratch({
 }: Props) {
     const container = useSize<HTMLDivElement>()
 
-    //const { scratch, savedScratch, isSaved, setScratch, saveScratch } = api.useScratch(slug)
     const { compilation, isCompiling, compile } = api.useCompilation(scratch, true)
-    //const forkScratch = api.useForkScratchAndGo(savedScratch, scratch)
+
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
 
