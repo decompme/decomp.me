@@ -11,6 +11,7 @@ import styles from "./ScratchBody.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 100
 const RIGHT_PANE_MIN_WIDTH = 100
+const TWO_PANE_MIN_CONTAINER_WIDTH = 800
 
 export type Props = {
     container: {width: number | undefined, height: number | undefined, ref: RefObject<HTMLDivElement>}
@@ -35,7 +36,7 @@ export default function ScratchBody({
     setCompilerOpts,
     scratch,
 }: Props) {
-    return container.width > (LEFT_PANE_MIN_WIDTH + RIGHT_PANE_MIN_WIDTH)
+    return container.width > TWO_PANE_MIN_CONTAINER_WIDTH
         ? (<resizer.Container className={styles.resizer}>
             <resizer.Section minSize={LEFT_PANE_MIN_WIDTH}>
                 <resizer.Container vertical style={{ height: "100%" }}>
