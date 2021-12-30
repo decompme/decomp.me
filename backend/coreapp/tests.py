@@ -267,8 +267,6 @@ class CompilationTests(APITestCase):
         Ensure that compilations with \\r\\n line endings succeed
         """
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        if result.errors:
-            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
     @onlyIfCompilerAvailable('mwcc_247_92')
@@ -285,8 +283,6 @@ class CompilationTests(APITestCase):
         """
 
         result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
-        if result.errors:
-            self.assertEqual(len(result.errors.strip()), 0, "There should be no errors or warnings for the compilation:" + result.errors)
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
 
