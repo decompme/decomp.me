@@ -97,7 +97,7 @@ export function useLeftTabs({ scratch, setScratch }: {
             </Tab>
         ),
         [LeftScratchTab.SETTINGS]: (
-            <Tab key="settings" tabKey="settings" label="Scratch settings">
+            <Tab key="settings" tabKey="settings" label="Scratch settings" className={styles.settings}>
                 <CompilerOpts
                     platform={scratch.platform}
                     value={scratch}
