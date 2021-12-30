@@ -150,7 +150,9 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_label"] = ""
             localStorage["new_scratch_asm"] = ""
 
-            router.push(`/scratch/${scratch.slug}`)
+            await api.claimScratch(scratch)
+
+            await router.push(`/scratch/${scratch.slug}`)
         } catch (error) {
             setLineNumbers(true) // line numbers are likely relevant to the error
             if (error?.responseJSON?.as_errors) {
