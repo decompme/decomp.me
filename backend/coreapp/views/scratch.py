@@ -3,7 +3,7 @@ from coreapp.error import CompilationError, SubprocessError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer, SmallScratchSerializer
 from django.shortcuts import get_object_or_404
 from django.core.validators import validate_slug
 from django.http import HttpResponse
@@ -11,6 +11,9 @@ from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.routers import DefaultRouter
+from rest_framework.pagination import CursorPagination
 
 import hashlib
 import io
@@ -317,3 +320,22 @@ def fork(request, slug):
         ScratchSerializer(new_scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
     )
+
+class ScratchPagination(CursorPagination):
+    ordering="-creation_time"
+    page_size=100
+
+class ScratchViewSet(ModelViewSet):
+    queryset = Scratch.objects.all()
+    #serializer_class = ScratchSerializer
+    pagination_class = ScratchPagination
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return SmallScratchSerializer
+        if self.action == "retrieve":
+            return ScratchWithMetadataSerializer
+        return ScratchSerializer
+
+router = DefaultRouter(trailing_slash=False)
+router.register(r'scratch2', ScratchViewSet)

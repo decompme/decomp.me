@@ -1,27 +1,38 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from typing import Optional, TYPE_CHECKING
 
 from .models import Profile, Scratch
 from .github import GitHubUser
 from .middleware import Request
 
-def serialize_profile(request: Request, profile: Profile):
+def serialize_profile(request: Request, profile: Profile, small = False):
     if profile.user is None:
         return {
+            "url": None,
             "is_you": profile == request.profile, # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
         }
     else:
         user = profile.user
-        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
-        github_details = github.details() if github else None
 
-        return {
+        small_obj = {
+            "url": reverse("user-detail", args=[user.username], request=request),
             "is_you": user == request.user, # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
             "username": user.username,
+        }
+
+        if small:
+            return small_obj
+
+        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        github_details = github.details() if github else None
+
+        return {
+            **small_obj,
             "email": user.email,
             "name": github_details.name if github_details else user.username,
             "avatar_url": github_details.avatar_url if github_details else None,
@@ -38,6 +49,10 @@ class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile)
 
+class SmallProfileField(ProfileFieldBaseClass):
+    def to_representation(self, profile: Profile):
+        return serialize_profile(self.context["request"], profile, small=True)
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -50,12 +65,15 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
+    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
+
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
+        fields = ["url", "slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
 
 # XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
 class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
+    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
     owner = ProfileField(read_only=True)
     parent = serializers.HyperlinkedRelatedField( # type: ignore
         read_only=True,
@@ -65,4 +83,17 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]
+        fields = ["url", "slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]
+
+class SmallScratchSerializer(serializers.ModelSerializer[Scratch]):
+    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
+    owner = SmallProfileField(read_only=True)
+    parent = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name="scratch-detail",
+        lookup_field="slug",
+    )
+
+    class Meta:
+        model = Scratch
+        fields = ["url", "name", "compiler", "platform", "score", "max_score", "owner", "parent"]

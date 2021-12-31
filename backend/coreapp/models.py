@@ -61,6 +61,9 @@ class Scratch(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
 
+    class Meta:
+        ordering = ['-creation_time']
+
     def __str__(self):
         return self.slug
 

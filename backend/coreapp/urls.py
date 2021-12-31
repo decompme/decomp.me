@@ -12,4 +12,5 @@ urlpatterns = [
     path('scratch/<slug:slug>/export', scratch.ScratchExport.as_view(), name='scratch-export'),
     path('user', user.CurrentUser.as_view(), name="current-user"),
     path('users/<slug:username>', user.user, name="user-detail"),
+    *scratch.router.urls,
 ]
