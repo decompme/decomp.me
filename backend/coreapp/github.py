@@ -126,6 +126,7 @@ class GitHubUser(models.Model):
         # If the previous profile was anonymous, give its scratches to the logged-in profile
         if request.profile.is_anonymous() and profile.id != request.profile.id:
             Scratch.objects.filter(owner=request.profile).update(owner=profile)
+            request.profile.delete()
 
         login(request, gh_user.user)
         request.profile = profile
