@@ -3,46 +3,39 @@ import { useRouter } from "next/router"
 import { mutate } from "swr"
 
 import * as api from "../../lib/api"
-import VerticalMenu, { ButtonItem, MenuItem } from "../VerticalMenu"
+import VerticalMenu, { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
 
 export default function UserMenu({ close }: { close: () => void }) {
     const user = api.useThisUser()
-    const router = useRouter()
-
-    const linkTo = (href: string) => () => {
-        close()
-        router.push(href)
-    }
 
     if (api.isAnonUser(user)) {
-        return <VerticalMenu>
-            <ButtonItem onClick={linkTo("/login")}>
+        return <VerticalMenu close={close}>
+            <LinkItem href="/login">
                 Sign in
-            </ButtonItem>
+            </LinkItem>
         </VerticalMenu>
     }
 
-    const signOut = async () => {
-        const user = await api.post("/user", {})
-        await mutate("/user", user)
-        close()
-    }
-
-    return <VerticalMenu>
+    return <VerticalMenu close={close}>
         <MenuItem>
             <span style={{ opacity: 0.6 }}>
                 Signed in as <b style={{ fontWeight: 600 }}>{user.username}</b>
             </span>
         </MenuItem>
         <hr />
-        <ButtonItem onClick={linkTo(`/u/${user.username}`)}>
+        <LinkItem href={`/u/${user.username}`}>
             Your profile
-        </ButtonItem>
-        <ButtonItem onClick={linkTo("/settings")}>
+        </LinkItem>
+        <LinkItem href="/settings">
             Settings
-        </ButtonItem>
+        </LinkItem>
         <hr />
-        <ButtonItem onClick={signOut}>
+        <ButtonItem
+            onClick={async () => {
+                const user = await api.post("/user", {})
+                await mutate("/user", user)
+            }}
+        >
             Sign out
         </ButtonItem>
     </VerticalMenu>
