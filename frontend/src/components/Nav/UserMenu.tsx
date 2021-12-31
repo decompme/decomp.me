@@ -1,24 +1,36 @@
 import { mutate } from "swr"
 
 import * as api from "../../lib/api"
+import GitHubLoginButton from "../GitHubLoginButton"
 import VerticalMenu, { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
+
+import styles from "./UserMenu.module.scss"
 
 export default function UserMenu({ close }: { close: () => void }) {
     const user = api.useThisUser()
 
     if (api.isAnonUser(user)) {
         return <VerticalMenu close={close}>
-            <LinkItem href="/login">
-                Sign in
+            <MenuItem>
+                <div className={styles.status}>
+                    Sign in now to keep track of your scratches.
+                </div>
+            </MenuItem>
+            <MenuItem>
+                <GitHubLoginButton popup />
+            </MenuItem>
+            <hr />
+            <LinkItem href="/settings">
+                Settings
             </LinkItem>
         </VerticalMenu>
     }
 
     return <VerticalMenu close={close}>
         <MenuItem>
-            <span style={{ opacity: 0.6 }}>
-                Signed in as <b style={{ fontWeight: 600 }}>{user.username}</b>
-            </span>
+            <div className={styles.status}>
+                Signed in as <b>{user.username}</b>
+            </div>
         </MenuItem>
         <hr />
         <LinkItem href={`/u/${user.username}`}>

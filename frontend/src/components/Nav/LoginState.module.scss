@@ -2,8 +2,13 @@
 
 .user {
     @extend .item;
-    gap: 6px;
+
     cursor: pointer;
+
+    gap: 2px;
+
+    font-size: .8em;
+    font-weight: 400;
 }
 
 .avatar {
