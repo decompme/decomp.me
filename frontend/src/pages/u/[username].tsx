@@ -1,12 +1,11 @@
 import { GetStaticProps } from "next"
 
 import Image from "next/image"
-import { useRouter } from "next/router"
+//import { useRouter } from "next/router"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
-import useSWR, { useSWRConfig } from "swr"
+import useSWR from "swr"
 
-import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
@@ -44,13 +43,12 @@ export const getStaticProps: GetStaticProps = async context => {
 }
 
 export default function UserPage({ user: initialUser }: { user: api.User }) {
-    const { mutate } = useSWRConfig()
-    const router = useRouter()
+    /*const router = useRouter()
     const { username } = router.query
+    const userIsYou = api.useUserIsYou()*/
     const { data: user, error } = useSWR<api.User>(`/users/${initialUser.username}`, api.get, {
         fallback: initialUser,
     })
-    const userIsYou = api.useUserIsYou()
 
     if (error)
         console.error(error)

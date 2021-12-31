@@ -1,5 +1,3 @@
-import { useRouter } from "next/router"
-
 import { mutate } from "swr"
 
 import * as api from "../../lib/api"
