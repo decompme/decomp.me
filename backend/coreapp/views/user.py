@@ -26,8 +26,8 @@ class CurrentUser(APIView):
 
         if "code" in request.data:
             GitHubUser.login(request, request.data["code"])
-
-            return Response(serialize_profile(request, request.profile))
+            assert not request.profile.is_anonymous()
+            return self.get(request)
         else:
             logout(request)
 
@@ -36,7 +36,7 @@ class CurrentUser(APIView):
             request.profile = profile
             request.session["profile_id"] = request.profile.id
 
-            return Response(serialize_profile(request, request.profile))
+            return self.get(request)
 
 @api_view(["GET"])
 def user(request, username):

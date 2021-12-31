@@ -47,7 +47,7 @@ export default function LoginState() {
         </div>
     } else {
         return <div>
-            <GitHubLoginButton label="Sign in" />
+            <GitHubLoginButton label="Sign in" popup={true} />
         </div>
     }
 }

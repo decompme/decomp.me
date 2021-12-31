@@ -1,4 +1,5 @@
 import * as api from "../../lib/api"
+import PlatformIcon from "../PlatformSelect/PlatformIcon"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
@@ -25,6 +26,9 @@ export default function ScratchToolbar({
 
     return (
         <div className={styles.toolbar}>
+            <div className={styles.icons}>
+                <PlatformIcon platform={scratch.platform} />
+            </div>
             <input
                 className={styles.scratchName}
                 type="text"

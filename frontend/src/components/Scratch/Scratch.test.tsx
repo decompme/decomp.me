@@ -30,7 +30,6 @@ test("renders without causing a state change", async () => {
     act(() => {
         render(<Scratch
             scratch={scratchJson}
-            isSaved
             onChange={onChange}
         />)
     })

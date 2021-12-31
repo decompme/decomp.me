@@ -3,7 +3,10 @@ import Link from "next/link"
 import useSWR from "swr"
 
 import * as api from "../../lib/api"
+import GitHubLoginButton from "../GitHubLoginButton"
 import LoadingSpinner from "../loading.svg"
+import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import PlatformName from "../PlatformSelect/PlatformName"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
@@ -41,16 +44,29 @@ export type Props = {
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
+    const userIsYou = api.useUserIsYou()
+
     return <div className={styles.container}>
         <div>
             <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
-                {scratch.owner ? <UserLink user={scratch.owner} /> : <ClaimScratchButton scratch={scratch} />}
+                {scratch.owner
+                    ? <UserLink user={scratch.owner} />
+                    : <ClaimScratchButton scratch={scratch} />
+                }
+                {scratch.owner?.is_anonymous && userIsYou(scratch.owner)
+                    && <GitHubLoginButton popup label="Sign in to keep" className={styles.signInPrompt} />
+                }
             </div>
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
                 <ScratchLink url={scratch.parent} />
             </div>}
+            <div className={styles.horizontalField}>
+                <p className={styles.label}>Platform</p>
+                <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
+                <PlatformName platform={scratch.platform} />
+            </div>
         </div>
 
         <hr className={styles.rule} />
