@@ -1,17 +1,8 @@
 import classNames from "classnames"
 
-import LogoGCWii from "./gc_wii.svg"
-import LogoN64 from "./n64.svg"
+import PlatformIcon from "./PlatformIcon"
 import styles from "./PlatformSelect.module.scss"
-import LogoPS1 from "./ps1.svg"
-import LogoPS2 from "./ps2.svg"
 
-const ICONS = {
-    "gc_wii": <LogoGCWii />,
-    "n64": <LogoN64 />,
-    "ps1": <LogoPS1 />,
-    "ps2": <LogoPS2 />,
-}
 
 export type Props = {
     platforms: {
@@ -35,7 +26,7 @@ export default function PlatformSelect({ platforms, value, onChange, className }
             className={classNames(styles.platform, { [styles.selected]: value === key })}
             onClick={() => onChange(key)}
         >
-            {ICONS[key]}
+            <PlatformIcon platform={key} />
             <div className={styles.labelContainer}>
                 <div className={styles.consoleName}>{platform.name}</div>
                 <div className={styles.platformName}>{platform.description}</div>
