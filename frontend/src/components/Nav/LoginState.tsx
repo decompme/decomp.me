@@ -1,47 +1,50 @@
-import { useEffect } from "react"
+import { useState } from "react"
 
 import Image from "next/image"
-import Link from "next/link"
 
-import useSWR from "swr"
+import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
 import GitHubLoginButton from "../GitHubLoginButton"
 
 import styles from "./LoginState.module.scss"
+import UserMenu from "./UserMenu"
 
-export type Props = {
-    onChange: (user: api.AnonymousUser | api.User) => void
-}
+export default function LoginState() {
+    const user = api.useThisUser()
+    const [isUserMenuOpen, setUserMenuOpen] = useState(false)
 
-export default function LoginState({ onChange }: Props) {
-    const { data: user, error } = useSWR<api.AnonymousUser | api.User>("/user", api.get)
+    const { renderLayer, triggerProps, layerProps } = useLayer({
+        isOpen: isUserMenuOpen,
+        onOutsideClick: () => setUserMenuOpen(false),
+        overflowContainer: false,
+        auto: false,
+        placement: "bottom-end",
+        triggerOffset: 2,
+    })
 
-    useEffect(() => {
-        if (user) {
-            onChange(user)
-        }
-    }, [user, onChange])
-
-    if (error) {
-        throw error
-    } else if (!user) {
+    if (!user) {
         // Loading...
         return <div />
     } else if (user && !api.isAnonUser(user) && user.username) {
-        return <Link href={`/u/${user.username}`}>
-            <a title={`@${user.username}`} className={styles.user}>
-                {user.avatar_url && <Image
-                    className={styles.avatar}
-                    src={user.avatar_url}
-                    alt="User avatar"
-                    width={24}
-                    height={24}
-                    priority
-                />}
-                {/*<span>{user.username}</span>*/}
-            </a>
-        </Link>
+        return <div
+            title={`@${user.username}`}
+            className={styles.user}
+            onClick={() => setUserMenuOpen(true)}
+            {...triggerProps}
+        >
+            {user.avatar_url && <Image
+                className={styles.avatar}
+                src={user.avatar_url}
+                alt={user.username}
+                width={24}
+                height={24}
+                priority
+            />}
+            {renderLayer(<div {...layerProps}>
+                {isUserMenuOpen && <UserMenu close={() => setUserMenuOpen(false)} />}
+            </div>)}
+        </div>
     } else {
         return <div>
             <GitHubLoginButton label="Sign in" />

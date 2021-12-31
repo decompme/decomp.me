@@ -1,0 +1,39 @@
+.menu {
+    color: var(--g1700);
+    background: var(--g400);
+    border: 1px solid var(--g600);
+    border-radius: 8px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+
+    list-style: none;
+
+    font-size: .9em;
+    user-select: none;
+    cursor: default;
+
+    padding: 8px 0;
+    min-width: 150px;
+}
+
+.item {
+    display: block;
+
+    padding: 4px 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+a.item {
+    cursor: pointer;
+
+    &:hover {
+        color: var(--g1900);
+        background: var(--g700);
+    }
+}
+
+.menu > hr {
+    border: 0;
+    border-top: 1px solid var(--g600);
+    margin: 8px 0;
+}

@@ -3,6 +3,7 @@
 .user {
     @extend .item;
     gap: 6px;
+    cursor: pointer;
 }
 
 .avatar {

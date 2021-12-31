@@ -52,14 +52,6 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
     })
     const userIsYou = api.useUserIsYou()
 
-    const signOut = async () => {
-        api.post("/user", {})
-            .then((user: api.AnonymousUser) => {
-                mutate("/user", user)
-                mutate(`/users/${username}`)
-            })
-    }
-
     if (error)
         console.error(error)
 
@@ -101,12 +93,6 @@ export default function UserPage({ user: initialUser }: { user: api.User }) {
                 <h2>Scratches</h2>
                 <ScratchList user={user} />
             </section>*/}
-
-            {userIsYou(user) && <section>
-                <AsyncButton onClick={signOut}>
-                    Sign out
-                </AsyncButton>
-            </section>}
         </main>
         <Footer />
     </>
