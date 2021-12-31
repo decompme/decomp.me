@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 8.4666665 8.4666669"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <rect
+       x="-62.859546"
+       y="-17.452527"
+       width="184.16212"
+       height="106.24013"
+       id="rect2036" />
+  </defs>
+  <g
+     id="layer1">
+    <g
+       aria-label="DS"
+       transform="matrix(0.08916035,0,0,0.09260417,5.6045639,3.5344613)"
+       id="text2034"
+       style="font-size:40px;line-height:1.25;white-space:pre;shape-inside:url(#rect2036);fill:#00d4aa">
+      <path
+         d="m -21.579375,-9.613125 c -3.8,-1.72 -10.96,-2.84 -17.28,-2.84 h -24 v 40 h 24 c 6.32,0 13.48,-1.08 17.28,-2.8 9.28,-4.2 12.28,-10.84 12.28,-17.2 0,-6.32 -3,-13 -12.28,-17.16 z m -20.6,31.64 h -7.68 v -29.08 h 7.68 c 11.8,0 19.24,5.16 19.24,14.6 0,9.44 -7.44,14.48 -19.24,14.48 z"
+         style="font-family:'New Fontendo 23DSi Lite XL';-inkscape-font-specification:'New Fontendo 23DSi Lite XL'"
+         id="path4598" />
+      <path
+         d="m -7.2993774,19.626875 v 6.68 c 5.04,0.8 9.6,1.24 16.2,1.24 16.0800004,0 23.1600004,-4.56 23.2000004,-10.92 0,-6.16 -5.72,-9 -15.92,-12.64 -7.3600004,-2.64 -11.5200004,-4.08 -11.5200004,-7.12 0,-2.08 2.68,-4.12 9.0800004,-4.12 5.96,0 9.8,1.44 14.12,2.24 l -0.04,-6.16 c -4.4,-0.8 -6.76,-1.28 -13.72,-1.28 -12.9200004,0 -21.3600004,3.88 -21.3600004,10.4 0,6.28 7.03999996,9.08 16.6,12.64 7.2000004,2.6 9.6800004,4.08 9.6800004,6.6 0,2.8 -2.68,5 -9.1600004,5 -5.96,0 -13.56,-1.12 -17.16,-2.56 z"
+         style="font-family:'New Fontendo 23DSi Lite XL';-inkscape-font-specification:'New Fontendo 23DSi Lite XL'"
+         id="path4600" />
+    </g>
+  </g>
+</svg>

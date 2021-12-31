@@ -58,7 +58,10 @@ RUN bash /compilers/download.sh
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+ARG ENABLE_NDS_SUPPORT
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
@@ -73,6 +76,12 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
 COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
     bash /compilers/mwcc.sh; \
+    fi
+
+# nds specifics
+COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
+RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] ; then \
+    bash /compilers/mwccarm.sh; \
     fi
 
 WORKDIR /backend
@@ -90,7 +99,9 @@ RUN useradd --create-home user \
 USER user
 
 # initialize wine files to /home/user/.wine
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
