@@ -20,7 +20,7 @@ class Profile(models.Model):
         null=True,
     )
 
-    def is_anonymous(self):
+    def is_anonymous(self) -> bool:
         return self.user is None
 
     def __str__(self):

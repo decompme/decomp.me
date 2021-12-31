@@ -2,7 +2,7 @@ import { Suspense, useState } from "react"
 
 import { GetServerSideProps } from "next"
 
-import { useSWRConfig } from "swr"
+import useSWR from "swr"
 
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
@@ -55,15 +55,22 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
     useSaveShortcut(scratch)
     useWarnBeforeScratchUnload(scratch)
 
-    // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`
+    // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
     if (scratch.slug !== initialScratch.slug)
         setScratch(initialScratch)
 
-    // If the SWR cache scratch owner changes (i.e. scratch was claimed), update local scratch owner
-    const { cache } = useSWRConfig()
-    const cached = cache.get(`/scratch/${scratch.slug}`) as api.Scratch
-    if (!scratch.owner && cached?.owner)
+    // If the server scratch owner changes (i.e. scratch was claimed), update local scratch owner.
+    // You can trigger this by:
+    // 1. Logging out
+    // 2. Creating a new scratch
+    // 3. Logging in
+    // 4. Notice the scratch owner (in the About panel) has changed to your newly-logged-in user
+    const ownerMayChange = !scratch.owner || scratch.owner.is_anonymous
+    const cached = useSWR<api.Scratch>(ownerMayChange && `/scratch/${scratch.slug}`, api.get)?.data
+    if (ownerMayChange && cached?.owner && !api.isUserEq(scratch.owner, cached?.owner)) {
+        console.info("Scratch owner updated", cached.owner)
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
+    }
 
     return <>
         <ScratchPageTitle scratch={scratch} />

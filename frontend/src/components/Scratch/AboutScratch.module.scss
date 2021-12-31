@@ -4,6 +4,7 @@
     gap: 1em;
     cursor: default;
 
+    min-width: 300px;
     height: 100%;
 }
 
@@ -102,4 +103,8 @@
 .platformIcon {
     width: 1.5em;
     margin-right: 6px;
+}
+
+.signInPrompt {
+    margin-left: 16px;
 }
