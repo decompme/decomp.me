@@ -215,10 +215,13 @@ export function useThisUser(): User | AnonymousUser | undefined {
     return user
 }
 
+export function isUserEq(a: User | AnonymousUser | undefined, b: User | AnonymousUser | undefined): boolean {
+    return a && b && a.id === b.id && a.is_anonymous === b.is_anonymous
+}
+
 export function useUserIsYou(): (user: User | AnonymousUser | undefined) => boolean {
     const you = useThisUser()
-
-    return user => you && user && you.id === user.id && you.is_anonymous === user.is_anonymous
+    return user => isUserEq(you, user)
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {

@@ -3,8 +3,6 @@ import { useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
-import useSWR from "swr"
-
 import * as api from "../../lib/api"
 import GitHubLoginButton from "../GitHubLoginButton"
 
@@ -15,7 +13,7 @@ export type Props = {
 }
 
 export default function LoginState({ onChange }: Props) {
-    const { data: user, error } = useSWR<api.AnonymousUser | api.User>("/user", api.get)
+    const user = api.useThisUser()
 
     useEffect(() => {
         if (user) {
@@ -23,9 +21,7 @@ export default function LoginState({ onChange }: Props) {
         }
     }, [user, onChange])
 
-    if (error) {
-        throw error
-    } else if (!user) {
+    if (!user) {
         // Loading...
         return <div />
     } else if (user && !api.isAnonUser(user) && user.username) {
@@ -44,7 +40,7 @@ export default function LoginState({ onChange }: Props) {
         </Link>
     } else {
         return <div>
-            <GitHubLoginButton label="Sign in" />
+            <GitHubLoginButton label="Sign in" popup={true} />
         </div>
     }
 }
