@@ -5,6 +5,8 @@ import useSWR from "swr"
 import * as api from "../../lib/api"
 import GitHubLoginButton from "../GitHubLoginButton"
 import LoadingSpinner from "../loading.svg"
+import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import PlatformName from "../PlatformSelect/PlatformName"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
@@ -60,6 +62,11 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 <p className={styles.label}>Fork of</p>
                 <ScratchLink url={scratch.parent} />
             </div>}
+            <div className={styles.horizontalField}>
+                <p className={styles.label}>Platform</p>
+                <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
+                <PlatformName platform={scratch.platform} />
+            </div>
         </div>
 
         <hr className={styles.rule} />
