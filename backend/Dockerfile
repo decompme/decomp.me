@@ -75,7 +75,7 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
 # gc/wii specifics
 COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
-    bash /compilers/mwcc.sh; \
+    bash /compilers/mwccppc.sh; \
     fi
 
 # nds specifics

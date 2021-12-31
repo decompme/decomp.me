@@ -36,10 +36,10 @@ COMPILERS_DSI["1.3"]="mwcc_40_1034"
 COMPILERS_DSI["1.3p1"]="mwcc_40_1036"
 COMPILERS_DSI["1.6sp1"]="mwcc_40_1051"
 
-echo "Downloading MWCC compilers"
+echo "Downloading MWCC ARM compilers..."
 wget -q -O "${compiler_dir}/compilers.zip" "${compiler_url}"
 
-echo "Extracting compilers"
+echo "Extracting MWCC ARM compilers..."
 unzip -oq "${compiler_dir}/compilers.zip" -d "${compiler_dir}" && rm "${compiler_dir}/compilers.zip"
 
 for key in "${!COMPILERS_12[@]}"; do
