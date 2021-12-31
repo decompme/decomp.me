@@ -38,6 +38,9 @@ export default function UserMenu({ close }: { close: () => void }) {
         <ButtonItem onClick={linkTo(`/u/${user.username}`)}>
             Your profile
         </ButtonItem>
+        <ButtonItem onClick={linkTo("/settings")}>
+            Settings
+        </ButtonItem>
         <hr />
         <ButtonItem onClick={signOut}>
             Sign out

@@ -2,6 +2,7 @@ import { useState } from "react"
 
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
+import { useAutoRecompileSetting } from "../../lib/settings"
 
 import { useLeftTabs, useRightTabs } from "./renderTabs"
 import styles from "./Scratch.module.scss"
@@ -20,7 +21,8 @@ export default function Scratch({
 }: Props) {
     const container = useSize<HTMLDivElement>()
 
-    const { compilation, isCompiling, compile } = api.useCompilation(scratch, true)
+    const [autoRecompileSetting] = useAutoRecompileSetting()
+    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting)
 
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")

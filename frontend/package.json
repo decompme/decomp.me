@@ -30,7 +30,8 @@
         "sass": "^1.42.1",
         "swr": "^1.0.0",
         "use-debounce": "^7.0.0",
-        "use-deep-compare-effect": "^1.6.1"
+        "use-deep-compare-effect": "^1.6.1",
+        "use-persisted-state": "^0.3.3"
     },
     "devDependencies": {
         "@babel/core": "^7.15.8",
