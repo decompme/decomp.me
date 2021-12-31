@@ -28,6 +28,12 @@
 
 .column {
     min-height: fit-content;
+    overflow-x: auto;
+}
+
+/* Don't let the target column get stupidly wide if there are long symbol names */
+.column:first-child {
+    max-width: 40ch;
 }
 
 .column:not(:last-child) {

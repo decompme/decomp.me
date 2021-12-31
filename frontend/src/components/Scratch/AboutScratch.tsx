@@ -3,6 +3,7 @@ import Link from "next/link"
 import useSWR from "swr"
 
 import * as api from "../../lib/api"
+import GitHubLoginButton from "../GitHubLoginButton"
 import LoadingSpinner from "../loading.svg"
 import UserLink from "../user/UserLink"
 
@@ -41,11 +42,19 @@ export type Props = {
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
+    const userIsYou = api.useUserIsYou()
+
     return <div className={styles.container}>
         <div>
             <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
-                {scratch.owner ? <UserLink user={scratch.owner} /> : <ClaimScratchButton scratch={scratch} />}
+                {scratch.owner
+                    ? <UserLink user={scratch.owner} />
+                    : <ClaimScratchButton scratch={scratch} />
+                }
+                {scratch.owner?.is_anonymous && userIsYou(scratch.owner)
+                    && <GitHubLoginButton popup label="Sign in to keep" className={styles.signInPrompt} />
+                }
             </div>
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
