@@ -3,12 +3,15 @@ from django.core.cache import cache
 from django.db import models, transaction
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from typing import Optional
 from github import Github
 from github.NamedUser import NamedUser
+
+from .models import Profile, Scratch
 from .middleware import Request
 import requests
 
@@ -115,6 +118,17 @@ class GitHubUser(models.Model):
         gh_user.access_token = access_token
         gh_user.save()
 
+        profile: Profile = Profile.objects.filter(user=gh_user.user).first() or Profile()
+        profile.user = gh_user.user
+        profile.last_request_date = now()
+        profile.save()
+
+        # If the previous profile was anonymous, give its scratches to the logged-in profile
+        if request.profile.is_anonymous() and profile.id != request.profile.id:
+            Scratch.objects.filter(owner=request.profile).update(owner=profile)
+
         login(request, gh_user.user)
+        request.profile = profile
+        request.session["profile_id"] = profile.id
 
         return gh_user
