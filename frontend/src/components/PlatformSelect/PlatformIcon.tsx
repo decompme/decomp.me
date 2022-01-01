@@ -1,6 +1,6 @@
 import LogoGCWii from "./gc_wii.svg"
-import LogoNDS from "./nds.svg"
 import LogoN64 from "./n64.svg"
+import LogoNDS from "./nds.svg"
 import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
 import UnknownIcon from "./unknown.svg"
