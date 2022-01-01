@@ -258,9 +258,35 @@ def load_platforms() -> Dict[str, Platform]:
         ),
         "nds_arm9": Platform(
             "Nintendo DS",
-            "ARM9",
+            "ARMv4T",
             "arm32",
             assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -o "$OUTPUT"',
+            objdump_cmd="arm-none-eabi-objdump",
+            nm_cmd="arm-none-eabi-nm",
+            asm_prelude="""
+.macro glabel label
+    .global \label
+    .thumb
+    \label:
+.endm
+
+.macro arm_func_start name
+.endm
+.macro arm_func_end name
+.endm
+.macro thumb_func_start name
+.endm
+.macro non_word_aligned_thumb_func_start name
+.endm
+.macro thumb_func_end name
+.endm
+"""
+        ),
+        "gba": Platform(
+            "Game Boy Advance",
+            "ARMv4T",
+            "arm32",
+            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
             objdump_cmd="arm-none-eabi-objdump",
             nm_cmd="arm-none-eabi-nm",
             asm_prelude="""

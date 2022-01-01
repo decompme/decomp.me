@@ -100,6 +100,11 @@ export const PRESETS = [
         compiler: "mwcc_41_60126",
         opts: "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -align powerpc -enum int",
     },
+    {
+        name: "The Minish Cap",
+        compiler: "agbcc",
+        opts: "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {

@@ -2,6 +2,7 @@ import { FunctionComponent } from "react"
 
 import * as api from "../../../lib/api"
 
+import * as Agbcc from "./agbcc"
 import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc27kmc from "./gcc2.7kmc"
@@ -99,6 +100,7 @@ const COMPILERS: CompilerModule[] = [
     Psyq41,
     Psyq43,
     Psyq46,
+    Agbcc,
     Dummy,
 ]
 

@@ -1,0 +1,4 @@
+{
+    "platform": "gba",
+    "cc": "\"${COMPILER_DIR}\"/bin/agbcc $COMPILER_FLAGS \"$INPUT\" -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
+}

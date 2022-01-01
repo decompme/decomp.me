@@ -39,3 +39,8 @@ if [[ "$uname" != "Darwin" ]]; then
     cp $compiler_dir/psyq4.1/mips-elf-as $compiler_dir/psyq4.6/mips-elf-as
     find . -name "CC1PSX.EXE" | xargs chmod +x
 fi
+
+# agbcc (gba)
+if [[ "$uname" != "Darwin" ]]; then
+    curl -L "https://github.com/ethteck/agbcc/releases/download/master/agbcc.tar.gz" | tar zx -C "$compiler_dir"/agbcc
+fi
