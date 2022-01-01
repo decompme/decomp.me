@@ -153,6 +153,7 @@ export type Scratch = {
     parent: string | null // URL
     diff_label: string | null
     score: number // -1 = doesn't compile
+    max_score: number
 }
 
 export type Compilation = {

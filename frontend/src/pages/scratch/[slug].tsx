@@ -7,6 +7,7 @@ import useSWR from "swr"
 import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
+import * as ScoreBadge from "../../components/ScoreBadge"
 import Scratch from "../../components/Scratch"
 import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
 import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
@@ -21,9 +22,16 @@ function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     if (!isSaved)
         title += " (unsaved)"
 
-    let description = `Score: ${scratch.score}`
-    if (scratch.score === 0)
-        description += " (matching!)"
+    let description = ""
+    if (scratch.score !== -1) {
+        description = `Score: ${scratch.score}`
+
+        if (scratch.score === 0)
+            description += " (matching!)"
+        else if (scratch.max_score != -1)
+            description += ` (${ScoreBadge.scorePercentAsString(scratch.score, scratch.max_score)})`
+    }
+
     if (scratch.description)
         description += `\n\n${scratch.description}`
 

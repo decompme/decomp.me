@@ -11,6 +11,10 @@ function calculateScorePercent(score: number, maxScore: number): number {
     return ((1 - (score / maxScore)) * 100)
 }
 
+export function scorePercentAsString(score: number, maxScore: number): string {
+    return calculateScorePercent(score, maxScore).toFixed(2) + "%"
+}
+
 export type Props = {
     score: number
     maxScore: number
@@ -27,7 +31,7 @@ export default function ScoreBadge({ score, maxScore }: Props) {
         </div>
     } else {
         return <div className={styles.badge} aria-label="Score">
-            {score} ({calculateScorePercent(score, maxScore).toFixed(2)}%)
+            {score} ({scorePercentAsString(score, maxScore)})
         </div>
     }
 }

@@ -211,6 +211,7 @@ class CompilationTests(APITestCase):
 
         # Test that we can create a scratch
         response = self.client.post(reverse('scratch'), scratch_dict)
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
