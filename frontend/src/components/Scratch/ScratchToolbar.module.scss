@@ -54,8 +54,15 @@
     font-size: 0.9em;
     color: var(--g1800);
 
+    overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+
     text-align: center;
+
+    &[contenteditable] {
+        text-overflow: initial;
+    }
 }
 
 .icons {

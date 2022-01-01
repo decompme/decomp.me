@@ -54,6 +54,7 @@ export default function ScratchPreferenceModal({ open, onClose }: { open: boolea
                         onChange={tab => setTab(tab)}
                         vertical={windowWidth > 800}
                         border={false}
+                        className={styles.tabs}
                     >
                         <Tab tabKey="diff" label="Diff" />
                     </Tabs>

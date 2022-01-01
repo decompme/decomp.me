@@ -82,8 +82,8 @@
 
 .closeButton {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 8px;
+    right: 8px;
     padding: 8px;
 
     width: 32px;
@@ -95,7 +95,7 @@
 
     color: var(--g1500);
     border: none;
-    background: initial;
+    background: var(--g400);
 
     cursor: pointer;
 
@@ -104,18 +104,10 @@
     &:hover {
         color: var(--g1900);
     }
+}
 
-    &:focus-visible, &:hover {
-        outline: none;
-        background: var(--g400);
-    }
-
-    @media (max-width: 900px) {
-        background: var(--g400);
-        top: 8px;
-        right: 8px;
-        padding: 8px;
-    }
+.tabs {
+    height: auto;
 }
 
 .booleanPreference {
