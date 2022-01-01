@@ -1,6 +1,7 @@
 /* eslint css-modules/no-unused-class: off */
 
 import classNames from "classnames"
+import * as resizer from "react-simple-resizer"
 
 import * as api from "../../lib/api"
 
@@ -25,7 +26,7 @@ function DiffColumn({ diff, prop, header }: {
     prop: keyof api.DiffRow & keyof api.DiffHeader
     header: string
 }) {
-    return <div className={styles.column}>
+    return <resizer.Section className={styles.column} minSize={100}>
         <div className={classNames(styles.row, styles.header)}>
             {header}
         </div>
@@ -37,7 +38,7 @@ function DiffColumn({ diff, prop, header }: {
                 </div>
             ))}
         </div>
-    </div>
+    </resizer.Section>
 }
 
 export type Props = {
@@ -46,6 +47,7 @@ export type Props = {
 
 export default function Diff({ compilation }: Props) {
     const diff: api.DiffOutput = compilation.diff_output
+
     if (!diff || diff.error) {
         return <div className={styles.container}>
             {compilation.errors && <div className={styles.log}>{compilation.errors}</div>}
@@ -53,10 +55,23 @@ export default function Diff({ compilation }: Props) {
         </div>
     } else {
         const threeWay = !!diff.header.previous
-        return <div className={styles.container}>
+
+        return <resizer.Container className={styles.container}>
             <DiffColumn diff={diff} prop="base" header="Target" />
+            <resizer.Bar
+                size={1}
+                className={styles.bar}
+                expandInteractiveArea={{ left: 2, right: 2 }}
+            />
             <DiffColumn diff={diff} prop="current" header="Current" />
-            {threeWay && <DiffColumn diff={diff} prop="previous" header="Saved" />}
-        </div>
+            {threeWay && <>
+                <resizer.Bar
+                    size={1}
+                    className={styles.bar}
+                    expandInteractiveArea={{ left: 2, right: 2 }}
+                />
+                <DiffColumn diff={diff} prop="previous" header="Saved" />
+            </>}
+        </resizer.Container>
     }
 }

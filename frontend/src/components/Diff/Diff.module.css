@@ -14,9 +14,6 @@
 }
 
 .container {
-    display: flex;
-    flex-direction: row;
-
     width: 100%;
     height: 100%;
 
@@ -27,21 +24,16 @@
 }
 
 .column {
-    min-height: fit-content;
-    overflow-x: auto;
+    height: max-content;
+    overflow: initial !important; /* overrides resizer.Section inline style */
 }
 
-/* Don't let the target column get stupidly wide if there are long symbol names */
-.column:first-child {
-    max-width: 40ch;
-}
+.bar {
+    cursor: col-resize;
+    background: var(--a50);
 
-.column:not(:last-child) {
-    border-right: 1px solid var(--a50);
-}
-
-.column:last-child {
-    flex-grow: 1;
+    position: sticky !important; /* overrides resizer.Bar inline style */
+    top: 0;
 }
 
 .row {
