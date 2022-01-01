@@ -34,7 +34,7 @@ def set_user_profile(get_response):
     """
 
     def middleware(request: Request):
-        # Skip if the reuqest is from SSR
+        # Skip if the request is from SSR
         if "User-Agent" in request.headers and "node-fetch" in request.headers["User-Agent"]:
             request.profile = Profile()
             return get_response(request)
