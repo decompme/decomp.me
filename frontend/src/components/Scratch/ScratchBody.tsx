@@ -10,7 +10,7 @@ import ChooseACompiler from "./ChooseACompiler"
 import styles from "./ScratchBody.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 100
-const RIGHT_PANE_MIN_WIDTH = 100
+const RIGHT_PANE_MIN_WIDTH = 250
 const TWO_PANE_MIN_CONTAINER_WIDTH = 800
 
 export type Props = {
