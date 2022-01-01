@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 
-import { GearIcon, ThreeBarsIcon } from "@primer/octicons-react"
+import { GearIcon, TriangleDownIcon } from "@primer/octicons-react"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import Frog from "../Nav/frog.svg"
+import LoginState from "../Nav/LoginState"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
 
@@ -112,7 +114,8 @@ export default function ScratchToolbar({
         <div className={styles.toolbar}>
             <div className={styles.left}>
                 <div className={styles.iconButton} onClick={() => setMenuOpen(!isMenuOpen)} {...triggerProps}>
-                    <ThreeBarsIcon size={16} />
+                    <Frog width={32} height={32} />
+                    <TriangleDownIcon />
                 </div>
                 {renderLayer(<div {...layerProps}>
                     {isMenuOpen && <VerticalMenu close={() => setMenuOpen(false)}>
@@ -147,6 +150,7 @@ export default function ScratchToolbar({
                 {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
                 {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                 {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
+                <LoginState className={styles.loginState} />
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
         </div>

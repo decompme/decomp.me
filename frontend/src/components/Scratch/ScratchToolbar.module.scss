@@ -1,18 +1,20 @@
+@import "../Nav/Nav.module.scss";
+
 .toolbar {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 
-    min-height: 43px; // SSR has no buttons
+    min-height: 40px; // SSR has no buttons
 
     gap: 4px;
-    padding: 4px;
+    padding: 0 4px;
 
-    background: var(--g300);
-    //border-bottom: 1px solid var(--a100);
+    //background: var(--g300);
+    border-bottom: 1px solid var(--a100);
 
-    @media screen and (min-width: 800px) and (min-height: 800px) {
+    @media screen and (min-height: 800px) {
         gap: 8px;
         padding: 8px;
     }
@@ -26,6 +28,10 @@
     gap: 4px;
 
     height: 100%;
+
+    @media screen and (min-height: 800px) {
+        gap: 8px;
+    }
 }
 
 .center {
@@ -90,12 +96,17 @@
 }
 
 .iconButton {
+    @extend .logo;
+
     color: var(--g1400);
-    padding: 0 8px;
     height: 100%;
 
     display: flex;
     align-items: center;
 
     cursor: pointer;
+}
+
+.loginState {
+    flex-shrink: 0;
 }

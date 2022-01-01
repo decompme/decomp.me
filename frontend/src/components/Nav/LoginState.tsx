@@ -3,6 +3,7 @@ import { useState } from "react"
 import Image from "next/image"
 
 import { TriangleDownIcon } from "@primer/octicons-react"
+import classNames from "classnames"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
@@ -10,7 +11,7 @@ import * as api from "../../lib/api"
 import styles from "./LoginState.module.scss"
 import UserMenu from "./UserMenu"
 
-export default function LoginState() {
+export default function LoginState({ className }: { className?: string }) {
     const user = api.useThisUser()
     const [isUserMenuOpen, setUserMenuOpen] = useState(false)
 
@@ -29,7 +30,7 @@ export default function LoginState() {
     }
 
     return <div
-        className={styles.user}
+        className={classNames(styles.user, className)}
         onClick={() => setUserMenuOpen(!isUserMenuOpen)}
         {...triggerProps}
     >

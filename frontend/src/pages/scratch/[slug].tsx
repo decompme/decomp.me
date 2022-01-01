@@ -5,7 +5,6 @@ import { GetServerSideProps } from "next"
 import useSWR from "swr"
 
 import LoadingSpinner from "../../components/loading.svg"
-import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import Scratch from "../../components/Scratch"
 import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
@@ -74,7 +73,6 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
 
     return <>
         <ScratchPageTitle scratch={scratch} />
-        <Nav />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch
