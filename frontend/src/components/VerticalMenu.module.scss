@@ -23,7 +23,8 @@ $padding: 6px;
 }
 
 .item {
-    display: block;
+    display: flex;
+    justify-content: space-between;
 
     padding: $padding 16px;
     text-overflow: ellipsis;

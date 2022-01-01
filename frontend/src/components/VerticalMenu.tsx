@@ -1,9 +1,10 @@
-import { createContext, ReactNode, useContext } from "react"
+import { createContext, ReactNode, useContext, useState } from "react"
 
 import Link from "next/link"
 
 import classNames from "classnames"
 
+import LoadingSpinner from "./loading.svg"
 import styles from "./VerticalMenu.module.scss"
 
 const MenuContext = createContext({ close: () => {} })
@@ -28,21 +29,31 @@ export function MenuItem({ children }: { children: ReactNode }) {
     </li>
 }
 
-export function ButtonItem({ children, disabled, onClick }: { children: ReactNode, disabled?: boolean, onClick: () => void }) {
+export function ButtonItem({ children, disabled, onClick }: {
+    children: ReactNode
+    disabled?: boolean
+    onClick: () => void | Promise<unknown>
+}) {
     const { close } = useContext(MenuContext)
+    const [isLoading, setIsLoading] = useState(false)
 
     return <a
         className={classNames(styles.item, {
             [styles.disabled]: disabled,
         })}
-        onClick={() => {
+        onClick={async () => {
             if (!disabled) {
-                onClick()
+                setIsLoading(true)
+                await onClick()
+                setIsLoading(false)
                 close()
             }
         }}
     >
-        {children}
+        <div>
+            {children}
+        </div>
+        {isLoading && <LoadingSpinner width={16} height={16} />}
     </a>
 }
 
