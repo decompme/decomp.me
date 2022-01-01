@@ -82,7 +82,5 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 placeholder="Add any notes about the scratch here"
             />
         </div> : <div />}
-
-        {process.env.NODE_ENV === "development" && <pre>{JSON.stringify(scratch, null, 4)}</pre>}
     </div>
 }
