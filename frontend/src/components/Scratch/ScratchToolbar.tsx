@@ -22,6 +22,14 @@ function htmlTextOnly(html: string): string {
     return html.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
+function exportScratchZip(scratch: api.Scratch) {
+    const url = `/api/scratch/${scratch.slug}/export`
+    const a = document.createElement("a")
+    a.href = url
+    a.download = scratch.name + ".zip"
+    a.click()
+}
+
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
     const [isEditing, setEditing] = useState(false)
     const editableRef = useRef<HTMLDivElement>()
@@ -125,7 +133,7 @@ export default function ScratchToolbar({
                         <ButtonItem onClick={saveScratch} disabled={userIsYou(scratch.owner)}>Save</ButtonItem>
                         <ButtonItem onClick={forkScratch}>Fork</ButtonItem>
                         <hr />
-                        <ButtonItem disabled onClick={() => /* TODO */ undefined}>Export as...</ButtonItem>
+                        <ButtonItem onClick={() => exportScratchZip(scratch)}>Export as ZIP...</ButtonItem>
                         <hr />
                         <LinkItem href="/credits">Credits</LinkItem>
                         <LinkItem href="https://github.com/decompme/decomp.me">Contribute to decomp.me</LinkItem>
