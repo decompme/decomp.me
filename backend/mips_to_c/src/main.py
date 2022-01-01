@@ -18,6 +18,7 @@ from .translate import (
     translate_to_ast,
 )
 from .types import TypePool
+from .arch_mips import MipsArch
 
 
 def print_current_exception(sanitize: bool) -> None:
@@ -59,6 +60,7 @@ def print_exception_as_comment(
 
 
 def run(options: Options) -> int:
+    arch = MipsArch()
     all_functions: Dict[str, Function] = {}
     asm_data = AsmData()
     try:
@@ -106,9 +108,9 @@ def run(options: Options) -> int:
     function_names = set(all_functions.keys())
     typepool = TypePool(
         unknown_field_prefix="unk_" if fmt.coding_style.unknown_underscore else "unk",
-        struct_field_inference=options.struct_field_inference,
+        unk_inference=options.unk_inference,
     )
-    global_info = GlobalInfo(asm_data, function_names, typemap, typepool)
+    global_info = GlobalInfo(asm_data, arch, function_names, typemap, typepool)
 
     flow_graphs: List[Union[FlowGraph, Exception]] = []
     for function in functions:
@@ -165,10 +167,11 @@ def run(options: Options) -> int:
             print(visualize_flowgraph(fn_info.flow_graph))
             return 0
 
-        if options.structs:
-            type_decls = typepool.format_type_declarations(fmt)
-            if type_decls:
-                print(type_decls)
+        type_decls = typepool.format_type_declarations(
+            fmt, stack_structs=options.print_stack_structs
+        )
+        if type_decls:
+            print(type_decls)
 
         global_decls = global_info.global_decls(
             fmt,
@@ -262,6 +265,14 @@ def parse_flags(flags: List[str]) -> Options:
         default=[],
         help="Mark preprocessor constant as undefined",
     )
+    group.add_argument(
+        "--incbin-dir",
+        dest="incbin_dirs",
+        action="append",
+        default=[],
+        type=Path,
+        help="Add search path for loading .incbin directives in the input asm",
+    )
 
     group = parser.add_argument_group("Output Options")
     group.add_argument(
@@ -285,12 +296,13 @@ def parse_flags(flags: List[str]) -> Options:
         '"none" does not emit any global declarations. ',
     )
     group.add_argument(
-        "--structs",
-        dest="structs",
+        "--stack-structs",
+        dest="print_stack_structs",
         action="store_true",
-        help="Perform type inference on unknown struct fields, and include struct declarations "
-        "representing each function's stack in the output. These can be modified and passed back "
-        "to mips_to_c via --context to improve the output.",
+        help=(
+            "Include template structs for each function's stack. These can be modified and passed back "
+            "into mips_to_c with --context to set the types & names of stack vars."
+        ),
     )
     group.add_argument(
         "--debug",
@@ -386,6 +398,12 @@ def parse_flags(flags: List[str]) -> Options:
         action="store_true",
         help="Don't emit any type casts",
     )
+    group.add_argument(
+        "--zfill-constants",
+        dest="zfill_constants",
+        action="store_true",
+        help="Pad hex constants with 0's to fill their type's width.",
+    )
 
     group = parser.add_argument_group("Analysis Options")
     group.add_argument(
@@ -448,10 +466,13 @@ def parse_flags(flags: List[str]) -> Options:
         help="Disable detection of &&/||",
     )
     group.add_argument(
-        "--no-struct-inference",
-        dest="no_struct_inference",
-        action="store_true",
-        help=argparse.SUPPRESS,
+        "--no-unk-inference",
+        dest="unk_inference",
+        action="store_false",
+        help=(
+            "Disable type inference on unknown struct fields & unknown global symbol types. "
+            "See the README for more information on unknown inference."
+        ),
     )
     group.add_argument(
         "--reg-vars",
@@ -475,6 +496,12 @@ def parse_flags(flags: List[str]) -> Options:
         dest="pdb_translate",
         action="store_true",
         help=argparse.SUPPRESS,
+    )
+    group.add_argument(
+        "--structs",
+        dest="structs_compat",
+        action="store_true",
+        help=argparse.SUPPRESS,  # For backwards compatibility; now enabled by default
     )
 
     args = parser.parse_args(flags)
@@ -525,6 +552,7 @@ def parse_flags(flags: List[str]) -> Options:
         switch_detection=args.switch_detection,
         andor_detection=args.andor_detection,
         skip_casts=args.skip_casts,
+        zfill_constants=args.zfill_constants,
         reg_vars=reg_vars,
         goto_patterns=args.goto_patterns,
         stop_on_error=args.stop_on_error,
@@ -540,9 +568,10 @@ def parse_flags(flags: List[str]) -> Options:
         valid_syntax=args.valid_syntax,
         global_decls=args.global_decls,
         compiler=args.compiler,
-        structs=args.structs,
-        struct_field_inference=args.structs and not args.no_struct_inference,
+        print_stack_structs=args.print_stack_structs,
+        unk_inference=args.unk_inference,
         passes=args.passes,
+        incbin_dirs=args.incbin_dirs,
     )
 
 

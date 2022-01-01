@@ -48,6 +48,7 @@ class Options:
     switch_detection: bool
     andor_detection: bool
     skip_casts: bool
+    zfill_constants: bool
     reg_vars: List[str]
     goto_patterns: List[str]
     stop_on_error: bool
@@ -63,14 +64,16 @@ class Options:
     valid_syntax: bool
     global_decls: GlobalDeclsEnum
     compiler: CompilerEnum
-    structs: bool
-    struct_field_inference: bool
+    print_stack_structs: bool
+    unk_inference: bool
     passes: int
+    incbin_dirs: List[Path]
 
     def formatter(self) -> "Formatter":
         return Formatter(
             self.coding_style,
             skip_casts=self.skip_casts,
+            zfill_constants=self.zfill_constants,
             valid_syntax=self.valid_syntax,
         )
 
@@ -96,6 +99,7 @@ class Formatter:
     debug: bool = False
     valid_syntax: bool = False
     line_length: int = 80
+    zfill_constants: bool = False
 
     def indent(self, line: str, indent: int = 0) -> str:
         return self.indent_step * max(indent + self.extra_indent, 0) + line
@@ -150,8 +154,20 @@ class Formatter:
     def format_hex(self, val: int) -> str:
         return format(val, "x").upper()
 
-    def format_int(self, val: int) -> str:
+    def format_int(self, val: int, size_bits: Optional[int] = None) -> str:
         if abs(val) < 10:
             return str(val)
 
-        return hex(val).upper().replace("X", "x")
+        if self.zfill_constants and size_bits is not None:
+            hex_digits = f"{abs(val):0{size_bits // 4}X}"
+        else:
+            hex_digits = f"{abs(val):X}"
+
+        # Always pad 7-digit hex constants to 8 digits. (These are very common and easily confused.)
+        if len(hex_digits) == 7:
+            hex_digits = f"0{hex_digits}"
+
+        if val < 0:
+            return f"-0x{hex_digits}"
+        else:
+            return f"0x{hex_digits}"
