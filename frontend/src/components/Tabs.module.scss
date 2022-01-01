@@ -97,7 +97,7 @@
         margin-right: 8px;
     }
 
-    &:focus-visible {
+    &:focus {
         outline: none; // remove focus ring, .tabButtonsBackground replaces it
     }
 

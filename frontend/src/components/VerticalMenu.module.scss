@@ -54,7 +54,7 @@ a.item {
         }
 
         &:hover,
-        &:focus-visible {
+        &:focus {
             color: var(--g1900);
 
             &::before {
