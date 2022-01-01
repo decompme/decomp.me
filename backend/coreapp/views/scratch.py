@@ -1,9 +1,9 @@
 from rest_framework.exceptions import APIException
-from coreapp.error import CompilationError, SubprocessError
+from coreapp.error import CompilationError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer, ScratchWithMetadataSerializer
+from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
 from django.shortcuts import get_object_or_404
 from django.core.validators import validate_slug
 from django.http import HttpResponse
@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 import zipfile
 
-from ..models import Asm, Scratch, gen_scratch_id
+from ..models import Asm, Scratch
 from ..middleware import Request
 from ..decorators.django import condition
 
@@ -76,7 +76,7 @@ class ScratchDetail(APIView):
     def get(self, request: Request, slug: str):
         scratch = get_object_or_404(Scratch, slug=slug)
         response = self.head(request, slug)
-        response.data = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
+        response.data = ScratchSerializer(scratch, context={ "request": request }).data
         return response
 
     def patch(self, request: Request, slug: str):
@@ -144,7 +144,7 @@ class ScratchExport(APIView):
         validate_slug(slug)
         scratch = get_object_or_404(Scratch, slug=slug)
 
-        metadata = ScratchWithMetadataSerializer(scratch, context={ "request": request }).data
+        metadata = ScratchSerializer(scratch, context={ "request": request }).data
         metadata.pop("source_code")
         metadata.pop("context")
 
@@ -217,12 +217,9 @@ def create_scratch(request):
     if compiler and compiler_flags:
         compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
 
-    slug = gen_scratch_id()
-
     name = data.get("name", diff_label)
 
     scratch_data = {
-        "slug": slug,
         "name": name,
         "compiler": compiler,
         "platform": platform,
@@ -237,12 +234,12 @@ def create_scratch(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
 
-    scratch = Scratch.objects.get(slug=scratch_data["slug"])
+    scratch = Scratch.objects.get(slug=serializer.data["slug"])
 
     update_scratch_score(scratch)
 
     return Response(
-        ScratchWithMetadataSerializer(scratch, context={ "request": request }).data,
+        ScratchSerializer(scratch, context={ "request": request }).data,
         status=status.HTTP_201_CREATED,
     )
 
@@ -280,35 +277,28 @@ def compile(request, slug):
 
 @api_view(["POST"])
 def fork(request, slug):
-    required_params = ["compiler", "platform", "compiler_flags", "source_code", "context"]
-
-    for param in required_params:
-        if param not in request.data:
-            raise APIException({"error": f"Missing parameter: {param}"})
-
     parent_scratch = Scratch.objects.filter(slug=slug).first()
 
     if not parent_scratch:
         raise APIException({"error": "Parent scratch does not exist"})
 
-    # TODO validate
-    compiler = request.data["compiler"]
-    platform = request.data["platform"]
-    compiler_flags = request.data["compiler_flags"]
-    code = request.data["source_code"]
-    context = request.data["context"]
+    fork_data = {
+        "compiler": request.data.get("compiler", parent_scratch.compiler),
+        "compiler_flags": request.data.get("compiler_flags", parent_scratch.compiler_flags),
+        "source_code": request.data.get("source_code", parent_scratch.source_code),
+        "context": request.data.get("context", parent_scratch.context),
+        "name": parent_scratch.name,
+        "platform": parent_scratch.platform,
+        "target_assembly": parent_scratch.target_assembly.hash,
+        "diff_label": parent_scratch.diff_label,
+        "parent": parent_scratch.slug,
+    }
 
-    new_scratch = Scratch(
-        name=parent_scratch.name,
-        compiler=compiler,
-        platform=platform,
-        compiler_flags=compiler_flags,
-        target_assembly=parent_scratch.target_assembly,
-        source_code=code,
-        context=context,
-        diff_label=parent_scratch.diff_label,
-        parent=parent_scratch,
-    )
+    ser = ScratchSerializer(data=fork_data, context={ "request": request })
+    ser.is_valid(raise_exception=True)
+    new_scratch = ser.save()
+
+    new_scratch.parent = parent_scratch
     new_scratch.save()
 
     update_scratch_score(new_scratch)
