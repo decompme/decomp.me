@@ -30,7 +30,7 @@ export default function LoginState() {
 
     return <div
         className={styles.user}
-        onClick={() => setUserMenuOpen(true)}
+        onClick={() => setUserMenuOpen(!isUserMenuOpen)}
         {...triggerProps}
     >
         {api.isAnonUser(user)

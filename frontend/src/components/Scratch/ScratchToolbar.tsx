@@ -111,7 +111,7 @@ export default function ScratchToolbar({
     return (
         <div className={styles.toolbar}>
             <div className={styles.left}>
-                <div className={styles.iconButton} onClick={() => setMenuOpen(true)} {...triggerProps}>
+                <div className={styles.iconButton} onClick={() => setMenuOpen(!isMenuOpen)} {...triggerProps}>
                     <ThreeBarsIcon size={16} />
                 </div>
                 {renderLayer(<div {...layerProps}>
