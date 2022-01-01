@@ -1,24 +1,22 @@
 .header {
-    border-top-left-radius: 1em;
-    border-top-right-radius: 1em;
-    padding: 1em;
-    padding-left: 1.5em;
-    padding-right: 1.5em;
+    padding: 1.5rem;
+    padding-bottom: 0;
     background: var(--g300);
-    border-bottom: 1px solid var(--g400);
 
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 1em;
+
+    font-size: 0.8em;
+    color: var(--g1200);
 
     cursor: default;
 }
 
 .container {
-    border-bottom-left-radius: 1em;
-    border-bottom-right-radius: 1em;
-    padding: 1.5em;
+    padding: 1.5rem;
     background: var(--g300);
 }
 

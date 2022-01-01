@@ -24,7 +24,7 @@ export enum LeftScratchTab {
     ABOUT,
     SOURCE_CODE,
     CONTEXT,
-    SETTINGS,
+    COMPILER_OPTS,
 }
 
 export enum RightScratchTab {
@@ -96,8 +96,8 @@ export function useLeftTabs({ scratch, setScratch }: {
                 />
             </Tab>
         ),
-        [LeftScratchTab.SETTINGS]: (
-            <Tab key="settings" tabKey="settings" label="Scratch settings" className={styles.settings}>
+        [LeftScratchTab.COMPILER_OPTS]: (
+            <Tab key="compiler_opts" tabKey="compiler_opts" label="Compiler options" className={styles.settings}>
                 <CompilerOpts
                     platform={scratch.platform}
                     value={scratch}
