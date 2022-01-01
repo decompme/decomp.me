@@ -42,5 +42,6 @@ fi
 
 # agbcc (gba)
 if [[ "$uname" != "Darwin" ]]; then
+    mkdir -p "$compiler_dir/agbcc"
     curl -L "https://github.com/ethteck/agbcc/releases/download/master/agbcc.tar.gz" | tar zx -C "$compiler_dir"/agbcc
 fi
