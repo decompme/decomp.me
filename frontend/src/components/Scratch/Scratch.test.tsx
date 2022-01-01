@@ -22,6 +22,7 @@ const scratchJson: api.Scratch = {
     "parent": null,
     "diff_label": "",
     "score": 0,
+    "max_score": 0,
 }
 
 test("renders without causing a state change", async () => {
