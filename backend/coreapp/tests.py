@@ -556,4 +556,4 @@ class RequestTests(APITestCase):
         response = self.client.get(reverse('compilers'), HTTP_USER_AGENT='node-fetch')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(Profile.objects.count(), 0),
+        self.assertEqual(Profile.objects.count(), 0)
