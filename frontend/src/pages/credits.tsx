@@ -144,6 +144,12 @@ export default function CreditsPage({ maintainers, contributors }: {
                             <a>coreui/coreui-icons</a>
                         </Link>
                     </li>
+                    <li>New Fontendo 23DSi Lite XL by MaxiGamer</li>
+                    <li>
+                        <Link href="https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059">
+                            <a>New Fontendo 23DSi Lite XL</a>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </main>
