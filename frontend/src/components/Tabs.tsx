@@ -16,7 +16,7 @@ type Context = {
 const TABS_CTX = createContext<Context>(null)
 
 export type TabProps = {
-    children: ReactNode
+    children?: ReactNode
     className?: string
     tabKey: string
     label?: ReactNode
@@ -63,6 +63,9 @@ export class Tab extends Component<TabProps> {
                         ctx.setHover(key)
                         event.stopPropagation()
                     }}
+                    onFocus={() => {
+                        ctx.setHover(key)
+                    }}
                     ref={this.ref}
                 >
                     {this.props.label ?? key}
@@ -77,9 +80,11 @@ export type Props = {
     children: ReactElement<typeof Tab> | ReactElement<typeof Tab>[] | ReactElement<typeof Tab>[][]
     activeTab: string | undefined
     onChange: (tab: string) => void
+    vertical?: boolean
+    border?: boolean
 }
 
-export default function Tabs({ children, activeTab, onChange, className }: Props) {
+export default function Tabs({ children, activeTab, onChange, className, vertical, border }: Props) {
     const [hover, _setHover] = useState<string>()
     const bgRef = useRef<HTMLDivElement>()
     const isMovingBetweenButtons = useRef(false)
@@ -118,8 +123,9 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
         if (button) {
             Object.assign(bgRef.current.style, {
                 opacity: 1,
-                transform: `translate(${button.offsetLeft}px, ${button.offsetTop}px)`,
-                width: `${button.offsetWidth}px`,
+                transform: `translate(${button.offsetLeft}px, ${vertical ? (button.offsetTop - 8) : button.offsetTop}px)`,
+                width: vertical ? "" : `${button.offsetWidth}px`,
+                height: vertical ? `${button.offsetHeight}px` : "",
             })
         } else {
             Object.assign(bgRef.current.style, {
@@ -145,7 +151,16 @@ export default function Tabs({ children, activeTab, onChange, className }: Props
             },
         }}
     >
-        <div className={classNames(styles.container, className)}>
+        <div
+            className={classNames(
+                styles.container,
+                {
+                    [styles.border]: typeof border === "undefined" ? true : border,
+                    [styles.vertical]: vertical,
+                },
+                className,
+            )}
+        >
             <div
                 role="tablist"
                 className={styles.tabButtons}

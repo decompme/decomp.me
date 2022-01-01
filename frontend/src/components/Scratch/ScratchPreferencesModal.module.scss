@@ -1,0 +1,128 @@
+.dialog {
+    border: 1px solid var(--g500);
+    border-radius: 0.75em;
+    background: var(--g300);
+    box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
+
+    position: fixed;
+
+    // Horizontal positioning
+    width: 100%;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (max-width: 900px) {
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+
+    // Vertical positioning
+    top: 20vh;
+    bottom: 0;
+    height: 60vh;
+    max-height: 700px;
+
+    @media (max-height: 600px) {
+        top: 10vh;
+        height: 80vh;
+    }
+
+    @media (max-height: 400px) {
+        top: 0;
+        height: 100vh;
+
+        border-top: 0;
+        border-bottom: 0;
+        border-radius: 0;
+    }
+}
+
+.dialog::backdrop,
+.dialog + :global(.backdrop) {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    @media (max-width: 800px) {
+        flex-direction: column;
+        font-size: 0.9em;
+    }
+}
+
+.left {
+    flex-basis: 20%;
+    border-right: 1px solid var(--g500);
+
+    // Vertical
+    @media (max-width: 800px) {
+        flex-basis: unset;
+        border-right: none;
+        border-bottom: 1px solid var(--g500);
+    }
+}
+
+.right {
+    padding: 1em;
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.titleText {
+    font-weight: 400;
+    font-size: 1.2em;
+    padding: 1em;
+}
+
+.closeButton {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 8px;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--g1500);
+    border: none;
+    background: initial;
+
+    cursor: pointer;
+
+    border-radius: 999px;
+
+    &:hover {
+        color: var(--g1900);
+    }
+
+    &:focus-visible, &:hover {
+        outline: none;
+        background: var(--g400);
+    }
+
+    @media (max-width: 900px) {
+        background: var(--g400);
+        top: 8px;
+        right: 8px;
+        padding: 8px;
+    }
+}
+
+.booleanPreference {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+
+    font-size: 0.9em;
+    color: var(--g1500);
+}

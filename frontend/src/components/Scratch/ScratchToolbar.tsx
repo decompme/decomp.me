@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { ThreeBarsIcon } from "@primer/octicons-react"
+import { GearIcon, ThreeBarsIcon } from "@primer/octicons-react"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
@@ -12,6 +12,7 @@ import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
 import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
+import ScratchPreferencesModal from "./ScratchPreferencesModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -101,6 +102,8 @@ export default function ScratchToolbar({
         triggerOffset: 0,
     })
 
+    const [isPreferencesOpen, setPreferencesOpen] = useState(false)
+
     if (isSSR) {
         return <div className={styles.toolbar} />
     }
@@ -108,7 +111,7 @@ export default function ScratchToolbar({
     return (
         <div className={styles.toolbar}>
             <div className={styles.left}>
-                <div className={styles.menuButton} onClick={() => setMenuOpen(true)} {...triggerProps}>
+                <div className={styles.iconButton} onClick={() => setMenuOpen(true)} {...triggerProps}>
                     <ThreeBarsIcon size={16} />
                 </div>
                 {renderLayer(<div {...layerProps}>
@@ -137,11 +140,15 @@ export default function ScratchToolbar({
                 />
             </div>
             <div className={styles.right}>
+                <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
+                    <GearIcon size={16} />
+                </div>
                 <CompileScratchButton compile={compile} isCompiling={isCompiling} />
                 {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
                 {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                 {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
             </div>
+            <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
         </div>
     )
 }
