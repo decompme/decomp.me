@@ -36,9 +36,9 @@ export default function UserMenu({ close }: { close: () => void }) {
         <LinkItem href={`/u/${user.username}`}>
             Your profile
         </LinkItem>
-        <LinkItem href="/settings">
+        {/*<LinkItem href="/settings">
             Settings
-        </LinkItem>
+        /LinkItem>*/}
         <hr />
         <ButtonItem
             onClick={async () => {
