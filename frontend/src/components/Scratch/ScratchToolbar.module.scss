@@ -73,6 +73,10 @@
 
     text-align: center;
 
+    &.editable {
+        cursor: text;
+    }
+
     &[contenteditable] {
         text-overflow: initial;
     }

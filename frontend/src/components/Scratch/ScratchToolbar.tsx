@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import { GearIcon, TriangleDownIcon } from "@primer/octicons-react"
+import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
@@ -76,7 +77,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
         />
     } else {
         return <div
-            className={styles.name}
+            className={classNames(styles.name, { [styles.editable]: !!onChange })}
             onClick={() => {
                 if (onChange)
                     setEditing(true)
