@@ -291,12 +291,15 @@ def fork(request, slug):
         "platform": parent_scratch.platform,
         "target_assembly": parent_scratch.target_assembly.hash,
         "diff_label": parent_scratch.diff_label,
-        "parent": parent_scratch,
+        "parent": parent_scratch.slug,
     }
 
     ser = ScratchSerializer(data=fork_data, context={ "request": request })
     ser.is_valid(raise_exception=True)
     new_scratch = ser.save()
+
+    new_scratch.parent = parent_scratch
+    new_scratch.save()
 
     update_scratch_score(new_scratch)
 

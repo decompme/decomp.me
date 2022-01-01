@@ -51,8 +51,13 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     owner = ProfileField(read_only=True)
+    parent = serializers.HyperlinkedRelatedField( # type: ignore
+        read_only=True,
+        view_name="scratch-detail",
+        lookup_field="slug",
+    )
 
     class Meta:
         model = Scratch
         fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score", "parent", "owner"]
-        read_only_fields = ["slug", "parent"]
+        read_only_fields = ["slug", "parent", "owner"]
