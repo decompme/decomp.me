@@ -15,7 +15,6 @@ export default function ChooseACompiler({ platform, onCommit }: {
 
     return <div className={styles.chooseACompiler}>
         <CompilerOpts
-            title="Choose a compiler"
             platform={platform}
             value={compiler}
             onChange={c => setCompiler(c)}

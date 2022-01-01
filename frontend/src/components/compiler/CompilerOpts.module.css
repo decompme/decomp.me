@@ -1,22 +1,23 @@
 .header {
-    padding: 1.5rem;
+    padding: 1.5em;
     padding-bottom: 0;
     background: var(--g300);
 
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 1em;
-
-    font-size: 0.8em;
-    color: var(--g1200);
 
     cursor: default;
 }
 
+.header > * {
+    flex-shrink: 0;
+}
+
 .container {
-    padding: 1.5rem;
+    padding: 1.5em;
     background: var(--g300);
 }
 
@@ -26,6 +27,15 @@
     background: transparent;
 
     /* border-bottom: 1px solid var(--g400); */
+}
+
+.preset {
+    font-size: 0.8em;
+    color: var(--g1200);
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .row {

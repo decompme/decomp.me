@@ -97,12 +97,14 @@ export function useLeftTabs({ scratch, setScratch }: {
             </Tab>
         ),
         [LeftScratchTab.COMPILER_OPTS]: (
-            <Tab key="compiler_opts" tabKey="compiler_opts" label="Compiler options" className={styles.settings}>
-                <CompilerOpts
-                    platform={scratch.platform}
-                    value={scratch}
-                    onChange={setScratch}
-                />
+            <Tab key="compiler_opts" tabKey="compiler_opts" label="Compiler options" className={styles.compilerOptsTab}>
+                <div className={styles.compilerOptsContainer}>
+                    <CompilerOpts
+                        platform={scratch.platform}
+                        value={scratch}
+                        onChange={setScratch}
+                    />
+                </div>
             </Tab>
         ),
     }, filter)

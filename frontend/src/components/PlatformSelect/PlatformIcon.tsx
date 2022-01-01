@@ -14,10 +14,11 @@ const ICONS = {
 export type Props = {
     platform: string
     className?: string
+    size?: number
 }
 
-export default function PlatformIcon({ platform, className }: Props) {
+export default function PlatformIcon({ platform, className, size }: Props) {
     const Icon = ICONS[platform] || UnknownIcon
 
-    return <Icon className={className} />
+    return <Icon width={size} height={size} className={className} />
 }
