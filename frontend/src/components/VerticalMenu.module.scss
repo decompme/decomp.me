@@ -21,9 +21,13 @@
     padding: 4px 16px;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    &.disabled {
+        color: var(--g600);
+    }
 }
 
-a.item {
+a.item:not(.disabled) {
     cursor: pointer;
 
     &:hover {

@@ -2,6 +2,8 @@ import { createContext, ReactNode, useContext } from "react"
 
 import Link from "next/link"
 
+import classNames from "classnames"
+
 import styles from "./VerticalMenu.module.scss"
 
 const MenuContext = createContext({ close: () => {} })
@@ -26,14 +28,18 @@ export function MenuItem({ children }: { children: ReactNode }) {
     </li>
 }
 
-export function ButtonItem({ children, onClick }: { children: ReactNode, onClick: () => void }) {
+export function ButtonItem({ children, disabled, onClick }: { children: ReactNode, disabled?: boolean, onClick: () => void }) {
     const { close } = useContext(MenuContext)
 
     return <a
-        className={styles.item}
+        className={classNames(styles.item, {
+            [styles.disabled]: disabled,
+        })}
         onClick={() => {
-            onClick()
-            close()
+            if (!disabled) {
+                onClick()
+                close()
+            }
         }}
     >
         {children}
