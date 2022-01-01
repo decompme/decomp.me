@@ -1,24 +1,31 @@
+$padding: 6px;
+
 .menu {
     color: var(--g1700);
-    background: var(--g400);
-    border: 1px solid var(--g600);
-    border-radius: 8px;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 
     list-style: none;
 
-    font-size: 0.9em;
+    font-size: 0.8em;
     user-select: none;
     cursor: default;
 
-    padding: 8px 0;
+    padding: $padding 0;
     min-width: 150px;
+
+    @supports not (backdrop-filter: blur(10px)) {
+        background: var(--g100);
+    }
 }
 
 .item {
     display: block;
 
-    padding: 4px 16px;
+    padding: $padding 16px;
     text-overflow: ellipsis;
     white-space: nowrap;
 
@@ -27,17 +34,47 @@
     }
 }
 
-a.item:not(.disabled) {
-    cursor: pointer;
+a.item {
+    font-weight: 450;
 
-    &:hover {
-        color: var(--g1900);
-        background: var(--g700);
+    &:not(.disabled) {
+        cursor: pointer;
+
+        position: relative;
+
+        &::before {
+            content: "";
+
+            position: absolute;
+            inset: 0 $padding 0 $padding;
+
+            border-radius: 3px;
+
+            z-index: -1;
+        }
+
+        &:hover,
+        &:focus-visible {
+            color: var(--g1900);
+
+            &::before {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        &:active {
+            color: var(--g2000);
+
+            &::before {
+                background: rgba(255, 255, 255, 0.05);
+            }
+        }
     }
 }
 
 .menu > hr {
     border: 0;
-    border-top: 1px solid var(--g600);
-    margin: 8px 0;
+    border-top: 1px solid inherit;
+    margin: $padding auto;
+    width: calc(100% - $padding * 2);
 }

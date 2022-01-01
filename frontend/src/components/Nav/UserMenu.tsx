@@ -19,10 +19,10 @@ export default function UserMenu({ close }: { close: () => void }) {
             <MenuItem>
                 <GitHubLoginButton popup />
             </MenuItem>
-            <hr />
+            {/*<hr />
             <LinkItem href="/settings">
                 Settings
-            </LinkItem>
+            </LinkItem>*/}
         </VerticalMenu>
     }
 

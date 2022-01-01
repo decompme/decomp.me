@@ -21,7 +21,7 @@ export default function LoginState({ className }: { className?: string }) {
         overflowContainer: false,
         auto: false,
         placement: "bottom-end",
-        triggerOffset: 2,
+        triggerOffset: 4,
     })
 
     if (!user) {

@@ -109,7 +109,7 @@ export default function ScratchToolbar({
         overflowContainer: false,
         auto: false,
         placement: "bottom-start",
-        triggerOffset: 0,
+        triggerOffset: 4,
     })
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
@@ -130,7 +130,7 @@ export default function ScratchToolbar({
                         <LinkItem href="/scratch/new">New scratch...</LinkItem>
                         <hr />
                         {!scratch.owner && <ButtonItem onClick={() => api.claimScratch(scratch)}>Claim</ButtonItem>}
-                        <ButtonItem onClick={saveScratch} disabled={userIsYou(scratch.owner)}>Save</ButtonItem>
+                        <ButtonItem onClick={saveScratch} disabled={scratch.owner && !userIsYou(scratch.owner)}>Save</ButtonItem>
                         <ButtonItem onClick={forkScratch}>Fork</ButtonItem>
                         <hr />
                         <ButtonItem onClick={() => exportScratchZip(scratch)}>Export as ZIP...</ButtonItem>
