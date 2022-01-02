@@ -82,6 +82,11 @@
     &[contenteditable] {
         text-overflow: initial;
     }
+
+    &.editable:hover,
+    &[contenteditable] {
+        background: var(--g250);
+    }
 }
 
 .icons {
