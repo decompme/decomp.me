@@ -57,13 +57,13 @@
     color: var(--g1200);
     border-bottom: 1px solid var(--a50);
 
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(3px);
 
     user-select: none;
     cursor: default;
 }
 
-@supports not (backdrop-filter: blur(10px)) {
+@supports not (backdrop-filter: blur(3px)) {
     .header {
         background: var(--g200);
     }
