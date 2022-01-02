@@ -47,7 +47,7 @@ export class ResponseError extends Error {
         this.status = response.status
         this.responseJSON = responseJSON
         this.code = responseJSON.code
-        this.message = responseJSON.detail
+        this.message = responseJSON?.detail
         this.name = "ResponseError"
     }
 }
@@ -340,7 +340,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
         }).finally(() => {
             setCompileRequestPromise(null)
         }).catch(error => {
-            setCompilation({ "errors": error.responseJSON.detail, "diff_output": null })
+            setCompilation({ "errors": error.responseJSON?.detail, "diff_output": null })
         })
 
         setCompileRequestPromise(promise)
