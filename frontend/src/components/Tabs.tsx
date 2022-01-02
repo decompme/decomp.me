@@ -82,9 +82,10 @@ export type Props = {
     onChange: (tab: string) => void
     vertical?: boolean
     border?: boolean
+    background?: string
 }
 
-export default function Tabs({ children, activeTab, onChange, className, vertical, border }: Props) {
+export default function Tabs({ children, activeTab, onChange, className, vertical, border, background }: Props) {
     const [hover, _setHover] = useState<string>()
     const bgRef = useRef<HTMLDivElement>()
     const isMovingBetweenButtons = useRef(false)
@@ -164,6 +165,7 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
             <div
                 role="tablist"
                 className={styles.tabButtons}
+                style={{ background }}
                 onMouseMove={() => {
                     // If the event propagated here, no non-disabled tab is hovered over
                     setHover(undefined)
