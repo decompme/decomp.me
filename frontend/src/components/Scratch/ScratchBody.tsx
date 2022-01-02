@@ -10,7 +10,7 @@ import ChooseACompiler from "./ChooseACompiler"
 import styles from "./ScratchBody.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 100
-const RIGHT_PANE_MIN_WIDTH = 100
+const RIGHT_PANE_MIN_WIDTH = 250
 const TWO_PANE_MIN_CONTAINER_WIDTH = 800
 
 export type Props = {
@@ -40,7 +40,7 @@ export default function ScratchBody({
         ? (<resizer.Container className={styles.resizer}>
             <resizer.Section minSize={LEFT_PANE_MIN_WIDTH}>
                 <resizer.Container vertical style={{ height: "100%" }}>
-                    <Tabs activeTab={leftTab} onChange={setLeftTab}>
+                    <Tabs activeTab={leftTab} onChange={setLeftTab} background="var(--g300)" border={false}>
                         {leftTabs}
                     </Tabs>
                 </resizer.Container>
@@ -58,7 +58,7 @@ export default function ScratchBody({
             <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>
                 {scratch.compiler === ""
                     ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
-                    : <Tabs activeTab={rightTab} onChange={setRightTab}>
+                    : <Tabs activeTab={rightTab} onChange={setRightTab} background="var(--g300)" border={false}>
                         {rightTabs}
                     </Tabs>
                 }

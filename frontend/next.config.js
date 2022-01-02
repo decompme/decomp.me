@@ -38,6 +38,11 @@ module.exports = removeImports(withPWA({
                 destination: "/scratch/new",
                 permanent: true,
             },
+            {
+                source: "/settings",
+                destination: "/settings/editor",
+                permanent: false,
+            },
             // TEMP
             // {
             //     source: "/training",

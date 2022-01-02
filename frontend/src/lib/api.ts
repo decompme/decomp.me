@@ -47,7 +47,7 @@ export class ResponseError extends Error {
         this.status = response.status
         this.responseJSON = responseJSON
         this.code = responseJSON.code
-        this.message = responseJSON.detail
+        this.message = responseJSON?.detail
         this.name = "ResponseError"
     }
 }
@@ -222,7 +222,10 @@ export function isUserEq(a: User | AnonymousUser | undefined, b: User | Anonymou
 
 export function useUserIsYou(): (user: User | AnonymousUser | undefined) => boolean {
     const you = useThisUser()
-    return user => isUserEq(you, user)
+
+    return useCallback(user => {
+        return isUserEq(you, user)
+    }, [you && you.id, you && you.is_anonymous]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {
@@ -237,7 +240,6 @@ export function useSavedScratch(scratch: Scratch): Scratch {
 }
 
 export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
-    const slug = localScratch.slug
     const savedScratch = useSavedScratch(localScratch)
     const userIsYou = useUserIsYou()
 
@@ -249,7 +251,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             throw new Error("Cannot save scratch which you do not own")
         }
 
-        await patch(`/scratch/${slug}`, {
+        await patch(`/scratch/${localScratch.slug}`, {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
@@ -258,8 +260,8 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         })
 
-        await mutate(`/scratch/${slug}`, localScratch, true)
-    }, [localScratch, slug, savedScratch, userIsYou])
+        await mutate(`/scratch/${localScratch.slug}`, localScratch, true)
+    }, [localScratch, savedScratch, userIsYou])
 
     return saveScratch
 }
@@ -286,12 +288,12 @@ export async function forkScratch(parent: Scratch): Promise<Scratch> {
 export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
     const router = useRouter()
 
-    return async () => {
+    return useCallback(async () => {
         const fork = await forkScratch(parent)
 
         ignoreNextWarnBeforeUnload()
         await router.push(`/scratch/${fork.slug}`)
-    }
+    }, [router, parent])
 }
 
 export function useIsScratchSaved(scratch: Scratch): boolean {
@@ -307,7 +309,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
     )
 }
 
-export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
+export function useCompilation(scratch: Scratch | null, autoRecompile = true, initial = null): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
@@ -315,7 +317,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
 } {
     const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
-    const [compilation, setCompilation] = useState<Compilation>(null)
+    const [compilation, setCompilation] = useState<Compilation>(initial)
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -338,7 +340,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
         }).finally(() => {
             setCompileRequestPromise(null)
         }).catch(error => {
-            setCompilation({ "errors": error.responseJSON.detail, "diff_output": null })
+            setCompilation({ "errors": error.responseJSON?.detail, "diff_output": null })
         })
 
         setCompileRequestPromise(promise)
@@ -349,7 +351,9 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     useEffect(() => {
-        if (autoRecompile) {
+        if (!compilation) {
+            compile()
+        } else if (autoRecompile) {
             if (scratch && scratch.compiler !== "")
                 debouncedCompile()
             else

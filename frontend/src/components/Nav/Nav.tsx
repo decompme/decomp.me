@@ -3,17 +3,14 @@ import Link from "next/link"
 import ErrorBoundary from "../ErrorBoundary"
 
 import Frog from "./frog.svg"
-import LoginState, { Props as LoginStateProps } from "./LoginState"
+import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
-
-const onUserChangeNop: LoginStateProps["onChange"] = _user => {}
 
 export type Props = {
     children?: React.ReactNode
-    onUserChange?: LoginStateProps["onChange"]
 }
 
-export default function Nav({ children, onUserChange }: Props) {
+export default function Nav({ children }: Props) {
     return <ErrorBoundary className={styles.nav}>
         <nav className={styles.nav}>
             <Link href="/">
@@ -34,7 +31,7 @@ export default function Nav({ children, onUserChange }: Props) {
             <div className={styles.grow} />
 
             <ErrorBoundary>
-                <LoginState onChange={onUserChange ?? onUserChangeNop} />
+                <LoginState />
             </ErrorBoundary>
         </nav>
     </ErrorBoundary>

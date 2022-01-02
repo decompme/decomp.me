@@ -23,6 +23,8 @@
         "next": "^11.1.2",
         "next-pwa": "^5.3.1",
         "react": "^18.0.0-alpha-fd5e01c2e-20210913",
+        "react-contenteditable": "^3.3.6",
+        "react-dialog-polyfill": "^1.0.5",
         "react-dom": "^18.0.0-alpha-fd5e01c2e-20210913",
         "react-hot-toast": "^2.1.0",
         "react-laag": "^2.0.3",
@@ -30,7 +32,8 @@
         "sass": "^1.42.1",
         "swr": "^1.0.0",
         "use-debounce": "^7.0.0",
-        "use-deep-compare-effect": "^1.6.1"
+        "use-deep-compare-effect": "^1.6.1",
+        "use-persisted-state": "^0.3.3"
     },
     "devDependencies": {
         "@babel/core": "^7.15.8",

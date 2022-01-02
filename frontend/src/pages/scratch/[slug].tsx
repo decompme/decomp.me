@@ -5,33 +5,24 @@ import { GetServerSideProps } from "next"
 import useSWR from "swr"
 
 import LoadingSpinner from "../../components/loading.svg"
-import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
-import * as ScoreBadge from "../../components/ScoreBadge"
+import { getScoreText } from "../../components/ScoreBadge"
 import Scratch from "../../components/Scratch"
-import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
 import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
 import * as api from "../../lib/api"
 
 import styles from "./[slug].module.scss"
 
-function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
+function ScratchPageTitle({ scratch, compilation }: { scratch: api.Scratch, compilation: api.Compilation }) {
     const isSaved = api.useIsScratchSaved(scratch)
 
     let title = scratch.name || "Untitled scratch"
     if (!isSaved)
         title += " (unsaved)"
 
-    let description = ""
-    if (scratch.score !== -1) {
-        description = `Score: ${scratch.score}`
-
-        if (scratch.score === 0)
-            description += " (matching!)"
-        else if (scratch.max_score != -1)
-            description += ` (${ScoreBadge.scorePercentAsString(scratch.score, scratch.max_score)})`
-    }
-
+    let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
+    if (scratch.owner && !api.isAnonUser(scratch.owner))
+        description += `\nOwner: ${scratch.owner.username}`
     if (scratch.description)
         description += `\n\n${scratch.description}`
 
@@ -42,12 +33,28 @@ export const getServerSideProps: GetServerSideProps = async context => {
     const { slug } = context.params
 
     try {
-        // TODO: pass along context.req.cookies
-        const initialScratch: api.Scratch = await api.get(`/scratch/${slug}`)
+        const scratch: api.Scratch = await api.get(`/scratch/${slug}`)
+
+        let initialCompilation: api.Compilation | null = null
+        try {
+            initialCompilation = await api.post(`/scratch/${slug}/compile`, {
+                // TODO(backend): api should take {}, supporting undefinedIfUnchanged on all fields
+                compiler: scratch.compiler,
+                compiler_flags: scratch.compiler_flags,
+                source_code: scratch.source_code,
+                context: undefined,
+            })
+        } catch (err) {
+            if (err.response?.status !== 400)
+                throw err
+
+            initialCompilation = null
+        }
 
         return {
             props: {
-                initialScratch,
+                initialScratch: scratch,
+                initialCompilation,
             },
         }
     } catch (error) {
@@ -57,10 +64,9 @@ export const getServerSideProps: GetServerSideProps = async context => {
     }
 }
 
-export default function ScratchPage({ initialScratch }: { initialScratch: api.Scratch }) {
+export default function ScratchPage({ initialScratch, initialCompilation }: { initialScratch: api.Scratch, initialCompilation?: api.Compilation }) {
     const [scratch, setScratch] = useState(initialScratch)
 
-    useSaveShortcut(scratch)
     useWarnBeforeScratchUnload(scratch)
 
     // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
@@ -81,12 +87,12 @@ export default function ScratchPage({ initialScratch }: { initialScratch: api.Sc
     }
 
     return <>
-        <ScratchPageTitle scratch={scratch} />
-        <Nav />
+        <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch
                     scratch={scratch}
+                    initialCompilation={initialCompilation}
                     onChange={partial => {
                         setScratch(scratch => {
                             return { ...scratch, ...partial }

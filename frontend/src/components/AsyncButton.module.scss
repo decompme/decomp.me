@@ -22,6 +22,8 @@
     transform: initial;
     transition: opacity 0.1s ease, transform 0.1s ease;
 
+    white-space: nowrap;
+
     .isLoading & {
         opacity: 0;
         transform: scale(0.9);

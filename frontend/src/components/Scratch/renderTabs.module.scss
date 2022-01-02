@@ -14,10 +14,13 @@
 
 .about {
     padding: 16px;
-    max-width: 500px;
     overflow: auto;
 }
 
-.settings {
+.compilerOptsTab {
     overflow: auto;
+}
+
+.compilerOptsContainer {
+    min-width: 400px;
 }
