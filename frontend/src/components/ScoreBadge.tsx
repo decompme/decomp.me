@@ -17,7 +17,7 @@ export function getScoreText(score: number, maxScore: number): string {
     } else if (score === 0) {
         return "0 (100%) 🎊"
     } else {
-        const percent = calculateScorePercent(score === -1 ? maxScore : score, maxScore)
+        const percent = calculateScorePercent(score, maxScore)
 
         if (Math.floor(percent * 100) / 100 === Math.floor(percent)) // If the percent is an integer, don't show the decimal
             return `${score} (${Math.floor(percent)}%)`
