@@ -7,6 +7,7 @@ import GitHubLoginButton from "../GitHubLoginButton"
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import PlatformName from "../PlatformSelect/PlatformName"
+import { getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
@@ -48,6 +49,10 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
 
     return <div className={styles.container}>
         <div>
+            <div className={styles.horizontalField}>
+                <p className={styles.label}>Score</p>
+                <span>{getScoreText(scratch.score, scratch.max_score)}</span>
+            </div>
             <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
                 {scratch.owner
