@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-const isMacOS = typeof window !== "undefined" && window.navigator.userAgent
+const isMacOS = typeof window !== "undefined" && window.navigator.platform.toUpperCase().indexOf('MAC') >= 0
 
 export type Key = string | SpecialKey
 
