@@ -78,7 +78,7 @@ export function ButtonItem({ children, disabled, onTrigger, shortcutKeys }: {
         })}
         onClick={trigger}
     >
-        <div>{children}</div>
+        <div className={styles.itemChildren}>{children}</div>
 
         {shortcutKeys && <div className={styles.right} style={isLoading ? { display: "none" } : {}}>
             <Shortcut keys={shortcutKeys} className={styles.shortcut}/>
@@ -108,7 +108,7 @@ export function LinkItem({ children, href, disabled, shortcutKeys }: { children:
                     setOpen(false)
             }}
         >
-            <div>{children}</div>
+            <div className={styles.itemChildren}>{children}</div>
             {shortcutKeys && <div>
                 <Shortcut keys={shortcutKeys} className={styles.shortcut}/>
             </div>}

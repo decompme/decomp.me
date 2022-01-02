@@ -87,6 +87,12 @@ a.item {
     }
 }
 
+.itemChildren {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .right {
     display: flex;
     align-items: center;

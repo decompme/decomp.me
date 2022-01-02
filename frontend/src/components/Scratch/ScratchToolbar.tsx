@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 
-import { GearIcon, TriangleDownIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -130,7 +131,10 @@ export default function ScratchToolbar({
                 </div>
                 {renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
-                        <LinkItem href="/scratch/new">New scratch...</LinkItem>
+                        <LinkItem href="/scratch/new">
+                            <PlusIcon />
+                            New scratch...
+                        </LinkItem>
                         <hr />
                         {!scratch.owner && <ButtonItem
                             onTrigger={() => api.claimScratch(scratch)}
@@ -147,20 +151,38 @@ export default function ScratchToolbar({
                                 && [SpecialKey.CTRL_COMMAND, "S"]
                             }
                         >
+                            <UploadIcon />
                             Save
                         </ButtonItem>
                         <ButtonItem
                             onTrigger={forkScratch}
                             shortcutKeys={fuzzySaveAction === FuzzySaveAction.FORK && [SpecialKey.CTRL_COMMAND, "S"]}
                         >
+                            <RepoForkedIcon />
                             Fork
                         </ButtonItem>
                         <hr />
-                        <ButtonItem onTrigger={() => exportScratchZip(scratch)}>Export as ZIP...</ButtonItem>
+                        <ButtonItem onTrigger={() => exportScratchZip(scratch)}>
+                            <DownloadIcon />
+                            Export as ZIP...
+                        </ButtonItem>
                         <hr />
-                        <LinkItem href="/credits">Credits</LinkItem>
-                        <LinkItem href="https://github.com/decompme/decomp.me">Contribute to decomp.me</LinkItem>
-                        <LinkItem href="https://discord.gg/sutqNShRRs">Join the Discord server</LinkItem>
+                        <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>
+                            <GearIcon />
+                            Preferences...
+                        </ButtonItem>
+                        <hr />
+                        <LinkItem href="https://github.com/decompme/decomp.me">
+                            <MarkGithubIcon />
+                            Contribute to decomp.me
+                        </LinkItem>
+                        <LinkItem href="https://discord.gg/sutqNShRRs">
+                            <DiscordIcon width={16} height={16} />
+                            Join the Discord server
+                        </LinkItem>
+                        <LinkItem href="/credits">
+                            <PeopleIcon /> Credits
+                        </LinkItem>
                     </VerticalMenu>
                 </div>)}
             </div>
