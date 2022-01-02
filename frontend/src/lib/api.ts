@@ -308,7 +308,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
     )
 }
 
-export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
+export function useCompilation(scratch: Scratch | null, autoRecompile = true, initial = null): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
@@ -316,7 +316,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
 } {
     const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
-    const [compilation, setCompilation] = useState<Compilation>(null)
+    const [compilation, setCompilation] = useState<Compilation>(initial)
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -350,7 +350,9 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true): {
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     useEffect(() => {
-        if (autoRecompile) {
+        if (!compilation) {
+            compile()
+        } else if (autoRecompile) {
             if (scratch && scratch.compiler !== "")
                 debouncedCompile()
             else

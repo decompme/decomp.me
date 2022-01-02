@@ -13,16 +13,18 @@ import setCompilerOptsFunction from "./util/setCompilerOpts"
 export type Props = {
     scratch: Readonly<api.Scratch>
     onChange: (scratch: Partial<api.Scratch>) => void
+    initialCompilation?: Readonly<api.Compilation>
 }
 
 export default function Scratch({
     scratch,
     onChange: setScratch,
+    initialCompilation,
 }: Props) {
     const container = useSize<HTMLDivElement>()
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
-    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting)
+    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting, initialCompilation)
 
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
