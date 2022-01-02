@@ -39,6 +39,7 @@ export default function Scratch({
 
     const rightTabs = useRightTabs({
         compilation,
+        isCompiling,
     })
 
     return <div ref={container.ref} className={styles.container}>

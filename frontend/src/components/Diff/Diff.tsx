@@ -1,9 +1,12 @@
 /* eslint css-modules/no-unused-class: off */
 
+import { ReactNode } from "react"
+
 import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
 
 import * as api from "../../lib/api"
+import Loading from "../loading.svg"
 
 import styles from "./Diff.module.css"
 
@@ -24,7 +27,7 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
 function DiffColumn({ diff, prop, header }: {
     diff: api.DiffOutput
     prop: keyof api.DiffRow & keyof api.DiffHeader
-    header: string
+    header: ReactNode
 }) {
     return <resizer.Section className={styles.column} minSize={100}>
         <div className={classNames(styles.row, styles.header)}>
@@ -43,9 +46,10 @@ function DiffColumn({ diff, prop, header }: {
 
 export type Props = {
     compilation: api.Compilation
+    isCompiling?: boolean
 }
 
-export default function Diff({ compilation }: Props) {
+export default function Diff({ compilation, isCompiling }: Props) {
     const diff: api.DiffOutput = compilation.diff_output
 
     if (!diff || diff.error) {
@@ -63,7 +67,14 @@ export default function Diff({ compilation }: Props) {
                 className={styles.bar}
                 expandInteractiveArea={{ left: 2, right: 2 }}
             />
-            <DiffColumn diff={diff} prop="current" header="Current" />
+            <DiffColumn
+                diff={diff}
+                prop="current"
+                header={<>
+                    Current
+                    {isCompiling && <Loading width={20} height={20} />}
+                </>}
+            />
             {threeWay && <>
                 <resizer.Bar
                     size={1}

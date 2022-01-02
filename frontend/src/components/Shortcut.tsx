@@ -108,6 +108,7 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
             }
 
             event.preventDefault()
+            event.stopImmediatePropagation()
 
             keysDown.clear()
             callback()

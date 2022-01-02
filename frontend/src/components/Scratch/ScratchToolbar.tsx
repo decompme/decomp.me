@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import { useAutoRecompileSetting } from "../../lib/settings"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
@@ -102,7 +103,6 @@ export default function ScratchToolbar({
     isCompiling, compile, scratch, setScratch,
 }: Props) {
     const userIsYou = api.useUserIsYou()
-    const isSSR = typeof window === "undefined"
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch)
 
@@ -116,11 +116,12 @@ export default function ScratchToolbar({
         triggerOffset: 4,
     })
 
+    const [autoRecompileSetting] = useAutoRecompileSetting()
+
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
 
-    if (isSSR) {
-        return <div className={styles.toolbar} />
-    }
+    const [isMounted, setMounted] = useState(false)
+    useEffect(() => setMounted(true), [])
 
     return (
         <div className={styles.toolbar}>
@@ -129,7 +130,7 @@ export default function ScratchToolbar({
                     <Frog width={32} height={32} />
                     <TriangleDownIcon />
                 </div>
-                {renderLayer(<div {...layerProps}>
+                {isMounted && renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
                         <LinkItem href="/scratch/new">
                             <PlusIcon />
@@ -160,6 +161,13 @@ export default function ScratchToolbar({
                         >
                             <RepoForkedIcon />
                             Fork
+                        </ButtonItem>
+                        <ButtonItem
+                            onTrigger={compile}
+                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "D"]}
+                        >
+                            <SyncIcon />
+                            Compile
                         </ButtonItem>
                         <hr />
                         <ButtonItem onTrigger={() => exportScratchZip(scratch)}>
@@ -199,11 +207,13 @@ export default function ScratchToolbar({
                 <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
                     <GearIcon size={16} />
                 </div>
-                <CompileScratchButton compile={compile} isCompiling={isCompiling} />
-                {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
-                {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
-                {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
-                <LoginState className={styles.loginState} />
+                {isMounted && <>
+                    {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
+                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
+                    {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
+                    {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
+                    <LoginState className={styles.loginState} />
+                </>}
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
         </div>

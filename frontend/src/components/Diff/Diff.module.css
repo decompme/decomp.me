@@ -43,8 +43,8 @@
 
 .header {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    gap: 4px;
 
     height: 3em;
     padding: 0 1em;
