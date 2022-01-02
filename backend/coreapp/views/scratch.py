@@ -326,6 +326,7 @@ class ScratchViewSet(ModelViewSet):
 
         # Apply partial
         if request.method == "POST":
+            # TODO: use a serializer w/ validation
             if "compiler" in request.data:
                 scratch.compiler = request.data["compiler"]
             if "compiler_flags" in request.data:
