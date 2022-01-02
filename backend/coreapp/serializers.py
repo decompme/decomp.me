@@ -50,12 +50,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
-    class Meta:
-        model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
-
-# XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
-class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
     owner = ProfileField(read_only=True)
     parent = serializers.HyperlinkedRelatedField( # type: ignore
         read_only=True,
@@ -65,4 +59,5 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]
+        fields = ["slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score", "parent", "owner"]
+        read_only_fields = ["slug", "parent", "owner"]

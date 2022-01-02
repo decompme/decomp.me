@@ -211,6 +211,7 @@ class CompilationTests(APITestCase):
 
         # Test that we can create a scratch
         response = self.client.post(reverse('scratch'), scratch_dict)
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -545,3 +546,24 @@ class ScratchDetailTests(APITestCase):
         updated_scratch = Scratch.objects.first()
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
+
+class RequestTests(APITestCase):
+    def test_create_profile(self):
+        """
+        Ensure that we create a profile for a normal request
+        """
+
+        response = self.client.get(reverse('compilers'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(Profile.objects.count(), 1)
+
+    def test_node_fetch_request(self):
+        """
+        Ensure that we don't create profiles for node-fetch requests (SSR)
+        """
+
+        response = self.client.get(reverse('compilers'), HTTP_USER_AGENT='node-fetch')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(Profile.objects.count(), 0)
