@@ -45,7 +45,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
                 context: undefined,
             })
         } catch (err) {
-            if (err.response?.status !== 400)
+            if (err.status !== 400)
                 throw err
 
             initialCompilation = null

@@ -208,7 +208,7 @@ export default function ScratchToolbar({
                     <GearIcon size={16} />
                 </div>
                 {isMounted && <>
-                    {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
+                    {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
                     {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
                     {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                     {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
