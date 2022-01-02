@@ -7,7 +7,6 @@ import useSWR from "swr"
 import LoadingSpinner from "../../components/loading.svg"
 import PageTitle from "../../components/PageTitle"
 import Scratch from "../../components/Scratch"
-import useSaveShortcut from "../../components/Scratch/hooks/useSaveShortcut"
 import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
 import * as api from "../../lib/api"
 
@@ -51,7 +50,6 @@ export const getServerSideProps: GetServerSideProps = async context => {
 export default function ScratchPage({ initialScratch }: { initialScratch: api.Scratch }) {
     const [scratch, setScratch] = useState(initialScratch)
 
-    useSaveShortcut(scratch)
     useWarnBeforeScratchUnload(scratch)
 
     // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.

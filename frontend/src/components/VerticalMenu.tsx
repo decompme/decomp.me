@@ -1,24 +1,45 @@
-import { createContext, ReactNode, useContext, useState } from "react"
+import { createContext, ReactNode, useCallback, useContext, useState } from "react"
 
 import Link from "next/link"
+import { useRouter } from "next/router"
 
 import classNames from "classnames"
 
+import ErrorBoundary from "./ErrorBoundary"
 import LoadingSpinner from "./loading.svg"
+import Shortcut, { Key, useShortcut } from "./Shortcut"
 import styles from "./VerticalMenu.module.scss"
 
-const MenuContext = createContext({ close: () => {} })
+const MenuContext = createContext({
+    open: true,
+    setOpen: (_open: boolean) => {},
+    setPointerEvents: (_pointerEvents: boolean) => {},
+})
 
-export default function VerticalMenu({ children, close }: { children: ReactNode, close: () => void }) {
-    return <MenuContext.Provider value={{ close }}>
+export interface Props {
+    children: ReactNode
+    open: boolean
+    setOpen: (open: boolean) => void
+}
+
+export default function VerticalMenu({ children, open, setOpen }: Props) {
+    const [pointerEvents, setPointerEvents] = useState(true)
+
+    return <MenuContext.Provider value={{ open, setOpen, setPointerEvents }}>
         <ul
             className={styles.menu}
             onClick={evt => {
                 // Prevent reopening the menu
                 evt.stopPropagation()
             }}
+            style={{
+                display: open ? "block" : "none",
+                pointerEvents: pointerEvents ? "auto" : "none",
+            }}
         >
-            {children}
+            <ErrorBoundary>
+                {children}
+            </ErrorBoundary>
         </ul>
     </MenuContext.Provider>
 }
@@ -29,45 +50,68 @@ export function MenuItem({ children }: { children: ReactNode }) {
     </li>
 }
 
-export function ButtonItem({ children, disabled, onClick }: {
+export function ButtonItem({ children, disabled, onTrigger, shortcutKeys }: {
     children: ReactNode
     disabled?: boolean
-    onClick: () => void | Promise<unknown>
+    onTrigger: () => void | Promise<unknown>
+    shortcutKeys?: Key[]
 }) {
-    const { close } = useContext(MenuContext)
+    const { setOpen, setPointerEvents } = useContext(MenuContext)
     const [isLoading, setIsLoading] = useState(false)
+
+    const trigger = async () => {
+        if (!disabled) {
+            setIsLoading(true)
+            setPointerEvents(false)
+            await onTrigger()
+            setIsLoading(false)
+            setPointerEvents(true)
+            setOpen(false)
+        }
+    }
+
+    useShortcut(shortcutKeys, trigger)
 
     return <a
         className={classNames(styles.item, {
             [styles.disabled]: disabled,
         })}
-        onClick={async () => {
-            if (!disabled) {
-                setIsLoading(true)
-                await onClick()
-                setIsLoading(false)
-                close()
-            }
-        }}
+        onClick={trigger}
     >
-        <div>
-            {children}
+        <div>{children}</div>
+
+        {shortcutKeys && <div className={styles.right} style={isLoading ? { display: "none" } : {}}>
+            <Shortcut keys={shortcutKeys} className={styles.shortcut}/>
+        </div>}
+        <div className={styles.right} style={isLoading ? {} : { display: "none" }}>
+            <LoadingSpinner width={16} height={16} />
         </div>
-        {isLoading && <LoadingSpinner width={16} height={16} />}
     </a>
 }
 
-export function LinkItem({ children, href }: { children: ReactNode, href: string }) {
-    const { close } = useContext(MenuContext)
+export function LinkItem({ children, href, disabled, shortcutKeys }: { children: ReactNode, href: string, disabled?: boolean, shortcutKeys?: Key[] }) {
+    const { setOpen } = useContext(MenuContext)
+    const router = useRouter()
+
+    useShortcut(shortcutKeys, useCallback(() => {
+        if (!disabled)
+            router.push(href)
+    }, [disabled, router, href]))
 
     return <Link href={href}>
         <a
-            className={styles.item}
-            onClick={_evt => {
-                close()
+            className={classNames(styles.item, {
+                [styles.disabled]: disabled,
+            })}
+            onClick={() => {
+                if (!disabled)
+                    setOpen(false)
             }}
         >
-            {children}
+            <div>{children}</div>
+            {shortcutKeys && <div>
+                <Shortcut keys={shortcutKeys} className={styles.shortcut}/>
+            </div>}
         </a>
     </Link>
 }

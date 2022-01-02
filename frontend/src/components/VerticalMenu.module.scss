@@ -22,9 +22,14 @@ $padding: 6px;
     }
 }
 
+.shortcut {
+    color: var(--g600);
+}
+
 .item {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 
     padding: $padding 16px;
     text-overflow: ellipsis;
@@ -37,6 +42,7 @@ $padding: 6px;
 
 a.item {
     font-weight: 450;
+    height: 28px;
 
     &:not(.disabled) {
         cursor: pointer;
@@ -70,7 +76,20 @@ a.item {
                 background: rgba(255, 255, 255, 0.05);
             }
         }
+
+        &:hover,
+        &:focus,
+        &:active {
+            .shortcut {
+                color: inherit;
+            }
+        }
     }
+}
+
+.right {
+    display: flex;
+    align-items: center;
 }
 
 .menu > hr {

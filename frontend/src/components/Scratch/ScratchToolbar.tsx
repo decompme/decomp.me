@@ -9,12 +9,14 @@ import * as api from "../../lib/api"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
 import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
+import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import ScratchPreferencesModal from "./ScratchPreferencesModal"
 import styles from "./ScratchToolbar.module.scss"
 
@@ -101,7 +103,7 @@ export default function ScratchToolbar({
     const userIsYou = api.useUserIsYou()
     const isSSR = typeof window === "undefined"
     const forkScratch = api.useForkScratchAndGo(scratch)
-    const saveScratch = api.useSaveScratch(scratch)
+    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch)
 
     const [isMenuOpen, setMenuOpen] = useState(false)
     const { renderLayer, triggerProps, layerProps } = useLayer({
@@ -127,19 +129,39 @@ export default function ScratchToolbar({
                     <TriangleDownIcon />
                 </div>
                 {renderLayer(<div {...layerProps}>
-                    {isMenuOpen && <VerticalMenu close={() => setMenuOpen(false)}>
+                    <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
                         <LinkItem href="/scratch/new">New scratch...</LinkItem>
                         <hr />
-                        {!scratch.owner && <ButtonItem onClick={() => api.claimScratch(scratch)}>Claim</ButtonItem>}
-                        <ButtonItem onClick={saveScratch} disabled={scratch.owner && !userIsYou(scratch.owner)}>Save</ButtonItem>
-                        <ButtonItem onClick={forkScratch}>Fork</ButtonItem>
+                        {!scratch.owner && <ButtonItem
+                            onTrigger={() => api.claimScratch(scratch)}
+                            shortcutKeys={fuzzySaveAction === FuzzySaveAction.CLAIM && [SpecialKey.CTRL_COMMAND, "S"]}
+                        >
+                            Claim
+                        </ButtonItem>
+                        }
+                        <ButtonItem
+                            onTrigger={fuzzySaveScratch}
+                            disabled={scratch.owner && !userIsYou(scratch.owner)}
+                            shortcutKeys={
+                                (fuzzySaveAction === FuzzySaveAction.SAVE || fuzzySaveAction === FuzzySaveAction.NONE)
+                                && [SpecialKey.CTRL_COMMAND, "S"]
+                            }
+                        >
+                            Save
+                        </ButtonItem>
+                        <ButtonItem
+                            onTrigger={forkScratch}
+                            shortcutKeys={fuzzySaveAction === FuzzySaveAction.FORK && [SpecialKey.CTRL_COMMAND, "S"]}
+                        >
+                            Fork
+                        </ButtonItem>
                         <hr />
-                        <ButtonItem onClick={() => exportScratchZip(scratch)}>Export as ZIP...</ButtonItem>
+                        <ButtonItem onTrigger={() => exportScratchZip(scratch)}>Export as ZIP...</ButtonItem>
                         <hr />
                         <LinkItem href="/credits">Credits</LinkItem>
                         <LinkItem href="https://github.com/decompme/decomp.me">Contribute to decomp.me</LinkItem>
                         <LinkItem href="https://discord.gg/sutqNShRRs">Join the Discord server</LinkItem>
-                    </VerticalMenu>}
+                    </VerticalMenu>
                 </div>)}
             </div>
             <div className={styles.center}>

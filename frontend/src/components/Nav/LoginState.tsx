@@ -7,9 +7,10 @@ import classNames from "classnames"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import VerticalMenu from "../VerticalMenu"
 
 import styles from "./LoginState.module.scss"
-import UserMenu from "./UserMenu"
+import UserMenu from "./UserMenuItems"
 
 export default function LoginState({ className }: { className?: string }) {
     const user = api.useThisUser()
@@ -47,7 +48,9 @@ export default function LoginState({ className }: { className?: string }) {
         }
         <TriangleDownIcon />
         {renderLayer(<div {...layerProps}>
-            {isUserMenuOpen && <UserMenu close={() => setUserMenuOpen(false)} />}
+            {isUserMenuOpen && <VerticalMenu open={isUserMenuOpen} setOpen={setUserMenuOpen}>
+                <UserMenu />
+            </VerticalMenu>}
         </div>)}
     </div>
 }

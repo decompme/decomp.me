@@ -2,15 +2,15 @@ import { mutate } from "swr"
 
 import * as api from "../../lib/api"
 import GitHubLoginButton from "../GitHubLoginButton"
-import VerticalMenu, { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
+import { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
 
-import styles from "./UserMenu.module.scss"
+import styles from "./UserMenuItems.module.scss"
 
-export default function UserMenu({ close }: { close: () => void }) {
+export default function UserMenuItems() {
     const user = api.useThisUser()
 
     if (api.isAnonUser(user)) {
-        return <VerticalMenu close={close}>
+        return <>
             <MenuItem>
                 <div className={styles.status}>
                     Sign in now to keep track of your scratches.
@@ -23,10 +23,10 @@ export default function UserMenu({ close }: { close: () => void }) {
             <LinkItem href="/settings">
                 Settings
             </LinkItem>*/}
-        </VerticalMenu>
+        </>
     }
 
-    return <VerticalMenu close={close}>
+    return <>
         <MenuItem>
             <div className={styles.status}>
                 Signed in as <b>{user.username}</b>
@@ -41,12 +41,12 @@ export default function UserMenu({ close }: { close: () => void }) {
         /LinkItem>*/}
         <hr />
         <ButtonItem
-            onClick={async () => {
+            onTrigger={async () => {
                 const user = await api.post("/user", {})
                 await mutate("/user", user)
             }}
         >
             Sign out
         </ButtonItem>
-    </VerticalMenu>
+    </>
 }
