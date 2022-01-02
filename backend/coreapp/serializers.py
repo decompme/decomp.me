@@ -1,4 +1,6 @@
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
+from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from typing import Optional, TYPE_CHECKING
 
@@ -49,6 +51,30 @@ class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile)
 
+class HtmlUrlField(serializers.HyperlinkedIdentityField):
+    """
+    A read-only field that represents the frontend identity URL for the object, itself.
+    """
+
+    def __init__(self, **kwargs):
+        kwargs["view_name"] = "__unused__"
+        super().__init__(**kwargs)
+
+    def get_url(self, value, view_name, request, format):
+        if isinstance(value, Scratch):
+            return request.build_absolute_uri(f"/scratch/{value.slug}")
+        if isinstance(value, Profile):
+            return request.build_absolute_uri(f"/u/{value.user.username}")
+
+        raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
+
+# TODO: how do we represent anonymous profiles?
+"""
+class ProfileURLField(ProfileFieldBaseClass):
+    def to_representation(self, profile: Profile):
+        return reverse("user-detail", args=[profile.user.username], request=self.context["request"])
+"""
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -60,16 +86,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     context = serializers.CharField(allow_blank=True) # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
-class ScratchSerializer(serializers.ModelSerializer[Scratch]):
-    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
-    owner = ProfileField(read_only=True)
-    parent = serializers.HyperlinkedRelatedField( # type: ignore
-        read_only=True,
-        view_name="scratch-detail",
-        lookup_field="slug",
-    )
+class ScratchSerializer(serializers.HyperlinkedModelSerializer[Scratch]):
+    html_url = HtmlUrlField()
+    owner = ProfileField(read_only=True) # TODO: use ProfileURLField
 
     class Meta:
         model = Scratch
-        exclude = []
-        read_only_fields = ["slug", "parent", "owner"]
+        exclude = ["target_assembly"]
+        read_only_fields = ["url", "html_url", "parent", "owner"]

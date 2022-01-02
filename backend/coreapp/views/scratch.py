@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
@@ -313,12 +313,38 @@ def fork(request, slug):
 
 class ScratchPagination(CursorPagination):
     ordering="-creation_time"
-    page_size=100
+    page_size=10
 
 class ScratchViewSet(ModelViewSet):
     queryset = Scratch.objects.all()
     serializer_class = ScratchSerializer
     pagination_class = ScratchPagination
+
+    @action(detail=True, methods=['GET', 'POST'])
+    def compile(self, request, pk=None):
+        scratch = get_object_or_404(Scratch, slug=pk)
+
+        # Apply partial
+        if request.method == "POST":
+            if "compiler" in request.data:
+                scratch.compiler = request.data["compiler"]
+            if "compiler_flags" in request.data:
+                scratch.compiler_flags = request.data["compiler_flags"]
+            if "source_code" in request.data:
+                scratch.source_code = request.data["source_code"]
+            if "context" in request.data:
+                scratch.context = request.data["context"]
+
+        result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+
+        diff_output: Optional[Dict[str, Any]] = None
+        if result.elf_object:
+            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+
+        return Response({
+            "diff_output": diff_output,
+            "errors": result.errors,
+        })
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'scratch2', ScratchViewSet)

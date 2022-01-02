@@ -80,3 +80,6 @@ class Scratch(models.Model):
             self.parent,
             self.owner,
         ))
+
+    def get_html_url(self):
+        return "/scratch/" + self.slug + "/"
