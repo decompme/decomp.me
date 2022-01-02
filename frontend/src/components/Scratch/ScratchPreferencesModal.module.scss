@@ -1,7 +1,7 @@
 .dialog {
-    border: 1px solid var(--g500);
-    border-radius: 0.75em;
-    background: var(--g300);
+    border: 1px solid var(--g300);
+    border-radius: 8px;
+    background: var(--g200);
     box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
 
     position: fixed;
@@ -42,6 +42,7 @@
 .dialog::backdrop,
 .dialog + :global(.backdrop) {
     background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
 }
 
 .container {
@@ -57,14 +58,14 @@
 }
 
 .left {
-    flex-basis: 20%;
-    border-right: 1px solid var(--g500);
+    flex-basis: 25%;
+    border-right: 1px solid var(--g300);
 
     // Vertical
     @media (max-width: 800px) {
         flex-basis: unset;
         border-right: none;
-        border-bottom: 1px solid var(--g500);
+        border-bottom: 1px solid var(--g300);
     }
 }
 
@@ -93,13 +94,13 @@
     align-items: center;
     justify-content: center;
 
-    color: var(--g1500);
+    color: var(--g1400);
     border: none;
-    background: var(--g400);
+    background: var(--g300);
 
     cursor: pointer;
 
-    border-radius: 999px;
+    border-radius: 6px;
 
     &:hover {
         color: var(--g1900);
@@ -108,6 +109,14 @@
 
 .tabs {
     height: auto;
+}
+
+.sectionTitle {
+    font-weight: 300;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--g300);
+    margin-top: 4px;
+    margin-bottom: 0.5em;
 }
 
 .booleanPreference {

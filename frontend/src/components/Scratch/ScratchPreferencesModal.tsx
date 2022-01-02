@@ -13,14 +13,17 @@ function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
 
     return <div>
-        <label className={styles.booleanPreference}>
-            <input
-                type="checkbox"
-                checked={autoRecompile}
-                onChange={evt => setAutoRecompile(evt.target.checked)}
-            />
-            Automatically recompile when changed
-        </label>
+        <section>
+            <h2 className={styles.sectionTitle}>Diff preferences</h2>
+            <label className={styles.booleanPreference}>
+                <input
+                    type="checkbox"
+                    checked={autoRecompile}
+                    onChange={evt => setAutoRecompile(evt.target.checked)}
+                />
+                Automatically compile on change
+            </label>
+        </section>
     </div>
 }
 
@@ -47,7 +50,7 @@ export default function ScratchPreferenceModal({ open, onClose }: { open: boolea
                 </button>
                 <div className={styles.left}>
                     <h1 className={styles.titleText}>
-                    Preferences
+                    Editor preferences
                     </h1>
                     <Tabs
                         activeTab={tab}
