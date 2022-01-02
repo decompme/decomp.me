@@ -6,7 +6,6 @@ import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
-import { useAutoRecompileSetting } from "../../lib/settings"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
@@ -115,8 +114,6 @@ export default function ScratchToolbar({
         placement: "bottom-start",
         triggerOffset: 4,
     })
-
-    const [autoRecompileSetting] = useAutoRecompileSetting()
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
 
