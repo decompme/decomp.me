@@ -24,7 +24,7 @@ export enum LeftScratchTab {
     ABOUT,
     SOURCE_CODE,
     CONTEXT,
-    SETTINGS,
+    COMPILER_OPTS,
 }
 
 export enum RightScratchTab {
@@ -96,13 +96,15 @@ export function useLeftTabs({ scratch, setScratch }: {
                 />
             </Tab>
         ),
-        [LeftScratchTab.SETTINGS]: (
-            <Tab key="settings" tabKey="settings" label="Scratch settings" className={styles.settings}>
-                <CompilerOpts
-                    platform={scratch.platform}
-                    value={scratch}
-                    onChange={setScratch}
-                />
+        [LeftScratchTab.COMPILER_OPTS]: (
+            <Tab key="compiler_opts" tabKey="compiler_opts" label="Compiler options" className={styles.compilerOptsTab}>
+                <div className={styles.compilerOptsContainer}>
+                    <CompilerOpts
+                        platform={scratch.platform}
+                        value={scratch}
+                        onChange={setScratch}
+                    />
+                </div>
             </Tab>
         ),
     }, filter)
@@ -113,8 +115,9 @@ export function useLeftTabs({ scratch, setScratch }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation }: {
+export function useRightTabs({ compilation, isCompiling }: {
     compilation?: Compilation
+    isCompiling?: boolean
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -129,7 +132,7 @@ export function useRightTabs({ compilation }: {
                 </>}
                 className={styles.diffTab}
             >
-                {compilation && <Diff compilation={compilation} />}
+                {compilation && <Diff compilation={compilation} isCompiling={isCompiling} />}
             </Tab>
         ),
         /*<Tab key="options" label="Options">

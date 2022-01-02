@@ -1,0 +1,22 @@
+.container {
+    max-width: 50em;
+
+    cursor: default;
+}
+
+.tabs {
+    height: 100%;
+}
+
+.tabPanel {
+    padding: 1em;
+
+    label {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+
+        font-size: 0.9em;
+        color: var(--g1500);
+    }
+}

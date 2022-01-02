@@ -4,6 +4,10 @@
 
     flex: 1;
     height: 0;
+
+    &.vertical {
+        height: auto;
+    }
 }
 
 .tabButtons {
@@ -12,7 +16,18 @@
     white-space: nowrap;
     overflow-x: auto;
 
-    border-bottom: 1px solid var(--a100);
+    display: flex;
+    align-items: stretch;
+
+    .border & {
+        border-bottom: 1px solid var(--a100);
+    }
+
+    .vertical & {
+        flex-direction: column;
+
+        overflow: hidden;
+    }
 }
 
 .tabButton {
@@ -25,7 +40,7 @@
 
     padding: 0 12px;
     min-width: 60px;
-    height: 100%;
+    min-height: 32px;
 
     font-size: 0.8rem;
     font-weight: 500;
@@ -65,6 +80,14 @@
         height: 2px;
 
         background: var(--a1000);
+
+        .vertical & {
+            width: 2px;
+            height: calc(100% - 16px);
+
+            left: 0;
+            bottom: 8px;
+        }
     }
 
     &:first-child {
@@ -74,6 +97,22 @@
     &:last-child {
         margin-right: 8px;
     }
+
+    &:focus {
+        outline: none; // remove focus ring, .tabButtonsBackground replaces it
+    }
+
+    .vertical & {
+        display: flex;
+        justify-content: flex-start;
+
+        min-width: unset;
+
+        margin-left: 0;
+        margin-right: 0;
+
+        padding: 0 16px;
+    }
 }
 
 .tabButtonsBackground {
@@ -82,9 +121,9 @@
     height: calc(100% - 16px);
     pointer-events: none;
 
-    transition: transform, width;
+    transition: transform, width, height;
 
-    // transform, width, transition-duration, opacity set by JS
+    // transform, width, height, transition-duration, opacity set by JS
 
     // must be separate element for a different transition-duration
     &::after {
@@ -96,10 +135,16 @@
         height: 100%;
 
         background: var(--a200);
-        border-radius: 4px;
+        border-radius: 6px;
 
         opacity: inherit;
         transition: opacity 0.1s;
+    }
+
+    .vertical & {
+        width: calc(100% - 16px);
+        height: 100%;
+        left: 8px;
     }
 }
 

@@ -1,46 +1,56 @@
-import { useEffect } from "react"
+import { useState } from "react"
 
 import Image from "next/image"
-import Link from "next/link"
+
+import { TriangleDownIcon } from "@primer/octicons-react"
+import classNames from "classnames"
+import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
-import GitHubLoginButton from "../GitHubLoginButton"
+import VerticalMenu from "../VerticalMenu"
 
 import styles from "./LoginState.module.scss"
+import UserMenu from "./UserMenuItems"
 
-export type Props = {
-    onChange: (user: api.AnonymousUser | api.User) => void
-}
-
-export default function LoginState({ onChange }: Props) {
+export default function LoginState({ className }: { className?: string }) {
     const user = api.useThisUser()
+    const [isUserMenuOpen, setUserMenuOpen] = useState(false)
 
-    useEffect(() => {
-        if (user) {
-            onChange(user)
-        }
-    }, [user, onChange])
+    const { renderLayer, triggerProps, layerProps } = useLayer({
+        isOpen: isUserMenuOpen,
+        onOutsideClick: () => setUserMenuOpen(false),
+        overflowContainer: false,
+        auto: false,
+        placement: "bottom-end",
+        triggerOffset: 4,
+    })
 
     if (!user) {
         // Loading...
         return <div />
-    } else if (user && !api.isAnonUser(user) && user.username) {
-        return <Link href={`/u/${user.username}`}>
-            <a title={`@${user.username}`} className={styles.user}>
-                {user.avatar_url && <Image
-                    className={styles.avatar}
-                    src={user.avatar_url}
-                    alt="User avatar"
-                    width={24}
-                    height={24}
-                    priority
-                />}
-                {/*<span>{user.username}</span>*/}
-            </a>
-        </Link>
-    } else {
-        return <div>
-            <GitHubLoginButton label="Sign in" popup={true} />
-        </div>
     }
+
+    return <div
+        className={classNames(styles.user, className)}
+        onClick={() => setUserMenuOpen(!isUserMenuOpen)}
+        {...triggerProps}
+    >
+        {api.isAnonUser(user)
+            ? "Not signed in"
+            : <Image
+                className={styles.avatar}
+                src={user.avatar_url}
+                alt="Avatar"
+                width={24}
+                height={24}
+                priority
+            />
+        }
+        <TriangleDownIcon />
+        {renderLayer(<div {...layerProps}>
+            {isUserMenuOpen && <VerticalMenu open={isUserMenuOpen} setOpen={setUserMenuOpen}>
+                <UserMenu />
+            </VerticalMenu>}
+        </div>)}
+    </div>
 }

@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react"
 
+import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
@@ -70,11 +71,10 @@ export type Props = {
     platform?: string
     value: CompilerOptsT
     onChange: (value: CompilerOptsT) => void
-    title?: string
     isPopup?: boolean
 }
 
-export default function CompilerOpts({ platform, value, onChange, title, isPopup }: Props) {
+export default function CompilerOpts({ platform, value, onChange, isPopup }: Props) {
     const compiler = value.compiler
     let opts = value.compiler_flags
 
@@ -115,8 +115,11 @@ export default function CompilerOpts({ platform, value, onChange, title, isPopup
         },
     }}>
         <div className={styles.header} data-is-popup={isPopup}>
-            {title || "Compiler Options"}
-            <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
+            <PlatformIcon platform={platform} size={32} />
+            <div className={styles.preset}>
+                Preset
+                <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
+            </div>
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
             <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />

@@ -232,16 +232,21 @@ class Body:
         self.add_statement(SimpleStatement(None, comment=contents))
 
     def add_if_else(self, if_else: IfElseStatement) -> None:
-        if if_else.if_body.ends_in_jump():
-            # Transform `if (A) { B; return C; } else { D; }`
-            # into `if (A) { B; return C; } D;`,
-            # which reduces indentation to make the output more readable
-            self.statements.append(replace(if_else, else_body=None))
+        if if_else.else_body is None or if_else.if_body.ends_in_jump():
+            # We now know that we have an IfElseStatement like `if (A) { B; goto C; } else { D; }`
+            # where `D` may be empty. We can rewrite this into `if (A) { B; goto C; } D;`
+            # which reduces indentation to make the output more readable.
+
+            # Append the final outermost `if_else`, without an `else_body` and rewritten to try
+            # to avoid CommaConditionExprs.
+            self.statements.append(rewrite_if_ands(if_else.condition, if_else.if_body))
+
+            # Move the original `else_body` out of the block (if set)
             if if_else.else_body is not None:
                 self.extend(if_else.else_body)
-            return
-
-        self.statements.append(if_else)
+        else:
+            # Simple case; perform no further rewrites
+            self.statements.append(if_else)
 
     def add_do_while_loop(self, do_while_loop: DoWhileLoop) -> None:
         self.statements.append(do_while_loop)
@@ -302,6 +307,60 @@ class Body:
             for statement in self.statements
             if statement.should_write()
         )
+
+
+def rewrite_if_ands(condition: Condition, if_body: "Body") -> IfElseStatement:
+    """
+    Iterate through the left-heavy `&&`-joined subconditions in `condition`, checking
+    or CommaConditionExprs. When encountered, convert the original if statement into
+    a series of nested if's.
+
+    This can transform input like:      if (cond1 && cond2 && cond3) { if_body }
+    into nested ifs like:               if (cond1) { if (cond2) { if (cond3) { if_body } } }
+    ...when `cond2` and `cond3` are CommaConditionExprs, which avoids the need for the comma operator.
+
+    Warning: This rewrite is only valid if there is no else block in the original if
+    statement, or if `if_body` ends in a jump.
+    """
+    outer_cond: Condition = condition
+    inner_conds: List[Condition] = []
+    while (
+        isinstance(outer_cond, BinaryOp)
+        and isinstance(outer_cond.left, Condition)
+        and outer_cond.op == "&&"
+        and isinstance(outer_cond.right, Condition)
+    ):
+        # Move the iterator forward
+        cond = outer_cond.right
+        outer_cond = outer_cond.left
+
+        if not isinstance(cond, CommaConditionExpr):
+            inner_conds.append(cond)
+        else:
+            # Rewrite the CommaConditionExpr into a nested IfElseStatement.
+            # Start by joining all of the iterated `inner_conds` together, following
+            # the same left-heavy pattern used in try_make_if_condition.
+            inner_cond = cond.condition
+            while inner_conds:
+                inner_cond = join_conditions(inner_cond, "&&", inner_conds.pop())
+
+            # Split the `if` into two nested `if`s, to move the CommaConditionExpr and
+            # all of the `inner_conds` into an inner if statement. After moving them,
+            # we can drop them from the outer if statement (`condition`).
+            new_body = Body(print_node_comment=if_body.print_node_comment)
+            for stmt in cond.statements:
+                new_body.add_statement(SimpleStatement(stmt))
+            new_body.add_if_else(
+                IfElseStatement(
+                    condition=inner_cond,
+                    if_body=if_body,
+                    else_body=None,
+                )
+            )
+            if_body = new_body
+            condition = outer_cond
+
+    return IfElseStatement(condition=condition, if_body=if_body, else_body=None)
 
 
 def label_for_node(context: Context, node: Node) -> str:
@@ -470,6 +529,53 @@ def gather_any_comma_conditions(block_info: BlockInfo) -> Condition:
         return branch_condition
 
 
+@dataclass(frozen=True)
+class Bounds:
+    """
+    Utility class for tracking possible switch control values across multiple
+    conditional branches.
+    """
+
+    lower: int = -(2 ** 31)  # `INT32_MAX`
+    upper: int = (2 ** 32) - 1  # `UINT32_MAX`
+    holes: Set[int] = field(default_factory=set)
+
+    def __post_init__(self) -> None:
+        assert self.lower <= self.upper
+
+    def without(self, hole: int) -> "Bounds":
+        return replace(self, holes=self.holes | {hole})
+
+    def at_most(self, val: int) -> "Bounds":
+        if self.lower <= val <= self.upper:
+            return replace(self, upper=val)
+        elif val > self.upper:
+            return self
+        else:
+            return Bounds.empty()
+
+    def at_least(self, val: int) -> "Bounds":
+        if self.lower <= val <= self.upper:
+            return replace(self, lower=val)
+        elif val < self.lower:
+            return self
+        else:
+            return Bounds.empty()
+
+    def values(self, *, max_count: int) -> Optional[List[int]]:
+        values: List[int] = []
+        for i in range(self.lower, self.upper + 1):
+            if i not in self.holes:
+                values.append(i)
+                if len(values) > max_count:
+                    return None
+        return values
+
+    @staticmethod
+    def empty() -> "Bounds":
+        return Bounds(lower=0, upper=0, holes={0})
+
+
 def try_make_if_condition(
     chained_cond_nodes: List[ConditionalNode], end: Node
 ) -> Optional[Tuple[Condition, Node, Optional[Node]]]:
@@ -490,9 +596,6 @@ def try_make_if_condition(
 
     This function returns `None` if the topology of `chained_cond_nodes` cannot
     be represented by a single `Condition`.
-
-    It also returns `None` if `cond` has an outermost && expression with a
-    `CommaConditionExpr`: these are better represented as nested if statements.
     """
     start_node = chained_cond_nodes[0]
     if_node = chained_cond_nodes[-1].fallthrough_edge
@@ -610,16 +713,6 @@ def try_make_if_condition(
         if_node = else_node
         else_node = None
 
-    # If there is no `else`, then check the conditions in the outermost `&&` expression.
-    # Complex `&&` conditions are better represented with nested ifs.
-    if else_node is None:
-        c: Expression = cond
-        while isinstance(c, BinaryOp) and c.op == "&&":
-            if isinstance(c.right, CommaConditionExpr):
-                # Fail, to try building a shorter conditional expression
-                return None
-            c = c.left
-
     return (cond, if_node, else_node)
 
 
@@ -664,8 +757,8 @@ def try_build_irregular_switch(
 
     # Unwrap EvalOnceExpr's and Cast's; ops like `<=` always include an `(s32)` cast
     uw_var_expr = early_unwrap_ints(var_expr)
-    # Nodes we need to visit, initially just the `start` node
-    node_queue: List[Node] = [start]
+    # Nodes we need to visit & their bounds, initially just the `start` node over a full int32
+    node_queue: List[Tuple[Node, Bounds]] = [(start, Bounds())]
     # Nodes we have already visited, to avoid infinite loops
     visited_nodes: Set[Node] = set()
     # Nodes that have no statements, and should be marked as emitted if we emit a SwitchStatement.
@@ -680,7 +773,7 @@ def try_build_irregular_switch(
     irregular_comparison_count = 0
 
     while node_queue:
-        node = node_queue.pop()
+        node, bounds = node_queue.pop()
         if node in visited_nodes or node == end or node == default_node:
             continue
         visited_nodes.add(node)
@@ -697,7 +790,7 @@ def try_build_irregular_switch(
             # Otherwise, treat these like empty BasicNodes.
             nodes_to_mark_emitted.add(node)
             if isinstance(node, BasicNode):
-                node_queue.append(node.successor)
+                node_queue.append((node.successor, bounds))
             continue
 
         elif start not in node.dominators or end not in node.postdominators:
@@ -707,7 +800,7 @@ def try_build_irregular_switch(
         elif isinstance(node, BasicNode):
             # This node has no statements, so it is just a goto
             nodes_to_mark_emitted.add(node)
-            node_queue.append(node.successor)
+            node_queue.append((node.successor, bounds))
             continue
 
         elif isinstance(node, ConditionalNode):
@@ -717,8 +810,14 @@ def try_build_irregular_switch(
                 control_expr is not None
                 and early_unwrap_ints(control_expr) == uw_var_expr
             ):
-                node_queue.append(node.fallthrough_edge)
-                node_queue.append(node.conditional_edge)
+                # We can get away without adjusting the bounds here, even though the switch guard
+                # puts a hole in our bounds. If the switch guard covers the range `[n, m]` inclusive,
+                # the fallthrough edge is a jump table for these values, and the jump table doesn't
+                # need the bounds. On the conditional side, we would only need to accurately track the
+                # bounds to find an `n-1` or `m+1` case; however, we can assume these don't exist,
+                # because they could have been part of the jump table (instead of a separate conditional).
+                node_queue.append((node.fallthrough_edge, bounds))
+                node_queue.append((node.conditional_edge, bounds))
                 nodes_to_mark_emitted.add(node)
                 continue
 
@@ -734,28 +833,32 @@ def try_build_irregular_switch(
                 # will use `x != N` when it needs to jump backwards to an already-emitted block.
                 # GCC will more freely use either `x == N` or `x != N`.
                 # Examples from PM: func_8026E558, pr_load_npc_extra_anims
+                val = cond.right.value
                 if cond.op == "==":
-                    if cond.right.value in cases:
+                    if val in cases:
                         return None
-                    cases[cond.right.value] = node.conditional_edge
-                    node_queue.append(node.fallthrough_edge)
+                    cases[val] = node.conditional_edge
+                    node_queue.append((node.fallthrough_edge, bounds.without(val)))
                 elif cond.op == "!=" and (
                     node.block.index > node.conditional_edge.block.index
-                    or context.options.compiler == context.options.CompilerEnum.GCC
+                    or context.options.compiler != context.options.CompilerEnum.IDO
                 ):
-                    if cond.right.value in cases:
+                    if val in cases:
                         return None
-                    cases[cond.right.value] = node.fallthrough_edge
-                    node_queue.append(node.conditional_edge)
-                elif cond.op in ("<", "<=", ">=", ">"):
-                    # TODO: GCC (maybe?) can emit a series of `<`/`>=` comparisons that limit
-                    # to a specific case. Ex: `x < 9 && x >= 8` is only true for `x == 8`.
-                    # Detecting these would require tracking & checking all of the bounds.
-                    # Without bounds tracking for now, assume that all branches are reachable
-                    # and that every case label will have an exact equality check.
-                    # See PM: func_802403D4_97BA04
-                    node_queue.append(node.fallthrough_edge)
-                    node_queue.append(node.conditional_edge)
+                    cases[val] = node.fallthrough_edge
+                    node_queue.append((node.conditional_edge, bounds.without(val)))
+                elif cond.op == "<":
+                    node_queue.append((node.fallthrough_edge, bounds.at_least(val)))
+                    node_queue.append((node.conditional_edge, bounds.at_most(val - 1)))
+                elif cond.op == ">=":
+                    node_queue.append((node.fallthrough_edge, bounds.at_most(val - 1)))
+                    node_queue.append((node.conditional_edge, bounds.at_least(val)))
+                elif cond.op == "<=":
+                    node_queue.append((node.fallthrough_edge, bounds.at_least(val + 1)))
+                    node_queue.append((node.conditional_edge, bounds.at_most(val)))
+                elif cond.op == ">":
+                    node_queue.append((node.fallthrough_edge, bounds.at_most(val)))
+                    node_queue.append((node.conditional_edge, bounds.at_least(val + 1)))
                 else:
                     return None
                 irregular_comparison_count += 1
@@ -777,6 +880,17 @@ def try_build_irregular_switch(
                 cases[i] = case
             nodes_to_mark_emitted.add(node)
             irregular_comparison_count += 1
+            continue
+
+        values = bounds.values(max_count=1)
+        if values and context.options.compiler != context.options.CompilerEnum.IDO:
+            # The bounds only have a few possible values, so add this node to the set of cases
+            # IDO won't make implicit cases like this, however.
+            for value in values:
+                if value in cases:
+                    return None
+                cases[value] = node
+            nodes_to_mark_emitted.add(node)
             continue
 
         # If we've gotten here, then the node is not a valid jump target for the switch,
@@ -1293,6 +1407,9 @@ def get_function_text(function_info: FunctionInfo, options: Options) -> str:
     any_decl = False
 
     with fmt.indented():
+        # Format the body first, because this can result in additional type inferencce
+        formatted_body = body.format(fmt)
+
         local_vars = function_info.stack_info.local_vars
         # GCC's stack is ordered low-to-high (e.g. `int sp10; int sp14;`)
         # IDO's stack is ordered high-to-low (e.g. `int sp14; int sp10;`)
@@ -1346,7 +1463,7 @@ def get_function_text(function_info: FunctionInfo, options: Options) -> str:
         if any_decl:
             function_lines.append("")
 
-        function_lines.append(body.format(fmt))
+        function_lines.append(formatted_body)
         function_lines.append("}")
     full_function_text: str = "\n".join(function_lines)
     return full_function_text

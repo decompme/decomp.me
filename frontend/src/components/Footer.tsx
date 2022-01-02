@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { MarkGithubIcon } from "@primer/octicons-react"
+import { MarkGithubIcon, PeopleIcon } from "@primer/octicons-react"
 
 import Discord from "./discord.svg"
 import ErrorBoundary from "./ErrorBoundary"
@@ -36,6 +36,7 @@ export default function Footer() {
 
                     <Link href="/credits">
                         <a className={styles.link}>
+                            <PeopleIcon size={24} />
                             Credits
                         </a>
                     </Link>

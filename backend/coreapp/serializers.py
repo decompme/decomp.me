@@ -49,10 +49,6 @@ class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile)
 
-class SmallProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile):
-        return serialize_profile(self.context["request"], profile, small=True)
-
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -66,14 +62,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
-
-    class Meta:
-        model = Scratch
-        fields = ["url", "slug", "name", "description", "compiler", "platform", "compiler_flags", "target_assembly", "source_code", "context", "diff_label", "score", "max_score"]
-
-# XXX: ideally we would just use ScratchSerializer, but adding owner and parent breaks creation
-class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
-    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
     owner = ProfileField(read_only=True)
     parent = serializers.HyperlinkedRelatedField( # type: ignore
         read_only=True,
@@ -83,17 +71,5 @@ class ScratchWithMetadataSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        fields = ["url", "slug", "name", "description", "compiler", "platform", "compiler_flags", "source_code", "context", "owner", "parent", "diff_label", "score", "max_score"]
-
-class SmallScratchSerializer(serializers.ModelSerializer[Scratch]):
-    url = serializers.HyperlinkedIdentityField(view_name="scratch-detail")
-    owner = SmallProfileField(read_only=True)
-    parent = serializers.HyperlinkedRelatedField(
-        read_only=True,
-        view_name="scratch-detail",
-        lookup_field="slug",
-    )
-
-    class Meta:
-        model = Scratch
-        fields = ["url", "name", "compiler", "platform", "score", "max_score", "owner", "parent"]
+        exclude = []
+        read_only_fields = ["slug", "parent", "owner"]

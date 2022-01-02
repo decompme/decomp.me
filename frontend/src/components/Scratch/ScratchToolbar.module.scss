@@ -1,55 +1,91 @@
+@import "../Nav/Nav.module.scss";
+
 .toolbar {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: initial;
+    justify-content: space-between;
 
-    min-height: 43px; // SSR has no buttons
+    min-height: 40px; // SSR has no buttons
 
     gap: 4px;
-    padding: 4px;
+    padding: 0 4px;
 
-    background: var(--g300);
+    background: var(--g400);
     //border-bottom: 1px solid var(--a100);
 
-    @media screen and (min-width: 800px) and (min-height: 800px) {
+    @media screen and (min-height: 800px) {
         gap: 8px;
         padding: 8px;
+        height: 48px;
     }
 }
 
-.scratchName {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    padding: 4px 8px;
+.left,
+.center,
+.right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
-    border: 1px solid transparent;
-    border-radius: 4px;
+    gap: 4px;
+
+    height: 100%;
+
+    @media screen and (min-height: 800px) {
+        gap: 8px;
+    }
+}
+
+.center {
+    justify-content: center;
+    overflow: hidden;
+
+    @media (min-width: 800px) {
+        flex-basis: 50%;
+    }
+}
+
+.left {
+    justify-content: flex-start;
+
+    @media (min-width: 800px) {
+        flex-basis: 25%;
+    }
+}
+
+.right {
+    flex-basis: 25%;
+    justify-content: flex-end;
+}
+
+.name {
+    padding: 4px;
+
+    border: 0;
     background: transparent;
     outline: none !important;
 
+    font-size: 0.9em;
     color: var(--g1800);
 
+    overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 
-    transition: border-color 0.15s;
+    text-align: center;
 
-    &::-webkit-input-placeholder {
-        color: var(--g1800);
-        transition: color 0.15s;
+    &.editable {
+        cursor: text;
     }
 
-    &:not(:disabled) {
-        &:hover,
-        &:active,
-        &:focus {
-            border-color: var(--g400);
+    &[contenteditable] {
+        text-overflow: initial;
+    }
 
-            &::-webkit-input-placeholder {
-                color: var(--g800);
-            }
-        }
+    &.editable:hover,
+    &[contenteditable] {
+        background: var(--g300);
     }
 }
 
@@ -69,4 +105,20 @@
     svg {
         height: 100%;
     }
+}
+
+.iconButton {
+    @extend .logo;
+
+    color: var(--g1400);
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+
+    cursor: pointer;
+}
+
+.loginState {
+    flex-shrink: 0;
 }

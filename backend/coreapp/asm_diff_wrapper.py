@@ -139,11 +139,17 @@ class AsmDifferWrapper:
         # Preprocess the dumps
         try:
             basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
+        except AssertionError as e:
+            logger.exception("Error preprocessing base dump")
+            raise DiffError(f"Error preprocessing base dump: {e}")
         except Exception as e:
             raise DiffError(f"Error preprocessing base dump: {e}")
 
         try:
             mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump)
+        except AssertionError as e:
+            logger.exception("Error preprocessing new dump")
+            raise DiffError(f"Error preprocessing new dump: {e}")
         except Exception as e:
             raise DiffError(f"Error preprocessing new dump: {e}")
 

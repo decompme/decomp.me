@@ -34,10 +34,10 @@ WII_COMPILERS["1.1"]="mwcc_43_151"
 WII_COMPILERS["1.3"]="mwcc_43_172"
 WII_COMPILERS["1.7"]="mwcc_43_213"
 
-echo "Downloading MWCC compilers"
+echo "Downloading MWCC PPC compilers..."
 wget -q -O "${compiler_dir}/compilers.zip" "${compiler_url}"
 
-echo "Extracting compilers"
+echo "Extracting MWCC PPC compilers..."
 unzip -oq "${compiler_dir}/compilers.zip" -d "${compiler_dir}" && rm "${compiler_dir}/compilers.zip"
 
 for key in "${!GC_COMPILERS[@]}"; do

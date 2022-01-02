@@ -12,6 +12,7 @@
     border: 0;
     background: var(--g300);
     height: 1px;
+    flex-shrink: 0;
 }
 
 .label {
@@ -35,6 +36,7 @@
 
     .label {
         width: 100px;
+        flex-shrink: 0;
     }
 }
 
@@ -45,9 +47,15 @@
     height: 100%;
 
     color: var(--g800);
+
+    max-width: 400px;
 }
 
 .scratchLink {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     cursor: pointer;
     color: var(--g1400);
 
@@ -58,8 +66,7 @@
 }
 
 .scratchLinkByText {
-    padding-left: 6px;
-    padding-right: 4px;
+    padding: 0 0.5ch;
 }
 
 .textArea {
