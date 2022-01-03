@@ -9,7 +9,7 @@ export enum FuzzySaveAction {
     NONE,
 }
 
-export default function useFuzzySaveCallback(scratch: api.Scratch): [FuzzySaveAction, () => void] {
+export default function useFuzzySaveCallback(scratch: api.Scratch): [FuzzySaveAction, () => Promise<void>] {
     const saveScratch = api.useSaveScratch(scratch)
     const forkScratch = api.useForkScratchAndGo(scratch)
     const userIsYou = api.useUserIsYou()
