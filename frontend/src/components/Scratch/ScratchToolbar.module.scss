@@ -141,6 +141,10 @@ $column_width: 260px;
     padding-left: 4px;
 
     cursor: pointer;
+
+    &:hover {
+        opacity: 0.8;
+    }
 }
 
 .loginState {
