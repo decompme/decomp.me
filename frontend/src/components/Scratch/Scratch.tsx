@@ -29,8 +29,7 @@ export default function Scratch({
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
 
-    const saveScratch = api.useSaveScratch(scratch)
-    const setCompilerOpts = setCompilerOptsFunction({ scratch, setScratch, saveScratch })
+    const setCompilerOpts = setCompilerOptsFunction({ scratch, setScratch })
 
     const leftTabs = useLeftTabs({
         scratch,
