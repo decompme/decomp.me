@@ -3,7 +3,7 @@ import { UploadIcon } from "@primer/octicons-react"
 import * as api from "../../../lib/api"
 import AsyncButton from "../../AsyncButton"
 
-export default function SaveScratchButton({ scratch, setScratch, compile }) {
+export default function SaveScratchButton({ scratch, setScratch, isSaving, compile }) {
     const saveScratch = api.useSaveScratch(scratch)
     const isSaved = api.useIsScratchSaved(scratch)
 
@@ -16,6 +16,7 @@ export default function SaveScratchButton({ scratch, setScratch, compile }) {
                 ])
             }}
             disabled={isSaved}
+            forceLoading={isSaving}
         >
             <UploadIcon size={16} /> Save
         </AsyncButton>

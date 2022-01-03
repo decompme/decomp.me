@@ -104,6 +104,7 @@ export default function ScratchToolbar({
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
+    const [isSaving, setIsSaving] = useState(false)
 
     const [isMenuOpen, setMenuOpen] = useState(false)
     const { renderLayer, triggerProps, layerProps } = useLayer({
@@ -142,7 +143,11 @@ export default function ScratchToolbar({
                         </ButtonItem>
                         }
                         <ButtonItem
-                            onTrigger={fuzzySaveScratch}
+                            onTrigger={async () => {
+                                setIsSaving(true)
+                                await fuzzySaveScratch()
+                                setIsSaving(false)
+                            }}
                             disabled={scratch.owner && !userIsYou(scratch.owner)}
                             shortcutKeys={
                                 (fuzzySaveAction === FuzzySaveAction.SAVE || fuzzySaveAction === FuzzySaveAction.NONE)
@@ -161,7 +166,7 @@ export default function ScratchToolbar({
                         </ButtonItem>
                         <ButtonItem
                             onTrigger={compile}
-                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "D"]}
+                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "J"]}
                         >
                             <SyncIcon />
                             Compile
@@ -206,7 +211,7 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && <>
                     {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} />}
+                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
                     {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                     {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
                     <LoginState className={styles.loginState} />
