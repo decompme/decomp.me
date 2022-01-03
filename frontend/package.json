@@ -17,6 +17,7 @@
         "@react-hook/resize-observer": "^1.2.2",
         "classnames": "^2.3.1",
         "dequal": "^2.0.2",
+        "downshift": "^6.1.7",
         "framer-motion": "^4.1.17",
         "is-mobile": "^3.0.0",
         "monaco-editor": "^0.29.1",

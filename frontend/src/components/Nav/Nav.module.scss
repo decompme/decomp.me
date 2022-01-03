@@ -5,8 +5,7 @@
     user-select: none;
 
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: stretch;
     flex-wrap: wrap;
     gap: 0.5em;
 
@@ -27,7 +26,6 @@
     display: flex;
     align-items: center;
 
-    height: 100%;
     padding: 0 8px;
 
     opacity: 1;
@@ -92,4 +90,14 @@
 
 .grow {
     flex: 1;
+}
+
+.search {
+    flex-basis: 25%;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.right {
+    justify-self: flex-end;
 }

@@ -61,7 +61,8 @@ a.item {
         }
 
         &:hover,
-        &:focus {
+        &:focus,
+        &[aria-selected="true"] {
             color: var(--g1900);
 
             &::before {

@@ -9,7 +9,7 @@ import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
-type Json = Record<string, unknown>
+type Json = any
 
 const commonOpts: RequestInit = {
     credentials: "include",
@@ -150,21 +150,24 @@ export interface User {
     username: string
     name: string
     avatar_url: string | null
-    github_api_url: string | null
-    github_html_url: string | null
+    //github_api_url: string | null
+    //github_html_url: string | null
 }
 
-export type Scratch = {
+export interface TerseScratch {
     url: string
-    slug: string // avoid using, use `url` instead
     html_url: string
     owner: AnonymousUser | User | null // null means unclaimed
     name: string
-    description: string
     creation_time: string
     last_updated: string
     compiler: string
     platform: string
+}
+
+export interface Scratch extends TerseScratch {
+    slug: string // avoid using, use `url` instead
+    description: string
     compiler_flags: string
     source_code: string
     context: string

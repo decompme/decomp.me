@@ -4,12 +4,14 @@ from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from django.http import HttpResponse, QueryDict
-from rest_framework import serializers, status, mixins
+from rest_framework import serializers, status, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
+
+import django_filters
 
 import hashlib
 import io
@@ -83,7 +85,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     return False
 
 class ScratchPagination(CursorPagination):
-    ordering="-creation_time"
+    ordering="-last_updated"
     page_size=10
     page_size_query_param="page_size"
     max_page_size=100
@@ -97,6 +99,9 @@ class ScratchViewSet(
 ):
     queryset = Scratch.objects.all()
     pagination_class = ScratchPagination
+    filter_fields = ['platform', 'compiler']
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name', 'diff_label']
 
     def get_serializer_class(self):
         if self.action == "list":
