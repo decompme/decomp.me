@@ -50,14 +50,14 @@ def update_scratch_score(scratch: Scratch):
         scratch.max_score = diff_output.get("max_score", scratch.max_score)
         scratch.save()
 
-def scratch_last_modified(request: Request, pk: str = None) -> Optional[datetime]:
+def scratch_last_modified(request: Request, pk: Optional[str] = None) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
         return scratch.last_updated
     else:
         return None
 
-def scratch_etag(request: Request, pk: str = None) -> Optional[str]:
+def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
         # We hash the Accept header too to avoid the following situation:
@@ -73,7 +73,7 @@ def scratch_etag(request: Request, pk: str = None) -> Optional[str]:
 
 scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
 
-def update_needs_recompile(partial):
+def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     recompile_params = ["compiler", "compiler_flags", "source_code", "context"]
 
     for param in recompile_params:
@@ -102,9 +102,9 @@ class ScratchViewSet(
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        ser = ScratchCreateSerializer(data=request.data)
-        ser.is_valid(raise_exception=True)
-        data = ser.validated_data
+        create_ser = ScratchCreateSerializer(data=request.data)
+        create_ser.is_valid(raise_exception=True)
+        data = create_ser.validated_data
 
         platform = data.get("platform")
         compiler = data.get("compiler")

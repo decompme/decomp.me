@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 from .models import Profile, Scratch
 from .github import GitHubUser
@@ -56,15 +56,13 @@ class HtmlUrlField(serializers.HyperlinkedIdentityField):
     A read-only field that represents the frontend identity URL for the object, itself.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         kwargs["view_name"] = "__unused__"
         super().__init__(**kwargs)
 
     def get_url(self, value, view_name, request, format):
         if isinstance(value, Scratch):
             return request.build_absolute_uri(f"/scratch/{value.slug}")
-        if isinstance(value, Profile):
-            return request.build_absolute_uri(f"/u/{value.user.username}")
 
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
@@ -85,12 +83,12 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     context = serializers.CharField(allow_blank=True) # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
-class ScratchSerializer(serializers.HyperlinkedModelSerializer[Scratch]):
+class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
     html_url = HtmlUrlField()
     owner = ProfileField(read_only=True) # TODO: use ProfileURLField
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(allow_blank=True, trim_whitespace=False)
+    context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
 
     class Meta:
         model = Scratch
