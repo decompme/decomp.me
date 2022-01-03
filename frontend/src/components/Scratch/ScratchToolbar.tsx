@@ -9,6 +9,7 @@ import * as api from "../../lib/api"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
+import Search from "../Nav/Search"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
@@ -195,7 +196,9 @@ export default function ScratchToolbar({
                         </LinkItem>
                     </VerticalMenu>
                 </div>)}
+                <Search className={styles.search} />
             </div>
+            <div className={styles.grow} />
             <div className={styles.center}>
                 <div className={styles.icons}>
                     <PlatformIcon size={20} platform={scratch.platform} />
@@ -205,7 +208,9 @@ export default function ScratchToolbar({
                     onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
                 />
             </div>
+            <div className={styles.grow} />
             <div className={styles.right}>
+                <div className={styles.grow} />
                 <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
                     <GearIcon size={16} />
                 </div>

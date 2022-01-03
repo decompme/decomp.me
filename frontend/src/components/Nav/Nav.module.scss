@@ -38,8 +38,9 @@
 .logo {
     @extend .item;
 
-    margin: 0 0.5vw;
+    margin: 0;
     padding: 0;
+    padding-left: 4px;
 
     svg {
         pointer-events: none;

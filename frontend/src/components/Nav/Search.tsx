@@ -101,7 +101,7 @@ export default function Search({ className }: { className?: string }) {
             <input
                 className={styles.input}
                 type="text"
-                placeholder="Search..."
+                placeholder="Search decomp.me..."
                 spellCheck={false}
                 value=""
             />
@@ -128,7 +128,7 @@ export default function Search({ className }: { className?: string }) {
                 [styles.isOpen]: isOpen,
             })}
             type="text"
-            placeholder="Search..."
+            placeholder="Search decomp.me..."
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}

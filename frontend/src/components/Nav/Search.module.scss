@@ -3,6 +3,10 @@
 .container {
     position: relative;
     z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input {
@@ -24,7 +28,7 @@
     transition: border-radius, background, border-color;
 
     &::placeholder {
-        color: var(--g1500);
+        color: var(--g1000);
     }
 
     &:focus,
@@ -52,8 +56,9 @@
 .icon,
 .loadingIcon {
     position: absolute;
-    top: 8px;
+    top: calc(50% + 1px);
     left: 10px;
+    transform: translateY(-50%);
 
     width: 14px;
     height: 14px;
