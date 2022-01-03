@@ -5,10 +5,10 @@ from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
 from django.http import HttpResponse, QueryDict
-from rest_framework import serializers, status
+from rest_framework import serializers, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
 
@@ -86,7 +86,13 @@ class ScratchPagination(CursorPagination):
     ordering="-creation_time"
     page_size=10
 
-class ScratchViewSet(ModelViewSet):
+class ScratchViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
     queryset = Scratch.objects.all()
     serializer_class = ScratchSerializer
     pagination_class = ScratchPagination
@@ -164,6 +170,13 @@ class ScratchViewSet(ModelViewSet):
 
     # TODO: possibly move this logic into ScratchSerializer.save method
     def update(self, request, *args, **kwargs):
+        # Check permission
+        scratch = self.get_object()
+        if scratch.owner != request.profile:
+            response = self.retrieve(request, *args, **kwargs)
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return response
+
         response = super().update(request, *args, **kwargs)
 
         if update_needs_recompile(request.data):
