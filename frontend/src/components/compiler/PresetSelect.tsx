@@ -103,7 +103,7 @@ export const PRESETS = [
     {
         name: "Super Mario Sunshine",
         compiler: "mwcc_233_163",
-        opts: "-Cpp_exceptions off -fp hard -O4 -nodefaults -msgstyle gcc -enum int -rostr",
+        opts: " -lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -msgstyle gcc -enum int -rostr",
     },
     {
         name: "The Minish Cap",
