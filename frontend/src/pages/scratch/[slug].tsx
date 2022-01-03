@@ -33,7 +33,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
     const { slug } = context.params
 
     try {
-        const scratch: api.Scratch = await api.get(`/scratch2/${slug}`)
+        const scratch: api.Scratch = await api.get(`/scratch/${slug}`)
 
         let initialCompilation: api.Compilation | null = null
         try {

@@ -82,15 +82,17 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
-    # TODO: `context` should be renamed; it conflicts with Field.context
     context = serializers.CharField(allow_blank=True) # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer[Scratch]):
+    slug = serializers.SlugField(read_only=True)
     html_url = HtmlUrlField()
     owner = ProfileField(read_only=True) # TODO: use ProfileURLField
+    source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
+    context = serializers.CharField(allow_blank=True, trim_whitespace=False)
 
     class Meta:
         model = Scratch
         exclude = ["target_assembly"]
-        read_only_fields = ["url", "html_url", "parent", "owner"]
+        read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]

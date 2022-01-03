@@ -43,7 +43,7 @@ jr $ra
 nop"""
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -68,7 +68,7 @@ sb  $t6, %lo(D_801D702C)($at)
 """
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -83,7 +83,7 @@ sb  $t6, %lo(D_801D702C)($at)
             'target_asm': 'this is some test asm',
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -100,7 +100,7 @@ class ScratchModificationTests(APITestCase):
             'target_asm': "jr $ra"
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
@@ -112,7 +112,7 @@ class ScratchModificationTests(APITestCase):
         self.assertGreater(scratch.score, 0)
 
         # Obtain ownership of the scratch
-        response = self.client.post(reverse('scratch-claim', kwargs={'slug': slug}))
+        response = self.client.post(reverse('scratch-claim', kwargs={'pk': slug}))
 
         # Update the scratch's code and compiler output
         scratch_patch = {
@@ -120,7 +120,7 @@ class ScratchModificationTests(APITestCase):
             'compiler': 'ido5.3'
         }
 
-        response = self.client.patch(reverse('scratch-detail', kwargs={'slug': slug}), scratch_patch)
+        response = self.client.patch(reverse('scratch-detail', kwargs={'pk': slug}), scratch_patch)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         scratch = Scratch.objects.first()
@@ -140,7 +140,7 @@ class ScratchModificationTests(APITestCase):
             'source_code': 'int func() { return 2; }'
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
@@ -163,7 +163,7 @@ class ScratchForkTests(APITestCase):
             'name': 'cat scratch',
         }
 
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
@@ -181,7 +181,8 @@ class ScratchForkTests(APITestCase):
         }
 
         # Create a fork of the scratch
-        response = self.client.post(reverse('scratch-fork', kwargs={'slug': slug}), fork_dict)
+        response = self.client.post(reverse('scratch-fork', kwargs={'pk': slug}), fork_dict)
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         new_slug = response.json()["slug"]
@@ -210,8 +211,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can create a scratch
-        response = self.client.post(reverse('scratch'), scratch_dict)
-        print(response.json())
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -225,7 +225,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
+        response = self.client.post(reverse("scratch-compile", kwargs={'pk': slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @onlyIfCompilerAvailable('gcc2.8.1')
@@ -241,7 +241,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can create a scratch
-        response = self.client.post(reverse('scratch'), scratch_dict)
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
@@ -260,7 +260,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={"slug": slug}), compile_dict)
+        response = self.client.post(reverse("scratch-compile", kwargs={'pk': slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(len(response.json()["errors"]), 0)
@@ -467,7 +467,7 @@ class UserTests(APITestCase):
 
 class ScratchDetailTests(APITestCase):
     def make_nop_scratch(self) -> Scratch:
-        response = self.client.post(reverse("scratch"), {
+        response = self.client.post(reverse("scratch-list"), {
             'compiler': 'dummy',
             'platform': 'dummy',
             'context': '',

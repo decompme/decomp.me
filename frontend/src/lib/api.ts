@@ -14,6 +14,9 @@ type Json = Record<string, unknown>
 const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
+    headers: {
+        "Accept": "application/json",
+    },
 }
 
 /*
@@ -66,7 +69,18 @@ export async function get(url: string, useCacheIfFresh = false) {
         throw new ResponseError(response, await response.json())
     }
 
-    return await response.json()
+    try {
+        return await response.json()
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new ResponseError(response, {
+                code: "invalid_json",
+                detail: "The server returned invalid JSON",
+            })
+        }
+
+        throw error
+    }
 }
 
 export const getCached = (url: string) => get(url, true)
@@ -142,6 +156,7 @@ export interface User {
 
 export type Scratch = {
     url: string
+    slug: string // avoid using, use `url` instead
     html_url: string
     owner: AnonymousUser | User | null // null means unclaimed
     name: string
@@ -242,7 +257,7 @@ export function useSavedScratch(scratch: Scratch): Scratch {
     return savedScratch
 }
 
-export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
+export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     const savedScratch = useSavedScratch(localScratch)
     const userIsYou = useUserIsYou()
 
@@ -254,7 +269,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             throw new Error("Cannot save scratch which you do not own")
         }
 
-        await patch(localScratch.url, {
+        const updatedScratch = await patch(localScratch.url, {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
@@ -263,7 +278,9 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         })
 
-        await mutate(localScratch.url, localScratch, true)
+        await mutate(localScratch.url, updatedScratch, false)
+
+        return updatedScratch
     }, [localScratch, savedScratch, userIsYou])
 
     return saveScratch

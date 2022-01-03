@@ -9,7 +9,10 @@ export enum FuzzySaveAction {
     NONE,
 }
 
-export default function useFuzzySaveCallback(scratch: api.Scratch): [FuzzySaveAction, () => void] {
+export default function useFuzzySaveCallback(
+    scratch: api.Scratch,
+    setScratch: (partial: Partial<api.Scratch>) => void,
+): [FuzzySaveAction, () => void] {
     const saveScratch = api.useSaveScratch(scratch)
     const forkScratch = api.useForkScratchAndGo(scratch)
     const userIsYou = api.useUserIsYou()
@@ -29,10 +32,9 @@ export default function useFuzzySaveCallback(scratch: api.Scratch): [FuzzySaveAc
             switch (action) {
             case FuzzySaveAction.CLAIM:
                 await api.claimScratch(scratch)
-                await saveScratch()
-                break
+                // fallthrough
             case FuzzySaveAction.SAVE:
-                await saveScratch()
+                setScratch(await saveScratch())
                 break
             case FuzzySaveAction.FORK:
                 await forkScratch()
@@ -40,6 +42,6 @@ export default function useFuzzySaveCallback(scratch: api.Scratch): [FuzzySaveAc
             case FuzzySaveAction.NONE:
                 break
             }
-        }, [action, forkScratch, saveScratch, scratch]),
+        }, [action, forkScratch, saveScratch, scratch, setScratch]),
     ]
 }

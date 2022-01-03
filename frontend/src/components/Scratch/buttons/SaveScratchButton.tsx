@@ -3,7 +3,7 @@ import { UploadIcon } from "@primer/octicons-react"
 import * as api from "../../../lib/api"
 import AsyncButton from "../../AsyncButton"
 
-export default function SaveScratchButton({ scratch, compile }) {
+export default function SaveScratchButton({ scratch, setScratch, compile }) {
     const saveScratch = api.useSaveScratch(scratch)
     const isSaved = api.useIsScratchSaved(scratch)
 
@@ -11,7 +11,7 @@ export default function SaveScratchButton({ scratch, compile }) {
         <AsyncButton
             onClick={() => {
                 return Promise.all([
-                    saveScratch(),
+                    saveScratch().then(setScratch),
                     compile().catch(() => {}), // Ignore errors
                 ])
             }}

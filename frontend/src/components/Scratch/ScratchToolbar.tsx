@@ -27,7 +27,7 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = `/api/scratch/${scratch.slug}/export`
+    const url = `${scratch.url}/export`
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"
@@ -59,7 +59,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
             className={styles.name}
 
             onChange={evt => {
-                const name = evt.target.value
+                const name = evt.currentTarget.innerText as string
                 if (name.length != 0)
                     onChange(name)
             }}
@@ -103,7 +103,7 @@ export default function ScratchToolbar({
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
-    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch)
+    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
 
     const [isMenuOpen, setMenuOpen] = useState(false)
     const { renderLayer, triggerProps, layerProps } = useLayer({
@@ -206,7 +206,7 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && <>
                     {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} />}
+                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} />}
                     {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                     {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
                     <LoginState className={styles.loginState} />
