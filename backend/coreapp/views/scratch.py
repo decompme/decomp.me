@@ -3,7 +3,6 @@ from coreapp.error import CompilationError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.serializers import ScratchCreateSerializer, ScratchSerializer
 from django.http import HttpResponse, QueryDict
 from rest_framework import serializers, status, mixins
 from rest_framework.response import Response
@@ -24,6 +23,7 @@ import re
 from ..models import Asm, Scratch
 from ..middleware import Request
 from ..decorators.django import condition
+from ..serializers import TerseScratchSerializer, ScratchCreateSerializer, ScratchSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +85,8 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
 class ScratchPagination(CursorPagination):
     ordering="-creation_time"
     page_size=10
+    page_size_query_param="page_size"
+    max_page_size=100
 
 class ScratchViewSet(
     mixins.CreateModelMixin,
@@ -94,8 +96,13 @@ class ScratchViewSet(
     GenericViewSet,
 ):
     queryset = Scratch.objects.all()
-    serializer_class = ScratchSerializer
     pagination_class = ScratchPagination
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return TerseScratchSerializer
+        else:
+            return ScratchSerializer
 
     @scratch_condition
     def retrieve(self, request, *args, **kwargs):

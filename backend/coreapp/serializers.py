@@ -19,25 +19,25 @@ def serialize_profile(request: Request, profile: Profile, small = False):
     else:
         user = profile.user
 
+        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        github_details = github.details() if github else None
+
         small_obj = {
             "url": reverse("user-detail", args=[user.username], request=request),
             "is_you": user == request.user, # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
             "username": user.username,
+            "avatar_url": github_details.avatar_url if github_details else None,
         }
 
         if small:
             return small_obj
 
-        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
-        github_details = github.details() if github else None
-
         return {
             **small_obj,
             "email": user.email,
             "name": github_details.name if github_details else user.username,
-            "avatar_url": github_details.avatar_url if github_details else None,
             "github_api_url": github_details.url if github_details else None,
             "github_html_url": github_details.html_url if github_details else None,
         }
@@ -50,6 +50,10 @@ else:
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile)
+
+class TerseProfileField(ProfileFieldBaseClass):
+    def to_representation(self, profile: Profile):
+        return serialize_profile(self.context["request"], profile, small=True)
 
 class HtmlUrlField(serializers.HyperlinkedIdentityField):
     """
@@ -66,13 +70,6 @@ class HtmlUrlField(serializers.HyperlinkedIdentityField):
 
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
-# TODO: how do we represent anonymous profiles?
-"""
-class ProfileURLField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile):
-        return reverse("user-detail", args=[profile.user.username], request=self.context["request"])
-"""
-
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -86,7 +83,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
     html_url = HtmlUrlField()
-    owner = ProfileField(read_only=True) # TODO: use ProfileURLField
+    owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
 
@@ -94,3 +91,12 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
         model = Scratch
         exclude = ["target_assembly"]
         read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
+
+class TerseScratchSerializer(ScratchSerializer):
+    owner = TerseProfileField(read_only=True)
+    source_code = None
+    context = None
+
+    class Meta:
+        model = Scratch
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name"]
