@@ -166,7 +166,7 @@ export default function ScratchToolbar({
                         </ButtonItem>
                         <ButtonItem
                             onTrigger={compile}
-                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "D"]}
+                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "J"]}
                         >
                             <SyncIcon />
                             Compile
