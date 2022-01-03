@@ -150,8 +150,8 @@ export interface User {
     username: string
     name: string
     avatar_url: string | null
-    //github_api_url: string | null
-    //github_html_url: string | null
+    github_api_url: string | null
+    github_html_url: string | null
 }
 
 export interface TerseScratch {
