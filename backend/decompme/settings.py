@@ -30,6 +30,7 @@ env = environ.Env(
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
     COMPILATION_CACHE_SIZE=(int, 100),
     WINEPREFIX=(str, "/tmp/wine"),
+    FRONTEND_BASE=(str, "https://decomp.me"),
 )
 
 for stem in [".env.local", ".env"]:
@@ -43,6 +44,7 @@ DEBUG = env('DEBUG')
 DJANGO_LOG_LEVEL = env('DJANGO_LOG_LEVEL')
 DUMMY_COMPILER = env('DUMMY_COMPILER')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+FRONTEND_BASE = env('FRONTEND_BASE')
 
 # Application definition
 

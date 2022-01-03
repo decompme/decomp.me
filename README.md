@@ -114,14 +114,14 @@ Running decomp.me using nginx as a proxy better emulates the production environm
 
 - Install nginx
 
-- Create an nginx site configuration (typically `/etc/nginx/sites-available/local.decomp.me`)
+- Create an nginx site configuration (typically `/etc/nginx/sites-available/decomp.local`)
 ```nginx
 server {
     listen 80;
     listen [::]:80;
     client_max_body_size 5M;
 
-    server_name local.decomp.me www.local.decomp.me;
+    server_name decomp.local www.decomp.local;
 
     location / {
         try_files $uri @proxy_frontend;
@@ -159,24 +159,25 @@ server {
 
 - Enable the site
 ```shell
-ln -s /etc/nginx/sites-available/local.decomp.me /etc/nginx/sites-enabled/local.decomp.me
+ln -s /etc/nginx/sites-available/decomp.local /etc/nginx/sites-enabled/decomp.local
 ```
 
 - Add the following lines to `/etc/hosts`:
 ```
-127.0.0.1	    local.decomp.me
-127.0.0.1	    www.local.decomp.me
+127.0.0.1	    decomp.local
+127.0.0.1	    www.decomp.local
 ```
 
 - Edit `.env.local`:
     - Set `API_BASE=/api`
-    - Set `ALLOWED_HOSTS=local.decomp.me`
+    - Set `FRONTEND_BASE=http://decomp.local`
+    - Set `ALLOWED_HOSTS=decomp.local`
 
-- If you set up GitHub authentication, change the application URLs to `http://local.decomp.me` and `http://local.decomp.me/login`
+- If you set up GitHub authentication, change the application URLs to `http://decomp.local` and `http://decomp.local/login`
 
 - Restart nginx, the frontend, and the backend
 
-- Access the site via [http://local.decomp.me](http://local.decomp.me)
+- Access the site via [http://decomp.local](http://decomp.local)
 
 ### Sandbox jail
 

@@ -7,6 +7,7 @@ from typing import Any, Optional, TYPE_CHECKING
 from .models import Profile, Scratch
 from .github import GitHubUser
 from .middleware import Request
+from decompme.settings import FRONTEND_BASE
 
 def serialize_profile(request: Request, profile: Profile, small = False):
     if profile.user is None:
@@ -66,7 +67,7 @@ class HtmlUrlField(serializers.HyperlinkedIdentityField):
 
     def get_url(self, value, view_name, request, format):
         if isinstance(value, Scratch):
-            return request.build_absolute_uri(f"/scratch/{value.slug}")
+            return f"{FRONTEND_BASE}/scratch/{value.slug}"
 
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
