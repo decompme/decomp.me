@@ -93,9 +93,9 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
         read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
 
 class TerseScratchSerializer(ScratchSerializer):
-    owner = TerseProfileField(read_only=True)
-    source_code = None
-    context = None
+    owner = TerseProfileField(read_only=True) # type: ignore
+    source_code = None # type: ignore
+    context = None # type: ignore
 
     class Meta:
         model = Scratch
