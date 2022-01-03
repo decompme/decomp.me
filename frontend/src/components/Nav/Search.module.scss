@@ -8,7 +8,7 @@
 .input {
     border-radius: 6px;
     padding-right: 32px; // space for loading spinner
-    padding-left: 8px;
+    padding-left: 28px; // space for search icon
     padding-top: 5px;
     padding-bottom: 6px;
     background: var(--g300);
@@ -25,10 +25,6 @@
 
     &::placeholder {
         color: var(--g1500);
-    }
-
-    &.noQuery {
-        padding-left: 28px;
     }
 
     &:focus,

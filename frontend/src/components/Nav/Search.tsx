@@ -98,12 +98,11 @@ export default function Search({ className }: { className?: string }) {
     }
 
     return <div className={classNames(styles.container, className)} {...getComboboxProps()}>
-        {!query && <SearchIcon className={styles.icon} />}
+        <SearchIcon className={styles.icon} />
         <input
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
-                [styles.noQuery]: !query,
             })}
             type="text"
             placeholder="Search..."
