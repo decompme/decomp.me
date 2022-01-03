@@ -5,7 +5,7 @@ colorama
 cxxfilt
 django-cors-headers
 django-environ
-django-filters
+django-filter
 django-stubs
 django-stubs-ext
 djangorestframework
