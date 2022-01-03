@@ -43,9 +43,10 @@ export default function Search({ className }: { className?: string }) {
         getInputProps,
         getComboboxProps,
         getItemProps,
+        setInputValue,
     } = useCombobox({
         items,
-        isOpen: isFocused && !(isLoading && items.length === 0),
+        isOpen: (isFocused || query) && !(isLoading && items.length === 0),
         itemToString(item) {
             return item.name
         },
@@ -67,6 +68,11 @@ export default function Search({ className }: { className?: string }) {
                 setIsLoading(false)
             }, 200))
         },
+        onSelectedItemChange({ selectedItem }) {
+            if (selectedItem) {
+                router.push(selectedItem.html_url)
+            }
+        },
     })
 
     const { renderLayer, triggerProps, layerProps, triggerBounds } = useLayer({
@@ -78,6 +84,10 @@ export default function Search({ className }: { className?: string }) {
         possiblePlacements: ["top-start", "bottom-start"],
         triggerOffset: 0,
         containerOffset: 16,
+        onOutsideClick() {
+            setInputValue("")
+            setQuery("")
+        },
     })
 
     const [isMounted, setIsMounted] = useState(false)
@@ -98,7 +108,19 @@ export default function Search({ className }: { className?: string }) {
         </div>
     }
 
-    return <div className={classNames(styles.container, className)} {...getComboboxProps()}>
+    return <div
+        className={classNames(styles.container, className)}
+        {...getComboboxProps()}
+        onKeyDown={evt => {
+            if (evt.key === "Enter") {
+                evt.stopPropagation()
+                evt.preventDefault()
+
+                if (searchItems.length > 0)
+                    router.push(searchItems[0].html_url)
+            }
+        }}
+    >
         <SearchIcon className={styles.icon} />
         <input
             {...getInputProps(triggerProps)}
@@ -110,12 +132,6 @@ export default function Search({ className }: { className?: string }) {
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            onKeyDown={evt => {
-                if (evt.key === "Enter") {
-                    if (items.length > 0)
-                        router.push(items[0].html_url)
-                }
-            }}
         />
         {isLoading && isFocused && <LoadingSpinner className={styles.loadingIcon} />}
         {isMounted && renderLayer(
@@ -138,10 +154,10 @@ export default function Search({ className }: { className?: string }) {
                                 className={classNames(verticalMenuStyles.item, styles.item)}
                                 {...getItemProps({ item: scratch, index })}
                             >
+                                <PlatformIcon platform={scratch.platform} size={16} />
                                 <span className={styles.itemName}>
                                     {scratch.name}
                                 </span>
-                                <PlatformIcon platform={scratch.platform} size={16} />
                                 {scratch.owner && !api.isAnonUser(scratch.owner) && <Image
                                     src={scratch.owner.avatar_url}
                                     alt={scratch.owner.username}
