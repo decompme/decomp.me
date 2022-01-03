@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 
 import Image from "next/image"
-import Link from "next/link"
 import { useRouter } from "next/router"
 
 import { SearchIcon } from "@primer/octicons-react"
@@ -34,16 +33,14 @@ export default function Search({ className }: { className?: string }) {
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
     const recentScratches = useRecentScratches()
-    const inputRef = useRef<HTMLInputElement>(null)
 
     const items = query.length > 0 ? searchItems : recentScratches
 
     const close = () => {
+        console.info("<Search> close")
         setInputValue("")
         setQuery("")
         setIsFocused(false)
-        if (inputRef.current)
-            inputRef.current.blur()
     }
 
     const {
@@ -79,8 +76,9 @@ export default function Search({ className }: { className?: string }) {
         },
         onSelectedItemChange({ selectedItem }) {
             if (selectedItem) {
-                router.push(selectedItem.html_url)
+                console.info("<Search> onSelectedItemChange")
                 close()
+                router.push(selectedItem.html_url)
             }
         },
     })
@@ -95,6 +93,7 @@ export default function Search({ className }: { className?: string }) {
         triggerOffset: 0,
         containerOffset: 16,
         onOutsideClick() {
+            console.info("<Search> onOutsideClick")
             close()
         },
     })
@@ -126,15 +125,15 @@ export default function Search({ className }: { className?: string }) {
                 evt.preventDefault()
 
                 if (searchItems.length > 0) {
-                    router.push(searchItems[0].html_url)
+                    console.info("<Search> Enter pressed")
                     close()
+                    router.push(searchItems[0].html_url)
                 }
             }
         }}
     >
         <SearchIcon className={styles.icon} />
         <input
-            ref={inputRef}
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
@@ -143,7 +142,7 @@ export default function Search({ className }: { className?: string }) {
             placeholder="Search decomp.me..."
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onClick={() => setIsFocused(true)}
         />
         {isLoading && isFocused && <LoadingSpinner className={styles.loadingIcon} />}
         {isMounted && renderLayer(
@@ -160,26 +159,33 @@ export default function Search({ className }: { className?: string }) {
                     exit={{ opacity: 0, scaleY: 0.75 }}
                     transition={{ duration: 0.125 }}
                 >
-                    {items.map((scratch, index) => (
-                        <Link key={scratch.url} href={scratch.html_url}>
-                            <a
-                                className={classNames(verticalMenuStyles.item, styles.item)}
-                                {...getItemProps({ item: scratch, index })}
-                            >
-                                <PlatformIcon platform={scratch.platform} size={16} />
-                                <span className={styles.itemName}>
-                                    {scratch.name}
-                                </span>
-                                {scratch.owner && !api.isAnonUser(scratch.owner) && <Image
-                                    src={scratch.owner.avatar_url}
-                                    alt={scratch.owner.username}
-                                    width={16}
-                                    height={16}
-                                    className={styles.scratchOwnerAvatar}
-                                />}
-                            </a>
-                        </Link>
-                    ))}
+                    {items.map((scratch, index) => {
+                        const props = getItemProps({ item: scratch, index })
+                        const oldOnClick = props.onClick
+                        props.onClick = evt => {
+                            evt.preventDefault() // Don't visit the link
+                            return oldOnClick(evt)
+                        }
+
+                        return <a
+                            key={scratch.url}
+                            href={scratch.html_url}
+                            className={classNames(verticalMenuStyles.item, styles.item)}
+                            {...props}
+                        >
+                            <PlatformIcon platform={scratch.platform} size={16} />
+                            <span className={styles.itemName}>
+                                {scratch.name}
+                            </span>
+                            {scratch.owner && !api.isAnonUser(scratch.owner) && <Image
+                                src={scratch.owner.avatar_url}
+                                alt={scratch.owner.username}
+                                width={16}
+                                height={16}
+                                className={styles.scratchOwnerAvatar}
+                            />}
+                        </a>
+                    })}
                     {items.length === 0 && <div className={classNames(verticalMenuStyles.item, styles.noResults)}>
                         No search results
                     </div>}
