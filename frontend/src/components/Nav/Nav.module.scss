@@ -39,8 +39,7 @@
     @extend .item;
 
     margin: 0;
-    padding: 0;
-    padding-left: 4px;
+    padding: 0 4px;
 
     svg {
         pointer-events: none;
