@@ -66,8 +66,8 @@ class HtmlUrlField(serializers.HyperlinkedIdentityField):
         super().__init__(**kwargs)
 
     def get_url(self, value, view_name, request, format):
-        if isinstance(value, Scratch):
-            return f"{FRONTEND_BASE}/scratch/{value.slug}"
+        if hasattr(value, "get_html_url"):
+            return value.get_html_url()
 
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 

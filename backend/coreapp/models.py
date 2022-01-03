@@ -2,6 +2,8 @@ from django.utils.crypto import get_random_string
 from django.db import models
 from django.contrib.auth.models import User
 
+from decompme.settings import FRONTEND_BASE
+
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
 
@@ -82,4 +84,4 @@ class Scratch(models.Model):
         ))
 
     def get_html_url(self):
-        return "/scratch/" + self.slug + "/"
+        return FRONTEND_BASE + "/scratch/" + self.slug
