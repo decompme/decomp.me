@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import Image from "next/image"
 import Link from "next/link"
@@ -34,8 +34,17 @@ export default function Search({ className }: { className?: string }) {
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
     const recentScratches = useRecentScratches()
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const items = query.length > 0 ? searchItems : recentScratches
+
+    const close = () => {
+        setInputValue("")
+        setQuery("")
+        setIsFocused(false)
+        if (inputRef.current)
+            inputRef.current.blur()
+    }
 
     const {
         isOpen,
@@ -71,6 +80,7 @@ export default function Search({ className }: { className?: string }) {
         onSelectedItemChange({ selectedItem }) {
             if (selectedItem) {
                 router.push(selectedItem.html_url)
+                close()
             }
         },
     })
@@ -85,8 +95,7 @@ export default function Search({ className }: { className?: string }) {
         triggerOffset: 0,
         containerOffset: 16,
         onOutsideClick() {
-            setInputValue("")
-            setQuery("")
+            close()
         },
     })
 
@@ -116,13 +125,16 @@ export default function Search({ className }: { className?: string }) {
                 evt.stopPropagation()
                 evt.preventDefault()
 
-                if (searchItems.length > 0)
+                if (searchItems.length > 0) {
                     router.push(searchItems[0].html_url)
+                    close()
+                }
             }
         }}
     >
         <SearchIcon className={styles.icon} />
         <input
+            ref={inputRef}
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
