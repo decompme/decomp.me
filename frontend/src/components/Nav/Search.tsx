@@ -13,6 +13,7 @@ import useSWR from "swr"
 
 import * as api from "../../lib/api"
 import LoadingSpinner from "../loading.svg"
+import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import verticalMenuStyles from "../VerticalMenu.module.scss" // eslint-disable-line css-modules/no-unused-class
 
 import styles from "./Search.module.scss"
@@ -134,12 +135,13 @@ export default function Search({ className }: { className?: string }) {
                     {items.map((scratch, index) => (
                         <Link key={scratch.url} href={scratch.html_url}>
                             <a
-                                className={verticalMenuStyles.item}
+                                className={classNames(verticalMenuStyles.item, styles.item)}
                                 {...getItemProps({ item: scratch, index })}
                             >
                                 <span className={styles.itemName}>
                                     {scratch.name}
                                 </span>
+                                <PlatformIcon platform={scratch.platform} size={16} />
                                 {scratch.owner && !api.isAnonUser(scratch.owner) && <Image
                                     src={scratch.owner.avatar_url}
                                     alt={scratch.owner.username}

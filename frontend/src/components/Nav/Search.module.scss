@@ -82,6 +82,10 @@
     border-top-right-radius: 0;
 }
 
+.item {
+    gap: 4px;
+}
+
 .itemName {
     flex: 1;
     overflow: hidden;
