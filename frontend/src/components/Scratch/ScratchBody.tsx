@@ -66,7 +66,7 @@ export default function ScratchBody({
         </resizer.Container>)
         : scratch.compiler === ""
             ? (<ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />)
-            : (<Tabs activeTab={leftTab} onChange={setLeftTab}>
+            : (<Tabs activeTab={leftTab} onChange={setLeftTab} background="var(--g300)" border={false}>
                 {leftTabs}
                 {rightTabs}
             </Tabs>)

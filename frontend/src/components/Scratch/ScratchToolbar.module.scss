@@ -1,14 +1,15 @@
-@import "../Nav/Nav.module.scss";
+$column_width: 260px;
 
 .toolbar {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
 
     min-height: 40px; // SSR has no buttons
 
-    gap: 4px;
+    font-size: 90%;
+
     padding: 0 4px;
 
     background: var(--g400);
@@ -30,33 +31,56 @@
 
     gap: 4px;
 
-    height: 100%;
-
     @media screen and (min-height: 800px) {
         gap: 8px;
     }
+
+    min-width: $column_width;
 }
 
 .center {
     justify-content: center;
     overflow: hidden;
-
-    @media (min-width: 800px) {
-        flex-basis: 50%;
-    }
 }
 
-.left {
-    justify-content: flex-start;
-
-    @media (min-width: 800px) {
-        flex-basis: 25%;
-    }
-}
-
+.left,
 .right {
-    flex-basis: 25%;
-    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+@media (max-width: ($column_width * 3)) {
+    .center {
+        min-width: $column_width * 0.5;
+    }
+}
+
+@media (max-width: ($column_width * 2.5)) {
+    .left,
+    .right,
+    .center {
+        min-width: 0;
+    }
+
+    .search {
+        display: none;
+    }
+}
+
+@media (max-width: ($column_width * 2)) {
+    .right > button,
+    .right > .iconButton {
+        // Button actions are available in frog menu as alternative
+        display: none;
+    }
+
+    .left,
+    .right {
+        min-width: 60px;
+    }
+}
+
+.grow {
+    flex: 1;
 }
 
 .name {
@@ -108,15 +132,19 @@
 }
 
 .iconButton {
-    @extend .logo;
-
     color: var(--g1400);
     height: 100%;
 
     display: flex;
     align-items: center;
 
+    padding-left: 4px;
+
     cursor: pointer;
+
+    &:hover {
+        opacity: 0.8;
+    }
 }
 
 .loginState {

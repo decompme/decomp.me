@@ -16,7 +16,6 @@ class CurrentUser(APIView):
 
     def get(self, request: Request):
         user = serialize_profile(request, request.profile)
-        assert user["is_you"] == True
         return Response(user)
 
     def post(self, request: Request):

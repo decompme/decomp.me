@@ -124,13 +124,13 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
             keysDown.clear()
         }
 
-        console.log("Shortcut " + translateKeys(keys) + " mounting")
+        //console.log("Shortcut " + translateKeys(keys) + " mounting")
         el.addEventListener("keydown", handleKeyDown)
         el.addEventListener("keyup", handleKeyUp)
         el.addEventListener("blur", handleBlur)
 
         return () => {
-            console.log("Shortcut " + translateKeys(keys) + " unmounting")
+            //console.log("Shortcut " + translateKeys(keys) + " unmounting")
             el.removeEventListener("keydown", handleKeyDown)
             el.removeEventListener("keyup", handleKeyUp)
             el.removeEventListener("blur", handleBlur)

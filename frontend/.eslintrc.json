@@ -32,6 +32,7 @@
         "no-confusing-arrow": ["error", { "allowParens": true }],
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "no-extra-semi": "off",
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-extra-semi": ["error"],
         "no-empty-function": "off",
         "@typescript-eslint/no-empty-function": "off",

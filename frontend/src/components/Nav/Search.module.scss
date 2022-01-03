@@ -1,0 +1,111 @@
+@use "../VerticalMenu.module.scss" as VerticalMenu;
+
+.container {
+    position: relative;
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input {
+    border-radius: 6px;
+    padding-right: 32px; // space for loading spinner
+    padding-left: 28px; // space for search icon
+    padding-top: 5px;
+    padding-bottom: 6px;
+    background: var(--g300);
+    border: 1px solid var(--g600);
+    color: var(--g1900);
+
+    text-overflow: ellipsis;
+
+    width: 100%;
+
+    font-size: 0.9em;
+
+    transition: border-radius, background, border-color;
+
+    &::placeholder {
+        color: var(--g1000);
+    }
+
+    &:focus,
+    &.isOpen {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.125);
+        background: rgba(0, 0, 0, 0.5);
+
+        @supports not (backdrop-filter: blur(10px)) {
+            background: var(--g100);
+        }
+
+        &::placeholder {
+            color: var(--g900);
+        }
+    }
+
+    &.isOpen {
+        border-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+}
+
+.icon,
+.loadingIcon {
+    position: absolute;
+    top: calc(50% + 1px);
+    left: 10px;
+    transform: translateY(-50%);
+
+    width: 14px;
+    height: 14px;
+
+    color: var(--g1000);
+
+    pointer-events: none;
+}
+
+.loadingIcon {
+    left: unset;
+    right: 10px;
+
+    color: inherit;
+}
+
+.container:focus-within .icon {
+    color: var(--g900);
+}
+
+.results {
+    list-style: none;
+    transform-origin: center top;
+
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.item {
+    gap: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.itemName {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scratchOwnerAvatar {
+    flex-shrink: 0;
+    border-radius: 999px;
+    width: 16px;
+    height: 16px;
+}
+
+.noResults {
+    color: var(--g500);
+}

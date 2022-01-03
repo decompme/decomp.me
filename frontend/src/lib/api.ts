@@ -9,11 +9,14 @@ import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
-type Json = Record<string, unknown>
+type Json = any
 
 const commonOpts: RequestInit = {
     credentials: "include",
     cache: "reload",
+    headers: {
+        "Accept": "application/json",
+    },
 }
 
 /*
@@ -66,7 +69,18 @@ export async function get(url: string, useCacheIfFresh = false) {
         throw new ResponseError(response, await response.json())
     }
 
-    return await response.json()
+    try {
+        return await response.json()
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new ResponseError(response, {
+                code: "invalid_json",
+                detail: "The server returned invalid JSON",
+            })
+        }
+
+        throw error
+    }
 }
 
 export const getCached = (url: string) => get(url, true)
@@ -136,24 +150,31 @@ export interface User {
     username: string
     name: string
     avatar_url: string | null
-    github_api_url: string | null
-    github_html_url: string | null
+    //github_api_url: string | null
+    //github_html_url: string | null
 }
 
-export type Scratch = {
+export interface TerseScratch {
+    url: string
+    html_url: string
+    owner: AnonymousUser | User | null // null means unclaimed
     name: string
-    description: string
-    slug: string
+    creation_time: string
+    last_updated: string
     compiler: string
     platform: string
+}
+
+export interface Scratch extends TerseScratch {
+    slug: string // avoid using, use `url` instead
+    description: string
     compiler_flags: string
     source_code: string
     context: string
-    owner: AnonymousUser | User | null // null means unclaimed
-    parent: string | null // URL
-    diff_label: string | null
-    score: number // -1 = doesn't compile
+    diff_label: string
+    score: number // - 1 = doesn't compile
     max_score: number
+    parent: string | null
 }
 
 export type Compilation = {
@@ -229,7 +250,7 @@ export function useUserIsYou(): (user: User | AnonymousUser | undefined) => bool
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {
-    const { data: savedScratch, error } = useSWR(`/scratch/${scratch.slug}`, get, {
+    const { data: savedScratch, error } = useSWR(scratch.url, get, {
         fallbackData: scratch, // No loading state, just use the local scratch
     })
 
@@ -239,7 +260,7 @@ export function useSavedScratch(scratch: Scratch): Scratch {
     return savedScratch
 }
 
-export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
+export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     const savedScratch = useSavedScratch(localScratch)
     const userIsYou = useUserIsYou()
 
@@ -251,7 +272,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             throw new Error("Cannot save scratch which you do not own")
         }
 
-        await patch(`/scratch/${localScratch.slug}`, {
+        const updatedScratch = await patch(localScratch.url, {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
@@ -260,27 +281,29 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<void> {
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         })
 
-        await mutate(`/scratch/${localScratch.slug}`, localScratch, true)
+        await mutate(localScratch.url, updatedScratch, false)
+
+        return updatedScratch
     }, [localScratch, savedScratch, userIsYou])
 
     return saveScratch
 }
 
 export async function claimScratch(scratch: Scratch): Promise<void> {
-    const { success } = await post(`/scratch/${scratch.slug}/claim`, {})
+    const { success } = await post(`${scratch.url}/claim`, {})
     const user = await get("/user")
 
     if (!success)
         throw new Error("Scratch already claimed")
 
-    await mutate(`/scratch/${scratch.slug}`, {
+    await mutate(scratch.url, {
         ...scratch,
         owner: user,
     })
 }
 
 export async function forkScratch(parent: Scratch): Promise<Scratch> {
-    const scratch = await post(`/scratch/${parent.slug}/fork`, parent)
+    const scratch = await post(`${parent.url}/fork`, parent)
     await claimScratch(scratch)
     return scratch
 }
@@ -292,7 +315,7 @@ export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
         const fork = await forkScratch(parent)
 
         ignoreNextWarnBeforeUnload()
-        await router.push(`/scratch/${fork.slug}`)
+        await router.push(fork.html_url)
     }, [router, parent])
 }
 
@@ -329,7 +352,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
         if (!scratch.compiler)
             return Promise.reject(new Error("Cannot compile before a compiler is set"))
 
-        const promise = post(`/scratch/${scratch.slug}/compile`, {
+        const promise = post(`${scratch.url}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
             compiler_flags: scratch.compiler_flags,
@@ -347,6 +370,15 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
 
         return promise
     }, [compileRequestPromise, savedScratch, scratch])
+
+    // If the scratch we're looking at changes, we need to recompile
+    const [url, setUrl] = useState(scratch.url)
+    useEffect(() => {
+        if (url !== scratch.url) {
+            setUrl(scratch.url)
+            compile()
+        }
+    }, [compile, scratch.url, url])
 
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 

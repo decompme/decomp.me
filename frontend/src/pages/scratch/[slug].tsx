@@ -37,13 +37,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
 
         let initialCompilation: api.Compilation | null = null
         try {
-            initialCompilation = await api.post(`/scratch/${slug}/compile`, {
-                // TODO(backend): api should take {}, supporting undefinedIfUnchanged on all fields
-                compiler: scratch.compiler,
-                compiler_flags: scratch.compiler_flags,
-                source_code: scratch.source_code,
-                context: undefined,
-            })
+            initialCompilation = await api.get(`${scratch.url}/compile`)
         } catch (err) {
             if (err.status !== 400)
                 throw err
@@ -58,6 +52,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
             },
         }
     } catch (error) {
+        console.log(error)
         return {
             notFound: true,
         }
@@ -70,7 +65,7 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
     useWarnBeforeScratchUnload(scratch)
 
     // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
-    if (scratch.slug !== initialScratch.slug)
+    if (scratch.url !== initialScratch.url)
         setScratch(initialScratch)
 
     // If the server scratch owner changes (i.e. scratch was claimed), update local scratch owner.
@@ -80,7 +75,7 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
     // 3. Logging in
     // 4. Notice the scratch owner (in the About panel) has changed to your newly-logged-in user
     const ownerMayChange = !scratch.owner || scratch.owner.is_anonymous
-    const cached = useSWR<api.Scratch>(ownerMayChange && `/scratch/${scratch.slug}`, api.get)?.data
+    const cached = useSWR<api.Scratch>(ownerMayChange && scratch.url, api.get)?.data
     if (ownerMayChange && cached?.owner && !api.isUserEq(scratch.owner, cached?.owner)) {
         console.info("Scratch owner updated", cached.owner)
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))

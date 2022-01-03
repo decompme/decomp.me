@@ -3,6 +3,7 @@ import { createContext, ReactNode, useCallback, useContext, useState } from "rea
 import Link from "next/link"
 import { useRouter } from "next/router"
 
+import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
 import ErrorBoundary from "./ErrorBoundary"
@@ -44,8 +45,8 @@ export default function VerticalMenu({ children, open, setOpen }: Props) {
     </MenuContext.Provider>
 }
 
-export function MenuItem({ children }: { children: ReactNode }) {
-    return <li className={styles.item}>
+export function MenuItem({ className, children }: { className?: string, children: ReactNode }) {
+    return <li className={classNames(styles.item, className)}>
         {children}
     </li>
 }
@@ -114,4 +115,11 @@ export function LinkItem({ children, href, disabled, shortcutKeys }: { children:
             </div>}
         </a>
     </Link>
+}
+
+export function SearchItem() {
+    return <MenuItem className={styles.searchItem}>
+        <SearchIcon />
+        <input type="text" placeholder="Search..." />
+    </MenuItem>
 }

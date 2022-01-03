@@ -2,6 +2,8 @@ from django.utils.crypto import get_random_string
 from django.db import models
 from django.contrib.auth.models import User
 
+from decompme.settings import FRONTEND_BASE
+
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
 
@@ -45,7 +47,7 @@ class Assembly(models.Model):
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
-    name = models.CharField(max_length=512, default="", blank=True)
+    name = models.CharField(max_length=512, default="Untitled", blank=False)
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -60,6 +62,9 @@ class Scratch(models.Model):
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ['-creation_time']
 
     def __str__(self):
         return self.slug
@@ -77,3 +82,6 @@ class Scratch(models.Model):
             self.parent,
             self.owner,
         ))
+
+    def get_html_url(self):
+        return FRONTEND_BASE + "/scratch/" + self.slug

@@ -9,6 +9,7 @@ import * as api from "../../lib/api"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
+import Search from "../Nav/Search"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
@@ -27,7 +28,7 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = `/api/scratch/${scratch.slug}/export`
+    const url = `${scratch.url}/export`
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"
@@ -59,7 +60,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
             className={styles.name}
 
             onChange={evt => {
-                const name = evt.target.value
+                const name = evt.currentTarget.innerText as string
                 if (name.length != 0)
                     onChange(name)
             }}
@@ -103,7 +104,7 @@ export default function ScratchToolbar({
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
-    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch)
+    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
 
     const [isMenuOpen, setMenuOpen] = useState(false)
@@ -195,7 +196,9 @@ export default function ScratchToolbar({
                         </LinkItem>
                     </VerticalMenu>
                 </div>)}
+                <Search className={styles.search} />
             </div>
+            <div className={styles.grow} />
             <div className={styles.center}>
                 <div className={styles.icons}>
                     <PlatformIcon size={20} platform={scratch.platform} />
@@ -205,13 +208,15 @@ export default function ScratchToolbar({
                     onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
                 />
             </div>
+            <div className={styles.grow} />
             <div className={styles.right}>
+                <div className={styles.grow} />
                 <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
                     <GearIcon size={16} />
                 </div>
                 {isMounted && <>
                     {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} isSaving={isSaving} />}
+                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
                     {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
                     {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
                     <LoginState className={styles.loginState} />

@@ -157,7 +157,7 @@ export default function NewScratch({ serverCompilers }: {
 
             await api.claimScratch(scratch)
 
-            await router.push(`/scratch/${scratch.slug}`)
+            await router.push(scratch.html_url)
         } catch (error) {
             setLineNumbers(true) // line numbers are likely relevant to the error
             console.error(error)

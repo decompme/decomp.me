@@ -61,7 +61,8 @@ a.item {
         }
 
         &:hover,
-        &:focus {
+        &:focus,
+        &[aria-selected="true"] {
             color: var(--g1900);
 
             &::before {
@@ -103,4 +104,60 @@ a.item {
     border-top: 1px solid inherit;
     margin: $padding auto;
     width: calc(100% - $padding * 2);
+}
+
+.searchItem {
+    position: relative;
+
+    padding-left: 6px;
+    padding-right: 6px;
+
+    &:first-child,
+    hr + & {
+        padding-top: 0;
+    }
+
+    input {
+        border-radius: 3px;
+        padding-right: 6px; // space for loading spinner
+        padding-left: 30px; // space for search icon
+        padding-top: 5px;
+        padding-bottom: 6px;
+        background: transparent;
+        border: 1px solid var(--g600);
+        color: var(--g1900);
+
+        text-overflow: ellipsis;
+
+        width: 100%;
+
+        transition: border-radius, background, border-color;
+
+        &::placeholder {
+            color: var(--g1500);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.125);
+            background: rgba(0, 0, 0, 0.5);
+
+            &::placeholder {
+                color: var(--g900);
+            }
+        }
+    }
+
+    svg {
+        position: absolute;
+        top: 6px;
+        left: 16px;
+
+        width: 16px;
+        height: 16px;
+
+        color: var(--g1000);
+
+        pointer-events: none;
+    }
 }
