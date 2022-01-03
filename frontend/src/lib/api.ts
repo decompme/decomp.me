@@ -371,6 +371,15 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
         return promise
     }, [compileRequestPromise, savedScratch, scratch])
 
+    // If the scratch we're looking at changes, we need to recompile
+    const [url, setUrl] = useState(scratch.url)
+    useEffect(() => {
+        if (url !== scratch.url) {
+            setUrl(scratch.url)
+            compile()
+        }
+    }, [compile, scratch.url, url])
+
     const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
 
     useEffect(() => {
