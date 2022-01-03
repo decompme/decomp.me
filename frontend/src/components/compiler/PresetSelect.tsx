@@ -101,6 +101,11 @@ export const PRESETS = [
         opts: "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -align powerpc -enum int",
     },
     {
+        name: "Super Mario Sunshine",
+        compiler: "mwcc_233_163",
+        opts: "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -msgstyle gcc -enum int -rostr",
+    },
+    {
         name: "The Minish Cap",
         compiler: "agbcc",
         opts: "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
