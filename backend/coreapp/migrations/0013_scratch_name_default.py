@@ -9,7 +9,8 @@ def populate_name(apps, schema_editor):
     """
     Scratch = apps.get_model("coreapp", "Scratch")
     for row in Scratch.objects.all():
-        row.name = row.diff_label if row.diff_label else "Untitled"
+        if not row.name:
+            row.name = "Untitled"
         row.save()
 
 class Migration(migrations.Migration):
