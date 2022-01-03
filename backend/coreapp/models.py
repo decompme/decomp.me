@@ -47,7 +47,7 @@ class Assembly(models.Model):
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
-    name = models.CharField(max_length=512, default="", blank=True)
+    name = models.CharField(max_length=512, default="Untitled", blank=False)
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
