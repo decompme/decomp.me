@@ -63,7 +63,7 @@ export const PRESETS = [
     {
         name: "Battle for Bikini Bottom",
         compiler: "mwcc_247_92",
-        opts: "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+        opts: "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     },
     {
         name: "Super Monkey Ball",
@@ -103,7 +103,7 @@ export const PRESETS = [
     {
         name: "Super Mario Sunshine",
         compiler: "mwcc_233_163",
-        opts: "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -msgstyle gcc -enum int -rostr",
+        opts: "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
     },
     {
         name: "The Minish Cap",
