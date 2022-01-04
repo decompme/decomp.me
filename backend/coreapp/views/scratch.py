@@ -51,7 +51,7 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult):
     scratch.max_score = diff.get("max_score", scratch.max_score)
     scratch.save()
 
-def compile_update_scratch_score(scratch: Scratch) -> None:
+def compile_scratch_update_score(scratch: Scratch) -> None:
     """
     Initialize the scratch's score and ignore errors should they occur
     """
@@ -184,7 +184,7 @@ class ScratchViewSet(
         ser.is_valid(raise_exception=True)
         scratch = ser.save(target_assembly=assembly, platform=platform)
 
-        compile_update_scratch_score(scratch)
+        compile_scratch_update_score(scratch)
 
         return Response(
             ScratchSerializer(scratch, context={ 'request': request }).data,
@@ -204,7 +204,7 @@ class ScratchViewSet(
 
         if update_needs_recompile(request.data):
             scratch = self.get_object()
-            compile_update_scratch_score(scratch)
+            compile_scratch_update_score(scratch)
             return Response(ScratchSerializer(scratch, context={ 'request': request }).data)
 
         return response
@@ -269,7 +269,7 @@ class ScratchViewSet(
             platform=parent_scratch.platform,
         )
 
-        compile_update_scratch_score(new_scratch)
+        compile_scratch_update_score(new_scratch)
 
         return Response(
             ScratchSerializer(new_scratch, context={ "request": request }).data,

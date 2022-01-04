@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 5000
 
+
 class AsmDifferWrapper:
     @staticmethod
     def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
