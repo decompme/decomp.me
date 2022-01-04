@@ -2,8 +2,8 @@ from coreapp.error import AssemblyError, DiffError, NmError, ObjdumpError
 from coreapp import compiler_wrapper
 from coreapp.models import Assembly
 from coreapp.sandbox import Sandbox
-from coreapp.compiler_wrapper import PATH
-from typing import Any, Dict, Optional
+from coreapp.compiler_wrapper import PATH, DiffResult
+from typing import Optional
 import json
 import logging
 import subprocess
@@ -106,7 +106,7 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def diff(target_assembly: Assembly, platform: str, diff_label:Optional[str], compiled_elf: bytes) -> Dict[str, Any]:
+    def diff(target_assembly: Assembly, platform: str, diff_label:Optional[str], compiled_elf: bytes) -> DiffResult:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
         if compiler_arch == "dummy":
