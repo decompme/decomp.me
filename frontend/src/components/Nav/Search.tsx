@@ -111,7 +111,6 @@ export default function Search({ className }: { className?: string }) {
                 type="text"
                 placeholder="Search decomp.me..."
                 spellCheck={false}
-                value=""
             />
         </div>
     }
