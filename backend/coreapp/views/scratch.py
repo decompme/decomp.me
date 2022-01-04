@@ -1,8 +1,8 @@
 from rest_framework.exceptions import APIException
-from coreapp.error import CompilationError
+from coreapp.error import CompilationError, DiffError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
-from coreapp.compiler_wrapper import CompilerWrapper
+from coreapp.compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from django.http import HttpResponse, QueryDict
 from rest_framework import serializers, status, mixins, filters
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 import zipfile
 import re
 
@@ -36,21 +36,32 @@ def get_db_asm(request_asm) -> Asm:
     })
     return asm
 
-def update_scratch_score(scratch: Scratch):
+def compile_scratch(scratch: Scratch) -> CompilationResult:
+    return CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+
+def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
+    return AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, compilation.elf_object)
+
+def update_scratch_score(scratch: Scratch, diff: DiffResult):
     """
-    Compile a scratch and save its score and max score
+    Given a scratch and a diff, update the scratch's score
+    """
+
+    scratch.score = diff.get("current_score", scratch.score)
+    scratch.max_score = diff.get("max_score", scratch.max_score)
+    scratch.save()
+
+def compile_update_scratch_score(scratch: Scratch) -> None:
+    """
+    Initialize the scratch's score and ignore errors should they occur
     """
 
     try:
-        result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
-    except CompilationError:
-        return
-
-    if result.elf_object:
-        diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
-        scratch.score = diff_output.get("current_score", scratch.score)
-        scratch.max_score = diff_output.get("max_score", scratch.max_score)
-        scratch.save()
+        compilation = compile_scratch(scratch)
+        diff = diff_compilation(scratch, compilation)
+        update_scratch_score(scratch, diff)
+    except (DiffError, CompilationError):
+        pass
 
 def scratch_last_modified(request: Request, pk: Optional[str] = None) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
@@ -173,7 +184,7 @@ class ScratchViewSet(
         ser.is_valid(raise_exception=True)
         scratch = ser.save(target_assembly=assembly, platform=platform)
 
-        update_scratch_score(scratch)
+        compile_update_scratch_score(scratch)
 
         return Response(
             ScratchSerializer(scratch, context={ 'request': request }).data,
@@ -193,11 +204,12 @@ class ScratchViewSet(
 
         if update_needs_recompile(request.data):
             scratch = self.get_object()
-            update_scratch_score(scratch)
+            compile_update_scratch_score(scratch)
             return Response(ScratchSerializer(scratch, context={ 'request': request }).data)
 
         return response
 
+    # POST on compile takes a partial and does not update the scratch's compilation status
     @action(detail=True, methods=['GET', 'POST'])
     def compile(self, request, pk):
         scratch: Scratch = self.get_object()
@@ -214,15 +226,15 @@ class ScratchViewSet(
             if "context" in request.data:
                 scratch.context = request.data["context"]
 
-        result = CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
+        compilation = compile_scratch(scratch)
+        diff = diff_compilation(scratch, compilation)
 
-        diff_output: Optional[Dict[str, Any]] = None
-        if result.elf_object:
-            diff_output = AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, result.elf_object)
+        if request.method == "GET":
+            update_scratch_score(scratch, diff)
 
         return Response({
-            "diff_output": diff_output,
-            "errors": result.errors,
+            "diff_output": diff,
+            "errors": compilation.errors,
         })
 
     @action(detail=True, methods=['POST'])
@@ -257,7 +269,7 @@ class ScratchViewSet(
             platform=parent_scratch.platform,
         )
 
-        update_scratch_score(new_scratch)
+        compile_update_scratch_score(new_scratch)
 
         return Response(
             ScratchSerializer(new_scratch, context={ "request": request }).data,

@@ -13,7 +13,7 @@ from time import sleep
 from .models import Scratch, Profile
 from .github import GitHubUser
 
-def onlyIfCompilerAvailable(*compiler_ids: str):
+def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
 
     for id in compiler_ids:
@@ -23,7 +23,7 @@ def onlyIfCompilerAvailable(*compiler_ids: str):
     return skipIf(False, "")
 
 class ScratchCreationTests(APITestCase):
-    @onlyIfCompilerAvailable('ido7.1')
+    @requiresCompiler('ido7.1')
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
@@ -47,7 +47,7 @@ nop"""
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Scratch.objects.count(), 1)
 
-    @onlyIfCompilerAvailable('ido5.3')
+    @requiresCompiler('ido5.3')
     def test_n64_func(self):
         """
         Ensure that functions with t6/t7 registers can be assembled.
@@ -88,7 +88,7 @@ sb  $t6, %lo(D_801D702C)($at)
         self.assertEqual(Scratch.objects.count(), 1)
 
 class ScratchModificationTests(APITestCase):
-    @onlyIfCompilerAvailable('gcc2.8.1', 'ido5.3')
+    @requiresCompiler('gcc2.8.1', 'ido5.3')
     def test_update_scratch_score(self):
         """
         Ensure that a scratch's score gets updated when the code changes.
@@ -104,7 +104,6 @@ class ScratchModificationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
-        self.assertIsNotNone(scratch)
         assert(scratch is not None)
 
         slug = scratch.slug
@@ -127,7 +126,41 @@ class ScratchModificationTests(APITestCase):
         assert(scratch is not None)
         self.assertEqual(scratch.score, 200)
 
-    @onlyIfCompilerAvailable('ido7.1')
+    @requiresCompiler('gcc2.8.1')
+    def test_update_scratch_score_on_compile_get(self):
+        """
+        Ensure that a scratch's score gets updated on a GET to compile
+        """
+        scratch_dict = {
+            'compiler': 'gcc2.8.1',
+            'compiler_flags': '-O2',
+            'platform': 'n64',
+            'context': '',
+            'target_asm': 'jr $ra\nli $v0,2',
+            'source_code': 'int func() { return 2; }'
+        }
+
+        response = self.client.post(reverse('scratch-list'), scratch_dict)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        scratch = Scratch.objects.first()
+        assert(scratch is not None)
+
+        scratch.score = -1
+        scratch.max_score = -1
+        scratch.save()
+
+        self.assertEqual(scratch.score, -1)
+        slug = scratch.slug
+
+        response = self.client.get(reverse('scratch-compile', kwargs={'pk': slug}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        scratch = Scratch.objects.first()
+        assert(scratch is not None)
+        self.assertEqual(scratch.score, 0)
+
+    @requiresCompiler('ido7.1')
     def test_create_scratch_score(self):
         """
         Ensure that a scratch's score gets set upon creation.
@@ -144,7 +177,6 @@ class ScratchModificationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
-        self.assertIsNotNone(scratch)
         assert(scratch is not None)
 
         self.assertEqual(scratch.score, 0)
@@ -167,7 +199,6 @@ class ScratchForkTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         scratch = Scratch.objects.first()
-        self.assertIsNotNone(scratch)
         assert(scratch is not None)
 
         slug = scratch.slug
@@ -198,7 +229,7 @@ class ScratchForkTests(APITestCase):
 
 
 class CompilationTests(APITestCase):
-    @onlyIfCompilerAvailable('gcc2.8.1')
+    @requiresCompiler('gcc2.8.1')
     def test_simple_compilation(self):
         """
         Ensure that we can run a simple compilation via the api
@@ -228,7 +259,7 @@ class CompilationTests(APITestCase):
         response = self.client.post(reverse("scratch-compile", kwargs={'pk': slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @onlyIfCompilerAvailable('gcc2.8.1')
+    @requiresCompiler('gcc2.8.1')
     def test_giant_compilation(self):
         """
         Ensure that we can compile a giant file
@@ -265,7 +296,7 @@ class CompilationTests(APITestCase):
 
         self.assertEqual(len(response.json()["errors"]), 0)
 
-    @onlyIfCompilerAvailable('ido5.3')
+    @requiresCompiler('ido5.3')
     def test_ido_line_endings(self):
         """
         Ensure that compilations with \\r\\n line endings succeed
@@ -273,7 +304,7 @@ class CompilationTests(APITestCase):
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
-    @onlyIfCompilerAvailable('mwcc_247_92')
+    @requiresCompiler('mwcc_247_92')
     def test_mwcc_wine(self):
         """
         Ensure that we can invoke mwcc through wine

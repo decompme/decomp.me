@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
 from coreapp.error import AssemblyError, CompilationError
 from coreapp.models import Asm, Assembly
@@ -16,6 +16,7 @@ from platform import uname
 
 logger = logging.getLogger(__name__)
 
+DiffResult = Dict[str, Any]
 
 PATH: str
 if settings.USE_SANDBOX_JAIL:
