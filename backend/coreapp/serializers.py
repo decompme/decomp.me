@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedIdentityField
+from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
 from typing import Any, Optional, TYPE_CHECKING
 
@@ -127,7 +127,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         exclude = []
         depth = 1 # repo
 
-class ProjectFunctionSerializer(serializers.HyperlinkedModelSerializer):
+class ProjectFunctionSerializer(serializers.ModelSerializer):
+    scratch = HyperlinkedRelatedField(view_name="scratch-detail", queryset=Scratch.objects.all())
+
     class Meta:
         model = ProjectFunction
-        exclude = []
+        exclude = ["project"]
+        read_only_fields = ["creation_time"]
