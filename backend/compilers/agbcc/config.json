@@ -1,4 +1,12 @@
-{
-    "platform": "gba",
-    "cc": "\"${COMPILER_DIR}\"/bin/agbcc $COMPILER_FLAGS \"$INPUT\" -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
-}
+[
+    {
+        "name": "agbcc",
+        "platform": "gba",
+        "cc": "\"${COMPILER_DIR}\"/bin/agbcc $COMPILER_FLAGS \"$INPUT\" -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
+    },
+    {
+        "name": "old_agbcc",
+        "platform": "gba",
+        "cc": "\"${COMPILER_DIR}\"/bin/old_agbcc $COMPILER_FLAGS \"$INPUT\" -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
+    }
+]

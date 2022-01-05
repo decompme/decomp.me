@@ -12,11 +12,13 @@ import os
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
-from platform import uname
+from platform import platform, uname
 
 logger = logging.getLogger(__name__)
 
 DiffResult = Dict[str, Any]
+
+CONFIG_JSON = "config.json"
 
 PATH: str
 if settings.USE_SANDBOX_JAIL:
@@ -31,34 +33,48 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
 else:
     WINE = "wine"
 
+def load_compiler(id: str, cc: Optional[str], platform: Optional[str], compilers: Dict[str, Dict[str, str]], base_id: Optional[str]=None):
+    if not cc or not platform:
+        logger.error(f"Error: {id} {CONFIG_JSON} is missing 'cc' and/or 'platform' field(s), skipping.")
+        return
+
+    if not base_id:
+        base_id = id
+
+    # allow binaries to exist outside of repo
+    binaries_path = Path(CompilerWrapper.base_path() / base_id)
+    # consider compiler binaries present if *any* non-config.json file is found
+    binaries = (x for x in binaries_path.glob("*") if x.name != CONFIG_JSON)
+    if next(binaries, None) != None:
+        compilers[id] = {
+            "cc": cc,
+            "platform": platform
+        }
+    else:
+        logger.debug(f"Config found but no binaries found for {id}, ignoring.")
+
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret = {}
-    config_json = "config.json"
     compilers_base = settings.BASE_DIR / "compilers"
     compiler_dirs = next(os.walk(compilers_base))
-    for compiler_id in compiler_dirs[1]:
-        config_path = Path(compilers_base / compiler_id / config_json)
+    for compiler_dir_name in compiler_dirs[1]:
+        config_path = Path(compilers_base / compiler_dir_name / CONFIG_JSON)
         if config_path.exists():
             with open(config_path) as f:
                 try:
                     config = json.load(f)
                 except:
-                    logger.error(f"Error: Unable to parse {config_json} for {compiler_id}")
+                    logger.error(f"Error: Unable to parse {CONFIG_JSON} for {compiler_dir_name}")
                     continue
 
-                if "cc" in config and "platform" in config:
-                    # allow binaries to exist outside of repo
-                    binaries_path = Path(CompilerWrapper.base_path() / compiler_id)
-                    logger.debug(f"Valid config found for {compiler_id}. Checking {binaries_path}...")
-                    # consider compiler binaries present if *any* non-config.json file is found
-                    binaries = (x for x in binaries_path.glob("*") if x.name != config_json)
-                    if next(binaries, None) != None:
-                        logger.debug(f"Enabling {compiler_id}.")
-                        ret[compiler_id] = config
-                    else:
-                        logger.debug(f"No binaries for {compiler_id}, ignoring.")
-                else:
-                    logger.warning(f"Error: {compiler_id} {config_json} is missing 'cc' and/or 'platform' field(s), skipping.")
+                if isinstance(config, dict):
+                    load_compiler(compiler_dir_name, config.get("cc"), config.get("platform"), ret)
+                elif isinstance(config, list):
+                    for list_def in config:
+                        if "name" not in list_def:
+                            logger.error(f"Error: {CONFIG_JSON} for {compiler_dir_name} is missing 'name' field")
+                            continue
+                        load_compiler(list_def["name"], list_def.get("cc"), list_def.get("platform"), ret, compiler_dir_name)
 
     if settings.DUMMY_COMPILER:
         ret["dummy"] = {
@@ -538,6 +554,6 @@ class CompilerWrapper:
 
 
 _compilers = load_compilers()
-logger.info(f"Found {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
+logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
 _platforms = load_platforms()
 logger.info(f"Available platform(s): {', '.join(CompilerWrapper.available_platforms().keys())}")
