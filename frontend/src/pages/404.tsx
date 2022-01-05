@@ -1,3 +1,4 @@
+import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import Frog from "../components/Nav/frog.svg"
 
@@ -12,5 +13,6 @@ export default function Error404Page() {
                 <b>404</b>. Page not found.
             </h1>
         </main>
+        <Footer />
     </>
 }
