@@ -13,6 +13,7 @@ def serialize_profile(request: Request, profile: Profile, small = False):
     if profile.user is None:
         return {
             "url": None,
+            "html_url": None,
             "is_you": profile == request.profile, # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
@@ -25,6 +26,7 @@ def serialize_profile(request: Request, profile: Profile, small = False):
 
         small_obj = {
             "url": reverse("user-detail", args=[user.username], request=request),
+            "html_url": profile.get_html_url(),
             "is_you": user == request.user, # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
@@ -100,7 +102,7 @@ class TerseScratchSerializer(ScratchSerializer):
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name"]
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "max_score"]
 
 class GitHubRepoSerializer(serializers.ModelSerializer):
     html_url = HtmlUrlField()
@@ -128,7 +130,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         depth = 1 # repo
 
 class ProjectFunctionSerializer(serializers.ModelSerializer):
-    scratch = HyperlinkedRelatedField(view_name="scratch-detail", queryset=Scratch.objects.all())
+    scratch = TerseScratchSerializer()
 
     class Meta:
         model = ProjectFunction

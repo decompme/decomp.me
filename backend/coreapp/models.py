@@ -33,7 +33,7 @@ class Profile(models.Model):
 
     def get_html_url(self):
         if self.user:
-            return f"{FRONTEND_BASE}/users/{self.user.username}"
+            return f"{FRONTEND_BASE}/u/{self.user.username}"
 
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)

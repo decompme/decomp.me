@@ -146,11 +146,15 @@ export interface Page<T> {
 }
 
 export interface AnonymousUser {
+    url: null
+    html_url: null
     is_anonymous: true
     id: number
 }
 
 export interface User {
+    url: string
+    html_url: string
     is_anonymous: false
     id: number
     username: string
@@ -169,6 +173,7 @@ export interface TerseScratch {
     last_updated: string
     compiler: string
     platform: string
+    max_score: number
 }
 
 export interface Scratch extends TerseScratch {
@@ -179,7 +184,6 @@ export interface Scratch extends TerseScratch {
     context: string
     diff_label: string
     score: number // - 1 = doesn't compile
-    max_score: number
     parent: string | null
 }
 
@@ -198,6 +202,13 @@ export interface Project {
     }
     creation_time: string
     icon_url: string
+}
+
+export interface ProjectFunction {
+    url: string
+    slug: string
+    scratch: TerseScratch
+    creation_time: string
 }
 
 export type Compilation = {
@@ -324,13 +335,13 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     })
 }
 
-export async function forkScratch(parent: Scratch): Promise<Scratch> {
+export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
     const scratch = await post(`${parent.url}/fork`, parent)
     await claimScratch(scratch)
     return scratch
 }
 
-export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
+export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
     const router = useRouter()
 
     return useCallback(async () => {

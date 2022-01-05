@@ -17,7 +17,7 @@ const Button = forwardRef(function Button({
             [styles.primary]: primary,
         })}
         onClick={event => {
-            if (!disabled) {
+            if (!disabled && onClick) {
                 onClick(event)
             }
         }}
@@ -29,7 +29,7 @@ const Button = forwardRef(function Button({
 
 export type Props = {
     children: React.ReactNode
-    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
     className?: string
     disabled?: boolean
     primary?: boolean

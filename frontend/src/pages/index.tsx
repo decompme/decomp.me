@@ -57,7 +57,7 @@ export default function IndexPage() {
                         {user?.is_anonymous && <GitHubLoginButton popup />}
                         <Link href="/new">
                             <a>
-                                <Button primary onClick={() => {}}>
+                                <Button primary>
                                     Start decomping
                                     <ArrowRightIcon />
                                 </Button>

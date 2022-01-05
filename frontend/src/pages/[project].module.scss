@@ -1,0 +1,48 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    max-width: 50em;
+    padding: 1em;
+
+    cursor: default;
+}
+
+.header {
+    background: var(--g300);
+    user-select: auto;
+    align-self: stretch;
+
+    .headerInner {
+        max-width: 50em;
+        padding: 1em;
+        margin: 0 auto;
+    }
+
+    h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 500;
+
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+
+    p {
+        padding-top: 4px;
+        color: var(--g1000);
+        font-size: 0.9em;
+        max-width: 50ch;
+    }
+
+    .maintainers {
+        font-size: 1.5em;
+
+        > label {
+            font-size: 0.5em;
+            color: var(--g800);
+        }
+    }
+}
