@@ -131,7 +131,7 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
-                        <LinkItem href="/scratch/new">
+                        <LinkItem href="/new">
                             <PlusIcon />
                             New scratch...
                         </LinkItem>

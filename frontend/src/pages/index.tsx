@@ -55,7 +55,7 @@ export default function IndexPage() {
                     </p>
                     <div className={styles.cta}>
                         {user?.is_anonymous && <GitHubLoginButton popup />}
-                        <Link href="/scratch/new">
+                        <Link href="/new">
                             <a>
                                 <Button primary onClick={() => {}}>
                                     Start decomping

@@ -23,7 +23,7 @@ export default function Nav({ children }: Props) {
             {children ?? <>
                 <Search className={styles.search} />
 
-                <Link href="/scratch/new">
+                <Link href="/new">
                     <a className={styles.item}>New scratch</a>
                 </Link>
                 {/* Add back when training is done: (<Link href="/training">
