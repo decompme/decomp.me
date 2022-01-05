@@ -33,10 +33,10 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
 else:
     WINE = "wine"
 
-def load_compiler(id: str, cc: Optional[str], platform: Optional[str], compilers: Dict[str, Dict[str, str]], base_id: Optional[str]=None):
+def load_compiler(id: str, cc: Optional[str], platform: Optional[str], base_id: Optional[str]=None) -> Optional[Dict[str, str]]:
     if not cc or not platform:
         logger.error(f"Error: {id} {CONFIG_JSON} is missing 'cc' and/or 'platform' field(s), skipping.")
-        return
+        return None
 
     if not base_id:
         base_id = id
@@ -46,12 +46,13 @@ def load_compiler(id: str, cc: Optional[str], platform: Optional[str], compilers
     # consider compiler binaries present if *any* non-config.json file is found
     binaries = (x for x in binaries_path.glob("*") if x.name != CONFIG_JSON)
     if next(binaries, None) != None:
-        compilers[id] = {
+        return {
             "cc": cc,
             "platform": platform
         }
     else:
         logger.debug(f"Config found but no binaries found for {id}, ignoring.")
+        return None
 
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret: Dict[str, Dict[str, str]] = {}
@@ -68,13 +69,18 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
                     continue
 
                 if isinstance(config, dict):
-                    load_compiler(compiler_dir_name, config.get("cc"), config.get("platform"), ret)
+                    comp = load_compiler(compiler_dir_name, config.get("cc"), config.get("platform"))
+                    if comp:
+                        ret[compiler_dir_name] = comp
                 elif isinstance(config, list):
                     for list_def in config:
                         if "name" not in list_def:
                             logger.error(f"Error: {CONFIG_JSON} for {compiler_dir_name} is missing 'name' field")
                             continue
-                        load_compiler(list_def["name"], list_def.get("cc"), list_def.get("platform"), ret, compiler_dir_name)
+                        name = list_def["name"]
+                        comp = load_compiler(name, list_def.get("cc"), list_def.get("platform"), compiler_dir_name)
+                        if comp:
+                            ret[name] = comp
 
     if settings.DUMMY_COMPILER:
         ret["dummy"] = {
