@@ -1,7 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { ArrowRightIcon, PlusIcon } from "@primer/octicons-react"
+import { ArrowRightIcon } from "@primer/octicons-react"
 
 import Button from "../components/Button"
 import ErrorBoundary from "../components/ErrorBoundary"
@@ -45,7 +45,7 @@ export default function IndexPage() {
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
         <Nav />
         <main className={styles.container}>
-            <aside className={styles.about}>
+            <header className={styles.about}>
                 <ErrorBoundary>
                     <h1>
                         Welcome to <span className={styles.siteName}>decomp.me</span>
@@ -65,19 +65,19 @@ export default function IndexPage() {
                         </Link>
                     </div>
                 </ErrorBoundary>
-            </aside>
-            <main className={styles.activity}>
+            </header>
+            <section className={styles.activity}>
                 <ErrorBoundary>
                     <h2>Recently updated</h2>
                     <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
                 </ErrorBoundary>
-            </main>
-            <aside className={styles.projects}>
+            </section>
+            <section className={styles.projects}>
                 <ErrorBoundary>
                     <h2>Projects</h2>
                     <ProjectList />
                 </ErrorBoundary>
-            </aside>
+            </section>
         </main>
         <Footer />
     </>
