@@ -37,7 +37,7 @@ export default function LoginState({ className }: { className?: string }) {
     >
         {api.isAnonUser(user)
             ? "Not signed in"
-            : <Image
+            : user.avatar_url && <Image
                 className={styles.avatar}
                 src={user.avatar_url}
                 alt="Avatar"

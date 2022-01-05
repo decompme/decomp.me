@@ -1,19 +1,26 @@
+from pathlib import Path
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models, transaction
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.dispatch import receiver
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-from typing import Optional
+from typing import List, Optional
 from github import Github
 from github.NamedUser import NamedUser
+from github.Repository import Repository
+import requests
+import subprocess
+import shutil
 
 from .models import Profile, Scratch
 from .middleware import Request
-import requests
+
+from decompme.settings import LOCAL_FILE_PATH
 
 API_CACHE_TIMEOUT = 60 * 60 # 1 hour
 
@@ -24,12 +31,7 @@ class BadOAuthCode(APIException):
 
 class MissingOAuthScope(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_code = "bad_oauth_scope"
-    missing_scope: str
-
-    def __init__(self, scope: str):
-        super(f"The GitHub OAuth verification code was valid but lacks required scope '{scope}'.")
-        self.missing_scope = scope
+    default_code = "missing_oauth_scope"
 
 class MalformedGithubApiResponse(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -91,8 +93,8 @@ class GitHubUser(models.Model):
             raise MalformedGithubApiResponse()
 
         scopes = scope_str.split(",")
-        #if not "public_repo" in scopes:
-        #    raise MissingOAuthScope("public_repo")
+        if not "public_repo" in scopes:
+            raise MissingOAuthScope("public_repo")
 
         details = Github(access_token).get_user()
 
@@ -133,3 +135,93 @@ class GitHubUser(models.Model):
         request.session["profile_id"] = profile.id
 
         return gh_user
+
+class GitHubRepo(models.Model):
+    owner = models.CharField(max_length=100)
+    repo = models.CharField(max_length=100)
+    branch = models.CharField(max_length=100, default="master", blank=False)
+    gh_user = models.ForeignKey(GitHubUser, null=False, help_text="Must have admin permission on the repo", on_delete=models.PROTECT)
+    is_pulling = models.BooleanField(default=False)
+    last_pulled = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "GitHub repo"
+        verbose_name_plural = "GitHub repos"
+
+    # TODO: make this async
+    def pull(self):
+        if self.is_pulling:
+            raise Exception("Already pulling")
+
+        self.is_pulling = True
+        self.save()
+
+        try:
+            repo_dir = self.get_dir()
+            remote_url = f"https://github.com/{self.owner}/{self.repo}"
+
+            if repo_dir.exists():
+                subprocess.run(["git", "remote", "set-url", "origin", remote_url], cwd=repo_dir)
+                subprocess.run(["git", "fetch", "origin", self.branch], cwd=repo_dir)
+                subprocess.run(["git", "reset", "--hard", f"origin/{self.branch}"], cwd=repo_dir)
+                subprocess.run(["git", "pull"], cwd=repo_dir)
+            else:
+                repo_dir.mkdir(parents=True)
+                subprocess.run([
+                    "git", "clone",
+                    remote_url,
+                    ".",
+                    "--depth", "1",
+                    "-b", self.branch,
+                ], check=True, cwd=repo_dir)
+
+            self.last_pulled = now()
+        finally:
+            self.is_pulling = False
+            self.save()
+
+    def get_dir(self) -> Path:
+        return LOCAL_FILE_PATH / "repos" / str(self.id)
+
+    def details(self) -> Repository:
+        cache_key = f"github_repo_details:{self.id}"
+        cached = cache.get(cache_key)
+
+        if cached:
+            return cached
+
+        details = Github(self.gh_user.access_token).get_repo(f"{self.owner}/{self.repo}")
+
+        cache.set(cache_key, details, API_CACHE_TIMEOUT)
+        return details
+
+    def maintainers(self) -> List[GitHubUser]:
+        users = []
+
+        for collaborator in self.details().get_collaborators():
+            if collaborator.permissions.maintain:
+                gh_user = GitHubUser.objects.filter(github_id=collaborator.id).first()
+                if gh_user is not None:
+                    users.append(gh_user)
+
+        return users
+
+    def is_maintainer(self, request: Request) -> bool:
+        if request.profile.is_anonymous():
+            return False
+
+        gh_user = GitHubUser.objects.filter(user=request.profile.user).first()
+        return gh_user in self.maintainers()
+
+    def __str__(self):
+        return f"{self.owner}/{self.repo}#{self.branch} ({self.id})"
+
+    def get_html_url(self):
+        return self.details().html_url
+
+# When a GitHubRepo is deleted, delete its directory
+@receiver(models.signals.pre_delete, sender=GitHubRepo)
+def delete_local_repo_dir(instance: GitHubRepo, **kwargs):
+    dir = instance.get_dir()
+    if dir.exists():
+        shutil.rmtree(dir)

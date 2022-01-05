@@ -1,13 +1,13 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from typing import Any, Optional, TYPE_CHECKING
 
-from .models import Profile, Scratch
-from .github import GitHubUser
+from .models import Profile, ProjectFunction, Scratch, Project
+from .github import GitHubUser, GitHubRepo
 from .middleware import Request
-from decompme.settings import FRONTEND_BASE
 
 def serialize_profile(request: Request, profile: Profile, small = False):
     if profile.user is None:
@@ -101,3 +101,33 @@ class TerseScratchSerializer(ScratchSerializer):
     class Meta:
         model = Scratch
         fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name"]
+
+class GitHubRepoSerializer(serializers.ModelSerializer):
+    html_url = HtmlUrlField()
+    maintainers = SerializerMethodField()
+
+    class Meta:
+        model = GitHubRepo
+        exclude = ["id", "gh_user"]
+        read_only_fields = ["last_pulled", "is_pulling"]
+
+    def get_maintainers(self, repo: GitHubRepo):
+        def get_url(user):
+            return reverse("user-detail", args=[user.username], request=self.context["request"])
+
+        return [get_url(gh_user.user) for gh_user in repo.maintainers()]
+
+class ProjectSerializer(serializers.ModelSerializer):
+    url = HyperlinkedIdentityField(view_name="project-detail")
+    html_url = HtmlUrlField()
+    repo = GitHubRepoSerializer()
+
+    class Meta:
+        model = Project
+        exclude = []
+        depth = 1 # repo
+
+class ProjectFunctionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ProjectFunction
+        exclude = []

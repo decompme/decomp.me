@@ -23,6 +23,7 @@ env = environ.Env(
     SECURE_HSTS_PRELOAD=(bool, False),
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
+    LOCAL_FILE_DIR=(str, BASE_DIR / "local_files"),
     USE_SANDBOX_JAIL=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
@@ -45,6 +46,7 @@ DJANGO_LOG_LEVEL = env('DJANGO_LOG_LEVEL')
 DUMMY_COMPILER = env('DUMMY_COMPILER')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 FRONTEND_BASE = env('FRONTEND_BASE')
+LOCAL_FILE_PATH = Path(env('LOCAL_FILE_DIR'))
 
 # Application definition
 
@@ -181,7 +183,6 @@ else:
     SESSION_COOKIE_SAMESITE = "Lax"
 
 COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
-LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
 if sys.platform in ["darwin", "win32"]:
