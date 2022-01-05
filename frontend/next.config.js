@@ -30,7 +30,12 @@ module.exports = removeImports(withPWA({
         return [
             {
                 source: "/scratch",
-                destination: "/scratch/new",
+                destination: "/",
+                permanent: true,
+            },
+            {
+                source: "/scratch/new",
+                destination: "/new",
                 permanent: true,
             },
             {
@@ -38,12 +43,6 @@ module.exports = removeImports(withPWA({
                 destination: "/settings/editor",
                 permanent: false,
             },
-            // TEMP
-            // {
-            //     source: "/training",
-            //     destination: "/scratch/new",
-            //     permanent: false,
-            // },
         ]
     },
     async rewrites() {
