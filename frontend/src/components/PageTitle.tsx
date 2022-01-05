@@ -8,7 +8,7 @@ export type Props = {
 }
 
 export default function PageTitle({ title, description }: Props) {
-    const titleWithSiteName = title ? `${title} - decomp.me` : title
+    const titleWithSiteName = title ? `${title} - decomp.me` : "decomp.me"
 
     useEffect(() => {
         document.title = titleWithSiteName
