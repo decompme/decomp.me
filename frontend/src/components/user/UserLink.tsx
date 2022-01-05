@@ -24,12 +24,14 @@ export default function UserLink({ user }: Props) {
 
     if (api.isAnonUser(user)) {
         return <a className={styles.user}>
-            <span>{userIsYou(user) ? "You" : "Anonymous"}</span>
+            <span>{userIsYou(user) ? "You" : "Anon"}</span>
         </a>
     } else {
         return <Link href={`/u/${user.username}`}>
             <a className={styles.user}>
-                {user.avatar_url && <Image className={styles.avatar} src={user.avatar_url} alt="User avatar" width={24} height={24} />}
+                <div className={styles.avatar}>
+                    {user.avatar_url && <Image src={user.avatar_url} alt="User avatar" width={24} height={24} />}
+                </div>
                 <span>{user.username}</span>
             </a>
         </Link>

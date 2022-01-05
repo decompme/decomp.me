@@ -18,7 +18,7 @@
 
     border: 1px solid transparent;
     border-radius: 6px;
-    background: var(--g300);
+    background: transparent;
     color: var(--g1200);
 
     cursor: pointer;
@@ -26,7 +26,7 @@
 
     white-space: nowrap;
 
-    transition: border-color 0.1s, background 0.15s, color 0.2s;
+    transition: border-color 0.1s, color 0.2s;
 
     svg {
         width: 40px;
@@ -48,7 +48,7 @@
     }
 
     &.selected {
-        background: var(--g400);
+        background: var(--g300);
     }
 }
 
