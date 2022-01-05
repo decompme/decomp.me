@@ -167,13 +167,15 @@ export interface User {
 export interface TerseScratch {
     url: string
     html_url: string
-    owner: AnonymousUser | User | null // null means unclaimed
+    owner: AnonymousUser | User | null // null = unclaimed
     name: string
     creation_time: string
     last_updated: string
     compiler: string
     platform: string
+    score: number // -1 = doesn't compile
     max_score: number
+    project: string
 }
 
 export interface Scratch extends TerseScratch {
@@ -183,7 +185,6 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    score: number // - 1 = doesn't compile
     parent: string | null
 }
 
@@ -205,7 +206,7 @@ export interface Project {
 }
 
 export interface ProjectFunction {
-    url: string
+    id: number
     slug: string
     scratch: TerseScratch
     creation_time: string

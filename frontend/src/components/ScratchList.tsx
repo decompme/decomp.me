@@ -8,13 +8,17 @@ import * as api from "../lib/api"
 import AsyncButton from "./AsyncButton"
 import LoadingSpinner from "./loading.svg"
 import PlatformIcon from "./PlatformSelect/PlatformIcon"
+import ProjectIcon from "./ProjectIcon"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
+
 
 function Scratch({ scratch }: { scratch: api.TerseScratch }) {
     return <div className={styles.scratch}>
         <div className={styles.header}>
-            <PlatformIcon platform={scratch.platform} className={styles.icon} />
+            {scratch.project
+                ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
+                : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
             <Link href={scratch.html_url}>
                 <a className={classNames(styles.link, styles.name)}>
                     {scratch.name}

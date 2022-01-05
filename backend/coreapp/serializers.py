@@ -89,20 +89,23 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
+    project = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
         exclude = ["target_assembly"]
         read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
 
+    def get_project(self, scratch: Scratch):
+        if hasattr(scratch, "projectfunction"):
+            return reverse("project-detail", args=[scratch.projectfunction.project.slug], request=self.context["request"])
+
 class TerseScratchSerializer(ScratchSerializer):
     owner = TerseProfileField(read_only=True) # type: ignore
-    source_code = None # type: ignore
-    context = None # type: ignore
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "max_score"]
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project"]
 
 class GitHubRepoSerializer(serializers.ModelSerializer):
     html_url = HtmlUrlField()

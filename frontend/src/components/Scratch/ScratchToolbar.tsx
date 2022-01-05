@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
@@ -11,6 +11,7 @@ import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
 import Search from "../Nav/Search"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import ProjectIcon from "../ProjectIcon"
 import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
 
@@ -33,6 +34,14 @@ function exportScratchZip(scratch: api.Scratch) {
     a.href = url
     a.download = scratch.name + ".zip"
     a.click()
+}
+
+function ScratchIcon({ scratch }: { scratch: api.TerseScratch }) {
+    if (scratch.project) {
+        return <ProjectIcon size={20} projectUrl={scratch.project} />
+    } else {
+        return <PlatformIcon size={20} platform={scratch.platform} />
+    }
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -131,6 +140,10 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
+                        <LinkItem href="/">
+                            <HomeIcon />
+                            Dashboard
+                        </LinkItem>
                         <LinkItem href="/new">
                             <PlusIcon />
                             New scratch...
@@ -201,7 +214,7 @@ export default function ScratchToolbar({
             <div className={styles.grow} />
             <div className={styles.center}>
                 <div className={styles.icons}>
-                    <PlatformIcon size={20} platform={scratch.platform} />
+                    <ScratchIcon scratch={scratch} />
                 </div>
                 <ScratchName
                     name={scratch.name}

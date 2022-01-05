@@ -63,7 +63,7 @@ export default function ProjectFunctionList({ projectUrl, className }: Props) {
 
     return <ul className={classNames(styles.list, className)}>
         {results.map(func => (
-            <li key={func.url} className={styles.item}>
+            <li key={func.id} className={styles.item}>
                 <ProjectFunction func={func} />
             </li>
         ))}
