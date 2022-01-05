@@ -168,17 +168,16 @@ export default function NewScratch({ serverCompilers }: {
     return <>
         <PageTitle title="New scratch" />
         <Nav />
-        <main className={styles.container}>
-            <div className={styles.heading}>
-                <h1>Create a new scratch</h1>
+        <header className={styles.heading}>
+            <div className={styles.headingInner}>
+                <h1>Start a new scratch</h1>
                 <p>
-                    A scratch is a playground where you can work on matching
-                    a given target function using any compiler options you like.
+                A scratch is a playground where you can work on matching
+                a given target function using any compiler options you like.
                 </p>
             </div>
-
-            <hr className={styles.rule} />
-
+        </header>
+        <main className={styles.container}>
             <div>
                 <p className={styles.label}>
                     Platform

@@ -29,11 +29,6 @@ module.exports = removeImports(withPWA({
     async redirects() {
         return [
             {
-                source: "/",
-                destination: "/scratch/new",
-                permanent: false,
-            },
-            {
                 source: "/scratch",
                 destination: "/scratch/new",
                 permanent: true,
@@ -82,7 +77,7 @@ module.exports = removeImports(withPWA({
         return config
     },
     images: {
-        domains: ["avatars.githubusercontent.com"],
+        domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
     },
     pwa: {
         dest: "public",
