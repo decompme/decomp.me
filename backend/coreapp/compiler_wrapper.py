@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
-from platform import platform, uname
+from platform import uname
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def load_compiler(id: str, cc: Optional[str], platform: Optional[str], compilers
         logger.debug(f"Config found but no binaries found for {id}, ignoring.")
 
 def load_compilers() -> Dict[str, Dict[str, str]]:
-    ret = {}
+    ret: Dict[str, Dict[str, str]] = {}
     compilers_base = settings.BASE_DIR / "compilers"
     compiler_dirs = next(os.walk(compilers_base))
     for compiler_dir_name in compiler_dirs[1]:
