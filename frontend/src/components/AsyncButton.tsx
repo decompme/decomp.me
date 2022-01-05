@@ -44,6 +44,7 @@ export default function AsyncButton(props: Props) {
         isOpen: errorMessage !== "",
         onOutsideClick: () => setErrorMessage(""),
         placement: props.errorPlacement ?? "top-center",
+        auto: true,
         triggerOffset: 8,
     })
 

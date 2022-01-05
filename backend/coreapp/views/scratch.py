@@ -241,7 +241,7 @@ class ScratchViewSet(
     def claim(self, request, pk):
         scratch: Scratch = self.get_object()
 
-        if scratch.owner is not None:
+        if not scratch.is_claimable():
             return Response({ "success": False })
 
         profile = request.profile

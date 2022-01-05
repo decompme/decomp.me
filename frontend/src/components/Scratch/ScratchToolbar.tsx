@@ -149,20 +149,13 @@ export default function ScratchToolbar({
                             New scratch...
                         </LinkItem>
                         <hr />
-                        {!scratch.owner && <ButtonItem
-                            onTrigger={() => api.claimScratch(scratch)}
-                            shortcutKeys={fuzzySaveAction === FuzzySaveAction.CLAIM && [SpecialKey.CTRL_COMMAND, "S"]}
-                        >
-                            Claim
-                        </ButtonItem>
-                        }
                         <ButtonItem
                             onTrigger={async () => {
                                 setIsSaving(true)
                                 await fuzzySaveScratch()
                                 setIsSaving(false)
                             }}
-                            disabled={scratch.owner && !userIsYou(scratch.owner)}
+                            disabled={(scratch.owner && !userIsYou(scratch.owner)) || !!scratch.project}
                             shortcutKeys={
                                 (fuzzySaveAction === FuzzySaveAction.SAVE || fuzzySaveAction === FuzzySaveAction.NONE)
                                 && [SpecialKey.CTRL_COMMAND, "S"]
@@ -229,9 +222,9 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && <>
                     {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
-                    {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
-                    {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
+                    {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
+                    {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
+                    {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
                     <LoginState className={styles.loginState} />
                 </>}
             </div>

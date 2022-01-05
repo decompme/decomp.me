@@ -1,6 +1,8 @@
 from django.utils.crypto import get_random_string
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from decompme.settings import FRONTEND_BASE
 
@@ -100,8 +102,18 @@ class Scratch(models.Model):
             self.owner,
         ))
 
+    def save(self, *args, **kwargs):
+        # Scratches cannot be owned if they are a root function in a project
+        if self.owner is not None and ProjectFunction.objects.filter(scratch=self).exists():
+            self.owner = None
+
+        super().save(*args, **kwargs)
+
     def get_html_url(self):
         return FRONTEND_BASE + "/scratch/" + self.slug
+
+    def is_claimable(self) -> bool:
+        return self.owner is None and not ProjectFunction.objects.filter(scratch=self).exists()
 
 class ProjectFunction(models.Model):
     slug = models.SlugField(blank=False, null=False)

@@ -328,7 +328,7 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     const user = await get("/user")
 
     if (!success)
-        throw new Error("Scratch already claimed")
+        throw new Error("Scratch cannot be claimed")
 
     await mutate(scratch.url, {
         ...scratch,

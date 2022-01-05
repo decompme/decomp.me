@@ -53,7 +53,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 <p className={styles.label}>Score</p>
                 <span>{getScoreText(scratch.score, scratch.max_score)}</span>
             </div>
-            <div className={styles.horizontalField}>
+            {!scratch.project && <div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
                 {scratch.owner
                     ? <UserLink user={scratch.owner} />
@@ -62,7 +62,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 {scratch.owner?.is_anonymous && userIsYou(scratch.owner)
                     && <GitHubLoginButton popup label="Sign in to keep" className={styles.signInPrompt} />
                 }
-            </div>
+            </div>}
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>
                 <ScratchLink url={scratch.parent} />
