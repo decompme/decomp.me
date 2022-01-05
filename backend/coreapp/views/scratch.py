@@ -47,9 +47,12 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult):
     Given a scratch and a diff, update the scratch's score
     """
 
-    scratch.score = diff.get("current_score", scratch.score)
-    scratch.max_score = diff.get("max_score", scratch.max_score)
-    scratch.save()
+    score = diff.get("current_score", scratch.score)
+    max_score = diff.get("max_score", scratch.max_score)
+    if score != scratch.score or max_score != scratch.max_score:
+        scratch.score = score
+        scratch.max_score = max_score
+        scratch.save()
 
 def compile_scratch_update_score(scratch: Scratch) -> None:
     """
