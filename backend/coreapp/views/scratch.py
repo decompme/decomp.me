@@ -95,7 +95,7 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
         family = Scratch.objects.filter(
             target_assembly=scratch.target_assembly,
             compiler=scratch.compiler,
-        ).all()
+        )
 
         return str(hash((family, request.headers.get("Accept"))))
     else:
@@ -328,7 +328,7 @@ class ScratchViewSet(
         family = Scratch.objects.filter(
             target_assembly=scratch.target_assembly,
             compiler=scratch.compiler,
-        )
+        ).order_by("creation_time")
 
         return Response(TerseScratchSerializer(family, many=True, context={ 'request': request }).data)
 
