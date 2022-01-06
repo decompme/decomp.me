@@ -169,6 +169,8 @@ export interface TerseScratch {
     last_updated: string
     compiler: string
     platform: string
+    score: number
+    max_score: number
 }
 
 export interface Scratch extends TerseScratch {
@@ -178,26 +180,7 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    score: number // - 1 = doesn't compile
-    max_score: number
     parent: string | null
-}
-
-export interface Project {
-    slug: string
-    url: string
-    html_url: string
-    repo: {
-        html_url: string
-        maintainers: string[]
-        owner: string
-        repo: string
-        branch: string
-        is_pulling: boolean
-        last_pulled: string | null
-    }
-    creation_time: string
-    icon_url: string
 }
 
 export type Compilation = {
