@@ -5,7 +5,7 @@
     box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
 
     @supports (backdrop-filter: blur(8px)) {
-        background:rgba(255, 255, 255, 0.02);
+        background: rgba(255, 255, 255, 0.02);
         backdrop-filter: blur(8px);
     }
 
