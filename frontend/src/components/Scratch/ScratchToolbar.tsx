@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
@@ -131,6 +131,10 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
+                        <LinkItem href="/">
+                            <HomeIcon />
+                            Home
+                        </LinkItem>
                         <LinkItem href="/new">
                             <PlusIcon />
                             New scratch...
