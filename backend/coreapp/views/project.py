@@ -11,10 +11,14 @@ import logging
 
 from ..models import Project, ProjectFunction, Scratch
 from ..serializers import ProjectFunctionSerializer, ProjectSerializer
-from ..github import GitHubRepo
+from ..github import GitHubRepo, GitHubRepoBusy
 from .scratch import ScratchPagination
 
 logger = logging.getLogger(__name__)
+
+class NotProjectMaintainer(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must be a project maintainer to perform this action."
 
 class ProjectPagination(CursorPagination):
     ordering="-creation_time"
@@ -48,11 +52,8 @@ class ProjectViewSet(
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
 
-        if repo.is_pulling:
-            return Response(ProjectSerializer(project, context={ "request": request }).data, status=status.HTTP_409_CONFLICT)
-
         if not repo.is_maintainer(request):
-            raise APIException("Only repo maintainers can pull", status.HTTP_403_FORBIDDEN)
+            raise NotProjectMaintainer()
 
         project.repo.pull() # TODO: in background
 
@@ -64,11 +65,11 @@ class ProjectViewSet(
         repo: GitHubRepo = project.repo
 
         if repo.is_pulling:
-            raise APIException("Repo is being pulled", status.HTTP_409_CONFLICT)
+            raise GitHubRepoBusy()
 
         if request.method == "POST":
             if not repo.is_maintainer(request):
-                raise APIException("Only repo maintainers can add new functions", status.HTTP_403_FORBIDDEN)
+                raise NotProjectMaintainer()
 
             serializer = ProjectFunctionSerializer(data=request.data, context={ "request": request })
             serializer.is_valid(raise_exception=True)

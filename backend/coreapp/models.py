@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from typing import Any, Optional
+
 from decompme.settings import FRONTEND_BASE
 
 def gen_scratch_id() -> str:
@@ -33,9 +35,12 @@ class Profile(models.Model):
         else:
             return str(self.id)
 
-    def get_html_url(self):
+    def get_html_url(self) -> Optional[str]:
         if self.user:
             return f"{FRONTEND_BASE}/u/{self.user.username}"
+        else:
+            # No URLs for anonymous profiles
+            return None
 
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
@@ -60,7 +65,7 @@ class Project(models.Model):
     def __str__(self):
         return self.slug
 
-    def get_html_url(self):
+    def get_html_url(self) -> str:
         return f"{FRONTEND_BASE}/{self.slug}"
 
 class Scratch(models.Model):
@@ -88,28 +93,18 @@ class Scratch(models.Model):
     def __str__(self):
         return self.slug
 
-    # hash for etagging, might be better to add a field to the model that changes on every save
+    # hash for etagging
     def __hash__(self):
-        return hash((
-            self.slug, self.name, self.description,
-            self.creation_time, self.last_updated,
-            self.platform, self.compiler, self.compiler_flags,
-            self.target_assembly, self.source_code,
-            self.context,
-            self.diff_label,
-            self.score, self.max_score,
-            self.parent,
-            self.owner,
-        ))
+        return hash((self.slug, self.last_updated))
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         # Scratches cannot be owned if they are a root function in a project
         if self.owner is not None and ProjectFunction.objects.filter(scratch=self).exists():
             self.owner = None
 
         super().save(*args, **kwargs)
 
-    def get_html_url(self):
+    def get_html_url(self) -> str:
         return FRONTEND_BASE + "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
@@ -126,8 +121,8 @@ class ProjectFunction(models.Model):
             models.UniqueConstraint(fields=["slug", "project"], name="unique_project_function")
         ]
 
-    def get_html_url(self):
-        return self.project.html_url() + "/" + self.function
+    def get_html_url(self) -> str:
+        return self.project.get_html_url() + "/" + self.slug
 
     def __str__(self):
         return f"{self.slug} ({self.project})"

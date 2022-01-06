@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
 
 from .models import Profile, ProjectFunction, Scratch, Project
 from .github import GitHubUser, GitHubRepo
@@ -98,7 +99,7 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_project(self, scratch: Scratch):
         if hasattr(scratch, "projectfunction"):
-            return reverse("project-detail", args=[scratch.projectfunction.project.slug], request=self.context["request"])
+            return reverse("project-detail", args=[scratch.projectfunction.project.slug], request=self.context["request"]) # type: ignore
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = TerseProfileField(read_only=True) # type: ignore
@@ -107,7 +108,7 @@ class TerseScratchSerializer(ScratchSerializer):
         model = Scratch
         fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project"]
 
-class GitHubRepoSerializer(serializers.ModelSerializer):
+class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
     html_url = HtmlUrlField()
     maintainers = SerializerMethodField()
 
@@ -117,22 +118,22 @@ class GitHubRepoSerializer(serializers.ModelSerializer):
         read_only_fields = ["last_pulled", "is_pulling"]
 
     def get_maintainers(self, repo: GitHubRepo):
-        def get_url(user):
+        def get_url(user: User):
             return reverse("user-detail", args=[user.username], request=self.context["request"])
 
         return [get_url(gh_user.user) for gh_user in repo.maintainers()]
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer[Project]):
     url = HyperlinkedIdentityField(view_name="project-detail")
     html_url = HtmlUrlField()
     repo = GitHubRepoSerializer()
 
     class Meta:
         model = Project
-        exclude = []
+        exclude: List[str] = []
         depth = 1 # repo
 
-class ProjectFunctionSerializer(serializers.ModelSerializer):
+class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     scratch = TerseScratchSerializer()
 
     class Meta:

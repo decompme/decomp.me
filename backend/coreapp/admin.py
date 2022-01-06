@@ -5,16 +5,14 @@ import shutil
 from .models import Profile, Assembly, Asm, Scratch, Project, ProjectFunction
 from .github import GitHubUser, GitHubRepo
 
-class GitHubRepoAdmin(admin.ModelAdmin):
+class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
     actions = ["pull", "reclone"]
 
-    @admin.action(description="Pull selected repos from GitHub")
     def pull(self, request, queryset):
         for repo in queryset.all():
             repo.is_pulling = False
             repo.pull()
 
-    @admin.action(description="Reclone selected repos from GitHub")
     def reclone(self, request, queryset):
         for repo in queryset.all():
             repo.is_pulling = False

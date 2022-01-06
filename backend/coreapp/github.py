@@ -136,6 +136,10 @@ class GitHubUser(models.Model):
 
         return gh_user
 
+class GitHubRepoBusy(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "This repository is currently being pulled."
+
 class GitHubRepo(models.Model):
     owner = models.CharField(max_length=100)
     repo = models.CharField(max_length=100)
@@ -149,9 +153,9 @@ class GitHubRepo(models.Model):
         verbose_name_plural = "GitHub repos"
 
     # TODO: make this async
-    def pull(self):
+    def pull(self) -> None:
         if self.is_pulling:
-            raise Exception("Already pulling")
+            raise GitHubRepoBusy()
 
         self.is_pulling = True
         self.save()
