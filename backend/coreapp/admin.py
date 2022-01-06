@@ -3,19 +3,20 @@ from django.contrib import admin
 import shutil
 
 from .models import Profile, Assembly, Asm, Scratch, Project, ProjectFunction
-from .github import GitHubUser, GitHubRepo
+from .github import GitHubUser, GitHubRepo, GitHubRepoBusy
 
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
     actions = ["pull", "reclone"]
 
     def pull(self, request, queryset):
         for repo in queryset.all():
-            repo.is_pulling = False
             repo.pull()
 
     def reclone(self, request, queryset):
         for repo in queryset.all():
-            repo.is_pulling = False
+            if repo.is_pulling:
+                raise GitHubRepoBusy()
+
             repo.last_pulled = None
             shutil.rmtree(repo.get_dir())
             repo.pull()
