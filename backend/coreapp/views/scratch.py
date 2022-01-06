@@ -314,7 +314,7 @@ class ScratchViewSet(
             compiler=scratch.compiler,
         )
 
-        return Response(ScratchSerializer(family, many=True, context={ 'request': request }).data)
+        return Response(TerseScratchSerializer(family, many=True, context={ 'request': request }).data)
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'scratch', ScratchViewSet)
