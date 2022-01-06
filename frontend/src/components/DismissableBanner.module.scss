@@ -1,0 +1,42 @@
+.container {
+    font-size: 0.8rem;
+
+    width: 100%;
+    padding: 0.8em 1em;
+    overflow: hidden;
+
+    display: grid;
+    grid-template-columns: 1fr 2em;
+
+    color: rgba(255, 255, 255, 0.75);
+    background: #4273e1;
+}
+
+.content {
+    align-self: center;
+
+    > a {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.dismiss {
+    width: 2em;
+    height: 2em;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    color: rgba(255, 255, 255, 0.9);
+    background: transparent;
+    border: 0;
+
+    &:hover {
+        background: var(--a100);
+    }
+}
