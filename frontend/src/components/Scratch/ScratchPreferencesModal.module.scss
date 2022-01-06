@@ -4,13 +4,13 @@
     background: var(--g200);
     box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
 
-    position: fixed;
+    position: absolute;
 
     // Horizontal positioning
     width: 100%;
     max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
+    left: 50%;
+    transform: translateX(-50%);
 
     @media (max-width: 900px) {
         border-left: 0;
@@ -24,12 +24,12 @@
     height: 60vh;
     max-height: 700px;
 
-    @media (max-height: 600px) {
+    @media (max-height: 800px) {
         top: 10vh;
         height: 80vh;
     }
 
-    @media (max-height: 400px) {
+    @media (max-height: 600px) {
         top: 0;
         height: 100vh;
 
@@ -39,8 +39,12 @@
     }
 }
 
-.dialog::backdrop,
-.dialog + :global(.backdrop) {
+.overlay {
+    position: fixed;
+    inset: 0 0 0 0;
+
+    z-index: 100;
+
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(20px);
 }
