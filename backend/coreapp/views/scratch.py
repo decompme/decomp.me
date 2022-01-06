@@ -1,8 +1,8 @@
 from rest_framework.exceptions import APIException
 from coreapp.error import CompilationError, DiffError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from coreapp.decompiler_wrapper import DecompilerWrapper
 from django.http import HttpResponse, QueryDict
 from rest_framework import serializers, status, mixins, filters
 from rest_framework.response import Response
@@ -156,16 +156,7 @@ class ScratchViewSet(
         source_code = data.get("source_code")
         if not source_code:
             default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-            source_code = default_source_code
-            arch = CompilerWrapper.arch_from_platform(platform)
-            if arch in ["mips", "mipsel"]:
-                try:
-                    source_code = M2CWrapper.decompile(asm.data, context, compiler)
-                except M2CError as e:
-                    source_code = f"{e}\n{default_source_code}"
-                except Exception:
-                    logger.exception("Error running mips_to_c")
-                    source_code = f"/* Internal error while running mips_to_c */\n{default_source_code}"
+            source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
 
         compiler_flags = data.get("compiler_flags", "")
         if compiler and compiler_flags:
