@@ -17,8 +17,7 @@
             border-bottom: 1px solid var(--g300);
         }
 
-        .scratchList,
-        .projectList {
+        .scratchList {
             max-width: 100%;
         }
     }
@@ -85,39 +84,4 @@
     max-width: 700px;
 
     padding: 1em 0;
-}
-
-.projectList {
-    font-size: 0.9em;
-    max-width: 300px;
-
-    list-style: none;
-
-    > li {
-        padding: 1em 0;
-
-        &:last-child {
-            padding-bottom: 0;
-        }
-    }
-}
-
-.loadMoreLink {
-    font-size: 0.8em;
-    color: var(--g1000);
-
-    &:hover {
-        color: var(--link);
-    }
-}
-
-.projectLink {
-    display: flex;
-    gap: 0.3em;
-
-    font-weight: 500;
-
-    &:hover {
-        color: var(--link);
-    }
 }
