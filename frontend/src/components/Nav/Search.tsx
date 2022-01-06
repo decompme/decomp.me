@@ -176,7 +176,7 @@ export default function Search({ className }: { className?: string }) {
                             <span className={styles.itemName}>
                                 {scratch.name}
                             </span>
-                            {scratch.owner && !api.isAnonUser(scratch.owner) && <Image
+                            {scratch.owner && !api.isAnonUser(scratch.owner) && scratch.owner.avatar_url && <Image
                                 src={scratch.owner.avatar_url}
                                 alt={scratch.owner.username}
                                 width={16}
