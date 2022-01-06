@@ -2,6 +2,7 @@ import { GetStaticProps } from "next"
 
 import Link from "next/link"
 
+import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import UserLink, { GitHubUserLink } from "../components/user/UserLink"
 import * as api from "../lib/api"
@@ -156,5 +157,6 @@ export default function CreditsPage({ maintainers, contributors }: {
                 </ul>
             </div>
         </main>
+        <Footer />
     </>
 }

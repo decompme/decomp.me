@@ -139,6 +139,12 @@ export async function patch(url: string, json: Json) {
     return JSON.parse(text)
 }
 
+export interface Page<T> {
+    next: string | null
+    previous: string | null
+    results: T[]
+}
+
 export interface AnonymousUser {
     is_anonymous: true
     id: number
@@ -163,6 +169,8 @@ export interface TerseScratch {
     last_updated: string
     compiler: string
     platform: string
+    score: number
+    max_score: number
 }
 
 export interface Scratch extends TerseScratch {
@@ -172,8 +180,6 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    score: number // - 1 = doesn't compile
-    max_score: number
     parent: string | null
 }
 
@@ -221,7 +227,6 @@ export type DiffText = {
     index?: number
     key?: string
 }
-
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
@@ -427,4 +432,65 @@ export function useCompilers(): Record<string, { platform: string | null }> {
     })
 
     return data.compilers
+}
+
+export function usePaginated<T>(url: string): {
+    results: T[]
+    hasNext: boolean
+    hasPrevious: boolean
+    isLoading: boolean
+    loadNext: () => Promise<void>
+    loadPrevious: () => Promise<void>
+} {
+    const [results, setResults] = useState<T[]>([])
+    const [next, setNext] = useState<string | null>(url)
+    const [previous, setPrevious] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        setResults([])
+        setNext(url)
+        setPrevious(null)
+        setIsLoading(true)
+
+        get(url).then((data: Page<T>) => {
+            setResults(data.results)
+            setNext(data.next)
+            setPrevious(data.previous)
+            setIsLoading(false)
+        })
+    }, [url])
+
+    const loadNext = useCallback(async () => {
+        if (!next)
+            throw new Error("No more")
+
+        setIsLoading(true)
+
+        const data: Page<T> = await get(next)
+        setResults(results => [...results, ...data.results])
+        setNext(data.next)
+        setIsLoading(false)
+    }, [next])
+
+    const loadPrevious = useCallback(async () => {
+        if (!previous)
+            throw new Error("No more")
+
+        setIsLoading(true)
+
+        const data: Page<T> = await get(previous)
+        setResults(results => [...data.results, ...results])
+        setPrevious(data.previous)
+        setIsLoading(false)
+    }, [previous])
+
+    return {
+        results,
+        hasNext: !!next,
+        hasPrevious: !!previous,
+        isLoading,
+        loadNext,
+        loadPrevious,
+    }
 }

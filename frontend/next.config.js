@@ -29,13 +29,13 @@ module.exports = removeImports(withPWA({
     async redirects() {
         return [
             {
-                source: "/",
-                destination: "/scratch/new",
-                permanent: false,
+                source: "/scratch",
+                destination: "/",
+                permanent: true,
             },
             {
-                source: "/scratch",
-                destination: "/scratch/new",
+                source: "/scratch/new",
+                destination: "/new",
                 permanent: true,
             },
             {
@@ -43,12 +43,6 @@ module.exports = removeImports(withPWA({
                 destination: "/settings/editor",
                 permanent: false,
             },
-            // TEMP
-            // {
-            //     source: "/training",
-            //     destination: "/scratch/new",
-            //     permanent: false,
-            // },
         ]
     },
     async rewrites() {
@@ -82,7 +76,7 @@ module.exports = removeImports(withPWA({
         return config
     },
     images: {
-        domains: ["avatars.githubusercontent.com"],
+        domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
     },
     pwa: {
         dest: "public",

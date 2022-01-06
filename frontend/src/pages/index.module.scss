@@ -1,0 +1,87 @@
+.container {
+    display: grid;
+    grid-template-columns: 250px 1fr 250px;
+    grid-template-rows: min-content min-content 1fr;
+    grid-template-areas:
+        "about    about    about"
+        "activity activity projects"
+        "activity activity projects";
+
+    @media (max-width: 600px) {
+        grid-template-areas:
+            "about about about"
+            "projects projects projects"
+            "activity activity activity";
+
+        .projects {
+            border-bottom: 1px solid var(--g300);
+        }
+
+        .scratchList {
+            max-width: 100%;
+        }
+    }
+
+    > footer {
+        grid-area: footer;
+    }
+}
+
+.about,
+.activity,
+.projects {
+    padding: 1em;
+
+    > h1 {
+        font-weight: 300;
+    }
+
+    > h2 {
+        font-weight: 400;
+    }
+}
+
+.about {
+    grid-area: about;
+    background: var(--g300);
+
+    h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 300;
+
+        .siteName {
+            font-weight: 500;
+        }
+    }
+
+    p {
+        padding-top: 4px;
+        color: var(--g1000);
+        font-size: 0.9em;
+        max-width: 40ch;
+    }
+
+    .cta {
+        padding-top: 1em;
+
+        display: flex;
+        align-items: stretch;
+        gap: 0.5em;
+    }
+}
+
+.activity {
+    grid-area: activity;
+}
+
+.projects {
+    grid-area: projects;
+}
+
+.scratchList {
+    font-size: 0.8em;
+    max-width: 700px;
+
+    padding: 1em 0;
+}
