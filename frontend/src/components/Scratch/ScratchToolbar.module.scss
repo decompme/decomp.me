@@ -48,13 +48,13 @@ $column_width: 260px;
     flex-shrink: 0;
 }
 
-@media (max-width: ($column_width * 3)) {
+@media (max-width: ($column_width * 3.25)) {
     .center {
         min-width: $column_width * 0.5;
     }
 }
 
-@media (max-width: ($column_width * 2.5)) {
+@media (max-width: ($column_width * 2.75)) {
     .left,
     .right,
     .center {

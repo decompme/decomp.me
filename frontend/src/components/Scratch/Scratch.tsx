@@ -3,10 +3,12 @@ import { useState } from "react"
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
 import { useAutoRecompileSetting } from "../../lib/settings"
+import ErrorBoundary from "../ErrorBoundary"
 
 import { useLeftTabs, useRightTabs } from "./renderTabs"
 import styles from "./Scratch.module.scss"
 import ScratchBody from "./ScratchBody"
+import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
 import setCompilerOptsFunction from "./util/setCompilerOpts"
 
@@ -42,6 +44,9 @@ export default function Scratch({
     })
 
     return <div ref={container.ref} className={styles.container}>
+        <ErrorBoundary>
+            <ScratchMatchBanner scratch={scratch} />
+        </ErrorBoundary>
         <ScratchToolbar
             compile={compile}
             isCompiling={isCompiling}

@@ -305,5 +305,16 @@ class ScratchViewSet(
             }
         )
 
+    @action(detail=True)
+    def family(self, request: Request, pk: str) -> Response:
+        scratch: Scratch = self.get_object()
+
+        family = Scratch.objects.filter(
+            target_assembly=scratch.target_assembly,
+            compiler=scratch.compiler,
+        )
+
+        return Response(ScratchSerializer(family, many=True, context={ 'request': request }).data)
+
 router = DefaultRouter(trailing_slash=False)
 router.register(r'scratch', ScratchViewSet)
