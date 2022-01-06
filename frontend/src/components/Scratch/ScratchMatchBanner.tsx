@@ -20,10 +20,10 @@ export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScra
         return null
 
     let message = "This function has been matched"
-    if (userIsYou(scratch.owner))
+    if (userIsYou(match.owner))
         message += " by you, elsewhere"
-    else if (scratch.owner && !api.isAnonUser(scratch.owner))
-        message += ` by ${scratch.owner.username}`
+    else if (match.owner && !api.isAnonUser(match.owner))
+        message += ` by ${match.owner.username}`
 
     return <DismissableBanner>
         {message}. <Link href={match.html_url}>View match</Link>
