@@ -83,5 +83,5 @@ class Scratch(models.Model):
             self.owner,
         ))
 
-    def get_html_url(self):
+    def get_html_url(self) -> str:
         return FRONTEND_BASE + "/scratch/" + self.slug
