@@ -1,7 +1,7 @@
 @use "./theme.scss" as theme;
 
-.themeGreen {
-    @include theme.theme(#77b255, #37393e);
+:root {
+    --link: #3db8e9;
 }
 
 .themePlum {
@@ -32,7 +32,7 @@ html {
 }
 
 body {
-    background: var(--g300);
+    background: var(--g200);
     color: var(--a800);
 
     line-height: 1.25;
@@ -70,20 +70,4 @@ main {
 
 .routerProgressBar {
     z-index: 999;
-}
-
-// dialog-polyfill
-.backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
-
-// for Safari
-dialog {
-    z-index: 1000;
 }
