@@ -244,6 +244,18 @@ class ScratchViewSet(
         })
 
     @action(detail=True, methods=['POST'])
+    def decompile(self, request, pk):
+        scratch: Scratch = self.get_object()
+        context = request.data.get("context", "")
+        compiler = request.data.get("compiler", scratch.compiler)
+
+        decompilation = DecompilerWrapper.decompile("", scratch.platform, scratch.target_assembly.source_asm.data, context, compiler)
+
+        return Response({
+            "decompilation": decompilation
+        })
+
+    @action(detail=True, methods=['POST'])
     def claim(self, request, pk):
         scratch: Scratch = self.get_object()
 
