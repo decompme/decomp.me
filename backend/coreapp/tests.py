@@ -305,6 +305,7 @@ class CompilationTests(BaseTestCase):
 
 
 class DecompilationTests(BaseTestCase):
+    @requiresCompiler('gcc2.8.1')
     def test_default_decompilation(self):
         """
         Ensure that a scratch's initial decompilation makes sense
@@ -318,6 +319,7 @@ class DecompilationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
+    @requiresCompiler('gcc2.8.1')
     def test_decompile_endpoint(self):
         """
         Ensure that the decompile endpoint works
