@@ -47,9 +47,12 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult):
     Given a scratch and a diff, update the scratch's score
     """
 
-    scratch.score = diff.get("current_score", scratch.score)
-    scratch.max_score = diff.get("max_score", scratch.max_score)
-    scratch.save()
+    score = diff.get("current_score", scratch.score)
+    max_score = diff.get("max_score", scratch.max_score)
+    if score != scratch.score or max_score != scratch.max_score:
+        scratch.score = score
+        scratch.max_score = max_score
+        scratch.save()
 
 def compile_scratch_update_score(scratch: Scratch) -> None:
     """
@@ -85,6 +88,18 @@ def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
         return None
 
 scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
+
+def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
+    if scratch:
+        family = Scratch.objects.filter(
+            target_assembly=scratch.target_assembly,
+            compiler=scratch.compiler,
+        )
+
+        return str(hash((family, request.headers.get("Accept"))))
+    else:
+        return None
 
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     recompile_params = ["compiler", "compiler_flags", "source_code", "context"]
@@ -295,6 +310,18 @@ class ScratchViewSet(
                 "Content-Disposition": f"attachment; filename={safe_name}.zip",
             }
         )
+
+    @action(detail=True)
+    @condition(etag_func=family_etag)
+    def family(self, request: Request, pk: str) -> Response:
+        scratch: Scratch = self.get_object()
+
+        family = Scratch.objects.filter(
+            target_assembly=scratch.target_assembly,
+            compiler=scratch.compiler,
+        ).order_by("creation_time")
+
+        return Response(TerseScratchSerializer(family, many=True, context={ 'request': request }).data)
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'scratch', ScratchViewSet)

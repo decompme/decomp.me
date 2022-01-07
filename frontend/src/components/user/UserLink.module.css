@@ -2,7 +2,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 0.3em;
 
     vertical-align: bottom;
 }
@@ -12,12 +12,12 @@
 }
 
 .user:any-link:hover {
-    color: var(--g1700);
-    text-decoration: underline;
+    color: var(--link);
 }
 
 .avatar {
     border-radius: 999px;
-    width: 1.5em;
-    height: 1.5em;
+    overflow: hidden;
+    width: 1.25em !important;
+    height: 1.25em !important;
 }

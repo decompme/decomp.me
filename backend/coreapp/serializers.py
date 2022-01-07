@@ -100,4 +100,4 @@ class TerseScratchSerializer(ScratchSerializer):
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name"]
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score"]

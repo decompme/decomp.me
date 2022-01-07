@@ -578,6 +578,68 @@ class ScratchDetailTests(APITestCase):
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
 
+    def test_family(self):
+        root = self.make_nop_scratch()
+
+        # verify the family only holds root
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+
+        # verify the family holds both
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
+
+        # fork the fork
+        response = self.client.post(reverse("scratch-fork", args=[fork.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork2: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+
+        # verify the family holds all three
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 3)
+
+    def test_family_order(self):
+        root = self.make_nop_scratch()
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork = response.json()
+
+        # verify the family holds both, in creation order
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
+        self.assertEqual(response.json()[1]["html_url"], fork["html_url"])
+
+    def test_family_etag(self):
+        root = self.make_nop_scratch()
+
+        # get etag of only the root
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        etag = response.headers.get("Etag")
+        self.assertIsNotNone(etag)
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify etag has changed
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(etag, response.headers.get("Etag"))
+
 class RequestTests(APITestCase):
     def test_create_profile(self):
         """
