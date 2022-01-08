@@ -36,6 +36,11 @@ export const PRESETS = [
         opts: "-Olimit 2000 -mips2 -O2",
     },
     {
+        name: "Diddy Kong Racing",
+        compile: "ido5.3",
+        opts: "-mips1 -O2",
+    },
+    {
         name: "Mario Party 3",
         compiler: "gcc2.7kmc",
         opts: "-O1 -mips2",
