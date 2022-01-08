@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import * as api from "../../lib/api"
@@ -71,6 +72,14 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 <p className={styles.label}>Platform</p>
                 <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
                 <PlatformName platform={scratch.platform} />
+            </div>
+            <div className={styles.horizontalField}>
+                <p className={styles.label}>Created</p>
+                <TimeAgo date={scratch.creation_time} />
+            </div>
+            <div className={styles.horizontalField}>
+                <p className={styles.label}>Modified</p>
+                <TimeAgo date={scratch.last_updated} />
             </div>
         </div>
 
