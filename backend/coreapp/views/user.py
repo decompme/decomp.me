@@ -39,18 +39,30 @@ class CurrentUser(APIView):
 
             return self.get(request)
 
+
 class CurrentUserScratchList(generics.ListAPIView):
     """
     Gets the current user's scratches
     """
 
     pagination_class = ScratchPagination
+    serializer_class = TerseScratchSerializer
 
     def get_queryset(self):
         return Scratch.objects.filter(owner=self.request.profile)
 
-    def get_serializer(self, *args, **kwargs):
-        return TerseScratchSerializer(*args, **kwargs, context={ 'request': self.request })
+
+class UserScratchList(generics.ListAPIView):
+    """
+    Gets a user's scratches
+    """
+
+    pagination_class = ScratchPagination
+    serializer_class = TerseScratchSerializer
+
+    def get_queryset(self):
+        return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
+
 
 @api_view(["GET"])
 def user(request, username):

@@ -18,6 +18,10 @@ const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where y
 export default function IndexPage() {
     const user = api.useThisUser()
 
+    const yourScratchesUrl = (!user || api.isAnonUser(user))
+        ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
+        : `/users/${user.username}/scratches?page_size=16`
+
     return <>
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
         <Nav />
@@ -48,15 +52,15 @@ export default function IndexPage() {
             <section className={styles.activity}>
                 <ErrorBoundary>
                     <h2>Recently updated</h2>
-                    <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
+                    <ScratchList url="/scratch?page_size=16" className={styles.scratchList} />
                 </ErrorBoundary>
             </section>
             <section className={styles.projects}>
                 <ErrorBoundary>
                     <h2>Your scratches</h2>
                     <ScratchList
-                        url="/user/scratches?page_size=8"
-                        className={styles.scratchList}
+                        url={yourScratchesUrl}
+                        className={styles.yourScratchList}
                         item={SingleLineScratchItem}
                         emptyButtonLabel="Create your first scratch"
                     />

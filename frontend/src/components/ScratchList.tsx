@@ -71,7 +71,32 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
                         {scratch.name}
                     </a>
                 </Link>
-                {scratch.owner && <UserLink user={scratch.owner} />}
+                {scratch.owner && <div className={styles.owner}>
+                    <UserLink user={scratch.owner} />
+                </div>}
+            </div>
+            <div className={styles.metadata}>
+                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+            </div>
+        </div>
+    </li>
+}
+
+export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
+    const compilerName = COMPILERS.find(c => c.id == scratch.compiler)?.name ?? scratch.compiler
+
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return <li className={styles.item}>
+        <div className={styles.scratch}>
+            <div className={styles.header}>
+                <PlatformIcon platform={scratch.platform} className={styles.icon} />
+                <Link href={scratch.html_url}>
+                    <a className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </a>
+                </Link>
             </div>
             <div className={styles.metadata}>
                 {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />

@@ -97,7 +97,14 @@
 
 .scratchList {
     font-size: 0.8em;
-    max-width: 700px;
+
+    @media (min-width: 1500px) {
+        --num-columns: 2;
+    }
+}
+
+.yourScratchList {
+    font-size: 0.8em;
 }
 
 .activity,
