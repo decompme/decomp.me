@@ -37,7 +37,7 @@ export const PRESETS = [
     },
     {
         name: "Diddy Kong Racing",
-        compile: "ido5.3",
+        compiler: "ido5.3",
         opts: "-mips1 -O2",
     },
     {
