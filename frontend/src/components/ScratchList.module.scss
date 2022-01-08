@@ -4,6 +4,8 @@
     align-items: center;
     gap: 0.5em;
 
+    padding: 1em;
+
     opacity: 0.5;
 }
 
@@ -13,6 +15,10 @@
     // These inherited by .item
     border-color: var(--g300);
     border-radius: 4px;
+
+    display: grid;
+    grid-template-columns: repeat(var(--num-columns, 1), 1fr);
+    gap: 0.5em;
 }
 
 .item {
@@ -24,7 +30,7 @@
     overflow: hidden;
 
     padding: 1em;
-    margin: 0.5em 0;
+    margin: 0;
 
     border: 1px solid inherit;
     border-radius: inherit;
@@ -38,10 +44,24 @@
     }
 }
 
-.loadButton {
+.button {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    margin-top: 0.5em;
+
+    opacity: 0.7;
+
+    grid-column: span var(--num-columns, 1);
+}
+
+.link {
+    font-weight: 600;
+
+    &:hover {
+        color: var(--link);
+    }
 }
 
 .scratch {
@@ -61,20 +81,44 @@
         }
     }
 
-    .link {
-        font-weight: 600;
-
-        &:hover {
-            color: var(--link);
-        }
-    }
-
     .icon {
         width: 1.2em;
         height: 1.2em;
     }
 
+    .owner {
+        color: var(--g900);
+    }
+
     .metadata {
-        opacity: 0.5;
+        color: var(--g700);
+    }
+}
+
+.singleLine {
+    white-space: nowrap;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+
+    padding: 0.4em 0;
+
+    .icon {
+        flex-shrink: 0;
+        width: 1.2em;
+        height: 1.2em;
+    }
+
+    .name {
+        flex-grow: 1;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .metadata {
+        color: var(--g700);
     }
 }

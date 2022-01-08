@@ -8,7 +8,7 @@ import Footer from "../components/Footer"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
-import ScratchList from "../components/ScratchList"
+import ScratchList, { SingleLineScratchItem } from "../components/ScratchList"
 import * as api from "../lib/api"
 
 import styles from "./index.module.scss"
@@ -18,10 +18,16 @@ const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where y
 export default function IndexPage() {
     const user = api.useThisUser()
 
+    const yourScratchesUrl = (!user || api.isAnonUser(user))
+        ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
+        : `/users/${user.username}/scratches?page_size=16`
+
     return <>
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
         <Nav />
         <main className={styles.container}>
+            <div className={styles.padl} />
+            <div className={styles.padr} />
             <header className={styles.about}>
                 <ErrorBoundary>
                     <h1>
@@ -46,10 +52,20 @@ export default function IndexPage() {
             <section className={styles.activity}>
                 <ErrorBoundary>
                     <h2>Recently updated</h2>
-                    <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
+                    <ScratchList url="/scratch?page_size=16" className={styles.scratchList} />
                 </ErrorBoundary>
             </section>
-            <section className={styles.projects} />
+            <section className={styles.projects}>
+                <ErrorBoundary>
+                    <h2>Your scratches</h2>
+                    <ScratchList
+                        url={yourScratchesUrl}
+                        className={styles.yourScratchList}
+                        item={SingleLineScratchItem}
+                        emptyButtonLabel="Create your first scratch"
+                    />
+                </ErrorBoundary>
+            </section>
         </main>
         <Footer />
     </>
