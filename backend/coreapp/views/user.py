@@ -1,12 +1,14 @@
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404
+from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from coreapp.middleware import Request
-from coreapp.models import Profile
 
-from coreapp.serializers import serialize_profile
+from .scratch import ScratchPagination
+from ..middleware import Request
+from ..models import Profile, Scratch
+from ..serializers import serialize_profile, TerseScratchSerializer
 from ..github import GitHubUser
 
 class CurrentUser(APIView):
@@ -37,6 +39,19 @@ class CurrentUser(APIView):
 
             return self.get(request)
 
+class CurrentUserScratchList(generics.ListAPIView):
+    """
+    Gets the current user's scratches
+    """
+
+    pagination_class = ScratchPagination
+
+    def get_queryset(self):
+        return Scratch.objects.filter(owner=self.request.profile)
+
+    def get_serializer(self, *args, **kwargs):
+        return TerseScratchSerializer(*args, **kwargs, context={ 'request': self.request })
+
 @api_view(["GET"])
 def user(request, username):
     """
@@ -44,4 +59,3 @@ def user(request, username):
     """
 
     return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
-

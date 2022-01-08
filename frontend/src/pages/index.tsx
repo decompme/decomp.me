@@ -8,7 +8,7 @@ import Footer from "../components/Footer"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
-import ScratchList from "../components/ScratchList"
+import ScratchList, { SingleLineScratchItem } from "../components/ScratchList"
 import * as api from "../lib/api"
 
 import styles from "./index.module.scss"
@@ -22,6 +22,8 @@ export default function IndexPage() {
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
         <Nav />
         <main className={styles.container}>
+            <div className={styles.padl} />
+            <div className={styles.padr} />
             <header className={styles.about}>
                 <ErrorBoundary>
                     <h1>
@@ -49,7 +51,17 @@ export default function IndexPage() {
                     <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
                 </ErrorBoundary>
             </section>
-            <section className={styles.projects} />
+            <section className={styles.projects}>
+                <ErrorBoundary>
+                    <h2>Your scratches</h2>
+                    <ScratchList
+                        url="/user/scratches?page_size=8"
+                        className={styles.scratchList}
+                        item={SingleLineScratchItem}
+                        emptyButtonLabel="Create your first scratch"
+                    />
+                </ErrorBoundary>
+            </section>
         </main>
         <Footer />
     </>

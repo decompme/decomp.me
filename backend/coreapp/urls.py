@@ -6,5 +6,6 @@ urlpatterns = [
     path('compilers', compilers.CompilersDetail.as_view(), name='compilers'),
     *scratch.router.urls,
     path('user', user.CurrentUser.as_view(), name="current-user"),
+    path('user/scratches', user.CurrentUserScratchList.as_view(), name="current-user-scratches"),
     path('users/<slug:username>', user.user, name="user-detail"),
 ]

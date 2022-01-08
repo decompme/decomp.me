@@ -4,6 +4,8 @@
     align-items: center;
     gap: 0.5em;
 
+    padding: 1em;
+
     opacity: 0.5;
 }
 
@@ -38,10 +40,22 @@
     }
 }
 
-.loadButton {
+.button {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    margin-top: 0.5em;
+
+    opacity: 0.7;
+}
+
+.link {
+    font-weight: 600;
+
+    &:hover {
+        color: var(--link);
+    }
 }
 
 .scratch {
@@ -61,20 +75,39 @@
         }
     }
 
-    .link {
-        font-weight: 600;
-
-        &:hover {
-            color: var(--link);
-        }
-    }
-
     .icon {
         width: 1.2em;
         height: 1.2em;
     }
 
     .metadata {
-        opacity: 0.5;
+        color: var(--g700);
+    }
+}
+
+.singleLine {
+    white-space: nowrap;
+
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+
+    padding: 0.4em 0;
+
+    .icon {
+        flex-shrink: 0;
+        width: 1.2em;
+        height: 1.2em;
+    }
+
+    .name {
+        flex-grow: 1;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .metadata {
+        color: var(--g700);
     }
 }
