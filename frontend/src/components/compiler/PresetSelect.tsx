@@ -41,6 +41,11 @@ export const PRESETS = [
         opts: "-O1 -mips2",
     },
     {
+        name: "Dinosaur Planet",
+        compiler: "ido5.3",
+        opts: "-O2 -g3 -mips2",
+    },
+    {
         name: "Evo's Space Adventures",
         compiler: "psyq4.6",
         opts: "-O2",
