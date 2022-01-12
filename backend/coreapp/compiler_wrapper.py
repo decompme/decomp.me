@@ -283,7 +283,7 @@ def load_platforms() -> Dict[str, Platform]:
             "Nintendo DS",
             "ARMv4T",
             "arm32",
-            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -o "$OUTPUT"',
+            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT"',
             objdump_cmd="arm-none-eabi-objdump",
             nm_cmd="arm-none-eabi-nm",
             asm_prelude="""
