@@ -8,6 +8,7 @@ import Head from "next/head"
 import Router from "next/router"
 
 import ProgressBar from "@badrap/bar-of-progress"
+import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
 
@@ -38,6 +39,11 @@ export default function MyApp({ Component, pageProps }) {
         <Head>
             <meta name="theme-color" content={themeColor} />
         </Head>
-        <Component {...pageProps} />
+        <PlausibleProvider
+            domain="decomp.me"
+            selfHosted={true}
+        >
+            <Component {...pageProps} />
+        </PlausibleProvider>
     </Layout>
 }
