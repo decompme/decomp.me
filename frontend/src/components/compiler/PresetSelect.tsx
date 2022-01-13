@@ -125,6 +125,16 @@ export const PRESETS = [
         compiler: "agbccpp",
         opts: "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
     },
+    {
+        name: "Pokémon Diamond / Pearl",
+        compiler: "mwcc_30_123",
+        opts: "-c -O4,p -gccext,on -proc arm946e -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+    },
+    {
+        name: "Pokémon HeartGold / SoulSilver",
+        compiler: "mwcc_30_137",
+        opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -proc arm946e -gccinc -interworking -gccdep -MD",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
