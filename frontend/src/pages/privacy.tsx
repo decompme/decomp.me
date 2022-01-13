@@ -90,13 +90,13 @@ export default function PrivacyPage() {
             <p>
                 Voluntarily-submitted information is used to provide vital site features such
                 as user profile pages and the scratch editor. We also reserve the right to use
-                any and all volunarily-submited information for improving existing decompilation
+                any and all voluntarily-submited information for improving existing decompilation
                 tools and developing new ones.
             </p>
             <p>
                 We make every effort to keep your data secure. In the case of a breach, we will
                 notify you and take appropriate action, such as revoking GitHub OAuth tokens.
-                Please note that our servers never recieve or store user passwords.
+                Please note that our servers never receive or store user passwords.
             </p>
 
             <h2>How to request your data or delete it</h2>
