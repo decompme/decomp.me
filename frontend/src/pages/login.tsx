@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
+import { usePlausible } from "next-plausible"
 import { useSWRConfig } from "swr"
 
 import GitHubLoginButton from "../components/GitHubLoginButton"
@@ -17,6 +18,7 @@ export default function LoginPage() {
     const { mutate } = useSWRConfig()
     const code = (router.query.code ?? "").toString()
     const next = (router.query.next ?? "").toString()
+    const plausible = usePlausible()
 
     useEffect(() => {
         if (code) {
@@ -25,6 +27,8 @@ export default function LoginPage() {
                 if (user.is_anonymous) {
                     return Promise.reject(new Error("Still not logged-in."))
                 }
+
+                plausible("login")
 
                 mutate("/user", user)
 
@@ -42,7 +46,7 @@ export default function LoginPage() {
                 setError(error)
             })
         }
-    }, [code, router, mutate, next])
+    }, [code, router, mutate, next, plausible])
 
     return <>
         <main className={styles.container}>

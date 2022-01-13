@@ -4,6 +4,8 @@ import { GetStaticProps } from "next"
 
 import { useRouter } from "next/router"
 
+import { usePlausible } from "next-plausible"
+
 import AsyncButton from "../components/AsyncButton"
 import { CompilerPreset } from "../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
@@ -76,7 +78,9 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compiler, setCompiler] = useState<string>()
     const [compilerOpts, setCompilerOpts] = useState<string>("")
+
     const router = useRouter()
+    const plausible = usePlausible()
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
@@ -156,6 +160,8 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_asm"] = ""
 
             await api.claimScratch(scratch)
+
+            plausible("createScratch", { props: { platform, compiler, url: scratch.html_url } })
 
             await router.push(scratch.html_url)
         } catch (error) {

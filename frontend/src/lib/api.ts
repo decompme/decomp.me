@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
+import { usePlausible } from "next-plausible"
 import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
@@ -269,6 +270,7 @@ export function useSavedScratch(scratch: Scratch): Scratch {
 export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     const savedScratch = useSavedScratch(localScratch)
     const userIsYou = useUserIsYou()
+    const plausible = usePlausible()
 
     const saveScratch = useCallback(async () => {
         if (!localScratch) {
@@ -289,8 +291,10 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
 
         await mutate(localScratch.url, updatedScratch, false)
 
+        plausible("saveScratch", { props: { scratch: localScratch.html_url } })
+
         return updatedScratch
-    }, [localScratch, savedScratch, userIsYou])
+    }, [localScratch, plausible, savedScratch, userIsYou])
 
     return saveScratch
 }
@@ -316,13 +320,16 @@ export async function forkScratch(parent: Scratch): Promise<Scratch> {
 
 export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
     const router = useRouter()
+    const plausible = usePlausible()
 
     return useCallback(async () => {
         const fork = await forkScratch(parent)
 
+        plausible("forkScratch", { props: { parent: parent.html_url, fork: fork.html_url } })
+
         ignoreNextWarnBeforeUnload()
         await router.push(fork.html_url)
-    }, [router, parent])
+    }, [parent, router, plausible])
 }
 
 export function useIsScratchSaved(scratch: Scratch): boolean {
@@ -347,6 +354,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
     const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(initial)
+    const plausible = usePlausible()
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -374,8 +382,10 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
 
         setCompileRequestPromise(promise)
 
+        plausible("compileScratch", { props: { auto: autoRecompile, scratch: scratch.html_url } })
+
         return promise
-    }, [compileRequestPromise, savedScratch, scratch])
+    }, [autoRecompile, compileRequestPromise, plausible, savedScratch, scratch])
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(scratch.url)

@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
+import { usePlausible } from "next-plausible"
 
 import Button from "../components/Button"
 import ErrorBoundary from "../components/ErrorBoundary"
@@ -17,6 +18,7 @@ const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where y
 
 export default function IndexPage() {
     const user = api.useThisUser()
+    const plausible = usePlausible()
 
     const yourScratchesUrl = (!user || api.isAnonUser(user))
         ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
@@ -40,7 +42,7 @@ export default function IndexPage() {
                         {user?.is_anonymous && <GitHubLoginButton popup />}
                         <Link href="/new">
                             <a>
-                                <Button primary onClick={() => {}}>
+                                <Button primary onClick={() => plausible("indexCtaPress")}>
                                     Start decomping
                                     <ArrowRightIcon />
                                 </Button>

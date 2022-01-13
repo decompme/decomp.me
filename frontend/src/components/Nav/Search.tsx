@@ -7,6 +7,7 @@ import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { useCombobox } from "downshift"
 import { motion, AnimatePresence } from "framer-motion"
+import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
 import useSWR from "swr"
 
@@ -33,6 +34,7 @@ export default function Search({ className }: { className?: string }) {
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
     const recentScratches = useRecentScratches()
+    const plausible = usePlausible()
 
     const items = query.length > 0 ? searchItems : recentScratches
 
@@ -72,10 +74,12 @@ export default function Search({ className }: { className?: string }) {
                 const resp = await api.get(`/scratch?search=${inputValue}&page_size=5`)
                 setSearchItems(resp.results)
                 setIsLoading(false)
+                plausible("search", { props: { query: inputValue, numResults: resp.results.length } })
             }, 200))
         },
         onSelectedItemChange({ selectedItem }) {
             if (selectedItem) {
+                plausible("searchClickResult", { props: { query: query, result: selectedItem.html_url } })
                 console.info("<Search> onSelectedItemChange")
                 close()
                 router.push(selectedItem.html_url)
@@ -124,6 +128,7 @@ export default function Search({ className }: { className?: string }) {
                 evt.preventDefault()
 
                 if (searchItems.length > 0) {
+                    plausible("searchPressEnter")
                     console.info("<Search> Enter pressed")
                     close()
                     router.push(searchItems[0].html_url)

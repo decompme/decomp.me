@@ -1,3 +1,4 @@
+import { usePlausible } from "next-plausible"
 import { mutate } from "swr"
 
 import * as api from "../../lib/api"
@@ -8,6 +9,7 @@ import styles from "./UserMenuItems.module.scss"
 
 export default function UserMenuItems() {
     const user = api.useThisUser()
+    const plausible = usePlausible()
 
     if (api.isAnonUser(user)) {
         return <>
@@ -42,6 +44,7 @@ export default function UserMenuItems() {
         <hr />
         <ButtonItem
             onTrigger={async () => {
+                plausible("logout")
                 const user = await api.post("/user", {})
                 await mutate("/user", user)
             }}
