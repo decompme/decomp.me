@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react"
 
 import { GetStaticProps } from "next"
 
+import Link from "next/link"
 import { useRouter } from "next/router"
 
 import { usePlausible } from "next-plausible"
@@ -285,6 +286,10 @@ export default function NewScratch({ serverCompilers }: {
                 >
                     Create scratch
                 </AsyncButton>
+                <p className={styles.privacyNotice}>
+                    decomp.me will store any data you submit and link it to your session.<br />
+                    For more information, see our <Link href="/privacy">privacy policy</Link>.
+                </p>
             </div>
         </main>
         <Footer />
