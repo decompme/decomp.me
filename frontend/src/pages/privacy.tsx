@@ -60,6 +60,7 @@ export default function PrivacyPage() {
             </ul>
             <p>
                 For more information about analytics data, see the <Link href="https://plausible.io/data-policy">Plausible Data Policy</Link>.
+                Please note that decomp.me servers, not Plausible, store and process our analytics data.
             </p>
             <p>
                 <b>Voluntarily-submitted information:</b> decomp.me collects and retains information
@@ -91,7 +92,7 @@ export default function PrivacyPage() {
                 Voluntarily-submitted information is used to provide vital site features such
                 as user profile pages and the scratch editor. We also reserve the right to use
                 any and all voluntarily-submited information for improving existing decompilation
-                tools and developing new ones.
+                tools and developing new ones. This will not involve sharing information with third parties.
             </p>
             <p>
                 We make every effort to keep your data secure. In the case of a breach, we will
