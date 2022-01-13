@@ -41,6 +41,7 @@ export default function MyApp({ Component, pageProps }) {
         </Head>
         <PlausibleProvider
             domain="decomp.me"
+            customDomain="https://stats.decomp.me"
             selfHosted={true}
         >
             <Component {...pageProps} />
