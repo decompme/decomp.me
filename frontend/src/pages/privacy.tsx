@@ -72,7 +72,7 @@ export default function PrivacyPage() {
                 <b>Cookies:</b> decomp.me uses a single persistent authentication cookie used to link
                 voluntarily-submitted information to your session on our site. If you are logged in,
                 this cookie will link your session to your account on decomp.me. We do not show any
-                'cookie banners' or 'privacy popups' on decomp.me because we do use any third-party
+                'cookie banners' or 'privacy popups' on decomp.me because we do not use any third-party
                 or analytics cookies.
             </p>
 
