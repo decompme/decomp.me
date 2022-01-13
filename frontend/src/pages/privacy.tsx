@@ -102,7 +102,7 @@ export default function PrivacyPage() {
             <h2>How to request your data or delete it</h2>
             <p>
                 If you want us to delete some or all data linked to you, please contact us via <Link href="https://discord.gg/sutqNShRRs">our Discord server</Link> or <Link href="https://github.com/decompme/decomp.me/issues">GitHub Issues</Link>.
-                You may also want to disassociate your GitHub account with decomp.me through GitHub's website.
+                You may also want to <Link href="https://github.com/settings/applications">disassociate your GitHub account with decomp.me</Link>.
             </p>
             <p>
                 You may contact us through the same channels linked above if you would like to request
