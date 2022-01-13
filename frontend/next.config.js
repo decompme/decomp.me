@@ -18,6 +18,7 @@ try {
 }
 process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
+const { withPlausibleProxy } = require("next-plausible")
 const withPWA = require("next-pwa")
 const runtimeCaching = require("next-pwa/cache")
 const removeImports = require("next-remove-imports")({
@@ -25,7 +26,9 @@ const removeImports = require("next-remove-imports")({
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
 
-module.exports = removeImports(withPWA({
+module.exports = withPlausibleProxy({
+    customDomain: "https://stats.decomp.me",
+})(removeImports(withPWA({
     async redirects() {
         return [
             {
@@ -83,4 +86,4 @@ module.exports = removeImports(withPWA({
         runtimeCaching,
         disable: process.env.NODE_ENV === "development",
     },
-}))
+})))
