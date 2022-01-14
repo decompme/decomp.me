@@ -48,7 +48,8 @@ def load_compiler(id: str, cc: Optional[str], platform: Optional[str], base_id: 
     if next(binaries, None) != None:
         return {
             "cc": cc,
-            "platform": platform
+            "platform": platform,
+            "basedir": base_id,
         }
     else:
         logger.debug(f"Config found but no binaries found for {id}, ignoring.")
@@ -85,7 +86,8 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
     if settings.DUMMY_COMPILER:
         ret["dummy"] = {
             "platform": "dummy",
-            "cc": ""
+            "cc": "",
+            "basedir": "",
         }
     return ret
 
@@ -458,7 +460,7 @@ class CompilerWrapper:
                 f.write(code)
                 f.write('\n')
 
-            compiler_path = CompilerWrapper.base_path() / compiler
+            compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
 
             # Run compiler
             try:
