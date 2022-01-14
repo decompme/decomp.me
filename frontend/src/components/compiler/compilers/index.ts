@@ -3,6 +3,7 @@ import { FunctionComponent } from "react"
 import * as api from "../../../lib/api"
 
 import * as Agbcc from "./agbcc"
+import * as Agbccpp from "./agbccpp"
 import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc27kmc from "./gcc2.7kmc"
@@ -48,6 +49,7 @@ import * as Mwcc42b142 from "./mwcc_42_142"
 import * as Mwcc43b151 from "./mwcc_43_151"
 import * as Mwcc43b172 from "./mwcc_43_172"
 import * as Mwcc43b213 from "./mwcc_43_213"
+import * as OldAgbcc from "./old_agbcc"
 import * as Psyq41 from "./psyq4.1"
 import * as Psyq43 from "./psyq4.3"
 import * as Psyq46 from "./psyq4.6"
@@ -101,6 +103,8 @@ const COMPILERS: CompilerModule[] = [
     Psyq43,
     Psyq46,
     Agbcc,
+    OldAgbcc,
+    Agbccpp,
     Dummy,
 ]
 
