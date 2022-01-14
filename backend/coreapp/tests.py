@@ -408,7 +408,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 1)
         self.assertEqual(User.objects.count(), 0)
 
-    @responses.activate
+    @responses.activate # type: ignore
     def test_github_login(self) -> None:
         """
         Ensure that a user is created upon sign-in with GitHub.
