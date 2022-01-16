@@ -1,4 +1,4 @@
 {
     "platform": "gba",
-    "cc": "\"${COMPILER_DIR}\"/bin/agbcp -quiet $COMPILER_FLAGS \"$INPUT\" -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
+    "cc": "cc -E -I \"${COMPILER_DIR}\"/include -iquote include -nostdinc -undef \"$INPUT\" | \"${COMPILER_DIR}\"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o \"$OUTPUT\""
 }
