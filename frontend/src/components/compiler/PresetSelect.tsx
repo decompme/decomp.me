@@ -120,6 +120,11 @@ export const PRESETS = [
         compiler: "agbcc",
         opts: "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
     },
+    {
+        name: "Mother 3",
+        compiler: "agbccpp",
+        opts: "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {
