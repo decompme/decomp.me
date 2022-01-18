@@ -128,12 +128,12 @@ export const PRESETS = [
     {
         name: "Pokémon Diamond / Pearl",
         compiler: "mwcc_30_123",
-        opts: "-c -O4,p -gccext,on -proc arm946e -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+        opts: "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
     },
     {
         name: "Pokémon HeartGold / SoulSilver",
         compiler: "mwcc_30_137",
-        opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -proc arm946e -gccinc -interworking -gccdep -MD",
+        opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     },
 ]
 
