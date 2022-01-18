@@ -39,6 +39,11 @@ Dependencies:
 touch .env.local
 ```
 
+- Add `FRONTEND_BASE` to the file:
+```shell
+echo "FRONTEND_BASE=http://localhost:8080" > .env.local
+```
+
 ### Frontend
 ```shell
 cd frontend
