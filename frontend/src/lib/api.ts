@@ -8,8 +8,7 @@ import { useDebouncedCallback } from "use-debounce"
 
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
-const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
-const API_BASE = process.env.INTERNAL_API_BASE ?? EXTERNAL_API_BASE
+const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
 
 type Json = any
 
@@ -18,14 +17,6 @@ const commonOpts: RequestInit = {
     cache: "reload",
     headers: {
         "Accept": "application/json",
-
-        // Set the HTTP Host to point to EXTERNAL_API_BASE rather than the internal API_BASE.
-        // This causes url fields generated from the backend to use the EXTERNAL_API_BASE,
-        // even if the request is actually coming from the internal API_BASE.
-        //
-        // This only does anything Next.js server, because, in the browser,
-        // EXTERNAL_API_BASE == API_BASE and forging Host is disabled for security reasons.
-        "Host": (new URL(EXTERNAL_API_BASE)).hostname,
     },
 }
 
