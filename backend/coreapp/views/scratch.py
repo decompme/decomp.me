@@ -1,31 +1,32 @@
-from rest_framework.exceptions import APIException
-from coreapp.error import CompilationError, DiffError
-from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
-from coreapp.decompiler_wrapper import DecompilerWrapper
-from django.http import HttpResponse, QueryDict
-from rest_framework import serializers, status, mixins, filters
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.routers import DefaultRouter
-from rest_framework.pagination import CursorPagination
-
-import django_filters
-
 import hashlib
 import io
 import json
 import logging
-from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
-import zipfile
 import re
+import zipfile
+from datetime import datetime
+from typing import Any, Dict, Optional
 
-from ..models import Asm, Scratch
-from ..middleware import Request
+import django_filters
+from coreapp.asm_diff_wrapper import AsmDifferWrapper
+from coreapp.compiler_wrapper import (CompilationResult, CompilerWrapper,
+                                      DiffResult)
+from coreapp.decompiler_wrapper import DecompilerWrapper
+from coreapp.error import CompilationError, DiffError
+from django.http import HttpResponse, QueryDict
+from rest_framework import filters, mixins, serializers, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.pagination import CursorPagination
+from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
+from rest_framework.viewsets import GenericViewSet
+
 from ..decorators.django import condition
-from ..serializers import TerseScratchSerializer, ScratchCreateSerializer, ScratchSerializer
+from ..middleware import Request
+from ..models import Asm, Scratch
+from ..serializers import (ScratchCreateSerializer, ScratchSerializer,
+                           TerseScratchSerializer)
 
 logger = logging.getLogger(__name__)
 
