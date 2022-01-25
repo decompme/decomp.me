@@ -59,6 +59,10 @@ class CompilationError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
 
 
+class SandboxError(SubprocessError):
+    SUBPROCESS_NAME: ClassVar[str] = "Sandbox"
+
+
 class AssemblyError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
 

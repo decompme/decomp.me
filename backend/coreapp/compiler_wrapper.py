@@ -448,52 +448,49 @@ class CompilerWrapper:
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
-        try:
-            with Sandbox() as sandbox:
-                code_path = sandbox.path / "code.c"
-                object_path = sandbox.path / "object.o"
-                with code_path.open("w") as f:
-                    f.write('#line 1 "ctx.c"\n')
-                    f.write(context)
-                    f.write('\n')
+        with Sandbox() as sandbox:
+            code_path = sandbox.path / "code.c"
+            object_path = sandbox.path / "object.o"
+            with code_path.open("w") as f:
+                f.write('#line 1 "ctx.c"\n')
+                f.write(context)
+                f.write('\n')
 
-                    f.write('#line 1 "src.c"\n')
-                    f.write(code)
-                    f.write('\n')
+                f.write('#line 1 "src.c"\n')
+                f.write(code)
+                f.write('\n')
 
-                compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
+            compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
 
-                # Run compiler
-                try:
-                    compile_proc = sandbox.run_subprocess(
-                        _compilers[compiler]["cc"],
-                        mounts=[compiler_path],
-                        shell=True,
-                        env={
-                        "PATH": PATH,
-                        "WINE": WINE,
-                        "INPUT": sandbox.rewrite_path(code_path),
-                        "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
-                        "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
-                        "MWCIncludes": "/tmp",
-                    })
-                except subprocess.CalledProcessError as e:
-                    # Compilation failed
-                    logging.debug("Compilation failed: " + e.stderr)
-                    raise CompilationError(e.stderr)
+            # Run compiler
+            try:
+                compile_proc = sandbox.run_subprocess(
+                    _compilers[compiler]["cc"],
+                    mounts=[compiler_path],
+                    shell=True,
+                    env={
+                    "PATH": PATH,
+                    "WINE": WINE,
+                    "INPUT": sandbox.rewrite_path(code_path),
+                    "OUTPUT": sandbox.rewrite_path(object_path),
+                    "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
+                    "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                    "MWCIncludes": "/tmp",
+                })
+            except subprocess.CalledProcessError as e:
+                # Compilation failed
+                logging.debug("Compilation failed: " + e.stderr)
+                raise CompilationError(e.stderr)
 
-                if not object_path.exists():
-                    raise CompilationError("Compiler did not create an object file")
+            if not object_path.exists():
+                raise CompilationError("Compiler did not create an object file")
 
-                object_bytes = object_path.read_bytes()
+            object_bytes = object_path.read_bytes()
 
-                if not object_bytes:
-                    raise CompilationError("Compiler created an empty object file")
+            if not object_bytes:
+                raise CompilationError("Compiler created an empty object file")
 
-                return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
-        except PermissionError as e:
-            raise CompilationError(f"Permission denied: {e}")
+            return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
     def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Assembly:

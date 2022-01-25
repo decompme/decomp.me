@@ -8,6 +8,8 @@ import subprocess
 from tempfile import TemporaryDirectory
 import contextlib
 
+from backend.coreapp.error import SandboxError
+
 logger = logging.getLogger(__name__)
 
 
@@ -94,7 +96,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}
 
-        wrapper = self.sandbox_command(mounts, env)
+        try:
+            wrapper = self.sandbox_command(mounts, env)
+        except Exception as e:
+            raise SandboxError(f"Failed to initialize sandbox command: {e}")
+
         if shell:
             if isinstance(args, list):
                 args = " ".join(args)
