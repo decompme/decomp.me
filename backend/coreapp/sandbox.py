@@ -1,14 +1,14 @@
-from typing import Dict, Optional, List, Union
-from django.conf import settings
+import contextlib
 import logging
 import os
-from pathlib import Path
 import shlex
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
-import contextlib
+from typing import Dict, List, Optional, Union
 
-from backend.coreapp.error import SandboxError
+from coreapp.error import SandboxError
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
