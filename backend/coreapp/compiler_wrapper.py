@@ -303,10 +303,12 @@ def load_platforms() -> Dict[str, Platform]:
 .endm
 .macro thumb_func_start name
     .thumb
+    .syntax unified
     \name:
 .endm
 .macro non_word_aligned_thumb_func_start name
     .thumb
+    .syntax unified
     \name:
 .endm
 .macro thumb_func_end name
@@ -317,7 +319,7 @@ def load_platforms() -> Dict[str, Platform]:
             "Game Boy Advance",
             "ARMv4T",
             "arm32",
-            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mcpu=arm7tdmi -mthumb -o "$OUTPUT"',
             objdump_cmd="arm-none-eabi-objdump",
             nm_cmd="arm-none-eabi-nm",
             asm_prelude="""
