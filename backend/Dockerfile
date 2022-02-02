@@ -89,6 +89,9 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] ; then \
 
 # switch specifics
 ARG ENABLE_SWITCH_SUPPORT
+RUN if [ "${ENABLE_SWITCH_SUPPORT}" = "YES" ] ; then \
+    bash /compilers/clang.sh; \
+    fi
 
 WORKDIR /backend
 

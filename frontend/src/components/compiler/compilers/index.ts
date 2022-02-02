@@ -53,6 +53,7 @@ import * as OldAgbcc from "./old_agbcc"
 import * as Psyq41 from "./psyq4.1"
 import * as Psyq43 from "./psyq4.3"
 import * as Psyq46 from "./psyq4.6"
+import * as Clang401 from "./clang-4.0.1"
 
 const COMPILERS: CompilerModule[] = [
     Gcc281,
@@ -106,6 +107,7 @@ const COMPILERS: CompilerModule[] = [
     OldAgbcc,
     Agbccpp,
     Dummy,
+    Clang401,
 ]
 
 export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
