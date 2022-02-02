@@ -63,9 +63,14 @@ class UrlField(serializers.HyperlinkedIdentityField):
 
     def __init__(self, **kwargs: Any):
         kwargs["view_name"] = "__unused__"
+        self.target_field = kwargs.pop("target_field", "")
         super().__init__(**kwargs)
 
     def get_url(self, value, view_name, request, format):
+        if self.target_field:
+            value = getattr(value, self.target_field)
+        if not value:
+            return None
         if hasattr(value, "get_url"):
             return value.get_url()
 
@@ -97,7 +102,7 @@ class ScratchSerializer(serializers.ModelSerializer["Scratch"]):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
     html_url = HtmlUrlField()
-    parent = UrlField()
+    parent = UrlField(target_field="parent")
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
