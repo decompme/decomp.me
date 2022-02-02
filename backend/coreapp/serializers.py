@@ -1,6 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
-from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from typing import Any, Optional, TYPE_CHECKING
 
@@ -64,9 +63,14 @@ class UrlField(serializers.HyperlinkedIdentityField):
 
     def __init__(self, **kwargs: Any):
         kwargs["view_name"] = "__unused__"
+        self.target_field = kwargs.pop("target_field", "")
         super().__init__(**kwargs)
 
     def get_url(self, value, view_name, request, format):
+        if self.target_field:
+            value = getattr(value, self.target_field)
+        if not value:
+            return None
         if hasattr(value, "get_url"):
             return value.get_url()
 
@@ -77,7 +81,6 @@ class HtmlUrlField(UrlField):
     Read-only field that takes the value returned by the model's get_html_url method.
     get_html_url should return a path relative to FRONTEND_BASE that can be used to look at the HTML page for the model.
     """
-
 
     def get_url(self, value, view_name, request, format):
         if hasattr(value, "get_html_url"):
@@ -99,6 +102,7 @@ class ScratchSerializer(serializers.ModelSerializer["Scratch"]):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
     html_url = HtmlUrlField()
+    parent = UrlField(target_field="parent") # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
