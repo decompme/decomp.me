@@ -118,6 +118,15 @@ def load_platforms() -> Dict[str, Platform]:
             nm_cmd="echo",
             asm_prelude="",
         ),
+        "switch": Platform(
+            "Nintendo Switch",
+            "AARCH64",
+            "aarch64",
+            assemble_cmd='aarch64-linux-gnu-as -mcpu=cortex-a57+fp+simd+crypto+crc -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="aarch64-linux-gnu-objdump",
+            nm_cmd="aarch64-linux-gnu-nm",
+            asm_prelude="",
+        ),
         "n64": Platform(
             "Nintendo 64",
             "MIPS (big-endian)",
