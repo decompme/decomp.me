@@ -1,6 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
-from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from typing import Any, Optional, TYPE_CHECKING
 
@@ -78,7 +77,6 @@ class HtmlUrlField(UrlField):
     get_html_url should return a path relative to FRONTEND_BASE that can be used to look at the HTML page for the model.
     """
 
-
     def get_url(self, value, view_name, request, format):
         if hasattr(value, "get_html_url"):
             return value.get_html_url()
@@ -99,6 +97,7 @@ class ScratchSerializer(serializers.ModelSerializer["Scratch"]):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
     html_url = HtmlUrlField()
+    parent = HtmlUrlField()
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
