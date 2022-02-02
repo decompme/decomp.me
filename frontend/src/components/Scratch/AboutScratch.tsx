@@ -28,7 +28,7 @@ function ScratchLink({ url }: { url: string }) {
     }
 
     return <span className={styles.scratchLinkContainer}>
-        <Link href={`/scratch/${scratch.slug}`}>
+        <Link href={scratch.html_url}>
             <a className={styles.scratchLink}>
                 {scratch.name || "Untitled scratch"}
             </a>
