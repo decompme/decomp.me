@@ -102,7 +102,7 @@ class ScratchSerializer(serializers.ModelSerializer["Scratch"]):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
     html_url = HtmlUrlField()
-    parent = UrlField(target_field="parent")
+    parent = UrlField(target_field="parent") # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
