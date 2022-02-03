@@ -122,7 +122,8 @@ class ScratchModificationTests(BaseTestCase):
         # Update the scratch's code and compiler output
         scratch_patch = {
             'source_code': "int func() { return 2; }",
-            'compiler': 'ido5.3'
+            'compiler': 'ido5.3',
+            'compiler_flags': '-non_shared',
         }
 
         response = self.client.patch(reverse('scratch-detail', kwargs={'pk': slug}), scratch_patch)
@@ -169,6 +170,7 @@ class ScratchModificationTests(BaseTestCase):
         scratch_dict = {
             'platform': 'n64',
             'compiler': 'ido7.1',
+            'compiler_flags': '-non_shared',
             'context': '',
             'target_asm': 'jr $ra\nli $v0,2',
             'source_code': 'int func() { return 2; }'
