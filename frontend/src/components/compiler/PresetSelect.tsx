@@ -8,12 +8,12 @@ export const PRESETS = [
     {
         name: "Super Mario 64",
         compiler: "ido5.3",
-        opts: "-O1 -g -mips2",
+        opts: "-non_shared -O1 -g -mips2",
     },
     {
         name: "Mario Kart 64",
         compiler: "ido5.3",
-        opts: "-O2 -mips2",
+        opts: "-non_shared -O2 -mips2",
     },
     {
         name: "Paper Mario",
@@ -23,22 +23,22 @@ export const PRESETS = [
     {
         name: "Ocarina of Time",
         compiler: "ido7.1",
-        opts: "-O2 -mips2",
+        opts: "-non_shared -O2 -mips2",
     },
     {
         name: "Majora's Mask",
         compiler: "ido7.1",
-        opts: "-O2 -g3 -mips2",
+        opts: "-non_shared -O2 -g3 -mips2",
     },
     {
         name: "GoldenEye / Perfect Dark",
         compiler: "ido5.3",
-        opts: "-Olimit 2000 -mips2 -O2",
+        opts: "-non_shared -Olimit 2000 -mips2 -O2",
     },
     {
         name: "Diddy Kong Racing",
         compiler: "ido5.3",
-        opts: "-mips1 -O2",
+        opts: "-non_shared -mips1 -O2",
     },
     {
         name: "Mario Party 3",
@@ -48,7 +48,12 @@ export const PRESETS = [
     {
         name: "Dinosaur Planet",
         compiler: "ido5.3",
-        opts: "-O2 -g3 -mips2",
+        opts: "-non_shared -O2 -g3 -mips2",
+    },
+    {
+        name: "Dinosaur Planet (DLLs)",
+        compiler: "ido5.3",
+        opts: "-KPIC -O2 -g3 -mips2",
     },
     {
         name: "Evo's Space Adventures",

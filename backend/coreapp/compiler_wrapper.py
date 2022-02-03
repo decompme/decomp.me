@@ -425,7 +425,6 @@ class CompilerWrapper:
         }
         skip_flags = {
             "-ffreestanding",
-            "-non_shared",
             "-Xcpluscomm",
             "-Xfullwarn",
             "-fullwarn",
