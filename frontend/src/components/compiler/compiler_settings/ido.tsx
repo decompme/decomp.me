@@ -22,6 +22,8 @@ export function CommonIDOFlags() {
             <FlagOption flag="-mips3" />
         </FlagSet>
 
+        <Checkbox flag="-KPIC" description="-KPIC (-non_shared if unchecked)" />
+
         <Checkbox flag="-Wall" description="Enable all warning types" />
     </>
 }

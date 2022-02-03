@@ -51,6 +51,11 @@ export const PRESETS = [
         opts: "-O2 -g3 -mips2",
     },
     {
+        name: "Dinosaur Planet (DLLs)",
+        compiler: "ido5.3",
+        opts: "-O2 -g3 -mips2 -KPIC",
+    },
+    {
         name: "Evo's Space Adventures",
         compiler: "psyq4.6",
         opts: "-O2",
