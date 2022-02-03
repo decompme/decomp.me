@@ -22,10 +22,7 @@ export function CommonIDOFlags() {
             <FlagOption flag="-mips3" />
         </FlagSet>
 
-        <FlagSet name="-non_shared / -KPIC">
-            <FlagOption flag="-non_shared" />
-            <FlagOption flag="-KPIC" />
-        </FlagSet>
+        <Checkbox flag="-KPIC" description="-KPIC (-non_shared if unchecked)" />
 
         <Checkbox flag="-Wall" description="Enable all warning types" />
     </>

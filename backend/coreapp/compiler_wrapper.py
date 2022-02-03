@@ -425,6 +425,7 @@ class CompilerWrapper:
         }
         skip_flags = {
             "-ffreestanding",
+            "-non_shared",
             "-Xcpluscomm",
             "-Xfullwarn",
             "-fullwarn",
@@ -432,6 +433,7 @@ class CompilerWrapper:
             "-c",
             "-w",
         }
+
         skip_next = False
         flags = []
         for flag in compiler_flags.split():
@@ -474,10 +476,16 @@ class CompilerWrapper:
 
             compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
 
+            cc_cmd = _compilers[compiler]["cc"]
+
+            # IDO hack to support -KPIC
+            if "ido" in compiler and "-KPIC" in compiler_flags:
+                cc_cmd = cc_cmd.replace("-non_shared", "")
+
             # Run compiler
             try:
                 compile_proc = sandbox.run_subprocess(
-                    _compilers[compiler]["cc"],
+                    cc_cmd,
                     mounts=[compiler_path],
                     shell=True,
                     env={

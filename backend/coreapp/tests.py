@@ -122,8 +122,7 @@ class ScratchModificationTests(BaseTestCase):
         # Update the scratch's code and compiler output
         scratch_patch = {
             'source_code': "int func() { return 2; }",
-            'compiler': 'ido5.3',
-            'compiler_flags': '-non_shared',
+            'compiler': 'ido5.3'
         }
 
         response = self.client.patch(reverse('scratch-detail', kwargs={'pk': slug}), scratch_patch)
@@ -170,7 +169,6 @@ class ScratchModificationTests(BaseTestCase):
         scratch_dict = {
             'platform': 'n64',
             'compiler': 'ido7.1',
-            'compiler_flags': '-non_shared',
             'context': '',
             'target_asm': 'jr $ra\nli $v0,2',
             'source_code': 'int func() { return 2; }'
@@ -288,6 +286,15 @@ class CompilationTests(BaseTestCase):
         """
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+
+    @requiresCompiler('ido5.3')
+    def test_ido_kpic(self):
+        """
+        Ensure that ido compilations including -KPIC produce different code
+        """
+        result_non_shared = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "")
+        result_kpic = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2 -KPIC", "int dog = 5;", "")
+        self.assertNotEqual(result_non_shared.elf_object, result_kpic.elf_object, "The compilation result should be different")
 
     @requiresCompiler('mwcc_247_92')
     def test_mwcc_wine(self):
