@@ -10,3 +10,5 @@ runner:
     format: tsc
   mypy:
     cmd: cd backend && mypy
+    errorformat:
+    - "%f:%l:%c: %t%*[^:]: %m"
