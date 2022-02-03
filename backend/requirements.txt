@@ -10,7 +10,7 @@ django-stubs
 django-stubs-ext
 djangorestframework
 djangorestframework-stubs
-mypy==0.930
+mypy==0.921
 psycopg2-binary
 pycparser
 python-Levenshtein
