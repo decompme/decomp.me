@@ -53,6 +53,7 @@ import * as OldAgbcc from "./old_agbcc"
 import * as Psyq41 from "./psyq4.1"
 import * as Psyq43 from "./psyq4.3"
 import * as Psyq46 from "./psyq4.6"
+import * as Clang391 from "./clang-3.9.1"
 import * as Clang401 from "./clang-4.0.1"
 
 const COMPILERS: CompilerModule[] = [
@@ -107,6 +108,7 @@ const COMPILERS: CompilerModule[] = [
     OldAgbcc,
     Agbccpp,
     Dummy,
+    Clang391,
     Clang401,
 ]
 
