@@ -133,6 +133,14 @@ if __name__ == "__main__":
         Implies --source.""",
     )
     parser.add_argument(
+        "-j",
+        "--section",
+        dest="diff_section",
+        default=".text",
+        metavar="SECTION",
+        help="Diff restricted to a given output section.",
+    )
+    parser.add_argument(
         "-L",
         "--line-numbers",
         dest="show_line_numbers",
@@ -365,6 +373,7 @@ class ProjectSettings:
     source_directories: Optional[List[str]]
     source_extensions: List[str]
     show_line_numbers_default: bool
+    disassemble_all: bool
 
 
 @dataclass
@@ -381,6 +390,7 @@ class Config:
     diff_obj: bool
     make: bool
     source_old_binutils: bool
+    diff_section: str
     inlines: bool
     max_function_size_lines: int
     max_function_size_bytes: int
@@ -425,6 +435,7 @@ def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
         map_format=settings.get("map_format", "gnu"),
         mw_build_dir=settings.get("mw_build_dir", "build/"),
         show_line_numbers_default=settings.get("show_line_numbers_default", True),
+        disassemble_all=settings.get("disassemble_all", False)
     )
 
 
@@ -463,6 +474,7 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
         diff_obj=args.diff_obj,
         make=args.make,
         source_old_binutils=args.source_old_binutils,
+        diff_section=args.diff_section,
         inlines=args.inlines,
         max_function_size_lines=args.max_lines,
         max_function_size_bytes=args.max_lines * 4,
@@ -1009,11 +1021,11 @@ def run_objdump(cmd: ObjdumpCommand, config: Config, project: ProjectSettings) -
         with open(target, "rb") as f:
             obj_data = f.read()
 
-    return preprocess_objdump_out(restrict, obj_data, out)
+    return preprocess_objdump_out(restrict, obj_data, out, config)
 
 
 def preprocess_objdump_out(
-    restrict: Optional[str], obj_data: Optional[bytes], objdump_out: str
+    restrict: Optional[str], obj_data: Optional[bytes], objdump_out: str, config: Config
 ) -> str:
     """
     Preprocess the output of objdump into a format that `process()` expects.
@@ -1033,13 +1045,13 @@ def preprocess_objdump_out(
         out = out.rstrip("\n")
 
     if obj_data:
-        out = serialize_data_references(parse_elf_data_references(obj_data)) + out
+        out = serialize_data_references(parse_elf_data_references(obj_data, config)) + out
 
     return out
 
 
 def search_map_file(
-    fn_name: str, project: ProjectSettings
+    fn_name: str, project: ProjectSettings, config: Config
 ) -> Tuple[Optional[str], Optional[int]]:
     if not project.mapfile:
         fail(f"No map file configured; cannot find function {fn_name}.")
@@ -1059,7 +1071,7 @@ def search_map_file(
             cands = []
             last_line = ""
             for line in lines:
-                if line.startswith(" .text"):
+                if line.startswith(" " + config.diff_section):
                     cur_objfile = line.split()[3]
                 if "load address" in line:
                     tokens = last_line.split() + line.split()
@@ -1080,13 +1092,14 @@ def search_map_file(
         if len(cands) == 1:
             return cands[0]
     elif project.map_format == "mw":
+        section_pattern = re.escape(config.diff_section)
         find = re.findall(
             re.compile(
                 #            ram   elf rom
                 r"  \S+ \S+ (\S+) (\S+)  . "
                 + fn_name
                 #                                         object name
-                + r"(?: \(entry of \.(?:init|text)\))? \t(\S+)"
+                + r"(?: \(entry of " + section_pattern + r"\))? \t(\S+)"
             ),
             contents,
         )
@@ -1121,7 +1134,7 @@ def search_map_file(
     return None, None
 
 
-def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
+def parse_elf_data_references(data: bytes, config: Config) -> List[Tuple[int, int, str]]:
     e_ident = data[:16]
     if e_ident[:4] != b"\x7FELF":
         return []
@@ -1186,7 +1199,8 @@ def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
     assert len(symtab_sections) == 1
     symtab = sections[symtab_sections[0]]
 
-    text_sections = [i for i in range(e_shnum) if sec_names[i] == b".text" and sections[i].sh_size != 0]
+    section_name = config.diff_section.encode("utf-8")
+    text_sections = [i for i in range(e_shnum) if sec_names[i] == section_name and sections[i].sh_size != 0]
     if len(text_sections) != 1:
         return []
     text_section = text_sections[0]
@@ -1195,7 +1209,7 @@ def parse_elf_data_references(data: bytes) -> List[Tuple[int, int, str]]:
     for s in sections:
         if s.sh_type == SHT_REL or s.sh_type == SHT_RELA:
             if s.sh_info == text_section:
-                # Skip .text -> .text references
+                # Skip section_name -> section_name references
                 continue
             sec_name = sec_names[s.sh_info].decode("latin1")
             if sec_name == ".mwcats.text":
@@ -1257,11 +1271,16 @@ def dump_elf(
         f"--stop-address={end_addr}",
     ]
 
+    if project.disassemble_all:
+        disassemble_flag = "-D"
+    else:
+        disassemble_flag = "-d"
+
     flags2 = [
         f"--disassemble={diff_elf_symbol}",
     ]
 
-    objdump_flags = ["-drz", "-j", ".text"]
+    objdump_flags = [disassemble_flag, "-rz", "-j", config.diff_section]
     return (
         project.myimg,
         (objdump_flags + flags1, project.baseimg, None),
@@ -1283,7 +1302,7 @@ def dump_objfile(
     if start.startswith("0"):
         fail("numerical start address not supported with -o; pass a function name")
 
-    objfile, _ = search_map_file(start, project)
+    objfile, _ = search_map_file(start, project, config)
     if not objfile:
         fail("Not able to find .o file for function.")
 
@@ -1297,7 +1316,12 @@ def dump_objfile(
     if not os.path.isfile(refobjfile):
         fail(f'Please ensure an OK .o file exists at "{refobjfile}".')
 
-    objdump_flags = ["-drz", "-j", ".text"]
+    if project.disassemble_all:
+        disassemble_flag = "-D"
+    else:
+        disassemble_flag = "-d"
+
+    objdump_flags = [disassemble_flag, "-rz", "-j", config.diff_section]
     return (
         objfile,
         (objdump_flags, refobjfile, start),
@@ -1314,7 +1338,7 @@ def dump_binary(
         run_make(project.myimg, project)
     start_addr = maybe_eval_int(start)
     if start_addr is None:
-        _, start_addr = search_map_file(start, project)
+        _, start_addr = search_map_file(start, project, config)
         if start_addr is None:
             fail("Not able to find function in map file.")
     if end is not None:
@@ -1400,6 +1424,8 @@ class AsmProcessorMIPS(AsmProcessor):
             pass
         elif "R_MIPS_GPREL16" in row:
             repl = f"%gp_rel({repl})"
+        elif "R_MIPS_GOT16" in row:
+            repl = f"%got({repl})"
         else:
             assert False, f"unknown relocation type '{row}' for line '{prev}'"
         return before + repl + after
@@ -1692,6 +1718,8 @@ ARM32_SETTINGS = ArchSettings(
     proc=AsmProcessorARM32,
 )
 
+ARMEL_SETTINGS = replace(ARM32_SETTINGS, name="armel", big_endian=False)
+
 AARCH64_SETTINGS = ArchSettings(
     name="aarch64",
     re_int=re.compile(r"[0-9]+"),
@@ -1727,6 +1755,7 @@ ARCH_SETTINGS = [
     MIPS_SETTINGS,
     MIPSEL_SETTINGS,
     ARM32_SETTINGS,
+    ARMEL_SETTINGS,
     AARCH64_SETTINGS,
     PPC_SETTINGS,
 ]
