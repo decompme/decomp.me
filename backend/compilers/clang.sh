@@ -23,3 +23,11 @@ if [[ "$uname" != "Darwin" ]]; then
     curl -L "https://releases.llvm.org/3.9.1/$archive_name.tar.xz" | tar xJ --strip 1 -C "$compiler_dir"/clang-3.9.1
     cp "$compiler_dir"/clang-4.0.1/bin/ld.lld "$compiler_dir"/clang-3.9.1/bin/ld.lld
 fi
+
+# set up musl
+curl -L https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip > /tmp/musl.zip
+unzip -d /tmp /tmp/musl.zip
+cp -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba "$compiler_dir/clang-3.9.1"
+cp -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba "$compiler_dir/clang-4.0.1"
+rm -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba
+rm /tmp/musl.zip
