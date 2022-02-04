@@ -1387,7 +1387,7 @@ class AsmProcessor:
 class AsmProcessorMIPS(AsmProcessor):
     def process_reloc(self, row: str, prev: str) -> str:
         arch = self.config.arch
-        if "R_MIPS_NONE" in row:
+        if "R_MIPS_NONE" in row or "R_MIPS_JALR" in row:
             # GNU as emits no-op relocations immediately after real ones when
             # assembling with -mabi=64. Return without trying to parse 'imm' as an
             # integer.
@@ -1426,6 +1426,8 @@ class AsmProcessorMIPS(AsmProcessor):
             repl = f"%gp_rel({repl})"
         elif "R_MIPS_GOT16" in row:
             repl = f"%got({repl})"
+        elif "R_MIPS_CALL16" in row:
+            repl = f"%call16({repl})"
         else:
             assert False, f"unknown relocation type '{row}' for line '{prev}'"
         return before + repl + after
