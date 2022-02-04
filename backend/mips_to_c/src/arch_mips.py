@@ -1,3 +1,4 @@
+import typing
 from typing import (
     Dict,
     List,
@@ -5,15 +6,25 @@ from typing import (
     Set,
     Tuple,
 )
+
 from .error import DecompFailure
-from .types import FunctionSignature, Type
+from .options import Target
 from .parse_instruction import (
+    AsmAddressMode,
     AsmGlobalSymbol,
     AsmLiteral,
     Instruction,
     InstructionMeta,
     JumpTarget,
     Register,
+)
+from .asm_pattern import (
+    AsmMatch,
+    AsmMatcher,
+    AsmPattern,
+    Replacement,
+    SimpleAsmPattern,
+    make_pattern,
 )
 from .translate import (
     Abi,
@@ -45,7 +56,7 @@ from .translate import (
     as_u32,
     as_u64,
     fn_op,
-    fold_gcc_divmod,
+    fold_divmod,
     fold_mul_chains,
     handle_add,
     handle_add_double,
@@ -69,6 +80,7 @@ from .translate import (
     make_store,
     void_fn_op,
 )
+from .types import FunctionSignature, Type
 
 
 LENGTH_TWO: Set[str] = {
@@ -139,7 +151,291 @@ DIV_MULT_INSTRUCTIONS: Set[str] = {
 }
 
 
+class DivPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "bnez $q, .A",
+        "*",  # nop or div
+        "break",
+        ".A:",
+        "li $at, -1",
+        "bne $q, $at, .B",
+        "li $at, 0x80000000",
+        "bne $p, $at, .B",
+        "nop",
+        "break",
+        ".B:",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        return Replacement([m.body[1]], len(m.body) - 1)
+
+
+class DivuPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "bnez $q, .A",
+        "nop",
+        "break",
+        ".A:",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        return Replacement([], len(m.body) - 1)
+
+
+class ModP2Pattern1(SimpleAsmPattern):
+    """Modulo by power of two."""
+
+    pattern = make_pattern(
+        "bgez $i, .A",
+        "andi $o, $i, N",
+        "beqz $o, .A",
+        "nop",
+        "addiu $o, $o, (-1 - N)",
+        ".A:",
+    )
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        val = (m.literals["N"] & 0xFFFF) + 1
+        if val & (val - 1):
+            return None  # not a power of two
+        mod = m.derived_instr(
+            "mod.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(val)]
+        )
+        return Replacement([mod], len(m.body) - 1)
+
+
+class ModP2Pattern2(SimpleAsmPattern):
+    """Modulo by power of two where the mask is too big to fit an andi."""
+
+    pattern = make_pattern(
+        "li $at, HI",
+        "addiu $at, $at, LO?",
+        "bgez $i, .A",
+        "and $o, $i, $at",
+        "beqz $o, .A",
+        "addiu $at, $at, 1",
+        "subu $o, $o, $at",
+        ".A:",
+    )
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        val = (m.literals["HI"] & 0xFFFFFFFF) + 1
+        if "LO" in m.literals:
+            val += ((m.literals["LO"] + 0x8000) & 0xFFFF) - 0x8000
+        if not val or val & (val - 1):
+            return None  # not a power of two
+        mod = m.derived_instr(
+            "mod.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(val)]
+        )
+        return Replacement([mod], len(m.body) - 1)
+
+
+class DivP2Pattern1(SimpleAsmPattern):
+    """Division by power of two where input reg != output reg."""
+
+    pattern = make_pattern(
+        "bgez $i, .A",
+        "sra $o, $i, N",
+        "addiu $at, $i, ((1 << N) - 1)",
+        "sra $o, $at, N",
+        ".A:",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        shift = m.literals["N"] & 0x1F
+        div = m.derived_instr(
+            "div.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(2 ** shift)]
+        )
+        return Replacement([div], len(m.body) - 1)
+
+
+class DivP2Pattern2(SimpleAsmPattern):
+    """Division by power of two where input reg = output reg."""
+
+    pattern = make_pattern(
+        "bgez $x, .A",
+        "move $at, $x",
+        "addiu $at, $x, M",
+        ".A:",
+        "sra $x, $at, N",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        shift = m.literals["N"] & 0x1F
+        div = m.derived_instr(
+            "div.fictive", [m.regs["x"], m.regs["x"], AsmLiteral(2 ** shift)]
+        )
+        return Replacement([div], len(m.body))
+
+
+class Div2S16Pattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "sll $i, $i, N",
+        "sra $o, $i, N",
+        "srl $i, $i, 0x1f",
+        "addu $o, $o, $i",
+        "sra $o, $o, 1",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        # Keep 32->16 conversion from $i to $o, just add a division
+        div = m.derived_instr("div.fictive", [m.regs["o"], m.regs["o"], AsmLiteral(2)])
+        return Replacement(m.body[:2] + [div], len(m.body))
+
+
+class Div2S32Pattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "srl $o, $i, 0x1f",
+        "addu $o, $i, $o",
+        "sra $o, $o, 1",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        div = m.derived_instr("div.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(2)])
+        return Replacement([div], len(m.body))
+
+
+class UtfPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "bgez $x, .A",
+        "cvt.s.w $o, $i",
+        "li $at, 0x4f800000",
+        "mtc1",
+        "nop",
+        "add.s",
+        ".A:",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        new_instr = m.derived_instr("cvt.s.u.fictive", [m.regs["o"], m.regs["i"]])
+        return Replacement([new_instr], len(m.body) - 1)
+
+
+class FtuPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "cfc1 $o, $31",  # use out register as scratch
+        "nop",
+        "andi",
+        "andi?",  # (skippable)
+        "*",  # bnez or bneql
+        "*",
+        "li?",
+        "mtc1",
+        "mtc1?",
+        "li",
+        "*",  # sub.fmt *, X, *
+        "ctc1",
+        "nop",
+        "*",  # cvt.w.fmt *, *
+        "cfc1",
+        "nop",
+        "andi",
+        "andi?",
+        "bnez",
+        "nop",
+        "mfc1",
+        "li",
+        "b",
+        "or",
+        ".A:",
+        "b",
+        "li",
+        "*",  # label: (moved one step down if bneql)
+        "*",  # mfc1
+        "nop",
+        "bltz",
+        "nop",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        sub = next(
+            x
+            for x in m.body
+            if isinstance(x, Instruction) and x.mnemonic.startswith("sub")
+        )
+        fmt = sub.mnemonic.split(".")[-1]
+        args = [m.regs["o"], sub.args[1]]
+        if fmt == "s":
+            new_instr = m.derived_instr("cvt.u.s.fictive", args)
+        else:
+            new_instr = m.derived_instr("cvt.u.d.fictive", args)
+        return Replacement([new_instr], len(m.body))
+
+
+class Mips1DoubleLoadStorePattern(AsmPattern):
+    lwc_pattern = make_pattern("lwc1", "lwc1")
+    swc_pattern = make_pattern("swc1", "swc1")
+
+    def match(self, matcher: AsmMatcher) -> Optional[Replacement]:
+        # TODO: sometimes the instructions aren't consecutive.
+        m = matcher.try_match(self.lwc_pattern) or matcher.try_match(self.swc_pattern)
+        if not m:
+            return None
+        a, b = m.body
+        assert isinstance(a, Instruction)
+        assert isinstance(b, Instruction)
+        ra, ma = a.args
+        rb, mb = b.args
+        # Ideally we'd verify that the memory locations are consecutive as well,
+        # but that's a bit annoying with %lo macros vs raw offsets, and they
+        # might also be misidentified as separate globals.
+        if not (
+            isinstance(ra, Register)
+            and ra.is_float()
+            and ra.other_f64_reg() == rb
+            and isinstance(ma, AsmAddressMode)
+            and isinstance(mb, AsmAddressMode)
+            and ma.rhs == mb.rhs
+        ):
+            return None
+        num = int(ra.register_name[1:])
+        if num % 2 == 1:
+            ra, rb = rb, ra
+            ma, mb = mb, ma
+        # Store the even-numbered register (ra) into the low address (mb).
+        new_args = [ra, mb]
+        new_mn = "ldc1" if a.mnemonic == "lwc1" else "sdc1"
+        new_instr = m.derived_instr(new_mn, new_args)
+        return Replacement([new_instr], len(m.body))
+
+
+class GccSqrtPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "sqrt.s $o, $i",
+        "c.eq.s",
+        "nop",
+        "bc1t",
+        "*",
+        "jal sqrtf",
+        "nop",
+        "mov.s $o, $f0?",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        return Replacement([m.body[0]], len(m.body))
+
+
+class TrapuvPattern(SimpleAsmPattern):
+    pattern = make_pattern(
+        "li $x, 0xfffa0000",
+        "move $y, $sp",
+        "addiu $sp, $sp, N",
+        "ori $x, $x, 0x5a5a",
+        ".loop:",
+        "addiu $y, $y, -8",
+        "sw $x, ($y)",
+        "bne $y, $sp, .loop",
+        "sw $x, 4($y)",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        new_instr = m.derived_instr("trapuv.fictive", [])
+        return Replacement([m.body[2], new_instr], len(m.body))
+
+
 class MipsArch(Arch):
+    arch = Target.ArchEnum.MIPS
+
     stack_pointer_reg = Register("sp")
     frame_pointer_reg = Register("fp")
     return_address_reg = Register("ra")
@@ -231,13 +527,13 @@ class MipsArch(Arch):
         "r0": Register("zero"),
     }
 
+    uses_delay_slots = True
+
     @staticmethod
     def is_branch_instruction(instr: Instruction) -> bool:
         return (
             instr.mnemonic
             in [
-                "j",
-                "b",
                 "beq",
                 "bne",
                 "beqz",
@@ -250,6 +546,7 @@ class MipsArch(Arch):
                 "bc1f",
             ]
             or MipsArch.is_branch_likely_instruction(instr)
+            or MipsArch.is_constant_branch_instruction(instr)
         )
 
     @staticmethod
@@ -268,15 +565,8 @@ class MipsArch(Arch):
         ]
 
     @staticmethod
-    def get_branch_target(instr: Instruction) -> JumpTarget:
-        label = instr.args[-1]
-        if isinstance(label, AsmGlobalSymbol):
-            return JumpTarget(label.symbol_name)
-        if not isinstance(label, JumpTarget):
-            raise DecompFailure(
-                f'Couldn\'t parse instruction "{instr}": invalid branch target'
-            )
-        return label
+    def is_constant_branch_instruction(instr: Instruction) -> bool:
+        return instr.mnemonic in ("b", "j")
 
     @staticmethod
     def is_jump_instruction(instr: Instruction) -> bool:
@@ -297,6 +587,10 @@ class MipsArch(Arch):
         return instr.mnemonic == "jr" and instr.args[0] == Register("ra")
 
     @staticmethod
+    def is_conditional_return_instruction(instr: Instruction) -> bool:
+        return False
+
+    @staticmethod
     def is_jumptable_instruction(instr: Instruction) -> bool:
         return instr.mnemonic == "jr" and instr.args[0] != Register("ra")
 
@@ -305,8 +599,8 @@ class MipsArch(Arch):
         meta = InstructionMeta.missing()
         return [Instruction("jr", [Register("ra")], meta), Instruction("nop", [], meta)]
 
-    @staticmethod
-    def normalize_instruction(instr: Instruction) -> Instruction:
+    @classmethod
+    def normalize_instruction(cls, instr: Instruction) -> Instruction:
         args = instr.args
         if len(args) == 3:
             if instr.mnemonic == "sll" and args[0] == args[1] == Register("zero"):
@@ -355,15 +649,31 @@ class MipsArch(Arch):
                 lit = AsmLiteral((args[1].value & 0xFFFF) << 16)
                 return Instruction("li", [args[0], lit], instr.meta)
             if instr.mnemonic in LENGTH_THREE:
-                return MipsArch.normalize_instruction(
+                return cls.normalize_instruction(
                     Instruction(instr.mnemonic, [args[0]] + args, instr.meta)
                 )
         if len(args) == 1:
             if instr.mnemonic in LENGTH_TWO:
-                return MipsArch.normalize_instruction(
+                return cls.normalize_instruction(
                     Instruction(instr.mnemonic, [args[0]] + args, instr.meta)
                 )
         return instr
+
+    asm_patterns = [
+        DivPattern(),
+        DivuPattern(),
+        DivP2Pattern1(),
+        DivP2Pattern2(),
+        Div2S16Pattern(),
+        Div2S32Pattern(),
+        ModP2Pattern1(),
+        ModP2Pattern2(),
+        UtfPattern(),
+        FtuPattern(),
+        Mips1DoubleLoadStorePattern(),
+        GccSqrtPattern(),
+        TrapuvPattern(),
+    ]
 
     instrs_ignore: InstrSet = {
         # Ignore FCSR sets; they are leftovers from float->unsigned conversions.
@@ -521,11 +831,11 @@ class MipsArch(Arch):
             BinaryOp.u64(a.reg(0), "/", a.reg(1)),
         ),
         "mult": lambda a: (
-            fold_gcc_divmod(BinaryOp.int(a.reg(0), "MULT_HI", a.reg(1))),
+            fold_divmod(BinaryOp.int(a.reg(0), "MULT_HI", a.reg(1))),
             BinaryOp.int(a.reg(0), "*", a.reg(1)),
         ),
         "multu": lambda a: (
-            fold_gcc_divmod(BinaryOp.int(a.reg(0), "MULTU_HI", a.reg(1))),
+            fold_divmod(BinaryOp.int(a.reg(0), "MULTU_HI", a.reg(1))),
             BinaryOp.int(a.reg(0), "*", a.reg(1)),
         ),
         "dmult": lambda a: (
@@ -552,7 +862,7 @@ class MipsArch(Arch):
         "addiu": lambda a: handle_addi(a),
         "addu": lambda a: handle_add(a),
         "subu": lambda a: (
-            fold_mul_chains(fold_gcc_divmod(BinaryOp.intptr(a.reg(1), "-", a.reg(2))))
+            fold_mul_chains(fold_divmod(BinaryOp.intptr(a.reg(1), "-", a.reg(2))))
         ),
         "negu": lambda a: fold_mul_chains(
             UnaryOp(op="-", expr=as_s32(a.reg(1)), type=Type.s32())
@@ -622,7 +932,7 @@ class MipsArch(Arch):
         "sllv": lambda a: fold_mul_chains(
             BinaryOp.int(left=a.reg(1), op="<<", right=as_intish(a.reg(2)))
         ),
-        "srl": lambda a: fold_gcc_divmod(
+        "srl": lambda a: fold_divmod(
             BinaryOp(
                 left=as_u32(a.reg(1)),
                 op=">>",
@@ -630,7 +940,7 @@ class MipsArch(Arch):
                 type=Type.u32(),
             )
         ),
-        "srlv": lambda a: fold_gcc_divmod(
+        "srlv": lambda a: fold_divmod(
             BinaryOp(
                 left=as_u32(a.reg(1)),
                 op=">>",
@@ -639,7 +949,7 @@ class MipsArch(Arch):
             )
         ),
         "sra": lambda a: handle_sra(a),
-        "srav": lambda a: fold_gcc_divmod(
+        "srav": lambda a: fold_divmod(
             BinaryOp(
                 left=as_s32(a.reg(1)),
                 op=">>",

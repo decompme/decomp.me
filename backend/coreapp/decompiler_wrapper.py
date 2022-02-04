@@ -14,9 +14,9 @@ class DecompilerWrapper:
 
         ret = default_source_code
         arch = CompilerWrapper.arch_from_platform(platform)
-        if arch in ["mips", "mipsel"]:
+        if arch in ["mips", "mipsel", "ppc"]:
             try:
-                ret = M2CWrapper.decompile(asm, context, compiler)
+                ret = M2CWrapper.decompile(asm, context, compiler, arch)
             except M2CError as e:
                 ret = f"{e}\n{default_source_code}"
             except Exception:

@@ -359,9 +359,23 @@ class M2CTests(TestCase):
         li $t6,1
         jr $ra
         sw $t6,0($a0)
-        """, "", "")
+        """, "", "ido", "mips")
 
         self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
+
+    """
+    Ensure that we can decompile ppc code
+    """
+    def test_ppc(self):
+        c_code = M2CWrapper.decompile("""
+        .global func_800B43A8
+        func_800B43A8:
+        xor r0, r3, r3
+        subf r3, r4, r0
+        blr
+        """, "", "mwcc", "ppc")
+
+        self.assertEqual("s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n", c_code)
 
 
 class UserTests(BaseTestCase):
