@@ -20,6 +20,11 @@ export function CommonClangFlags() {
             <FlagOption flag="-g3" description="Macro expansions" />
         </FlagSet>
 
+        <FlagSet name="Language">
+            <FlagOption flag="-x c++" description="C++" />
+            <FlagOption flag="-x c" description="C" />
+        </FlagSet>
+
         <FlagSet name="Language standard">
             <FlagOption flag="-std=c++98" description="ISO C++ 1998 with amendments" />
             <FlagOption flag="-std=c++03" description="ISO C++ 1998 with amendments" />
