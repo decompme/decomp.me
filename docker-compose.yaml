@@ -17,6 +17,7 @@ services:
         ENABLE_PS1_SUPPORT: "NO"
         ENABLE_GC_WII_SUPPORT: "NO"
         ENABLE_NDS_SUPPORT: "NO"
+        ENABLE_SWITCH_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:

@@ -140,6 +140,16 @@ export const PRESETS = [
         compiler: "mwcc_30_137",
         opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     },
+    {
+        name: "Super Mario Odyssey",
+        compiler: "clang-3.9.1",
+        opts: "-O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof",
+    },
+    {
+        name: "Breath of the Wild",
+        compiler: "clang-4.0.1",
+        opts: "-O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof",
+    },
 ]
 
 export default function PresetSelect({ className, platform, compiler, opts, setPreset, serverCompilers }: {

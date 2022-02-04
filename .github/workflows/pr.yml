@@ -59,6 +59,7 @@ jobs:
       - name: Download compilers
         run: |-
           ./backend/compilers/download.sh
+          ./backend/compilers/clang.sh
           ./backend/compilers/mwccppc.sh
           ./backend/compilers/mwccarm.sh
       - name: Install dkp dependencies (ppc)
