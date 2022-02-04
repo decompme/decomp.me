@@ -120,7 +120,7 @@ def load_platforms() -> Dict[str, Platform]:
         ),
         "switch": Platform(
             "Nintendo Switch",
-            "AARCH64",
+            "ARMv8-A",
             "aarch64",
             assemble_cmd='aarch64-linux-gnu-as -mcpu=cortex-a57+fp+simd+crypto+crc -o "$OUTPUT" "$INPUT"',
             objdump_cmd="aarch64-linux-gnu-objdump",

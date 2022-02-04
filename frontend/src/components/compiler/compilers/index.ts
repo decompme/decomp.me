@@ -4,6 +4,8 @@ import * as api from "../../../lib/api"
 
 import * as Agbcc from "./agbcc"
 import * as Agbccpp from "./agbccpp"
+import * as Clang391 from "./clang-3.9.1"
+import * as Clang401 from "./clang-4.0.1"
 import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc27kmc from "./gcc2.7kmc"
@@ -53,8 +55,6 @@ import * as OldAgbcc from "./old_agbcc"
 import * as Psyq41 from "./psyq4.1"
 import * as Psyq43 from "./psyq4.3"
 import * as Psyq46 from "./psyq4.6"
-import * as Clang391 from "./clang-3.9.1"
-import * as Clang401 from "./clang-4.0.1"
 
 const COMPILERS: CompilerModule[] = [
     Gcc281,
