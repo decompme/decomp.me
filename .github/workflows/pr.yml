@@ -1,4 +1,4 @@
-name: review
+name: PR
 on:
   push:
     branches:
