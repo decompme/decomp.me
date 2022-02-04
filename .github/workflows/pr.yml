@@ -12,7 +12,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: reviewdog/action-setup@v1
       - run: cd frontend && yarn
-      - run: pip install -r backend/requirements.txt
       - run: reviewdog -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -21,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: pip install -r backend/requirements.txt
       - uses: tsuyoshicho/action-mypy@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
