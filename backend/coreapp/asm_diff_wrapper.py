@@ -24,6 +24,7 @@ class AsmDifferWrapper:
             diff_obj=True,
             make=False,
             source_old_binutils=True,
+            diff_section=".text",
             inlines=False,
             max_function_size_lines=MAX_FUNC_SIZE_LINES,
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
@@ -138,7 +139,7 @@ class AsmDifferWrapper:
 
         # Preprocess the dumps
         try:
-            basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump)
+            basedump = asm_differ.preprocess_objdump_out(None, target_assembly.elf_object, basedump, config)
         except AssertionError as e:
             logger.exception("Error preprocessing base dump")
             raise DiffError(f"Error preprocessing base dump: {e}")
@@ -146,7 +147,7 @@ class AsmDifferWrapper:
             raise DiffError(f"Error preprocessing base dump: {e}")
 
         try:
-            mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump)
+            mydump = asm_differ.preprocess_objdump_out(None, compiled_elf, mydump, config)
         except AssertionError as e:
             logger.exception("Error preprocessing new dump")
             raise DiffError(f"Error preprocessing new dump: {e}")

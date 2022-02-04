@@ -13,9 +13,32 @@ class M2CError(Exception):
 
 class M2CWrapper:
     @staticmethod
-    def decompile(asm: str, context: str, compiler: str) -> str:
+    def get_triple(compiler: str, arch: str) -> str:
+        if "mips" in arch:
+            t_arch = "mips"
+        elif "ppc" in arch:
+            t_arch = "ppc"
+        else:
+            raise M2CError(f"Unsupported arch '{arch}'")
+
+        if "ido" in compiler:
+            t_compiler = "ido"
+        elif "gcc" in compiler:
+            t_compiler = "gcc"
+        elif "mwcc" in compiler:
+            t_compiler = "mwcc"
+        else:
+            raise M2CError(f"Unsupported compiler '{compiler}'")
+
+        return f"{t_arch}-{t_compiler}"
+
+
+    @staticmethod
+    def decompile(asm: str, context: str, compiler: str, arch: str) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
+
+            flags.append(f"--target={M2CWrapper.get_triple(compiler, arch)}")
 
             # Create temp asm file
             asm_path = sandbox.path / "asm.s"
