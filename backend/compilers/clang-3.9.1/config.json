@@ -1,4 +1,4 @@
 {
     "platform": "switch",
-    "cc": "TOOLROOT=\"$COMPILER_DIR\" \"$COMPILER_DIR/bin/clang++\" -target aarch64-linux-elf -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o \"$OUTPUT\" \"$INPUT\""
+    "cc": "TOOLROOT=\"$COMPILER_DIR\" \"$COMPILER_DIR/bin/clang++\" -target aarch64-linux-elf -x c++ -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o \"$OUTPUT\" \"$INPUT\""
 }
