@@ -37,7 +37,7 @@ export function CommonClangFlags() {
         </FlagSet>
 
         <Checkbox flag="-Wall" description="Enable all warning types" />
-        <Checkbox flag="-fno-rtti" description="Generate read-write position independent code" />
-        <Checkbox flag="-fno-exceptions" description="Enable support for exception handling" />
+        <Checkbox flag="-fno-rtti" description="Disable standard C++ runtime type information features" />
+        <Checkbox flag="-fno-exceptions" description="Disable exception handling" />
     </>
 }
