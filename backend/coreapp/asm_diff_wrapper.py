@@ -44,7 +44,10 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def get_objdump_target_function_flags(sandbox: Sandbox, target_path, platform: str, label: str) -> List[str]:
+    def get_objdump_target_function_flags(sandbox: Sandbox, target_path, platform: str, label: Optional[str]) -> List[str]:
+        if not label:
+            return ["--start-address=0"]
+
         if compiler_wrapper.supports_objdump_disassemble(platform):
             return [f"--disassemble={label}"]
 
@@ -88,10 +91,7 @@ class AsmDifferWrapper:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            if label:
-                flags += AsmDifferWrapper.get_objdump_target_function_flags(sandbox, target_path, platform, label)
-            else:
-                flags.append("--start-address=0")
+            flags += AsmDifferWrapper.get_objdump_target_function_flags(sandbox, target_path, platform, label)
 
             objdump_command = compiler_wrapper.get_objdump_command(platform)
 
