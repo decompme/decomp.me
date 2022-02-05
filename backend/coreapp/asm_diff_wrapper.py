@@ -3,7 +3,7 @@ from coreapp import compiler_wrapper
 from coreapp.models import Assembly
 from coreapp.sandbox import Sandbox
 from coreapp.compiler_wrapper import PATH, DiffResult
-from typing import Optional
+from typing import List, Optional
 import json
 import logging
 import subprocess
@@ -44,6 +44,35 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
+    def get_objdump_target_function_flags(sandbox: Sandbox, target_path, platform: str, label: str) -> List[str]:
+        nm_command = compiler_wrapper.get_nm_command(platform)
+        if not nm_command:
+            raise NmError(f"No nm command for {platform}")
+
+        try:
+            nm_proc = sandbox.run_subprocess(
+                [nm_command] + [sandbox.rewrite_path(target_path)],
+                shell=True,
+                env={
+                    "PATH": PATH,
+                },
+            )
+        except subprocess.CalledProcessError as e:
+            raise NmError.from_process_error(e)
+
+        if nm_proc.stdout:
+            # e.g.
+            # 00000000 T osEepromRead
+            #          U osMemSize
+            for line in nm_proc.stdout.splitlines():
+                nm_line = line.split()
+                if len(nm_line) == 3 and label == nm_line[2]:
+                    start_addr = int(nm_line[0], 16)
+                    return [f"--start-address={start_addr}"]
+
+        return ["--start-address=0"]
+
+    @staticmethod
     def run_objdump(target_data: bytes, platform: str, config: asm_differ.Config, label: Optional[str]) -> str:
         flags = [
             "--disassemble",
@@ -56,36 +85,10 @@ class AsmDifferWrapper:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            start_addr = 0
-
             if label:
-                nm_command = compiler_wrapper.get_nm_command(platform)
-
-                if nm_command:
-                    try:
-                        nm_proc = sandbox.run_subprocess(
-                            [nm_command] + [sandbox.rewrite_path(target_path)],
-                            shell=True,
-                            env={
-                                "PATH": PATH,
-                            },
-                        )
-                    except subprocess.CalledProcessError as e:
-                        raise NmError.from_process_error(e)
-
-                    if nm_proc.stdout:
-                        # e.g.
-                        # 00000000 T osEepromRead
-                        #          U osMemSize
-                        for line in nm_proc.stdout.splitlines():
-                            nm_line = line.split()
-                            if len(nm_line) == 3 and label == nm_line[2]:
-                                start_addr = int(nm_line[0], 16)
-                                break
-                else:
-                    raise NmError(f"No nm command for {platform}")
-
-            flags.append(f"--start-address={start_addr}")
+                flags += AsmDifferWrapper.get_objdump_target_function_flags(sandbox, target_path, platform, label)
+            else:
+                flags.append("--start-address=0")
 
             objdump_command = compiler_wrapper.get_objdump_command(platform)
 
