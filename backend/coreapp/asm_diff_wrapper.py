@@ -45,6 +45,9 @@ class AsmDifferWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(sandbox: Sandbox, target_path, platform: str, label: str) -> List[str]:
+        if compiler_wrapper.supports_objdump_disassemble(platform):
+            return [f"--disassemble={label}"]
+
         nm_command = compiler_wrapper.get_nm_command(platform)
         if not nm_command:
             raise NmError(f"No nm command for {platform}")
