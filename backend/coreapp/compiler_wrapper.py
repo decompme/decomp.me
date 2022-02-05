@@ -101,6 +101,7 @@ class Platform:
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
+    supports_objdump_disassemble: bool = False
 
 @dataclass
 class CompilationResult:
@@ -126,6 +127,7 @@ def load_platforms() -> Dict[str, Platform]:
             objdump_cmd="aarch64-linux-gnu-objdump",
             nm_cmd="aarch64-linux-gnu-nm",
             asm_prelude="",
+            supports_objdump_disassemble=True,
         ),
         "n64": Platform(
             "Nintendo 64",
@@ -372,6 +374,11 @@ def get_objdump_command(platform: str) -> Optional[str]:
     if platform in _platforms:
         return _platforms[platform].objdump_cmd
     return None
+
+def supports_objdump_disassemble(platform: str) -> bool:
+    if platform in _platforms:
+        return _platforms[platform].supports_objdump_disassemble
+    return False
 
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
