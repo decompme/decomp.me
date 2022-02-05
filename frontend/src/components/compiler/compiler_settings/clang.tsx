@@ -20,6 +20,11 @@ export function CommonClangFlags() {
             <FlagOption flag="-g3" description="Macro expansions" />
         </FlagSet>
 
+        <FlagSet name="Language">
+            <FlagOption flag="-x c++" description="C++" />
+            <FlagOption flag="-x c" description="C" />
+        </FlagSet>
+
         <FlagSet name="Language standard">
             <FlagOption flag="-std=c++98" description="ISO C++ 1998 with amendments" />
             <FlagOption flag="-std=c++03" description="ISO C++ 1998 with amendments" />
@@ -37,7 +42,7 @@ export function CommonClangFlags() {
         </FlagSet>
 
         <Checkbox flag="-Wall" description="Enable all warning types" />
-        <Checkbox flag="-fno-rtti" description="Generate read-write position independent code" />
-        <Checkbox flag="-fno-exceptions" description="Enable support for exception handling" />
+        <Checkbox flag="-fno-rtti" description="Disable standard C++ runtime type information features" />
+        <Checkbox flag="-fno-exceptions" description="Disable exception handling" />
     </>
 }
