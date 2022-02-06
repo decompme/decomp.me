@@ -39,7 +39,7 @@ class AsmDifferWrapper:
             show_source=False,
             stop_jrra=False,
             ignore_large_imms=False,
-            ignore_addr_diffs=False,
+            ignore_addr_diffs=True,
             algorithm="levenshtein",
         )
 
