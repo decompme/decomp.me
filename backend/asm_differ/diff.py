@@ -1147,7 +1147,6 @@ def parse_elf_data_references(data: bytes, config: Config) -> List[Tuple[int, in
     is_little_endian = e_ident[5] == 1
     str_end = "<" if is_little_endian else ">"
     str_off = "I" if is_32bit else "Q"
-    sym_size = {"B": 1, "H": 2, "I": 4, "Q": 8}
 
     def read(spec: str, offset: int) -> Tuple[int, ...]:
         spec = spec.replace("P", str_off)
@@ -1681,7 +1680,7 @@ PPC_BRANCH_INSTRUCTIONS = {
 MIPS_SETTINGS = ArchSettings(
     name="mips",
     re_int=re.compile(r"[0-9]+"),
-    re_comment=re.compile(r"<.*?>"),
+    re_comment=re.compile(r"<.*>"),
     re_reg=re.compile(
         r"\$?\b(a[0-7]|t[0-9]|s[0-8]|at|v[01]|f[12]?[0-9]|f3[01]|kt?[01]|fp|ra|zero)\b"
     ),
@@ -1702,7 +1701,7 @@ MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
 ARM32_SETTINGS = ArchSettings(
     name="arm32",
     re_int=re.compile(r"[0-9]+"),
-    re_comment=re.compile(r"(<.*?>|//.*$)"),
+    re_comment=re.compile(r"(<.*>|//.*$)"),
     # Includes:
     #   - General purpose registers: r0..13
     #   - Frame pointer registers: lr (r14), pc (r15)
@@ -1725,7 +1724,7 @@ ARMEL_SETTINGS = replace(ARM32_SETTINGS, name="armel", big_endian=False)
 AARCH64_SETTINGS = ArchSettings(
     name="aarch64",
     re_int=re.compile(r"[0-9]+"),
-    re_comment=re.compile(r"(<.*?>|//.*$)"),
+    re_comment=re.compile(r"(<.*>|//.*$)"),
     # GPRs and FP registers: X0-X30, W0-W30, [BHSDVQ]0..31
     # (FP registers may be followed by data width and number of elements, e.g. V0.4S)
     # The zero registers and SP should not be in this list.
@@ -1742,7 +1741,7 @@ AARCH64_SETTINGS = ArchSettings(
 PPC_SETTINGS = ArchSettings(
     name="ppc",
     re_int=re.compile(r"[0-9]+"),
-    re_comment=re.compile(r"(<.*?>|//.*$)"),
+    re_comment=re.compile(r"(<.*>|//.*$)"),
     re_reg=re.compile(r"\$?\b([rf][0-9]+)\b"),
     re_sprel=re.compile(r"(?<=,)(-?[0-9]+|-?0x[0-9a-f]+)\(r1\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
