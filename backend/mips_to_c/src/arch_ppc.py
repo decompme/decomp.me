@@ -535,6 +535,7 @@ class PpcArch(Arch):
         # Function call
         "bl",
         "blrl",
+        "bctrl",
     }
     instrs_no_dest: StmtInstrMap = {
         "sync": lambda a: void_fn_op("MIPS2C_SYNC", []),
@@ -552,16 +553,16 @@ class PpcArch(Arch):
             UnaryOp(op="-", expr=as_s32(a.reg(1)), type=Type.s32())
         ),
         "divw": lambda a: BinaryOp.s32(a.reg(1), "/", a.reg(2)),
-        "divuw": lambda a: BinaryOp.u32(a.reg(1), "/", a.reg(2)),
+        "divwu": lambda a: BinaryOp.u32(a.reg(1), "/", a.reg(2)),
         "mulli": lambda a: BinaryOp.int(a.reg(1), "*", a.imm(2)),
         "mullw": lambda a: BinaryOp.int(a.reg(1), "*", a.reg(2)),
         "mulhw": lambda a: fold_divmod(BinaryOp.int(a.reg(1), "MULT_HI", a.reg(2))),
         "mulhwu": lambda a: fold_divmod(BinaryOp.int(a.reg(1), "MULTU_HI", a.reg(2))),
         # Bit arithmetic
+        "or": lambda a: handle_or(a.reg(1), a.reg(2)),
         "ori": lambda a: handle_or(a.reg(1), a.unsigned_imm(2)),
         "oris": lambda a: handle_or(a.reg(1), a.shifted_imm(2)),
         "and": lambda a: BinaryOp.int(left=a.reg(1), op="&", right=a.reg(2)),
-        "or": lambda a: BinaryOp.int(left=a.reg(1), op="|", right=a.reg(2)),
         "not": lambda a: UnaryOp("~", a.reg(1), type=Type.intish()),
         "nor": lambda a: UnaryOp(
             "~", BinaryOp.int(left=a.reg(1), op="|", right=a.reg(2)), type=Type.intish()

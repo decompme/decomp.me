@@ -1,6 +1,7 @@
 """Functions and classes useful for parsing an arbitrary MIPS instruction.
 """
 import abc
+import csv
 from dataclasses import dataclass, replace
 import string
 from typing import Dict, List, Optional, Set, Union
@@ -297,6 +298,9 @@ def parse_arg_elems(arg_elems: List[str], arch: ArchAsmParsing) -> Optional[Argu
         if tok.isspace():
             # Ignore whitespace.
             arg_elems.pop(0)
+        elif tok == ",":
+            expect(",")
+            break
         elif tok == "$":
             # Register.
             assert value is None
@@ -365,16 +369,6 @@ def parse_arg_elems(arg_elems: List[str], arch: ArchAsmParsing) -> Optional[Argu
                 value = maybe_reg
             else:
                 value = AsmGlobalSymbol(word)
-        elif tok == '"':
-            # Quoted global symbol
-            expect('"')
-            symbol = ""
-            while arg_elems and arg_elems[0] != '"':
-                if arg_elems[0] == "\\" and len(arg_elems) >= 2:
-                    arg_elems.pop(0)
-                symbol += arg_elems.pop(0)
-            expect('"')
-            return AsmGlobalSymbol(symbol)
         elif tok in "<>+-&*":
             # Binary operators, used e.g. to modify global symbols or constants.
             assert isinstance(value, (AsmLiteral, AsmGlobalSymbol, BinOp))
@@ -409,10 +403,11 @@ def parse_arg_elems(arg_elems: List[str], arch: ArchAsmParsing) -> Optional[Argu
                 if isinstance(rhs, AsmLiteral) and isinstance(
                     value, AsmSectionGlobalSymbol
                 ):
-                    return asm_section_global_symbol(
+                    value = asm_section_global_symbol(
                         value.section_name, value.addend + rhs.value
                     )
-                return BinOp(op, value, rhs)
+                else:
+                    value = BinOp(op, value, rhs)
         elif tok == "@":
             # A relocation (e.g. (...)@ha or (...)@l).
             arg_elems.pop(0)
@@ -427,10 +422,24 @@ def parse_arg_elems(arg_elems: List[str], arch: ArchAsmParsing) -> Optional[Argu
 
 
 def parse_arg(arg: str, arch: ArchAsmParsing) -> Argument:
-    arg_elems: List[str] = list(arg)
+    arg_elems: List[str] = list(arg.strip())
     ret = parse_arg_elems(arg_elems, arch)
     assert ret is not None
     return constant_fold(ret)
+
+
+def split_arg_list(args: str) -> List[str]:
+    """Split a string of comma-separated arguments, handling quotes"""
+    return next(
+        csv.reader(
+            [args],
+            delimiter=",",
+            doublequote=False,
+            escapechar="\\",
+            quotechar='"',
+            skipinitialspace=True,
+        )
+    )
 
 
 def parse_instruction(
@@ -441,9 +450,7 @@ def parse_instruction(
         line = line.strip()
         mnemonic, _, args_str = line.partition(" ")
         # Parse arguments.
-        args: List[Argument] = []
-        if args_str.strip():
-            args = [parse_arg(arg_str.strip(), arch) for arg_str in args_str.split(",")]
+        args = [parse_arg(arg_str, arch) for arg_str in split_arg_list(args_str)]
         instr = Instruction(mnemonic, args, meta)
         return arch.normalize_instruction(instr)
     except Exception:

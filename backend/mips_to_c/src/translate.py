@@ -2512,6 +2512,10 @@ def handle_la(args: InstrArgs) -> Expression:
 
 
 def handle_or(left: Expression, right: Expression) -> Expression:
+    if left == right:
+        # `or $rD, $rS, $rS` can be used to move $rS into $rD
+        return left
+
     if isinstance(left, Literal) and isinstance(right, Literal):
         if (((left.value & 0xFFFF) == 0 and (right.value & 0xFFFF0000) == 0)) or (
             (right.value & 0xFFFF) == 0 and (left.value & 0xFFFF0000) == 0
@@ -4039,6 +4043,8 @@ def translate_node_body(node: Node, regs: RegInfo, stack_info: StackInfo) -> Blo
                     )
             elif arch_mnemonic == "ppc:blrl":
                 fn_target = args.regs[Register("lr")]
+            elif arch_mnemonic == "ppc:bctrl":
+                fn_target = args.regs[Register("ctr")]
             elif arch_mnemonic == "mips:jalr":
                 if args.count() == 1:
                     fn_target = args.reg(0)
