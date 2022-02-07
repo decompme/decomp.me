@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react"
 
+import Ansi from "ansi-to-react"
 import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
 
@@ -54,7 +55,7 @@ export default function Diff({ compilation, isCompiling }: Props) {
 
     if (!diff || diff.error) {
         return <div className={styles.container}>
-            {compilation.errors && <div className={styles.log}>{compilation.errors}</div>}
+            {compilation.errors && <div className={styles.log}><Ansi>{compilation.errors}</Ansi></div>}
             {(diff && diff.error) && <div className={styles.log}>{diff.error}</div>}
         </div>
     } else {
