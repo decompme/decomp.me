@@ -42,11 +42,9 @@ fi
 
 # GCC mipsel
 if [[ "$uname" != "Darwin" ]]; then
-    curl -L "https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip" && unzip gcc-2.6.3.zip -d "$compiler_dir/gcc2.6.3-mipsel" && gcc-2.6.3.zip
-    find . -name "cc1" | xargs chmod +x
-    find . -name "cpp" | xargs chmod +x
-    find . -name "g++" | xargs chmod +x
-    find . -name "gcc" | xargs chmod +x
+    mkdir -p "$compiler_dir/gcc2.6.3-mipsel"
+    curl -L -o gcc-2.6.3.zip "https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip" && unzip gcc-2.6.3.zip -d "$compiler_dir/gcc2.6.3-mipsel" && rm gcc-2.6.3.zip
+    chmod +x $compiler_dir/gcc2.6.3-mipsel/*
 fi
 
 # agbcc (gba)
