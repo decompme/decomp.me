@@ -1,4 +1,4 @@
 {
     "platform": "ps1",
-    "cc": "mips-linux-gnu-cpp -Wall -lang-c -gstabs \"$INPUT\" | \"${COMPILER_DIR}\"/cc1 -mips1 -mcpu=3000 -G0 -fno-builtin $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o \"$OUTPUT\""
+    "cc": "mips-linux-gnu-cpp -Wall -lang-c -gstabs \"$INPUT\" | \"${COMPILER_DIR}\"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o \"$OUTPUT\""
 }
