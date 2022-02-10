@@ -2,7 +2,7 @@ import { useState } from "react"
 
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import ErrorBoundary from "../ErrorBoundary"
 
 import { useLeftTabs, useRightTabs } from "./renderTabs"
@@ -26,7 +26,8 @@ export default function Scratch({
     const container = useSize<HTMLDivElement>()
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
-    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting, initialCompilation)
+    const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
+    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
 
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")

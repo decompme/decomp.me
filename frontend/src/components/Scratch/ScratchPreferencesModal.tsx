@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
 
 import { XIcon } from "@primer/octicons-react"
 import Modal from "react-modal"
 
-import { useAutoRecompileSetting } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import Tabs, { Tab } from "../Tabs"
+import TimePeriodInput from "../TimePeriodInput"
 
 import styles from "./ScratchPreferencesModal.module.scss"
 
 function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
+    const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
+
+    const onChange = (duration: number) => setAutoRecompileDelay(duration)
 
     return <div>
         <section>
@@ -21,6 +25,16 @@ function DiffPrefs() {
                     onChange={evt => setAutoRecompile(evt.target.checked)}
                 />
                 Automatically compile on change
+            </label>
+            <label className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="50" max="2000" step="50" value={autoRecompileDelay}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => onChange(+evt.target.value)}
+                    disabled={!autoRecompile}
+                />
+                <TimePeriodInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>
+                ms Delay before recompile is triggered
             </label>
         </section>
     </div>
