@@ -39,11 +39,6 @@ Dependencies:
 touch .env.local
 ```
 
-- Add `FRONTEND_BASE` to the file:
-```shell
-echo "FRONTEND_BASE=http://localhost:8080" > .env.local
-```
-
 ### Frontend
 ```shell
 cd frontend
@@ -175,7 +170,6 @@ ln -s /etc/nginx/sites-available/decomp.local /etc/nginx/sites-enabled/decomp.lo
 
 - Edit `.env.local`:
     - Set `API_BASE=/api`
-    - Set `FRONTEND_BASE=http://decomp.local`
     - Set `ALLOWED_HOSTS=decomp.local`
 
 - If you set up GitHub authentication, change the application URLs to `http://decomp.local` and `http://decomp.local/login`
