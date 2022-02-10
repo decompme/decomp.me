@@ -1,0 +1,4 @@
+{
+    "platform": "ps1",
+    "cc": "\"${COMPILER_DIR}\"/gcc -G0 -c -B \"${COMPILER_DIR}\"/ $COMPILER_FLAGS \"$INPUT\" -o \"$OUTPUT\""
+}
