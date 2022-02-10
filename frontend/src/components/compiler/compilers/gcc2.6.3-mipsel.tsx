@@ -1,5 +1,5 @@
-import { FlagOption, FlagSet } from "../CompilerOpts";
 import { CommonGccFlags } from "../compiler_settings/gcc"
+import { FlagOption, FlagSet } from "../CompilerOpts"
 
 export const name = "GCC 2.6.3 (mipsel)"
 export const id = "gcc2.6.3-mipsel"
