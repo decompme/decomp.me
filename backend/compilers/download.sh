@@ -40,6 +40,13 @@ if [[ "$uname" != "Darwin" ]]; then
     find . -name "CC1PSX.EXE" | xargs chmod +x
 fi
 
+# GCC mipsel
+if [[ "$uname" != "Darwin" ]]; then
+    mkdir -p "$compiler_dir/gcc2.6.3-mipsel"
+    curl -L -o gcc-2.6.3.zip "https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip" && unzip gcc-2.6.3.zip -d "$compiler_dir/gcc2.6.3-mipsel" && rm gcc-2.6.3.zip
+    chmod +x $compiler_dir/gcc2.6.3-mipsel/*
+fi
+
 # agbcc (gba)
 if [[ "$uname" != "Darwin" ]]; then
     mkdir -p "$compiler_dir/agbcc"
