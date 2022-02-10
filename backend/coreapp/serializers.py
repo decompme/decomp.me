@@ -6,7 +6,6 @@ from typing import Any, Optional, TYPE_CHECKING
 from .models import Profile, Scratch
 from .github import GitHubUser
 from .middleware import Request
-from decompme.settings import FRONTEND_BASE
 
 def serialize_profile(request: Request, profile: Profile, small = False):
     if profile.user is None:
@@ -79,7 +78,7 @@ class UrlField(serializers.HyperlinkedIdentityField):
 class HtmlUrlField(UrlField):
     """
     Read-only field that takes the value returned by the model's get_html_url method.
-    get_html_url should return a path relative to FRONTEND_BASE that can be used to look at the HTML page for the model.
+    get_html_url should return a path relative to the frontend that can be used to look at the HTML page for the model.
     """
 
     def get_url(self, value, view_name, request, format):
