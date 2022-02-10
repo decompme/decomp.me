@@ -26,7 +26,7 @@ fi
 # set up musl
 curl -L https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip > /tmp/musl.zip
 unzip -d /tmp /tmp/musl.zip
-#cp -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba "$compiler_dir/clang-3.9.1" # commented out because of a compatibility issue
+cp -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba "$compiler_dir/clang-3.9.1"
 cp -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba "$compiler_dir/clang-4.0.1"
 rm -r /tmp/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba
 rm /tmp/musl.zip
