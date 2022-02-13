@@ -1,13 +1,18 @@
 .container {
     display: grid;
-    grid-template-columns: 250px 1fr 250px;
+    grid-template-columns: 10vw 1fr 1fr 1fr 10vw;
     grid-template-rows: min-content min-content 1fr;
     grid-template-areas:
-        "about    about    about"
-        "activity activity projects"
-        "activity activity projects";
+        "padl about    about    about    padr"
+        ".    activity activity projects ."
+        ".    activity activity projects .";
+
+    @media (max-width: 1000px) {
+        grid-template-columns: 0 250px 2fr 300px 0;
+    }
 
     @media (max-width: 600px) {
+        grid-template-columns: 250px 1fr 250px;
         grid-template-areas:
             "about about about"
             "projects projects projects"
@@ -17,14 +22,9 @@
             border-bottom: 1px solid var(--g300);
         }
 
-        .scratchList,
-        .projectList {
+        .scratchList {
             max-width: 100%;
         }
-    }
-
-    > footer {
-        grid-area: footer;
     }
 }
 
@@ -39,6 +39,11 @@
 
     > h2 {
         font-weight: 400;
+    }
+
+    @media (min-width: 900px) {
+
+        //justify-self: center;
     }
 }
 
@@ -80,11 +85,43 @@
     grid-area: projects;
 }
 
+.padl {
+    grid-area: padl;
+    background: var(--g300);
+}
+
+.padr {
+    grid-area: padr;
+    background: var(--g300);
+}
+
 .scratchList {
     font-size: 0.8em;
-    max-width: 700px;
 
-    padding: 1em 0;
+    @media (min-width: 1500px) {
+        --num-columns: 2;
+    }
+}
+
+.yourScratchList {
+    font-size: 0.8em;
+}
+
+.activity,
+.projects {
+    padding-top: 0;
+
+    & > h2 {
+        position: sticky;
+        top: 0;
+
+        background: var(--g200);
+        padding: 0.75em 0;
+
+        z-index: 1;
+
+        font-weight: 500;
+    }
 }
 
 .projectList {
@@ -102,20 +139,20 @@
     }
 }
 
-.loadMoreLink {
-    font-size: 0.8em;
-    color: var(--g1000);
+.projectLink {
+    display: flex;
+    gap: 0.3em;
+
+    font-weight: 500;
 
     &:hover {
         color: var(--link);
     }
 }
 
-.projectLink {
-    display: flex;
-    gap: 0.3em;
-
-    font-weight: 500;
+.loadMoreLink {
+    font-size: 0.8em;
+    color: var(--g1000);
 
     &:hover {
         color: var(--link);

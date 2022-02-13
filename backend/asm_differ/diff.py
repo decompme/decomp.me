@@ -1333,11 +1333,6 @@ def dump_binary(
         (objdump_flags + flags2, project.myimg, None),
     )
 
-DATA_POOL_PLACEHOLDER = "DATA_POOL_PLACEHOLDER-OFFSET_{}"
-DATA_POOL_PLACEHOLDER_PATTERN = re.compile(
-    r"DATA_POOL_PLACEHOLDER-OFFSET_([a-zA-z0-9]+)"
-)
-
 # Example: "ldr r4, [pc, #56]    ; (4c <AddCoins+0x4c>)"
 ARM32_LOAD_POOL_PATTERN = r"(ldr\s+r([0-9]|1[0-3]),\s+\[pc,.*;\s*)(\([a-fA-F0-9]+.*\))"
 
@@ -1403,6 +1398,8 @@ class AsmProcessorMIPS(AsmProcessor):
             # Branch to glabel. This gives confusing output, but there's not much
             # we can do here.
             pass
+        elif "R_MIPS_GPREL16" in row:
+            repl = f"%gp_rel({repl})"
         else:
             assert False, f"unknown relocation type '{row}' for line '{prev}'"
         return before + repl + after
@@ -1463,37 +1460,21 @@ class AsmProcessorARM32(AsmProcessor):
 
     def _normalize_data_pool(self, row: str) -> str:
         pool_match = re.search(ARM32_LOAD_POOL_PATTERN, row)
-        if pool_match:
-            offset = pool_match.group(3).split(" ")[0][1:]
-            repl = DATA_POOL_PLACEHOLDER.format(offset)
-            return pool_match.group(1) + repl
-        return row
+        return pool_match.group(1) if pool_match else row
 
     def post_process(self, lines: List["Line"]) -> None:
         lines_by_line_number = {}
         for line in lines:
             lines_by_line_number[line.line_num] = line
         for line in lines:
-            reloc_match = re.search(
-                DATA_POOL_PLACEHOLDER_PATTERN, line.normalized_original
-            )
-            if reloc_match is None:
+            if line.data_pool_addr is None:
                 continue
 
-            # Get value at relocation
-            reloc = reloc_match.group(0)
-            line_number = re.search(
-                DATA_POOL_PLACEHOLDER_PATTERN, reloc).group(1)
-            line_original = lines_by_line_number[int(line_number, 16)].original
+            # Add data symbol and its address to the line.
+            line_original = lines_by_line_number[line.data_pool_addr].original
             value = line_original.split()[1]
-
-            # Replace relocation placeholder with value
-            replaced = re.sub(
-                DATA_POOL_PLACEHOLDER_PATTERN,
-                f"={value} ({line_number})",
-                line.normalized_original,
-            )
-            line.original = replaced
+            addr = "{:x}".format(line.data_pool_addr)
+            line.original = line.normalized_original + f"={value} ({addr})"
 
 
 class AsmProcessorAArch64(AsmProcessor):
@@ -1715,9 +1696,10 @@ AARCH64_SETTINGS = ArchSettings(
     name="aarch64",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"(<.*?>|//.*$)"),
-    # GPRs and FP registers: X0-X30, W0-W30, [DSHQ]0..31
+    # GPRs and FP registers: X0-X30, W0-W30, [BHSDVQ]0..31
+    # (FP registers may be followed by data width and number of elements, e.g. V0.4S)
     # The zero registers and SP should not be in this list.
-    re_reg=re.compile(r"\$?\b([dshq][12]?[0-9]|[dshq]3[01]|[xw][12]?[0-9]|[xw]30)\b"),
+    re_reg=re.compile(r"\$?\b([bhsdvq]([12]?[0-9]|3[01])(\.\d\d?[bhsdvq])?|[xw][12]?[0-9]|[xw]30)\b"),
     re_sprel=re.compile(r"sp, #-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(?<!sp, )#-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
@@ -1798,6 +1780,7 @@ class Line:
     scorable_line: str
     line_num: Optional[int] = None
     branch_target: Optional[int] = None
+    data_pool_addr: Optional[int] = None
     source_filename: Optional[str] = None
     source_line_num: Optional[int] = None
     source_lines: List[str] = field(default_factory=list)
@@ -1858,6 +1841,14 @@ def process(dump: str, config: Config) -> List[Line]:
                 source_line_num = int(tail.partition(" ")[0])
             source_lines.append(row)
             continue
+
+        # If the instructions loads a data pool symbol, extract the address of
+        # the symbol.
+        data_pool_addr = None
+        pool_match = re.search(ARM32_LOAD_POOL_PATTERN, row)
+        if pool_match:
+            offset = pool_match.group(3).split(" ")[0][1:]
+            data_pool_addr = int(offset, 16)
 
         m_comment = re.search(arch.re_comment, row)
         comment = m_comment[0] if m_comment else None
@@ -1949,6 +1940,7 @@ def process(dump: str, config: Config) -> List[Line]:
                 scorable_line=scorable_line,
                 line_num=line_num,
                 branch_target=branch_target,
+                data_pool_addr=data_pool_addr,
                 source_filename=source_filename,
                 source_line_num=source_line_num,
                 source_lines=source_lines,

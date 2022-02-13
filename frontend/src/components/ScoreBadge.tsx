@@ -3,12 +3,20 @@ import classNames from "classnames"
 
 import styles from "./ScoreBadge.module.scss"
 
-function calculateScorePercent(score: number, maxScore: number): number {
+export function calculateScorePercent(score: number, maxScore: number): number {
     if (score > maxScore) {
         return 0
     }
 
     return ((1 - (score / maxScore)) * 100)
+}
+
+export function percentToString(percent: number): string {
+    // If the percent is an integer, don't show the decimal
+    if (Math.floor(percent * 100) / 100 === Math.floor(percent))
+        return `${Math.floor(percent)}%`
+    else
+        return `${percent.toFixed(2)}%`
 }
 
 export function getScoreText(score: number, maxScore: number): string {
@@ -19,10 +27,7 @@ export function getScoreText(score: number, maxScore: number): string {
     } else {
         const percent = calculateScorePercent(score, maxScore)
 
-        if (Math.floor(percent * 100) / 100 === Math.floor(percent)) // If the percent is an integer, don't show the decimal
-            return `${score} (${Math.floor(percent)}%)`
-        else
-            return `${score} (${percent.toFixed(2)}%)`
+        return `${score} (${percentToString(percent)})`
     }
 }
 

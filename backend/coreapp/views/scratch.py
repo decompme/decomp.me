@@ -1,8 +1,8 @@
 from rest_framework.exceptions import APIException
 from coreapp.error import CompilationError, DiffError
 from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from coreapp.decompiler_wrapper import DecompilerWrapper
 from django.http import HttpResponse, QueryDict
 from rest_framework import serializers, status, mixins, filters
 from rest_framework.response import Response
@@ -89,6 +89,18 @@ def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
 
 scratch_condition = condition(last_modified_func=scratch_last_modified, etag_func=scratch_etag)
 
+def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
+    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
+    if scratch:
+        family = Scratch.objects.filter(
+            target_assembly=scratch.target_assembly,
+            compiler=scratch.compiler,
+        )
+
+        return str(hash((family, request.headers.get("Accept"))))
+    else:
+        return None
+
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     recompile_params = ["compiler", "compiler_flags", "source_code", "context"]
 
@@ -159,16 +171,7 @@ class ScratchViewSet(
         source_code = data.get("source_code")
         if not source_code:
             default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-            source_code = default_source_code
-            arch = CompilerWrapper.arch_from_platform(platform)
-            if arch in ["mips", "mipsel"]:
-                try:
-                    source_code = M2CWrapper.decompile(asm.data, context, compiler)
-                except M2CError as e:
-                    source_code = f"{e}\n{default_source_code}"
-                except Exception:
-                    logger.exception("Error running mips_to_c")
-                    source_code = f"/* Internal error while running mips_to_c */\n{default_source_code}"
+            source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
 
         compiler_flags = data.get("compiler_flags", "")
         if compiler and compiler_flags:
@@ -241,6 +244,18 @@ class ScratchViewSet(
         })
 
     @action(detail=True, methods=['POST'])
+    def decompile(self, request, pk):
+        scratch: Scratch = self.get_object()
+        context = request.data.get("context", "")
+        compiler = request.data.get("compiler", scratch.compiler)
+
+        decompilation = DecompilerWrapper.decompile("", scratch.platform, scratch.target_assembly.source_asm.data, context, compiler)
+
+        return Response({
+            "decompilation": decompilation
+        })
+
+    @action(detail=True, methods=['POST'])
     def claim(self, request, pk):
         scratch: Scratch = self.get_object()
 
@@ -307,6 +322,18 @@ class ScratchViewSet(
                 "Content-Disposition": f"attachment; filename={safe_name}.zip",
             }
         )
+
+    @action(detail=True)
+    @condition(etag_func=family_etag)
+    def family(self, request: Request, pk: str) -> Response:
+        scratch: Scratch = self.get_object()
+
+        family = Scratch.objects.filter(
+            target_assembly=scratch.target_assembly,
+            compiler=scratch.compiler,
+        ).order_by("creation_time")
+
+        return Response(TerseScratchSerializer(family, many=True, context={ 'request': request }).data)
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'scratch', ScratchViewSet)

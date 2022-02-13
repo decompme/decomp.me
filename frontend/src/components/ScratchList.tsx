@@ -1,3 +1,5 @@
+import { ReactNode } from "react"
+
 import Link from "next/link"
 
 import classNames from "classnames"
@@ -6,38 +8,23 @@ import TimeAgo from "react-timeago"
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
+import Button from "./Button"
+import COMPILERS from "./compiler/compilers"
 import LoadingSpinner from "./loading.svg"
 import PlatformIcon from "./PlatformSelect/PlatformIcon"
 import ProjectIcon from "./ProjectIcon"
+import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
-
-
-function Scratch({ scratch }: { scratch: api.TerseScratch }) {
-    return <div className={styles.scratch}>
-        <div className={styles.header}>
-            {scratch.project
-                ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
-                : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
-            <Link href={scratch.html_url}>
-                <a className={classNames(styles.link, styles.name)}>
-                    {scratch.name}
-                </a>
-            </Link>
-            {scratch.owner && <UserLink user={scratch.owner} />}
-        </div>
-        <div className={styles.metadata}>
-            <TimeAgo date={scratch.last_updated} />
-        </div>
-    </div>
-}
 
 export interface Props {
     url?: string
     className?: string
+    item?: ({ scratch }: { scratch: api.TerseScratch }) => JSX.Element
+    emptyButtonLabel?: ReactNode
 }
 
-export default function ScratchList({ url, className }: Props) {
+export default function ScratchList({ url, className, item, emptyButtonLabel }: Props) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(url || "/scratch")
 
     if (results.length === 0 && isLoading) {
@@ -47,16 +34,97 @@ export default function ScratchList({ url, className }: Props) {
         </div>
     }
 
+    const Item = item || ScratchItem
+
     return <ul className={classNames(styles.list, className)}>
         {results.map(scratch => (
-            <li key={scratch.url} className={styles.item}>
-                <Scratch scratch={scratch} />
-            </li>
+            <Item key={scratch.url} scratch={scratch} />
         ))}
-        {hasNext && <li className={styles.loadButton}>
+        {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
+            <Link href="/new">
+                <a>
+                    <Button>
+                        {emptyButtonLabel}
+                    </Button>
+                </a>
+            </Link>
+        </li>}
+        {hasNext && <li className={styles.button}>
             <AsyncButton onClick={loadNext}>
                 Show more
             </AsyncButton>
         </li>}
     </ul>
+}
+
+export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
+    const compilerName = COMPILERS.find(c => c.id == scratch.compiler)?.name ?? scratch.compiler
+
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return <li className={styles.item}>
+        <div className={styles.scratch}>
+            <div className={styles.header}>
+                {scratch.project
+                    ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
+                    : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+                <Link href={scratch.html_url}>
+                    <a className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </a>
+                </Link>
+                {scratch.owner && <div className={styles.owner}>
+                    <UserLink user={scratch.owner} />
+                </div>}
+            </div>
+            <div className={styles.metadata}>
+                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+            </div>
+        </div>
+    </li>
+}
+
+export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
+    const compilerName = COMPILERS.find(c => c.id == scratch.compiler)?.name ?? scratch.compiler
+
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return <li className={styles.item}>
+        <div className={styles.scratch}>
+            <div className={styles.header}>
+                {scratch.project
+                    ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
+                    : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+                <Link href={scratch.html_url}>
+                    <a className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </a>
+                </Link>
+            </div>
+            <div className={styles.metadata}>
+                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+            </div>
+        </div>
+    </li>
+}
+
+export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }) {
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return <li className={styles.singleLine}>
+        {scratch.project
+            ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
+            : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+        <Link href={scratch.html_url}>
+            <a className={classNames(styles.link, styles.name)}>
+                {scratch.name}
+            </a>
+        </Link>
+        <div className={styles.metadata}>
+            {matchPercentString}
+        </div>
+    </li>
 }

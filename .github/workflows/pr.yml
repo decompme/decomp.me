@@ -124,7 +124,7 @@ jobs:
       matrix:
         config:
           - os: ubuntu-latest
-          - os: windows-latest
+          #- os: windows-latest
     steps:
       - uses: actions/checkout@v2
       - run: cd frontend && yarn

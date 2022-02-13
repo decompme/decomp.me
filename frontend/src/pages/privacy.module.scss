@@ -1,0 +1,43 @@
+.container {
+    padding: 32px;
+    max-width: 700px;
+
+    user-select: text;
+    cursor: auto;
+    text-align: justify;
+
+    line-height: 1.6;
+
+    h1 {
+        font-size: 2em;
+    }
+
+    p,
+    ul {
+        color: var(--g1500);
+        padding: 0;
+        margin: 1.5em 0;
+    }
+
+    b {
+        color: var(--g1600);
+    }
+
+    a {
+        color: var(--link);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    h2 {
+        font-size: 1.5em;
+        margin-top: 1em;
+        margin-bottom: 0;
+
+        & + p {
+            margin-top: 0.25em;
+        }
+    }
+}

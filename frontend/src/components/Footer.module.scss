@@ -4,6 +4,8 @@
     color: var(--g1400);
     cursor: default;
 
+    font-size: calc(min(2vw, 1rem));
+
     svg {
         display: block;
     }
@@ -23,6 +25,7 @@
 
     @media (max-width: 600px) {
         flex-direction: column;
+        font-size: 0.8rem;
     }
 }
 
@@ -36,6 +39,11 @@
 
     &:hover {
         text-decoration: underline;
+    }
+
+    svg {
+        width: 1.4em;
+        height: 1.4em;
     }
 }
 

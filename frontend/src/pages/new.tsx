@@ -2,7 +2,10 @@ import { useEffect, useState, useMemo } from "react"
 
 import { GetStaticProps } from "next"
 
+import Link from "next/link"
 import { useRouter } from "next/router"
+
+import { usePlausible } from "next-plausible"
 
 import AsyncButton from "../components/AsyncButton"
 import { CompilerPreset } from "../components/compiler/CompilerOpts"
@@ -76,7 +79,9 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compiler, setCompiler] = useState<string>()
     const [compilerOpts, setCompilerOpts] = useState<string>("")
+
     const router = useRouter()
+    const plausible = usePlausible()
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
@@ -156,6 +161,8 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_asm"] = ""
 
             await api.claimScratch(scratch)
+
+            plausible("createScratch", { props: { platform, compiler, url: scratch.html_url } })
 
             await router.push(scratch.html_url)
         } catch (error) {
@@ -279,6 +286,10 @@ export default function NewScratch({ serverCompilers }: {
                 >
                     Create scratch
                 </AsyncButton>
+                <p className={styles.privacyNotice}>
+                    decomp.me will store any data you submit and link it to your session.<br />
+                    For more information, see our <Link href="/privacy">privacy policy</Link>.
+                </p>
             </div>
         </main>
         <Footer />

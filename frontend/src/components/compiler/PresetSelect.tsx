@@ -36,9 +36,19 @@ export const PRESETS = [
         opts: "-Olimit 2000 -mips2 -O2",
     },
     {
+        name: "Diddy Kong Racing",
+        compiler: "ido5.3",
+        opts: "-mips1 -O2",
+    },
+    {
         name: "Mario Party 3",
         compiler: "gcc2.7kmc",
         opts: "-O1 -mips2",
+    },
+    {
+        name: "Dinosaur Planet",
+        compiler: "ido5.3",
+        opts: "-O2 -g3 -mips2",
     },
     {
         name: "Evo's Space Adventures",
@@ -48,22 +58,22 @@ export const PRESETS = [
     {
         name: "The Thousand-Year Door",
         compiler: "mwcc_247_108",
-        opts: "-fp hard -fp_contract on -enum int -str pool -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred",
+        opts: "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     },
     {
         name: "Pikmin",
         compiler: "mwcc_233_163e",
-        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -msgstyle gcc",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
     },
     {
         name: "Pikmin 2",
         compiler: "mwcc_247_107",
-        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -inline auto -sdata 8 -sdata2 8 -msgstyle gcc",
+        opts: "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
     },
     {
         name: "Battle for Bikini Bottom",
         compiler: "mwcc_247_92",
-        opts: "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -msgstyle gcc -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+        opts: "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     },
     {
         name: "Super Monkey Ball",
@@ -103,12 +113,27 @@ export const PRESETS = [
     {
         name: "Super Mario Sunshine",
         compiler: "mwcc_233_163",
-        opts: "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -msgstyle gcc -enum int -rostr",
+        opts: "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
     },
     {
         name: "The Minish Cap",
         compiler: "agbcc",
         opts: "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
+    },
+    {
+        name: "Mother 3",
+        compiler: "agbccpp",
+        opts: "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
+    },
+    {
+        name: "Pokémon Diamond / Pearl",
+        compiler: "mwcc_30_123",
+        opts: "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+    },
+    {
+        name: "Pokémon HeartGold / SoulSilver",
+        compiler: "mwcc_30_137",
+        opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     },
 ]
 

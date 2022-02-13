@@ -1,17 +1,19 @@
+import { useState } from "react"
+
 import { GetStaticProps } from "next"
 
 import Image from "next/image"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
-import useSWR from "swr"
 
 import Footer from "../../components/Footer"
-import LoadingSpinner from "../../components/loading.svg"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
+import ScratchList, { ScratchItemNoOwner } from "../../components/ScratchList"
+import Tabs, { Tab } from "../../components/Tabs"
 import * as api from "../../lib/api"
 
-import styles from "./[username].module.css"
+import styles from "./[username].module.scss"
 
 // dynamically render all pages
 export async function getStaticPaths() {
@@ -41,68 +43,47 @@ export const getStaticProps: GetStaticProps = async context => {
     }
 }
 
-export default function UserPage({ user: initialUser }: { user: api.User }) {
-    const { data: user, error } = useSWR<api.User>(`/users/${initialUser.username}`, api.get, {
-        fallback: initialUser,
-    })
-
-    if (error)
-        console.error(error)
-
-    if (!user) {
-        // shouldn't show up in prod because fallback="blocking"
-        return <>
-            <Nav />
-            <main className={styles.loadingPage}>
-                <LoadingSpinner width="24px" />
-            </main>
-        </>
-    }
+export default function UserPage({ user }: { user: api.User }) {
+    const [activeTab, setActiveTab] = useState("scratches")
 
     return <>
         <PageTitle title={user.name || user.username} />
         <Nav />
         <main className={styles.pageContainer}>
-            <section className={styles.userRow}>
-                {user.avatar_url && <Image
-                    className={styles.avatar}
-                    src={user.avatar_url}
-                    alt="User avatar"
-                    width={64}
-                    height={64}
+            <header className={styles.header}>
+                <div className={styles.headerInner}>
+                    {user.avatar_url && <Image
+                        className={styles.avatar}
+                        src={user.avatar_url}
+                        alt="User avatar"
+                        width={64}
+                        height={64}
+                    />}
+                    <h1 className={styles.name}>
+                        <div>{user.name}</div>
+                        <div className={styles.username}>
+                            @{user.username}
+
+                            {user.github_html_url && <a href={user.github_html_url}>
+                                <MarkGithubIcon size={24} />
+                            </a>}
+                        </div>
+                    </h1>
+                </div>
+            </header>
+
+            <section>
+                <Tabs activeTab={activeTab} onChange={setActiveTab} className={styles.tabs}>
+                    <Tab tabKey="scratches" label="Scratches" />
+                </Tabs>
+
+                {activeTab === "scratches" && <ScratchList
+                    url={user.url + "/scratches?page_size=32"}
+                    item={ScratchItemNoOwner}
+                    className={styles.scratchList}
                 />}
-                <h1 className={styles.name}>
-                    <div>{user.name}</div>
-                    <div className={styles.username}>
-                        @{user.username}
-
-                        {user.github_html_url && <a href={user.github_html_url}>
-                            <MarkGithubIcon size={24} />
-                        </a>}
-                    </div>
-                </h1>
             </section>
-
-            {/*<section>
-                <h2>Scratches</h2>
-                <ScratchList user={user} />
-            </section>*/}
         </main>
         <Footer />
     </>
 }
-
-// TODO: needs backend
-/*
-export function ScratchList({ user }: { user: api.User }) {
-    const { data: scratches, error } = useSWR<api.Scratch[]>(`/user/${user.username}/scratches`, api.get)
-
-    if (scratches) {
-        return <ul className={styles.scratchList}>
-            {scratches.map(scratch => <li key={scratch.id}>
-                <ScratchLink scratch={scratch} />
-            </li>)}
-        </ul>
-    }
-}
-*/

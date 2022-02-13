@@ -14,9 +14,6 @@ class M2CError(Exception):
 class M2CWrapper:
     @staticmethod
     def decompile(asm: str, context: str, compiler: str) -> str:
-        if compiler == "dummy":
-            return f"decompiled({asm})"
-
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 

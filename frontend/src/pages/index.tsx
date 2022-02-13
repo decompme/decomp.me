@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
+import { usePlausible } from "next-plausible"
 
 import Button from "../components/Button"
 import ErrorBoundary from "../components/ErrorBoundary"
@@ -9,7 +10,7 @@ import Footer from "../components/Footer"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
-import ScratchList from "../components/ScratchList"
+import ScratchList, { SingleLineScratchItem } from "../components/ScratchList"
 import * as api from "../lib/api"
 
 import styles from "./index.module.scss"
@@ -40,11 +41,18 @@ function ProjectList() {
 
 export default function IndexPage() {
     const user = api.useThisUser()
+    const plausible = usePlausible()
+
+    const yourScratchesUrl = (!user || api.isAnonUser(user))
+        ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
+        : `/users/${user.username}/scratches?page_size=16`
 
     return <>
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
         <Nav />
         <main className={styles.container}>
+            <div className={styles.padl} />
+            <div className={styles.padr} />
             <header className={styles.about}>
                 <ErrorBoundary>
                     <h1>
@@ -57,7 +65,7 @@ export default function IndexPage() {
                         {user?.is_anonymous && <GitHubLoginButton popup />}
                         <Link href="/new">
                             <a>
-                                <Button primary>
+                                <Button primary onClick={() => plausible("indexCtaPress")}>
                                     Start decomping
                                     <ArrowRightIcon />
                                 </Button>
@@ -76,6 +84,16 @@ export default function IndexPage() {
                 <ErrorBoundary>
                     <h2>Projects</h2>
                     <ProjectList />
+
+                    <br/>
+
+                    <h2>Your scratches</h2>
+                    <ScratchList
+                        url={yourScratchesUrl}
+                        className={styles.yourScratchList}
+                        item={SingleLineScratchItem}
+                        emptyButtonLabel="Create your first scratch"
+                    />
                 </ErrorBoundary>
             </section>
         </main>

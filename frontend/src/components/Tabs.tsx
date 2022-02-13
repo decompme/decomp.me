@@ -171,6 +171,7 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
                     setHover(undefined)
                 }}
                 onMouseLeave={() => setHover(undefined)}
+                onBlur={() => setHover(undefined)}
             >
                 {children}
                 <div

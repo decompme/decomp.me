@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
+import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
@@ -115,6 +116,7 @@ export default function ScratchToolbar({
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
+    const plausible = usePlausible()
 
     const [isMenuOpen, setMenuOpen] = useState(false)
     const { renderLayer, triggerProps, layerProps } = useLayer({
@@ -179,7 +181,10 @@ export default function ScratchToolbar({
                             Compile
                         </ButtonItem>
                         <hr />
-                        <ButtonItem onTrigger={() => exportScratchZip(scratch)}>
+                        <ButtonItem onTrigger={() => {
+                            plausible("exportScratchZip", { props: { scratch: scratch.html_url } })
+                            exportScratchZip(scratch)
+                        }}>
                             <DownloadIcon />
                             Export as ZIP...
                         </ButtonItem>

@@ -22,7 +22,27 @@ def requiresCompiler(*compiler_ids: str):
 
     return skipIf(False, "")
 
-class ScratchCreationTests(APITestCase):
+
+class BaseTestCase(APITestCase):
+    # Create a scratch and return it as a DB object
+    def create_scratch(self, partial: dict[str, str]) -> Scratch:
+        response = self.client.post(reverse('scratch-list'), partial)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        scratch = Scratch.objects.get(slug=response.json()["slug"])
+        assert scratch is not None
+        return scratch
+
+    def create_nop_scratch(self) -> Scratch:
+        scratch_dict = {
+            'compiler': 'dummy',
+            'platform': 'dummy',
+            'context': '',
+            'target_asm': "jr $ra\nnop\n",
+        }
+        return self.create_scratch(scratch_dict)
+
+
+class ScratchCreationTests(BaseTestCase):
     @requiresCompiler('ido7.1')
     def test_accept_late_rodata(self):
         """
@@ -42,10 +62,7 @@ glabel func_80929D04
 jr $ra
 nop"""
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
+        self.create_scratch(scratch_dict)
 
     @requiresCompiler('ido5.3')
     def test_n64_func(self):
@@ -67,10 +84,7 @@ jr  $ra
 sb  $t6, %lo(D_801D702C)($at)
 """
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
+        self.create_scratch(scratch_dict)
 
     def test_dummy_platform(self):
         """
@@ -82,12 +96,10 @@ sb  $t6, %lo(D_801D702C)($at)
             'context': 'typedef unsigned char u8;',
             'target_asm': 'this is some test asm',
         }
+        self.create_scratch(scratch_dict)
 
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
 
-class ScratchModificationTests(APITestCase):
+class ScratchModificationTests(BaseTestCase):
     @requiresCompiler('gcc2.8.1', 'ido5.3')
     def test_update_scratch_score(self):
         """
@@ -99,13 +111,7 @@ class ScratchModificationTests(APITestCase):
             'context': '',
             'target_asm': "jr $ra"
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        scratch = Scratch.objects.first()
-        assert(scratch is not None)
-
+        scratch = self.create_scratch(scratch_dict)
         slug = scratch.slug
 
         self.assertGreater(scratch.score, 0)
@@ -122,7 +128,7 @@ class ScratchModificationTests(APITestCase):
         response = self.client.patch(reverse('scratch-detail', kwargs={'pk': slug}), scratch_patch)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        scratch = Scratch.objects.first()
+        scratch = Scratch.objects.get(slug=slug)
         assert(scratch is not None)
         self.assertEqual(scratch.score, 200)
 
@@ -139,12 +145,7 @@ class ScratchModificationTests(APITestCase):
             'target_asm': 'jr $ra\nli $v0,2',
             'source_code': 'int func() { return 2; }'
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        scratch = Scratch.objects.first()
-        assert(scratch is not None)
+        scratch = self.create_scratch(scratch_dict)
 
         scratch.score = -1
         scratch.max_score = -1
@@ -156,7 +157,7 @@ class ScratchModificationTests(APITestCase):
         response = self.client.get(reverse('scratch-compile', kwargs={'pk': slug}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        scratch = Scratch.objects.first()
+        scratch = Scratch.objects.get(slug=slug)
         assert(scratch is not None)
         self.assertEqual(scratch.score, 0)
 
@@ -172,16 +173,11 @@ class ScratchModificationTests(APITestCase):
             'target_asm': 'jr $ra\nli $v0,2',
             'source_code': 'int func() { return 2; }'
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        scratch = Scratch.objects.first()
-        assert(scratch is not None)
-
+        scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
-class ScratchForkTests(APITestCase):
+
+class ScratchForkTests(BaseTestCase):
     def test_fork_scratch(self):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
@@ -194,12 +190,7 @@ class ScratchForkTests(APITestCase):
             'diff_label': 'meow',
             'name': 'cat scratch',
         }
-
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        scratch = Scratch.objects.first()
-        assert(scratch is not None)
+        scratch = self.create_scratch(scratch_dict)
 
         slug = scratch.slug
 
@@ -228,7 +219,7 @@ class ScratchForkTests(APITestCase):
         self.assertEqual(scratch.name, fork.name)
 
 
-class CompilationTests(APITestCase):
+class CompilationTests(BaseTestCase):
     @requiresCompiler('gcc2.8.1')
     def test_simple_compilation(self):
         """
@@ -242,21 +233,17 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can create a scratch
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
-
-        slug = response.json()["slug"]
+        scratch = self.create_scratch(scratch_dict)
 
         compile_dict = {
-            'slug': slug,
+            'slug': scratch.slug,
             'compiler': 'gcc2.8.1',
             'compiler_flags': '-mips2 -O2',
             'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n'
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={'pk': slug}), compile_dict)
+        response = self.client.post(reverse("scratch-compile", kwargs={'pk': scratch.slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @requiresCompiler('gcc2.8.1')
@@ -272,18 +259,14 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can create a scratch
-        response = self.client.post(reverse('scratch-list'), scratch_dict)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Scratch.objects.count(), 1)
-
-        slug = response.json()["slug"]
+        scratch = self.create_scratch(scratch_dict)
 
         context = ""
         for i in range(25000):
             context += "extern int test_symbol_to_be_used_in_a_test;\n"
 
         compile_dict = {
-            'slug': slug,
+            'slug': scratch.slug,
             'compiler': 'gcc2.8.1',
             'compiler_flags': '-mips2 -O2',
             'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n',
@@ -291,7 +274,7 @@ class CompilationTests(APITestCase):
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={'pk': slug}), compile_dict)
+        response = self.client.post(reverse("scratch-compile", kwargs={'pk': scratch.slug}), compile_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(len(response.json()["errors"]), 0)
@@ -321,6 +304,42 @@ class CompilationTests(APITestCase):
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
 
+class DecompilationTests(BaseTestCase):
+    @requiresCompiler('gcc2.8.1')
+    def test_default_decompilation(self):
+        """
+        Ensure that a scratch's initial decompilation makes sense
+        """
+        scratch_dict = {
+            'compiler': 'gcc2.8.1',
+            'platform': 'n64',
+            'context': '',
+            'target_asm': 'glabel return_2\njr $ra\nli $v0,2',
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
+
+    @requiresCompiler('gcc2.8.1')
+    def test_decompile_endpoint(self):
+        """
+        Ensure that the decompile endpoint works
+        """
+        scratch_dict = {
+            'compiler': 'gcc2.8.1',
+            'platform': 'n64',
+            'context': 'typedef int s32;',
+            'target_asm': 'glabel return_2\njr $ra\nli $v0,2',
+        }
+        scratch = self.create_scratch(scratch_dict)
+
+        response = self.client.post(reverse("scratch-decompile", kwargs={'pk': scratch.slug}))
+        self.assertEqual(response.json()["decompilation"], "? return_2(void) {\n    return 2;\n}\n")
+
+        # Provide context and see that the decompilation changes
+        response = self.client.post(reverse("scratch-decompile", kwargs={'pk': scratch.slug}), data={"context": "s32 return_2(void);"})
+        self.assertEqual(response.json()["decompilation"], "s32 return_2(void) {\n    return 2;\n}\n")
+
+
 class M2CTests(TestCase):
     """
     Ensure that pointers are next to types (left style)
@@ -336,7 +355,7 @@ class M2CTests(TestCase):
         self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
 
 
-class UserTests(APITestCase):
+class UserTests(BaseTestCase):
     current_user_url: str
 
     GITHUB_USER = {
@@ -389,7 +408,7 @@ class UserTests(APITestCase):
         self.assertEqual(Profile.objects.count(), 1)
         self.assertEqual(User.objects.count(), 0)
 
-    @responses.activate
+    @responses.activate # type: ignore
     def test_github_login(self) -> None:
         """
         Ensure that a user is created upon sign-in with GitHub.
@@ -475,7 +494,6 @@ class UserTests(APITestCase):
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
         """
-
         response = self.client.post("/api/scratch", {
             'compiler': 'dummy',
             'platform': 'dummy',
@@ -496,21 +514,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
 
-class ScratchDetailTests(APITestCase):
-    def make_nop_scratch(self) -> Scratch:
-        response = self.client.post(reverse("scratch-list"), {
-            'compiler': 'dummy',
-            'platform': 'dummy',
-            'context': '',
-            'target_asm': "jr $ra\nnop\n",
-        })
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        scratch = Scratch.objects.first()
-        assert scratch is not None # assert keyword instead of self.assertIsNotNone for mypy
-        return scratch
-
+class ScratchDetailTests(BaseTestCase):
     def test_404_head(self):
         """
         Ensure that HEAD requests 404 correctly.
@@ -523,7 +527,7 @@ class ScratchDetailTests(APITestCase):
         Ensure that the Last-Modified header is set.
         """
 
-        scratch = self.make_nop_scratch()
+        scratch = self.create_nop_scratch()
 
         response = self.client.head(reverse("scratch-detail", args=[scratch.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -533,8 +537,7 @@ class ScratchDetailTests(APITestCase):
         """
         Ensure that the If-Modified-Since header is handled.
         """
-
-        scratch = self.make_nop_scratch()
+        scratch = self.create_nop_scratch()
 
         response = self.client.head(reverse("scratch-detail", args=[scratch.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -561,8 +564,7 @@ class ScratchDetailTests(APITestCase):
         """
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
         """
-
-        scratch = self.make_nop_scratch()
+        scratch = self.create_nop_scratch()
 
         self.assertIsNone(scratch.owner)
 
@@ -577,6 +579,68 @@ class ScratchDetailTests(APITestCase):
         updated_scratch = Scratch.objects.first()
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
+
+    def test_family(self):
+        root = self.create_nop_scratch()
+
+        # verify the family only holds root
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+
+        # verify the family holds both
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
+
+        # fork the fork
+        response = self.client.post(reverse("scratch-fork", args=[fork.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork2: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+
+        # verify the family holds all three
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 3)
+
+    def test_family_order(self):
+        root = self.create_nop_scratch()
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fork = response.json()
+
+        # verify the family holds both, in creation order
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
+        self.assertEqual(response.json()[1]["html_url"], fork["html_url"])
+
+    def test_family_etag(self):
+        root = self.create_nop_scratch()
+
+        # get etag of only the root
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        etag = response.headers.get("Etag")
+        self.assertIsNotNone(etag)
+
+        # fork the root
+        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify etag has changed
+        response = self.client.get(reverse("scratch-family", args=[root.slug]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(etag, response.headers.get("Etag"))
 
 class RequestTests(APITestCase):
     def test_create_profile(self):

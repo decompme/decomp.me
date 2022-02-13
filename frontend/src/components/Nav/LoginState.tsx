@@ -37,14 +37,14 @@ export default function LoginState({ className }: { className?: string }) {
     >
         {api.isAnonUser(user)
             ? "Not signed in"
-            : user.avatar_url && <Image
+            : (user.avatar_url && <Image
                 className={styles.avatar}
                 src={user.avatar_url}
                 alt="Avatar"
                 width={24}
                 height={24}
                 priority
-            />
+            />)
         }
         <TriangleDownIcon />
         {renderLayer(<div {...layerProps}>
