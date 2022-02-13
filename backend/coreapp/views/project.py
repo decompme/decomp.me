@@ -4,7 +4,6 @@ from rest_framework import status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -12,10 +11,9 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 import logging
 from threading import Thread
 
-from ..models import Project, ProjectFunction, Scratch
-from ..serializers import ProjectFunctionSerializer, ProjectSerializer
+from ..models import Project, ProjectFunction
+from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer
 from ..github import GitHubRepo, GitHubRepoBusy
-from .scratch import ScratchPagination
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +42,6 @@ class ProjectViewSet(
     pagination_class = ProjectPagination
     serializer_class = ProjectSerializer
 
-    def get_serializer_class(self):
-        if self.action == "functions":
-            return ProjectFunctionSerializer
-        else:
-            return ProjectSerializer
-
     @action(detail=True, methods=['POST'])
     def pull(self, request, pk):
         project: Project = self.get_object()
@@ -65,32 +57,6 @@ class ProjectViewSet(
         repo.is_pulling = True # Respond with is_pulling=True; the thread will save is_pulling=True to the DB
         return Response(ProjectSerializer(project, context={ "request": request }).data, status=status.HTTP_202_ACCEPTED)
 
-    """
-    @action(detail=True, methods=['GET', 'POST'])
-    def functions(self, request, pk):
-        project: Project = self.get_object()
-        repo: GitHubRepo = project.repo
-
-        if repo.is_pulling:
-            raise GitHubRepoBusy()
-
-        if request.method == "POST":
-            if not repo.is_maintainer(request):
-                raise NotProjectMaintainer()
-
-            serializer = ProjectFunctionSerializer(data=request.data, context={ "request": request })
-            serializer.is_valid(raise_exception=True)
-            function = serializer.save(project=project)
-            return Response(ProjectFunctionSerializer(function, context={ "request": request }).data, status=status.HTTP_201_CREATED)
-        elif request.method == "GET":
-            queryset = ProjectFunction.objects.filter(project=project)
-            paginator = ProjectFunctionPagination()
-
-            page = paginator.paginate_queryset(queryset, request=request)
-            serializer = ProjectFunctionSerializer(page, many=True, context={ "request": request })
-            return paginator.get_paginated_response(serializer.data)
-    """
-
 class ProjectFunctionViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -101,8 +67,21 @@ class ProjectFunctionViewSet(
     pagination_class = ProjectFunctionPagination
     serializer_class = ProjectFunctionSerializer
 
-    #def get_queryset(self):
-    #    return ProjectFunction.objects.filter(project__slug=self.kwargs["project"])
+    @action(detail=True, methods=['POST'])
+    def start(self, request, **kwargs):
+        function: ProjectFunction = self.get_object()
+        project: Project = function.project
+        repo: GitHubRepo = project.repo
+
+        if repo.is_pulling:
+            raise GitHubRepoBusy()
+
+        scratch = function.create_scratch()
+        if scratch.is_claimable():
+            scratch.owner = request.profile
+            scratch.save()
+
+        return Response(ScratchSerializer(scratch, context={ "request": request }).data, status=status.HTTP_201_CREATED)
 
 router = ExtendedSimpleRouter(trailing_slash=False)
 (

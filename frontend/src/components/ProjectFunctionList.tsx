@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useRouter } from "next/router"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
 import classNames from "classnames"
@@ -11,8 +12,11 @@ import LoadingSpinner from "./loading.svg"
 import styles from "./ProjectFunctionList.module.scss"
 
 function ProjectFunction({ func }: { func: api.ProjectFunction }) {
+    const router = useRouter()
+
     const start = async () => {
-        // TODO
+        const scratch = await api.post(func.url + "/start", {})
+        await router.push(scratch.html_url)
     }
 
     return <div className={styles.result}>

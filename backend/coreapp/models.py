@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from typing import Any, Optional
+from typing import Any, Optional, List
 from pathlib import Path
 import json
 import subprocess
@@ -71,18 +71,16 @@ class Project(models.Model):
     def get_html_url(self) -> str:
         return f"{FRONTEND_BASE}/{self.slug}"
 
-    @transaction.atomic
-    def update_functions(self):
+    def run_script(self, args: List[str]):
         repo_dir = self.repo.get_dir()
         script: Path = repo_dir / "tools" / "decompme"
 
-        assert script.is_file()
+        # TODO: sandbox
+        return json.loads(subprocess.check_output([str(script), *args], cwd=repo_dir))
 
-        def run_script(args):
-            # TODO: sandbox
-            return json.loads(subprocess.check_output([str(script), *args], cwd=repo_dir))
-
-        nonmatching_list = run_script(["list", "--json"])
+    @transaction.atomic
+    def update_functions(self):
+        nonmatching_list = self._run_script(["list", "--json"])
         assert isinstance(nonmatching_list, list)
 
         # Mark all ProjectFunctions for this project as matched. If we don't see them
@@ -165,3 +163,9 @@ class ProjectFunction(models.Model):
 
     def __str__(self):
         return f"{self.display_name} ({self.project})"
+
+    def create_scratch(self) -> Scratch:
+        from .views.scratch import create_scratch
+
+        data = self.project.run_script(["new", str(self.rom_address), "--dry-run"])
+        return create_scratch(data)

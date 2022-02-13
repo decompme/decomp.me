@@ -115,6 +115,86 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
 
     return False
 
+def create_scratch(data: Dict[str, Any]) -> Scratch:
+    create_ser = ScratchCreateSerializer(data=data)
+    create_ser.is_valid(raise_exception=True)
+    data = create_ser.validated_data
+
+    platform = data.get("platform")
+    compiler = data.get("compiler")
+    project = data.get("project")
+    rom_address = data.get("rom_address")
+
+    if platform:
+        if CompilerWrapper.platform_from_compiler(compiler) != platform:
+            raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
+    else:
+        platform = CompilerWrapper.platform_from_compiler(compiler)
+
+    if not platform:
+        raise serializers.ValidationError("Unknown compiler")
+
+    target_asm = data["target_asm"]
+    context = data["context"]
+    diff_label = data.get("diff_label", "")
+
+    assert isinstance(target_asm, str)
+    assert isinstance(context, str)
+    assert isinstance(diff_label, str)
+
+    asm = get_db_asm(target_asm)
+
+    assembly = CompilerWrapper.assemble_asm(platform, asm)
+
+    source_code = data.get("source_code")
+    if not source_code:
+        default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
+
+    compiler_flags = data.get("compiler_flags", "")
+    if compiler and compiler_flags:
+        compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
+
+    name = data.get("name", diff_label) or "Untitled"
+
+    if project or rom_address:
+        assert isinstance(project, str)
+        assert isinstance(rom_address, int)
+
+        project_obj: Project = Project.objects.filter(slug=project).first()
+        if not project_obj:
+            raise serializers.ValidationError("Unknown project")
+
+        repo: GitHubRepo = project_obj.repo
+        if repo.is_pulling:
+            raise GitHubRepoBusy()
+
+        project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
+        if not project_function:
+            raise serializers.ValidationError("Function with given rom address does not exist in project")
+
+        # There's a level of trust placed in the request here that the scratch being created actually is of the function it says it is.
+        # I can forsee a situation where a malicious user creates a matching nop scratch referencing a project function that is not a
+        # nop function, in order to trick decomp.me into giving them credit for 'matching' it.
+        # Perhaps in the future, we should hash the target_asm into the ProjectFunction at pull-time to protect against this.
+    else:
+        project_function = None
+
+    ser = ScratchSerializer(data={
+        "name": name,
+        "compiler": compiler,
+        "compiler_flags": compiler_flags,
+        "context": context,
+        "diff_label": diff_label,
+        "source_code": source_code,
+    })
+    ser.is_valid(raise_exception=True)
+    scratch = ser.save(target_assembly=assembly, platform=platform, project_function=project_function)
+
+    compile_scratch_update_score(scratch)
+
+    return scratch
+
 class ScratchPagination(CursorPagination):
     ordering="-last_updated"
     page_size=10
@@ -145,82 +225,7 @@ class ScratchViewSet(
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        create_ser = ScratchCreateSerializer(data=request.data)
-        create_ser.is_valid(raise_exception=True)
-        data = create_ser.validated_data
-
-        platform = data.get("platform")
-        compiler = data.get("compiler")
-        project = data.get("project")
-        rom_address = data.get("rom_address")
-
-        if platform:
-            if CompilerWrapper.platform_from_compiler(compiler) != platform:
-                raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
-        else:
-            platform = CompilerWrapper.platform_from_compiler(compiler)
-
-        if not platform:
-            raise serializers.ValidationError("Unknown compiler")
-
-        target_asm = data["target_asm"]
-        context = data["context"]
-        diff_label = data.get("diff_label", "")
-
-        assert isinstance(target_asm, str)
-        assert isinstance(context, str)
-        assert isinstance(diff_label, str)
-
-        asm = get_db_asm(target_asm)
-
-        assembly = CompilerWrapper.assemble_asm(platform, asm)
-
-        source_code = data.get("source_code")
-        if not source_code:
-            default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-            source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
-
-        compiler_flags = data.get("compiler_flags", "")
-        if compiler and compiler_flags:
-            compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
-
-        name = data.get("name", diff_label) or "Untitled"
-
-        if project or rom_address:
-            assert isinstance(project, str)
-            assert isinstance(rom_address, int)
-
-            project_obj: Project = Project.objects.filter(slug=project).first()
-            if not project_obj:
-                raise serializers.ValidationError("Unknown project")
-
-            repo: GitHubRepo = project_obj.repo
-            if repo.is_pulling:
-                raise GitHubRepoBusy()
-
-            project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
-            if not project_function:
-                raise serializers.ValidationError("Function with given rom address does not exist in project")
-
-            # There's a level of trust placed in the request here that the scratch being created actually is of the function it says it is.
-            # I can forsee a situation where a malicious user creates a matching nop scratch referencing a project function that is not a
-            # nop function, in order to trick decomp.me into giving them credit for 'matching' it.
-            # Perhaps in the future, we should hash the target_asm into the ProjectFunction at pull-time to protect against this.
-        else:
-            project_function = None
-
-        ser = ScratchSerializer(data={
-            "name": name,
-            "compiler": compiler,
-            "compiler_flags": compiler_flags,
-            "context": context,
-            "diff_label": diff_label,
-            "source_code": source_code,
-        })
-        ser.is_valid(raise_exception=True)
-        scratch = ser.save(target_assembly=assembly, platform=platform, project_function=project_function)
-
-        compile_scratch_update_score(scratch)
+        scratch = create_scratch(request.data)
 
         return Response(
             ScratchSerializer(scratch, context={ 'request': request }).data,
