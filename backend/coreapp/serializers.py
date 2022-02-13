@@ -115,7 +115,7 @@ class TerseScratchSerializer(ScratchSerializer):
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project_function"]
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project", "project_function"]
 
 class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
     html_url = HtmlUrlField()

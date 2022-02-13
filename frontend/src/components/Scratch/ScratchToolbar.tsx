@@ -11,8 +11,7 @@ import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
 import Search from "../Nav/Search"
-import PlatformIcon from "../PlatformSelect/PlatformIcon"
-import ProjectIcon from "../ProjectIcon"
+import ScratchIcon from "../ScratchIcon"
 import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
 
@@ -35,14 +34,6 @@ function exportScratchZip(scratch: api.Scratch) {
     a.href = url
     a.download = scratch.name + ".zip"
     a.click()
-}
-
-function ScratchIcon({ scratch }: { scratch: api.TerseScratch }) {
-    if (scratch.project) {
-        return <ProjectIcon size={20} projectUrl={scratch.project} />
-    } else {
-        return <PlatformIcon size={20} platform={scratch.platform} />
-    }
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -212,7 +203,7 @@ export default function ScratchToolbar({
             <div className={styles.grow} />
             <div className={styles.center}>
                 <div className={styles.icons}>
-                    <ScratchIcon scratch={scratch} />
+                    <ScratchIcon size={20} scratch={scratch} />
                 </div>
                 <ScratchName
                     name={scratch.name}

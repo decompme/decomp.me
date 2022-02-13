@@ -11,9 +11,8 @@ import AsyncButton from "./AsyncButton"
 import Button from "./Button"
 import COMPILERS from "./compiler/compilers"
 import LoadingSpinner from "./loading.svg"
-import PlatformIcon from "./PlatformSelect/PlatformIcon"
-import ProjectIcon from "./ProjectIcon"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
+import ScratchIcon from "./ScratchIcon"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
 
@@ -66,9 +65,7 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                {scratch.project
-                    ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
-                    : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+                <ScratchIcon scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -94,9 +91,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                {scratch.project
-                    ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
-                    : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+                <ScratchIcon scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -115,9 +110,7 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
     return <li className={styles.singleLine}>
-        {scratch.project
-            ? <ProjectIcon projectUrl={scratch.project} className={styles.icon} />
-            : <PlatformIcon platform={scratch.platform} className={styles.icon} />}
+        <ScratchIcon scratch={scratch} className={styles.icon} />
         <Link href={scratch.html_url}>
             <a className={classNames(styles.link, styles.name)}>
                 {scratch.name}
