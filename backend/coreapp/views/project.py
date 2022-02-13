@@ -8,6 +8,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
 
 import logging
+from threading import Thread
 
 from ..models import Project, ProjectFunction, Scratch
 from ..serializers import ProjectFunctionSerializer, ProjectSerializer
@@ -55,8 +56,11 @@ class ProjectViewSet(
         if not repo.is_maintainer(request):
             raise NotProjectMaintainer()
 
-        project.repo.pull() # TODO: in background
+        if not repo.is_pulling:
+            t = Thread(target=GitHubRepo.pull, args=(project.repo,))
+            t.start()
 
+        repo.is_pulling = True # Respond with is_pulling=True; the thread will save is_pulling=True to the DB
         return Response(ProjectSerializer(project, context={ "request": request }).data, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=True, methods=['GET', 'POST'])
