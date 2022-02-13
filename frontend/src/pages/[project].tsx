@@ -29,7 +29,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async context => {
     try {
-        const project: api.Scratch = await api.get(`/projects/${context.params.project}`)
+        const project: api.Project = await api.get(`/projects/${context.params.project}`)
 
         return {
             props: {

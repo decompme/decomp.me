@@ -1,0 +1,51 @@
+.header {
+    background: var(--g300);
+    user-select: auto;
+    align-self: stretch;
+
+    .headerInner {
+        max-width: 50em;
+        padding: 1em;
+        margin: 0 auto;
+    }
+
+    // breadcrumbs
+    h1 {
+        color: var(--g500); // "/" separator color
+        font-size: 1.25em;
+        font-weight: 300;
+
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+
+        // breadcrumbs
+        a {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+
+            font-weight: 500;
+            color: var(--g1200);
+
+            &:last-child {
+                color: var(--g1900);
+            }
+
+            &:any-link:hover {
+                color: var(--link);
+            }
+        }
+    }
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    max-width: 50em;
+    padding: 1em;
+
+    cursor: default;
+}
