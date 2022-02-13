@@ -94,6 +94,7 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
+    project = serializers.SerializerMethodField()
     project_function = serializers.SerializerMethodField()
 
     class Meta:
@@ -101,10 +102,13 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
         exclude = ["target_assembly"]
         read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
 
+    def get_project(self, scratch: Scratch):
+        if hasattr(scratch, "project_function") and scratch.project_function is not None:
+            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"]) # type: ignore
+
     def get_project_function(self, scratch: Scratch):
         if hasattr(scratch, "project_function") and scratch.project_function is not None:
-            # TODO: api url of function
-            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"]) # type: ignore
+            return reverse("projectfunction-detail", args=[scratch.project_function.project.slug, scratch.project_function.id], request=self.context["request"]) # type: ignore
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = TerseProfileField(read_only=True) # type: ignore

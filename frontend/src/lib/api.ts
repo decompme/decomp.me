@@ -177,6 +177,7 @@ export interface TerseScratch {
     score: number // -1 = doesn't compile
     max_score: number
     project: string
+    project_function: string
 }
 
 export interface Scratch extends TerseScratch {
