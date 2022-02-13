@@ -18,7 +18,7 @@ export default function useFuzzySaveCallback(
     const userIsYou = api.useUserIsYou()
 
     let action = FuzzySaveAction.NONE
-    if (!scratch.owner && !scratch.project) {
+    if (!scratch.owner) {
         action = FuzzySaveAction.CLAIM
     } else if (userIsYou(scratch.owner)) {
         action = FuzzySaveAction.SAVE

@@ -54,7 +54,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 <p className={styles.label}>Score</p>
                 <span>{getScoreText(scratch.score, scratch.max_score)}</span>
             </div>
-            {!scratch.project && <div className={styles.horizontalField}>
+            {<div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
                 {scratch.owner
                     ? <UserLink user={scratch.owner} />

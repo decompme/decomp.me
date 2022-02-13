@@ -148,7 +148,7 @@ export default function ScratchToolbar({
                                 await fuzzySaveScratch()
                                 setIsSaving(false)
                             }}
-                            disabled={(scratch.owner && !userIsYou(scratch.owner)) || !!scratch.project}
+                            disabled={scratch.owner && !userIsYou(scratch.owner)}
                             shortcutKeys={
                                 (fuzzySaveAction === FuzzySaveAction.SAVE || fuzzySaveAction === FuzzySaveAction.NONE)
                                 && [SpecialKey.CTRL_COMMAND, "S"]
