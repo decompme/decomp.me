@@ -145,7 +145,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     url = SerializerMethodField()
     html_url = HtmlUrlField()
-    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)
+    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True) # type: ignore
 
     class Meta:
         model = ProjectFunction
@@ -153,4 +153,4 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
         read_only_fields = ["creation_time"]
 
     def get_url(self, fn: ProjectFunction):
-        return reverse("projectfunction-detail", args=[fn.project.slug, fn.id], request=self.context["request"]) # type: ignore
+        return reverse("projectfunction-detail", args=[fn.project.slug, fn.id], request=self.context["request"])

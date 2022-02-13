@@ -122,6 +122,7 @@ def create_scratch(data: Dict[str, Any]) -> Scratch:
 
     platform = data.get("platform")
     compiler = data.get("compiler")
+    assert isinstance(compiler, str)
     project = data.get("project")
     rom_address = data.get("rom_address")
 
@@ -161,7 +162,7 @@ def create_scratch(data: Dict[str, Any]) -> Scratch:
         assert isinstance(project, str)
         assert isinstance(rom_address, int)
 
-        project_obj: Project = Project.objects.filter(slug=project).first()
+        project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
         if not project_obj:
             raise serializers.ValidationError("Unknown project")
 

@@ -79,8 +79,8 @@ class Project(models.Model):
         return json.loads(subprocess.check_output([str(script), *args], cwd=repo_dir))
 
     @transaction.atomic
-    def update_functions(self):
-        nonmatching_list = self._run_script(["list", "--json"])
+    def update_functions(self) -> None:
+        nonmatching_list = self.run_script(["list", "--json"])
         assert isinstance(nonmatching_list, list)
 
         # Mark all ProjectFunctions for this project as matched. If we don't see them
