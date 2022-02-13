@@ -2,8 +2,10 @@ import { GetStaticPaths, GetStaticProps } from "next"
 
 import Image from "next/image"
 
+import { RepoPullIcon } from "@primer/octicons-react"
 import useSWR from "swr"
 
+import AsyncButton from "../components/AsyncButton"
 import ErrorBoundary from "../components/ErrorBoundary"
 import Footer from "../components/Footer"
 import LoadingSpinner from "../components/loading.svg"
@@ -44,12 +46,14 @@ export const getStaticProps: GetStaticProps = async context => {
 }
 
 export default function ProjectPage(props: { project: api.Project }) {
-    const { data: project } = useSWR<api.Project>(props.project.url, api.get, {
+    const { data: project, mutate } = useSWR<api.Project>(props.project.url, api.get, {
         fallbackData: props.project,
 
         // Refresh every 2s if the repo is busy being pulled
         refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
     })
+    const user = api.useThisUser()
+    const userIsMaintainer = user && project.repo.maintainers.includes(user.url)
 
     return <>
         <PageTitle title={project.slug} />
@@ -64,6 +68,16 @@ export default function ProjectPage(props: { project: api.Project }) {
                     <label>Maintainer{project.repo.maintainers.length != 1 && "s"}</label>
                     <UserAvatarList urls={project.repo.maintainers} />
                 </div>
+                {userIsMaintainer && <div className={styles.headerActions}>
+                    <AsyncButton
+                        forceLoading={project.repo.is_pulling}
+                        onClick={async () => {
+                            mutate(await api.post(project.url + "/pull", {}))
+                        }}
+                    >
+                        <RepoPullIcon /> Pull
+                    </AsyncButton>
+                </div>}
             </div>
         </header>
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>

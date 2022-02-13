@@ -52,4 +52,12 @@
             color: var(--g800);
         }
     }
+
+    .headerActions {
+        display: flex;
+        padding-top: 1em;
+        gap: 0.5em;
+        align-items: center;
+        //justify-content: flex-end;
+    }
 }
