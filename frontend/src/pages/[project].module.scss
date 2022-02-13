@@ -9,6 +9,13 @@
     cursor: default;
 }
 
+.loadingContainer {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+}
+
 .header {
     background: var(--g300);
     user-select: auto;

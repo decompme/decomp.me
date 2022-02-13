@@ -2,8 +2,11 @@ import { GetStaticPaths, GetStaticProps } from "next"
 
 import Image from "next/image"
 
+import useSWR from "swr"
+
 import ErrorBoundary from "../components/ErrorBoundary"
 import Footer from "../components/Footer"
+import LoadingSpinner from "../components/loading.svg"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
 import ProjectFunctionList from "../components/ProjectFunctionList"
@@ -40,7 +43,14 @@ export const getStaticProps: GetStaticProps = async context => {
     }
 }
 
-export default function ProjectPage({ project }: { project: api.Project }) {
+export default function ProjectPage(props: { project: api.Project }) {
+    const { data: project } = useSWR<api.Project>(props.project.url, api.get, {
+        fallbackData: props.project,
+
+        // Refresh every 2s if the repo is busy being pulled
+        refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
+    })
+
     return <>
         <PageTitle title={project.slug} />
         <Nav />
@@ -56,12 +66,15 @@ export default function ProjectPage({ project }: { project: api.Project }) {
                 </div>
             </div>
         </header>
-        <main className={styles.container}>
+        {project.repo.is_pulling ? <main className={styles.loadingContainer}>
+            <LoadingSpinner width={32} height={32} />
+            This project is being synced, please wait
+        </main> : <main className={styles.container}>
             <ErrorBoundary>
                 <h2>Functions</h2>
                 <ProjectFunctionList projectUrl={project.url} />
             </ErrorBoundary>
-        </main>
+        </main>}
         <Footer />
     </>
 }
