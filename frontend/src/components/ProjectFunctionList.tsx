@@ -28,7 +28,7 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
             </Link>
         </div>
         <div className={styles.metadata}>
-            Added <TimeAgo date={func.creation_time} />
+            {func.is_matched_in_repo ? "Matched" : "Not matched"} • Added <TimeAgo date={func.creation_time} />
         </div>
         <div className={styles.actions}>
             {/*<Link href={func.scratch.html_url + "/forks"}>
@@ -40,7 +40,7 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
                 </a>
             </Link>*/}
             <AsyncButton onClick={start}>
-                Start
+                Start attempt
                 <ArrowRightIcon />
             </AsyncButton>
         </div>

@@ -1,6 +1,6 @@
 import rest_framework
 from rest_framework.exceptions import APIException
-from rest_framework import status, mixins
+from rest_framework import status, mixins, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
@@ -10,6 +10,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 import logging
 from threading import Thread
+import django_filters
 
 from ..models import Project, ProjectFunction
 from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer
@@ -61,11 +62,16 @@ class ProjectFunctionViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
-    NestedViewSetMixin,
 ):
-    queryset = ProjectFunction.objects.all()
     pagination_class = ProjectFunctionPagination
     serializer_class = ProjectFunctionSerializer
+
+    filter_fields = ['rom_address']
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['display_name']
+
+    def get_queryset(self):
+        return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
 
     @action(detail=True, methods=['POST'])
     def start(self, request, **kwargs):
