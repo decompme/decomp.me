@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.pagination import CursorPagination
+from rest_framework_extensions.routers import ExtendedSimpleRouter
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 import logging
 from threading import Thread
@@ -63,6 +65,7 @@ class ProjectViewSet(
         repo.is_pulling = True # Respond with is_pulling=True; the thread will save is_pulling=True to the DB
         return Response(ProjectSerializer(project, context={ "request": request }).data, status=status.HTTP_202_ACCEPTED)
 
+    """
     @action(detail=True, methods=['GET', 'POST'])
     def functions(self, request, pk):
         project: Project = self.get_object()
@@ -86,6 +89,23 @@ class ProjectViewSet(
             page = paginator.paginate_queryset(queryset, request=request)
             serializer = ProjectFunctionSerializer(page, many=True, context={ "request": request })
             return paginator.get_paginated_response(serializer.data)
+    """
 
-router = DefaultRouter(trailing_slash=False)
-router.register(r'projects', ProjectViewSet)
+class ProjectFunctionViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+    NestedViewSetMixin,
+):
+    queryset = ProjectFunction.objects.all()
+    pagination_class = ProjectFunctionPagination
+    serializer_class = ProjectFunctionSerializer
+
+    #def get_queryset(self):
+    #    return ProjectFunction.objects.filter(project__slug=self.kwargs["project"])
+
+router = ExtendedSimpleRouter(trailing_slash=False)
+(
+    router.register(r'projects', ProjectViewSet)
+        .register(r'functions', ProjectFunctionViewSet, basename='projectfunction', parents_query_lookups=['slug'])
+)

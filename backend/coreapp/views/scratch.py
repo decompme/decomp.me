@@ -195,14 +195,17 @@ class ScratchViewSet(
                 raise serializers.ValidationError("Unknown project")
 
             repo: GitHubRepo = project_obj.repo
-            if not repo.is_maintainer(request):
-                raise ProjectNotMaintainer()
             if repo.is_pulling:
                 raise GitHubRepoBusy()
 
             project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
             if not project_function:
                 raise serializers.ValidationError("Function with given rom address does not exist in project")
+
+            # There's a level of trust placed in the request here that the scratch being created actually is of the function it says it is.
+            # I can forsee a situation where a malicious user creates a matching nop scratch referencing a project function that is not a
+            # nop function, in order to trick decomp.me into giving them credit for 'matching' it.
+            # Perhaps in the future, we should hash the target_asm into the ProjectFunction at pull-time to protect against this.
         else:
             project_function = None
 

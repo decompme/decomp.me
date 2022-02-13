@@ -138,10 +138,15 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         exclude: List[str] = []
         depth = 1 # repo
 
-class ProjectFunctionSerializer(serializers.HyperlinkedModelSerializer[ProjectFunction]):
-    scratch = TerseScratchSerializer()
+class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
+    url = SerializerMethodField()
+    html_url = HtmlUrlField()
+    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)
 
     class Meta:
         model = ProjectFunction
-        exclude = []
+        exclude = ["id"]
         read_only_fields = ["creation_time"]
+
+    def get_url(self, fn: ProjectFunction):
+        return reverse("projectfunction-detail", args=[fn.project.slug, fn.id], request=self.context["request"]) # type: ignore

@@ -1,10 +1,13 @@
 from django.utils.crypto import get_random_string
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from typing import Any, Optional
+from pathlib import Path
+import json
+import subprocess
 
 from decompme.settings import FRONTEND_BASE
 
@@ -68,8 +71,44 @@ class Project(models.Model):
     def get_html_url(self) -> str:
         return f"{FRONTEND_BASE}/{self.slug}"
 
+    @transaction.atomic
     def update_functions(self):
-        pass # TODO
+        repo_dir = self.repo.get_dir()
+        script: Path = repo_dir / "tools" / "decompme"
+
+        assert script.is_file()
+
+        def run_script(args):
+            # TODO: sandbox
+            return json.loads(subprocess.check_output([str(script), *args], cwd=repo_dir))
+
+        nonmatching_list = run_script(["list", "--json"])
+        assert isinstance(nonmatching_list, list)
+
+        # Mark all ProjectFunctions for this project as matched. If we don't see them
+        # later in nonmatching_list (where they will be marked as unmatched), they are considered matched.
+        ProjectFunction.objects.filter(project=self).update(is_matched_in_repo=True)
+
+        # Update or create ProjectFunctions for each nonmatching
+        for data in nonmatching_list:
+            display_name = data.get("display_name")
+            assert isinstance(display_name, str)
+
+            rom_address = data.get("rom_address")
+            assert isinstance(rom_address, int)
+
+            project_function = ProjectFunction.objects.filter(project=self, rom_address=rom_address).first()
+            if project_function:
+                project_function.display_name = display_name
+                project_function.is_matched_in_repo = False
+            else:
+                project_function = ProjectFunction(
+                    project=self,
+                    rom_address=rom_address,
+                    display_name=display_name,
+                    is_matched_in_repo=False,
+                )
+            project_function.save()
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)

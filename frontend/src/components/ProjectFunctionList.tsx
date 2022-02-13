@@ -7,24 +7,24 @@ import TimeAgo from "react-timeago"
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
-import COMPILERS from "./compiler/compilers"
 import LoadingSpinner from "./loading.svg"
 import styles from "./ProjectFunctionList.module.scss"
 
 function ProjectFunction({ func }: { func: api.ProjectFunction }) {
-    const compilerName = COMPILERS.find(c => c.id === func.scratch.compiler)?.name || func.scratch.compiler
-    const forkScratchAndGo = api.useForkScratchAndGo(func.scratch)
+    const start = async () => {
+        // TODO
+    }
 
     return <div className={styles.result}>
         <div className={styles.header}>
-            <Link href={func.scratch.html_url}>
+            <Link href={func.html_url}>
                 <a className={classNames(styles.link, styles.name)}>
-                    {func.scratch.name}
+                    {func.display_name}
                 </a>
             </Link>
         </div>
         <div className={styles.metadata}>
-            {compilerName} • Added <TimeAgo date={func.creation_time} />
+            Added <TimeAgo date={func.creation_time} />
         </div>
         <div className={styles.actions}>
             {/*<Link href={func.scratch.html_url + "/forks"}>
@@ -35,13 +35,10 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
                     </Button>
                 </a>
             </Link>*/}
-            <AsyncButton onClick={forkScratchAndGo}>
+            <AsyncButton onClick={start}>
                 Start
                 <ArrowRightIcon />
             </AsyncButton>
-            {func.scratch.max_score != -1 && <div className={styles.complexityBg}>
-                {func.scratch.max_score.toLocaleString()} pts
-            </div>}
         </div>
     </div>
 }
@@ -63,7 +60,7 @@ export default function ProjectFunctionList({ projectUrl, className }: Props) {
 
     return <ul className={classNames(styles.list, className)}>
         {results.map(func => (
-            <li key={func.id} className={styles.item}>
+            <li key={func.url} className={styles.item}>
                 <ProjectFunction func={func} />
             </li>
         ))}

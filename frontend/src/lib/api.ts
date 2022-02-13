@@ -163,7 +163,6 @@ export interface User {
     avatar_url: string | null
     github_api_url: string | null
     github_html_url: string | null
-    url: string
 }
 
 export interface TerseScratch {
@@ -208,10 +207,13 @@ export interface Project {
 }
 
 export interface ProjectFunction {
-    id: number
-    slug: string
-    scratch: TerseScratch
+    url: string
+    html_url: string
+    project: string
+    rom_address: number
     creation_time: string
+    display_name: string
+    is_matched_in_repo: boolean
 }
 
 export type Compilation = {
