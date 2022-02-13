@@ -3,6 +3,7 @@ import { GetStaticPaths, GetStaticProps } from "next"
 import Image from "next/image"
 
 import { RepoPullIcon } from "@primer/octicons-react"
+import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import AsyncButton from "../components/AsyncButton"
@@ -68,16 +69,20 @@ export default function ProjectPage(props: { project: api.Project }) {
                     <label>Maintainer{project.repo.maintainers.length != 1 && "s"}</label>
                     <UserAvatarList urls={project.repo.maintainers} />
                 </div>
-                {userIsMaintainer && <div className={styles.headerActions}>
-                    <AsyncButton
+                <div className={styles.headerActions}>
+                    {userIsMaintainer && <AsyncButton
                         forceLoading={project.repo.is_pulling}
                         onClick={async () => {
                             mutate(await api.post(project.url + "/pull", {}))
                         }}
                     >
                         <RepoPullIcon /> Pull
-                    </AsyncButton>
-                </div>}
+                    </AsyncButton>}
+
+                    <small>
+                        Last pulled <TimeAgo date={project.repo.last_pulled} />
+                    </small>
+                </div>
             </div>
         </header>
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>

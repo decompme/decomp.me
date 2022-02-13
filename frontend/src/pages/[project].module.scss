@@ -59,5 +59,10 @@
         padding-top: 1em;
         gap: 0.5em;
         align-items: center;
+
+        small {
+            font-size: 0.8em;
+            color: var(--g1000);
+        }
     }
 }
