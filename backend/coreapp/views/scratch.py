@@ -22,12 +22,17 @@ from typing import Any, Dict, Optional, Tuple
 import zipfile
 import re
 
-from ..models import Asm, Scratch
+from ..models import Asm, Project, ProjectFunction, Scratch
 from ..middleware import Request
 from ..decorators.django import condition
 from ..serializers import TerseScratchSerializer, ScratchCreateSerializer, ScratchSerializer
+from ..github import GitHubRepo, GitHubRepoBusy
 
 logger = logging.getLogger(__name__)
+
+class ProjectNotMaintainer(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must be a maintainer of the project to perform this action."
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -146,6 +151,8 @@ class ScratchViewSet(
 
         platform = data.get("platform")
         compiler = data.get("compiler")
+        project = data.get("project")
+        rom_address = data.get("rom_address")
 
         if platform:
             if CompilerWrapper.platform_from_compiler(compiler) != platform:
@@ -179,6 +186,26 @@ class ScratchViewSet(
 
         name = data.get("name", diff_label) or "Untitled"
 
+        if project or rom_address:
+            assert isinstance(project, str)
+            assert isinstance(rom_address, int)
+
+            project_obj: Project = Project.objects.filter(slug=project).first()
+            if not project_obj:
+                raise serializers.ValidationError("Unknown project")
+
+            repo: GitHubRepo = project_obj.repo
+            if not repo.is_maintainer(request):
+                raise ProjectNotMaintainer()
+            if repo.is_pulling:
+                raise GitHubRepoBusy()
+
+            project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
+            if not project_function:
+                raise serializers.ValidationError("Function with given rom address does not exist in project")
+        else:
+            project_function = None
+
         ser = ScratchSerializer(data={
             "name": name,
             "compiler": compiler,
@@ -188,7 +215,7 @@ class ScratchViewSet(
             "source_code": source_code,
         })
         ser.is_valid(raise_exception=True)
-        scratch = ser.save(target_assembly=assembly, platform=platform)
+        scratch = ser.save(target_assembly=assembly, platform=platform, project_function=project_function)
 
         compile_scratch_update_score(scratch)
 

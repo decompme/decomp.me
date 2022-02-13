@@ -17,7 +17,7 @@ import requests
 import subprocess
 import shutil
 
-from .models import Profile, Scratch
+from .models import Profile, Project, Scratch
 from .middleware import Request
 
 from decompme.settings import LOCAL_FILE_PATH
@@ -152,7 +152,6 @@ class GitHubRepo(models.Model):
         verbose_name = "GitHub repo"
         verbose_name_plural = "GitHub repos"
 
-    # TODO: make this async
     def pull(self) -> None:
         if self.is_pulling:
             raise GitHubRepoBusy()
@@ -180,6 +179,10 @@ class GitHubRepo(models.Model):
                 ], check=True, cwd=repo_dir)
 
             self.last_pulled = now()
+            self.save()
+
+            for project in Project.objects.filter(github_repo=self):
+                project.update_functions()
         finally:
             self.is_pulling = False
             self.save()

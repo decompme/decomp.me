@@ -68,6 +68,9 @@ class Project(models.Model):
     def get_html_url(self) -> str:
         return f"{FRONTEND_BASE}/{self.slug}"
 
+    def update_functions(self):
+        pass # TODO
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=512, default="Untitled", blank=False)
@@ -83,8 +86,9 @@ class Scratch(models.Model):
     diff_label = models.CharField(max_length=512, blank=True, null=True)
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
-    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE) # XXX: should be SET_NULL?
-    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL) # XXX: should be CASCADE?
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
+    project_function = models.ForeignKey("ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL) # The function, if any, that this scratch is an attempt of
 
     class Meta:
         ordering = ['-creation_time']
@@ -97,32 +101,28 @@ class Scratch(models.Model):
     def __hash__(self):
         return hash((self.slug, self.last_updated))
 
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        # Scratches cannot be owned if they are a root function in a project
-        if self.owner is not None and ProjectFunction.objects.filter(scratch=self).exists():
-            self.owner = None
-
-        super().save(*args, **kwargs)
-
     def get_html_url(self) -> str:
         return FRONTEND_BASE + "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
-        return self.owner is None and not ProjectFunction.objects.filter(scratch=self).exists()
+        return self.owner is None
 
 class ProjectFunction(models.Model):
-    slug = models.SlugField(blank=False, null=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    scratch = models.OneToOneField(Scratch, on_delete=models.CASCADE)
+    rom_address = models.IntegerField()
     creation_time = models.DateTimeField(auto_now_add=True)
+    display_name = models.CharField(max_length=128, blank=False)
+    is_matched_in_repo = models.BooleanField(default=False)
+    #complexity = models.IntegerField()
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["slug", "project"], name="unique_project_function")
+            # ProjectFunctions are identified uniquely by (project, rom_address)
+            models.UniqueConstraint(fields=["project", "rom_address"], name="unique_project_function_addr"),
         ]
 
     def get_html_url(self) -> str:
-        return self.project.get_html_url() + "/" + self.slug
+        return f"{self.project.get_html_url()}/{self.rom_address:X}"
 
     def __str__(self):
-        return f"{self.slug} ({self.project})"
+        return f"{self.display_name} ({self.project})"

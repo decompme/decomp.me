@@ -84,29 +84,34 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     context = serializers.CharField(allow_blank=True) # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
+    # ProjectFunction reference
+    project = serializers.CharField(allow_blank=False, required=False)
+    rom_address = serializers.IntegerField(required=False)
+
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
     html_url = HtmlUrlField()
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
-    project = serializers.SerializerMethodField()
+    project_function = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
         exclude = ["target_assembly"]
         read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
 
-    def get_project(self, scratch: Scratch):
-        if hasattr(scratch, "projectfunction"):
-            return reverse("project-detail", args=[scratch.projectfunction.project.slug], request=self.context["request"]) # type: ignore
+    def get_project_function(self, scratch: Scratch):
+        if hasattr(scratch, "project_function") and scratch.project_function is not None:
+            # TODO: api url of function
+            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"]) # type: ignore
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = TerseProfileField(read_only=True) # type: ignore
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project"]
+        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project_function"]
 
 class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
     html_url = HtmlUrlField()
@@ -133,10 +138,10 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         exclude: List[str] = []
         depth = 1 # repo
 
-class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
+class ProjectFunctionSerializer(serializers.HyperlinkedModelSerializer[ProjectFunction]):
     scratch = TerseScratchSerializer()
 
     class Meta:
         model = ProjectFunction
-        exclude = ["project"]
+        exclude = []
         read_only_fields = ["creation_time"]
