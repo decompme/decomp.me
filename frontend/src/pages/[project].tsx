@@ -54,7 +54,7 @@ export default function ProjectPage(props: { project: api.Project }) {
         refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
     })
     const user = api.useThisUser()
-    const userIsMaintainer = user && project.repo.maintainers.includes(user.url)
+    const userIsMember = user && project.members.includes(user.url)
 
     return <>
         <PageTitle title={project.slug} />
@@ -65,12 +65,12 @@ export default function ProjectPage(props: { project: api.Project }) {
                     <Image src={project.icon_url} alt="" width={32} height={32} />
                     {project.slug}
                 </h1>
-                <div className={styles.maintainers}>
-                    <label>Maintainer{project.repo.maintainers.length != 1 && "s"}</label>
-                    <UserAvatarList urls={project.repo.maintainers} />
+                <div className={styles.members}>
+                    <label>Member{project.members.length != 1 && "s"}</label>
+                    <UserAvatarList urls={project.members} />
                 </div>
                 <div className={styles.headerActions}>
-                    {userIsMaintainer && <AsyncButton
+                    {userIsMember && <AsyncButton
                         forceLoading={project.repo.is_pulling}
                         onClick={async () => {
                             mutate(await api.post(project.url + "/pull", {}))

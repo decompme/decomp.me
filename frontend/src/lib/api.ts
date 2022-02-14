@@ -196,7 +196,6 @@ export interface Project {
     html_url: string
     repo: {
         html_url: string
-        maintainers: string[]
         owner: string
         repo: string
         branch: string
@@ -205,6 +204,7 @@ export interface Project {
     }
     creation_time: string
     icon_url: string
+    members: string[]
 }
 
 export interface ProjectFunction {

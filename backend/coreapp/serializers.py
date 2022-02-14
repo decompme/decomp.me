@@ -119,28 +119,28 @@ class TerseScratchSerializer(ScratchSerializer):
 
 class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
     html_url = HtmlUrlField()
-    maintainers = SerializerMethodField()
 
     class Meta:
         model = GitHubRepo
-        exclude = ["id", "gh_user"]
+        exclude = ["id"]
         read_only_fields = ["last_pulled", "is_pulling"]
-
-    def get_maintainers(self, repo: GitHubRepo):
-        def get_url(user: User):
-            return reverse("user-detail", args=[user.username], request=self.context["request"])
-
-        return [get_url(gh_user.user) for gh_user in repo.maintainers()]
 
 class ProjectSerializer(serializers.ModelSerializer[Project]):
     url = HyperlinkedIdentityField(view_name="project-detail")
     html_url = HtmlUrlField()
     repo = GitHubRepoSerializer()
+    members = SerializerMethodField()
 
     class Meta:
         model = Project
         exclude: List[str] = []
         depth = 1 # repo
+
+    def get_members(self, project: Project):
+        def get_url(user: User):
+            return reverse("user-detail", args=[user.username], request=self.context["request"])
+
+        return [get_url(member.profile.user) for member in project.members()]
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     url = SerializerMethodField()

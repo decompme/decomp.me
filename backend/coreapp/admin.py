@@ -2,7 +2,7 @@ from django.contrib import admin
 
 import shutil
 
-from .models import Profile, Assembly, Asm, Scratch, Project, ProjectFunction
+from .models import Profile, Assembly, Asm, ProjectMember, Scratch, Project, ProjectFunction
 from .github import GitHubUser, GitHubRepo, GitHubRepoBusy
 
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
@@ -28,4 +28,5 @@ admin.site.register(Assembly)
 admin.site.register(Scratch)
 admin.site.register(Project)
 admin.site.register(ProjectFunction)
+admin.site.register(ProjectMember)
 admin.site.register(GitHubRepo, GitHubRepoAdmin)

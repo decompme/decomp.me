@@ -48,7 +48,7 @@ class ProjectViewSet(
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
 
-        if not repo.is_maintainer(request):
+        if not project.is_member(request.profile):
             raise NotProjectMaintainer()
 
         if not repo.is_pulling:

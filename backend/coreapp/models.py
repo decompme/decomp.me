@@ -108,6 +108,12 @@ class Project(models.Model):
                 )
             project_function.save()
 
+    def is_member(self, profile: Profile) -> bool:
+        return ProjectMember.objects.filter(project=self, profile=profile).exists()
+
+    def members(self) -> List[Profile]:
+        return [m for m in ProjectMember.objects.filter(project=self)]
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=512, default="Untitled", blank=False)
@@ -169,3 +175,15 @@ class ProjectFunction(models.Model):
 
         data = self.project.run_script(["new", str(self.rom_address), "--dry-run"])
         return create_scratch(data)
+
+class ProjectMember(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["project", "profile"], name="unique_project_member"),
+        ]
+
+    def __str__(self):
+        return f"{self.profile} owns {self.project}"

@@ -144,7 +144,6 @@ class GitHubRepo(models.Model):
     owner = models.CharField(max_length=100)
     repo = models.CharField(max_length=100)
     branch = models.CharField(max_length=100, default="master", blank=False)
-    gh_user = models.ForeignKey(GitHubUser, null=False, help_text="Must have admin permission on the repo", on_delete=models.PROTECT)
     is_pulling = models.BooleanField(default=False)
     last_pulled = models.DateTimeField(blank=True, null=True)
 
@@ -190,41 +189,23 @@ class GitHubRepo(models.Model):
     def get_dir(self) -> Path:
         return LOCAL_FILE_PATH / "repos" / str(self.id)
 
-    def details(self) -> Repository:
+    def details(self, access_token: str) -> Repository:
         cache_key = f"github_repo_details:{self.id}"
         cached = cache.get(cache_key)
 
         if cached:
             return cached
 
-        details = Github(self.gh_user.access_token).get_repo(f"{self.owner}/{self.repo}")
+        details = Github(access_token).get_repo(f"{self.owner}/{self.repo}")
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
-
-    def maintainers(self) -> List[GitHubUser]:
-        users = []
-
-        for collaborator in self.details().get_collaborators():
-            if collaborator.permissions.maintain:
-                gh_user = GitHubUser.objects.filter(github_id=collaborator.id).first()
-                if gh_user is not None:
-                    users.append(gh_user)
-
-        return users
-
-    def is_maintainer(self, request: Request) -> bool:
-        if request.profile.is_anonymous():
-            return False
-
-        gh_user = GitHubUser.objects.filter(user=request.profile.user).first()
-        return gh_user in self.maintainers()
 
     def __str__(self):
         return f"{self.owner}/{self.repo}#{self.branch} ({self.id})"
 
     def get_html_url(self):
-        return self.details().html_url
+        return f"https://github.com/{self.owner}/{self.repo}/tree/{self.branch}"
 
 # When a GitHubRepo is deleted, delete its directory
 @receiver(models.signals.pre_delete, sender=GitHubRepo)
