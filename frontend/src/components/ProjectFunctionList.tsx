@@ -1,24 +1,18 @@
-import Link from "next/link"
-import { useRouter } from "next/router"
+import { useState } from "react"
 
-import { ArrowRightIcon } from "@primer/octicons-react"
+import Link from "next/link"
+
+import { RepoForkedIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
-import LoadingSpinner from "./loading.svg"
 import styles from "./ProjectFunctionList.module.scss"
+import SearchBox from "./SearchBox"
 
 function ProjectFunction({ func }: { func: api.ProjectFunction }) {
-    const router = useRouter()
-
-    const start = async () => {
-        const scratch = await api.post(func.url + "/start", {})
-        await router.push(scratch.html_url)
-    }
-
     return <div className={styles.result}>
         <div className={styles.header}>
             <Link href={func.html_url}>
@@ -27,22 +21,14 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
                 </a>
             </Link>
         </div>
-        <div className={styles.metadata}>
-            {func.is_matched_in_repo ? "Matched" : "Not matched"} • Added <TimeAgo date={func.creation_time} />
-        </div>
         <div className={styles.actions}>
-            {/*<Link href={func.scratch.html_url + "/forks"}>
-                <a>
-                    <Button>
-                        <RepoForkedIcon />
-                        {func.scratch.forks.length} attempts
-                    </Button>
-                </a>
-            </Link>*/}
-            <AsyncButton onClick={start}>
-                Start attempt
-                <ArrowRightIcon />
-            </AsyncButton>
+            <div>
+                <RepoForkedIcon />
+                10 attempts
+            </div>
+            <div>
+                Added <TimeAgo date={func.creation_time} />
+            </div>
         </div>
     </div>
 }
@@ -53,25 +39,31 @@ export interface Props {
 }
 
 export default function ProjectFunctionList({ projectUrl, className }: Props) {
-    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.ProjectFunction>(projectUrl + "/functions")
+    const [searchTerm, setSearchTerm] = useState("")
+    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.ProjectFunction>(projectUrl + `/functions?search=${searchTerm}&is_matched_in_repo=false`)
 
-    if (results.length === 0 && isLoading) {
-        return <div className={classNames(styles.loading, className)}>
-            <LoadingSpinner width="1.5em" height="1.5em" />
-            Just a moment...
-        </div>
-    }
-
-    return <ul className={classNames(styles.list, className)}>
-        {results.map(func => (
-            <li key={func.url} className={styles.item}>
-                <ProjectFunction func={func} />
-            </li>
-        ))}
-        {hasNext && <li className={styles.loadButton}>
+    return <div className={className}>
+        <SearchBox
+            className={styles.searchBox}
+            placeholder="Find a function..."
+            isLoading={isLoading}
+            onSearch={setSearchTerm}
+            searchAfterTimeout={400}
+        />
+        {results.length === 0 && !isLoading && <div className={styles.empty}>
+            No functions found :(
+        </div>}
+        <ul className={styles.list}>
+            {results.map(func => (
+                <li key={func.url} className={styles.item}>
+                    <ProjectFunction func={func} />
+                </li>
+            ))}
+        </ul>
+        {hasNext && !isLoading && <div className={styles.loadButton}>
             <AsyncButton onClick={loadNext}>
                 Show more
             </AsyncButton>
-        </li>}
-    </ul>
+        </div>}
+    </div>
 }

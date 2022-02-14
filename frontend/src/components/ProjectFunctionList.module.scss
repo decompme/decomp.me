@@ -1,18 +1,24 @@
-.loading {
+.empty {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0.5em;
+    padding: 1em;
 
-    opacity: 0.5;
+    color: var(--g800);
+}
+
+.searchBox {
+    width: 100%;
 }
 
 .list {
     list-style: none;
+    margin-top: 0.5em;
 
     // These inherited by .item
     border-color: var(--g300);
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .item {
@@ -24,17 +30,22 @@
     overflow: hidden;
 
     padding: 1em;
-    margin: 0.5em 0;
+    margin: 0;
 
-    border: 1px solid inherit;
-    border-radius: inherit;
+    border-top: 1px solid var(--g250);
+    border-left: 1px solid inherit;
+    border-right: 1px solid inherit;
 
     &:first-child {
-        margin-top: 0;
+        border-top: 1px solid inherit;
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
     }
 
     &:last-child {
-        margin-bottom: 0;
+        border-bottom: 1px solid inherit;
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
     }
 }
 
@@ -42,6 +53,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    margin-top: 0.5em;
 }
 
 .result {
@@ -71,16 +84,28 @@
         }
     }
 
-    .metadata {
-        color: var(--g800);
-    }
-
     .actions {
         padding-top: 0.5em;
 
         display: flex;
         align-items: stretch;
-        gap: 0.5em;
+        gap: 1.5em;
+
+        font-size: 0.8em;
+        color: var(--g800);
+
+        > div,
+        > a {
+            > svg:first-child {
+                margin-right: 0.25em;
+                width: 1.15em;
+                height: 1.15em;
+            }
+        }
+
+        > a:hover {
+            color: var(--link);
+        }
     }
 
     /*

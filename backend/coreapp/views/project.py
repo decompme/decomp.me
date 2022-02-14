@@ -66,7 +66,7 @@ class ProjectFunctionViewSet(
     pagination_class = ProjectFunctionPagination
     serializer_class = ProjectFunctionSerializer
 
-    filter_fields = ['rom_address']
+    filter_fields = ['rom_address', 'is_matched_in_repo']
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['display_name']
 
