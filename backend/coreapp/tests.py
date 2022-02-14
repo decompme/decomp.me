@@ -10,8 +10,8 @@ from unittest import skipIf
 import responses
 from time import sleep
 
-from .models import Scratch, Profile
-from .github import GitHubUser
+from .models import Project, Scratch, Profile
+from .github import GitHubRepo, GitHubUser
 
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
@@ -642,6 +642,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(etag, response.headers.get("Etag"))
 
+
 class RequestTests(APITestCase):
     def test_create_profile(self):
         """
@@ -662,3 +663,35 @@ class RequestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
+
+
+class ProjectTests(TestCase):
+    def create_test_project(self, slug: str = "test") -> Project:
+        repo = GitHubRepo(
+            owner="decompme",
+            repo="example-project",
+            branch="main",
+        )
+        repo.save()
+
+        project = Project(
+            slug=slug,
+            repo=repo,
+            icon_url="http://example.com",
+        )
+        project.save()
+
+        return project
+
+    """
+    Test that the repo is cloned into a directory and that it is deleted when the db object is deleted.
+    """
+    def test_create_delete_repo_dir(self):
+        project = self.create_test_project()
+
+        project.repo.pull()
+        self.assertTrue(project.repo.get_dir().is_dir())
+
+        project.delete()
+        project.repo.delete()
+        self.assertFalse(project.repo.get_dir().exists())
