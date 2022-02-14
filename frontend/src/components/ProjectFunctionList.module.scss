@@ -8,8 +8,19 @@
     color: var(--g800);
 }
 
-.searchBox {
-    width: 100%;
+
+.header {
+    display: flex;
+    gap: 0.5em;
+    align-items: stretch;
+
+    .searchBox {
+        flex-grow: 1;
+
+        input {
+            height: 100%;
+        }
+    }
 }
 
 .list {
@@ -18,7 +29,7 @@
 
     // These inherited by .item
     border-color: var(--g300);
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .item {

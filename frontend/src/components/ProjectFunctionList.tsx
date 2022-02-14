@@ -36,20 +36,24 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
 export interface Props {
     projectUrl: string
     className?: string
+    children?: React.ReactNode
 }
 
-export default function ProjectFunctionList({ projectUrl, className }: Props) {
+export default function ProjectFunctionList({ projectUrl, className, children }: Props) {
     const [searchTerm, setSearchTerm] = useState("")
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.ProjectFunction>(projectUrl + `/functions?search=${searchTerm}&is_matched_in_repo=false`)
 
     return <div className={className}>
-        <SearchBox
-            className={styles.searchBox}
-            placeholder="Find a function..."
-            isLoading={isLoading}
-            onSearch={setSearchTerm}
-            searchAfterTimeout={400}
-        />
+        <div className={styles.header}>
+            <SearchBox
+                className={styles.searchBox}
+                placeholder="Find a function..."
+                isLoading={isLoading}
+                onSearch={setSearchTerm}
+                searchAfterTimeout={400}
+            />
+            {children}
+        </div>
         {results.length === 0 && !isLoading && <div className={styles.empty}>
             No functions found :(
         </div>}
