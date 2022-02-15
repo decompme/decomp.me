@@ -12,8 +12,8 @@ import logging
 from threading import Thread
 import django_filters
 
-from ..models import Project, ProjectFunction
-from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer
+from ..models import Project, ProjectFunction, Scratch
+from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer, TerseScratchSerializer
 from ..github import GitHubRepo, GitHubRepoBusyException
 
 logger = logging.getLogger(__name__)
@@ -73,21 +73,27 @@ class ProjectFunctionViewSet(
     def get_queryset(self):
         return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
 
-    @action(detail=True, methods=['POST'])
-    def start(self, request, **kwargs):
-        function: ProjectFunction = self.get_object()
-        project: Project = function.project
+    @action(detail=True, methods=['GET', 'POST'])
+    def attempts(self, request, **kwargs):
+        fn: ProjectFunction = self.get_object()
+        project: Project = fn.project
         repo: GitHubRepo = project.repo
 
-        if repo.is_pulling:
-            raise GitHubRepoBusyException()
+        if request.method == "GET":
+            attempts = Scratch.objects.filter(project_function=fn).order_by("-last_updated")
+            return Response(TerseScratchSerializer(attempts, many=True, context={ "request": request }).data)
+        elif request.method == "POST":
+            if repo.is_pulling:
+                raise GitHubRepoBusyException()
 
-        scratch = function.create_scratch()
-        if scratch.is_claimable():
-            scratch.owner = request.profile
-            scratch.save()
+            scratch = fn.create_scratch()
+            if scratch.is_claimable():
+                scratch.owner = request.profile
+                scratch.save()
 
-        return Response(ScratchSerializer(scratch, context={ "request": request }).data, status=status.HTTP_201_CREATED)
+            return Response(ScratchSerializer(scratch, context={ "request": request }).data, status=status.HTTP_201_CREATED)
+        else:
+            raise Exception("Unsupported method")
 
 router = ExtendedSimpleRouter(trailing_slash=False)
 (

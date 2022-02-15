@@ -4,7 +4,6 @@ import Link from "next/link"
 
 import { RepoForkedIcon } from "@primer/octicons-react"
 import classNames from "classnames"
-import TimeAgo from "react-timeago"
 
 import * as api from "../lib/api"
 
@@ -24,11 +23,11 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
         <div className={styles.actions}>
             <div>
                 <RepoForkedIcon />
-                10 attempts
+                {func.attempts_count === 1 ? "1 attempt" : `${func.attempts_count} attempts`}
             </div>
-            <div>
+            {/*<div>
                 Added <TimeAgo date={func.creation_time} />
-            </div>
+            </div>*/}
         </div>
     </div>
 }

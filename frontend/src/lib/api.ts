@@ -215,6 +215,9 @@ export interface ProjectFunction {
     creation_time: string
     display_name: string
     is_matched_in_repo: boolean
+    src_file: string
+    asm_file: string
+    attempts_count: number
 }
 
 export type Compilation = {

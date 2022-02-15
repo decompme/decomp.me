@@ -7,10 +7,12 @@ import { useRouter } from "next/router"
 import { ArrowRightIcon } from "@primer/octicons-react"
 
 import AsyncButton from "../../components/AsyncButton"
+import Button from "../../components/Button"
 import ErrorBoundary from "../../components/ErrorBoundary"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
+import { ScratchItem } from "../../components/ScratchList"
 import * as api from "../../lib/api"
 
 import styles from "./[function].module.scss"
@@ -37,10 +39,13 @@ export const getStaticProps: GetStaticProps = async context => {
         const canonicalSlug = func.html_url.split("/").pop()
 
         if (slug == canonicalSlug) {
+            const attempts: api.TerseScratch[] = await api.get(func.url + "/attempts")
+
             return {
                 props: {
                     project,
                     func,
+                    attempts,
                 },
                 revalidate: 60, // cache for a minute
             }
@@ -62,12 +67,16 @@ export const getStaticProps: GetStaticProps = async context => {
     }
 }
 
-export default function ProjectFunctionPage({ project, func }: { project: api.Project, func: api.ProjectFunction }) {
+export default function ProjectFunctionPage({ project, func, attempts }: { project: api.Project, func: api.ProjectFunction, attempts: api.TerseScratch[] }) {
     const router = useRouter()
     const start = async () => {
-        const scratch = await api.post(func.url + "/start", {})
+        const scratch = await api.post(func.url + "/attempts", {})
         await router.push(scratch.html_url)
     }
+
+    // Find an attempt by this user
+    const userIsYou = api.useUserIsYou()
+    const userAttempt = attempts.find(scratch => userIsYou(scratch.owner))
 
     return <>
         <PageTitle title={func.display_name} />
@@ -90,12 +99,26 @@ export default function ProjectFunctionPage({ project, func }: { project: api.Pr
         </header>
         <main className={styles.container}>
             <ErrorBoundary>
-                <div>
-                    <AsyncButton onClick={start}>
-                        Start attempt
-                        <ArrowRightIcon />
-                    </AsyncButton>
-                </div>
+                <section className={styles.attempts}>
+                    <h2>
+                        <span>Attempts</span>
+                        <AsyncButton onClick={start} primary={!userAttempt}>
+                            New attempt
+                            <ArrowRightIcon />
+                        </AsyncButton>
+                        {userAttempt && <Link href={userAttempt.html_url}>
+                            <a>
+                                <Button primary>
+                                    Continue your attempt
+                                    <ArrowRightIcon />
+                                </Button>
+                            </a>
+                        </Link>}
+                    </h2>
+                    <ul>
+                        {attempts.map(scratch => <ScratchItem key={scratch.url} scratch={scratch} />)}
+                    </ul>
+                </section>
             </ErrorBoundary>
         </main>
         <Footer />
