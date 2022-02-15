@@ -115,7 +115,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
 
     return False
 
-def create_scratch(data: Dict[str, Any]) -> Scratch:
+def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
@@ -158,7 +158,7 @@ def create_scratch(data: Dict[str, Any]) -> Scratch:
 
     name = data.get("name", diff_label) or "Untitled"
 
-    if project or rom_address:
+    if allow_project and (project or rom_address):
         assert isinstance(project, str)
         assert isinstance(rom_address, int)
 
@@ -173,11 +173,6 @@ def create_scratch(data: Dict[str, Any]) -> Scratch:
         project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
         if not project_function:
             raise serializers.ValidationError("Function with given rom address does not exist in project")
-
-        # There's a level of trust placed in the request here that the scratch being created actually is of the function it says it is.
-        # I can forsee a situation where a malicious user creates a matching nop scratch referencing a project function that is not a
-        # nop function, in order to trick decomp.me into giving them credit for 'matching' it.
-        # Perhaps in the future, we should hash the target_asm into the ProjectFunction at pull-time to protect against this.
     else:
         project_function = None
 

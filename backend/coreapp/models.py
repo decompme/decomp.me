@@ -286,7 +286,7 @@ class ProjectFunction(models.Model):
             "platform": compiler_config.platform,
             "compiler": compiler_config.compiler,
             "compiler_flags": compiler_config.compiler_flags,
-        })
+        }, allow_project=True)
 
 class ProjectMember(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
