@@ -26,11 +26,11 @@ from ..models import Asm, Project, ProjectFunction, Scratch
 from ..middleware import Request
 from ..decorators.django import condition
 from ..serializers import TerseScratchSerializer, ScratchCreateSerializer, ScratchSerializer
-from ..github import GitHubRepo, GitHubRepoBusy
+from ..github import GitHubRepo, GitHubRepoBusyException
 
 logger = logging.getLogger(__name__)
 
-class ProjectNotMaintainer(APIException):
+class ProjectNotMemberException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must be a maintainer of the project to perform this action."
 
@@ -168,7 +168,7 @@ def create_scratch(data: Dict[str, Any]) -> Scratch:
 
         repo: GitHubRepo = project_obj.repo
         if repo.is_pulling:
-            raise GitHubRepoBusy()
+            raise GitHubRepoBusyException()
 
         project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
         if not project_function:

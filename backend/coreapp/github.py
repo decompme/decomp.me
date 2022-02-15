@@ -24,16 +24,16 @@ from decompme.settings import LOCAL_FILE_PATH
 
 API_CACHE_TIMEOUT = 60 * 60 # 1 hour
 
-class BadOAuthCode(APIException):
+class BadOAuthCodeException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_code = "bad_oauth_code"
     default_detail = "Invalid or expired GitHub OAuth verification code."
 
-class MissingOAuthScope(APIException):
+class MissingOAuthScopeException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "missing_oauth_scope"
 
-class MalformedGithubApiResponse(APIException):
+class MalformedGitHubApiResponseException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_code = "malformed_github_api_response"
     default_detail = "The GitHub API returned an malformed or unexpected response."
@@ -82,19 +82,19 @@ class GitHubUser(models.Model):
 
         error: Optional[str] = response.get("error")
         if error == "bad_verification_code":
-            raise BadOAuthCode()
+            raise BadOAuthCodeException()
         elif error:
-            raise MalformedGithubApiResponse(f"GitHub API login sent unknown error '{error}'.")
+            raise MalformedGitHubApiResponseException(f"GitHub API login sent unknown error '{error}'.")
 
         try:
             scope_str = str(response["scope"])
             access_token = str(response["access_token"])
         except KeyError:
-            raise MalformedGithubApiResponse()
+            raise MalformedGitHubApiResponseException()
 
         scopes = scope_str.split(",")
         if not "public_repo" in scopes:
-            raise MissingOAuthScope("public_repo")
+            raise MissingOAuthScopeException("public_repo")
 
         details = Github(access_token).get_user()
 
@@ -136,7 +136,7 @@ class GitHubUser(models.Model):
 
         return gh_user
 
-class GitHubRepoBusy(APIException):
+class GitHubRepoBusyException(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "This repository is currently being pulled."
 
@@ -153,7 +153,7 @@ class GitHubRepo(models.Model):
 
     def pull(self) -> None:
         if self.is_pulling:
-            raise GitHubRepoBusy()
+            raise GitHubRepoBusyException()
 
         self.is_pulling = True
         self.save()

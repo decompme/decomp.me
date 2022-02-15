@@ -14,7 +14,7 @@ import django_filters
 
 from ..models import Project, ProjectFunction
 from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer
-from ..github import GitHubRepo, GitHubRepoBusy
+from ..github import GitHubRepo, GitHubRepoBusyException
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class ProjectFunctionViewSet(
         repo: GitHubRepo = project.repo
 
         if repo.is_pulling:
-            raise GitHubRepoBusy()
+            raise GitHubRepoBusyException()
 
         scratch = function.create_scratch()
         if scratch.is_claimable():
