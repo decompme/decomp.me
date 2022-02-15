@@ -140,7 +140,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         def get_url(user: User):
             return reverse("user-detail", args=[user.username], request=self.context["request"])
 
-        return [get_url(member.profile.user) for member in project.members()]
+        return [get_url(member.profile.user) for member in project.members() if member.profile.user is not None]
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     url = SerializerMethodField()

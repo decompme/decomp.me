@@ -111,7 +111,7 @@ class Project(models.Model):
     def is_member(self, profile: Profile) -> bool:
         return ProjectMember.objects.filter(project=self, profile=profile).exists()
 
-    def members(self) -> List[Profile]:
+    def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
 
 class Scratch(models.Model):
