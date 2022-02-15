@@ -66,7 +66,7 @@ export default function ProjectPage(props: { project: api.Project }) {
                     {project.slug}
                 </h1>
                 <div className={styles.members}>
-                    <label>Member{project.members.length != 1 && "s"}</label>
+                    <label>People</label>
                     <UserAvatarList urls={project.members} />
                 </div>
             </div>

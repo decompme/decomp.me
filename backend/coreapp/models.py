@@ -163,6 +163,7 @@ class ProjectImportConfig(models.Model):
 
     @transaction.atomic
     def execute_import(self) -> None:
+        project_dir: Path = self.project.repo.get_dir()
         src_dir, nonmatchings_dir, symbol_addrs_path = self.get_paths()
 
         symbol_addrs = parse_symbol_addrs(symbol_addrs_path)
@@ -195,8 +196,8 @@ class ProjectImportConfig(models.Model):
             if func is not None:
                 func.display_name = symbol.label
                 func.is_matched_in_repo = False
-                func.src_file = str(src_file)
-                func.asm_file = str(asm_file)
+                func.src_file = str(src_file.relative_to(project_dir))
+                func.asm_file = str(asm_file.relative_to(project_dir))
                 func.import_config = self
             else:
                 func = ProjectFunction(
@@ -205,8 +206,8 @@ class ProjectImportConfig(models.Model):
 
                     display_name=symbol.label,
                     is_matched_in_repo=False,
-                    src_file=str(src_file),
-                    asm_file=str(asm_file),
+                    src_file=str(src_file.relative_to(project_dir)),
+                    asm_file=str(asm_file.relative_to(project_dir)),
                     import_config=self,
                 )
             func.save()

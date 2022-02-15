@@ -22,6 +22,9 @@ function ProjectFunction({ func }: { func: api.ProjectFunction }) {
         </div>
         <div className={styles.actions}>
             <div>
+                {func.src_file}
+            </div>
+            <div>
                 <RepoForkedIcon />
                 {func.attempts_count === 1 ? "1 attempt" : `${func.attempts_count} attempts`}
             </div>

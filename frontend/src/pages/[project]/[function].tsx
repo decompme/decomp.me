@@ -115,9 +115,11 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                             </a>
                         </Link>}
                     </h2>
-                    <ul>
+                    {attempts.length === 0 ? <div className={styles.noAttempts}>
+                        No attempts yet {"</3"}
+                    </div> : <ul>
                         {attempts.map(scratch => <ScratchItem key={scratch.url} scratch={scratch} />)}
-                    </ul>
+                    </ul>}
                 </section>
             </ErrorBoundary>
         </main>
