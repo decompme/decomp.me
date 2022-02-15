@@ -181,7 +181,7 @@ class GitHubRepo(models.Model):
             self.save()
 
             for project in Project.objects.filter(repo=self):
-                project.update_functions()
+                project.import_functions()
         finally:
             self.is_pulling = False
             self.save()

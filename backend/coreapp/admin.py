@@ -2,7 +2,7 @@ from django.contrib import admin
 
 import shutil
 
-from .models import Profile, Assembly, Asm, ProjectMember, Scratch, Project, ProjectFunction
+from .models import Profile, Assembly, Asm, ProjectMember, Scratch, Project, ProjectFunction, ProjectImportConfig, CompilerConfig
 from .github import GitHubUser, GitHubRepo, GitHubRepoBusyException
 
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
@@ -26,7 +26,9 @@ admin.site.register(GitHubUser)
 admin.site.register(Asm)
 admin.site.register(Assembly)
 admin.site.register(Scratch)
+admin.site.register(CompilerConfig)
 admin.site.register(Project)
 admin.site.register(ProjectFunction)
 admin.site.register(ProjectMember)
+admin.site.register(ProjectImportConfig)
 admin.site.register(GitHubRepo, GitHubRepoAdmin)
