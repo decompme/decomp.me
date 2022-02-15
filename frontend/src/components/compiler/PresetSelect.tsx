@@ -61,6 +61,11 @@ export const PRESETS = [
         opts: "-O2",
     },
     {
+        name: "Castlevania: Symphony of the Night",
+        compiler: "gcc2.6.3-mipsel",
+        opts: "-O2 -G0 -funsigned-char",
+    },
+    {
         name: "The Thousand-Year Door",
         compiler: "mwcc_247_108",
         opts: "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
