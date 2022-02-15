@@ -8,8 +8,10 @@ from typing import Any, Dict, Optional, List, Tuple
 from pathlib import Path
 from glob import glob
 import logging
+import shlex
 
 from .symbol_addrs import Symbol, parse_symbol_addrs, symbol_name_from_asm_file
+from .context import c_file_to_context
 from decompme.settings import FRONTEND_BASE
 
 logger = logging.getLogger(__name__)
@@ -247,7 +249,29 @@ class ProjectFunction(models.Model):
         asm_file = project_dir / Path(self.asm_file)
 
         source_code = "" # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
-        context = "" # TODO: m2ctx src_file
+
+        # TODO: make this more configurable or something
+        cpp_flags = shlex.split(compiler_config.compiler_flags) + [
+            "-Iinclude",
+            "-Isrc",
+            "-Iver/current/build/include",
+            "-D_LANGUAGE_C",
+            "-DF3DEX_GBI_2",
+            "-D_MIPS_SZLONG=32",
+            "-DSCRIPT(...)={}" # only relevant for papermario. bad
+            "-D__attribute__(...)=",
+            "-D__asm__(...)=",
+            "-ffreestanding",
+            "-DM2CTX",
+            "-DPERMUTER",
+        ]
+
+        # Attempt to generate context (TODO: use a real context filesystem that is #included so we don't have to do this)
+        try:
+            context = c_file_to_context(str(project_dir), str(src_file), cpp_flags=cpp_flags)
+        except Exception as e:
+            logging.error(f"failed to generate context for {asm_file}: {e}")
+            context = f"/* context generation failed: {e} */"
 
         with asm_file.open("r") as f:
             target_asm = f.read()
