@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import classNames from "classnames"
 
 import killEvent from "./killEvent"
-import styles from "./TimePeriodInput.module.scss"
+import styles from "./NumberInput.module.scss"
 
 export type Props = {
     value?: number

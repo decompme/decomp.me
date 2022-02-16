@@ -5,8 +5,8 @@ import classNames from "classnames"
 import Modal from "react-modal"
 
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import NumberInput from "../NumberInput"
 import Tabs, { Tab } from "../Tabs"
-import TimePeriodInput from "../TimePeriodInput"
 
 import styles from "./ScratchPreferencesModal.module.scss"
 
@@ -34,7 +34,7 @@ function DiffPrefs() {
                     onChange={(evt: ChangeEvent<HTMLInputElement>) => onChange(+evt.target.value)}
                     disabled={!autoRecompile}
                 />
-                <TimePeriodInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>ms
+                <NumberInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>ms
                 delay before recompile is triggered
             </div>
         </section>
