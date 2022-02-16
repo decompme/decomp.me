@@ -79,6 +79,13 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
             }}
 
             onBlur={() => setEditing(false)}
+
+            onKeyDown={evt => {
+                if (evt.key === "Enter") {
+                    evt.preventDefault()
+                    setEditing(false)
+                }
+            }}
         />
     } else {
         return <div
