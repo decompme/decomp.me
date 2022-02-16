@@ -23,7 +23,7 @@ env = environ.Env(
     SECURE_HSTS_PRELOAD=(bool, False),
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
-    USE_SANDBOX_JAIL=(bool, True),
+    USE_SANDBOX_JAIL=(bool, False),
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
@@ -182,8 +182,6 @@ COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
 LOCAL_FILE_DIR = BASE_DIR / "local_files"
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
-if sys.platform in ["darwin", "win32"]:
-    USE_SANDBOX_JAIL = False
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
