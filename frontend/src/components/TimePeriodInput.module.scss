@@ -3,10 +3,16 @@
     border-bottom: 1px dotted var(--g900);
     padding: 0.08em;
 
+    cursor: text;
+
+    &.disabled {
+        cursor: default;
+    }
+
     &:focus,
-    &:hover {
+    &:not(.disabled):hover {
         outline: none;
-        border-bottom-style: solid;
+        border-bottom: 0;
         background: var(--g300);
     }
 }

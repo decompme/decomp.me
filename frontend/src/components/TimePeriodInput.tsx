@@ -1,4 +1,6 @@
-import { ChangeEvent, KeyboardEvent } from "react"
+import { useEffect, useRef, useState } from "react"
+
+import classNames from "classnames"
 
 import killEvent from "./killEvent"
 import styles from "./TimePeriodInput.module.scss"
@@ -10,27 +12,42 @@ export type Props = {
 }
 
 export default function TimePeriodInput({ value, onChange, disabled }: Props) {
-    const onBlur = (evt: ChangeEvent<HTMLSpanElement>) => {
-        if (isNaN(+evt.currentTarget.textContent)) {
-            evt.currentTarget.textContent = ""+value // this should never happen, as the user is not allowed to type non-digits
-        }
-        onChange(+evt.currentTarget.textContent)
-    }
-    const onKeyPress = (evt: KeyboardEvent<HTMLSpanElement>) => {
-        if (isNaN(+evt.key) || disabled) // if active, only allow numbers,
-            killEvent(evt) // kill the event otherwise (cancel keypress)
+    const [isEditing, setIsEditing] = useState(false)
+    const editableRef = useRef<HTMLSpanElement>()
 
-        if (evt.key == "Enter") {
-            evt.currentTarget.blur() // submit
+    useEffect(() => {
+        const el = editableRef.current
+
+        if (el) {
+            const range = document.createRange()
+            range.selectNodeContents(el)
+            const sel = window.getSelection()
+            sel.removeAllRanges()
+            sel.addRange(range)
         }
-    }
+    }, [isEditing])
 
     return <span
-        className={styles.numberInput}
-        contentEditable={!disabled}
+        ref={editableRef}
+        className={classNames(styles.numberInput, { [styles.disabled]: disabled })}
+        contentEditable={isEditing && !disabled}
         suppressContentEditableWarning={true}
-        onBlur={onBlur}
-        onKeyPress={onKeyPress}
+        onClick={() => setIsEditing(true)}
+        onBlur={evt => {
+            if (isNaN(+evt.currentTarget.textContent)) {
+                evt.currentTarget.textContent = ""+value // this should never happen, as the user is not allowed to type non-digits
+            }
+            onChange(+evt.currentTarget.textContent)
+            setIsEditing(false)
+        }}
+        onKeyPress={evt => {
+            if (isNaN(+evt.key) || disabled) // if active, only allow numbers
+                killEvent(evt) // kill the event otherwise (cancel keypress)
+
+            if (evt.key == "Enter") {
+                evt.currentTarget.blur() // submit
+            }
+        }}
     >
         {value}
     </span>
