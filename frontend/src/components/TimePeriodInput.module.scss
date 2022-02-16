@@ -1,5 +1,12 @@
 .numberInput {
-    background-color: var(--g400);
-    border: none;
+    border: 0;
+    border-bottom: 1px dotted var(--g900);
     padding: 0.08em;
+
+    &:focus,
+    &:hover {
+        outline: none;
+        border-bottom-style: solid;
+        background: var(--g300);
+    }
 }

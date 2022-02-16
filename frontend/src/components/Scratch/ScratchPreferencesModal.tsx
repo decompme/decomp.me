@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react"
 
 import { XIcon } from "@primer/octicons-react"
+import classNames from "classnames"
 import Modal from "react-modal"
 
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
@@ -26,16 +27,16 @@ function DiffPrefs() {
                 />
                 Automatically compile on change
             </label>
-            <label className={styles.intPreference}>
+            <div className={classNames(styles.intPreference, { [styles.disabled]: !autoRecompile })}>
                 <input
                     type="range"
                     min="50" max="2000" step="50" value={autoRecompileDelay}
                     onChange={(evt: ChangeEvent<HTMLInputElement>) => onChange(+evt.target.value)}
                     disabled={!autoRecompile}
                 />
-                <TimePeriodInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>
-                ms Delay before recompile is triggered
-            </label>
+                <TimePeriodInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>ms
+                delay before recompile is triggered
+            </div>
         </section>
     </div>
 }
