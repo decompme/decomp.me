@@ -14,7 +14,8 @@ function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
 
-    const onChange = (duration: number) => setAutoRecompileDelay(duration)
+    const minDelay = 50
+    const onChange = (duration: number) => setAutoRecompileDelay(Math.max(minDelay, duration))
 
     return <div>
         <section>
@@ -30,7 +31,7 @@ function DiffPrefs() {
             <div className={classNames(styles.intPreference, { [styles.disabled]: !autoRecompile })}>
                 <input
                     type="range"
-                    min="50" max="2000" step="50" value={autoRecompileDelay}
+                    min={minDelay} max="2000" step="50" value={autoRecompileDelay}
                     onChange={(evt: ChangeEvent<HTMLInputElement>) => onChange(+evt.target.value)}
                     disabled={!autoRecompile}
                 />
