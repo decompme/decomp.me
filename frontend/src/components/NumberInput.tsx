@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 
 import classNames from "classnames"
 
-import killEvent from "./killEvent"
 import styles from "./NumberInput.module.scss"
 
 export type Props = {
@@ -42,7 +41,7 @@ export default function TimePeriodInput({ value, onChange, disabled }: Props) {
         }}
         onKeyPress={evt => {
             if (isNaN(+evt.key) || disabled) // if active, only allow numbers
-                killEvent(evt) // kill the event otherwise (cancel keypress)
+                evt.preventDefault()
 
             if (evt.key == "Enter") {
                 evt.currentTarget.blur() // submit
