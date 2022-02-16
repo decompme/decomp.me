@@ -1,0 +1,18 @@
+.numberInput {
+    border: 0;
+    border-bottom: 1px dotted var(--g900);
+    padding: 0.08em;
+
+    cursor: text;
+
+    &.disabled {
+        cursor: default;
+    }
+
+    &:focus,
+    &:not(.disabled):hover {
+        outline: none;
+        border-bottom: 0;
+        background: var(--g300);
+    }
+}

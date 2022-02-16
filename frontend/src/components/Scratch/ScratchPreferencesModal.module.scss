@@ -131,11 +131,20 @@
     margin-bottom: 0.5em;
 }
 
-.booleanPreference {
-    display: flex;
-    gap: 0.5em;
-    align-items: center;
+.booleanPreference,
+.intPreference {
+    display: block;
+    padding: 0.5em 0;
 
     font-size: 0.9em;
     color: var(--g1500);
+
+    > input {
+        margin-right: 0.5em;
+    }
+
+    &.disabled {
+        filter: grayscale(100%) opacity(50%);
+    }
 }
+
