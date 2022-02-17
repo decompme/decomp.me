@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "@badrap/bar-of-progress": "^0.1.2",
-        "@primer/octicons-react": "^15.0.0",
+        "@primer/octicons-react": "^16.3.1",
         "@react-hook/resize-observer": "^1.2.2",
         "ansi-to-react": "^6.1.6",
         "classnames": "^2.3.1",
