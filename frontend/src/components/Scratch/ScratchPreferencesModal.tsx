@@ -2,9 +2,9 @@ import { ChangeEvent, useEffect, useState } from "react"
 
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
-import Modal from "react-modal"
 
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import Modal from "../Modal"
 import NumberInput from "../NumberInput"
 import Tabs, { Tab } from "../Tabs"
 
@@ -55,8 +55,6 @@ export default function ScratchPreferencesModal({ open, onClose }: { open: boole
     return <Modal
         isOpen={open}
         onRequestClose={onClose}
-        className={styles.dialog}
-        overlayClassName={styles.overlay}
         contentLabel="Editor preferences"
     >
         <div className={styles.container} onClick={evt => evt.stopPropagation()}>
