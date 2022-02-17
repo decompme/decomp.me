@@ -684,7 +684,7 @@ class ProjectTests(TestCase):
 
         return project
 
-    @patch("coreapp.github.subprocess")
+    @patch("coreapp.github.subprocess.run")
     @patch("pathlib.Path.mkdir")
     def test_create_repo_dir(self, mock_mkdir, mock_subprocess):
         """
@@ -695,8 +695,8 @@ class ProjectTests(TestCase):
 
         mock_subprocess.assert_called_once()
         self.assertListEqual(
-            mock_subprocess.calls[0][:2],
-            ["git", "clone", f"https://github.com/{owner}/{repo}"]
+            mock_subprocess.call_args.args[0][:3],
+            ["git", "clone", "https://github.com/decompme/example-project"]
         )
         mock_mkdir.assert_called_once_with(parents=True)
 
