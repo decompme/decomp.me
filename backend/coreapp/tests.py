@@ -10,12 +10,14 @@ from unittest import skipIf, mock
 from unittest.mock import patch, Mock
 
 import responses
+import tempfile
 from time import sleep
+from pathlib import Path
 
 from .models.profile import Profile
-from .models.scratch import Scratch
+from .models.scratch import Scratch, CompilerConfig
 from .models.github import GitHubUser, GitHubRepo
-from .models.project import Project
+from .models.project import Project, ProjectFunction, ProjectImportConfig
 
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
@@ -744,14 +746,20 @@ class ProjectTests(TestCase):
 
         return project
 
+    def fake_clone_test_repo(self, repo: GitHubRepo):
+        with patch("coreapp.models.github.subprocess.run"):
+            repo.pull()
+
     @patch("coreapp.models.github.subprocess.run")
     @patch("pathlib.Path.mkdir")
-    def test_create_repo_dir(self, mock_mkdir, mock_subprocess):
+    @patch("pathlib.Path.exists")
+    def test_create_repo_dir(self, mock_exists, mock_mkdir, mock_subprocess):
         """
         Test that the repo is cloned into a directory
         """
+        mock_exists.return_value = False
+
         project = self.create_test_project()
-        self.assertFalse(project.repo.get_dir().exists())
         project.repo.pull()
 
         mock_subprocess.assert_called_once()
@@ -773,3 +781,57 @@ class ProjectTests(TestCase):
         project.delete()
         project.repo.delete()
         mock_rmtree.assert_called_once_with(mock_dir)
+
+    @patch("coreapp.models.github.subprocess.run")
+    def test_import_function(self, mock_subprocess):
+        with self.settings(LOCAL_FILE_PATH=Path(tempfile.gettempdir())): # FIXME
+            project = self.create_test_project()
+            project.repo.pull()
+            mock_subprocess.assert_called_once() # clone
+
+            # add some asm
+            dir = project.repo.get_dir()
+            (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
+            (dir / "src").mkdir(parents=True)
+            asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
+            with asm_file.open("w") as f:
+                f.writelines([
+                    "glabel test\n",
+                    "jr $ra\n",
+                    "nop\n",
+                ])
+            with (dir / "src" / "section.c").open("w") as f:
+                f.writelines([
+                    "typedef int s32;\n",
+                ])
+            with (dir / "symbol_addrs.txt").open("w") as f:
+                f.writelines([
+                    "test = 0x80240000; // type:func rom:0x1000\n",
+                ])
+
+            # configure the import
+            import_config = ProjectImportConfig(
+                project=project,
+                display_name="test",
+                compiler_config=CompilerConfig(
+                    platform="dummy",
+                    compiler="dummy",
+                    compiler_flags="dummy"),
+                src_dir="src",
+                nonmatchings_dir="asm/nonmatchings",
+                nonmatchings_glob="**/*.s",
+                symbol_addrs_path="symbol_addrs.txt",
+            )
+            import_config.save()
+
+            # import the function
+            self.assertEqual(ProjectFunction.objects.count(), 0)
+            import_config.execute_import()
+            self.assertEqual(ProjectFunction.objects.count(), 1)
+            self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
+
+            # match the function (by deleting the asm) and verify it is marked as matching
+            asm_file.unlink()
+            import_config.execute_import()
+            self.assertEqual(ProjectFunction.objects.count(), 1)
+            self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)
