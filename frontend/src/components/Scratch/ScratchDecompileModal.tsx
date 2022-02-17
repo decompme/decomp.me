@@ -48,6 +48,7 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
                         className={styles.editor}
                         language="c"
                         value={decompiledCode}
+                        onChange={c => setDecompiledCode(c)}
                         lineNumbers
                         showMargin
                     />
