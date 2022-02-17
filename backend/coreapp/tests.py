@@ -11,8 +11,9 @@ from unittest import skipIf
 import responses
 from time import sleep
 
-from .models import Scratch, Profile
-from .github import GitHubUser
+from .models.profile import Profile
+from .models.scratch import Scratch
+from .models.github import GitHubUser
 
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
@@ -466,7 +467,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 1)
         self.assertEqual(User.objects.count(), 0)
 
-    @responses.activate # type: ignore
+    @responses.activate
     def test_github_login(self) -> None:
         """
         Ensure that a user is created upon sign-in with GitHub.

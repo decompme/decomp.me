@@ -1,10 +1,6 @@
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
-from coreapp.error import AssemblyError, CompilationError
-from coreapp.models import Asm, Assembly
-from coreapp import util
-from coreapp.sandbox import Sandbox
 from django.conf import settings
 import json
 import logging
@@ -13,6 +9,11 @@ from pathlib import Path
 import subprocess
 from dataclasses import dataclass
 from platform import uname
+
+from .error import AssemblyError, CompilationError
+from .models.scratch import Asm, Assembly
+from . import util
+from .sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 

@@ -3,8 +3,9 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from typing import Any, Optional, TYPE_CHECKING
 
-from .models import Profile, Scratch
-from .github import GitHubUser
+from .models.profile import Profile
+from .models.scratch import Scratch
+from .models.github import GitHubUser
 from .middleware import Request
 
 def serialize_profile(request: Request, profile: Profile, small = False):

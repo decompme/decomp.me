@@ -7,9 +7,10 @@ from rest_framework.views import APIView
 
 from .scratch import ScratchPagination
 from ..middleware import Request
-from ..models import Profile, Scratch
+from ..models.profile import Profile
+from ..models.scratch import Scratch
+from ..models.github import GitHubUser
 from ..serializers import serialize_profile, TerseScratchSerializer
-from ..github import GitHubUser
 
 class CurrentUser(APIView):
     """

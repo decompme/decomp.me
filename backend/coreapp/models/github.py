@@ -11,8 +11,9 @@ from typing import Optional
 from github import Github
 from github.NamedUser import NamedUser
 
-from .models import Profile, Scratch
-from .middleware import Request
+from .profile import Profile
+from .scratch import Scratch
+from ..middleware import Request
 import requests
 
 API_CACHE_TIMEOUT = 60 * 60 # 1 hour
