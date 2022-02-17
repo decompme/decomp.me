@@ -1,4 +1,4 @@
 {
     "platform": "ps1",
-    "cc": "cpp -P \"$INPUT\" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet -G0 ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -o \"$OUTPUT\""
+    "cc": "cpp -P \"$INPUT\" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o \"$OUTPUT\""
 }

@@ -20,3 +20,19 @@
         color: var(--g1500);
     }
 }
+
+.intPreference {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+
+    font-size: 0.9em;
+    color: var(--g1500);
+}
+
+.numberInput {
+    background-color: var(--g400);
+    color: var(--g1500);
+    border: none;
+    padding: 0.08em;
+}

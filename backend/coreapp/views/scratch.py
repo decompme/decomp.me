@@ -1,32 +1,32 @@
-from rest_framework.exceptions import APIException
-from coreapp.error import CompilationError, DiffError
-from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
-from coreapp.decompiler_wrapper import DecompilerWrapper
-from django.http import HttpResponse, QueryDict
-from rest_framework import serializers, status, mixins, filters
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.routers import DefaultRouter
-from rest_framework.pagination import CursorPagination
-
-import django_filters
-
 import hashlib
 import io
 import json
 import logging
-from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
-import zipfile
 import re
+import zipfile
+from datetime import datetime
+from typing import Any, Dict, Optional
 
-from ..models import Asm, Project, ProjectFunction, Scratch
-from ..middleware import Request
+import django_filters
+from django.http import HttpResponse, QueryDict
+from rest_framework import filters, mixins, serializers, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.pagination import CursorPagination
+from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
+from rest_framework.viewsets import GenericViewSet
+
 from ..decorators.django import condition
-from ..serializers import TerseScratchSerializer, ScratchCreateSerializer, ScratchSerializer
-from ..github import GitHubRepo, GitHubRepoBusyException
+from ..middleware import Request
+from ..models.scratch import Asm, Scratch
+from ..models.project import Project, ProjectFunction
+from ..models.github import GitHubRepo, GitHubRepoBusyException
+from ..serializers import ScratchCreateSerializer, ScratchSerializer, TerseScratchSerializer
+from ..asm_diff_wrapper import AsmDifferWrapper
+from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from ..decompiler_wrapper import DecompilerWrapper
+from ..error import CompilationError, DiffError
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,8 @@ def get_db_asm(request_asm) -> Asm:
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     return CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
-    return AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, compilation.elf_object)
+def diff_compilation(scratch: Scratch, compilation: CompilationResult, allow_target_only:bool = False) -> DiffResult:
+    return AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, compilation.elf_object, allow_target_only=allow_target_only)
 
 def update_scratch_score(scratch: Scratch, diff: DiffResult):
     """
@@ -57,7 +57,7 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult):
     if score != scratch.score or max_score != scratch.max_score:
         scratch.score = score
         scratch.max_score = max_score
-        scratch.save()
+        scratch.save(update_fields=['score', 'max_score'])
 
 def compile_scratch_update_score(scratch: Scratch) -> None:
     """
@@ -66,10 +66,21 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
     try:
         compilation = compile_scratch(scratch)
+    except CompilationError:
+        compilation = CompilationResult(b"", "")
+
+    try:
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
-    except (DiffError, CompilationError):
-        pass
+    except Exception:
+        try:
+            # Attempt to process just the target asm so we can populate max_score
+            diff = diff_compilation(scratch, compilation, True)
+            update_scratch_score(scratch, diff)
+        except Exception:
+            pass
+
+
 
 def scratch_last_modified(request: Request, pk: Optional[str] = None) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()

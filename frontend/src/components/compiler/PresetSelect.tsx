@@ -51,9 +51,19 @@ export const PRESETS = [
         opts: "-O2 -g3 -mips2",
     },
     {
+        name: "Dinosaur Planet (DLLs)",
+        compiler: "ido5.3",
+        opts: "-O2 -g3 -mips2 -KPIC",
+    },
+    {
         name: "Evo's Space Adventures",
         compiler: "psyq4.6",
         opts: "-O2",
+    },
+    {
+        name: "Castlevania: Symphony of the Night",
+        compiler: "gcc2.6.3-mipsel",
+        opts: "-O2 -G0 -funsigned-char",
     },
     {
         name: "The Thousand-Year Door",
@@ -134,6 +144,16 @@ export const PRESETS = [
         name: "Pokémon HeartGold / SoulSilver",
         compiler: "mwcc_30_137",
         opts: "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
+    },
+    {
+        name: "Super Mario Odyssey",
+        compiler: "clang-3.9.1",
+        opts: "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
+    },
+    {
+        name: "Breath of the Wild",
+        compiler: "clang-4.0.1",
+        opts: "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     },
 ]
 

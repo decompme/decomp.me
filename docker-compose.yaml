@@ -17,6 +17,7 @@ services:
         ENABLE_PS1_SUPPORT: "NO"
         ENABLE_GC_WII_SUPPORT: "NO"
         ENABLE_NDS_SUPPORT: "NO"
+        ENABLE_SWITCH_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:
@@ -37,12 +38,10 @@ services:
       - seccomp=unconfined
     volumes:
     - ./backend:/backend
-    - type: tmpfs
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
-      target: /sandbox/tmp
-      tmpfs:
-        size: 64M
+    tmpfs:
+    # Use a separate tmpfs to prevent a rogue jailed process
+    # from filling /tmp on the parent container
+    - /sandbox/tmp:uid=1000,gid=1000,size=64M,mode=0700
   frontend:
     build: frontend
     environment:

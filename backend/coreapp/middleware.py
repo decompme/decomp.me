@@ -3,13 +3,13 @@ from django.utils.timezone import now
 from django.contrib import auth
 from django.contrib.auth.models import User
 
-from .models import Profile
+from .models.profile import Profile
 import logging
 from rest_framework.request import Request as DRFRequest
 from typing import Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .github import GitHubUser
+    from .models.github import GitHubUser
 
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile

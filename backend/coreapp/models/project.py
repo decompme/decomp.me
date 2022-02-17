@@ -1,74 +1,18 @@
-from django.utils.crypto import get_random_string
 from django.db import models, transaction
-from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
-from django.utils.translation import gettext_lazy as _
 
-from typing import Any, Dict, Optional, List, Tuple
+from typing import Optional, Tuple, List
 from pathlib import Path
 from glob import glob
 import logging
 import shlex
 
-from .symbol_addrs import Symbol, parse_symbol_addrs, symbol_name_from_asm_file
-from .context import c_file_to_context
+from .profile import Profile
+from .scratch import Scratch, CompilerConfig
+from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
+from ..context import c_file_to_context
 from decompme.settings import FRONTEND_BASE
 
 logger = logging.getLogger(__name__)
-
-def gen_scratch_id() -> str:
-    ret = get_random_string(length=5)
-
-    if Scratch.objects.filter(slug=ret).exists():
-        return gen_scratch_id()
-
-    return ret
-
-class Profile(models.Model):
-    creation_date = models.DateTimeField(auto_now_add=True)
-    last_request_date = models.DateTimeField(auto_now_add=True)
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="profile",
-        null=True,
-    )
-
-    def is_anonymous(self) -> bool:
-        return self.user is None
-
-    def __str__(self):
-        if self.user:
-            return self.user.username
-        else:
-            return str(self.id)
-
-    def get_html_url(self) -> Optional[str]:
-        if self.user:
-            return f"{FRONTEND_BASE}/u/{self.user.username}"
-        else:
-            # No URLs for anonymous profiles
-            return None
-
-class Asm(models.Model):
-    hash = models.CharField(max_length=64, primary_key=True)
-    data = models.TextField()
-
-    def __str__(self):
-        return self.data if len(self.data) < 20 else self.data[:17] + "..."
-
-class Assembly(models.Model):
-    hash = models.CharField(max_length=64, primary_key=True)
-    time = models.DateTimeField(auto_now_add=True)
-    arch = models.CharField(max_length=100)
-    source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
-    elf_object = models.BinaryField(blank=True)
-
-class CompilerConfig(models.Model):
-    # TODO: validate compiler and platform
-    compiler = models.CharField(max_length=100)
-    platform = models.CharField(max_length=100)
-    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
 
 class Project(models.Model):
     slug = models.SlugField(primary_key=True)
@@ -98,42 +42,6 @@ class Project(models.Model):
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
-
-class Scratch(models.Model):
-    slug = models.SlugField(primary_key=True, default=gen_scratch_id)
-    name = models.CharField(max_length=512, default="Untitled", blank=False)
-    description = models.TextField(max_length=5000, default="", blank=True)
-    creation_time = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100) # TODO: reference a CompilerConfig
-    platform = models.CharField(max_length=100, blank=True) # TODO: reference a CompilerConfig
-    compiler_flags = models.TextField(max_length=1000, default="", blank=True) # TODO: reference a CompilerConfig
-    target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
-    source_code = models.TextField(blank=True)
-    context = models.TextField(blank=True)
-    diff_label = models.CharField(max_length=512, blank=True, null=True)
-    score = models.IntegerField(default=-1)
-    max_score = models.IntegerField(default=-1)
-    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
-    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    project_function = models.ForeignKey("ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL) # The function, if any, that this scratch is an attempt of
-
-    class Meta:
-        ordering = ['-creation_time']
-        verbose_name_plural = "Scratches"
-
-    def __str__(self):
-        return self.slug
-
-    # hash for etagging
-    def __hash__(self):
-        return hash((self.slug, self.last_updated))
-
-    def get_html_url(self) -> str:
-        return FRONTEND_BASE + "/scratch/" + self.slug
-
-    def is_claimable(self) -> bool:
-        return self.owner is None
 
 class ProjectImportConfig(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -239,7 +147,7 @@ class ProjectFunction(models.Model):
         return f"{self.display_name} ({self.project})"
 
     def create_scratch(self) -> Scratch:
-        from .views.scratch import create_scratch
+        from ..views.scratch import create_scratch
 
         import_config: ProjectImportConfig = self.import_config
         project: Project = import_config.project

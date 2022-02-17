@@ -36,6 +36,7 @@ FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    binutils-aarch64-linux-gnu \
     curl \
     gcc-mips-linux-gnu \
     libnl-route-3-200 \
@@ -43,6 +44,8 @@ RUN apt-get -y update && apt-get install -y \
     netcat \
     unzip \
     wget \
+    libtinfo5 \
+    libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /backend/requirements.txt
@@ -82,6 +85,12 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
 COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
 RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] ; then \
     bash /compilers/mwccarm.sh; \
+    fi
+
+# switch specifics
+ARG ENABLE_SWITCH_SUPPORT
+RUN if [ "${ENABLE_SWITCH_SUPPORT}" = "YES" ] ; then \
+    bash /compilers/clang.sh; \
     fi
 
 WORKDIR /backend

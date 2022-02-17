@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
@@ -20,6 +20,7 @@ import CompileScratchButton from "./buttons/CompileScratchButton"
 import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
+import ScratchDecompileModal from "./ScratchDecompileModal"
 import ScratchPreferencesModal from "./ScratchPreferencesModal"
 import styles from "./ScratchToolbar.module.scss"
 
@@ -29,7 +30,7 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = `${scratch.url}/export`
+    const url = api.getURL(`${scratch.url}/export`)
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"
@@ -79,6 +80,13 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
             }}
 
             onBlur={() => setEditing(false)}
+
+            onKeyDown={evt => {
+                if (evt.key === "Enter") {
+                    evt.preventDefault()
+                    setEditing(false)
+                }
+            }}
         />
     } else {
         return <div
@@ -120,6 +128,7 @@ export default function ScratchToolbar({
     })
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
+    const [isDecompileOpen, setDecompileOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -179,6 +188,10 @@ export default function ScratchToolbar({
                             <DownloadIcon />
                             Export as ZIP...
                         </ButtonItem>
+                        <ButtonItem onTrigger={() => setDecompileOpen(true)}>
+                            <IterationsIcon />
+                            Rerun decompilation...
+                        </ButtonItem>
                         <hr />
                         <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>
                             <GearIcon />
@@ -225,6 +238,12 @@ export default function ScratchToolbar({
                 </>}
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
+            <ScratchDecompileModal
+                open={isDecompileOpen}
+                onClose={() => setDecompileOpen(false)}
+                scratch={scratch}
+                setSourceCode={source_code => setScratch({ source_code })}
+            />
         </div>
     )
 }

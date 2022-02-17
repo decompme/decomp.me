@@ -12,9 +12,10 @@ import logging
 from threading import Thread
 import django_filters
 
-from ..models import Project, ProjectFunction, Scratch
+from ..models.scratch import Scratch
+from ..models.project import Project, ProjectFunction
+from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..serializers import ProjectFunctionSerializer, ProjectSerializer, ScratchSerializer, TerseScratchSerializer
-from ..github import GitHubRepo, GitHubRepoBusyException
 
 logger = logging.getLogger(__name__)
 

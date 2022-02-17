@@ -1,0 +1,10 @@
+# asm_differ
+backend/asm_differ/diff.py linguist-generated=true
+
+# mips_to_c
+backend/mips_to_c/src/** linguist-generated=true
+backend/mips_to_c/stubs/** linguist-generated=true
+backend/mips_to_c/tests/** linguist-generated=true
+backend/mips_to_c/mips_to_c.py linguist-generated=true
+backend/mips_to_c/run_tests.py linguist-generated=true
+backend/mips_to_c/website.py linguist-generated=true

@@ -1,4 +1,5 @@
 from django.test.testcases import TestCase
+from coreapp.views.scratch import compile_scratch_update_score
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from django.urls import reverse
@@ -11,8 +12,10 @@ from unittest.mock import patch, Mock
 import responses
 from time import sleep
 
-from .models import Project, Scratch, Profile
-from .github import GitHubRepo, GitHubUser
+from .models.profile import Profile
+from .models.scratch import Scratch
+from .models.github import GitHubUser, GitHubRepo
+from .models.project import Project
 
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
@@ -99,6 +102,19 @@ sb  $t6, %lo(D_801D702C)($at)
         }
         self.create_scratch(scratch_dict)
 
+    @requiresCompiler('ido7.1')
+    def test_max_score(self):
+        """
+        Ensure that max_score is available upon scratch creation even if the initial compialtion fails
+        """
+        scratch_dict = {
+            'platform': 'n64',
+            'compiler': 'ido7.1',
+            'context': 'this aint cod',
+            'target_asm': ".text\nglabel func_80929D04\njr $ra\nnop"
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.max_score, 200)
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler('gcc2.8.1', 'ido5.3')
@@ -177,6 +193,27 @@ class ScratchModificationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
+    @requiresCompiler('ido7.1')
+    def test_update_scratch_score_does_not_affect_last_updated(self):
+        """
+        Ensure that a scratch's last_updated field does not get updated when the max_score changes.
+        """
+        scratch_dict = {
+            'platform': 'n64',
+            'compiler': 'ido7.1',
+            'context': '',
+            'target_asm': 'jr $ra\nli $v0,2',
+            'source_code': 'int func() { return 2; }'
+        }
+        scratch = self.create_scratch(scratch_dict)
+        scratch.max_score = -1
+        scratch.save()
+        self.assertEqual(scratch.max_score, -1)
+
+        prev_last_updated = scratch.last_updated
+        compile_scratch_update_score(scratch)
+        self.assertEqual(scratch.max_score, 200)
+        self.assertEqual(prev_last_updated, scratch.last_updated)
 
 class ScratchForkTests(BaseTestCase):
     def test_fork_scratch(self):
@@ -288,6 +325,15 @@ class CompilationTests(BaseTestCase):
         result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
         self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
 
+    @requiresCompiler('ido5.3')
+    def test_ido_kpic(self):
+        """
+        Ensure that ido compilations including -KPIC produce different code
+        """
+        result_non_shared = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "")
+        result_kpic = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2 -KPIC", "int dog = 5;", "")
+        self.assertNotEqual(result_non_shared.elf_object, result_kpic.elf_object, "The compilation result should be different")
+
     @requiresCompiler('mwcc_247_92')
     def test_mwcc_wine(self):
         """
@@ -351,9 +397,23 @@ class M2CTests(TestCase):
         li $t6,1
         jr $ra
         sw $t6,0($a0)
-        """, "", "")
+        """, "", "ido", "mips")
 
         self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
+
+    """
+    Ensure that we can decompile ppc code
+    """
+    def test_ppc(self):
+        c_code = M2CWrapper.decompile("""
+        .global func_800B43A8
+        func_800B43A8:
+        xor r0, r3, r3
+        subf r3, r4, r0
+        blr
+        """, "", "mwcc", "ppc")
+
+        self.assertEqual("s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n", c_code)
 
 
 class UserTests(BaseTestCase):

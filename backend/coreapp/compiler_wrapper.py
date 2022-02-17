@@ -1,10 +1,6 @@
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Set, Tuple
 from collections import OrderedDict
-from coreapp.error import AssemblyError, CompilationError
-from coreapp.models import Asm, Assembly
-from coreapp import util
-from coreapp.sandbox import Sandbox
 from django.conf import settings
 import json
 import logging
@@ -13,6 +9,11 @@ from pathlib import Path
 import subprocess
 from dataclasses import dataclass
 from platform import uname
+
+from .error import AssemblyError, CompilationError
+from .models.scratch import Asm, Assembly
+from . import util
+from .sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,7 @@ class Platform:
     assemble_cmd: Optional[str] = None
     objdump_cmd: Optional[str] = None
     nm_cmd: Optional[str] = None
+    supports_objdump_disassemble: bool = False
 
 @dataclass
 class CompilationResult:
@@ -117,6 +119,16 @@ def load_platforms() -> Dict[str, Platform]:
             objdump_cmd="echo",
             nm_cmd="echo",
             asm_prelude="",
+        ),
+        "switch": Platform(
+            "Nintendo Switch",
+            "ARMv8-A",
+            "aarch64",
+            assemble_cmd='aarch64-linux-gnu-as -mcpu=cortex-a57+fp+simd+crypto+crc -o "$OUTPUT" "$INPUT"',
+            objdump_cmd="aarch64-linux-gnu-objdump",
+            nm_cmd="aarch64-linux-gnu-nm",
+            asm_prelude="",
+            supports_objdump_disassemble=True,
         ),
         "n64": Platform(
             "Nintendo 64",
@@ -296,12 +308,18 @@ def load_platforms() -> Dict[str, Platform]:
 .endm
 
 .macro arm_func_start name
+    .arm
+    \name:
 .endm
 .macro arm_func_end name
 .endm
 .macro thumb_func_start name
+    .thumb
+    \name:
 .endm
 .macro non_word_aligned_thumb_func_start name
+    .thumb
+    \name:
 .endm
 .macro thumb_func_end name
 .endm
@@ -311,7 +329,7 @@ def load_platforms() -> Dict[str, Platform]:
             "Game Boy Advance",
             "ARMv4T",
             "arm32",
-            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+            assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mcpu=arm7tdmi -mthumb -o "$OUTPUT"',
             objdump_cmd="arm-none-eabi-objdump",
             nm_cmd="arm-none-eabi-nm",
             asm_prelude="""
@@ -322,12 +340,19 @@ def load_platforms() -> Dict[str, Platform]:
 .endm
 
 .macro arm_func_start name
+	.align 2, 0
+	.arm
 .endm
 .macro arm_func_end name
 .endm
 .macro thumb_func_start name
+	.align 2, 0
+	.thumb
+    .syntax unified
 .endm
 .macro non_word_aligned_thumb_func_start name
+	.thumb
+    .syntax unified
 .endm
 .macro thumb_func_end name
 .endm
@@ -350,6 +375,11 @@ def get_objdump_command(platform: str) -> Optional[str]:
     if platform in _platforms:
         return _platforms[platform].objdump_cmd
     return None
+
+def supports_objdump_disassemble(platform: str) -> bool:
+    if platform in _platforms:
+        return _platforms[platform].supports_objdump_disassemble
+    return False
 
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
@@ -420,6 +450,7 @@ class CompilerWrapper:
             "-c",
             "-w",
         }
+
         skip_next = False
         flags = []
         for flag in compiler_flags.split():
@@ -462,10 +493,16 @@ class CompilerWrapper:
 
             compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
 
+            cc_cmd = _compilers[compiler]["cc"]
+
+            # IDO hack to support -KPIC
+            if "ido" in compiler and "-KPIC" in compiler_flags:
+                cc_cmd = cc_cmd.replace("-non_shared", "")
+
             # Run compiler
             try:
                 compile_proc = sandbox.run_subprocess(
-                    _compilers[compiler]["cc"],
+                    cc_cmd,
                     mounts=[compiler_path],
                     shell=True,
                     env={
@@ -493,7 +530,7 @@ class CompilerWrapper:
             return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Assembly:
+    def assemble_asm(platform: str, asm: Asm) -> Assembly:
         if platform not in _platforms:
             raise AssemblyError(f"Platform {platform} not found")
 
@@ -501,12 +538,10 @@ class CompilerWrapper:
         if not assemble_cmd:
             raise AssemblyError(f"Assemble command for platform {platform} not found")
 
-        # Use the cache if we're not manually re-running an Assembly
-        if not to_regenerate:
-            cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
-            if cached_assembly:
-                logger.debug(f"Assembly cache hit! hash: {hash}")
-                return cached_assembly
+        cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
+        if cached_assembly:
+            logger.debug(f"Assembly cache hit! hash: {hash}")
+            return cached_assembly
 
         platform_cfg = _platforms[platform]
 
@@ -547,16 +582,12 @@ class CompilerWrapper:
             if not object_path.exists():
                 raise AssemblyError("Assembler did not create an object file")
 
-            if to_regenerate:
-                assembly = to_regenerate
-                assembly.elf_object = object_path.read_bytes()
-            else:
-                assembly = Assembly(
-                    hash=hash,
-                    arch=platform_cfg.arch,
-                    source_asm=asm,
-                    elf_object=object_path.read_bytes(),
-                )
+            assembly = Assembly(
+                hash=hash,
+                arch=platform_cfg.arch,
+                source_asm=asm,
+                elf_object=object_path.read_bytes(),
+            )
             assembly.save()
             return assembly
 

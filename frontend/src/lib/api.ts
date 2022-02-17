@@ -56,10 +56,15 @@ export class ResponseError extends Error {
     }
 }
 
-export async function get(url: string, useCacheIfFresh = false) {
+export function getURL(url: string) {
     if (url.startsWith("/")) {
         url = API_BASE + url
     }
+    return url
+}
+
+export async function get(url: string, useCacheIfFresh = false) {
+    url = getURL(url)
 
     const response = await fetch(url, {
         ...commonOpts,
@@ -87,9 +92,7 @@ export async function get(url: string, useCacheIfFresh = false) {
 export const getCached = (url: string) => get(url, true)
 
 export async function post(url: string, json: Json) {
-    if (url.startsWith("/")) {
-        url = API_BASE + url
-    }
+    url = getURL(url)
 
     const body: string = JSON.stringify(json)
 
@@ -112,9 +115,7 @@ export async function post(url: string, json: Json) {
 }
 
 export async function patch(url: string, json: Json) {
-    if (url.startsWith("/")) {
-        url = API_BASE + url
-    }
+    url = getURL(url)
 
     const body = JSON.stringify(json)
 
@@ -380,7 +381,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
     )
 }
 
-export function useCompilation(scratch: Scratch | null, autoRecompile = true, initial = null): {
+export function useCompilation(scratch: Scratch | null, autoRecompile = true, autoRecompileDelay, initial = null): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
@@ -431,7 +432,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, in
         }
     }, [compile, scratch.url, url])
 
-    const debouncedCompile = useDebouncedCallback(compile, 500, { leading: false, trailing: true })
+    const debouncedCompile = useDebouncedCallback(compile, autoRecompileDelay, { leading: false, trailing: true })
 
     useEffect(() => {
         if (!compilation) {

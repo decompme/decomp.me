@@ -24,14 +24,13 @@ env = environ.Env(
     STATIC_URL=(str, '/static/'),
     STATIC_ROOT=(str, BASE_DIR / 'static'),
     LOCAL_FILE_DIR=(str, BASE_DIR / "local_files"),
-    USE_SANDBOX_JAIL=(bool, True),
+    USE_SANDBOX_JAIL=(bool, False),
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
     COMPILATION_CACHE_SIZE=(int, 100),
     WINEPREFIX=(str, "/tmp/wine"),
-    FRONTEND_BASE=(str, "https://decomp.me"),
 )
 
 for stem in [".env.local", ".env"]:
@@ -185,8 +184,6 @@ else:
 COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
-if sys.platform in ["darwin", "win32"]:
-    USE_SANDBOX_JAIL = False
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"

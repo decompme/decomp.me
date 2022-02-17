@@ -2,8 +2,10 @@ from django.contrib import admin
 
 import shutil
 
-from .models import Profile, Assembly, Asm, ProjectMember, Scratch, Project, ProjectFunction, ProjectImportConfig, CompilerConfig
-from .github import GitHubUser, GitHubRepo, GitHubRepoBusyException
+from .models.profile import Profile
+from .models.scratch import Assembly, Asm, Scratch, CompilerConfig
+from .models.project import Project, ProjectMember, ProjectFunction, ProjectImportConfig
+from .models.github import GitHubUser, GitHubRepo, GitHubRepoBusyException
 
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
     actions = ["pull", "reclone"]

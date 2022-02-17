@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-from typing import List, Optional
+from typing import Optional
 from github import Github
 from github.NamedUser import NamedUser
 from github.Repository import Repository
@@ -17,10 +17,12 @@ import requests
 import subprocess
 import shutil
 
-from .models import Profile, Project, Scratch
-from .middleware import Request
-
 from decompme.settings import LOCAL_FILE_PATH
+from .profile import Profile
+from .scratch import Scratch
+from .project import Project
+from ..middleware import Request
+import requests
 
 API_CACHE_TIMEOUT = 60 * 60 # 1 hour
 

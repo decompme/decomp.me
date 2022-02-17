@@ -6,8 +6,10 @@ from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelate
 from rest_framework.reverse import reverse
 from typing import Any, List, Optional, TYPE_CHECKING
 
-from .models import Profile, ProjectFunction, Scratch, Project
-from .github import GitHubUser, GitHubRepo
+from .models.profile import Profile
+from .models.scratch import Scratch
+from .models.github import GitHubUser, GitHubRepo
+from .models.project import Project, ProjectFunction
 from .middleware import Request
 
 def serialize_profile(request: Request, profile: Profile, small = False):
@@ -59,14 +61,32 @@ class TerseProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile, small=True)
 
-class HtmlUrlField(serializers.HyperlinkedIdentityField):
+class UrlField(serializers.HyperlinkedIdentityField):
     """
-    A read-only field that represents the frontend identity URL for the object, itself.
+    Read-only field that takes the value returned by the model's get_url method.
+    get_url should return a path relative to API_BASE that can be used to retrieve the model from the API.
     """
 
     def __init__(self, **kwargs: Any):
         kwargs["view_name"] = "__unused__"
+        self.target_field = kwargs.pop("target_field", "")
         super().__init__(**kwargs)
+
+    def get_url(self, value, view_name, request, format):
+        if self.target_field:
+            value = getattr(value, self.target_field)
+        if not value:
+            return None
+        if hasattr(value, "get_url"):
+            return value.get_url()
+
+        raise ImproperlyConfigured("UrlField does not support this type of model")
+
+class HtmlUrlField(UrlField):
+    """
+    Read-only field that takes the value returned by the model's get_html_url method.
+    get_html_url should return a path relative to the frontend that can be used to look at the HTML page for the model.
+    """
 
     def get_url(self, value, view_name, request, format):
         if hasattr(value, "get_html_url"):
@@ -90,7 +110,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
+    url = UrlField()
     html_url = HtmlUrlField()
+    parent = UrlField(target_field="parent") # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore

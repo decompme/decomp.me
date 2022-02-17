@@ -4,8 +4,11 @@ import * as api from "../../../lib/api"
 
 import * as Agbcc from "./agbcc"
 import * as Agbccpp from "./agbccpp"
+import * as Clang391 from "./clang-3.9.1"
+import * as Clang401 from "./clang-4.0.1"
 import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
+import * as Gcc263mipsel from "./gcc2.6.3-mipsel"
 import * as Gcc27kmc from "./gcc2.7kmc"
 import * as Gcc281 from "./gcc2.8.1"
 import * as Ido53 from "./ido5.3"
@@ -59,6 +62,7 @@ const COMPILERS: CompilerModule[] = [
     Ido53,
     Ido71,
     Gcc27kmc,
+    Gcc263mipsel,
     EeGcc296,
     Mwcc20b72,
     Mwcc20b79,
@@ -106,6 +110,8 @@ const COMPILERS: CompilerModule[] = [
     OldAgbcc,
     Agbccpp,
     Dummy,
+    Clang391,
+    Clang401,
 ]
 
 export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
