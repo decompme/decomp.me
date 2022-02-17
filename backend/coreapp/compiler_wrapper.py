@@ -537,7 +537,6 @@ class CompilerWrapper:
         if not assemble_cmd:
             raise AssemblyError(f"Assemble command for platform {platform} not found")
 
-        # Use the cache if we're not manually re-running an Assembly
         cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
         if cached_assembly:
             logger.debug(f"Assembly cache hit! hash: {hash}")
