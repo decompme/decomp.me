@@ -1,4 +1,5 @@
 from django.test.testcases import TestCase
+from coreapp.views.scratch import compile_scratch_update_score
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.compiler_wrapper import CompilerWrapper
 from django.urls import reverse
@@ -189,6 +190,27 @@ class ScratchModificationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
+    @requiresCompiler('ido7.1')
+    def test_update_scratch_score_does_not_affect_last_updated(self):
+        """
+        Ensure that a scratch's last_updated field does not get updated when the max_score changes.
+        """
+        scratch_dict = {
+            'platform': 'n64',
+            'compiler': 'ido7.1',
+            'context': '',
+            'target_asm': 'jr $ra\nli $v0,2',
+            'source_code': 'int func() { return 2; }'
+        }
+        scratch = self.create_scratch(scratch_dict)
+        scratch.max_score = -1
+        scratch.save()
+        self.assertEqual(scratch.max_score, -1)
+
+        prev_last_updated = scratch.last_updated
+        compile_scratch_update_score(scratch)
+        self.assertEqual(scratch.max_score, 200)
+        self.assertEqual(prev_last_updated, scratch.last_updated)
 
 class ScratchForkTests(BaseTestCase):
     def test_fork_scratch(self):
