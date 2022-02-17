@@ -529,7 +529,7 @@ class CompilerWrapper:
             return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
 
     @staticmethod
-    def assemble_asm(platform: str, asm: Asm, to_regenerate: Optional[Assembly] = None) -> Assembly:
+    def assemble_asm(platform: str, asm: Asm) -> Assembly:
         if platform not in _platforms:
             raise AssemblyError(f"Platform {platform} not found")
 
@@ -538,11 +538,10 @@ class CompilerWrapper:
             raise AssemblyError(f"Assemble command for platform {platform} not found")
 
         # Use the cache if we're not manually re-running an Assembly
-        if not to_regenerate:
-            cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
-            if cached_assembly:
-                logger.debug(f"Assembly cache hit! hash: {hash}")
-                return cached_assembly
+        cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
+        if cached_assembly:
+            logger.debug(f"Assembly cache hit! hash: {hash}")
+            return cached_assembly
 
         platform_cfg = _platforms[platform]
 
@@ -583,16 +582,12 @@ class CompilerWrapper:
             if not object_path.exists():
                 raise AssemblyError("Assembler did not create an object file")
 
-            if to_regenerate:
-                assembly = to_regenerate
-                assembly.elf_object = object_path.read_bytes()
-            else:
-                assembly = Assembly(
-                    hash=hash,
-                    arch=platform_cfg.arch,
-                    source_asm=asm,
-                    elf_object=object_path.read_bytes(),
-                )
+            assembly = Assembly(
+                hash=hash,
+                arch=platform_cfg.arch,
+                source_asm=asm,
+                elf_object=object_path.read_bytes(),
+            )
             assembly.save()
             return assembly
 

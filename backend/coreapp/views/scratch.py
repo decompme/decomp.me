@@ -40,8 +40,8 @@ def get_db_asm(request_asm) -> Asm:
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     return CompilerWrapper.compile_code(scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context)
 
-def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
-    return AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, compilation.elf_object)
+def diff_compilation(scratch: Scratch, compilation: CompilationResult, allow_target_only:bool = False) -> DiffResult:
+    return AsmDifferWrapper.diff(scratch.target_assembly, scratch.platform, scratch.diff_label, compilation.elf_object, allow_target_only=allow_target_only)
 
 def update_scratch_score(scratch: Scratch, diff: DiffResult):
     """
@@ -53,7 +53,7 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult):
     if score != scratch.score or max_score != scratch.max_score:
         scratch.score = score
         scratch.max_score = max_score
-        scratch.save()
+        scratch.save(update_fields=['score', 'max_score'])
 
 def compile_scratch_update_score(scratch: Scratch) -> None:
     """
@@ -62,10 +62,21 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
     try:
         compilation = compile_scratch(scratch)
+    except CompilationError:
+        compilation = CompilationResult(b"", "")
+
+    try:
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
-    except (DiffError, CompilationError):
-        pass
+    except Exception:
+        try:
+            # Attempt to process just the target asm so we can populate max_score
+            diff = diff_compilation(scratch, compilation, True)
+            update_scratch_score(scratch, diff)
+        except Exception:
+            pass
+
+
 
 def scratch_last_modified(request: Request, pk: Optional[str] = None) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()

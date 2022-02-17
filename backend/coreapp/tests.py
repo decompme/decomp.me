@@ -98,6 +98,19 @@ sb  $t6, %lo(D_801D702C)($at)
         }
         self.create_scratch(scratch_dict)
 
+    @requiresCompiler('ido7.1')
+    def test_max_score(self):
+        """
+        Ensure that max_score is available upon scratch creation even if the initial compialtion fails
+        """
+        scratch_dict = {
+            'platform': 'n64',
+            'compiler': 'ido7.1',
+            'context': 'this aint cod',
+            'target_asm': ".text\nglabel func_80929D04\njr $ra\nnop"
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.max_score, 200)
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler('gcc2.8.1', 'ido5.3')
