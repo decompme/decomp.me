@@ -744,13 +744,14 @@ class ProjectTests(TestCase):
 
         return project
 
-    @patch("coreapp.github.subprocess.run")
+    @patch("coreapp.models.github.subprocess.run")
     @patch("pathlib.Path.mkdir")
     def test_create_repo_dir(self, mock_mkdir, mock_subprocess):
         """
         Test that the repo is cloned into a directory
         """
         project = self.create_test_project()
+        self.assertFalse(project.repo.get_dir().exists())
         project.repo.pull()
 
         mock_subprocess.assert_called_once()
@@ -760,8 +761,8 @@ class ProjectTests(TestCase):
         )
         mock_mkdir.assert_called_once_with(parents=True)
 
-    @patch("coreapp.github.GitHubRepo.get_dir")
-    @patch("coreapp.github.shutil.rmtree")
+    @patch("coreapp.models.github.GitHubRepo.get_dir")
+    @patch("coreapp.models.github.shutil.rmtree")
     def test_delete_repo_dir(self, mock_rmtree, mock_get_dir):
         """
         Test that the repo's directory is deleted when the repo is
