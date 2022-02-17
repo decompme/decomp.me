@@ -1,14 +1,15 @@
-from coreapp.error import AssemblyError, DiffError, NmError, ObjdumpError
-from coreapp import compiler_wrapper
-from coreapp.models import Assembly
-from coreapp.sandbox import Sandbox
-from coreapp.compiler_wrapper import PATH, DiffResult
 from typing import List, Optional
 import json
 import logging
 import subprocess
 
 import asm_differ.diff as asm_differ
+
+from .error import AssemblyError, DiffError, NmError, ObjdumpError
+from . import compiler_wrapper
+from .models.scratch import Assembly
+from .sandbox import Sandbox
+from .compiler_wrapper import PATH, DiffResult
 
 logger = logging.getLogger(__name__)
 

@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Scratch',
             fields=[
-                ('slug', models.SlugField(default=coreapp.models.gen_scratch_id, primary_key=True, serialize=False)),
+                ('slug', models.SlugField(default=coreapp.models.scratch.gen_scratch_id, primary_key=True, serialize=False)),
                 ('creation_time', models.DateTimeField(auto_now_add=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
                 ('compiler', models.CharField(blank=True, max_length=100)),

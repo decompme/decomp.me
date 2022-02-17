@@ -8,11 +8,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
-from coreapp.asm_diff_wrapper import AsmDifferWrapper
-from coreapp.compiler_wrapper import (CompilationResult, CompilerWrapper,
-                                      DiffResult)
-from coreapp.decompiler_wrapper import DecompilerWrapper
-from coreapp.error import CompilationError, DiffError
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -24,9 +19,12 @@ from rest_framework.viewsets import GenericViewSet
 
 from ..decorators.django import condition
 from ..middleware import Request
-from ..models import Asm, Scratch
-from ..serializers import (ScratchCreateSerializer, ScratchSerializer,
-                           TerseScratchSerializer)
+from ..models.scratch import Asm, Scratch
+from ..serializers import ScratchCreateSerializer, ScratchSerializer, TerseScratchSerializer
+from ..asm_diff_wrapper import AsmDifferWrapper
+from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from ..decompiler_wrapper import DecompilerWrapper
+from ..error import CompilationError, DiffError
 
 logger = logging.getLogger(__name__)
 
