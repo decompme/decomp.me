@@ -1,0 +1,58 @@
+.dialog {
+    border: 1px solid var(--g300);
+    border-radius: 8px;
+    background: var(--g200);
+    box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
+
+    @supports (backdrop-filter: blur(8px)) {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(8px);
+    }
+
+    position: absolute;
+
+    // Horizontal positioning
+    width: 100%;
+    max-width: 900px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    @media (max-width: 900px) {
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+
+    // Vertical positioning
+    top: 20vh;
+    bottom: 0;
+    height: 60vh;
+    max-height: 700px;
+
+    @media (max-height: 800px) {
+        top: 10vh;
+        height: 80vh;
+    }
+
+    @media (max-height: 600px) {
+        top: 0;
+        height: 100vh;
+
+        border-top: 0;
+        border-bottom: 0;
+        border-radius: 0;
+    }
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.overlay {
+    position: fixed;
+    inset: 0 0 0 0;
+
+    z-index: 100;
+
+    background: rgba(0, 0, 0, 0.4);
+}

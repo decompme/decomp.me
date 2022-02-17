@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TrashIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
@@ -21,6 +21,7 @@ import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import ScratchPreferencesModal from "./ScratchPreferencesModal"
+import ScratchResetModal from "./ScratchResetModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -127,6 +128,7 @@ export default function ScratchToolbar({
     })
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
+    const [isResetOpen, setResetOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -193,6 +195,10 @@ export default function ScratchToolbar({
                             <DownloadIcon />
                             Export as ZIP...
                         </ButtonItem>
+                        <ButtonItem onTrigger={() => setResetOpen(true)}>
+                            <TrashIcon />
+                            Reset source code...
+                        </ButtonItem>
                         <hr />
                         <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>
                             <GearIcon />
@@ -239,6 +245,12 @@ export default function ScratchToolbar({
                 </>}
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
+            <ScratchResetModal
+                open={isResetOpen}
+                onClose={() => setResetOpen(false)}
+                scratch={scratch}
+                setSourceCode={source_code => setScratch({ source_code })}
+            />
         </div>
     )
 }
