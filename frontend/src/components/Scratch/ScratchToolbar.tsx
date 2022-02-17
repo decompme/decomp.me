@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TrashIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
@@ -196,8 +196,8 @@ export default function ScratchToolbar({
                             Export as ZIP...
                         </ButtonItem>
                         <ButtonItem onTrigger={() => setDecompileOpen(true)}>
-                            <TrashIcon />
-                            Reset source code...
+                            <IterationsIcon />
+                            Rerun decompilation...
                         </ButtonItem>
                         <hr />
                         <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>

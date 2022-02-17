@@ -34,21 +34,25 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
     return <Modal
         isOpen={open}
         onRequestClose={onClose}
-        contentLabel="Reset scratch source code"
+        contentLabel="Rerun decompilation"
     >
         <div className={styles.container}>
             <section className={styles.main}>
-                <h2>Reset scratch source code</h2>
+                <h2>Rerun decompilation</h2>
 
-                <p>Are you sure you want to reset this scratch's source code to the decompiled original?</p>
+                <p>This is generally useful when you've edited the function signature or symbols pertaining to the function.
+                    This new decompilation should reflect your changes. </p>
 
-                {decompiledCode ? <Editor
-                    className={styles.editor}
-                    language="c"
-                    value={decompiledCode}
-                    lineNumbers
-                    showMargin
-                /> : <Loading className={styles.loading} />}
+                {decompiledCode ? <>
+                    <Editor
+                        className={styles.editor}
+                        language="c"
+                        value={decompiledCode}
+                        lineNumbers
+                        showMargin
+                    />
+                    <p>Would you like to reset this scratch's source code to this newly decompiled iteration?</p>
+                </> : <Loading className={styles.loading} />}
             </section>
 
             <div className={styles.actions}>
