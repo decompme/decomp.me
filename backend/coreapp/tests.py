@@ -5,7 +5,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
-from unittest import skipIf
+from unittest import skipIf, mock
+from unittest.mock import patch, Mock
 
 import responses
 from time import sleep
@@ -670,7 +671,7 @@ class ProjectTests(TestCase):
         repo = GitHubRepo(
             owner="decompme",
             repo="example-project",
-            branch="main",
+            branch="not_a_real_branch",
         )
         repo.save()
 
@@ -683,15 +684,31 @@ class ProjectTests(TestCase):
 
         return project
 
-    """
-    Test that the repo is cloned into a directory and that it is deleted when the db object is deleted.
-    """
-    def test_create_delete_repo_dir(self):
+    @patch("coreapp.github.subprocess.run")
+    @patch("pathlib.Path.mkdir")
+    def test_create_repo_dir(self, mock_mkdir, mock_subprocess):
+        """
+        Test that the repo is cloned into a directory
+        """
         project = self.create_test_project()
-
         project.repo.pull()
-        self.assertTrue(project.repo.get_dir().is_dir())
 
+        mock_subprocess.assert_called_once()
+        self.assertListEqual(
+            mock_subprocess.call_args.args[0][:3],
+            ["git", "clone", "https://github.com/decompme/example-project"]
+        )
+        mock_mkdir.assert_called_once_with(parents=True)
+
+    @patch("coreapp.github.GitHubRepo.get_dir")
+    @patch("coreapp.github.shutil.rmtree")
+    def test_delete_repo_dir(self, mock_rmtree, mock_get_dir):
+        """
+        Test that the repo's directory is deleted when the repo is
+        """
+        project = self.create_test_project()
+        mock_dir = Mock(exists=lambda: True)
+        mock_get_dir.return_value = mock_dir
         project.delete()
         project.repo.delete()
-        self.assertFalse(project.repo.get_dir().exists())
+        mock_rmtree.assert_called_once_with(mock_dir)
