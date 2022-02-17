@@ -20,8 +20,8 @@ import CompileScratchButton from "./buttons/CompileScratchButton"
 import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
+import ScratchDecompileModal from "./ScratchDecompileModal"
 import ScratchPreferencesModal from "./ScratchPreferencesModal"
-import ScratchResetModal from "./ScratchResetModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -128,7 +128,7 @@ export default function ScratchToolbar({
     })
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
-    const [isResetOpen, setResetOpen] = useState(false)
+    const [isDecompileOpen, setDecompileOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -195,7 +195,7 @@ export default function ScratchToolbar({
                             <DownloadIcon />
                             Export as ZIP...
                         </ButtonItem>
-                        <ButtonItem onTrigger={() => setResetOpen(true)}>
+                        <ButtonItem onTrigger={() => setDecompileOpen(true)}>
                             <TrashIcon />
                             Reset source code...
                         </ButtonItem>
@@ -245,9 +245,9 @@ export default function ScratchToolbar({
                 </>}
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
-            <ScratchResetModal
-                open={isResetOpen}
-                onClose={() => setResetOpen(false)}
+            <ScratchDecompileModal
+                open={isDecompileOpen}
+                onClose={() => setDecompileOpen(false)}
                 scratch={scratch}
                 setSourceCode={source_code => setScratch({ source_code })}
             />

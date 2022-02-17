@@ -6,7 +6,7 @@ import Editor from "../Editor"
 import Loading from "../loading.svg"
 import Modal from "../Modal"
 
-import styles from "./ScratchResetModal.module.scss"
+import styles from "./ScratchDecompileModal.module.scss"
 
 export type Props = {
     open: boolean
@@ -15,7 +15,7 @@ export type Props = {
     setSourceCode: (sourceCode: string) => void
 }
 
-export default function ScratchResetModal({ open, onClose, scratch, setSourceCode }: Props) {
+export default function ScratchDecompileModal({ open, onClose, scratch, setSourceCode }: Props) {
     const [decompiledCode, setDecompiledCode] = useState(null)
 
     useEffect(() => {
