@@ -1,4 +1,4 @@
 {
-    "cc" : "cpp -P \"$INPUT\" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o \"$OUTPUT\".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE \"$OUTPUT\".s -o \"$OUTPUT\".obj && ${COMPILER_DIR}/psyq-obj-parser \"$OUTPUT\".obj -o \"$OUTPUT\"",
-    "platform": "ps1"
+    "platform": "ps1",
+    "cc": "cpp -P \"$INPUT\" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o \"$OUTPUT\""
 }
