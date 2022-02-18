@@ -10,7 +10,6 @@ from .profile import Profile
 from .scratch import Scratch, CompilerConfig
 from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
 from ..context import c_file_to_context
-from decompme.settings import FRONTEND_BASE
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class Project(models.Model):
         return self.slug
 
     def get_html_url(self) -> str:
-        return f"{FRONTEND_BASE}/{self.slug}"
+        return f"/{self.slug}"
 
     @transaction.atomic
     def import_functions(self) -> None:

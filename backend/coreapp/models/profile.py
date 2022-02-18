@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 
 from typing import Optional
 
-from decompme.settings import FRONTEND_BASE
-
 class Profile(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     last_request_date = models.DateTimeField(auto_now_add=True)
@@ -26,7 +24,7 @@ class Profile(models.Model):
 
     def get_html_url(self) -> Optional[str]:
         if self.user:
-            return f"{FRONTEND_BASE}/u/{self.user.username}"
+            return f"/u/{self.user.username}"
         else:
             # No URLs for anonymous profiles
             return None

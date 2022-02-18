@@ -3,7 +3,6 @@ from django.db import models
 
 import logging
 
-from decompme.settings import FRONTEND_BASE
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -70,7 +69,7 @@ class Scratch(models.Model):
         return "/scratch/" + self.slug
 
     def get_html_url(self) -> str:
-        return FRONTEND_BASE + "/scratch/" + self.slug
+        return "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
         return self.owner is None
