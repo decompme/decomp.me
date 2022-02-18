@@ -56,6 +56,7 @@ COPY poetry.lock /backend/poetry.lock
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
 ENV PATH="/root/.local/bin:$PATH"
 RUN cd backend && poetry install
+RUN chown user:user /root/.local/bin/poetry
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
