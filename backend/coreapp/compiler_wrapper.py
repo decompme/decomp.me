@@ -524,12 +524,7 @@ class CompilerWrapper:
                 })
             except subprocess.CalledProcessError as e:
                 # Compilation failed
-                if e.stdout:
-                    msg = f"stdout:{e.stdout}\nstderr:{e.stderr}"
-                else:
-                    msg = e.stderr
-
-                logging.debug("Compilation failed: %s", msg)
+                logging.debug("Compilation failed: " + e.stderr)
                 raise CompilationError(e.stderr)
 
             if not object_path.exists():
