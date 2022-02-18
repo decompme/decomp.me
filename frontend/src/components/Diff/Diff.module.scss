@@ -1,20 +1,4 @@
-.body,
-.log {
-    user-select: text;
-    font-family: monospace;
-    font-size: 12px;
-    white-space: pre;
-}
-
-.log {
-    display: block;
-    padding: 1em;
-    width: 100%;
-    border: none;
-}
-
-.container {
-    width: 100%;
+.diff {
     height: 100%;
 
     overflow: auto;
@@ -23,9 +7,20 @@
     scrollbar-width: thin;
 }
 
+.body {
+    user-select: text;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+}
+
 .column {
     height: max-content;
     overflow: initial !important; /* overrides resizer.Section inline style */
+}
+
+.outdated {
+    filter: grayscale(25%) brightness(70%);
 }
 
 .bar {
@@ -55,7 +50,7 @@
     font-size: 0.8rem;
     font-weight: 500;
     color: var(--g1200);
-    border-bottom: 1px solid var(--a50);
+    border-bottom: 1px dashed var(--a50);
 
     backdrop-filter: blur(3px);
 

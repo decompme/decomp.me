@@ -2,7 +2,7 @@ import { useRef } from "react"
 
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
 import CompilerOpts from "../compiler/CompilerOpts"
-import Diff from "../Diff"
+import CompilationPanel from "../Diff/CompilationPanel"
 import Editor from "../Editor"
 import { EditorInstance } from "../Editor/MonacoEditor"
 import ScoreBadge from "../ScoreBadge"
@@ -115,9 +115,10 @@ export function useLeftTabs({ scratch, setScratch }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation, isCompiling }: {
+export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
     compilation?: Compilation
-    isCompiling?: boolean
+    isCompiling: boolean
+    isCompilationOld: boolean
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -125,14 +126,18 @@ export function useRightTabs({ compilation, isCompiling }: {
                 key="diff"
                 tabKey="diff"
                 label={<>
-                    Diff
+                    Compilation
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
                         maxScore={compilation?.diff_output?.max_score ?? -1} />}
                 </>}
                 className={styles.diffTab}
             >
-                {compilation && <Diff compilation={compilation} isCompiling={isCompiling} />}
+                {compilation && <CompilationPanel
+                    compilation={compilation}
+                    isCompiling={isCompiling}
+                    isCompilationOld={isCompilationOld}
+                />}
             </Tab>
         ),
         /*<Tab key="options" label="Options">
