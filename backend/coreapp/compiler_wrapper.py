@@ -469,10 +469,11 @@ class CompilerWrapper:
 
     @staticmethod
     def filter_compile_errors(input: str) -> str:
-        return input \
-            .replace("wine: could not load kernel32.dll, status c0000135\n", "") \
-            .replace("wineserver: could not save registry branch to system.reg : Read-only file system\n", "") \
+        return (
+            input.replace("wine: could not load kernel32.dll, status c0000135\n", "")
+            .replace("wineserver: could not save registry branch to system.reg : Read-only file system\n", "")
             .strip()
+        )
 
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
