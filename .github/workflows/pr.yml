@@ -82,7 +82,10 @@ jobs:
           python-version: 3.9
       - name: Install Poetry
         uses: snok/install-poetry@v1
-      - run: cd backend && poetry install
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - run: cd backend && poetry install --no-interaction
       - name: Run tests
         run: |-
           source $VENV

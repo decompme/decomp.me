@@ -52,6 +52,11 @@ RUN apt-get -y update && apt-get install -y \
 COPY pyproject.toml /backend/pyproject.toml
 COPY poetry.lock /backend/poetry.lock
 
+# Install poetry and dependencies
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+ENV PATH="/root/.local/bin:$PATH"
+RUN cd backend && poetry install
+
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY compilers/*.sh /compilers/
@@ -106,11 +111,6 @@ RUN useradd --create-home user \
 
 # switch to non-root user
 USER user
-
-# Set up poetry and install dependencies
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-ENV PATH="/root/.local/bin:$PATH"
-RUN cd backend && poetry install
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
