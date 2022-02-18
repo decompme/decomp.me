@@ -115,9 +115,10 @@ export function useLeftTabs({ scratch, setScratch }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation, isCompiling }: {
+export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
     compilation?: Compilation
-    isCompiling?: boolean
+    isCompiling: boolean
+    isCompilationOld: boolean
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -132,7 +133,11 @@ export function useRightTabs({ compilation, isCompiling }: {
                 </>}
                 className={styles.diffTab}
             >
-                {compilation && <CompilationPanel compilation={compilation} isCompiling={isCompiling} />}
+                {compilation && <CompilationPanel
+                    compilation={compilation}
+                    isCompiling={isCompiling}
+                    isCompilationOld={isCompilationOld}
+                />}
             </Tab>
         ),
         /*<Tab key="options" label="Options">

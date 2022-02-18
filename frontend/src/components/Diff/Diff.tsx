@@ -8,7 +8,6 @@ import * as resizer from "react-simple-resizer"
 import * as api from "../../lib/api"
 import Loading from "../loading.svg"
 
-import { ProblemState } from "./CompilationPanel"
 import styles from "./Diff.module.scss"
 
 function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
@@ -48,11 +47,11 @@ function DiffColumn({ diff, prop, header, className }: {
 
 export type Props = {
     diff: api.DiffOutput
-    problemState: ProblemState
     isCompiling: boolean
+    isCurrentOutdated: boolean
 }
 
-export default function Diff({ diff, problemState, isCompiling }: Props) {
+export default function Diff({ diff, isCompiling, isCurrentOutdated }: Props) {
     return <resizer.Container className={styles.diff}>
         <DiffColumn diff={diff} prop="base" header="Target" />
         <resizer.Bar
@@ -67,7 +66,7 @@ export default function Diff({ diff, problemState, isCompiling }: Props) {
                 Current
                 {isCompiling && <Loading width={20} height={20} />}
             </>}
-            className={classNames({ [styles.greyOut]: isCompiling || problemState == ProblemState.ERRORS })}
+            className={classNames({ [styles.outdated]: isCurrentOutdated })}
         />
         {diff?.header?.previous && <>
             <resizer.Bar

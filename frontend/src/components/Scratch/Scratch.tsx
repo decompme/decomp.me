@@ -27,7 +27,7 @@ export default function Scratch({
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
-    const { compilation, isCompiling, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
+    const { compilation, isCompiling, isCompilationOld, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
 
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
@@ -42,6 +42,7 @@ export default function Scratch({
     const rightTabs = useRightTabs({
         compilation,
         isCompiling,
+        isCompilationOld,
     })
 
     return <div ref={container.ref} className={styles.container}>

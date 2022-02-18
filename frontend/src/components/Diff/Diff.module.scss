@@ -19,8 +19,8 @@
     overflow: initial !important; /* overrides resizer.Section inline style */
 }
 
-.greyOut {
-    filter: grayscale(100%) brightness(50%);
+.outdated {
+    filter: grayscale(25%) brightness(70%);
 }
 
 .bar {

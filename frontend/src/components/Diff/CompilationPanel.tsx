@@ -29,9 +29,10 @@ export enum ProblemState {
 export type Props = {
     compilation: api.Compilation
     isCompiling?: boolean
+    isCompilationOld?: boolean
 }
 
-export default function CompilationPanel({ compilation, isCompiling }: Props) {
+export default function CompilationPanel({ compilation, isCompiling, isCompilationOld }: Props) {
     const [diff, setDiff] = useState<api.DiffOutput | null>(null)
     const problemState = getProblemState(compilation)
 
@@ -42,7 +43,11 @@ export default function CompilationPanel({ compilation, isCompiling }: Props) {
 
     return <resizer.Container vertical className={styles.container}>
         <resizer.Section minSize={100}>
-            <Diff diff={diff} problemState={problemState} isCompiling={isCompiling} />
+            <Diff
+                diff={diff}
+                isCompiling={isCompiling}
+                isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+            />
         </resizer.Section>
         <resizer.Bar
             size={1}
