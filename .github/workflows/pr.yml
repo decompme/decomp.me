@@ -86,7 +86,8 @@ jobs:
       - name: Run tests
         run: |-
           cd backend
-          poetry run python3 manage.py test
+          source $VENV
+          python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
