@@ -90,7 +90,8 @@ jobs:
         run: |-
           mkdir -p "${WINEPREFIX}"
           wineboot --init
-          poetry run backend/manage.py test backend
+          cd backend
+          poetry run manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
