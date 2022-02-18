@@ -1,14 +1,14 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode } from "react"
 
-import Ansi from "ansi-to-react"
 import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
 
 import * as api from "../../lib/api"
 import Loading from "../loading.svg"
 
+import { ProblemState } from "./CompilationPanel"
 import styles from "./Diff.module.scss"
 
 function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
@@ -46,76 +46,36 @@ function DiffColumn({ diff, prop, header, className }: {
     </resizer.Section>
 }
 
-enum ProblemState {
-    NO_PROBLEMS,
-    WARNINGS,
-    ERRORS,
-}
-
-function getProblemState(compilation: api.Compilation) {
-    if (compilation.diff_output) {
-        if (compilation.errors) {
-            return ProblemState.WARNINGS
-        } else {
-            return ProblemState.NO_PROBLEMS
-        }
-    } else {
-        return ProblemState.ERRORS
-    }
-}
-
 export type Props = {
-    compilation: api.Compilation
-    isCompiling?: boolean
+    diff: api.DiffOutput
+    problemState: ProblemState
+    isCompiling: boolean
 }
 
-export default function Diff({ compilation, isCompiling }: Props) {
-    const [diff, setDiff] = useState<api.DiffOutput | null>(null)
-    const problemState = getProblemState(compilation)
-
-    useEffect(() => {
-        if (compilation.diff_output)
-            setDiff(compilation.diff_output)
-    }, [compilation.diff_output])
-
-    return <resizer.Container vertical className={styles.container}>
-        <resizer.Section minSize={100}>
-            <resizer.Container className={styles.diff}>
-                <DiffColumn diff={diff} prop="base" header="Target" />
-                <resizer.Bar
-                    size={1}
-                    className={styles.bar}
-                    expandInteractiveArea={{ left: 2, right: 2 }}
-                />
-                <DiffColumn
-                    diff={diff}
-                    prop="current"
-                    header={<>
-                        Current
-                        {isCompiling && <Loading width={20} height={20} />}
-                    </>}
-                    className={classNames({ [styles.greyOut]: problemState == ProblemState.ERRORS })}
-                />
-                {diff?.header?.previous && <>
-                    <resizer.Bar
-                        size={1}
-                        className={styles.bar}
-                        expandInteractiveArea={{ left: 2, right: 2 }}
-                    />
-                    <DiffColumn diff={diff} prop="previous" header="Saved" />
-                </>}
-            </resizer.Container>
-        </resizer.Section>
+export default function Diff({ diff, problemState, isCompiling }: Props) {
+    return <resizer.Container className={styles.diff}>
+        <DiffColumn diff={diff} prop="base" header="Target" />
         <resizer.Bar
             size={1}
             className={styles.bar}
-            expandInteractiveArea={{ top: 2, bottom: 2 }}
+            expandInteractiveArea={{ left: 2, right: 2 }}
         />
-        {(problemState != ProblemState.NO_PROBLEMS) && <resizer.Section className={styles.problems}>
-            <h2>Compiler {problemState == ProblemState.ERRORS ? "errors" : "warnings"}</h2>
-            <div className={styles.log}>
-                <Ansi>{compilation.errors}</Ansi>
-            </div>
-        </resizer.Section>}
+        <DiffColumn
+            diff={diff}
+            prop="current"
+            header={<>
+                Current
+                {isCompiling && <Loading width={20} height={20} />}
+            </>}
+            className={classNames({ [styles.greyOut]: isCompiling || problemState == ProblemState.ERRORS })}
+        />
+        {diff?.header?.previous && <>
+            <resizer.Bar
+                size={1}
+                className={styles.bar}
+                expandInteractiveArea={{ left: 2, right: 2 }}
+            />
+            <DiffColumn diff={diff} prop="previous" header="Saved" />
+        </>}
     </resizer.Container>
 }

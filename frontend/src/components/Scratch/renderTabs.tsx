@@ -2,7 +2,7 @@ import { useRef } from "react"
 
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
 import CompilerOpts from "../compiler/CompilerOpts"
-import Diff from "../Diff"
+import CompilationPanel from "../Diff/CompilationPanel"
 import Editor from "../Editor"
 import { EditorInstance } from "../Editor/MonacoEditor"
 import ScoreBadge from "../ScoreBadge"
@@ -125,14 +125,14 @@ export function useRightTabs({ compilation, isCompiling }: {
                 key="diff"
                 tabKey="diff"
                 label={<>
-                    Diff
+                    Compilation
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
                         maxScore={compilation?.diff_output?.max_score ?? -1} />}
                 </>}
                 className={styles.diffTab}
             >
-                {compilation && <Diff compilation={compilation} isCompiling={isCompiling} />}
+                {compilation && <CompilationPanel compilation={compilation} isCompiling={isCompiling} />}
             </Tab>
         ),
         /*<Tab key="options" label="Options">

@@ -1,0 +1,34 @@
+.container {
+    width: 100%;
+    height: 100%;
+
+    .problems {
+        overflow: auto;
+
+        scrollbar-color: #fff3 transparent;
+        scrollbar-width: thin;
+
+        padding: 1em;
+        background: var(--g150);
+
+        > h2 {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--g1200);
+
+            margin-bottom: 0.5em;
+        }
+    }
+}
+
+.bar {
+    cursor: row-resize;
+    background: var(--a50);
+}
+
+.log {
+    user-select: text;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+}

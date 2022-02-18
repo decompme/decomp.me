@@ -1,45 +1,17 @@
-.container {
-    width: 100%;
+.diff {
     height: 100%;
 
-    .diff,
-    .problems {
-        overflow: auto;
+    overflow: auto;
 
-        scrollbar-color: #fff3 transparent;
-        scrollbar-width: thin;
-    }
-
-    .diff {
-        height: 100%;
-    }
-
-    .problems {
-        padding: 1em;
-        background: var(--g150);
-
-        > h2 {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--g1200);
-
-            margin-bottom: 0.5em;
-        }
-    }
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
 }
 
-.body,
-.log {
+.body {
     user-select: text;
     font-family: monospace;
     font-size: 12px;
     white-space: pre;
-}
-
-.log {
-    display: block;
-    width: 100%;
-    border: none;
 }
 
 .column {
