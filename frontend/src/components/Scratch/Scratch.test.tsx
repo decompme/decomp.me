@@ -13,6 +13,8 @@ const scratchJson: api.Scratch = {
     "owner": {
         "is_anonymous": true,
         "id": 8,
+        "url": null,
+        "html_url": null,
     },
     "source_code": "",
     "context": "",
@@ -27,6 +29,8 @@ const scratchJson: api.Scratch = {
     "score": 0,
     "max_score": 0,
     "parent": null,
+    "project": null,
+    "project_function": null,
 }
 
 test("renders without causing a state change", async () => {

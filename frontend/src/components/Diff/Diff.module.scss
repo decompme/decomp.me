@@ -7,13 +7,6 @@
     scrollbar-width: thin;
 }
 
-.body {
-    user-select: text;
-    font-family: monospace;
-    font-size: 12px;
-    white-space: pre;
-}
-
 .column {
     height: max-content;
     overflow: initial !important; /* overrides resizer.Section inline style */
@@ -68,6 +61,11 @@
     flex: 1;
     overflow: auto;
     padding: 8px 0;
+
+    user-select: text;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
 }
 
 .lineNumber {
