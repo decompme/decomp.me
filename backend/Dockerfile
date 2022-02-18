@@ -49,6 +49,16 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
+
+ENV WINEPREFIX=/tmp/wine
+
+# create a non-root user & /sandbox with correct ownership
+RUN useradd --create-home user \
+    && mkdir -p /sandbox \
+    && chown -R user:user /sandbox \
+    && mkdir -p "${WINEPREFIX}" \
+    && chown user:user "${WINEPREFIX}"
+
 COPY pyproject.toml /backend/pyproject.toml
 COPY poetry.lock /backend/poetry.lock
 
@@ -101,15 +111,6 @@ RUN if [ "${ENABLE_SWITCH_SUPPORT}" = "YES" ] ; then \
     fi
 
 WORKDIR /backend
-
-ENV WINEPREFIX=/tmp/wine
-
-# create a non-root user & /sandbox with correct ownership
-RUN useradd --create-home user \
-    && mkdir -p /sandbox \
-    && chown -R user:user /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown user:user "${WINEPREFIX}"
 
 # switch to non-root user
 USER user
