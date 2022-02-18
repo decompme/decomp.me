@@ -91,7 +91,7 @@ jobs:
           mkdir -p "${WINEPREFIX}"
           wineboot --init
           cd backend
-          poetry run manage.py test
+          poetry run python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
@@ -110,7 +110,7 @@ jobs:
       - name: Run tests
         run: |-
           cd backend
-          poetry run manage.py test
+          poetry run python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
@@ -135,7 +135,7 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
-            decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
+            decompme_backend -c 'cd /decomp.me/backend && poetry run python manage.py test'
 
   frontend_test:
     name: frontend tests
