@@ -783,57 +783,58 @@ class ProjectTests(TestCase):
 
     @patch("coreapp.models.github.subprocess.run")
     def test_import_function(self, mock_subprocess):
-        with self.settings(LOCAL_FILE_PATH=Path(tempfile.gettempdir())): # FIXME
-            project = self.create_test_project()
-            self.assertFalse(project.repo.get_dir().exists())
-            project.repo.pull()
+        with tempfile.TemporaryDirectory() as local_files_dir:
+            with self.settings(LOCAL_FILE_DIR=local_files_dir):
+                project = self.create_test_project()
+                self.assertFalse(project.repo.get_dir().exists())
+                project.repo.pull()
 
-            # add some asm
-            dir = project.repo.get_dir()
-            (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
-            (dir / "src").mkdir(parents=True)
-            asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
-            with asm_file.open("w") as f:
-                f.writelines([
-                    "glabel test\n",
-                    "jr $ra\n",
-                    "nop\n",
-                ])
-            with (dir / "src" / "section.c").open("w") as f:
-                f.writelines([
-                    "typedef int s32;\n",
-                ])
-            with (dir / "symbol_addrs.txt").open("w") as f:
-                f.writelines([
-                    "test = 0x80240000; // type:func rom:0x1000\n",
-                ])
+                # add some asm
+                dir = project.repo.get_dir()
+                (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
+                (dir / "src").mkdir(parents=True)
+                asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
+                with asm_file.open("w") as f:
+                    f.writelines([
+                        "glabel test\n",
+                        "jr $ra\n",
+                        "nop\n",
+                    ])
+                with (dir / "src" / "section.c").open("w") as f:
+                    f.writelines([
+                        "typedef int s32;\n",
+                    ])
+                with (dir / "symbol_addrs.txt").open("w") as f:
+                    f.writelines([
+                        "test = 0x80240000; // type:func rom:0x1000\n",
+                    ])
 
-            # configure the import
-            compiler_config = CompilerConfig(
-                platform="dummy",
-                compiler="dummy",
-                compiler_flags="dummy",
-            )
-            compiler_config.save()
-            import_config = ProjectImportConfig(
-                project=project,
-                display_name="test",
-                compiler_config=compiler_config,
-                src_dir="src",
-                nonmatchings_dir="asm/nonmatchings",
-                nonmatchings_glob="**/*.s",
-                symbol_addrs_path="symbol_addrs.txt",
-            )
-            import_config.save()
+                # configure the import
+                compiler_config = CompilerConfig(
+                    platform="dummy",
+                    compiler="dummy",
+                    compiler_flags="dummy",
+                )
+                compiler_config.save()
+                import_config = ProjectImportConfig(
+                    project=project,
+                    display_name="test",
+                    compiler_config=compiler_config,
+                    src_dir="src",
+                    nonmatchings_dir="asm/nonmatchings",
+                    nonmatchings_glob="**/*.s",
+                    symbol_addrs_path="symbol_addrs.txt",
+                )
+                import_config.save()
 
-            # import the function
-            self.assertEqual(ProjectFunction.objects.count(), 0)
-            project.repo.pull()
-            self.assertEqual(ProjectFunction.objects.count(), 1)
-            self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
+                # import the function
+                self.assertEqual(ProjectFunction.objects.count(), 0)
+                project.repo.pull()
+                self.assertEqual(ProjectFunction.objects.count(), 1)
+                self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
 
-            # match the function (by deleting the asm) and verify it is marked as matching
-            asm_file.unlink()
-            project.repo.pull()
-            self.assertEqual(ProjectFunction.objects.count(), 1)
-            self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)
+                # match the function (by deleting the asm) and verify it is marked as matching
+                asm_file.unlink()
+                project.repo.pull()
+                self.assertEqual(ProjectFunction.objects.count(), 1)
+                self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)

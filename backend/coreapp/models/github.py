@@ -17,7 +17,6 @@ import requests
 import subprocess
 import shutil
 
-from decompme.settings import LOCAL_FILE_PATH
 from .profile import Profile
 from .scratch import Scratch
 from .project import Project
@@ -189,7 +188,7 @@ class GitHubRepo(models.Model):
             self.save()
 
     def get_dir(self) -> Path:
-        return LOCAL_FILE_PATH / "repos" / str(self.id)
+        return Path(settings.LOCAL_FILE_DIR) / "repos" / str(self.id)
 
     def details(self, access_token: str) -> Repository:
         cache_key = f"github_repo_details:{self.id}"
