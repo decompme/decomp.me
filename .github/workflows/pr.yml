@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - run: cd backend && poetry install && poetry shell
