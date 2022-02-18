@@ -115,3 +115,13 @@
 .signInPrompt {
     margin-left: 16px;
 }
+
+.projectFunctionLinks {
+    a:last-child {
+        color: var(--g800);
+    }
+
+    a:hover {
+        color: var(--link);
+    }
+}

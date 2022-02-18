@@ -148,11 +148,15 @@ export interface Page<T> {
 }
 
 export interface AnonymousUser {
+    url: null
+    html_url: null
     is_anonymous: true
     id: number
 }
 
 export interface User {
+    url: string
+    html_url: string
     is_anonymous: false
     id: number
     username: string
@@ -160,20 +164,21 @@ export interface User {
     avatar_url: string | null
     github_api_url: string | null
     github_html_url: string | null
-    url: string
 }
 
 export interface TerseScratch {
     url: string
     html_url: string
-    owner: AnonymousUser | User | null // null means unclaimed
+    owner: AnonymousUser | User | null // null = unclaimed
     name: string
     creation_time: string
     last_updated: string
     compiler: string
     platform: string
-    score: number
+    score: number // -1 = doesn't compile
     max_score: number
+    project: string
+    project_function: string
 }
 
 export interface Scratch extends TerseScratch {
@@ -184,6 +189,36 @@ export interface Scratch extends TerseScratch {
     context: string
     diff_label: string
     parent: string | null
+}
+
+export interface Project {
+    slug: string
+    url: string
+    html_url: string
+    repo: {
+        html_url: string
+        owner: string
+        repo: string
+        branch: string
+        is_pulling: boolean
+        last_pulled: string | null
+    }
+    creation_time: string
+    icon_url: string
+    members: string[]
+}
+
+export interface ProjectFunction {
+    url: string
+    html_url: string
+    project: string
+    rom_address: number
+    creation_time: string
+    display_name: string
+    is_matched_in_repo: boolean
+    src_file: string
+    asm_file: string
+    attempts_count: number
 }
 
 export type Compilation = {
@@ -304,7 +339,7 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     const user = await get("/user")
 
     if (!success)
-        throw new Error("Scratch already claimed")
+        throw new Error("Scratch cannot be claimed")
 
     await mutate(scratch.url, {
         ...scratch,
@@ -312,13 +347,13 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     })
 }
 
-export async function forkScratch(parent: Scratch): Promise<Scratch> {
+export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
     const scratch = await post(`${parent.url}/fork`, parent)
     await claimScratch(scratch)
     return scratch
 }
 
-export function useForkScratchAndGo(parent: Scratch): () => Promise<void> {
+export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
     const router = useRouter()
     const plausible = usePlausible()
 

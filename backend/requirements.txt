@@ -10,6 +10,7 @@ django-stubs
 django-stubs-ext
 djangorestframework
 djangorestframework-stubs
+drf-extensions
 mypy
 psycopg2-binary
 pycparser
