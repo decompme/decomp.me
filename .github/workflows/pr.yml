@@ -85,8 +85,8 @@ jobs:
       - run: cd backend && poetry install
       - name: Run tests
         run: |-
-          cd backend
           source $VENV
+          cd backend
           python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
@@ -112,7 +112,7 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
-            decompme_backend -c 'cd /decomp.me/backend && python manage.py test'
+            decompme_backend -c 'cd /decomp.me/backend && /root/.local/bin/poetry run python manage.py test'
 
   frontend_test:
     name: frontend tests
