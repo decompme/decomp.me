@@ -53,10 +53,11 @@ COPY pyproject.toml /backend/pyproject.toml
 COPY poetry.lock /backend/poetry.lock
 
 # Install poetry and dependencies
+USER user
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-ENV PATH="/root/.local/bin:$PATH"
+ENV PATH="/user/.local/bin:$PATH"
 RUN cd backend && poetry install
-RUN chown user: /root/.local/bin/poetry
+USER root
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
