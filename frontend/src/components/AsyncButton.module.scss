@@ -24,6 +24,10 @@
 
     white-space: nowrap;
 
+    display: inline-flex;
+    gap: 0.5em;
+    align-items: center;
+
     .isLoading & {
         opacity: 0;
         transform: scale(0.9);

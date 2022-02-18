@@ -20,7 +20,7 @@ const ICONS = {
 export type Props = {
     platform: string
     className?: string
-    size?: number
+    size?: string | number
 }
 
 export default function PlatformIcon({ platform, className, size }: Props) {

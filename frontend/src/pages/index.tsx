@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
@@ -15,6 +16,29 @@ import * as api from "../lib/api"
 import styles from "./index.module.scss"
 
 const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
+const SHOW_PROJECT_LIST = false
+
+function ProjectList() {
+    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Project>("/projects")
+
+    return <ul className={styles.projectList}>
+        {results.map(project => (
+            <li key={project.url}>
+                <Link href={project.html_url}>
+                    <a className={styles.projectLink}>
+                        <Image src={project.icon_url} alt="" width={16} height={16} />
+                        {project.slug}
+                    </a>
+                </Link>
+            </li>
+        ))}
+        {hasNext && <li className={styles.loadMoreLink}>
+            <a onClick={loadNext}>
+                {isLoading ? "Loading..." : "Show more"}
+            </a>
+        </li>}
+    </ul>
+}
 
 export default function IndexPage() {
     const user = api.useThisUser()
@@ -54,11 +78,17 @@ export default function IndexPage() {
             <section className={styles.activity}>
                 <ErrorBoundary>
                     <h2>Recently updated</h2>
-                    <ScratchList url="/scratch?page_size=16" className={styles.scratchList} />
+                    <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
                 </ErrorBoundary>
             </section>
             <section className={styles.projects}>
                 <ErrorBoundary>
+                    {SHOW_PROJECT_LIST && <>
+                        <h2>Projects</h2>
+                        <ProjectList />
+                        <br/>
+                    </>}
+
                     <h2>Your scratches</h2>
                     <ScratchList
                         url={yourScratchesUrl}

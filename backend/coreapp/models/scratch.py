@@ -1,7 +1,11 @@
 from django.utils.crypto import get_random_string
 from django.db import models
 
+import logging
+
 from .profile import Profile
+
+logger = logging.getLogger(__name__)
 
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
@@ -25,46 +29,47 @@ class Assembly(models.Model):
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
     elf_object = models.BinaryField(blank=True)
 
+class CompilerConfig(models.Model):
+    # TODO: validate compiler and platform
+    compiler = models.CharField(max_length=100)
+    platform = models.CharField(max_length=100)
+    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=512, default="Untitled", blank=False)
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100)
-    platform = models.CharField(max_length=100, blank=True)
-    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+    compiler = models.CharField(max_length=100) # TODO: reference a CompilerConfig
+    platform = models.CharField(max_length=100, blank=True) # TODO: reference a CompilerConfig
+    compiler_flags = models.TextField(max_length=1000, default="", blank=True) # TODO: reference a CompilerConfig
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     diff_label = models.CharField(max_length=512, blank=True, null=True)
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
-    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
+    project_function = models.ForeignKey("ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL) # The function, if any, that this scratch is an attempt of
 
     class Meta:
         ordering = ['-creation_time']
+        verbose_name_plural = "Scratches"
 
     def __str__(self):
         return self.slug
 
-    # hash for etagging, might be better to add a field to the model that changes on every save
+    # hash for etagging
     def __hash__(self):
-        return hash((
-            self.slug, self.name, self.description,
-            self.creation_time, self.last_updated,
-            self.platform, self.compiler, self.compiler_flags,
-            self.target_assembly, self.source_code,
-            self.context,
-            self.diff_label,
-            self.score, self.max_score,
-            self.parent,
-            self.owner,
-        ))
+        return hash((self.slug, self.last_updated))
 
     def get_url(self) -> str:
         return "/scratch/" + self.slug
 
     def get_html_url(self) -> str:
         return "/scratch/" + self.slug
+
+    def is_claimable(self) -> bool:
+        return self.owner is None

@@ -119,13 +119,16 @@ jobs:
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
+          mkdir -p local_files && chmod 777 local_files
           docker run \
             -v $(pwd):/decomp.me \
+            -v $(pwd)/local_files:/local_files \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
+            -e LOCAL_FILE_DIR=/local_files \
             decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
 
   frontend_test:

@@ -1,0 +1,21 @@
+.list {
+    list-style: none;
+
+    display: flex;
+    gap: 0.2em;
+}
+
+.avatar,
+.skeleton {
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    width: 1.2em;
+    height: 1.2em;
+
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+
+    background: var(--a100); // skeleton
+}

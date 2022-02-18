@@ -1,0 +1,56 @@
+.container {
+    position: relative;
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    input {
+        border-radius: 4px;
+        padding-right: 32px; // space for loading spinner
+        padding-left: 28px; // space for search icon
+        padding-top: 5px;
+        padding-bottom: 6px;
+        background: transparent;
+        border: 1px solid var(--g400);
+        color: var(--g1900);
+
+        text-overflow: ellipsis;
+
+        width: 100%;
+
+        font-size: 0.9em;
+
+        &::placeholder {
+            color: var(--g800);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: var(--link);
+
+            @supports not (backdrop-filter: blur(10px)) {
+                background: var(--g100);
+            }
+
+            &::placeholder {
+                color: var(--g500);
+            }
+        }
+    }
+
+    svg {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+
+        width: 14px;
+        height: 14px;
+
+        color: var(--g1000);
+
+        pointer-events: none;
+    }
+}
