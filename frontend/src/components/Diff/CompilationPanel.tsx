@@ -54,7 +54,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
             className={styles.bar}
             expandInteractiveArea={{ top: 2, bottom: 2 }}
         />
-        {(problemState != ProblemState.NO_PROBLEMS) && <resizer.Section className={styles.problems}>
+        {(problemState != ProblemState.NO_PROBLEMS) && <resizer.Section className={styles.problems} minSize={100}>
             <h2>Compiler {problemState == ProblemState.ERRORS ? "errors" : "warnings"}</h2>
             <div className={styles.log}>
                 <Ansi>{compilation.errors}</Ansi>
