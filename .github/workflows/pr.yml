@@ -111,7 +111,9 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
-            decompme_backend -c 'cd /decomp.me/backend && /home/user/.local/bin/poetry run python manage.py test'
+            decompme_backend -c 'cd /decomp.me/backend && \
+            /home/user/.local/bin/poetry install && \
+            /home/user/.local/bin/poetry run python manage.py test'
 
   frontend_test:
     name: frontend tests
