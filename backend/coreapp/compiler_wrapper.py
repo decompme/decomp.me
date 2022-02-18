@@ -468,6 +468,14 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
+    def filter_compile_errors(input: str) -> str:
+        return (
+            input.replace("wine: could not load kernel32.dll, status c0000135\n", "")
+            .replace("wineserver: could not save registry branch to system.reg : Read-only file system\n", "")
+            .strip()
+        )
+
+    @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
     def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
         if compiler == "dummy":
@@ -532,7 +540,9 @@ class CompilerWrapper:
             if not object_bytes:
                 raise CompilationError("Compiler created an empty object file")
 
-            return CompilationResult(object_path.read_bytes(), compile_proc.stderr)
+            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stderr)
+
+            return CompilationResult(object_path.read_bytes(), compile_errors)
 
     @staticmethod
     def assemble_asm(platform: str, asm: Asm) -> Assembly:
