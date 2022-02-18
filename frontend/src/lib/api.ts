@@ -195,7 +195,6 @@ export type DiffOutput = {
     arch_str: string
     current_score: number
     max_score: number
-    error: string | null
     header: DiffHeader
     rows: DiffRow[]
 }

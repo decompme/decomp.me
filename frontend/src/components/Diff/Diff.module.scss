@@ -1,3 +1,33 @@
+.container {
+    width: 100%;
+    height: 100%;
+
+    .diff,
+    .problems {
+        overflow: auto;
+
+        scrollbar-color: #fff3 transparent;
+        scrollbar-width: thin;
+    }
+
+    .diff {
+        height: 100%;
+    }
+
+    .problems {
+        padding: 1em;
+        background: var(--g150);
+
+        > h2 {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--g1200);
+
+            margin-bottom: 0.5em;
+        }
+    }
+}
+
 .body,
 .log {
     user-select: text;
@@ -8,24 +38,17 @@
 
 .log {
     display: block;
-    padding: 1em;
     width: 100%;
     border: none;
-}
-
-.container {
-    width: 100%;
-    height: 100%;
-
-    overflow: auto;
-
-    scrollbar-color: #fff3 transparent;
-    scrollbar-width: thin;
 }
 
 .column {
     height: max-content;
     overflow: initial !important; /* overrides resizer.Section inline style */
+}
+
+.greyOut {
+    filter: grayscale(100%) brightness(50%);
 }
 
 .bar {
