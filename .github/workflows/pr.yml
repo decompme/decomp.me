@@ -82,11 +82,11 @@ jobs:
           python-version: 3.9
       - name: Install Poetry
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-      - run: cd backend && poetry install --no-interaction
+      - run: cd backend && %USERPROFILE%\.poetry\bin\poetry install --no-interaction
       - name: Run tests
         run: |-
           cd backend
-          poetry run python manage.py test
+          %USERPROFILE%\.poetry\bin\poetry run python manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
