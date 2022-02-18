@@ -48,9 +48,12 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /backend/requirements.txt
+COPY pyproject.toml /backend/pyproject.toml
+COPY poetry.lock /backend/poetry.lock
 
-RUN python -m pip install -r /backend/requirements.txt --no-cache-dir
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+
+RUN poetry install
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
