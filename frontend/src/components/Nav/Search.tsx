@@ -54,7 +54,7 @@ export default function Search({ className }: { className?: string }) {
         setInputValue,
     } = useCombobox({
         items,
-        isOpen: (isFocused || query) && !(isLoading && items.length === 0),
+        isOpen: (isFocused || !!query) && !(isLoading && items.length === 0),
         itemToString(item) {
             return item.name
         },

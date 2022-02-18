@@ -1,23 +1,23 @@
 .container {
     width: 100%;
     height: 100%;
+}
 
-    .problems {
-        overflow: auto !important; // overrides resizer section inline style
+.problems {
+    display: flex;
+    flex-direction: column;
 
-        scrollbar-color: #fff3 transparent;
-        scrollbar-width: thin;
+    background: var(--g150);
 
-        padding: 1em;
-        background: var(--g150);
+    > h2 {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--g1200);
 
-        > h2 {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--g1200);
+        padding: 0.8rem;
+        margin: 0;
 
-            margin-bottom: 0.5em;
-        }
+        border-bottom: 1px dashed var(--a50);
     }
 }
 
@@ -27,6 +27,14 @@
 }
 
 .log {
+    flex-grow: 1;
+
+    padding: 0.8rem;
+
+    overflow: auto;
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
+
     user-select: text;
     font-family: monospace;
     font-size: 12px;
