@@ -65,7 +65,7 @@ COPY poetry.lock /backend/poetry.lock
 # Install poetry and dependencies
 USER user
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-ENV PATH="/user/.local/bin:$PATH"
+ENV PATH="/home/user/.local/bin:$PATH"
 RUN cd backend && poetry install
 USER root
 
