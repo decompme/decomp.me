@@ -159,7 +159,8 @@ class ProjectFunction(models.Model):
         source_code = "" # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
 
         # TODO: make this more configurable or something
-        cpp_flags = shlex.split(compiler_config.compiler_flags) + [
+        cpp_flags = shlex.split(compiler_config.compiler_flags)
+        """[
             "-Iinclude",
             "-Isrc",
             "-Iver/current/build/include",
@@ -172,9 +173,9 @@ class ProjectFunction(models.Model):
             "-ffreestanding",
             "-DM2CTX",
             "-DPERMUTER",
-        ]
+        ]"""
 
-        # Attempt to generate context (TODO: use a real context filesystem that is #included so we don't have to do this)
+        # Attempt to generate context (TODO: #361 so we don't have to do this)
         try:
             context = c_file_to_context(str(project_dir), str(src_file), cpp_flags=cpp_flags)
         except Exception as e:

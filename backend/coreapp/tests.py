@@ -781,13 +781,10 @@ class ProjectTests(TestCase):
         project.repo.delete()
         mock_rmtree.assert_called_once_with(mock_dir)
 
-    @patch("coreapp.models.github.subprocess.run")
-    def test_import_function(self, mock_subprocess):
+    def test_import_function(self):
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
                 project = self.create_test_project()
-                self.assertFalse(project.repo.get_dir().exists())
-                project.repo.pull()
 
                 # add some asm
                 dir = project.repo.get_dir()
@@ -813,7 +810,7 @@ class ProjectTests(TestCase):
                 compiler_config = CompilerConfig(
                     platform="dummy",
                     compiler="dummy",
-                    compiler_flags="dummy",
+                    compiler_flags="",
                 )
                 compiler_config.save()
                 import_config = ProjectImportConfig(
@@ -829,12 +826,20 @@ class ProjectTests(TestCase):
 
                 # import the function
                 self.assertEqual(ProjectFunction.objects.count(), 0)
-                project.repo.pull()
+                project.import_functions()
                 self.assertEqual(ProjectFunction.objects.count(), 1)
                 self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
 
+                # create a scratch from the function
+                fn: ProjectFunction = ProjectFunction.objects.first()
+                scratch = fn.create_scratch()
+                self.assertEqual(scratch.platform, compiler_config.platform)
+                self.assertEqual(scratch.compiler, compiler_config.compiler)
+                self.assertEqual(scratch.compiler_flags, compiler_config.compiler_flags)
+                self.assertEqual(scratch.context, "typedef int s32;")
+
                 # match the function (by deleting the asm) and verify it is marked as matching
                 asm_file.unlink()
-                project.repo.pull()
+                project.import_functions()
                 self.assertEqual(ProjectFunction.objects.count(), 1)
                 self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)
