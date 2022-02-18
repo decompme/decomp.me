@@ -230,7 +230,6 @@ export type DiffOutput = {
     arch_str: string
     current_score: number
     max_score: number
-    error: string | null
     header: DiffHeader
     rows: DiffRow[]
 }
@@ -386,11 +385,13 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
     isCompiling: boolean
+    isCompilationOld: boolean
 } {
     const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(initial)
     const plausible = usePlausible()
+    const [isCompilationOld, setIsCompilationOld] = useState(false)
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -412,6 +413,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setCompilation(compilation)
         }).finally(() => {
             setCompileRequestPromise(null)
+            setIsCompilationOld(false)
         }).catch(error => {
             setCompilation({ "errors": error.responseJSON?.detail, "diff_output": null })
         })
@@ -437,11 +439,16 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     useEffect(() => {
         if (!compilation) {
             compile()
-        } else if (autoRecompile) {
-            if (scratch && scratch.compiler !== "")
-                debouncedCompile()
-            else
-                setCompilation(null)
+        } else {
+            setIsCompilationOld(true)
+
+            if (autoRecompile) {
+                if (scratch && scratch.compiler !== "") {
+                    debouncedCompile()
+                } else {
+                    setCompilation(null)
+                }
+            }
         }
     }, [ // eslint-disable-line react-hooks/exhaustive-deps
         debouncedCompile,
@@ -456,7 +463,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: !!compileRequestPromise || debouncedCompile.isPending(),
+        isCompiling: !!compileRequestPromise,
+        isCompilationOld,
     }
 }
 

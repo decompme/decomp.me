@@ -7,6 +7,7 @@ import ContentEditable from "react-contenteditable"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import { useAutoRecompileSetting } from "../../lib/settings"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
@@ -133,6 +134,8 @@ export default function ScratchToolbar({
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
 
+    const [autoRecompileSetting] = useAutoRecompileSetting()
+
     return (
         <div className={styles.toolbar}>
             <div className={styles.left}>
@@ -230,7 +233,7 @@ export default function ScratchToolbar({
                     <GearIcon size={16} />
                 </div>
                 {isMounted && <>
-                    {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
+                    {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
                     {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
                     {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
                     {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
