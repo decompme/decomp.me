@@ -16,6 +16,7 @@ import * as api from "../lib/api"
 import styles from "./index.module.scss"
 
 const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
+const SHOW_PROJECT_LIST = false
 
 function ProjectList() {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Project>("/projects")
@@ -82,10 +83,11 @@ export default function IndexPage() {
             </section>
             <section className={styles.projects}>
                 <ErrorBoundary>
-                    <h2>Projects</h2>
-                    <ProjectList />
-
-                    <br/>
+                    {SHOW_PROJECT_LIST && <>
+                        <h2>Projects</h2>
+                        <ProjectList />
+                        <br/>
+                    </>}
 
                     <h2>Your scratches</h2>
                     <ScratchList
