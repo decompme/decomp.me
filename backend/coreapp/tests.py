@@ -6,14 +6,18 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
-from unittest import skipIf
+from unittest import skipIf, mock
+from unittest.mock import patch, Mock
 
 import responses
+import tempfile
 from time import sleep
+from pathlib import Path
 
 from .models.profile import Profile
-from .models.scratch import Scratch
-from .models.github import GitHubUser
+from .models.scratch import Scratch, CompilerConfig
+from .models.github import GitHubUser, GitHubRepo
+from .models.project import Project, ProjectFunction, ProjectImportConfig
 
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
@@ -701,6 +705,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(etag, response.headers.get("Etag"))
 
+
 class RequestTests(APITestCase):
     def test_create_profile(self):
         """
@@ -721,3 +726,120 @@ class RequestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
+
+
+class ProjectTests(TestCase):
+    def create_test_project(self, slug: str = "test") -> Project:
+        repo = GitHubRepo(
+            owner="decompme",
+            repo="example-project",
+            branch="not_a_real_branch",
+        )
+        repo.save()
+
+        project = Project(
+            slug=slug,
+            repo=repo,
+            icon_url="http://example.com",
+        )
+        project.save()
+
+        return project
+
+    def fake_clone_test_repo(self, repo: GitHubRepo):
+        with patch("coreapp.models.github.subprocess.run"):
+            repo.pull()
+
+    @patch("coreapp.models.github.subprocess.run")
+    @patch("pathlib.Path.mkdir")
+    @patch("pathlib.Path.exists")
+    def test_create_repo_dir(self, mock_exists, mock_mkdir, mock_subprocess):
+        """
+        Test that the repo is cloned into a directory
+        """
+        mock_exists.return_value = False
+        project = self.create_test_project()
+        project.repo.pull()
+
+        mock_subprocess.assert_called_once()
+        self.assertListEqual(
+            mock_subprocess.call_args.args[0][:3],
+            ["git", "clone", "https://github.com/decompme/example-project"]
+        )
+        mock_mkdir.assert_called_once_with(parents=True)
+
+    @patch("coreapp.models.github.GitHubRepo.get_dir")
+    @patch("coreapp.models.github.shutil.rmtree")
+    def test_delete_repo_dir(self, mock_rmtree, mock_get_dir):
+        """
+        Test that the repo's directory is deleted when the repo is
+        """
+        project = self.create_test_project()
+        mock_dir = Mock(exists=lambda: True)
+        mock_get_dir.return_value = mock_dir
+        project.delete()
+        project.repo.delete()
+        mock_rmtree.assert_called_once_with(mock_dir)
+
+    def test_import_function(self):
+        with tempfile.TemporaryDirectory() as local_files_dir:
+            with self.settings(LOCAL_FILE_DIR=local_files_dir):
+                project = self.create_test_project()
+
+                # add some asm
+                dir = project.repo.get_dir()
+                (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
+                (dir / "src").mkdir(parents=True)
+                asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
+                with asm_file.open("w") as f:
+                    f.writelines([
+                        "glabel test\n",
+                        "jr $ra\n",
+                        "nop\n",
+                    ])
+                with (dir / "src" / "section.c").open("w") as f:
+                    f.writelines([
+                        "typedef int s32;\n",
+                    ])
+                with (dir / "symbol_addrs.txt").open("w") as f:
+                    f.writelines([
+                        "test = 0x80240000; // type:func rom:0x1000\n",
+                    ])
+
+                # configure the import
+                compiler_config = CompilerConfig(
+                    platform="dummy",
+                    compiler="dummy",
+                    compiler_flags="",
+                )
+                compiler_config.save()
+                import_config = ProjectImportConfig(
+                    project=project,
+                    display_name="test",
+                    compiler_config=compiler_config,
+                    src_dir="src",
+                    nonmatchings_dir="asm/nonmatchings",
+                    nonmatchings_glob="**/*.s",
+                    symbol_addrs_path="symbol_addrs.txt",
+                )
+                import_config.save()
+
+                # import the function
+                self.assertEqual(ProjectFunction.objects.count(), 0)
+                project.import_functions()
+                self.assertEqual(ProjectFunction.objects.count(), 1)
+                self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
+
+                # create a scratch from the function
+                fn: ProjectFunction = ProjectFunction.objects.first()
+                scratch = fn.create_scratch()
+                self.assertEqual(scratch.platform, compiler_config.platform)
+                self.assertEqual(scratch.compiler, compiler_config.compiler)
+                self.assertEqual(scratch.compiler_flags, compiler_config.compiler_flags)
+                self.assertEqual(scratch.project_function, fn)
+
+                # match the function (by deleting the asm) and verify it is marked as matching
+                asm_file.unlink()
+                project.import_functions()
+                self.assertEqual(ProjectFunction.objects.count(), 1)
+                self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)

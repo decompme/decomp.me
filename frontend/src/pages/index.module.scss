@@ -123,3 +123,38 @@
         font-weight: 500;
     }
 }
+
+.projectList {
+    font-size: 0.9em;
+    max-width: 300px;
+
+    list-style: none;
+
+    > li {
+        padding: 1em 0;
+
+        &:last-child {
+            padding-bottom: 0;
+        }
+    }
+}
+
+.projectLink {
+    display: flex;
+    gap: 0.3em;
+
+    font-weight: 500;
+
+    &:hover {
+        color: var(--link);
+    }
+}
+
+.loadMoreLink {
+    font-size: 0.8em;
+    color: var(--g1000);
+
+    &:hover {
+        color: var(--link);
+    }
+}

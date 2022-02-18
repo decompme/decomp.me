@@ -11,7 +11,7 @@ import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
 import Search from "../Nav/Search"
-import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import ScratchIcon from "../ScratchIcon"
 import { SpecialKey } from "../Shortcut"
 import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
 
@@ -144,20 +144,13 @@ export default function ScratchToolbar({
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
                         <LinkItem href="/">
                             <HomeIcon />
-                            Home
+                            Dashboard
                         </LinkItem>
                         <LinkItem href="/new">
                             <PlusIcon />
                             New scratch...
                         </LinkItem>
                         <hr />
-                        {!scratch.owner && <ButtonItem
-                            onTrigger={() => api.claimScratch(scratch)}
-                            shortcutKeys={fuzzySaveAction === FuzzySaveAction.CLAIM && [SpecialKey.CTRL_COMMAND, "S"]}
-                        >
-                            Claim
-                        </ButtonItem>
-                        }
                         <ButtonItem
                             onTrigger={async () => {
                                 setIsSaving(true)
@@ -223,7 +216,7 @@ export default function ScratchToolbar({
             <div className={styles.grow} />
             <div className={styles.center}>
                 <div className={styles.icons}>
-                    <PlatformIcon size={20} platform={scratch.platform} />
+                    <ScratchIcon size={20} scratch={scratch} />
                 </div>
                 <ScratchName
                     name={scratch.name}
@@ -238,9 +231,9 @@ export default function ScratchToolbar({
                 </div>
                 {isMounted && <>
                     {<CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {userIsYou(scratch.owner) && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
-                    {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
-                    {scratch.owner && !userIsYou(scratch.owner) && <ForkScratchButton scratch={scratch} />}
+                    {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
+                    {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
+                    {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
                     <LoginState className={styles.loginState} />
                 </>}
             </div>

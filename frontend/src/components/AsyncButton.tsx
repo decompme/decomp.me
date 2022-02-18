@@ -44,6 +44,7 @@ export default function AsyncButton(props: Props) {
         isOpen: errorMessage !== "",
         onOutsideClick: () => setErrorMessage(""),
         placement: props.errorPlacement ?? "top-center",
+        auto: true,
         triggerOffset: 8,
     })
 
@@ -70,7 +71,7 @@ export default function AsyncButton(props: Props) {
                     initial={{ scaleX: 0.7, scaleY: 0, opacity: 0 }}
                     animate={{ scaleX: 1, scaleY: 1, opacity: 1 }}
                     exit={{ scaleX: 0.7, scaleY: 0, opacity: 0 }}
-                    transition={{ type: "spring", duration: 0.2 }}
+                    transition={{ type: "spring", duration: 0.1 }}
                     {...layerProps}
                 >
                     <pre>{errorMessage}</pre>

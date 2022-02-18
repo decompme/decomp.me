@@ -20,6 +20,8 @@ from rest_framework.viewsets import GenericViewSet
 from ..decorators.django import condition
 from ..middleware import Request
 from ..models.scratch import Asm, Scratch
+from ..models.project import Project, ProjectFunction
+from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..serializers import ScratchCreateSerializer, ScratchSerializer, TerseScratchSerializer
 from ..asm_diff_wrapper import AsmDifferWrapper
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
@@ -27,6 +29,10 @@ from ..decompiler_wrapper import DecompilerWrapper
 from ..error import CompilationError, DiffError
 
 logger = logging.getLogger(__name__)
+
+class ProjectNotMemberException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must be a maintainer of the project to perform this action."
 
 def get_db_asm(request_asm) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
@@ -120,6 +126,82 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
 
     return False
 
+def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
+    create_ser = ScratchCreateSerializer(data=data)
+    create_ser.is_valid(raise_exception=True)
+    data = create_ser.validated_data
+
+    platform = data.get("platform")
+    compiler = data.get("compiler")
+    assert isinstance(compiler, str)
+    project = data.get("project")
+    rom_address = data.get("rom_address")
+
+    if platform:
+        if CompilerWrapper.platform_from_compiler(compiler) != platform:
+            raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
+    else:
+        platform = CompilerWrapper.platform_from_compiler(compiler)
+
+    if not platform:
+        raise serializers.ValidationError("Unknown compiler")
+
+    target_asm = data["target_asm"]
+    context = data["context"]
+    diff_label = data.get("diff_label", "")
+
+    assert isinstance(target_asm, str)
+    assert isinstance(context, str)
+    assert isinstance(diff_label, str)
+
+    asm = get_db_asm(target_asm)
+
+    assembly = CompilerWrapper.assemble_asm(platform, asm)
+
+    source_code = data.get("source_code")
+    if not source_code:
+        default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
+        source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
+
+    compiler_flags = data.get("compiler_flags", "")
+    if compiler and compiler_flags:
+        compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
+
+    name = data.get("name", diff_label) or "Untitled"
+
+    if allow_project and (project or rom_address):
+        assert isinstance(project, str)
+        assert isinstance(rom_address, int)
+
+        project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
+        if not project_obj:
+            raise serializers.ValidationError("Unknown project")
+
+        repo: GitHubRepo = project_obj.repo
+        if repo.is_pulling:
+            raise GitHubRepoBusyException()
+
+        project_function = ProjectFunction.objects.filter(project=project_obj, rom_address=rom_address).first()
+        if not project_function:
+            raise serializers.ValidationError("Function with given rom address does not exist in project")
+    else:
+        project_function = None
+
+    ser = ScratchSerializer(data={
+        "name": name,
+        "compiler": compiler,
+        "compiler_flags": compiler_flags,
+        "context": context,
+        "diff_label": diff_label,
+        "source_code": source_code,
+    })
+    ser.is_valid(raise_exception=True)
+    scratch = ser.save(target_assembly=assembly, platform=platform, project_function=project_function)
+
+    compile_scratch_update_score(scratch)
+
+    return scratch
+
 class ScratchPagination(CursorPagination):
     ordering="-last_updated"
     page_size=10
@@ -150,57 +232,7 @@ class ScratchViewSet(
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        create_ser = ScratchCreateSerializer(data=request.data)
-        create_ser.is_valid(raise_exception=True)
-        data = create_ser.validated_data
-
-        platform = data.get("platform")
-        compiler = data.get("compiler")
-
-        if platform:
-            if CompilerWrapper.platform_from_compiler(compiler) != platform:
-                raise APIException(f"Compiler {compiler} is not compatible with platform {platform}", str(status.HTTP_400_BAD_REQUEST))
-        else:
-            platform = CompilerWrapper.platform_from_compiler(compiler)
-
-        if not platform:
-            raise serializers.ValidationError("Unknown compiler")
-
-        target_asm = data["target_asm"]
-        context = data["context"]
-        diff_label = data.get("diff_label", "")
-
-        assert isinstance(target_asm, str)
-        assert isinstance(context, str)
-        assert isinstance(diff_label, str)
-
-        asm = get_db_asm(target_asm)
-
-        assembly = CompilerWrapper.assemble_asm(platform, asm)
-
-        source_code = data.get("source_code")
-        if not source_code:
-            default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-            source_code = DecompilerWrapper.decompile(default_source_code, platform, asm.data, context, compiler)
-
-        compiler_flags = data.get("compiler_flags", "")
-        if compiler and compiler_flags:
-            compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
-
-        name = data.get("name", diff_label) or "Untitled"
-
-        ser = ScratchSerializer(data={
-            "name": name,
-            "compiler": compiler,
-            "compiler_flags": compiler_flags,
-            "context": context,
-            "diff_label": diff_label,
-            "source_code": source_code,
-        })
-        ser.is_valid(raise_exception=True)
-        scratch = ser.save(target_assembly=assembly, platform=platform)
-
-        compile_scratch_update_score(scratch)
+        scratch = create_scratch(request.data)
 
         return Response(
             ScratchSerializer(scratch, context={ 'request': request }).data,
@@ -269,7 +301,7 @@ class ScratchViewSet(
     def claim(self, request, pk):
         scratch: Scratch = self.get_object()
 
-        if scratch.owner is not None:
+        if not scratch.is_claimable():
             return Response({ "success": False })
 
         profile = request.profile
