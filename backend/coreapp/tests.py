@@ -836,7 +836,7 @@ class ProjectTests(TestCase):
                 self.assertEqual(scratch.platform, compiler_config.platform)
                 self.assertEqual(scratch.compiler, compiler_config.compiler)
                 self.assertEqual(scratch.compiler_flags, compiler_config.compiler_flags)
-                self.assertEqual(scratch.context, "typedef int s32;")
+                self.assertEqual(scratch.project_function, fn)
 
                 # match the function (by deleting the asm) and verify it is marked as matching
                 asm_file.unlink()
