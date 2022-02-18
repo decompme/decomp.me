@@ -9,8 +9,11 @@ import * as Clang401 from "./clang-4.0.1"
 import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc263mipsel from "./gcc2.6.3-mipsel"
+import * as Gcc272psyq from "./gcc2.7.2-psyq"
 import * as Gcc27kmc from "./gcc2.7kmc"
 import * as Gcc281 from "./gcc2.8.1"
+import * as Gcc281psyq from "./gcc2.8.1-psyq"
+import * as Gcc2952psyq from "./gcc2.95.2-psyq"
 import * as Ido53 from "./ido5.3"
 import * as Ido71 from "./ido7.1"
 import * as Mwcc20b72 from "./mwcc_20_72"
@@ -63,6 +66,9 @@ const COMPILERS: CompilerModule[] = [
     Ido71,
     Gcc27kmc,
     Gcc263mipsel,
+    Gcc272psyq,
+    Gcc281psyq,
+    Gcc2952psyq,
     EeGcc296,
     Mwcc20b72,
     Mwcc20b79,
