@@ -3,7 +3,7 @@
     height: 100%;
 
     .problems {
-        overflow: auto;
+        overflow: auto !important; // overrides resizer section inline style
 
         scrollbar-color: #fff3 transparent;
         scrollbar-width: thin;
