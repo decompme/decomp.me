@@ -115,8 +115,8 @@ jobs:
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             decompme_backend -c 'cd /decomp.me/backend && \
-            /home/user/.local/bin/poetry install && \
-            /home/user/.local/bin/poetry run python manage.py test'
+            poetry install && \
+            poetry run python manage.py test'
 
   frontend_test:
     name: frontend tests

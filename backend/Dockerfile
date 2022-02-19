@@ -25,7 +25,7 @@ RUN apt-get -y update && apt-get install -y \
     pkg-config \
     protobuf-compiler
 
-# TODO: change this when they tag a release
+# TODO: change this when they tag a release (see https://github.com/google/nsjail/issues/190)
 RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
     && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
@@ -49,25 +49,8 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
-
-ENV WINEPREFIX=/tmp/wine
-
-# create a non-root user & /sandbox with correct ownership
-RUN useradd --create-home user \
-    && mkdir -p /sandbox \
-    && chown -R user:user /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown user:user "${WINEPREFIX}"
-
-COPY pyproject.toml /backend/pyproject.toml
-COPY poetry.lock /backend/poetry.lock
-
-# Install poetry and dependencies
-USER user
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-ENV PATH="/home/user/.local/bin:$PATH"
-RUN cd backend && poetry install
-USER root
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
+  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -112,6 +95,15 @@ RUN if [ "${ENABLE_SWITCH_SUPPORT}" = "YES" ] ; then \
 
 WORKDIR /backend
 
+ENV WINEPREFIX=/tmp/wine
+
+# create a non-root user & /sandbox with correct ownership
+RUN useradd --create-home user \
+    && mkdir -p /sandbox \
+    && chown -R user:user /sandbox \
+    && mkdir -p "${WINEPREFIX}" \
+    && chown user:user "${WINEPREFIX}"
+
 # switch to non-root user
 USER user
 
@@ -121,6 +113,8 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
+
+ENV PATH="$PATH:/etc/poetry/bin"
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
