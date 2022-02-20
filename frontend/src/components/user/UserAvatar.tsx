@@ -14,6 +14,6 @@ export type Props = {
 export default function UserAvatar({ user, className }: Props) {
     return <div className={classNames(styles.avatar, className)}>
         {!api.isAnonUser(user) && user.avatar_url && <Image src={user.avatar_url} alt="" layout="fill" />}
-        <div className={styles.online} aria-label="online" />
+        <div className={styles.online} title="Online" />
     </div>
 }
