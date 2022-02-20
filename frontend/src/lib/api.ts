@@ -152,6 +152,7 @@ export interface AnonymousUser {
     html_url: null
     is_anonymous: true
     id: number
+    is_online: boolean
 }
 
 export interface User {
@@ -159,6 +160,8 @@ export interface User {
     html_url: string
     is_anonymous: false
     id: number
+    is_online: boolean
+
     username: string
     name: string
     avatar_url: string | null

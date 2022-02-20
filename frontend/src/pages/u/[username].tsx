@@ -2,8 +2,6 @@ import { useState } from "react"
 
 import { GetStaticProps } from "next"
 
-import Image from "next/image"
-
 import { MarkGithubIcon } from "@primer/octicons-react"
 
 import Footer from "../../components/Footer"
@@ -11,6 +9,7 @@ import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import ScratchList, { ScratchItemNoOwner } from "../../components/ScratchList"
 import Tabs, { Tab } from "../../components/Tabs"
+import UserAvatar from "../../components/user/UserAvatar"
 import * as api from "../../lib/api"
 
 import styles from "./[username].module.scss"
@@ -52,13 +51,7 @@ export default function UserPage({ user }: { user: api.User }) {
         <main className={styles.pageContainer}>
             <header className={styles.header}>
                 <div className={styles.headerInner}>
-                    {user.avatar_url && <Image
-                        className={styles.avatar}
-                        src={user.avatar_url}
-                        alt="User avatar"
-                        width={64}
-                        height={64}
-                    />}
+                    <UserAvatar className={styles.avatar} user={user} />
                     <h1 className={styles.name}>
                         <div>{user.name}</div>
                         <div className={styles.username}>
