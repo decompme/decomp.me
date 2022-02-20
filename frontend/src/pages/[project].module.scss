@@ -26,16 +26,20 @@
         max-width: 50em;
         padding: 1em;
         margin: 0 auto;
+
+        display: flex;
+        flex-direction: column;
+        gap: 0.25em;
     }
 
     h1 {
         color: var(--g1900);
-        font-size: 1.25em;
+        font-size: 1.7em;
         font-weight: 500;
 
         display: flex;
         align-items: center;
-        gap: 0.5em;
+        gap: 0.25em;
     }
 
     p {
@@ -43,15 +47,6 @@
         color: var(--g1000);
         font-size: 0.9em;
         max-width: 50ch;
-    }
-
-    .members {
-        font-size: 1.5em;
-
-        > label {
-            font-size: 0.5em;
-            color: var(--g800);
-        }
     }
 }
 
@@ -63,5 +58,23 @@
     small {
         font-size: 0.8em;
         color: var(--g1000);
+    }
+}
+
+.links {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+
+    a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5ch;
+
+        color: var(--g1700);
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }

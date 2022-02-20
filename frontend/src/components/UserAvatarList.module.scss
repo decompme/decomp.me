@@ -1,7 +1,7 @@
 .list {
     list-style: none;
 
-    display: flex;
+    display: inline-flex;
     gap: 0.2em;
 }
 
@@ -10,8 +10,8 @@
     flex-grow: 0;
     flex-shrink: 0;
 
-    width: 1.2em;
-    height: 1.2em;
+    width: 1.5em;
+    height: 1.5em;
 
     border-radius: 999px;
     overflow: hidden;

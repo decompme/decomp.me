@@ -186,9 +186,10 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
 
 
 class ProjectSerializer(serializers.ModelSerializer[Project]):
+    slug = serializers.SlugField(read_only=True)
     url = HyperlinkedIdentityField(view_name="project-detail")
     html_url = HtmlUrlField()
-    repo = GitHubRepoSerializer()
+    repo = GitHubRepoSerializer(read_only=True)
     members = SerializerMethodField()
 
     class Meta:

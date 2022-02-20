@@ -1,8 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
 import Image from "next/image"
+import Link from "next/link"
 
-import { RepoPullIcon } from "@primer/octicons-react"
+import { MarkGithubIcon, RepoPullIcon } from "@primer/octicons-react"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
@@ -65,10 +66,16 @@ export default function ProjectPage(props: { project: api.Project }) {
                     <Image src={project.icon_url} alt="" width={32} height={32} />
                     {project.slug}
                 </h1>
-                <div className={styles.members}>
-                    <label>People</label>
+                <p>{project.description}</p>
+                <p className={styles.links}>
+                    <Link href={project.repo.html_url}>
+                        <a>
+                            <MarkGithubIcon size={18} />
+                            {project.repo.owner}/{project.repo.repo}
+                        </a>
+                    </Link>
                     <UserAvatarList urls={project.members} />
-                </div>
+                </p>
             </div>
         </header>
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>

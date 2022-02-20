@@ -206,6 +206,7 @@ export interface Project {
     creation_time: string
     icon_url: string
     members: string[]
+    description: string
 }
 
 export interface ProjectFunction {
