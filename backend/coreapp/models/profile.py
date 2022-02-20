@@ -33,5 +33,5 @@ class Profile(models.Model):
     def is_online(self) -> bool:
         delta = timezone.now() - self.last_request_date
 
-        # 5 mins
-        return delta.total_seconds() < (60 * 5)
+        # 2 mins
+        return delta.total_seconds() < (60 * 2)
