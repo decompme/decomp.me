@@ -1,3 +1,4 @@
+from typing import Optional
 from django.test.testcases import TestCase
 from coreapp.views.scratch import compile_scratch_update_score
 from coreapp.m2c_wrapper import M2CWrapper
@@ -942,10 +943,16 @@ class ProjectTests(TestCase):
                 self.assertEqual(ProjectFunction.objects.count(), 0)
                 project.import_functions()
                 self.assertEqual(ProjectFunction.objects.count(), 1)
-                self.assertFalse(ProjectFunction.objects.first().is_matched_in_repo)
+
+                pf = ProjectFunction.objects.first()
+
+                assert pf is not None
+                self.assertFalse(pf.is_matched_in_repo)
 
                 # create a scratch from the function
-                fn: ProjectFunction = ProjectFunction.objects.first()
+                fn: Optional[ProjectFunction] = ProjectFunction.objects.first()
+                assert fn is not None
+
                 scratch = fn.create_scratch()
                 self.assertEqual(scratch.platform, compiler_config.platform)
                 self.assertEqual(scratch.compiler, compiler_config.compiler)
@@ -956,7 +963,11 @@ class ProjectTests(TestCase):
                 asm_file.unlink()
                 project.import_functions()
                 self.assertEqual(ProjectFunction.objects.count(), 1)
-                self.assertTrue(ProjectFunction.objects.first().is_matched_in_repo)
+
+                pf = ProjectFunction.objects.first()
+                assert pf is not None
+
+                self.assertTrue(pf.is_matched_in_repo)
 
     def test_put_project_permissions(self):
         with tempfile.TemporaryDirectory() as local_files_dir:
@@ -972,8 +983,11 @@ class ProjectTests(TestCase):
                     content_type="application/json",
                 )
                 self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+                p = Project.objects.first()
+                assert p is not None
                 self.assertNotEqual(
-                    Project.objects.first().description, "new description"
+                    p.description, "new description"
                 )
 
                 # add project member
@@ -990,4 +1004,7 @@ class ProjectTests(TestCase):
                 )
                 print(response.json())
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
-                self.assertEqual(Project.objects.first().description, "new description")
+
+                p = Project.objects.first()
+                assert p is not None
+                self.assertEqual(p.description, "new description")
