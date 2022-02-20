@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from typing import Optional
 
+
 class Profile(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     last_request_date = models.DateTimeField(auto_now_add=True)
