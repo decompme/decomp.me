@@ -234,7 +234,26 @@ class ScratchForkTests(BaseTestCase):
             "diff_label": "meow",
             "name": "cat scratch",
         }
+
+        project = ProjectTests.create_test_project()
+
+        compiler_config = CompilerConfig()
+        compiler_config.save()
+
+        config = ProjectImportConfig(compiler_config=compiler_config, project=project)
+        config.save()
+
+        project_function = ProjectFunction(
+            display_name="howdy",
+            rom_address=1000,
+            import_config=config,
+            project=project,
+        )
+        project_function.save()
+
         scratch = self.create_scratch(scratch_dict)
+        scratch.project_function = project_function
+        scratch.save()
 
         slug = scratch.slug
 
@@ -263,6 +282,9 @@ class ScratchForkTests(BaseTestCase):
 
         # Make sure the name carried over to the fork
         self.assertEqual(scratch.name, fork.name)
+
+        # Make sure the project_function carried over to the fork
+        self.assertEqual(scratch.project_function, fork.project_function)
 
 
 class CompilationTests(BaseTestCase):
@@ -838,7 +860,8 @@ class RequestTests(APITestCase):
 
 
 class ProjectTests(TestCase):
-    def create_test_project(self, slug: str = "test") -> Project:
+    @staticmethod
+    def create_test_project(slug: str = "test") -> Project:
         repo = GitHubRepo(
             owner="decompme",
             repo="example-project",
@@ -867,7 +890,7 @@ class ProjectTests(TestCase):
         Test that the repo is cloned into a directory
         """
         mock_exists.return_value = False
-        project = self.create_test_project()
+        project = ProjectTests.create_test_project()
         project.repo.pull()
 
         mock_subprocess.assert_called_once()
@@ -883,7 +906,7 @@ class ProjectTests(TestCase):
         """
         Test that the repo's directory is deleted when the repo is
         """
-        project = self.create_test_project()
+        project = ProjectTests.create_test_project()
         mock_dir = Mock(exists=lambda: True)
         mock_get_dir.return_value = mock_dir
         project.delete()
@@ -893,7 +916,7 @@ class ProjectTests(TestCase):
     def test_import_function(self):
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
-                project = self.create_test_project()
+                project = ProjectTests.create_test_project()
 
                 # add some asm
                 dir = project.repo.get_dir()
@@ -972,7 +995,7 @@ class ProjectTests(TestCase):
     def test_put_project_permissions(self):
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
-                project = self.create_test_project()
+                project = ProjectTests.create_test_project()
 
                 # try, and fail
                 response = self.client.patch(
