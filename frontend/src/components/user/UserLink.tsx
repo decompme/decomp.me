@@ -14,7 +14,6 @@ export function GitHubUserLink({ user }: { user: { login: string, avatar_url?: s
     </Link>
 }
 
-
 export type Props = {
     user: api.User | api.AnonymousUser
 }

@@ -3,7 +3,6 @@ import classNames from "classnames"
 import PlatformIcon from "./PlatformIcon"
 import styles from "./PlatformSelect.module.scss"
 
-
 export type Props = {
     platforms: {
         [key: string]: {
