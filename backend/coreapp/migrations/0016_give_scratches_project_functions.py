@@ -12,7 +12,7 @@ def assign_forks_to_projects(apps, schema_editor):
     for row in Scratch.objects.all():
         if row.parent and row.parent.project_function:
             row.project_function = row.parent.project_function
-            row.save(update_fields["project_function"])  # type: ignore
+            row.save(update_fields=["project_function"])  # type: ignore
 
 
 class Migration(migrations.Migration):
