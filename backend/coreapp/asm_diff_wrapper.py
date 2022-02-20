@@ -23,6 +23,7 @@ class AsmDifferWrapper:
             arch=arch,
             # Build/objdump options
             diff_obj=True,
+            objfile="",
             make=False,
             source_old_binutils=True,
             diff_section=".text",
