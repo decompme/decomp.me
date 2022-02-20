@@ -3,6 +3,8 @@ import { MutableRefObject, useEffect, useRef } from "react"
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 
+import { materialPalenight } from "../../lib/themes/dark"
+
 export interface Props {
     value: string
     onChange?: (value: string) => void
@@ -39,6 +41,7 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
                         return null
                     }),
                     extensionsRef.current,
+                    materialPalenight,
                 ],
             }),
             parent: el.current,
@@ -75,5 +78,5 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
         }
     }, [value])
 
-    return <div ref={el} className={className} />
+    return <div ref={el} className={className} style={{ fontSize: "0.8em" }} />
 }
