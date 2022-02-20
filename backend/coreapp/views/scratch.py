@@ -372,22 +372,21 @@ class ScratchViewSet(
 
     @action(detail=True, methods=["POST"])
     def fork(self, request, pk):
-        parent_scratch: Scratch = self.get_object()
+        parent: Scratch = self.get_object()
 
         request_data = (
             request.data.dict() if isinstance(request.data, QueryDict) else request.data
         )
-        parent_data = ScratchSerializer(
-            parent_scratch, context={"request": request}
-        ).data
+        parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
         new_scratch = ser.save(
-            parent=parent_scratch,
-            target_assembly=parent_scratch.target_assembly,
-            platform=parent_scratch.platform,
+            parent=parent,
+            target_assembly=parent.target_assembly,
+            platform=parent.platform,
+            project_function=parent.project_function,
         )
 
         compile_scratch_update_score(new_scratch)
