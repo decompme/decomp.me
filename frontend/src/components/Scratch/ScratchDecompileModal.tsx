@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react"
 
+import { basicSetup } from "@codemirror/basic-setup"
+import { cpp } from "@codemirror/lang-cpp"
+
 import * as api from "../../lib/api"
 import Button from "../Button"
 import CodeMirror from "../Editor/CodeMirror"
@@ -48,6 +51,7 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
                         className={styles.editor}
                         value={decompiledCode}
                         onChange={c => setDecompiledCode(c)}
+                        extensions={[basicSetup, cpp()]}
                     />
                     <p>Would you like to reset this scratch's source code to this newly decompiled iteration?</p>
                 </> : <Loading className={styles.loading} />}

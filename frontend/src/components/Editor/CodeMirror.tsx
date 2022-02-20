@@ -1,18 +1,17 @@
 import { MutableRefObject, useEffect, useRef } from "react"
 
-import { EditorState, EditorView, basicSetup } from "@codemirror/basic-setup"
-import { cpp } from "@codemirror/lang-cpp"
-
-export { EditorView } from "@codemirror/basic-setup"
+import { Extension, EditorState } from "@codemirror/state"
+import { EditorView } from "@codemirror/view"
 
 export interface Props {
     value: string
     onChange?: (value: string) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
+    extensions: Extension
 }
 
-export default function CodeMirror({ value, onChange, className, viewRef: viewRefProp }: Props) {
+export default function CodeMirror({ value, onChange, className, viewRef: viewRefProp, extensions }: Props) {
     const el = useRef<HTMLDivElement>()
 
     const valueRef = useRef(value)
@@ -29,8 +28,6 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
-                    basicSetup,
-                    cpp(),
                     EditorState.transactionExtender.of(({ newDoc }) => {
                         const newValue = newDoc.toString()
                         if (newValue !== valueRef.current) {
@@ -38,6 +35,7 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
                         }
                         return null
                     }),
+                    extensions,
                 ],
             }),
             parent: el.current,
@@ -52,7 +50,7 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [viewRefProp])
+    }, [extensions, viewRefProp])
 
     // Replace doc when `value` prop changes
     useEffect(() => {

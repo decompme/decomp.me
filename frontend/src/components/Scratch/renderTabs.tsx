@@ -1,14 +1,25 @@
 import { useRef } from "react"
 
+import { basicSetup, EditorView } from "@codemirror/basic-setup"
+import { indentWithTab } from "@codemirror/commands"
+import { cpp } from "@codemirror/lang-cpp"
+import { keymap } from "@codemirror/view"
+
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CompilationPanel from "../Diff/CompilationPanel"
-import CodeMirror, { EditorView } from "../Editor/CodeMirror"
+import CodeMirror from "../Editor/CodeMirror"
 import ScoreBadge from "../ScoreBadge"
 import { Tab } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
 import styles from "./renderTabs.module.scss"
+
+const CODEMIRROR_EXTENSIONS = [
+    basicSetup,
+    cpp(),
+    keymap.of([indentWithTab]),
+]
 
 type ScratchTab = LeftScratchTab | RightScratchTab
 
@@ -58,6 +69,7 @@ export function useLeftTabs({ scratch, setScratch }: {
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
+                    extensions={CODEMIRROR_EXTENSIONS}
                 />
             </Tab>
         ),
@@ -84,6 +96,7 @@ export function useLeftTabs({ scratch, setScratch }: {
                     onChange={value => {
                         setScratch({ context: value })
                     }}
+                    extensions={CODEMIRROR_EXTENSIONS}
                 />
             </Tab>
         ),

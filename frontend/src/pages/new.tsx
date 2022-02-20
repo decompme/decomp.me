@@ -5,13 +5,14 @@ import { GetStaticProps } from "next"
 import Link from "next/link"
 import { useRouter } from "next/router"
 
+import { basicSetup } from "@codemirror/basic-setup"
+import { cpp } from "@codemirror/lang-cpp"
 import { usePlausible } from "next-plausible"
 
 import AsyncButton from "../components/AsyncButton"
 import { CompilerPreset } from "../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../components/compiler/PresetSelect"
-import Editor from "../components/Editor"
 import CodeMirror from "../components/Editor/CodeMirror"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
@@ -90,8 +91,6 @@ export default function NewScratch({ serverCompilers }: {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
-    const [lineNumbers, setLineNumbers] = useState(false)
-
     const setPreset = (preset: CompilerPreset) => {
         setCompiler(preset.compiler)
         setCompilerOpts(preset.opts)
@@ -167,7 +166,6 @@ export default function NewScratch({ serverCompilers }: {
 
             await router.push(scratch.html_url)
         } catch (error) {
-            setLineNumbers(true) // line numbers are likely relevant to the error
             console.error(error)
             throw error
         }
@@ -251,14 +249,11 @@ export default function NewScratch({ serverCompilers }: {
             </div>
             <div className={styles.editorContainer}>
                 <p className={styles.label}>Target assembly <small>(required)</small></p>
-                <Editor
+                <CodeMirror
                     className={styles.editor}
-                    language="mips"
                     value={asm}
                     onChange={setAsm}
-                    padding={10}
-                    showMargin={lineNumbers}
-                    lineNumbers={lineNumbers}
+                    extensions={basicSetup}
                 />
             </div>
             <div className={styles.editorContainer}>
@@ -269,6 +264,7 @@ export default function NewScratch({ serverCompilers }: {
                     className={styles.editor}
                     value={context}
                     onChange={setContext}
+                    extensions={[basicSetup, cpp()]}
                 />
             </div>
 
