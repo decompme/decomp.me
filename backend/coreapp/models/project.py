@@ -18,6 +18,7 @@ class Project(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     repo = models.OneToOneField("GithubRepo", on_delete=models.PROTECT)
     icon_url = models.URLField(blank=False)
+    description = models.TextField(default="", blank=True)
 
     def __str__(self):
         return self.slug
