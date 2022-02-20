@@ -1,0 +1,41 @@
+.user {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+
+    vertical-align: bottom;
+}
+
+.user:any-link {
+    cursor: pointer;
+}
+
+.user:any-link:hover {
+    color: var(--link);
+}
+
+.avatar {
+    width: 1.25em !important;
+    height: 1.25em !important;
+
+    position: relative;
+
+    img {
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .online {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+
+        border-radius: 999px;
+
+        width: 0.5em;
+        height: 0.5em;
+        background: #7df658;
+        border: 1px solid var(--g400);
+    }
+}

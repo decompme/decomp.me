@@ -21,6 +21,7 @@ def serialize_profile(request: Request, profile: Profile, small=False):
             "is_you": profile == request.profile,  # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
+            "is_online": profile.is_online(),
         }
     else:
         user = profile.user
@@ -34,6 +35,7 @@ def serialize_profile(request: Request, profile: Profile, small=False):
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
+            "is_online": profile.is_online(),
             "username": user.username,
             "avatar_url": github_details.avatar_url if github_details else None,
         }
