@@ -986,9 +986,7 @@ class ProjectTests(TestCase):
 
                 p = Project.objects.first()
                 assert p is not None
-                self.assertNotEqual(
-                    p.description, "new description"
-                )
+                self.assertNotEqual(p.description, "new description")
 
                 # add project member
                 profile = Profile.objects.first()
