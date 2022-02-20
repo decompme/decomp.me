@@ -153,8 +153,10 @@ jobs:
           python-version: 3.9
       - name: Install Poetry
         uses: snok/install-poetry@v1
-      - run: cd backend && poetry install
-      - run: cd backend && mypy
+      - run: |
+        cd backend
+        poetry install
+        poetry run mypy
   black:
     name: black
     runs-on: ubuntu-latest
