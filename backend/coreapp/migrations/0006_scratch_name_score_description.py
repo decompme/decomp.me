@@ -3,6 +3,7 @@
 from django.db import migrations, models
 import django.db.migrations.operations.special
 
+
 def populate_name(apps, schema_editor):
     """
     Populate the name field for all existing scratches
@@ -16,32 +17,32 @@ def populate_name(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0005_scratch_arch'),
+        ("coreapp", "0005_scratch_arch"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scratch',
-            name='score',
+            model_name="scratch",
+            name="score",
             field=models.IntegerField(default=-1),
         ),
         migrations.AddField(
-            model_name='scratch',
-            name='description',
-            field=models.TextField(blank=True, default='', max_length=5000),
+            model_name="scratch",
+            name="description",
+            field=models.TextField(blank=True, default="", max_length=5000),
         ),
         migrations.AddField(
-            model_name='scratch',
-            name='name',
-            field=models.CharField(blank=True, default='', max_length=100),
+            model_name="scratch",
+            name="name",
+            field=models.CharField(blank=True, default="", max_length=100),
         ),
         migrations.RunPython(
             code=populate_name,
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
         migrations.AlterField(
-            model_name='scratch',
-            name='cc_opts',
-            field=models.TextField(blank=True, default='', max_length=1000),
+            model_name="scratch",
+            name="cc_opts",
+            field=models.TextField(blank=True, default="", max_length=1000),
         ),
     ]

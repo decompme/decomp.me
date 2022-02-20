@@ -12,6 +12,7 @@ from ..models.scratch import Scratch
 from ..models.github import GitHubUser
 from ..serializers import serialize_profile, TerseScratchSerializer
 
+
 class CurrentUser(APIView):
     """
     View to access the current user profile.
@@ -71,4 +72,6 @@ def user(request, username):
     Gets a user's basic data
     """
 
-    return Response(serialize_profile(request, get_object_or_404(Profile, user__username=username)))
+    return Response(
+        serialize_profile(request, get_object_or_404(Profile, user__username=username))
+    )

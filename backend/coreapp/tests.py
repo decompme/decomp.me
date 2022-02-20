@@ -19,6 +19,7 @@ from .models.scratch import Scratch, CompilerConfig
 from .models.github import GitHubUser, GitHubRepo
 from .models.project import Project, ProjectFunction, ProjectImportConfig
 
+
 def requiresCompiler(*compiler_ids: str):
     available = CompilerWrapper.available_compiler_ids()
 
@@ -32,7 +33,7 @@ def requiresCompiler(*compiler_ids: str):
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
     def create_scratch(self, partial: dict[str, str]) -> Scratch:
-        response = self.client.post(reverse('scratch-list'), partial)
+        response = self.client.post(reverse("scratch-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         scratch = Scratch.objects.get(slug=response.json()["slug"])
         assert scratch is not None
@@ -40,47 +41,45 @@ class BaseTestCase(APITestCase):
 
     def create_nop_scratch(self) -> Scratch:
         scratch_dict = {
-            'compiler': 'dummy',
-            'platform': 'dummy',
-            'context': '',
-            'target_asm': "jr $ra\nnop\n",
+            "compiler": "dummy",
+            "platform": "dummy",
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
         }
         return self.create_scratch(scratch_dict)
 
 
 class ScratchCreationTests(BaseTestCase):
-    @requiresCompiler('ido7.1')
+    @requiresCompiler("ido7.1")
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
         scratch_dict = {
-            'platform': 'n64',
-            'compiler': 'ido7.1',
-            'context': '',
-            'target_asm':
-""".late_rodata
+            "platform": "n64",
+            "compiler": "ido7.1",
+            "context": "",
+            "target_asm": """.late_rodata
 glabel D_8092C224
 /* 000014 8092C224 3DCCCCCD */ .float 0.1
 
 .text
 glabel func_80929D04
 jr $ra
-nop"""
+nop""",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler('ido5.3')
+    @requiresCompiler("ido5.3")
     def test_n64_func(self):
         """
         Ensure that functions with t6/t7 registers can be assembled.
         """
         scratch_dict = {
-            'platform': 'n64',
-            'compiler': 'ido5.3',
-            'context': 'typedef unsigned char u8;',
-            'target_asm':
-"""
+            "platform": "n64",
+            "compiler": "ido5.3",
+            "context": "typedef unsigned char u8;",
+            "target_asm": """
 .text
 glabel func_8019B378
 lui $t6, %hi(sOcarinaSongAppendPos)
@@ -88,7 +87,7 @@ lbu $t6, %lo(sOcarinaSongAppendPos)($t6)
 lui $at, %hi(D_801D702C)
 jr  $ra
 sb  $t6, %lo(D_801D702C)($at)
-"""
+""",
         }
         self.create_scratch(scratch_dict)
 
@@ -97,38 +96,39 @@ sb  $t6, %lo(D_801D702C)($at)
         Ensure that we can create scratches with the dummy platform and compiler
         """
         scratch_dict = {
-            'platform': 'dummy',
-            'compiler': 'dummy',
-            'context': 'typedef unsigned char u8;',
-            'target_asm': 'this is some test asm',
+            "platform": "dummy",
+            "compiler": "dummy",
+            "context": "typedef unsigned char u8;",
+            "target_asm": "this is some test asm",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler('ido7.1')
+    @requiresCompiler("ido7.1")
     def test_max_score(self):
         """
         Ensure that max_score is available upon scratch creation even if the initial compialtion fails
         """
         scratch_dict = {
-            'platform': 'n64',
-            'compiler': 'ido7.1',
-            'context': 'this aint cod',
-            'target_asm': ".text\nglabel func_80929D04\njr $ra\nnop"
+            "platform": "n64",
+            "compiler": "ido7.1",
+            "context": "this aint cod",
+            "target_asm": ".text\nglabel func_80929D04\njr $ra\nnop",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
+
 class ScratchModificationTests(BaseTestCase):
-    @requiresCompiler('gcc2.8.1', 'ido5.3')
+    @requiresCompiler("gcc2.8.1", "ido5.3")
     def test_update_scratch_score(self):
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
-            'context': '',
-            'target_asm': "jr $ra"
+            "compiler": "gcc2.8.1",
+            "platform": "n64",
+            "context": "",
+            "target_asm": "jr $ra",
         }
         scratch = self.create_scratch(scratch_dict)
         slug = scratch.slug
@@ -136,33 +136,35 @@ class ScratchModificationTests(BaseTestCase):
         self.assertGreater(scratch.score, 0)
 
         # Obtain ownership of the scratch
-        response = self.client.post(reverse('scratch-claim', kwargs={'pk': slug}))
+        response = self.client.post(reverse("scratch-claim", kwargs={"pk": slug}))
 
         # Update the scratch's code and compiler output
         scratch_patch = {
-            'source_code': "int func() { return 2; }",
-            'compiler': 'ido5.3'
+            "source_code": "int func() { return 2; }",
+            "compiler": "ido5.3",
         }
 
-        response = self.client.patch(reverse('scratch-detail', kwargs={'pk': slug}), scratch_patch)
+        response = self.client.patch(
+            reverse("scratch-detail", kwargs={"pk": slug}), scratch_patch
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         scratch = Scratch.objects.get(slug=slug)
-        assert(scratch is not None)
+        assert scratch is not None
         self.assertEqual(scratch.score, 200)
 
-    @requiresCompiler('gcc2.8.1')
+    @requiresCompiler("gcc2.8.1")
     def test_update_scratch_score_on_compile_get(self):
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'compiler_flags': '-O2',
-            'platform': 'n64',
-            'context': '',
-            'target_asm': 'jr $ra\nli $v0,2',
-            'source_code': 'int func() { return 2; }'
+            "compiler": "gcc2.8.1",
+            "compiler_flags": "-O2",
+            "platform": "n64",
+            "context": "",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "int func() { return 2; }",
         }
         scratch = self.create_scratch(scratch_dict)
 
@@ -173,39 +175,39 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, -1)
         slug = scratch.slug
 
-        response = self.client.get(reverse('scratch-compile', kwargs={'pk': slug}))
+        response = self.client.get(reverse("scratch-compile", kwargs={"pk": slug}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         scratch = Scratch.objects.get(slug=slug)
-        assert(scratch is not None)
+        assert scratch is not None
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler('ido7.1')
+    @requiresCompiler("ido7.1")
     def test_create_scratch_score(self):
         """
         Ensure that a scratch's score gets set upon creation.
         """
         scratch_dict = {
-            'platform': 'n64',
-            'compiler': 'ido7.1',
-            'context': '',
-            'target_asm': 'jr $ra\nli $v0,2',
-            'source_code': 'int func() { return 2; }'
+            "platform": "n64",
+            "compiler": "ido7.1",
+            "context": "",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "int func() { return 2; }",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler('ido7.1')
+    @requiresCompiler("ido7.1")
     def test_update_scratch_score_does_not_affect_last_updated(self):
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
         """
         scratch_dict = {
-            'platform': 'n64',
-            'compiler': 'ido7.1',
-            'context': '',
-            'target_asm': 'jr $ra\nli $v0,2',
-            'source_code': 'int func() { return 2; }'
+            "platform": "n64",
+            "compiler": "ido7.1",
+            "context": "",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "int func() { return 2; }",
         }
         scratch = self.create_scratch(scratch_dict)
         scratch.max_score = -1
@@ -217,33 +219,36 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.max_score, 200)
         self.assertEqual(prev_last_updated, scratch.last_updated)
 
+
 class ScratchForkTests(BaseTestCase):
     def test_fork_scratch(self):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
-            'compiler': 'dummy',
-            'platform': 'dummy',
-            'context': '',
-            'target_asm': 'glabel meow\njr $ra',
-            'diff_label': 'meow',
-            'name': 'cat scratch',
+            "compiler": "dummy",
+            "platform": "dummy",
+            "context": "",
+            "target_asm": "glabel meow\njr $ra",
+            "diff_label": "meow",
+            "name": "cat scratch",
         }
         scratch = self.create_scratch(scratch_dict)
 
         slug = scratch.slug
 
         fork_dict = {
-            'compiler': 'dummy',
-            'platform': 'dummy',
-            'compiler_flags': '-O2',
-            'source_code': 'int func() { return 2; }',
-            'context': '',
+            "compiler": "dummy",
+            "platform": "dummy",
+            "compiler_flags": "-O2",
+            "source_code": "int func() { return 2; }",
+            "context": "",
         }
 
         # Create a fork of the scratch
-        response = self.client.post(reverse('scratch-fork', kwargs={'pk': slug}), fork_dict)
+        response = self.client.post(
+            reverse("scratch-fork", kwargs={"pk": slug}), fork_dict
+        )
         print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -260,42 +265,44 @@ class ScratchForkTests(BaseTestCase):
 
 
 class CompilationTests(BaseTestCase):
-    @requiresCompiler('gcc2.8.1')
+    @requiresCompiler("gcc2.8.1")
     def test_simple_compilation(self):
         """
         Ensure that we can run a simple compilation via the api
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
-            'context': '',
-            'target_asm': 'glabel func_80929D04\njr $ra\nnop'
+            "compiler": "gcc2.8.1",
+            "platform": "n64",
+            "context": "",
+            "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
 
         # Test that we can create a scratch
         scratch = self.create_scratch(scratch_dict)
 
         compile_dict = {
-            'slug': scratch.slug,
-            'compiler': 'gcc2.8.1',
-            'compiler_flags': '-mips2 -O2',
-            'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n'
+            "slug": scratch.slug,
+            "compiler": "gcc2.8.1",
+            "compiler_flags": "-mips2 -O2",
+            "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={'pk': scratch.slug}), compile_dict)
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @requiresCompiler('gcc2.8.1')
+    @requiresCompiler("gcc2.8.1")
     def test_giant_compilation(self):
         """
         Ensure that we can compile a giant file
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
-            'context': '',
-            'target_asm': 'glabel func_80929D04\njr $ra\nnop'
+            "compiler": "gcc2.8.1",
+            "platform": "n64",
+            "context": "",
+            "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
 
         # Test that we can create a scratch
@@ -306,43 +313,67 @@ class CompilationTests(BaseTestCase):
             context += "extern int test_symbol_to_be_used_in_a_test;\n"
 
         compile_dict = {
-            'slug': scratch.slug,
-            'compiler': 'gcc2.8.1',
-            'compiler_flags': '-mips2 -O2',
-            'source_code': 'int add(int a, int b){\nreturn a + b;\n}\n',
-            'context': context,
+            "slug": scratch.slug,
+            "compiler": "gcc2.8.1",
+            "compiler_flags": "-mips2 -O2",
+            "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
+            "context": context,
         }
 
         # Test that we can compile a scratch
-        response = self.client.post(reverse("scratch-compile", kwargs={'pk': scratch.slug}), compile_dict)
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(len(response.json()["errors"]), 0)
 
-    @requiresCompiler('ido5.3')
+    @requiresCompiler("ido5.3")
     def test_ido_line_endings(self):
         """
         Ensure that compilations with \\r\\n line endings succeed
         """
-        result = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+        result = CompilerWrapper.compile_code(
+            "ido5.3",
+            "-mips2 -O2",
+            "int dog = 5;",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
 
-    @requiresCompiler('ido5.3')
+    @requiresCompiler("ido5.3")
     def test_ido_kpic(self):
         """
         Ensure that ido compilations including -KPIC produce different code
         """
-        result_non_shared = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2", "int dog = 5;", "")
-        result_kpic = CompilerWrapper.compile_code("ido5.3", "-mips2 -O2 -KPIC", "int dog = 5;", "")
-        self.assertNotEqual(result_non_shared.elf_object, result_kpic.elf_object, "The compilation result should be different")
+        result_non_shared = CompilerWrapper.compile_code(
+            "ido5.3", "-mips2 -O2", "int dog = 5;", ""
+        )
+        result_kpic = CompilerWrapper.compile_code(
+            "ido5.3", "-mips2 -O2 -KPIC", "int dog = 5;", ""
+        )
+        self.assertNotEqual(
+            result_non_shared.elf_object,
+            result_kpic.elf_object,
+            "The compilation result should be different",
+        )
 
-    @requiresCompiler('mwcc_247_92')
+    @requiresCompiler("mwcc_247_92")
     def test_mwcc_wine(self):
         """
         Ensure that we can invoke mwcc through wine
         """
-        result = CompilerWrapper.compile_code("mwcc_247_92", "-str reuse -inline on -fp off -O0", "int func(void) { return 5; }", "extern char libvar1;\r\nextern char libvar2;\r\n")
-        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+        result = CompilerWrapper.compile_code(
+            "mwcc_247_92",
+            "-str reuse -inline on -fp off -O0",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
 
     def test_dummy_compiler(self):
         """
@@ -350,72 +381,102 @@ class CompilationTests(BaseTestCase):
         """
 
         result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
-        self.assertGreater(len(result.elf_object), 0, "The compilation result should be non-null")
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
 
 
 class DecompilationTests(BaseTestCase):
-    @requiresCompiler('gcc2.8.1')
+    @requiresCompiler("gcc2.8.1")
     def test_default_decompilation(self):
         """
         Ensure that a scratch's initial decompilation makes sense
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
-            'context': '',
-            'target_asm': 'glabel return_2\njr $ra\nli $v0,2',
+            "compiler": "gcc2.8.1",
+            "platform": "n64",
+            "context": "",
+            "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
-    @requiresCompiler('gcc2.8.1')
+    @requiresCompiler("gcc2.8.1")
     def test_decompile_endpoint(self):
         """
         Ensure that the decompile endpoint works
         """
         scratch_dict = {
-            'compiler': 'gcc2.8.1',
-            'platform': 'n64',
-            'context': 'typedef int s32;',
-            'target_asm': 'glabel return_2\njr $ra\nli $v0,2',
+            "compiler": "gcc2.8.1",
+            "platform": "n64",
+            "context": "typedef int s32;",
+            "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
         scratch = self.create_scratch(scratch_dict)
 
-        response = self.client.post(reverse("scratch-decompile", kwargs={'pk': scratch.slug}))
-        self.assertEqual(response.json()["decompilation"], "? return_2(void) {\n    return 2;\n}\n")
+        response = self.client.post(
+            reverse("scratch-decompile", kwargs={"pk": scratch.slug})
+        )
+        self.assertEqual(
+            response.json()["decompilation"], "? return_2(void) {\n    return 2;\n}\n"
+        )
 
         # Provide context and see that the decompilation changes
-        response = self.client.post(reverse("scratch-decompile", kwargs={'pk': scratch.slug}), data={"context": "s32 return_2(void);"})
-        self.assertEqual(response.json()["decompilation"], "s32 return_2(void) {\n    return 2;\n}\n")
+        response = self.client.post(
+            reverse("scratch-decompile", kwargs={"pk": scratch.slug}),
+            data={"context": "s32 return_2(void);"},
+        )
+        self.assertEqual(
+            response.json()["decompilation"], "s32 return_2(void) {\n    return 2;\n}\n"
+        )
 
 
 class M2CTests(TestCase):
     """
     Ensure that pointers are next to types (left style)
     """
+
     def test_left_pointer_style(self):
-        c_code = M2CWrapper.decompile("""
+        c_code = M2CWrapper.decompile(
+            """
         glabel func
         li $t6,1
         jr $ra
         sw $t6,0($a0)
-        """, "", "ido", "mips")
+        """,
+            "",
+            "ido",
+            "mips",
+        )
 
-        self.assertTrue("s32*" in c_code, "The decompiled c code should have a left-style pointer, was instead:\n" + c_code)
+        self.assertTrue(
+            "s32*" in c_code,
+            "The decompiled c code should have a left-style pointer, was instead:\n"
+            + c_code,
+        )
 
     """
     Ensure that we can decompile ppc code
     """
+
     def test_ppc(self):
-        c_code = M2CWrapper.decompile("""
+        c_code = M2CWrapper.decompile(
+            """
         .global func_800B43A8
         func_800B43A8:
         xor r0, r3, r3
         subf r3, r4, r0
         blr
-        """, "", "mwcc", "ppc")
+        """,
+            "",
+            "mwcc",
+            "ppc",
+        )
 
-        self.assertEqual("s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n", c_code)
+        self.assertEqual(
+            "s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n",
+            c_code,
+        )
 
 
 class UserTests(BaseTestCase):
@@ -453,7 +514,7 @@ class UserTests(BaseTestCase):
         "followers": 0,
         "following": 0,
         "created_at": "2021-08-23T20:56:16Z",
-        "updated_at": "2021-08-23T21:00:04Z"
+        "updated_at": "2021-08-23T21:00:04Z",
     }
 
     @classmethod
@@ -477,16 +538,34 @@ class UserTests(BaseTestCase):
         Ensure that a user is created upon sign-in with GitHub.
         """
 
-        responses.add(responses.POST, "https://github.com/login/oauth/access_token", json={
-            "access_token": "__mock__",
-            "scope": "public_repo",
-        }, status=200)
-        responses.add(responses.GET, "https://api.github.com:443/user", json=self.GITHUB_USER, status=200)
-        responses.add(responses.GET, f"https://api.github.com:443/user/{self.GITHUB_USER['id']}", json=self.GITHUB_USER, status=200)
+        responses.add(
+            responses.POST,
+            "https://github.com/login/oauth/access_token",
+            json={
+                "access_token": "__mock__",
+                "scope": "public_repo",
+            },
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://api.github.com:443/user",
+            json=self.GITHUB_USER,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            f"https://api.github.com:443/user/{self.GITHUB_USER['id']}",
+            json=self.GITHUB_USER,
+            status=200,
+        )
 
-        response = self.client.post(self.current_user_url, {
-            "code": "__mock__",
-        })
+        response = self.client.post(
+            self.current_user_url,
+            {
+                "code": "__mock__",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Profile.objects.count(), 1)
@@ -502,17 +581,35 @@ class UserTests(BaseTestCase):
         # log in as the user
         self.test_github_login()
 
-        responses.add(responses.POST, "https://github.com/login/oauth/access_token", json={
-            "access_token": "__mock__",
-            "scope": "public_repo",
-        }, status=200)
-        responses.add(responses.GET, "https://api.github.com:443/user", json=self.GITHUB_USER, status=200)
-        responses.add(responses.GET, f"https://api.github.com:443/user/{self.GITHUB_USER['id']}", json=self.GITHUB_USER, status=200)
+        responses.add(
+            responses.POST,
+            "https://github.com/login/oauth/access_token",
+            json={
+                "access_token": "__mock__",
+                "scope": "public_repo",
+            },
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://api.github.com:443/user",
+            json=self.GITHUB_USER,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            f"https://api.github.com:443/user/{self.GITHUB_USER['id']}",
+            json=self.GITHUB_USER,
+            status=200,
+        )
 
         # log in as the user again
-        response = self.client.post(self.current_user_url, {
-            "code": "__mock__",
-        })
+        response = self.client.post(
+            self.current_user_url,
+            {
+                "code": "__mock__",
+            },
+        )
 
         # check there is only one user created
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -533,7 +630,7 @@ class UserTests(BaseTestCase):
         response = self.client.get(self.current_user_url)
         self.assertEqual(response.json()["is_anonymous"], False)
 
-        self.assertEqual(Profile.objects.count(), 1) # logged-in
+        self.assertEqual(Profile.objects.count(), 1)  # logged-in
 
         # log out
         response = self.client.post(self.current_user_url, {})
@@ -541,7 +638,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(response.json()["is_you"], True)
         self.assertEqual(response.json()["is_anonymous"], True)
 
-        self.assertEqual(Profile.objects.count(), 2) # logged-out
+        self.assertEqual(Profile.objects.count(), 2)  # logged-out
 
         for i in range(3):
             # verify we are logged out
@@ -557,12 +654,15 @@ class UserTests(BaseTestCase):
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
         """
-        response = self.client.post("/api/scratch", {
-            'compiler': 'dummy',
-            'platform': 'dummy',
-            'context': '',
-            'target_asm': "jr $ra\nnop\n"
-        })
+        response = self.client.post(
+            "/api/scratch",
+            {
+                "compiler": "dummy",
+                "platform": "dummy",
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         slug = response.json()["slug"]
 
@@ -573,7 +673,9 @@ class UserTests(BaseTestCase):
         self.assertTrue(response.json()["success"])
 
         response = self.client.get(f"/api/scratch/{slug}")
-        self.assertEqual(response.json()["owner"]["username"], self.GITHUB_USER["login"])
+        self.assertEqual(
+            response.json()["owner"]["username"], self.GITHUB_USER["login"]
+        )
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
 
@@ -607,7 +709,10 @@ class ScratchDetailTests(BaseTestCase):
         last_modified = response.headers.get("Last-Modified")
 
         # should be unmodified
-        response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
+        response = self.client.get(
+            reverse("scratch-detail", args=[scratch.slug]),
+            HTTP_IF_MODIFIED_SINCE=last_modified,
+        )
         self.assertEqual(response.status_code, status.HTTP_304_NOT_MODIFIED)
 
         # Last-Modified is only granular to the second
@@ -620,7 +725,10 @@ class ScratchDetailTests(BaseTestCase):
         self.assertNotEqual(scratch.last_updated, old_last_updated)
 
         # should now be modified
-        response = self.client.get(reverse("scratch-detail", args=[scratch.slug]), HTTP_IF_MODIFIED_SINCE=last_modified)
+        response = self.client.get(
+            reverse("scratch-detail", args=[scratch.slug]),
+            HTTP_IF_MODIFIED_SINCE=last_modified,
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_double_claim(self):
@@ -712,7 +820,7 @@ class RequestTests(APITestCase):
         Ensure that we create a profile for a normal request
         """
 
-        response = self.client.get(reverse('compilers'))
+        response = self.client.get(reverse("compilers"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 1)
@@ -722,7 +830,7 @@ class RequestTests(APITestCase):
         Ensure that we don't create profiles for node-fetch requests (SSR)
         """
 
-        response = self.client.get(reverse('compilers'), HTTP_USER_AGENT='node-fetch')
+        response = self.client.get(reverse("compilers"), HTTP_USER_AGENT="node-fetch")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
@@ -764,7 +872,7 @@ class ProjectTests(TestCase):
         mock_subprocess.assert_called_once()
         self.assertListEqual(
             mock_subprocess.call_args.args[0][:3],
-            ["git", "clone", "https://github.com/decompme/example-project"]
+            ["git", "clone", "https://github.com/decompme/example-project"],
         )
         mock_mkdir.assert_called_once_with(parents=True)
 
@@ -792,19 +900,25 @@ class ProjectTests(TestCase):
                 (dir / "src").mkdir(parents=True)
                 asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
                 with asm_file.open("w") as f:
-                    f.writelines([
-                        "glabel test\n",
-                        "jr $ra\n",
-                        "nop\n",
-                    ])
+                    f.writelines(
+                        [
+                            "glabel test\n",
+                            "jr $ra\n",
+                            "nop\n",
+                        ]
+                    )
                 with (dir / "src" / "section.c").open("w") as f:
-                    f.writelines([
-                        "typedef int s32;\n",
-                    ])
+                    f.writelines(
+                        [
+                            "typedef int s32;\n",
+                        ]
+                    )
                 with (dir / "symbol_addrs.txt").open("w") as f:
-                    f.writelines([
-                        "test = 0x80240000; // type:func rom:0x1000\n",
-                    ])
+                    f.writelines(
+                        [
+                            "test = 0x80240000; // type:func rom:0x1000\n",
+                        ]
+                    )
 
                 # configure the import
                 compiler_config = CompilerConfig(

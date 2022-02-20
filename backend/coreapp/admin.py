@@ -7,6 +7,7 @@ from .models.scratch import Assembly, Asm, Scratch, CompilerConfig
 from .models.project import Project, ProjectMember, ProjectFunction, ProjectImportConfig
 from .models.github import GitHubUser, GitHubRepo, GitHubRepoBusyException
 
+
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
     actions = ["pull", "reclone"]
 
@@ -22,6 +23,7 @@ class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
             repo.last_pulled = None
             shutil.rmtree(repo.get_dir())
             repo.pull()
+
 
 admin.site.register(Profile)
 admin.site.register(GitHubUser)

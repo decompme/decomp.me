@@ -3,6 +3,7 @@
 from django.db import migrations, models
 import django.db.migrations.operations.special
 
+
 def populate_compiler(apps, schema_editor):
     """
     Populate the compiler field for all existing scratches
@@ -12,38 +13,39 @@ def populate_compiler(apps, schema_editor):
         row.compiler = row.compiler if row.compiler else "ido7.1"
         row.save()
 
+
 class Migration(migrations.Migration):
     dependencies = [
-        ('coreapp', '0007_rename_arch_scratch_platform'),
+        ("coreapp", "0007_rename_arch_scratch_platform"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scratch',
-            name='max_score',
+            model_name="scratch",
+            name="max_score",
             field=models.IntegerField(default=-1),
         ),
         migrations.RemoveField(
-            model_name='scratch',
-            name='original_context',
+            model_name="scratch",
+            name="original_context",
         ),
         migrations.RenameField(
-            model_name='compilation',
-            old_name='cc_opts',
-            new_name='compiler_flags',
+            model_name="compilation",
+            old_name="cc_opts",
+            new_name="compiler_flags",
         ),
         migrations.RenameField(
-            model_name='scratch',
-            old_name='cc_opts',
-            new_name='compiler_flags',
+            model_name="scratch",
+            old_name="cc_opts",
+            new_name="compiler_flags",
         ),
         migrations.RunPython(
             code=populate_compiler,
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
         migrations.AlterField(
-            model_name='scratch',
-            name='compiler',
+            model_name="scratch",
+            name="compiler",
             field=models.CharField(max_length=100),
-        )
+        ),
     ]

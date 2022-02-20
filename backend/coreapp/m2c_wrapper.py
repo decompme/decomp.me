@@ -8,8 +8,10 @@ from coreapp.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
+
 class M2CError(Exception):
     pass
+
 
 class M2CWrapper:
     @staticmethod
@@ -31,7 +33,6 @@ class M2CWrapper:
             raise M2CError(f"Unsupported compiler '{compiler}'")
 
         return f"{t_arch}-{t_compiler}"
-
 
     @staticmethod
     def decompile(asm: str, context: str, compiler: str, arch: str) -> str:

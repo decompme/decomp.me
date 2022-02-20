@@ -7,6 +7,7 @@ from .profile import Profile
 
 logger = logging.getLogger(__name__)
 
+
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)
 
@@ -15,12 +16,14 @@ def gen_scratch_id() -> str:
 
     return ret
 
+
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
 
     def __str__(self):
         return self.data if len(self.data) < 20 else self.data[:17] + "..."
+
 
 class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
@@ -29,11 +32,13 @@ class Assembly(models.Model):
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
     elf_object = models.BinaryField(blank=True)
 
+
 class CompilerConfig(models.Model):
     # TODO: validate compiler and platform
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
@@ -41,9 +46,13 @@ class Scratch(models.Model):
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100) # TODO: reference a CompilerConfig
-    platform = models.CharField(max_length=100, blank=True) # TODO: reference a CompilerConfig
-    compiler_flags = models.TextField(max_length=1000, default="", blank=True) # TODO: reference a CompilerConfig
+    compiler = models.CharField(max_length=100)  # TODO: reference a CompilerConfig
+    platform = models.CharField(
+        max_length=100, blank=True
+    )  # TODO: reference a CompilerConfig
+    compiler_flags = models.TextField(
+        max_length=1000, default="", blank=True
+    )  # TODO: reference a CompilerConfig
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
@@ -52,10 +61,12 @@ class Scratch(models.Model):
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    project_function = models.ForeignKey("ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL) # The function, if any, that this scratch is an attempt of
+    project_function = models.ForeignKey(
+        "ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL
+    )  # The function, if any, that this scratch is an attempt of
 
     class Meta:
-        ordering = ['-creation_time']
+        ordering = ["-creation_time"]
         verbose_name_plural = "Scratches"
 
     def __str__(self):
