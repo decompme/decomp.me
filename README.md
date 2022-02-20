@@ -67,20 +67,26 @@ python3 -m virtualenv venv
 source venv/bin/activate
 ```
 
-- Install dependencies
+- Install python dependencies
+* [Install poetry](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
 ```shell
-pip install -r requirements.txt
+poetry install
+./compilers/download.sh
+```
+
+- Install compilers
+```shell
 ./compilers/download.sh
 ```
 
 - Set up the database
 ```shell
-python manage.py migrate
+poetry run python manage.py migrate
 ```
 
 - Start the API server
 ```shell
-python manage.py runserver
+poetry run python manage.py runserver
 ```
 
 ---
@@ -198,13 +204,6 @@ To enable it locally outside of the Docker container:
     - Set `USE_SANDBOX_JAIL=on`
     - Set `SANDBOX_NSJAIL_BIN_PATH` to the absolute path of the `nsjail` binary built above
 
-## Deployment
-
-- Backend - same as in development, just set DEBUG=true
-- Frontend - multiple options:
-    - Self-hosted - `yarn build && yarn start` with nginx proxy to filter /api/* to the backend
-    - [Deploy with Vercel](https://vercel.com/new)
-
 ## Contributing
 
 Contributions are very much welcome! You may want to [join our Discord server](https://discord.gg/sutqNShRRs).
@@ -237,8 +236,8 @@ mypy
 
 If you modify any database models (`models.py`), you'll need to run the following to update the database:
 ```shell
-python manage.py makemigrations
-python manage.py migrate
+poetry run python manage.py makemigrations
+poetry run python manage.py migrate
 ```
 
 ## License

@@ -11,8 +11,12 @@ until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   sleep 1
 done
 
-python /backend/manage.py migrate
+poetry config virtualenvs.path /backend/virtualenvs
 
-python /backend/manage.py loaddata /backend/db.json
+poetry install
 
-python /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
+poetry run /backend/manage.py migrate
+
+poetry run /backend/manage.py loaddata /backend/db.json
+
+poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}

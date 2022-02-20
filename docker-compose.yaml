@@ -31,6 +31,7 @@ services:
       ALLOWED_HOSTS: "backend,localhost,127.0.0.1"
       USE_SANDBOX_JAIL: "on"
       COMPILER_BASE_PATH: /compilers
+      LOCAL_FILE_DIRL: /local_files
     ports:
     - "8000:8000"
     security_opt:
@@ -38,6 +39,7 @@ services:
       - seccomp=unconfined
     volumes:
     - ./backend:/backend
+    - ./local_files:/local_files
     tmpfs:
     # Use a separate tmpfs to prevent a rogue jailed process
     # from filling /tmp on the parent container

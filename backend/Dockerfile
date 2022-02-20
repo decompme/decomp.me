@@ -5,7 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
-    python-is-python3
+    python-is-python3 \
+    python3.9-venv
 
 
 FROM base AS nsjail
@@ -24,7 +25,7 @@ RUN apt-get -y update && apt-get install -y \
     pkg-config \
     protobuf-compiler
 
-# TODO: change this when they tag a release
+# TODO: change this when they tag a release (see https://github.com/google/nsjail/issues/190)
 RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
     && cd /nsjail \
     && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
@@ -48,9 +49,8 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /backend/requirements.txt
-
-RUN python -m pip install -r /backend/requirements.txt --no-cache-dir
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
+  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -113,6 +113,8 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
+
+ENV PATH="$PATH:/etc/poetry/bin"
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
