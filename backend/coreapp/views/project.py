@@ -50,7 +50,10 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         assert isinstance(obj, Project)
-        return request.method in permissions.SAFE_METHODS or obj.is_member(request.profile)
+        return request.method in permissions.SAFE_METHODS or obj.is_member(
+            request.profile
+        )
+
 
 class ProjectViewSet(
     mixins.RetrieveModelMixin,

@@ -964,20 +964,30 @@ class ProjectTests(TestCase):
                 project = self.create_test_project()
 
                 # try, and fail
-                response = self.client.patch(reverse('project-detail', args=[project.slug]), {
-                    "description": "new description",
-                }, content_type="application/json")
+                response = self.client.patch(
+                    reverse("project-detail", args=[project.slug]),
+                    {
+                        "description": "new description",
+                    },
+                    content_type="application/json",
+                )
                 self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-                self.assertNotEqual(Project.objects.first().description, "new description")
+                self.assertNotEqual(
+                    Project.objects.first().description, "new description"
+                )
 
                 # add project member
                 profile = Profile.objects.first()
                 ProjectMember(project=project, profile=profile).save()
 
                 # try again
-                response = self.client.patch(reverse('project-detail', args=[project.slug]), {
-                    "description": "new description",
-                }, content_type="application/json")
+                response = self.client.patch(
+                    reverse("project-detail", args=[project.slug]),
+                    {
+                        "description": "new description",
+                    },
+                    content_type="application/json",
+                )
                 print(response.json())
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertEqual(Project.objects.first().description, "new description")
