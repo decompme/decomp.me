@@ -3,8 +3,7 @@ import { useRef } from "react"
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CompilationPanel from "../Diff/CompilationPanel"
-import Editor from "../Editor"
-import { EditorInstance } from "../Editor/MonacoEditor"
+import CodeMirror, { EditorView } from "../Editor/CodeMirror"
 import ScoreBadge from "../ScoreBadge"
 import { Tab } from "../Tabs"
 
@@ -40,8 +39,8 @@ export function useLeftTabs({ scratch, setScratch }: {
     scratch: Scratch
     setScratch: (s: Partial<Scratch>) => void
 }, filter?: Array<LeftScratchTab>): React.ReactElement<typeof Tab>[] {
-    const sourceEditor = useRef<EditorInstance>()
-    const contextEditor = useRef<EditorInstance>()
+    const sourceEditor = useRef<EditorView>()
+    const contextEditor = useRef<EditorView>()
     const userIsYou = useUserIsYou()
 
     return renderTabs({
@@ -50,19 +49,15 @@ export function useLeftTabs({ scratch, setScratch }: {
                 key="source"
                 tabKey="source"
                 label="Source code"
-                onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
+                onSelect={() => sourceEditor.current?.focus?.()}
             >
-                <Editor
-                    instanceRef={sourceEditor}
+                <CodeMirror
+                    viewRef={sourceEditor}
                     className={styles.editor}
-                    language="c"
                     value={scratch.source_code}
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
-                    lineNumbers
-                    showMargin
-                    bubbleSuspense
                 />
             </Tab>
         ),
@@ -80,19 +75,15 @@ export function useLeftTabs({ scratch, setScratch }: {
                 tabKey="context"
                 label="Context"
                 className={styles.context}
-                onSelect={() => contextEditor.current && contextEditor.current.focus()}
+                onSelect={() => contextEditor.current?.focus?.()}
             >
-                <Editor
-                    instanceRef={contextEditor}
+                <CodeMirror
+                    viewRef={contextEditor}
                     className={styles.editor}
-                    language="c"
                     value={scratch.context}
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    lineNumbers
-                    showMargin
-                    bubbleSuspense
                 />
             </Tab>
         ),

@@ -13,6 +13,8 @@
     },
     "dependencies": {
         "@badrap/bar-of-progress": "^0.1.2",
+        "@codemirror/basic-setup": "^0.19.1",
+        "@codemirror/lang-cpp": "^0.19.1",
         "@primer/octicons-react": "^16.3.1",
         "@react-hook/resize-observer": "^1.2.2",
         "ansi-to-react": "^6.1.6",

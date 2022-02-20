@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import * as api from "../../lib/api"
 import Button from "../Button"
-import Editor from "../Editor"
+import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"
 import Modal from "../Modal"
 
@@ -44,13 +44,10 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
                     This new decompilation should reflect your changes. </p>
 
                 {decompiledCode ? <>
-                    <Editor
+                    <CodeMirror
                         className={styles.editor}
-                        language="c"
                         value={decompiledCode}
                         onChange={c => setDecompiledCode(c)}
-                        lineNumbers
-                        showMargin
                     />
                     <p>Would you like to reset this scratch's source code to this newly decompiled iteration?</p>
                 </> : <Loading className={styles.loading} />}

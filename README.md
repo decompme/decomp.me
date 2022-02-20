@@ -160,6 +160,13 @@ server {
         proxy_redirect off;
         proxy_pass http://127.0.0.1:8080;
     }
+
+    location /_next/webpack-hmr {
+        proxy_pass http://127.0.0.1:8080/_next/webpack-hmr;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
 }
 ```
 
