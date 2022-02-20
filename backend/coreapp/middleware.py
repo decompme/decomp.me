@@ -11,15 +11,20 @@ from typing import Union, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from .models.github import GitHubUser
 
+
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile
 
+
 if TYPE_CHECKING:
+
     class Request(DRFRequest):
         user: Union[User, AnonymousUser]
         profile: Profile
+
 else:
     Request = DRFRequest
+
 
 def disable_csrf(get_response):
     def middleware(request: HttpRequest):
@@ -28,6 +33,7 @@ def disable_csrf(get_response):
 
     return middleware
 
+
 def set_user_profile(get_response):
     """
     Makes sure that `request.profile` is always available, even for anonymous users.
@@ -35,7 +41,10 @@ def set_user_profile(get_response):
 
     def middleware(request: Request):
         # Skip if the request is from SSR
-        if "User-Agent" in request.headers and "node-fetch" in request.headers["User-Agent"]:
+        if (
+            "User-Agent" in request.headers
+            and "node-fetch" in request.headers["User-Agent"]
+        ):
             request.profile = Profile()
             return get_response(request)
 

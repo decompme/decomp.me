@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0004_scratch_diff_label'),
+        ("coreapp", "0004_scratch_diff_label"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scratch',
-            name='arch',
+            model_name="scratch",
+            name="arch",
             field=models.CharField(blank=True, max_length=100),
         ),
     ]

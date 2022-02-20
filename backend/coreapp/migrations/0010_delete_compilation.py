@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0009_remove_crud_from_compilation'),
+        ("coreapp", "0009_remove_crud_from_compilation"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Compilation',
+            name="Compilation",
         ),
     ]

@@ -3,6 +3,7 @@
 from django.db import migrations, models
 import django.db.migrations.operations.special
 
+
 def populate_name(apps, schema_editor):
     """
     Populate the name field for all existing scratches
@@ -13,21 +14,22 @@ def populate_name(apps, schema_editor):
             row.name = "Untitled"
         row.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0012_alter_scratch_name'),
+        ("coreapp", "0012_alter_scratch_name"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='scratch',
-            options={'ordering': ['-creation_time']},
+            name="scratch",
+            options={"ordering": ["-creation_time"]},
         ),
         migrations.AlterField(
-            model_name='scratch',
-            name='name',
-            field=models.CharField(default='Untitled', max_length=512),
+            model_name="scratch",
+            name="name",
+            field=models.CharField(default="Untitled", max_length=512),
         ),
         migrations.RunPython(
             code=populate_name,

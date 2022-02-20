@@ -5,6 +5,7 @@ from typing import (
     Optional,
     Set,
     Tuple,
+    Union,
 )
 from .error import DecompFailure
 from .options import Target
@@ -12,12 +13,14 @@ from .parse_instruction import (
     Argument,
     AsmAddressMode,
     AsmGlobalSymbol,
+    AsmInstruction,
     AsmLiteral,
     Instruction,
     InstructionMeta,
     JumpTarget,
     Macro,
     Register,
+    get_jump_target,
 )
 from .asm_pattern import (
     AsmMatch,
@@ -32,6 +35,7 @@ from .translate import (
     AbiArgSlot,
     Arch,
     BinaryOp,
+    CarryBit,
     Cast,
     CmpInstrMap,
     CommentStmt,
@@ -40,11 +44,13 @@ from .translate import (
     ImplicitInstrMap,
     InstrMap,
     InstrSet,
+    Literal,
     PpcCmpInstrMap,
     PairInstrMap,
     SecondF64Half,
     StmtInstrMap,
     StoreInstrMap,
+    TernaryOp,
     UnaryOp,
     as_f32,
     as_f64,
@@ -68,6 +74,7 @@ from .translate import (
     handle_loadx,
     handle_or,
     handle_rlwinm,
+    handle_rlwimi,
     handle_sra,
     load_upper,
     make_store,
@@ -94,11 +101,11 @@ class FcmpoCrorPattern(SimpleAsmPattern):
         assert isinstance(fcmpo, Instruction)
         if m.literals["N"] == 0:
             return Replacement(
-                [m.derived_instr("fcmpo.lte.fictive", fcmpo.args)], len(m.body)
+                [AsmInstruction("fcmpo.lte.fictive", fcmpo.args)], len(m.body)
             )
         elif m.literals["N"] == 1:
             return Replacement(
-                [m.derived_instr("fcmpo.gte.fictive", fcmpo.args)], len(m.body)
+                [AsmInstruction("fcmpo.gte.fictive", fcmpo.args)], len(m.body)
             )
         return None
 
@@ -120,8 +127,8 @@ class TailCallPattern(AsmPattern):
         ):
             return Replacement(
                 [
-                    Instruction.derived("bl", instr.args, instr),
-                    Instruction.derived("blr", [], instr),
+                    AsmInstruction("bl", instr.args),
+                    AsmInstruction("blr", []),
                 ],
                 1,
             )
@@ -139,7 +146,7 @@ class BoolCastPattern(SimpleAsmPattern):
 
     def replace(self, m: AsmMatch) -> Optional[Replacement]:
         return Replacement(
-            [m.derived_instr("boolcast.fictive", [Register("r0"), m.regs["x"]])],
+            [AsmInstruction("boolcast.fictive", [Register("r0"), m.regs["x"]])],
             len(m.body),
         )
 
@@ -153,8 +160,8 @@ class BranchCtrPattern(AsmPattern):
             ctr = Register("ctr")
             return Replacement(
                 [
-                    Instruction.derived("addi", [ctr, ctr, AsmLiteral(-1)], instr),
-                    Instruction.derived(instr.mnemonic + ".fictive", instr.args, instr),
+                    AsmInstruction("addi", [ctr, ctr, AsmLiteral(-1)]),
+                    AsmInstruction(instr.mnemonic + ".fictive", instr.args),
                 ],
                 1,
             )
@@ -283,75 +290,9 @@ class PpcArch(Arch):
 
     aliased_regs: Dict[str, Register] = {}
 
-    uses_delay_slots = False
-
-    @staticmethod
-    def is_branch_instruction(instr: Instruction) -> bool:
-        return (
-            instr.mnemonic
-            in [
-                "ble",
-                "blt",
-                "beq",
-                "bge",
-                "bgt",
-                "bne",
-                "bdnz",
-                "bdz",
-                "bdnz.fictive",
-                "bdz.fictive",
-            ]
-            or PpcArch.is_constant_branch_instruction(instr)
-        )
-
-    @staticmethod
-    def is_branch_likely_instruction(instr: Instruction) -> bool:
-        return False
-
-    @staticmethod
-    def is_constant_branch_instruction(instr: Instruction) -> bool:
-        return instr.mnemonic == "b"
-
-    @staticmethod
-    def is_jump_instruction(instr: Instruction) -> bool:
-        # (we don't treat jal/jalr as jumps, since control flow will return
-        # after the call)
-        return (
-            PpcArch.is_conditional_return_instruction(instr)
-            or PpcArch.is_branch_instruction(instr)
-            or instr.mnemonic in ("blr", "bctr")
-        )
-
-    @staticmethod
-    def is_delay_slot_instruction(instr: Instruction) -> bool:
-        return False
-
-    @staticmethod
-    def is_return_instruction(instr: Instruction) -> bool:
-        return instr.mnemonic == "blr"
-
-    @staticmethod
-    def is_conditional_return_instruction(instr: Instruction) -> bool:
-        return instr.mnemonic in (
-            "beqlr",
-            "bgelr",
-            "bgtlr",
-            "blelr",
-            "bltlr",
-            "bnelr",
-            "bnglr",
-            "bnllr",
-            "bnslr",
-            "bsolr",
-        )
-
-    @staticmethod
-    def is_jumptable_instruction(instr: Instruction) -> bool:
-        return instr.mnemonic == "bctr"
-
-    @staticmethod
-    def missing_return() -> List[Instruction]:
-        return [Instruction("blr", [], InstructionMeta.missing())]
+    @classmethod
+    def missing_return(cls) -> List[Instruction]:
+        return [cls.parse("blr", [], InstructionMeta.missing())]
 
     # List of all instructions where `$r0` as certian args is interpreted as `0`
     # instead of the contents of `$r0`. The dict value represents the argument
@@ -409,13 +350,13 @@ class PpcArch(Arch):
     }
 
     @classmethod
-    def normalize_instruction(cls, instr: Instruction) -> Instruction:
+    def normalize_instruction(cls, instr: AsmInstruction) -> AsmInstruction:
         # Remove +/- suffix, which indicates branch-(un)likely and can be ignored
         if instr.mnemonic.startswith("b") and (
             instr.mnemonic.endswith("+") or instr.mnemonic.endswith("-")
         ):
             return PpcArch.normalize_instruction(
-                Instruction(instr.mnemonic[:-1], instr.args, instr.meta)
+                AsmInstruction(instr.mnemonic[:-1], instr.args)
             )
 
         args = instr.args
@@ -432,7 +373,7 @@ class PpcArch(Arch):
                 new_args = args[:]
                 new_args[r0_index] = r0_arg
                 return PpcArch.normalize_instruction(
-                    Instruction(instr.mnemonic, new_args, instr.meta)
+                    AsmInstruction(instr.mnemonic, new_args)
                 )
         if len(args) == 3:
             if (
@@ -441,11 +382,11 @@ class PpcArch(Arch):
                 and args[1] in (Register("r2"), Register("r13"))
                 and args[2].macro_name in ("sda2", "sda21")
             ):
-                return Instruction("li", [args[0], args[2].argument], instr.meta)
+                return AsmInstruction("li", [args[0], args[2].argument])
         if len(args) == 2:
             if instr.mnemonic == "lis" and isinstance(args[1], AsmLiteral):
                 lit = AsmLiteral((args[1].value & 0xFFFF) << 16)
-                return Instruction("li", [args[0], lit], instr.meta)
+                return AsmInstruction("li", [args[0], lit])
             if (
                 instr.mnemonic == "lis"
                 and isinstance(args[1], Macro)
@@ -457,12 +398,82 @@ class PpcArch(Arch):
                 if value & 0x8000:
                     value += 0x10000
                 lit = AsmLiteral(value & 0xFFFF0000)
-                return Instruction("li", [args[0], lit], instr.meta)
+                return AsmInstruction("li", [args[0], lit])
             if instr.mnemonic.startswith("cmp"):
                 # For the two-argument form of cmpw, the insert an implicit CR0 as the first arg
                 cr0: Argument = Register("cr0")
-                return Instruction(instr.mnemonic, [cr0] + instr.args, instr.meta)
+                return AsmInstruction(instr.mnemonic, [cr0] + instr.args)
         return instr
+
+    @classmethod
+    def parse(
+        cls, mnemonic: str, args: List[Argument], meta: InstructionMeta
+    ) -> Instruction:
+        jump_target: Optional[Union[JumpTarget, Register]] = None
+        function_target: Optional[Union[AsmGlobalSymbol, Register]] = None
+        is_conditional = False
+        is_return = False
+
+        if mnemonic == "blr":
+            # Return
+            is_return = True
+        elif mnemonic in (
+            "beqlr",
+            "bgelr",
+            "bgtlr",
+            "blelr",
+            "bltlr",
+            "bnelr",
+            "bnglr",
+            "bnllr",
+            "bnslr",
+            "bsolr",
+        ):
+            # Conditional return
+            is_return = True
+            is_conditional = True
+        elif mnemonic == "bctr":
+            # Jump table (switch)
+            jump_target = Register("ctr")
+            is_conditional = True
+        elif mnemonic == "bl":
+            # Function call to label
+            assert isinstance(args[0], AsmGlobalSymbol)
+            function_target = args[0]
+        elif mnemonic == "bctrl":
+            # Function call to pointer in $ctr
+            function_target = Register("ctr")
+        elif mnemonic == "blrl":
+            # Function call to pointer in $lr
+            function_target = Register("lr")
+        elif mnemonic == "b":
+            # Unconditional jump
+            jump_target = get_jump_target(args[0])
+        elif mnemonic in (
+            "ble",
+            "blt",
+            "beq",
+            "bge",
+            "bgt",
+            "bne",
+            "bdnz",
+            "bdz",
+            "bdnz.fictive",
+            "bdz.fictive",
+        ):
+            # Normal branch
+            jump_target = get_jump_target(args[-1])
+            is_conditional = True
+
+        return Instruction(
+            mnemonic=mnemonic,
+            args=args,
+            meta=meta,
+            jump_target=jump_target,
+            function_target=function_target,
+            is_conditional=is_conditional,
+            is_return=is_return,
+        )
 
     asm_patterns = [
         FcmpoCrorPattern(),
@@ -543,14 +554,33 @@ class PpcArch(Arch):
     }
     instrs_destination_first: InstrMap = {
         # Integer arithmetic
-        "addi": lambda a: handle_addi(a),
+        # TODO: Read XER_CA in extended instrs, instead of using CarryBit
         "add": lambda a: handle_add(a),
+        "addc": lambda a: handle_add(a),
+        "adde": lambda a: CarryBit.add_to(handle_add(a)),
+        "addze": lambda a: CarryBit.add_to(a.reg(1)),
+        "addi": lambda a: handle_addi(a),
+        "addic": lambda a: handle_addi(a),
         "addis": lambda a: handle_addis(a),
         "subf": lambda a: fold_divmod(
             BinaryOp.intptr(left=a.reg(2), op="-", right=a.reg(1))
         ),
+        "subfc": lambda a: fold_divmod(
+            BinaryOp.intptr(left=a.reg(2), op="-", right=a.reg(1))
+        ),
+        "subfe": lambda a: CarryBit.sub_from(
+            fold_divmod(BinaryOp.intptr(left=a.reg(2), op="-", right=a.reg(1)))
+        ),
+        "subfic": lambda a: fold_divmod(
+            BinaryOp.intptr(left=a.imm(2), op="-", right=a.reg(1))
+        ),
+        "subfze": lambda a: CarryBit.sub_from(
+            fold_mul_chains(
+                UnaryOp(op="-", expr=as_s32(a.reg(1), silent=True), type=Type.s32())
+            )
+        ),
         "neg": lambda a: fold_mul_chains(
-            UnaryOp(op="-", expr=as_s32(a.reg(1)), type=Type.s32())
+            UnaryOp(op="-", expr=as_s32(a.reg(1), silent=True), type=Type.s32())
         ),
         "divw": lambda a: BinaryOp.s32(a.reg(1), "/", a.reg(2)),
         "divwu": lambda a: BinaryOp.u32(a.reg(1), "/", a.reg(2)),
@@ -563,17 +593,26 @@ class PpcArch(Arch):
         "ori": lambda a: handle_or(a.reg(1), a.unsigned_imm(2)),
         "oris": lambda a: handle_or(a.reg(1), a.shifted_imm(2)),
         "and": lambda a: BinaryOp.int(left=a.reg(1), op="&", right=a.reg(2)),
+        "andc": lambda a: BinaryOp.int(
+            left=a.reg(1), op="&", right=UnaryOp("~", a.reg(2), type=Type.intish())
+        ),
         "not": lambda a: UnaryOp("~", a.reg(1), type=Type.intish()),
         "nor": lambda a: UnaryOp(
             "~", BinaryOp.int(left=a.reg(1), op="|", right=a.reg(2)), type=Type.intish()
         ),
         "xor": lambda a: BinaryOp.int(left=a.reg(1), op="^", right=a.reg(2)),
+        "eqv": lambda a: UnaryOp(
+            "~", BinaryOp.int(left=a.reg(1), op="^", right=a.reg(2)), type=Type.intish()
+        ),
         "andi": lambda a: BinaryOp.int(left=a.reg(1), op="&", right=a.unsigned_imm(2)),
         "andis": lambda a: BinaryOp.int(left=a.reg(1), op="&", right=a.shifted_imm(2)),
         "xori": lambda a: BinaryOp.int(left=a.reg(1), op="^", right=a.unsigned_imm(2)),
         "xoris": lambda a: BinaryOp.int(left=a.reg(1), op="^", right=a.shifted_imm(2)),
         "boolcast.fictive": lambda a: UnaryOp(
             op="!!", expr=a.reg(1), type=Type.intish()
+        ),
+        "rlwimi": lambda a: handle_rlwimi(
+            a.reg(0), a.reg(1), a.imm_value(2), a.imm_value(3), a.imm_value(4)
         ),
         "rlwinm": lambda a: handle_rlwinm(
             a.reg(1), a.imm_value(2), a.imm_value(3), a.imm_value(4)
@@ -622,6 +661,7 @@ class PpcArch(Arch):
         "srawi": lambda a: handle_sra(a),
         "extsb": lambda a: handle_convert(a.reg(1), Type.s8(), Type.intish()),
         "extsh": lambda a: handle_convert(a.reg(1), Type.s16(), Type.intish()),
+        "cntlzw": lambda a: UnaryOp(op="CLZ", expr=a.reg(1), type=Type.intish()),
         # Integer Loads
         "lba": lambda a: handle_load(a, type=Type.s8()),
         "lbz": lambda a: handle_load(a, type=Type.u8()),
@@ -697,6 +737,14 @@ class PpcArch(Arch):
         ),
         # TODO: Detect if we should use fabs or fabsf
         "fabs": lambda a: fn_op("fabs", [a.reg(1)], Type.floatish()),
+        "fres": lambda a: fn_op("__fres", [a.reg(1)], Type.floatish()),
+        "frsqrte": lambda a: fn_op("__frsqrte", [a.reg(1)], Type.floatish()),
+        "fsel": lambda a: TernaryOp(
+            cond=BinaryOp.fcmp(a.reg(1), ">=", Literal(0)),
+            left=a.reg(2),
+            right=a.reg(3),
+            type=Type.floatish(),
+        ),
     }
     instrs_load_update: InstrMap = {
         "lbau": lambda a: handle_load(a, type=Type.s8()),
