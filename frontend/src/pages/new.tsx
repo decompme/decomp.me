@@ -12,6 +12,7 @@ import { CompilerPreset } from "../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
 import PresetSelect, { PRESETS } from "../components/compiler/PresetSelect"
 import Editor from "../components/Editor"
+import CodeMirror from "../components/Editor/CodeMirror"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
@@ -264,14 +265,10 @@ export default function NewScratch({ serverCompilers }: {
                 <p className={styles.label}>
                     Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
                 </p>
-                <Editor
+                <CodeMirror
                     className={styles.editor}
-                    language="c"
                     value={context}
                     onChange={setContext}
-                    padding={10}
-                    showMargin={lineNumbers}
-                    lineNumbers={lineNumbers}
                 />
             </div>
 

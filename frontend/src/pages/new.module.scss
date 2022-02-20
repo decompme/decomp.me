@@ -88,6 +88,12 @@
 
     border: 1px solid var(--g500);
     border-radius: 4px;
+
+    overflow: hidden;
+
+    :global(.cm-editor) {
+        height: 100%;
+    }
 }
 
 .compilerContainer {
