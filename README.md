@@ -68,7 +68,7 @@ source venv/bin/activate
 ```
 
 - Install python dependencies
-* [Install poetry](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
+* [Install poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
 ```shell
 poetry install
 ./compilers/download.sh
