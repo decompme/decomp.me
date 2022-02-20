@@ -11,7 +11,7 @@ import styles from "./Editor.module.scss"
 import type { Props as MonacoEditorProps } from "./MonacoEditor"
 import getTheme from "./monacoTheme"
 
-const isMobile = mobile()
+const isMobile = true || mobile() // TEMP
 const isSSR = typeof window === "undefined"
 
 interface Props extends MonacoEditorProps {
