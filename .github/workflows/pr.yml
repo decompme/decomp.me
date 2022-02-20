@@ -5,28 +5,6 @@ on:
       - main
   pull_request:
 jobs:
-  reviewdog:
-    name: reviewdog
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-setup@v1
-      - run: cd frontend && yarn
-      - run: reviewdog -reporter=github-check
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  mypy:
-    name: mypy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: pip install -r backend/requirements.txt
-      - uses: tsuyoshicho/action-mypy@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-check
-          workdir: backend
-
   backend_test:
     name: backend tests
     runs-on: ubuntu-latest
@@ -35,8 +13,9 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: 3.9
-      - name: Install Python dependencies
-        run: pip install -r backend/requirements.txt
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - run: cd backend && poetry install
       - name: Add i386 architecture and install dependencies
         run: |-
           sudo dpkg --add-architecture i386
@@ -84,7 +63,8 @@ jobs:
         run: |-
           mkdir -p "${WINEPREFIX}"
           wineboot --init
-          python backend/manage.py test backend
+          cd backend
+          poetry run python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
@@ -92,16 +72,21 @@ jobs:
   backend_test_windows:
     name: backend tests (windows)
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: 3.9
-      - name: Install Python dependencies
-        run: pip install -r backend/requirements.txt
+      - name: Install Poetry
+        run: pip install --user poetry
+      - run: cd backend && poetry install
       - name: Run tests
         run: |-
-          python backend/manage.py test backend
+          cd backend
+          poetry run python manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
 
@@ -129,7 +114,9 @@ jobs:
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
-            decompme_backend -c 'cd /decomp.me && python backend/manage.py test backend'
+            decompme_backend -c 'cd /decomp.me/backend && \
+            poetry install && \
+            poetry run python manage.py test'
 
   frontend_test:
     name: frontend tests
@@ -145,3 +132,38 @@ jobs:
         name: Install dependencies
       - run: cd frontend && yarn test:ci
         name: Run tests
+
+  reviewdog:
+    name: reviewdog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-setup@v1
+      - run: cd frontend && yarn
+      - run: reviewdog -reporter=github-check
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - run: cd backend && poetry install
+      - uses: tsuyoshicho/action-mypy@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          workdir: backend
+  black:
+    name: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+        with:
+          src: "./backend"

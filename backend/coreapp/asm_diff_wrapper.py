@@ -23,6 +23,7 @@ class AsmDifferWrapper:
             arch=arch,
             # Build/objdump options
             diff_obj=True,
+            objfile="",
             make=False,
             source_old_binutils=True,
             diff_section=".text",
@@ -45,7 +46,9 @@ class AsmDifferWrapper:
         )
 
     @staticmethod
-    def get_objdump_target_function_flags(sandbox: Sandbox, target_path, platform: str, label: Optional[str]) -> List[str]:
+    def get_objdump_target_function_flags(
+        sandbox: Sandbox, target_path, platform: str, label: Optional[str]
+    ) -> List[str]:
         if not label:
             return ["--start-address=0"]
 
@@ -80,7 +83,12 @@ class AsmDifferWrapper:
         return ["--start-address=0"]
 
     @staticmethod
-    def run_objdump(target_data: bytes, platform: str, config: asm_differ.Config, label: Optional[str]) -> str:
+    def run_objdump(
+        target_data: bytes,
+        platform: str,
+        config: asm_differ.Config,
+        label: Optional[str],
+    ) -> str:
         flags = [
             "--disassemble",
             "--disassemble-zeroes",
@@ -92,14 +100,19 @@ class AsmDifferWrapper:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            flags += AsmDifferWrapper.get_objdump_target_function_flags(sandbox, target_path, platform, label)
+            flags += AsmDifferWrapper.get_objdump_target_function_flags(
+                sandbox, target_path, platform, label
+            )
 
             objdump_command = compiler_wrapper.get_objdump_command(platform)
 
             if objdump_command:
                 try:
                     objdump_proc = sandbox.run_subprocess(
-                        [objdump_command] + config.arch.arch_flags + flags + [sandbox.rewrite_path(target_path)],
+                        [objdump_command]
+                        + config.arch.arch_flags
+                        + flags
+                        + [sandbox.rewrite_path(target_path)],
                         shell=True,
                         env={
                             "PATH": PATH,
@@ -114,8 +127,13 @@ class AsmDifferWrapper:
         return out
 
     @staticmethod
-    def get_dump(elf_object: bytes, platform: str, diff_label: Optional[str], arch:asm_differ.ArchSettings,
-                     config: asm_differ.Config) -> str:
+    def get_dump(
+        elf_object: bytes,
+        platform: str,
+        diff_label: Optional[str],
+        arch: asm_differ.ArchSettings,
+        config: asm_differ.Config,
+    ) -> str:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
         try:
@@ -129,13 +147,17 @@ class AsmDifferWrapper:
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
-        basedump = AsmDifferWrapper.run_objdump(elf_object, platform, config, diff_label)
+        basedump = AsmDifferWrapper.run_objdump(
+            elf_object, platform, config, diff_label
+        )
         if not basedump:
             raise ObjdumpError("Error running objdump")
 
         # Preprocess the dump
         try:
-            basedump = asm_differ.preprocess_objdump_out(None, elf_object, basedump, config)
+            basedump = asm_differ.preprocess_objdump_out(
+                None, elf_object, basedump, config
+            )
         except AssertionError as e:
             logger.exception("Error preprocessing dump")
             raise DiffError(f"Error preprocessing dump: {e}")
@@ -145,7 +167,13 @@ class AsmDifferWrapper:
         return basedump
 
     @staticmethod
-    def diff(target_assembly: Assembly, platform: str, diff_label:Optional[str], compiled_elf: bytes, allow_target_only:bool = False) -> DiffResult:
+    def diff(
+        target_assembly: Assembly,
+        platform: str,
+        diff_label: Optional[str],
+        compiled_elf: bytes,
+        allow_target_only: bool = False,
+    ) -> DiffResult:
         compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
         if compiler_arch == "dummy":
@@ -160,9 +188,13 @@ class AsmDifferWrapper:
 
         config = AsmDifferWrapper.create_config(arch)
 
-        basedump = AsmDifferWrapper.get_dump(bytes(target_assembly.elf_object), platform, diff_label, arch, config)
+        basedump = AsmDifferWrapper.get_dump(
+            bytes(target_assembly.elf_object), platform, diff_label, arch, config
+        )
         try:
-            mydump = AsmDifferWrapper.get_dump(compiled_elf, platform, diff_label, arch, config)
+            mydump = AsmDifferWrapper.get_dump(
+                compiled_elf, platform, diff_label, arch, config
+            )
         except Exception as e:
             if allow_target_only:
                 mydump = ""

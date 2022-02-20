@@ -23,21 +23,25 @@ from .project import Project
 from ..middleware import Request
 import requests
 
-API_CACHE_TIMEOUT = 60 * 60 # 1 hour
+API_CACHE_TIMEOUT = 60 * 60  # 1 hour
+
 
 class BadOAuthCodeException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_code = "bad_oauth_code"
     default_detail = "Invalid or expired GitHub OAuth verification code."
 
+
 class MissingOAuthScopeException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "missing_oauth_scope"
+
 
 class MalformedGitHubApiResponseException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_code = "malformed_github_api_response"
     default_detail = "The GitHub API returned an malformed or unexpected response."
+
 
 class GitHubUser(models.Model):
     user = models.OneToOneField(
@@ -78,14 +82,16 @@ class GitHubUser(models.Model):
                 "client_secret": settings.GITHUB_CLIENT_SECRET,
                 "code": oauth_code,
             },
-            headers={ "Accept": "application/json" },
+            headers={"Accept": "application/json"},
         ).json()
 
         error: Optional[str] = response.get("error")
         if error == "bad_verification_code":
             raise BadOAuthCodeException()
         elif error:
-            raise MalformedGitHubApiResponseException(f"GitHub API login sent unknown error '{error}'.")
+            raise MalformedGitHubApiResponseException(
+                f"GitHub API login sent unknown error '{error}'."
+            )
 
         try:
             scope_str = str(response["scope"])
@@ -106,7 +112,11 @@ class GitHubUser(models.Model):
             user = request.user
 
             # make a new user if request.user already has a github account attached
-            if user.is_anonymous or isinstance(user, User) and GitHubUser.objects.filter(user=user).get() is not None:
+            if (
+                user.is_anonymous
+                or isinstance(user, User)
+                and GitHubUser.objects.filter(user=user).get() is not None
+            ):
                 user = User.objects.create_user(
                     username=details.login,
                     email=details.email,
@@ -121,7 +131,9 @@ class GitHubUser(models.Model):
         gh_user.access_token = access_token
         gh_user.save()
 
-        profile: Profile = Profile.objects.filter(user=gh_user.user).first() or Profile()
+        profile: Profile = (
+            Profile.objects.filter(user=gh_user.user).first() or Profile()
+        )
         profile.user = gh_user.user
         profile.last_request_date = now()
         profile.save()
@@ -137,9 +149,11 @@ class GitHubUser(models.Model):
 
         return gh_user
 
+
 class GitHubRepoBusyException(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "This repository is currently being pulled."
+
 
 class GitHubRepo(models.Model):
     owner = models.CharField(max_length=100)
@@ -164,19 +178,30 @@ class GitHubRepo(models.Model):
             remote_url = f"https://github.com/{self.owner}/{self.repo}"
 
             if repo_dir.exists():
-                subprocess.run(["git", "remote", "set-url", "origin", remote_url], cwd=repo_dir)
+                subprocess.run(
+                    ["git", "remote", "set-url", "origin", remote_url], cwd=repo_dir
+                )
                 subprocess.run(["git", "fetch", "origin", self.branch], cwd=repo_dir)
-                subprocess.run(["git", "reset", "--hard", f"origin/{self.branch}"], cwd=repo_dir)
+                subprocess.run(
+                    ["git", "reset", "--hard", f"origin/{self.branch}"], cwd=repo_dir
+                )
                 subprocess.run(["git", "pull"], cwd=repo_dir)
             else:
                 repo_dir.mkdir(parents=True)
-                subprocess.run([
-                    "git", "clone",
-                    remote_url,
-                    ".",
-                    "--depth", "1",
-                    "-b", self.branch,
-                ], check=True, cwd=repo_dir)
+                subprocess.run(
+                    [
+                        "git",
+                        "clone",
+                        remote_url,
+                        ".",
+                        "--depth",
+                        "1",
+                        "-b",
+                        self.branch,
+                    ],
+                    check=True,
+                    cwd=repo_dir,
+                )
 
             self.last_pulled = now()
             self.save()
@@ -207,6 +232,7 @@ class GitHubRepo(models.Model):
 
     def get_html_url(self):
         return f"https://github.com/{self.owner}/{self.repo}/tree/{self.branch}"
+
 
 # When a GitHubRepo is deleted, delete its directory
 @receiver(models.signals.pre_delete, sender=GitHubRepo)

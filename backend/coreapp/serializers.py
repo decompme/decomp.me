@@ -12,12 +12,13 @@ from .models.github import GitHubUser, GitHubRepo
 from .models.project import Project, ProjectFunction
 from .middleware import Request
 
-def serialize_profile(request: Request, profile: Profile, small = False):
+
+def serialize_profile(request: Request, profile: Profile, small=False):
     if profile.user is None:
         return {
             "url": None,
             "html_url": None,
-            "is_you": profile == request.profile, # TODO(#245): remove
+            "is_you": profile == request.profile,  # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
         }
@@ -30,7 +31,7 @@ def serialize_profile(request: Request, profile: Profile, small = False):
         small_obj = {
             "url": reverse("user-detail", args=[user.username], request=request),
             "html_url": profile.get_html_url(),
-            "is_you": user == request.user, # TODO(#245): remove
+            "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
             "username": user.username,
@@ -48,18 +49,22 @@ def serialize_profile(request: Request, profile: Profile, small = False):
             "github_html_url": github_details.html_url if github_details else None,
         }
 
+
 if TYPE_CHECKING:
     ProfileFieldBaseClass = serializers.RelatedField[Profile, str, str]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
+
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile)
 
+
 class TerseProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile):
         return serialize_profile(self.context["request"], profile, small=True)
+
 
 class UrlField(serializers.HyperlinkedIdentityField):
     """
@@ -82,6 +87,7 @@ class UrlField(serializers.HyperlinkedIdentityField):
 
         raise ImproperlyConfigured("UrlField does not support this type of model")
 
+
 class HtmlUrlField(UrlField):
     """
     Read-only field that takes the value returned by the model's get_html_url method.
@@ -94,6 +100,7 @@ class HtmlUrlField(UrlField):
 
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -101,43 +108,73 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
-    context = serializers.CharField(allow_blank=True) # type: ignore
+    context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
 
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
 
+
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
     html_url = HtmlUrlField()
-    parent = UrlField(target_field="parent") # type: ignore
+    parent = UrlField(target_field="parent")  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(allow_blank=True, trim_whitespace=False) # type: ignore
+    context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
     project = serializers.SerializerMethodField()
     project_function = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
         exclude = ["target_assembly"]
-        read_only_fields = ["url", "html_url", "parent", "owner", "last_updated", "creation_time", "platform"]
+        read_only_fields = [
+            "url",
+            "html_url",
+            "parent",
+            "owner",
+            "last_updated",
+            "creation_time",
+            "platform",
+        ]
 
     def get_project(self, scratch: Scratch):
-        if hasattr(scratch, "project_function") and scratch.project_function is not None:
-            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"]) # type: ignore
+        if (
+            hasattr(scratch, "project_function")
+            and scratch.project_function is not None
+        ):
+            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"])  # type: ignore
 
     def get_project_function(self, scratch: Scratch):
-        if hasattr(scratch, "project_function") and scratch.project_function is not None:
-            return reverse("projectfunction-detail", args=[scratch.project_function.project.slug, scratch.project_function.id], request=self.context["request"]) # type: ignore
+        if (
+            hasattr(scratch, "project_function")
+            and scratch.project_function is not None
+        ):
+            return reverse("projectfunction-detail", args=[scratch.project_function.project.slug, scratch.project_function.id], request=self.context["request"])  # type: ignore
+
 
 class TerseScratchSerializer(ScratchSerializer):
-    owner = TerseProfileField(read_only=True) # type: ignore
+    owner = TerseProfileField(read_only=True)  # type: ignore
 
     class Meta:
         model = Scratch
-        fields = ["url", "html_url", "owner", "last_updated", "creation_time", "platform", "compiler", "name", "score", "max_score", "project", "project_function"]
+        fields = [
+            "url",
+            "html_url",
+            "owner",
+            "last_updated",
+            "creation_time",
+            "platform",
+            "compiler",
+            "name",
+            "score",
+            "max_score",
+            "project",
+            "project_function",
+        ]
+
 
 class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
     html_url = HtmlUrlField()
@@ -146,6 +183,7 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
         model = GitHubRepo
         exclude = ["id"]
         read_only_fields = ["last_pulled", "is_pulling"]
+
 
 class ProjectSerializer(serializers.ModelSerializer[Project]):
     slug = serializers.SlugField(read_only=True)
@@ -157,18 +195,25 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
     class Meta:
         model = Project
         exclude: List[str] = []
-        depth = 1 # repo
+        depth = 1  # repo
 
     def get_members(self, project: Project):
         def get_url(user: User):
-            return reverse("user-detail", args=[user.username], request=self.context["request"])
+            return reverse(
+                "user-detail", args=[user.username], request=self.context["request"]
+            )
 
-        return [get_url(member.profile.user) for member in project.members() if member.profile.user is not None]
+        return [
+            get_url(member.profile.user)
+            for member in project.members()
+            if member.profile.user is not None
+        ]
+
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     url = SerializerMethodField()
     html_url = HtmlUrlField()
-    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True) # type: ignore
+    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)  # type: ignore
     attempts_count = SerializerMethodField()
 
     class Meta:
@@ -177,7 +222,11 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
         read_only_fields = ["creation_time"]
 
     def get_url(self, fn: ProjectFunction):
-        return reverse("projectfunction-detail", args=[fn.project.slug, fn.id], request=self.context["request"])
+        return reverse(
+            "projectfunction-detail",
+            args=[fn.project.slug, fn.id],
+            request=self.context["request"],
+        )
 
     def get_attempts_count(self, fn: ProjectFunction):
         return Scratch.objects.filter(project_function=fn).count()

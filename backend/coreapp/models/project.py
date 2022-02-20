@@ -13,6 +13,7 @@ from ..context import c_file_to_context
 
 logger = logging.getLogger(__name__)
 
+
 class Project(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
@@ -42,6 +43,7 @@ class Project(models.Model):
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
+
 
 class ProjectImportConfig(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -75,9 +77,18 @@ class ProjectImportConfig(models.Model):
         src_dir, nonmatchings_dir, symbol_addrs_path = self.get_paths()
 
         symbol_addrs = parse_symbol_addrs(symbol_addrs_path)
-        asm_files = [Path(p) for p in glob(str(nonmatchings_dir.joinpath(self.nonmatchings_glob)), recursive=True)]
+        asm_files = [
+            Path(p)
+            for p in glob(
+                str(nonmatchings_dir.joinpath(self.nonmatchings_glob)), recursive=True
+            )
+        ]
 
-        logger.info("Importing %d nonmatching asm files from %s", len(asm_files), nonmatchings_dir)
+        logger.info(
+            "Importing %d nonmatching asm files from %s",
+            len(asm_files),
+            nonmatchings_dir,
+        )
 
         for asm_file in asm_files:
             symbol_name = symbol_name_from_asm_file(asm_file)
@@ -94,13 +105,19 @@ class ProjectImportConfig(models.Model):
                 continue
 
             # Search C file for this function (TODO: use configurable regex replace?)
-            src_file = src_dir / asm_file.relative_to(nonmatchings_dir).parent.with_suffix(".c")
+            src_file = src_dir / asm_file.relative_to(
+                nonmatchings_dir
+            ).parent.with_suffix(".c")
             if not src_file.is_file():
-                logger.warn(f"no C file found for '{asm_file}' (looked for '{src_file}')")
+                logger.warn(
+                    f"no C file found for '{asm_file}' (looked for '{src_file}')"
+                )
                 continue
 
             # Create or update ProjectFunction
-            func: Optional[ProjectFunction] = ProjectFunction.objects.filter(project=self.project, rom_address=symbol.rom_address).first()
+            func: Optional[ProjectFunction] = ProjectFunction.objects.filter(
+                project=self.project, rom_address=symbol.rom_address
+            ).first()
             if func is not None:
                 func.display_name = symbol.label
                 func.is_matched_in_repo = False
@@ -111,7 +128,6 @@ class ProjectImportConfig(models.Model):
                 func = ProjectFunction(
                     project=self.project,
                     rom_address=symbol.rom_address,
-
                     display_name=symbol.label,
                     is_matched_in_repo=False,
                     src_file=str(src_file.relative_to(project_dir)),
@@ -120,15 +136,18 @@ class ProjectImportConfig(models.Model):
                 )
             func.save()
 
+
 class ProjectFunction(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE) # note: redundant w.r.t. import_config.project
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE
+    )  # note: redundant w.r.t. import_config.project
     rom_address = models.IntegerField()
 
     creation_time = models.DateTimeField(auto_now_add=True)
 
     display_name = models.CharField(max_length=128, blank=False)
     is_matched_in_repo = models.BooleanField(default=False)
-    #complexity = models.IntegerField()
+    # complexity = models.IntegerField()
 
     src_file = models.CharField(max_length=256)
     asm_file = models.CharField(max_length=256)
@@ -137,7 +156,9 @@ class ProjectFunction(models.Model):
     class Meta:
         constraints = [
             # ProjectFunctions are identified uniquely by (project, rom_address)
-            models.UniqueConstraint(fields=["project", "rom_address"], name="unique_project_function_addr"),
+            models.UniqueConstraint(
+                fields=["project", "rom_address"], name="unique_project_function_addr"
+            ),
         ]
 
     def get_html_url(self) -> str:
@@ -157,7 +178,9 @@ class ProjectFunction(models.Model):
         src_file = project_dir / Path(self.src_file)
         asm_file = project_dir / Path(self.asm_file)
 
-        source_code = "" # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
+        source_code = (
+            ""  # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
+        )
 
         # TODO: make this more configurable or something
         cpp_flags = shlex.split(compiler_config.compiler_flags)
@@ -178,7 +201,9 @@ class ProjectFunction(models.Model):
 
         # Attempt to generate context (TODO: #361 so we don't have to do this)
         try:
-            context = c_file_to_context(str(project_dir), str(src_file), cpp_flags=cpp_flags)
+            context = c_file_to_context(
+                str(project_dir), str(src_file), cpp_flags=cpp_flags
+            )
         except Exception as e:
             logging.error(f"failed to generate context for {asm_file}: {e}")
             context = f"/* context generation failed: {e} */"
@@ -186,17 +211,21 @@ class ProjectFunction(models.Model):
         with asm_file.open("r") as f:
             target_asm = f.read()
 
-        return create_scratch({
-            "project": self.project.slug,
-            "rom_address": self.rom_address,
-            "diff_label": symbol_name_from_asm_file(asm_file),
-            "target_asm": target_asm,
-            "source_code": source_code,
-            "context": context,
-            "platform": compiler_config.platform,
-            "compiler": compiler_config.compiler,
-            "compiler_flags": compiler_config.compiler_flags,
-        }, allow_project=True)
+        return create_scratch(
+            {
+                "project": self.project.slug,
+                "rom_address": self.rom_address,
+                "diff_label": symbol_name_from_asm_file(asm_file),
+                "target_asm": target_asm,
+                "source_code": source_code,
+                "context": context,
+                "platform": compiler_config.platform,
+                "compiler": compiler_config.compiler,
+                "compiler_flags": compiler_config.compiler_flags,
+            },
+            allow_project=True,
+        )
+
 
 class ProjectMember(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -204,7 +233,9 @@ class ProjectMember(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["project", "profile"], name="unique_project_member"),
+            models.UniqueConstraint(
+                fields=["project", "profile"], name="unique_project_member"
+            ),
         ]
 
     def __str__(self):

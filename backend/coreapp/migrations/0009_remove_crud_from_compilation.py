@@ -6,25 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0008_scratch_max_score_squashed_0011_alter_scratch_compiler'),
+        ("coreapp", "0008_scratch_max_score_squashed_0011_alter_scratch_compiler"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='compilation',
-            name='elf_object',
+            model_name="compilation",
+            name="elf_object",
         ),
         migrations.RemoveField(
-            model_name='compilation',
-            name='stderr',
+            model_name="compilation",
+            name="stderr",
         ),
         migrations.RemoveField(
-            model_name='compilation',
-            name='hash',
+            model_name="compilation",
+            name="hash",
         ),
         migrations.AddField(
-            model_name='compilation',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False),
+            model_name="compilation",
+            name="id",
+            field=models.BigAutoField(
+                auto_created=True, primary_key=True, serialize=False
+            ),
         ),
     ]

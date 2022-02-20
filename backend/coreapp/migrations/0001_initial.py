@@ -9,61 +9,109 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [  # type: ignore
-    ]
+    dependencies = []  # type: ignore
 
     operations = [
         migrations.CreateModel(
-            name='Asm',
+            name="Asm",
             fields=[
-                ('hash', models.CharField(max_length=64, primary_key=True, serialize=False)),
-                ('data', models.TextField()),
+                (
+                    "hash",
+                    models.CharField(max_length=64, primary_key=True, serialize=False),
+                ),
+                ("data", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='Assembly',
+            name="Assembly",
             fields=[
-                ('hash', models.CharField(max_length=64, primary_key=True, serialize=False)),
-                ('time', models.DateTimeField(auto_now_add=True)),
-                ('arch', models.CharField(max_length=100)),
-                ('as_opts', models.TextField(blank=True, max_length=1000, null=True)),
-                ('elf_object', models.BinaryField(blank=True)),
-                ('source_asm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='coreapp.asm')),
+                (
+                    "hash",
+                    models.CharField(max_length=64, primary_key=True, serialize=False),
+                ),
+                ("time", models.DateTimeField(auto_now_add=True)),
+                ("arch", models.CharField(max_length=100)),
+                ("as_opts", models.TextField(blank=True, max_length=1000, null=True)),
+                ("elf_object", models.BinaryField(blank=True)),
+                (
+                    "source_asm",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="coreapp.asm"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Compilation',
+            name="Compilation",
             fields=[
-                ('hash', models.CharField(max_length=64, primary_key=True, serialize=False)),
-                ('time', models.DateTimeField(auto_now_add=True)),
-                ('compiler', models.CharField(max_length=100)),
-                ('cc_opts', models.TextField(blank=True, max_length=1000, null=True)),
-                ('source_code', models.TextField()),
-                ('context', models.TextField(blank=True)),
-                ('elf_object', models.BinaryField(blank=True)),
-                ('stderr', models.TextField(blank=True, null=True)),
+                (
+                    "hash",
+                    models.CharField(max_length=64, primary_key=True, serialize=False),
+                ),
+                ("time", models.DateTimeField(auto_now_add=True)),
+                ("compiler", models.CharField(max_length=100)),
+                ("cc_opts", models.TextField(blank=True, max_length=1000, null=True)),
+                ("source_code", models.TextField()),
+                ("context", models.TextField(blank=True)),
+                ("elf_object", models.BinaryField(blank=True)),
+                ("stderr", models.TextField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Scratch',
+            name="Scratch",
             fields=[
-                ('slug', models.SlugField(default=gen_scratch_id, primary_key=True, serialize=False)),
-                ('creation_time', models.DateTimeField(auto_now_add=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('compiler', models.CharField(blank=True, max_length=100)),
-                ('cc_opts', models.TextField(blank=True, max_length=1000, null=True)),
-                ('source_code', models.TextField(blank=True)),
-                ('context', models.TextField(blank=True)),
-                ('original_context', models.TextField(blank=True)),
-                ('owner', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='coreapp.profile')),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='coreapp.scratch')),
-                ('target_assembly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='coreapp.assembly')),
+                (
+                    "slug",
+                    models.SlugField(
+                        default=gen_scratch_id, primary_key=True, serialize=False
+                    ),
+                ),
+                ("creation_time", models.DateTimeField(auto_now_add=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                ("compiler", models.CharField(blank=True, max_length=100)),
+                ("cc_opts", models.TextField(blank=True, max_length=1000, null=True)),
+                ("source_code", models.TextField(blank=True)),
+                ("context", models.TextField(blank=True)),
+                ("original_context", models.TextField(blank=True)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="coreapp.profile",
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="coreapp.scratch",
+                    ),
+                ),
+                (
+                    "target_assembly",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="coreapp.assembly",
+                    ),
+                ),
             ],
         ),
     ]

@@ -34,9 +34,14 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
 else:
     WINE = "wine"
 
-def load_compiler(id: str, cc: Optional[str], platform: Optional[str], base_id: Optional[str]=None) -> Optional[Dict[str, str]]:
+
+def load_compiler(
+    id: str, cc: Optional[str], platform: Optional[str], base_id: Optional[str] = None
+) -> Optional[Dict[str, str]]:
     if not cc or not platform:
-        logger.error(f"Error: {id} {CONFIG_JSON} is missing 'cc' and/or 'platform' field(s), skipping.")
+        logger.error(
+            f"Error: {id} {CONFIG_JSON} is missing 'cc' and/or 'platform' field(s), skipping."
+        )
         return None
 
     if not base_id:
@@ -56,6 +61,7 @@ def load_compiler(id: str, cc: Optional[str], platform: Optional[str], base_id: 
         logger.debug(f"Config found but no binaries found for {id}, ignoring.")
         return None
 
+
 def load_compilers() -> Dict[str, Dict[str, str]]:
     ret: Dict[str, Dict[str, str]] = {}
     compilers_base = settings.BASE_DIR / "compilers"
@@ -67,20 +73,31 @@ def load_compilers() -> Dict[str, Dict[str, str]]:
                 try:
                     config = json.load(f)
                 except:
-                    logger.error(f"Error: Unable to parse {CONFIG_JSON} for {compiler_dir_name}")
+                    logger.error(
+                        f"Error: Unable to parse {CONFIG_JSON} for {compiler_dir_name}"
+                    )
                     continue
 
                 if isinstance(config, dict):
-                    comp = load_compiler(compiler_dir_name, config.get("cc"), config.get("platform"))
+                    comp = load_compiler(
+                        compiler_dir_name, config.get("cc"), config.get("platform")
+                    )
                     if comp:
                         ret[compiler_dir_name] = comp
                 elif isinstance(config, list):
                     for list_def in config:
                         if "name" not in list_def:
-                            logger.error(f"Error: {CONFIG_JSON} for {compiler_dir_name} is missing 'name' field")
+                            logger.error(
+                                f"Error: {CONFIG_JSON} for {compiler_dir_name} is missing 'name' field"
+                            )
                             continue
                         name = list_def["name"]
-                        comp = load_compiler(name, list_def.get("cc"), list_def.get("platform"), compiler_dir_name)
+                        comp = load_compiler(
+                            name,
+                            list_def.get("cc"),
+                            list_def.get("platform"),
+                            compiler_dir_name,
+                        )
                         if comp:
                             ret[name] = comp
 
@@ -104,10 +121,12 @@ class Platform:
     nm_cmd: Optional[str] = None
     supports_objdump_disassemble: bool = False
 
+
 @dataclass
 class CompilationResult:
     elf_object: bytes
     errors: str
+
 
 def load_platforms() -> Dict[str, Platform]:
     return {
@@ -115,7 +134,7 @@ def load_platforms() -> Dict[str, Platform]:
             "Dummy System",
             "DMY",
             "dummy",
-            assemble_cmd='echo \"assembled("$INPUT")\" > "$OUTPUT"',
+            assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
             objdump_cmd="echo",
             nm_cmd="echo",
             asm_prelude="",
@@ -157,7 +176,7 @@ def load_platforms() -> Dict[str, Platform]:
 .set noreorder
 .set gp=64
 
-"""
+""",
         ),
         "ps1": Platform(
             "PlayStation",
@@ -180,7 +199,7 @@ def load_platforms() -> Dict[str, Platform]:
 .set noat
 .set noreorder
 
-"""
+""",
         ),
         "ps2": Platform(
             "PlayStation 2",
@@ -203,7 +222,7 @@ def load_platforms() -> Dict[str, Platform]:
 .set noat
 .set noreorder
 
-"""
+""",
         ),
         "gc_wii": Platform(
             "GameCube / Wii",
@@ -291,7 +310,7 @@ def load_platforms() -> Dict[str, Platform]:
 .set qr5, 5
 .set qr6, 6
 .set qr7, 7
-"""
+""",
         ),
         "nds_arm9": Platform(
             "Nintendo DS",
@@ -323,7 +342,7 @@ def load_platforms() -> Dict[str, Platform]:
 .endm
 .macro thumb_func_end name
 .endm
-"""
+""",
         ),
         "gba": Platform(
             "Game Boy Advance",
@@ -356,30 +375,34 @@ def load_platforms() -> Dict[str, Platform]:
 .endm
 .macro thumb_func_end name
 .endm
-"""
+""",
         ),
-
     }
+
 
 def get_assemble_cmd(platform: str) -> Optional[str]:
     if platform in _platforms:
         return _platforms[platform].assemble_cmd
     return None
 
+
 def get_nm_command(platform: str) -> Optional[str]:
     if platform in _platforms:
         return _platforms[platform].nm_cmd
     return None
+
 
 def get_objdump_command(platform: str) -> Optional[str]:
     if platform in _platforms:
         return _platforms[platform].objdump_cmd
     return None
 
+
 def supports_objdump_disassemble(platform: str) -> bool:
     if platform in _platforms:
         return _platforms[platform].supports_objdump_disassemble
     return False
+
 
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
@@ -407,7 +430,10 @@ class CompilerWrapper:
 
     @staticmethod
     def available_compilers() -> Dict[str, Dict[str, Optional[str]]]:
-        return {k: {"platform": CompilerWrapper.platform_from_compiler(k)} for k in CompilerWrapper.available_compiler_ids()}
+        return {
+            k: {"platform": CompilerWrapper.platform_from_compiler(k)}
+            for k in CompilerWrapper.available_compiler_ids()
+        }
 
     @staticmethod
     def available_platforms() -> OrderedDict[str, Dict[str, str]]:
@@ -471,13 +497,18 @@ class CompilerWrapper:
     def filter_compile_errors(input: str) -> str:
         return (
             input.replace("wine: could not load kernel32.dll, status c0000135\n", "")
-            .replace("wineserver: could not save registry branch to system.reg : Read-only file system\n", "")
+            .replace(
+                "wineserver: could not save registry branch to system.reg : Read-only file system\n",
+                "",
+            )
             .strip()
         )
 
     @staticmethod
-    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE) # type: ignore
-    def compile_code(compiler: str, compiler_flags: str, code: str, context: str) -> CompilationResult:
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
+    def compile_code(
+        compiler: str, compiler_flags: str, code: str, context: str
+    ) -> CompilationResult:
         if compiler == "dummy":
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
 
@@ -493,13 +524,15 @@ class CompilerWrapper:
             with code_path.open("w") as f:
                 f.write('#line 1 "ctx.c"\n')
                 f.write(context)
-                f.write('\n')
+                f.write("\n")
 
                 f.write('#line 1 "src.c"\n')
                 f.write(code)
-                f.write('\n')
+                f.write("\n")
 
-            compiler_path = CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
+            compiler_path = (
+                CompilerWrapper.base_path() / _compilers[compiler]["basedir"]
+            )
 
             cc_cmd = _compilers[compiler]["cc"]
 
@@ -514,14 +547,15 @@ class CompilerWrapper:
                     mounts=[compiler_path],
                     shell=True,
                     env={
-                    "PATH": PATH,
-                    "WINE": WINE,
-                    "INPUT": sandbox.rewrite_path(code_path),
-                    "OUTPUT": sandbox.rewrite_path(object_path),
-                    "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
-                    "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
-                    "MWCIncludes": "/tmp",
-                })
+                        "PATH": PATH,
+                        "WINE": WINE,
+                        "INPUT": sandbox.rewrite_path(code_path),
+                        "OUTPUT": sandbox.rewrite_path(object_path),
+                        "COMPILER_DIR": sandbox.rewrite_path(compiler_path),
+                        "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "MWCIncludes": "/tmp",
+                    },
+                )
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 logging.debug("Compilation failed: " + e.stderr)
@@ -560,7 +594,7 @@ class CompilerWrapper:
                 hash=hash,
                 arch=platform_cfg.arch,
                 source_asm=asm,
-                elf_object=f"assembled({asm.data})".encode("UTF-8")
+                elf_object=f"assembled({asm.data})".encode("UTF-8"),
             )
             assembly.save()
             return assembly
@@ -578,16 +612,19 @@ class CompilerWrapper:
                     mounts=[],
                     shell=True,
                     env={
-                    "PATH": PATH,
-                    "INPUT": sandbox.rewrite_path(asm_path),
-                    "OUTPUT": sandbox.rewrite_path(object_path),
-                })
+                        "PATH": PATH,
+                        "INPUT": sandbox.rewrite_path(asm_path),
+                        "OUTPUT": sandbox.rewrite_path(object_path),
+                    },
+                )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
 
             # Assembly failed
             if assemble_proc.returncode != 0:
-                raise AssemblyError(f"Assembler failed with error code {assemble_proc.returncode}")
+                raise AssemblyError(
+                    f"Assembler failed with error code {assemble_proc.returncode}"
+                )
 
             if not object_path.exists():
                 raise AssemblyError("Assembler did not create an object file")
@@ -605,4 +642,6 @@ class CompilerWrapper:
 _compilers = load_compilers()
 logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
 _platforms = load_platforms()
-logger.info(f"Available platform(s): {', '.join(CompilerWrapper.available_platforms().keys())}")
+logger.info(
+    f"Available platform(s): {', '.join(CompilerWrapper.available_platforms().keys())}"
+)
