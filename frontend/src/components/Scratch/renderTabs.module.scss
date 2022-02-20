@@ -5,6 +5,12 @@
 
 .editor {
     height: 100%;
+
+    overflow: hidden;
+
+    :global(.cm-editor) {
+        height: 100%;
+    }
 }
 
 .diffTab {
