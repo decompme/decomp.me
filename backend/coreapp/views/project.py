@@ -1,6 +1,6 @@
 import rest_framework
 from rest_framework.exceptions import APIException
-from rest_framework import status, mixins, filters
+from rest_framework import status, mixins, filters, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
@@ -35,14 +35,24 @@ class ProjectFunctionPagination(CursorPagination):
     page_size_query_param="page_size"
     max_page_size=100
 
+class IsProjectMemberOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        assert isinstance(obj, Project)
+        return request.method in permissions.SAFE_METHODS or obj.is_member(request.profile)
+
 class ProjectViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     GenericViewSet,
 ):
     queryset = Project.objects.all()
     pagination_class = ProjectPagination
     serializer_class = ProjectSerializer
+    permission_classes = [IsProjectMemberOrReadOnly]
 
     @action(detail=True, methods=['POST'])
     def pull(self, request, pk):
