@@ -8,7 +8,7 @@ export interface Props {
     onChange?: (value: string) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
-    extensions: Extension
+    extensions: Extension // const
 }
 
 export default function CodeMirror({ value, onChange, className, viewRef: viewRefProp, extensions }: Props) {
@@ -21,6 +21,9 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
     onChangeRef.current = onChange
 
     const viewRef = useRef<EditorView>()
+
+    const extensionsRef = useRef(extensions)
+    extensionsRef.current = extensions
 
     // Initial view creation
     useEffect(() => {
@@ -35,7 +38,7 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
                         }
                         return null
                     }),
-                    extensions,
+                    extensionsRef.current,
                 ],
             }),
             parent: el.current,
@@ -50,7 +53,7 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [extensions, viewRefProp])
+    }, [viewRefProp])
 
     // Replace doc when `value` prop changes
     useEffect(() => {

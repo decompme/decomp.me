@@ -19,7 +19,7 @@ export type Props = {
 }
 
 export default function ScratchDecompileModal({ open, onClose, scratch, setSourceCode }: Props) {
-    const [decompiledCode, setDecompiledCode] = useState(null)
+    const [decompiledCode, setDecompiledCode] = useState<string | null>(null)
 
     useEffect(() => {
         if (open) {
@@ -46,7 +46,7 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
                 <p>This is generally useful when you've edited the function signature or symbols pertaining to the function.
                     This new decompilation should reflect your changes. </p>
 
-                {decompiledCode ? <>
+                {(typeof decompiledCode == "string") ? <>
                     <CodeMirror
                         className={styles.editor}
                         value={decompiledCode}
