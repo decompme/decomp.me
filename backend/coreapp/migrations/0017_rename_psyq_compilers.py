@@ -20,6 +20,7 @@ def rename_psyq_compilers(apps, schema_editor):
             row.compiler = compiler_map[row.compiler]
             row.save(update_fields=["compiler"])
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
