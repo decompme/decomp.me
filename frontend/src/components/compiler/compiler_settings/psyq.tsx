@@ -23,6 +23,11 @@ export function CommonPsyqFlags() {
             <FlagOption flag="-G8" description="8 bytes" />
         </FlagSet>
 
+        <FlagSet name="Endianess">
+            <FlagOption flag="-mel" description="Little endian" />
+            <FlagOption flag="-meb" description="Big endian" />
+        </FlagSet>
+
         <Checkbox flag="-Wall" description="Enable all warning types" />
     </>
 }

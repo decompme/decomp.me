@@ -25,7 +25,7 @@ class M2CWrapper:
 
         if "ido" in compiler:
             t_compiler = "ido"
-        elif "gcc" in compiler:
+        elif "gcc" in compiler or "psyq" in compiler:
             t_compiler = "gcc"
         elif "mwcc" in compiler:
             t_compiler = "mwcc"
