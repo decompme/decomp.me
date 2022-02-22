@@ -213,12 +213,13 @@ class GitHubRepo(models.Model):
             self.save()
 
     def get_dir(self) -> Path:
-        return Path(settings.LOCAL_FILE_DIR) / "repos" / str(self.id)
+        repo_dir = Path(settings.LOCAL_FILE_DIR) / "repos" / str(self.id)
+        if not repo_dir.exists():
+            raise RuntimeError("Repo directory does not exist.")
+        return repo_dir
 
     def get_sha(self) -> str:
         repo_dir = self.get_dir()
-        if not repo_dir.exists():
-            raise RuntimeError("Repo directory does not exist.")
         return (
             subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_dir)
             .decode("utf-8")
