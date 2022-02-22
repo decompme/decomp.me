@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional
 from django.test.testcases import TestCase
 from coreapp.views.scratch import compile_scratch_update_score
@@ -835,6 +836,90 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(etag, response.headers.get("Etag"))
+
+
+@dataclass
+class MockRepository:
+    name: str
+    default_branch: str = "master"
+    content: str = (
+        f"""header\nINCLUDE_ASM(void, "file", some_function, \ns32 arg0);\nfooter"""
+    )
+
+    def get_contents(self, path: str):
+        return Mock(content=self.content, sha="12345")
+
+    def update_file(self, content: str, **kwargs):
+        self.content = content
+
+    def create_pull(self, **kwargs):
+        return Mock(url="http://github.com/fake_url")
+
+
+class ScratchPRTests(BaseTestCase):
+    @patch("coreapp.views.scratch.Github.get_repo")
+    def test_pr(self, mock_get_repo):
+        """
+        Create a PR from a scratch to an upstream (project) repo
+        """
+
+        Profile.user = Mock(username="fakeuser", github=Mock(access_token="dummytoken"))
+        GitHubRepo.details = lambda self, token: MockRepository("orig_repo")
+        mock_fork = MockRepository("fork_repo")
+        mock_get_repo.return_value = mock_fork
+
+        scratch = self.create_scratch(
+            {
+                "compiler": "dummy",
+                "platform": "dummy",
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            }
+        )
+        profile = Profile.objects.first()
+        profile.save()
+        scratch.owner = profile
+
+        project = ProjectTests.create_test_project()
+
+        compiler_config = CompilerConfig(
+            platform="dummy",
+            compiler="dummy",
+            compiler_flags="",
+        )
+        compiler_config.save()
+        import_config = ProjectImportConfig(
+            project=project,
+            display_name="test",
+            compiler_config=compiler_config,
+            src_dir="src",
+            nonmatchings_dir="asm/nonmatchings",
+            nonmatchings_glob="**/*.s",
+            symbol_addrs_path="symbol_addrs.txt",
+        )
+        import_config.save()
+        project_fn = ProjectFunction(
+            project=project,
+            rom_address="10",
+            display_name="some_function",
+            src_file="src/some_file.c",
+            asm_file="asm/some_file.s",
+            import_config=import_config,
+        )
+        project_fn.save()
+        scratch.project_function = project_fn
+
+        scratch.save()
+
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/pr", {"profile": "testowner"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["url"], "http://github.com/fake_url")
+        self.assertEqual(
+            mock_fork.content,
+            f"""header\n{scratch.source_code}\nfooter""",
+        )
 
 
 class RequestTests(APITestCase):

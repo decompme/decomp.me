@@ -38,6 +38,12 @@ function exportScratchZip(scratch: api.Scratch) {
     a.click()
 }
 
+async function makeGithubPR(scratch: api.Scratch) {
+    const { url } = await api.post(`${scratch.url}/pr`, scratch)
+    const win = window.open(url, '_blank')
+    win.focus()
+}
+
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
     const [isEditing, setEditing] = useState(false)
     const editableRef = useRef<HTMLDivElement>()
@@ -190,6 +196,12 @@ export default function ScratchToolbar({
                         }}>
                             <DownloadIcon />
                             Export as ZIP...
+                        </ButtonItem>
+                        <ButtonItem onTrigger={() =>
+                            makeGithubPR(scratch)
+                        }>
+                            <MarkGithubIcon />
+                            Make a PR...
                         </ButtonItem>
                         <ButtonItem onTrigger={() => setDecompileOpen(true)}>
                             <IterationsIcon />

@@ -215,17 +215,18 @@ class GitHubRepo(models.Model):
     def get_dir(self) -> Path:
         return Path(settings.LOCAL_FILE_DIR) / "repos" / str(self.id)
 
+    def get_sha(self) -> str:
+        repo_dir = self.get_dir()
+        if not repo_dir.exists():
+            raise RuntimeError("Repo directory does not exist.")
+        return (
+            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_dir)
+            .decode("utf-8")
+            .strip()
+        )
+
     def details(self, access_token: str) -> Repository:
-        cache_key = f"github_repo_details:{self.id}"
-        cached = cache.get(cache_key)
-
-        if cached:
-            return cached
-
-        details = Github(access_token).get_repo(f"{self.owner}/{self.repo}")
-
-        cache.set(cache_key, details, API_CACHE_TIMEOUT)
-        return details
+        return Github(access_token).get_repo(f"{self.owner}/{self.repo}")
 
     def __str__(self):
         return f"{self.owner}/{self.repo}#{self.branch} ({self.id})"
