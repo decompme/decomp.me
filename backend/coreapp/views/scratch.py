@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
+from django.contrib.auth.models import User
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -46,6 +47,16 @@ class ProjectNotMemberException(APIException):
 class ScratchNotOwnerException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must be the owner of this scratch to perform this action."
+
+
+class GithubLoginException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must be the logged in to Github to perform this action."
+
+
+class ScratchNotProjectFunctionException(APIException):
+    status_code = status.HTTP_501_NOT_IMPLEMENTED
+    default_detail = "This action is only supported for project functions."
 
 
 def get_db_asm(request_asm) -> Asm:
@@ -441,8 +452,13 @@ class ScratchViewSet(
         if scratch.owner != request.profile:
             raise ScratchNotOwnerException()
         # TODO: catch exceptions
-        fn: ProjectFunction = scratch.project_function
-        token = request.profile.user.github.access_token
+        fn: Optional[ProjectFunction] = scratch.project_function
+        if fn is None:
+            raise ScratchNotProjectFunctionException()
+        user: Optional[User] = request.profile.user
+        if user is None:
+            raise GithubLoginException()
+        token = user.github.access_token
         github_repo: Repository = fn.project.repo.details(token)
 
         # Get or create fork
@@ -454,14 +470,17 @@ class ScratchViewSet(
             fork = Github(token).get_user().create_fork(github_repo)
 
         # Change file contents
-        contents = fork.get_contents(fn.src_file)
+        contents_data = fork.get_contents(fn.src_file)
+        contents = (
+            contents_data[0] if isinstance(contents_data, list) else contents_data
+        )
         new_content = re.compile(
             # TODO: escape function name?
             rf"INCLUDE_ASM\([^,]+, [^,]+, {fn.display_name}[^\)]*\);",
             re.MULTILINE,
         ).sub(
             scratch.source_code,
-            contents.content,
+            contents.content or "",
         )
 
         # Make commit

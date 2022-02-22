@@ -857,6 +857,11 @@ class MockRepository:
 
 
 class ScratchPRTests(BaseTestCase):
+    @patch.object(
+        GitHubRepo,
+        "details",
+        new=Mock(return_value=MockRepository("orig_repo")),
+    )
     @patch("coreapp.views.scratch.Github.get_repo")
     def test_pr(self, mock_get_repo):
         """
@@ -864,7 +869,6 @@ class ScratchPRTests(BaseTestCase):
         """
 
         Profile.user = Mock(username="fakeuser", github=Mock(access_token="dummytoken"))
-        GitHubRepo.details = lambda self, token: MockRepository("orig_repo")
         mock_fork = MockRepository("fork_repo")
         mock_get_repo.return_value = mock_fork
 
@@ -876,9 +880,7 @@ class ScratchPRTests(BaseTestCase):
                 "target_asm": "jr $ra\nnop\n",
             }
         )
-        profile = Profile.objects.first()
-        profile.save()
-        scratch.owner = profile
+        scratch.owner = Profile.objects.first()
 
         project = ProjectTests.create_test_project()
 
@@ -915,7 +917,7 @@ class ScratchPRTests(BaseTestCase):
             f"/api/scratch/{scratch.slug}/pr", {"profile": "testowner"}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["url"], "http://github.com/fake_url")
+        self.assertEqual(response.json()["url"], "http://github.com/fake_url")
         self.assertEqual(
             mock_fork.content,
             f"""header\n{scratch.source_code}\nfooter""",
