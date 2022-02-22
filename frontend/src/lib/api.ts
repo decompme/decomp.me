@@ -42,16 +42,16 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
 
 export class ResponseError extends Error {
     status: number
-    responseJSON: Json
+    json: Json
     code: string
 
-    constructor(response: Response, responseJSON) {
+    constructor(response: Response, json) {
         super(`Server responded with HTTP status code ${response.status}`)
 
         this.status = response.status
-        this.responseJSON = responseJSON
-        this.code = responseJSON.code
-        this.message = responseJSON?.detail
+        this.json = json
+        this.code = json.code
+        this.message = json?.detail
         this.name = "ResponseError"
     }
 }
@@ -419,7 +419,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setCompileRequestPromise(null)
             setIsCompilationOld(false)
         }).catch(error => {
-            setCompilation({ "errors": error.responseJSON?.detail, "diff_output": null })
+            setCompilation({ "errors": error.json?.detail, "diff_output": null })
         })
 
         setCompileRequestPromise(promise)
