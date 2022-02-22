@@ -1,33 +1,34 @@
-from typing import Optional
-from django.test.testcases import TestCase
-from coreapp.views.scratch import compile_scratch_update_score
-from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.compiler_wrapper import CompilerWrapper
-from django.urls import reverse
-from django.contrib.auth.models import User
-from rest_framework import status
-from rest_framework.test import APITestCase
-from unittest import skipIf, mock
-from unittest.mock import patch, Mock
-
-import responses
 import tempfile
 from time import sleep
-from pathlib import Path
+from typing import Optional
+from unittest import skip, skipIf, skipUnless
+from unittest.mock import Mock, patch
+
+import responses
+from django.contrib.auth.models import User
+from django.test.testcases import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from coreapp import compilers, platforms
+
+from coreapp.compiler_wrapper import CompilerWrapper
+from coreapp.compilers import Compiler, GCC281, IDO53, IDO71, MWCC_247_92
+from coreapp.m2c_wrapper import M2CWrapper
+from coreapp.platforms import N64
+from coreapp.views.scratch import compile_scratch_update_score
+from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
-from .models.scratch import Scratch, CompilerConfig
-from .models.github import GitHubUser, GitHubRepo
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
+from .models.scratch import CompilerConfig, Scratch
 
 
-def requiresCompiler(*compiler_ids: str):
-    available = CompilerWrapper.available_compiler_ids()
-
-    for id in compiler_ids:
-        if id not in available:
-            return skipIf(True, f"Compiler {id} not available")
-
+def requiresCompiler(*compilers: Compiler):
+    for c in compilers:
+        if not c.available():
+            return skip(f"Compiler {c.id} not available")
     return skipIf(False, "")
 
 
@@ -42,8 +43,8 @@ class BaseTestCase(APITestCase):
 
     def create_nop_scratch(self) -> Scratch:
         scratch_dict = {
-            "compiler": "dummy",
-            "platform": "dummy",
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
@@ -51,14 +52,14 @@ class BaseTestCase(APITestCase):
 
 
 class ScratchCreationTests(BaseTestCase):
-    @requiresCompiler("ido7.1")
+    @requiresCompiler(IDO71)
     def test_accept_late_rodata(self):
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
         scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido7.1",
+            "platform": N64.id,
+            "compiler": IDO71.id,
             "context": "",
             "target_asm": """.late_rodata
 glabel D_8092C224
@@ -71,14 +72,14 @@ nop""",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler("ido5.3")
+    @requiresCompiler(IDO53)
     def test_n64_func(self):
         """
         Ensure that functions with t6/t7 registers can be assembled.
         """
         scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido5.3",
+            "platform": N64.id,
+            "compiler": IDO53.id,
             "context": "typedef unsigned char u8;",
             "target_asm": """
 .text
@@ -97,21 +98,21 @@ sb  $t6, %lo(D_801D702C)($at)
         Ensure that we can create scratches with the dummy platform and compiler
         """
         scratch_dict = {
-            "platform": "dummy",
-            "compiler": "dummy",
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
             "context": "typedef unsigned char u8;",
             "target_asm": "this is some test asm",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler("ido7.1")
+    @requiresCompiler(IDO71)
     def test_max_score(self):
         """
         Ensure that max_score is available upon scratch creation even if the initial compialtion fails
         """
         scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido7.1",
+            "platform": N64.id,
+            "compiler": IDO71.id,
             "context": "this aint cod",
             "target_asm": ".text\nglabel func_80929D04\njr $ra\nnop",
         }
@@ -120,14 +121,14 @@ sb  $t6, %lo(D_801D702C)($at)
 
 
 class ScratchModificationTests(BaseTestCase):
-    @requiresCompiler("gcc2.8.1", "ido5.3")
+    @requiresCompiler(GCC281, IDO53)
     def test_update_scratch_score(self):
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
-            "platform": "n64",
+            "platform": N64.id,
+            "compiler": GCC281.id,
             "context": "",
             "target_asm": "jr $ra",
         }
@@ -142,7 +143,7 @@ class ScratchModificationTests(BaseTestCase):
         # Update the scratch's code and compiler output
         scratch_patch = {
             "source_code": "int func() { return 2; }",
-            "compiler": "ido5.3",
+            "compiler": IDO53.id,
         }
 
         response = self.client.patch(
@@ -154,15 +155,15 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 200)
 
-    @requiresCompiler("gcc2.8.1")
+    @requiresCompiler(GCC281)
     def test_update_scratch_score_on_compile_get(self):
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
+            "platform": N64.id,
+            "compiler": GCC281.id,
             "compiler_flags": "-O2",
-            "platform": "n64",
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "int func() { return 2; }",
@@ -183,14 +184,14 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler("ido7.1")
+    @requiresCompiler(IDO71)
     def test_create_scratch_score(self):
         """
         Ensure that a scratch's score gets set upon creation.
         """
         scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido7.1",
+            "platform": N64.id,
+            "compiler": IDO71.id,
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "int func() { return 2; }",
@@ -198,14 +199,14 @@ class ScratchModificationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler("ido7.1")
+    @requiresCompiler(IDO71)
     def test_update_scratch_score_does_not_affect_last_updated(self):
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
         """
         scratch_dict = {
-            "platform": "n64",
-            "compiler": "ido7.1",
+            "platform": N64.id,
+            "compiler": IDO71.id,
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "int func() { return 2; }",
@@ -227,8 +228,8 @@ class ScratchForkTests(BaseTestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict = {
-            "compiler": "dummy",
-            "platform": "dummy",
+            "compiler": platforms.DUMMY.id,
+            "platform": compilers.DUMMY.id,
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
@@ -258,8 +259,8 @@ class ScratchForkTests(BaseTestCase):
         slug = scratch.slug
 
         fork_dict = {
-            "compiler": "dummy",
-            "platform": "dummy",
+            "compiler": platforms.DUMMY.id,
+            "platform": compilers.DUMMY.id,
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -288,14 +289,14 @@ class ScratchForkTests(BaseTestCase):
 
 
 class CompilationTests(BaseTestCase):
-    @requiresCompiler("gcc2.8.1")
+    @requiresCompiler(GCC281)
     def test_simple_compilation(self):
         """
         Ensure that we can run a simple compilation via the api
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
-            "platform": "n64",
+            "compiler": GCC281.id,
+            "platform": N64.id,
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
@@ -305,7 +306,7 @@ class CompilationTests(BaseTestCase):
 
         compile_dict = {
             "slug": scratch.slug,
-            "compiler": "gcc2.8.1",
+            "compiler": GCC281.id,
             "compiler_flags": "-mips2 -O2",
             "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
         }
@@ -316,14 +317,14 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @requiresCompiler("gcc2.8.1")
+    @requiresCompiler(GCC281)
     def test_giant_compilation(self):
         """
         Ensure that we can compile a giant file
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
-            "platform": "n64",
+            "compiler": GCC281.id,
+            "platform": N64.id,
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
@@ -337,7 +338,7 @@ class CompilationTests(BaseTestCase):
 
         compile_dict = {
             "slug": scratch.slug,
-            "compiler": "gcc2.8.1",
+            "compiler": GCC281.id,
             "compiler_flags": "-mips2 -O2",
             "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
             "context": context,
@@ -351,13 +352,13 @@ class CompilationTests(BaseTestCase):
 
         self.assertEqual(len(response.json()["errors"]), 0)
 
-    @requiresCompiler("ido5.3")
+    @requiresCompiler(IDO53)
     def test_ido_line_endings(self):
         """
         Ensure that compilations with \\r\\n line endings succeed
         """
         result = CompilerWrapper.compile_code(
-            "ido5.3",
+            IDO53,
             "-mips2 -O2",
             "int dog = 5;",
             "extern char libvar1;\r\nextern char libvar2;\r\n",
@@ -366,16 +367,16 @@ class CompilationTests(BaseTestCase):
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @requiresCompiler("ido5.3")
+    @requiresCompiler(IDO53)
     def test_ido_kpic(self):
         """
         Ensure that ido compilations including -KPIC produce different code
         """
         result_non_shared = CompilerWrapper.compile_code(
-            "ido5.3", "-mips2 -O2", "int dog = 5;", ""
+            IDO53, "-mips2 -O2", "int dog = 5;", ""
         )
         result_kpic = CompilerWrapper.compile_code(
-            "ido5.3", "-mips2 -O2 -KPIC", "int dog = 5;", ""
+            IDO53, "-mips2 -O2 -KPIC", "int dog = 5;", ""
         )
         self.assertNotEqual(
             result_non_shared.elf_object,
@@ -383,13 +384,13 @@ class CompilationTests(BaseTestCase):
             "The compilation result should be different",
         )
 
-    @requiresCompiler("mwcc_247_92")
+    @requiresCompiler(MWCC_247_92)
     def test_mwcc_wine(self):
         """
         Ensure that we can invoke mwcc through wine
         """
         result = CompilerWrapper.compile_code(
-            "mwcc_247_92",
+            MWCC_247_92,
             "-str reuse -inline on -fp off -O0",
             "int func(void) { return 5; }",
             "extern char libvar1;\r\nextern char libvar2;\r\n",
@@ -403,35 +404,37 @@ class CompilationTests(BaseTestCase):
         Ensure basic functionality works for the dummy compiler
         """
 
-        result = CompilerWrapper.compile_code("dummy", "", "sample text 123", "")
+        result = CompilerWrapper.compile_code(
+            compilers.DUMMY, "", "sample text 123", ""
+        )
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
 
 class DecompilationTests(BaseTestCase):
-    @requiresCompiler("gcc2.8.1")
+    @requiresCompiler(GCC281)
     def test_default_decompilation(self):
         """
         Ensure that a scratch's initial decompilation makes sense
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
-            "platform": "n64",
+            "compiler": GCC281.id,
+            "platform": N64.id,
             "context": "",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
-    @requiresCompiler("gcc2.8.1")
+    @requiresCompiler(GCC281)
     def test_decompile_endpoint(self):
         """
         Ensure that the decompile endpoint works
         """
         scratch_dict = {
-            "compiler": "gcc2.8.1",
-            "platform": "n64",
+            "compiler": GCC281.id,
+            "platform": N64.id,
             "context": "typedef int s32;",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
@@ -468,7 +471,7 @@ class M2CTests(TestCase):
         sw $t6,0($a0)
         """,
             "",
-            "ido",
+            IDO53,
             "mips",
         )
 
@@ -492,7 +495,7 @@ class M2CTests(TestCase):
         blr
         """,
             "",
-            "mwcc",
+            MWCC_247_92,
             "ppc",
         )
 
@@ -680,8 +683,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": "dummy",
-                "platform": "dummy",
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
@@ -946,8 +949,8 @@ class ProjectTests(TestCase):
 
                 # configure the import
                 compiler_config = CompilerConfig(
-                    platform="dummy",
-                    compiler="dummy",
+                    platform=platforms.DUMMY.id,
+                    compiler=compilers.DUMMY.id,
                     compiler_flags="",
                 )
                 compiler_config.save()

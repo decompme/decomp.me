@@ -1,12 +1,13 @@
-from django.http.request import HttpRequest
-from django.utils.timezone import now
+import logging
+from typing import Optional, TYPE_CHECKING, Union
+
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.http.request import HttpRequest
+from django.utils.timezone import now
+from rest_framework.request import Request as DRFRequest
 
 from .models.profile import Profile
-import logging
-from rest_framework.request import Request as DRFRequest
-from typing import Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .models.github import GitHubUser

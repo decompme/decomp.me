@@ -1,8 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils import timezone
-
 from typing import Optional
+
+from django.contrib.auth.models import User
+from django.db import models
+from django.utils import timezone
 
 
 class Profile(models.Model):

@@ -1,11 +1,12 @@
-from django.contrib import admin
-
 import shutil
 
+from django.contrib import admin
+
+from .models.github import GitHubRepo, GitHubRepoBusyException, GitHubUser
+
 from .models.profile import Profile
-from .models.scratch import Assembly, Asm, Scratch, CompilerConfig
-from .models.project import Project, ProjectMember, ProjectFunction, ProjectImportConfig
-from .models.github import GitHubUser, GitHubRepo, GitHubRepoBusyException
+from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
+from .models.scratch import Asm, Assembly, CompilerConfig, Scratch
 
 
 class GitHubRepoAdmin(admin.ModelAdmin[GitHubRepo]):
