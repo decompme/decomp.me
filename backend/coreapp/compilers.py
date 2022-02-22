@@ -8,6 +8,7 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_IDO_FLAGS,
+    COMMON_MWCC_EPPC_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     FlagSet,
@@ -16,7 +17,7 @@ from coreapp.flags import (
 
 from coreapp import platforms
 
-from coreapp.platforms import GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH
+from coreapp.platforms import DARWIN, GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,11 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+
+
+@dataclass(frozen=True)
+class MWCCEPPCCompiler(MWCCCompiler):
+    flags: ClassVar[Flags] = COMMON_MWCC_EPPC_FLAGS
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -170,6 +176,19 @@ CLANG_401 = ClangCompiler(
             "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
         ),
     ],
+)
+
+# DARWIN
+DARWIN_GCC401 = GCCCompiler(
+    id="powerpc-darwin-cross",
+    platform=DARWIN,
+    cc='"${COMPILER_DIR}"/powerpc-darwin-cross/bin/cc1 $COMPILER_FLAGS "$INPUT" -D__ppc__ -D__POWERPC__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__BIG_ENDIAN__ -D__APPLE__ -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/c++/4.0.0 -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/c++/4.0.0/powerpc-apple-darwin8 -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/gcc/darwin/3.3 -o "$GENERATED_ASM"; python3 "${COMPILER_DIR}"/convert_gas_syntax.py "$GENERATED_ASM" "$FUNCTION_TO_DIFF" new | powerpc-linux-gnu-as -o "$OUTPUT"',
+)
+
+DARWIN_GCC401_CPP = GCCCompiler(
+    id="powerpc-darwin-cross-cpp",
+    platform=DARWIN,
+    cc='"${COMPILER_DIR}"/powerpc-darwin-cross/bin/cc1plus $COMPILER_FLAGS "$INPUT" -D__ppc__ -D__POWERPC__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__BIG_ENDIAN__ -D__APPLE__ -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/c++/4.0.0 -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/c++/4.0.0/powerpc-apple-darwin8 -I${COMPILER_DIR}/powerpc-darwin-cross/powerpc-apple-darwin/include/gcc/darwin/3.3 -o "$GENERATED_ASM"; python3 "${COMPILER_DIR}"/convert_gas_syntax.py "$GENERATED_ASM" "$FUNCTION_TO_DIFF" new | powerpc-linux-gnu-as -o "$OUTPUT"',
 )
 
 # PS1
@@ -283,13 +302,13 @@ GCC281 = GCCCompiler(
 # GC_WII
 MWCCEPPC_CC = '${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
-MWCC_233_144 = MWCCCompiler(
+MWCC_233_144 = MWCCEPPCCompiler(
     id="mwcc_233_144",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_233_159 = MWCCCompiler(
+MWCC_233_159 = MWCCEPPCCompiler(
     id="mwcc_233_159",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -301,7 +320,7 @@ MWCC_233_159 = MWCCCompiler(
     ],
 )
 
-MWCC_233_163 = MWCCCompiler(
+MWCC_233_163 = MWCCEPPCCompiler(
     id="mwcc_233_163",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -313,7 +332,7 @@ MWCC_233_163 = MWCCCompiler(
     ],
 )
 
-MWCC_233_163E = MWCCCompiler(
+MWCC_233_163E = MWCCEPPCCompiler(
     id="mwcc_233_163e",
     platform=GC_WII,
     cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
@@ -329,13 +348,13 @@ MWCC_233_163E = MWCCCompiler(
     ],
 )
 
-MWCC_242_81 = MWCCCompiler(
+MWCC_242_81 = MWCCEPPCCompiler(
     id="mwcc_242_81",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_92 = MWCCCompiler(
+MWCC_247_92 = MWCCEPPCCompiler(
     id="mwcc_247_92",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -347,13 +366,13 @@ MWCC_247_92 = MWCCCompiler(
     ],
 )
 
-MWCC_247_105 = MWCCCompiler(
+MWCC_247_105 = MWCCEPPCCompiler(
     id="mwcc_247_105",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_107 = MWCCCompiler(
+MWCC_247_107 = MWCCEPPCCompiler(
     id="mwcc_247_107",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -365,7 +384,7 @@ MWCC_247_107 = MWCCCompiler(
     ],
 )
 
-MWCC_247_108 = MWCCCompiler(
+MWCC_247_108 = MWCCEPPCCompiler(
     id="mwcc_247_108",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -381,7 +400,7 @@ MWCC_247_108 = MWCCCompiler(
     ],
 )
 
-MWCC_41_60831 = MWCCCompiler(
+MWCC_41_60831 = MWCCEPPCCompiler(
     id="mwcc_41_60831",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -401,37 +420,37 @@ MWCC_41_60831 = MWCCCompiler(
     ],
 )
 
-MWCC_41_60126 = MWCCCompiler(
+MWCC_41_60126 = MWCCEPPCCompiler(
     id="mwcc_41_60126",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
     presets=[
         Preset(
             "Super Mario Galaxy",
-            "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
+            "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -align powerpc -enum int",
         ),
     ],
 )
 
-MWCC_42_142 = MWCCCompiler(
+MWCC_42_142 = MWCCEPPCCompiler(
     id="mwcc_42_142",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_151 = MWCCCompiler(
+MWCC_43_151 = MWCCEPPCCompiler(
     id="mwcc_43_151",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_172 = MWCCCompiler(
+MWCC_43_172 = MWCCEPPCCompiler(
     id="mwcc_43_172",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_213 = MWCCCompiler(
+MWCC_43_213 = MWCCEPPCCompiler(
     id="mwcc_43_213",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -655,6 +674,9 @@ _all_compilers: List[Compiler] = [
     MWCC_40_1034,
     MWCC_40_1036,
     MWCC_40_1051,
+    # DARWIN
+    DARWIN_GCC401,
+    DARWIN_GCC401_CPP,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})

@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from coreapp import compilers
 
+from coreapp import compilers
+
 from ..decorators.django import condition
 
 boot_time = now()
@@ -17,6 +19,7 @@ class CompilersDetail(APIView):
     def compilers_json() -> Dict[str, Dict[str, object]]:
         return {
             c.id: {
+                "name": "COMPILER NAME",  # c.name
                 "platform": c.platform.id,
                 "flags": [f.to_json() for f in c.flags],
                 "presets": [p.to_json() for p in c.presets],

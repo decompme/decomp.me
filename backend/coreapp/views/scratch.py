@@ -60,6 +60,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
         scratch.compiler_flags,
         scratch.source_code,
         scratch.context,
+        scratch.diff_label,
     )
 
 

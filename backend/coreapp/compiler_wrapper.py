@@ -102,7 +102,7 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
     def compile_code(
-        compiler: Compiler, compiler_flags: str, code: str, context: str
+        compiler: Compiler, compiler_flags: str, code: str, context: str, function: str
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
@@ -141,6 +141,8 @@ class CompilerWrapper:
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
                         "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "GENERATED_ASM": sandbox.rewrite_path(code_path).replace("code.c", "code.s"),
+                        "FUNCTION_TO_DIFF": function,
                         "MWCIncludes": "/tmp",
                     },
                 )
