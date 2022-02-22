@@ -10,12 +10,7 @@ const scratchJson: api.Scratch = {
     "url": "http://localhost/api/scratch/qCxNx",
     "slug": "qCxNx",
     "html_url": "http://localhost/scratch/qCxNx",
-    "owner": {
-        "is_anonymous": true,
-        "id": 8,
-        "url": null,
-        "html_url": null,
-    },
+    "owner": null,
     "source_code": "",
     "context": "",
     "name": "Untitled",
