@@ -985,7 +985,7 @@ def restrict_to_function(dump: str, fn_name: str) -> str:
         return ""
 
 
-def serialize_data_references(references: List[Tuple[int, int, str]]) -> str:
+def serialize_rodata_references(references: List[Tuple[int, int, str]]) -> str:
     return "".join(
         f"DATAREF {text_offset} {from_offset} {from_section}\n"
         for (text_offset, from_offset, from_section) in references
@@ -1056,7 +1056,7 @@ def preprocess_objdump_out(
         out = out.rstrip("\n")
 
     if obj_data:
-        out = serialize_data_references(parse_elf_data_references(obj_data, config)) + out
+        out = serialize_rodata_references(parse_elf_rodata_references(obj_data, config)) + out
 
     return out
 
@@ -1145,7 +1145,7 @@ def search_map_file(
     return None, None
 
 
-def parse_elf_data_references(data: bytes, config: Config) -> List[Tuple[int, int, str]]:
+def parse_elf_rodata_references(data: bytes, config: Config) -> List[Tuple[int, int, str]]:
     e_ident = data[:16]
     if e_ident[:4] != b"\x7FELF":
         return []
@@ -1222,8 +1222,7 @@ def parse_elf_data_references(data: bytes, config: Config) -> List[Tuple[int, in
                 # Skip section_name -> section_name references
                 continue
             sec_name = sec_names[s.sh_info].decode("latin1")
-            if sec_name == ".mwcats.text":
-                # Skip Metrowerks CATS Utility section
+            if sec_name != ".rodata":
                 continue
             sec_base = sections[s.sh_info].sh_offset
             for i in range(0, s.sh_size, s.sh_entsize):
@@ -1315,7 +1314,7 @@ def dump_objfile(
     objfile = config.objfile
     if not objfile:
         objfile, _ = search_map_file(start, project, config)
-    
+
     if not objfile:
         fail("Not able to find .o file for function.")
 
