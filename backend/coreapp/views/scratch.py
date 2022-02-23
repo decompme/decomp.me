@@ -462,11 +462,10 @@ class ScratchViewSet(
         github_repo: Repository = fn.project.repo.details(token)
 
         # Get or create fork
+        # TODO: likely need to pull this to make it up to date
         try:
-            # TODO: likely need to pull this to make it up to date
             fork = Github(token).get_repo(f"{scratch.owner}/{github_repo.name}")
         except UnknownObjectException:
-            # TODO: maybe just call this? POST == GET if exists?
             fork = Github(token).get_user().create_fork(github_repo)
 
         # Change file contents
@@ -474,19 +473,17 @@ class ScratchViewSet(
         contents = (
             contents_data[0] if isinstance(contents_data, list) else contents_data
         )
-        new_content = re.compile(
+        new_content = re.sub(
             # TODO: escape function name?
             rf"INCLUDE_ASM\([^,]+, [^,]+, {fn.display_name}[^\)]*\);",
-            re.MULTILINE,
-        ).sub(
             scratch.source_code,
             contents.content or "",
+            flags=re.MULTILINE,
         )
 
         # Make commit
-        # TODO: randomize and sanitize?
+        # TODO: make unique by GETting the branch
         fork_branch = f"decompme__GEN__{fn.display_name}"
-
         message = f"[decomp.me] Decompile {fn.display_name} ({fn.src_file})"
         fork.update_file(
             message=message,
