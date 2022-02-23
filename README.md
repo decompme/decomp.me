@@ -61,17 +61,9 @@ yarn dev
 cd backend
 ```
 
-- Set up a virtual environment (optional)
-```shell
-python3 -m virtualenv venv
-source venv/bin/activate
-```
-
-- Install python dependencies
-* [Install poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
+* [Install poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer) and python dependencies
 ```shell
 poetry install
-./compilers/download.sh
 ```
 
 - Install compilers
