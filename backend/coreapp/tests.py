@@ -862,13 +862,16 @@ class ScratchPRTests(BaseTestCase):
         "details",
         new=Mock(return_value=MockRepository("orig_repo")),
     )
+    @patch.object(
+        Profile,
+        "user",
+        new=Mock(username="fakeuser", github=Mock(access_token="dummytoken")),
+    )
     @patch("coreapp.views.scratch.Github.get_repo")
     def test_pr(self, mock_get_repo):
         """
         Create a PR from a scratch to an upstream (project) repo
         """
-
-        Profile.user = Mock(username="fakeuser", github=Mock(access_token="dummytoken"))
         mock_fork = MockRepository("fork_repo")
         mock_get_repo.return_value = mock_fork
 
@@ -1006,7 +1009,7 @@ class ProjectTests(TestCase):
                 project = ProjectTests.create_test_project()
 
                 # add some asm
-                dir = project.repo.get_dir()
+                dir = project.repo.get_dir(check_exists=False)
                 (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
                 (dir / "src").mkdir(parents=True)
                 asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
