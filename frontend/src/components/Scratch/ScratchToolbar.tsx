@@ -40,7 +40,7 @@ function exportScratchZip(scratch: api.Scratch) {
 
 async function makeGithubPR(scratch: api.Scratch) {
     const { url } = await api.post(`${scratch.url}/pr`, scratch)
-    const win = window.open(url, '_blank')
+    const win = window.open(url, "_blank")
     win.focus()
 }
 
