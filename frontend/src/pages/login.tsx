@@ -8,6 +8,7 @@ import { useSWRConfig } from "swr"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import LoadingSpinner from "../components/loading.svg"
 import * as api from "../lib/api"
+import { requestMissingScopes } from "../lib/oauth"
 
 import styles from "./login.module.css"
 
@@ -21,9 +22,8 @@ export default function LoginPage() {
     const plausible = usePlausible()
 
     useEffect(() => {
-        if (code) {
-            setError(null)
-            api.post("/user", { code }).then((user: api.User) => {
+        if (code && !error) {
+            requestMissingScopes(() => api.post("/user", { code })).then((user: api.User) => {
                 if (user.is_anonymous) {
                     return Promise.reject(new Error("Still not logged-in."))
                 }
@@ -40,13 +40,15 @@ export default function LoginPage() {
                         user,
                     }, window.opener)
                     window.close()
+                } else {
+                    window.location.href = "/"
                 }
             }).catch(error => {
                 console.error(error)
                 setError(error)
             })
         }
-    }, [code, router, mutate, next, plausible])
+    }, [code, router, mutate, next, plausible, error])
 
     return <>
         <main className={styles.container}>
