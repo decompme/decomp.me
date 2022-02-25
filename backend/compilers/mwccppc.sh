@@ -1,12 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# patch (file, offset, value)
-patch () {
-    echo "Patching $1 offset $2 with value $3"
-    printf $(printf '\\x%02X' ${3}) | dd of="${1}" bs=1 seek=${2} count=1 conv=notrunc &> /dev/null
-}
-
 compiler_dir="$(dirname $(readlink -f "${BASH_SOURCE[0]}"))"
 compiler_url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip"
 mwcceppc_exe="mwcceppc.exe"
@@ -59,13 +53,6 @@ for key in "${!WII_COMPILERS[@]}"; do
         mv "${compiler_dir}/Wii/${compiler_version}/"* "${compiler_dir}/${compiler_id}/"
     fi
 done
-
-# patch compilers
-if [ -f "${compiler_dir}/mwcc_247_108/${mwcceppc_exe}" ]; then
-    mkdir -p "${compiler_dir}/mwcc_247_108_tp"
-    cp -r "${compiler_dir}/mwcc_247_108/"* "${compiler_dir}/mwcc_247_108_tp/"
-    patch "${compiler_dir}/mwcc_247_108_tp/${mwcceppc_exe}" 1862228 109
-fi
 
 # copy in clean 1.2.5 for frank
 if [ -f "${compiler_dir}/mwcc_233_163/${mwcceppc_exe}" ]; then

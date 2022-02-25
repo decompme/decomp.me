@@ -60,14 +60,3 @@ if [[ "$uname" != "Darwin" ]]; then
     chmod +x $compiler_dir/gcc2.6.3-mipsel/*
 fi
 
-# agbcc (gba)
-if [[ "$uname" != "Darwin" ]]; then
-    mkdir -p "$compiler_dir/agbcc"
-    curl -L "https://github.com/ethteck/agbcc/releases/download/master/agbcc.tar.gz" | tar zx -C "$compiler_dir"/agbcc
-fi
-
-#agbccpp (gba)
-if [[ "$uname" != "Darwin" ]]; then
-    mkdir -p "$compiler_dir/agbccpp"
-    curl -L "https://github.com/notyourav/agbcc/releases/download/cp/agbcc.tar.gz" | tar zx -C "$compiler_dir"/agbccpp
-fi
