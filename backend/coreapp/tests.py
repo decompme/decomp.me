@@ -856,43 +856,29 @@ class MockRepository:
         return Mock(url="http://github.com/fake_url")
 
 
+@patch.object(
+    GitHubRepo,
+    "details",
+    new=Mock(return_value=MockRepository("orig_repo")),
+)
+@patch.object(
+    Profile,
+    "user",
+    new=Mock(username="fakeuser", github=Mock(access_token="dummytoken")),
+)
+@patch("coreapp.views.project.Github.get_repo")
 class ScratchPRTests(BaseTestCase):
-    @patch.object(
-        GitHubRepo,
-        "details",
-        new=Mock(return_value=MockRepository("orig_repo")),
-    )
-    @patch.object(
-        Profile,
-        "user",
-        new=Mock(username="fakeuser", github=Mock(access_token="dummytoken")),
-    )
-    @patch("coreapp.views.scratch.Github.get_repo")
-    def test_pr(self, mock_get_repo):
-        """
-        Create a PR from a scratch to an upstream (project) repo
-        """
-        mock_fork = MockRepository("fork_repo")
-        mock_get_repo.return_value = mock_fork
-
-        scratch = self.create_scratch(
-            {
-                "compiler": "dummy",
-                "platform": "dummy",
-                "context": "",
-                "target_asm": "jr $ra\nnop\n",
-            }
-        )
-        scratch.owner = Profile.objects.first()
-
+    def setUp(self):
+        super().setUp()
         project = ProjectTests.create_test_project()
-
+        self.project = project
         compiler_config = CompilerConfig(
             platform="dummy",
             compiler="dummy",
             compiler_flags="",
         )
         compiler_config.save()
+        self.compiler_config = compiler_config
         import_config = ProjectImportConfig(
             project=project,
             display_name="test",
@@ -903,6 +889,7 @@ class ScratchPRTests(BaseTestCase):
             symbol_addrs_path="symbol_addrs.txt",
         )
         import_config.save()
+        self.import_config = import_config
         project_fn = ProjectFunction(
             project=project,
             rom_address="10",
@@ -912,18 +899,57 @@ class ScratchPRTests(BaseTestCase):
             import_config=import_config,
         )
         project_fn.save()
+        self.project_fn = project_fn
+        scratch = self.create_nop_scratch()
+        scratch.owner = Profile.objects.first()
         scratch.project_function = project_fn
-
         scratch.save()
+        self.scratch = scratch
+        # project_member = ProjectMember(project=project, profile=Profile.objects.first())
+        # project_member.save()
+        # self.project_member = project_member
+
+    def test_pr_one_scratch(self, mock_get_repo):
+        """
+        Create a PR from one scratch to an upstream (project) repo
+        """
+        mock_fork = MockRepository("fork_repo")
+        mock_get_repo.return_value = mock_fork
 
         response = self.client.post(
-            f"/api/scratch/{scratch.slug}/pr", {"profile": "testowner"}
+            reverse("project-pr", args=[self.project.slug]),
+            data={"scratch_slugs": [self.scratch.slug]},
         )
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["url"], "http://github.com/fake_url")
         self.assertEqual(
             mock_fork.content,
-            f"""header\n{scratch.source_code}\nfooter""",
+            f"""header\n{self.scratch.source_code}\nfooter""",
+        )
+
+    def test_pr_multiple_scratch(self, mock_get_repo):
+        """
+        Create a PR from two scratches to an upstream (project) repo
+        """
+        mock_fork = MockRepository("fork_repo")
+        mock_get_repo.return_value = mock_fork
+
+        scratch_2 = self.create_nop_scratch()
+        scratch_2.owner = Profile.objects.first()
+        scratch_2.project_function = self.project_fn
+        scratch_2.save()
+
+        response = self.client.post(
+            reverse("project-pr", args=[self.project.slug]),
+            data={"scratch_slugs": [self.scratch.slug, scratch_2.slug]},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["url"], "http://github.com/fake_url")
+        self.assertEqual(
+            mock_fork.content,
+            f"""header\n{self.scratch.source_code}\nfooter""",
         )
 
 
