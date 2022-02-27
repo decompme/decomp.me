@@ -21,6 +21,9 @@ def custom_exception_handler(exc, context):
             status=HTTP_400_BAD_REQUEST,
         )
 
+    if response is not None:
+        response.data["kind"] = exc.__class__.__name__
+
     return response
 
 
