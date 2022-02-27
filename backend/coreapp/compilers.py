@@ -31,9 +31,8 @@ class Compiler:
         return COMPILER_BASE_PATH / (self.base_id or self.id)
 
     def available(self) -> bool:
-        # consider compiler binaries present if *any* file is found
-        binaries = (x for x in self.path.glob("*"))
-        return next(binaries, None) != None
+        # consider compiler binaries present if the compiler's directory is found
+        return self.path.exists()
 
 
 @dataclass(frozen=True)
@@ -157,11 +156,11 @@ IDO71 = IDOCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
-# TODO replace with other one from decompals
-GCC27KMC = GCCCompiler(
-    id="gcc2.7kmc",
+# TODO confirm this works
+GCC272KMC = GCCCompiler(
+    id="gcc2.7.2kmc",
     platform=N64,
-    cc='N64ALIGN=ON VR4300MUL=ON "${COMPILER_DIR}"/gcc -G0 -c -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='"${COMPILER_DIR}"/gcc -G0 -c -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 GCC281 = GCCCompiler(
@@ -430,7 +429,7 @@ _all_compilers: List[Compiler] = [
     # N64
     IDO53,
     IDO71,
-    GCC27KMC,
+    GCC272KMC,
     GCC281,
     # GC_WII
     MWCC_233_144,

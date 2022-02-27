@@ -77,7 +77,11 @@ def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
 
     progress_bar.close()
 
-    if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+    if (
+        total_size_in_bytes != 0
+        and progress_bar.n != total_size_in_bytes
+        and total_size_in_bytes > 1024 * 1024
+    ):
         print("ERROR, something went wrong")
 
 
@@ -110,6 +114,9 @@ def download_tar(
         else:
             dl_name = url.split("/")[-1]
 
+    if not dest_name:
+        dest_name = dl_name
+
     if not log_name:
         log_name = dest_name
 
@@ -136,6 +143,9 @@ def download_zip(
             dl_name = dest_name
         else:
             dl_name = url.split("/")[-1]
+
+    if not dest_name:
+        dest_name = dl_name
 
     if not log_name:
         log_name = dest_name
@@ -191,17 +201,16 @@ def download_switch():
         if host_os == MACOS and version not in mac_versions:
             continue
 
+        log_name = f"clang {version}"
         dest_dir = dest_for_version(version)
         if dest_dir.exists():
-            print(f"{version} already exists, skipping")
+            print(f"{log_name} already exists, skipping")
             continue
 
         package_name = f"clang+llvm-{version}-x86_64-{host_os.clang_package_name}"
         url = f"https://releases.llvm.org/{version}/{package_name}.tar.xz"
 
-        download_tar(
-            url=url, mode="r:xz", log_name=f"clang {version}", create_subdir=False
-        )
+        download_tar(url=url, mode="r:xz", log_name=log_name, create_subdir=False)
 
         shutil.move(COMPILERS_DIR / package_name, dest_dir)
 
@@ -248,8 +257,6 @@ def download_n64():
         dest="gcc2.8.1",
     )
 
-    # TODO MIGRATION FROM gcc2.7kmc to this
-    # TODO config for this compiler
     # GCC 2.7.2 KMC
     download_gcc(
         gcc_url=f"https://github.com/decompals/mips-gcc-2.7.2/releases/download/main/gcc-2.7.2-{host_os.n64_gcc_os}.tar.gz",
@@ -393,6 +400,7 @@ def download_wii_gc():
 
 
 # TODO migration for tp version of wii_gc compiler to the non-tp version
+# TODO MIGRATION FROM gcc2.7kmc to gcc2.7.2kmc (+ config)
 def main(args):
     download_gba()
     download_switch()
@@ -400,7 +408,7 @@ def main(args):
     download_ps1()
     download_nds()
     download_wii_gc()
-    print("\nCompilers finsished downloading!")
+    print("Compilers finsished downloading!")
 
 
 if __name__ == "__main__":
