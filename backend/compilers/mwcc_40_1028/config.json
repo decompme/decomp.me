@@ -1,4 +1,0 @@
-{
-    "platform": "nds_arm9",
-    "cc": "${WINE} \"${COMPILER_DIR}/mwccarm.exe\" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o \"${OUTPUT}\" \"${INPUT}\""
-}

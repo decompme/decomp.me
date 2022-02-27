@@ -6,7 +6,6 @@ import platform
 import shutil
 import sys
 import tarfile
-from threading import local
 from zipfile import ZipFile
 from tqdm import tqdm
 from typing import Optional
@@ -19,10 +18,24 @@ class OS:
     name: str
     system: str
     clang_package_name: str
+    n64_gcc_os: str
+    ido_os: str
 
 
-MACOS = OS(name="MacOS", system="darwin", clang_package_name="apple-darwin")
-LINUX = OS(name="Linux", system="linux", clang_package_name="linux-gnu-debian8")
+MACOS = OS(
+    name="MacOS",
+    system="darwin",
+    clang_package_name="apple-darwin",
+    n64_gcc_os="mac",
+    ido_os="macos",
+)
+LINUX = OS(
+    name="Linux",
+    system="linux",
+    clang_package_name="linux-gnu-debian8",
+    n64_gcc_os="linux",
+    ido_os="ubuntu",
+)
 
 oses: dict[str, OS] = {
     "darwin": MACOS,
@@ -69,17 +82,22 @@ def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
 
 def download_tar(
     url: str,
-    mode: str,
+    mode: str = "r:gz",
+    dl_name: str = "",
     dest_name: str = "",
     create_subdir: bool = True,
     log_name: str = "",
 ):
-    if not dest_name:
-        dest_name = url.split("/")[-1]
-    download_dest_path = DOWNLOAD_CACHE / dest_name
+    if not dl_name:
+        if dest_name:
+            dl_name = dest_name
+        else:
+            dl_name = url.split("/")[-1]
+
+    download_dest_path = DOWNLOAD_CACHE / dl_name
 
     if not log_name:
-        log_name = dest_name
+        log_name = dl_name
 
     download_file(url, log_name, download_dest_path)
 
@@ -98,21 +116,27 @@ def download_tar(
             f.extract(member=memeber, path=dest_path)
 
 
-def download_zip(url: str, shortname: str = ""):
-    dest_name = url.split("/")[-1]
+def download_zip(url: str, dest_name: str = "", log_name: str = ""):
+    if not dest_name:
+        dest_name = url.split("/")[-1]
+
     dest_path = DOWNLOAD_CACHE / dest_name
-    download_file(url, shortname, dest_path)
+
+    if not log_name:
+        log_name = dest_name
+
+    download_file(url, log_name, dest_path)
 
     with ZipFile(file=dest_path) as f:
         for file in tqdm(
-            desc=f"Extracting {shortname}",
+            desc=f"Extracting {log_name}",
             iterable=f.namelist(),
             total=len(f.namelist()),
         ):
             f.extract(member=file, path=COMPILERS_DIR)
 
 
-def download_agbcc():
+def download_gba():
     if host_os != LINUX:
         print("agbcc unsupported on " + host_os.name)
         return
@@ -123,7 +147,7 @@ def download_agbcc():
             print(f"{dest} already exists, skipping")
             return
 
-        download_tar(url=url, mode="r:gz", dest_name=dest)
+        download_tar(url=url, dest_name=dest)
 
     download_agbcc(
         "https://github.com/ethteck/agbcc/releases/download/master/agbcc.tar.gz",
@@ -135,11 +159,10 @@ def download_agbcc():
     )
 
 
-def download_clang():
+def download_switch():
     def dest_for_version(version: str) -> Path:
         return COMPILERS_DIR / f"clang-{version}"
 
-    print("Downloading clang compilers")
     versions = ["4.0.1", "3.9.1"]
 
     # 3.9.1 isn't available for mac
@@ -173,7 +196,6 @@ def download_clang():
             )
 
     # Set up musl
-    print("\nDownloading and copying musl to botw compilers")
     download_zip(
         "https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip",
         shortname="musl",
@@ -187,10 +209,117 @@ def download_clang():
     shutil.rmtree(musl_dest)
 
 
+def download_n64():
+    def download_gcc(gcc_url: str, binutils_url, dest: str):
+        dest_path = COMPILERS_DIR / dest
+        if dest_path.exists():
+            print(f"{dest} already exists, skipping")
+        else:
+            download_tar(
+                url=gcc_url,
+                dest_name=dest,
+            )
+            download_tar(
+                url=binutils_url,
+                dl_name=f"{dest}-binutils",
+                dest_name=dest,
+            )
+
+    # GCC 2.8.1
+    download_gcc(
+        gcc_url=f"https://github.com/pmret/gcc-papermario/releases/download/master/{host_os.n64_gcc_os}.tar.gz",
+        binutils_url=f"https://github.com/pmret/binutils-papermario/releases/download/master/{host_os.n64_gcc_os}.tar.gz",
+        dest="gcc2.8.1",
+    )
+
+    # TODO MIGRATION FROM gcc2.7kmc to this
+    # TODO config for this compiler
+    # GCC 2.7.2 KMC
+    download_gcc(
+        gcc_url=f"https://github.com/decompals/mips-gcc-2.7.2/releases/download/main/gcc-2.7.2-{host_os.n64_gcc_os}.tar.gz",
+        binutils_url=f"https://github.com/decompals/mips-binutils-2.6/releases/download/main/binutils-2.6-{host_os.n64_gcc_os}.tar.gz",
+        dest="gcc2.7.2kmc",
+    )
+
+    # IDO
+    ido_versions = ["5.3", "7.1"]
+    for version in ido_versions:
+        dest = COMPILERS_DIR / f"ido{version}"
+        if dest.exists():
+            print(f"ido{version} already exists, skipping")
+        else:
+            download_tar(
+                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
+                dest_name=f"ido{version}",
+            )
+    pass
+
+
+def download_ps1():
+    pass
+
+
+def download_nds():
+    compilers_12 = {
+        "base": "mwcc_20_72",
+        "sp2": "mwcc_20_79",
+        "sp2p3": "mw22_20_82",
+        "sp3": "mwcc_20_84",
+        "sp4": "mwcc_20_87",
+    }
+
+    compilers_20 = {
+        "base": "mwcc_30_114",
+        "sp1": "mwcc_30_123",
+        "sp1p2": "mwcc_30_126",
+        "sp1p5": "mwcc_30_131",
+        "sp1p6": "mwcc_30_133",
+        "sp1p7": "mwcc_30_134",
+        "sp2": "mwcc_30_136",
+        "sp2p2": "mwcc_30_137",
+        "sp2p3": "mwcc_30_138",
+        "sp2p4": "mwcc_30_139",
+    }
+
+    compilers_dsi = {
+        "1.1": "mwcc_40_1018",
+        "1.1p1": "mwcc_40_1024",
+        "1.2": "mwcc_40_1026",
+        "1.2p1": "mwcc_40_1027",
+        "1.2p2": "mwcc_40_1028",
+        "1.3": "mwcc_40_1034",
+        "1.3p1": "mwcc_40_1036",
+        "1.6sp1": "mwcc_40_1051",
+    }
+
+    compiler_groups = {
+        "1.2": compilers_12,
+        "2.0": compilers_20,
+        "dsi": compilers_dsi
+    }
+
+    download_zip(
+        url="https://cdn.discordapp.com/attachments/698589325620936736/845499146982129684/mwccarm.zip",
+        dest_name="mwccarm",
+    )
+
+    for group_id, group in compiler_groups.items():
+        mwccarm_dir = COMPILERS_DIR / "mwccarm" / group_id
+        license_path = COMPILERS_DIR / "mwccarm" / "license.dat"
+        for ver, compiler_id in group.items():
+            compiler_dir = COMPILERS_DIR / compiler_id
+            shutil.move(mwccarm_dir / ver, compiler_dir)
+            shutil.copy(license_path, compiler_dir / "license.dat")
+
+    pass
+
+
 def main(args):
-    # GBA
-    download_agbcc()
-    # download_clang()
+    # download_gba()
+    # download_switch()
+    # download_n64()
+    # download_ps1()
+    download_nds()
     print("\nCompilers finsished downloading!")
 
 
