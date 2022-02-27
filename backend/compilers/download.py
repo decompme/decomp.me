@@ -123,12 +123,12 @@ def download_tar(
     dest_path = download_file_wrapper(url, dl_name, dest_name, create_subdir, log_name)
 
     with tarfile.open(DOWNLOAD_CACHE / dl_name, mode=mode) as f:
-        for memeber in tqdm(
+        for member in tqdm(
             desc=f"Extracting {log_name}",
             iterable=f.getmembers(),
             total=len(f.getmembers()),
         ):
-            f.extract(member=memeber, path=dest_path)
+            f.extract(member=member, path=dest_path)
 
 
 def download_zip(
@@ -463,7 +463,7 @@ def main(args):
     download_ps1()
     download_nds()
     download_wii_gc()
-    print("Compilers finsished downloading!")
+    print("Compilers finished downloading!")
 
 
 if __name__ == "__main__":
