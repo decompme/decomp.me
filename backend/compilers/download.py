@@ -459,7 +459,9 @@ def download_wii_gc():
 def main(args):
     def should_enable(platform):
         # assume enabled unless explicitly disabled
-        return os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
+        return (
+            os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
+        )
 
     should_enable("gba") and download_gba()
     should_enable("n64") and download_n64()
