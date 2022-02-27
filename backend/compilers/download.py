@@ -54,7 +54,7 @@ COMPILERS_DIR: Path = Path(os.path.dirname(os.path.realpath(__file__)))
 DOWNLOAD_CACHE = COMPILERS_DIR / "download_cache"
 DOWNLOAD_CACHE.mkdir(exist_ok=True)
 
-
+# Downloads a file to the file cache
 def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
     if dest_path.exists():
         print(f"Download of {log_name} already exists; skipping download")
@@ -81,6 +81,21 @@ def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
         print("ERROR, something went wrong")
 
 
+# Used for compiler packages
+def download_file_wrapper(
+    url: str, dl_name: str, dest_name: str, create_subdir: bool, log_name: str
+):
+    download_file(url=url, log_name=log_name, dest_path=DOWNLOAD_CACHE / dl_name)
+
+    if create_subdir:
+        dest_path = COMPILERS_DIR / dest_name
+        dest_path.mkdir(exist_ok=True)
+    else:
+        dest_path = COMPILERS_DIR
+
+    return dest_path
+
+
 def download_tar(
     url: str,
     mode: str = "r:gz",
@@ -95,20 +110,12 @@ def download_tar(
         else:
             dl_name = url.split("/")[-1]
 
-    download_dest_path = DOWNLOAD_CACHE / dl_name
-
     if not log_name:
-        log_name = dl_name
+        log_name = dest_name
 
-    download_file(url, log_name, download_dest_path)
+    dest_path = download_file_wrapper(url, dl_name, dest_name, create_subdir, log_name)
 
-    if create_subdir:
-        dest_path = COMPILERS_DIR / dest_name
-        dest_path.mkdir(exist_ok=True)
-    else:
-        dest_path = COMPILERS_DIR
-
-    with tarfile.open(download_dest_path, mode=mode) as f:
+    with tarfile.open(DOWNLOAD_CACHE / dl_name, mode=mode) as f:
         for memeber in tqdm(
             desc=f"Extracting {log_name}",
             iterable=f.getmembers(),
@@ -117,24 +124,31 @@ def download_tar(
             f.extract(member=memeber, path=dest_path)
 
 
-def download_zip(url: str, dest_name: str = "", log_name: str = ""):
-    if not dest_name:
-        dest_name = url.split("/")[-1]
-
-    dest_path = DOWNLOAD_CACHE / dest_name
+def download_zip(
+    url: str,
+    dl_name: str = "",
+    dest_name: str = "",
+    create_subdir: bool = False,
+    log_name: str = "",
+):
+    if not dl_name:
+        if dest_name:
+            dl_name = dest_name
+        else:
+            dl_name = url.split("/")[-1]
 
     if not log_name:
         log_name = dest_name
 
-    download_file(url, log_name, dest_path)
+    dest_path = download_file_wrapper(url, dl_name, dest_name, create_subdir, log_name)
 
-    with ZipFile(file=dest_path) as f:
+    with ZipFile(file=DOWNLOAD_CACHE / dl_name) as f:
         for file in tqdm(
             desc=f"Extracting {log_name}",
             iterable=f.namelist(),
             total=len(f.namelist()),
         ):
-            f.extract(member=file, path=COMPILERS_DIR)
+            f.extract(member=file, path=dest_path)
 
 
 def download_gba():
@@ -198,8 +212,8 @@ def download_switch():
 
     # Set up musl
     download_zip(
-        "https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip",
-        shortname="musl",
+        url="https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip",
+        log_name="musl",
     )
     musl_name = "botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba"
     musl_dest = COMPILERS_DIR / musl_name
@@ -257,6 +271,12 @@ def download_n64():
 
 
 def download_ps1():
+    download_zip(
+        url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
+        dl_name="gcc2.6.3-mispel.zip",
+        dest_name="gcc2.6.3-mispel",
+        create_subdir=True,
+    )
     pass
 
 
@@ -373,11 +393,11 @@ def download_wii_gc():
 
 # TODO migration for tp version of wii_gc compiler to the non-tp version
 def main(args):
-    # download_gba()
-    # download_switch()
-    # download_n64()
-    # download_ps1()
-    # download_nds()
+    download_gba()
+    download_switch()
+    download_n64()
+    download_ps1()
+    download_nds()
     download_wii_gc()
     print("\nCompilers finsished downloading!")
 
