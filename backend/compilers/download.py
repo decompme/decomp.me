@@ -454,21 +454,25 @@ def download_wii_gc():
     )
 
 
-# TODO migration for tp version of wii_gc compiler to the non-tp version
-# TODO MIGRATION FROM gcc2.7kmc to gcc2.7.2kmc (+ config)
 def main(args):
-    def should_enable(platform):
+    def should_download(platform):
         # assume enabled unless explicitly disabled
         return (
             os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
         )
 
-    should_enable("gba") and download_gba()
-    should_enable("n64") and download_n64()
-    should_enable("nds") and download_nds()
-    should_enable("ps1") and download_ps1()
-    should_enable("switch") and download_switch()
-    should_enable("wii_gc") and download_wii_gc()
+    if should_download("gba"):
+        download_gba()
+    if should_download("n64"):
+        download_n64()
+    if should_download("nds"):
+        download_nds()
+    if should_download("ps1"):
+        download_ps1()
+    if should_download("switch"):
+        download_switch()
+    if should_download("wii_gc"):
+        download_wii_gc()
 
     print("Compilers finished downloading!")
 
