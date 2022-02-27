@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import stat
 import sys
 import tarfile
 from zipfile import ZipFile
@@ -260,66 +261,124 @@ def download_ps1():
 
 
 def download_nds():
-    compilers_12 = {
-        "base": "mwcc_20_72",
-        "sp2": "mwcc_20_79",
-        "sp2p3": "mw22_20_82",
-        "sp3": "mwcc_20_84",
-        "sp4": "mwcc_20_87",
-    }
-
-    compilers_20 = {
-        "base": "mwcc_30_114",
-        "sp1": "mwcc_30_123",
-        "sp1p2": "mwcc_30_126",
-        "sp1p5": "mwcc_30_131",
-        "sp1p6": "mwcc_30_133",
-        "sp1p7": "mwcc_30_134",
-        "sp2": "mwcc_30_136",
-        "sp2p2": "mwcc_30_137",
-        "sp2p3": "mwcc_30_138",
-        "sp2p4": "mwcc_30_139",
-    }
-
-    compilers_dsi = {
-        "1.1": "mwcc_40_1018",
-        "1.1p1": "mwcc_40_1024",
-        "1.2": "mwcc_40_1026",
-        "1.2p1": "mwcc_40_1027",
-        "1.2p2": "mwcc_40_1028",
-        "1.3": "mwcc_40_1034",
-        "1.3p1": "mwcc_40_1036",
-        "1.6sp1": "mwcc_40_1051",
-    }
-
     compiler_groups = {
-        "1.2": compilers_12,
-        "2.0": compilers_20,
-        "dsi": compilers_dsi
+        "1.2": {
+            "base": "mwcc_20_72",
+            "sp2": "mwcc_20_79",
+            "sp2p3": "mwcc_20_82",
+            "sp3": "mwcc_20_84",
+            "sp4": "mwcc_20_87",
+        },
+        "2.0": {
+            "base": "mwcc_30_114",
+            "sp1": "mwcc_30_123",
+            "sp1p2": "mwcc_30_126",
+            "sp1p5": "mwcc_30_131",
+            "sp1p6": "mwcc_30_133",
+            "sp1p7": "mwcc_30_134",
+            "sp2": "mwcc_30_136",
+            "sp2p2": "mwcc_30_137",
+            "sp2p3": "mwcc_30_138",
+            "sp2p4": "mwcc_30_139",
+        },
+        "dsi": {
+            "1.1": "mwcc_40_1018",
+            "1.1p1": "mwcc_40_1024",
+            "1.2": "mwcc_40_1026",
+            "1.2p1": "mwcc_40_1027",
+            "1.2p2": "mwcc_40_1028",
+            "1.3": "mwcc_40_1034",
+            "1.3p1": "mwcc_40_1036",
+            "1.6sp1": "mwcc_40_1051",
+        },
     }
 
     download_zip(
         url="https://cdn.discordapp.com/attachments/698589325620936736/845499146982129684/mwccarm.zip",
-        dest_name="mwccarm",
     )
 
+    # Organize dirs, copy license
     for group_id, group in compiler_groups.items():
         mwccarm_dir = COMPILERS_DIR / "mwccarm" / group_id
         license_path = COMPILERS_DIR / "mwccarm" / "license.dat"
         for ver, compiler_id in group.items():
             compiler_dir = COMPILERS_DIR / compiler_id
-            shutil.move(mwccarm_dir / ver, compiler_dir)
+            if not compiler_dir.exists():
+                shutil.move(mwccarm_dir / ver, compiler_dir)
+
             shutil.copy(license_path, compiler_dir / "license.dat")
 
-    pass
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "mwccarm.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
+    shutil.rmtree(COMPILERS_DIR / "mwccarm")
 
 
+def download_wii_gc():
+    compiler_groups = {
+        "GC": {
+            "1.0": "mwcc_233_144",
+            "1.1": "mwcc_233_159",
+            "1.2.5": "mwcc_233_163",
+            "1.2.5e": "mwcc_233_163e",
+            "1.3.2": "mwcc_242_81",
+            "2.0": "mwcc_247_92",
+            "2.5": "mwcc_247_105",
+            "2.6": "mwcc_247_107",
+            "2.7": "mwcc_247_108",
+            "3.0": "mwcc_41_60831",
+            "3.0a3": "mwcc_41_60126",
+        },
+        "Wii": {
+            "1.0": "mwcc_42_142",
+            "1.1": "mwcc_43_151",
+            "1.3": "mwcc_43_172",
+            "1.7": "mwcc_43_213",
+        },
+    }
+
+    download_zip(
+        url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip",
+    )
+
+    for group_id, group in compiler_groups.items():
+        for ver, compiler_id in group.items():
+            compiler_dir = COMPILERS_DIR / compiler_id
+            if not compiler_dir.exists():
+                shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
+
+            # Rename dll to uppercase - WSL is case sensitive without wine
+            lowercase_lmgr = compiler_dir / "lmgr326b.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
+
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "mwcceppc.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
+        shutil.rmtree(COMPILERS_DIR / group_id)
+
+    # copy in clean 1.2.5 for frank
+    shutil.copy(
+        COMPILERS_DIR / "mwcc_233_163" / "mwcceppc.exe",
+        COMPILERS_DIR / "mwcc_233_163e" / "mwcceppc.125.exe",
+    )
+    download_file(
+        url="https://raw.githubusercontent.com/projectPiki/pikmin/main/tools/frank.py",
+        log_name="frank",
+        dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
+    )
+
+
+# TODO migration for tp version of wii_gc compiler to the non-tp version
 def main(args):
     # download_gba()
     # download_switch()
     # download_n64()
     # download_ps1()
-    download_nds()
+    # download_nds()
+    download_wii_gc()
     print("\nCompilers finsished downloading!")
 
 
