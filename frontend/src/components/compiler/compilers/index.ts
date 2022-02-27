@@ -10,7 +10,7 @@ import * as Dummy from "./dummy"
 import * as EeGcc296 from "./ee-gcc2.96"
 import * as Gcc263mipsel from "./gcc2.6.3-mipsel"
 import * as Gcc272psyq from "./gcc2.7.2-psyq"
-import * as Gcc27kmc from "./gcc2.7kmc"
+import * as Gcc272kmc from "./gcc2.7.2kmc"
 import * as Gcc281 from "./gcc2.8.1"
 import * as Gcc281psyq from "./gcc2.8.1-psyq"
 import * as Gcc2952psyq from "./gcc2.95.2-psyq"
@@ -64,7 +64,7 @@ const COMPILERS: CompilerModule[] = [
     Gcc281,
     Ido53,
     Ido71,
-    Gcc27kmc,
+    Gcc272kmc,
     Gcc263mipsel,
     Gcc272psyq,
     Gcc281psyq,

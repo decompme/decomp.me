@@ -188,7 +188,7 @@ IDO71 = IDOCompiler(
 GCC272KMC = GCCCompiler(
     id="gcc2.7.2kmc",
     platform=N64,
-    cc='"${COMPILER_DIR}"/gcc -G0 -c -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G0 -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 GCC281 = GCCCompiler(

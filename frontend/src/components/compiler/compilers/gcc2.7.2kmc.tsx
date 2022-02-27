@@ -1,7 +1,7 @@
 import { Checkbox, FlagSet, FlagOption } from "../CompilerOpts"
 
-export const name = "KMC GCC 2.7"
-export const id = "gcc2.7kmc"
+export const name = "KMC GCC 2.7.2"
+export const id = "gcc2.7.2kmc"
 
 export function Flags() {
     return <>
