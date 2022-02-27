@@ -54,10 +54,9 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY compilers/*.sh /compilers/
+COPY compilers/download.py /compilers/
 
-# TODO (poetry run python /compilers/download.py ???)
-# RUN bash /compilers/download.sh
+RUN pip install requests tqdm && python3 /compilers/download.py
 
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT

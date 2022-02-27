@@ -58,6 +58,7 @@ import * as Mwcc43b213 from "./mwcc_43_213"
 import * as OldAgbcc from "./old_agbcc"
 import * as Psyq40 from "./psyq4.0"
 import * as Psyq41 from "./psyq4.1"
+import * as Psyq43 from "./psyq4.3"
 import * as Psyq46 from "./psyq4.6"
 
 const COMPILERS: CompilerModule[] = [
@@ -111,6 +112,7 @@ const COMPILERS: CompilerModule[] = [
     Mwcc43b213,
     Psyq40,
     Psyq41,
+    Psyq43,
     Psyq46,
     Agbcc,
     OldAgbcc,
