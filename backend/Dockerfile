@@ -54,17 +54,13 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY compilers/download.py /compilers/
-
-RUN pip install requests tqdm && python3 /compilers/download.py
-
 # windows compilers need i386 wine
-ARG ENABLE_PS1_SUPPORT
-ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_NDS_SUPPORT
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
+ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_WII_GC_SUPPORT
+RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
@@ -77,21 +73,25 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
 
 # gc/wii specifics
 COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
-RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] ; then \
-    bash /compilers/mwccppc.sh; \
-    fi
 
 # nds specifics
 COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
-RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] ; then \
-    bash /compilers/mwccarm.sh; \
-    fi
 
-# switch specifics
+# download compilers
+COPY compilers/download.py /compilers/
+
+ARG ENABLE_GBA_SUPPORT
+ARG ENABLE_N64_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
-RUN if [ "${ENABLE_SWITCH_SUPPORT}" = "YES" ] ; then \
-    bash /compilers/clang.sh; \
-    fi
+
+ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
+ENV ENABLE_WII_GC_SUPPORT=${ENABLE_WII_GC_SUPPORT}
+ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
+ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
+ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
+ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
+
+RUN pip install requests tqdm && python3 /compilers/download.py && rm -rf /compilers/download_cache/
 
 WORKDIR /backend
 
@@ -109,7 +109,7 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi

@@ -97,7 +97,7 @@ jobs:
         run: |-
           docker build backend \
             -t decompme_backend \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES \
+            --build-arg ENABLE_WII_GC_SUPPORT=YES \
             --build-arg ENABLE_PS1_SUPPORT=YES
       - name: Run tests
         run: |-
