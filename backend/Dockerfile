@@ -56,7 +56,8 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY compilers/*.sh /compilers/
 
-RUN bash /compilers/download.sh
+# TODO (poetry run python /compilers/download.py ???)
+# RUN bash /compilers/download.sh
 
 # windows compilers need i386 wine
 ARG ENABLE_PS1_SUPPORT

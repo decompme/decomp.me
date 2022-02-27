@@ -37,7 +37,7 @@ jobs:
           sudo cp nsjail/nsjail /usr/bin/
       - name: Download compilers
         run: |-
-          ./backend/compilers/download.sh
+          poetry run python3 backend/compilers/download.py
           ./backend/compilers/clang.sh
           ./backend/compilers/mwccppc.sh
           ./backend/compilers/mwccarm.sh
