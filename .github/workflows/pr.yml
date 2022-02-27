@@ -37,10 +37,8 @@ jobs:
           sudo cp nsjail/nsjail /usr/bin/
       - name: Download compilers
         run: |-
-          poetry run python3 backend/compilers/download.py
-          ./backend/compilers/clang.sh
-          ./backend/compilers/mwccppc.sh
-          ./backend/compilers/mwccarm.sh
+          cd backend
+          poetry run python3 compilers/download.py
       - name: Install dkp dependencies (ppc)
         run: |-
           mkdir -p bin
