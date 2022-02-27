@@ -196,11 +196,12 @@ def download_switch():
             print(f"{version} already exists, skipping")
             continue
 
-        package_name = f"clang+llvm-{version}-x86_64-{OS.clang_package_name}"
+        package_name = f"clang+llvm-{version}-x86_64-{host_os.clang_package_name}"
         url = f"https://releases.llvm.org/{version}/{package_name}.tar.xz"
-        print(f"\n{version} : {url}")
 
-        download_tar(url=url, mode="r:xz", log_name=version, create_subdir=False)
+        download_tar(
+            url=url, mode="r:xz", log_name=f"clang {version}", create_subdir=False
+        )
 
         shutil.move(COMPILERS_DIR / package_name, dest_dir)
 
