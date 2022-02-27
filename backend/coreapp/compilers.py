@@ -118,22 +118,50 @@ GCC263_MIPSEL = GCCCompiler(
     cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
 )
 
+psyq_cc = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
+
+PSYQ40 = GCCCompiler(
+    id="psyq4.0",
+    platform=PS1,
+    cc=psyq_cc,
+)
+
 PSYQ41 = GCCCompiler(
     id="psyq4.1",
     platform=PS1,
-    cc='cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"',
+    cc=psyq_cc,
 )
 
 PSYQ43 = GCCCompiler(
     id="psyq4.3",
     platform=PS1,
-    cc='cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"',
+    cc=psyq_cc,
 )
 
 PSYQ46 = GCCCompiler(
     id="psyq4.6",
     platform=PS1,
-    cc='cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"',
+    cc=psyq_cc,
+)
+
+psyq_gcc_cc = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
+
+GCC272PSYQ = GCCCompiler(
+    id="gcc2.7.2-psyq",
+    platform=PS1,
+    cc=psyq_gcc_cc,
+)
+
+GCC281PSYQ = GCCCompiler(
+    id="gcc2.8.1-psyq",
+    platform=PS1,
+    cc=psyq_gcc_cc,
+)
+
+GCC2952PSYQ = GCCCompiler(
+    id="gcc2.95.2-psyq",
+    platform=PS1,
+    cc=psyq_gcc_cc,
 )
 
 # PS2
@@ -421,9 +449,13 @@ _all_compilers: List[Compiler] = [
     CLANG_401,
     # PS1
     GCC263_MIPSEL,
+    PSYQ40,
     PSYQ41,
     PSYQ43,
     PSYQ46,
+    GCC272PSYQ,
+    GCC281PSYQ,
+    GCC2952PSYQ,
     # PS2
     EE_GCC296,
     # N64

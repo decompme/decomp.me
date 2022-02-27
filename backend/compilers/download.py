@@ -279,13 +279,68 @@ def download_n64():
 
 
 def download_ps1():
+    if host_os != LINUX:
+        print("ps1 compilers unsupported on " + host_os.name)
+        return
+
     download_zip(
         url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
         dl_name="gcc2.6.3-mispel.zip",
         dest_name="gcc2.6.3-mispel",
         create_subdir=True,
     )
-    pass
+
+    download_tar(
+        url="https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz",
+        dest_name="psyq-compilers",
+    )
+
+    psyq_to_gcc = {
+        "4.0": "2.7.2",
+        "4.1": "2.7.2",
+        "4.3": "2.8.1",
+        "4.6": "2.95.2",
+    }
+
+    for version in psyq_to_gcc.keys():
+        compilers_path = COMPILERS_DIR / "psyq-compilers"
+        dest = COMPILERS_DIR / f"psyq{version}"
+        if not dest.exists():
+            shutil.move(compilers_path / f"psyq{version}", COMPILERS_DIR)
+        shutil.copy(
+            compilers_path / "psyq-obj-parser",
+            dest / "psyq-obj-parser",
+        )
+
+        # +x exes
+        for file in dest.glob("*.exe"):
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
+        for file in dest.glob("*.EXE"):
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
+
+    shutil.rmtree(compilers_path)
+
+    binutils_name = "binutils-2.25.1-psyq"
+    download_tar(
+        "https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz",
+        dest_name=binutils_name,
+        create_subdir=True,
+    )
+    as_path = COMPILERS_DIR / binutils_name / "usr" / "local" / "bin" / "mips-elf-as"
+
+    # psyq flavours of gcc
+    for pysq_ver, gcc_ver in psyq_to_gcc.items():
+        dest = COMPILERS_DIR / f"gcc{gcc_ver}-psyq"
+        dest.mkdir(exist_ok=True)
+        exe_name = "CC1PSX.EXE"
+        shutil.copy(COMPILERS_DIR / f"psyq{pysq_ver}" / exe_name, dest / exe_name)
+        shutil.copy(as_path, dest / "mips-elf-as")
+
+        # +x exes
+        for file in dest.glob("*.EXE"):
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
+
+    shutil.rmtree(COMPILERS_DIR / binutils_name)
 
 
 def download_nds():
