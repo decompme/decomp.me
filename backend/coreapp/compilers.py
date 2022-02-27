@@ -21,9 +21,9 @@ class Compiler:
     cc: str
     platform: Platform
     base_id: Optional[str] = None
-    is_gcc: bool = False
-    is_ido: bool = False
-    is_mwcc: bool = False
+    is_gcc: ClassVar[bool] = False
+    is_ido: ClassVar[bool] = False
+    is_mwcc: ClassVar[bool] = False
     needs_wine = False
 
     @property

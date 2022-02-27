@@ -1,17 +1,17 @@
 import argparse
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import platform
 import shutil
 import stat
 import sys
 import tarfile
-from zipfile import ZipFile
-from tqdm import tqdm
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
+from zipfile import ZipFile
 
 import requests
+from tqdm import tqdm
 
 
 @dataclass
