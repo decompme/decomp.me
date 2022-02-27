@@ -905,9 +905,6 @@ class ScratchPRTests(BaseTestCase):
         scratch.project_function = project_fn
         scratch.save()
         self.scratch = scratch
-        # project_member = ProjectMember(project=project, profile=Profile.objects.first())
-        # project_member.save()
-        # self.project_member = project_member
 
     def test_pr_one_scratch(self, mock_get_repo):
         """

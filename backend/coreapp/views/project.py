@@ -73,10 +73,8 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         assert isinstance(obj, Project)
-        return (
-            request.method in permissions.SAFE_METHODS
-            or obj.is_member(request.profile)
-            or request.path.endswith("/pr")
+        return request.method in permissions.SAFE_METHODS or obj.is_member(
+            request.profile
         )
 
 
@@ -108,6 +106,10 @@ class ProjectViewSet(
             ProjectSerializer(project, context={"request": request}).data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+
+class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    queryset = Project.objects.all()
 
     @action(detail=True, methods=["POST"])
     def pr(self, request, pk):
@@ -262,11 +264,10 @@ class ProjectFunctionViewSet(
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
-(
-    router.register(r"projects", ProjectViewSet).register(
-        r"functions",
-        ProjectFunctionViewSet,
-        basename="projectfunction",
-        parents_query_lookups=["slug"],
-    )
+router.register(r"projects", ProjectViewSet).register(
+    r"functions",
+    ProjectFunctionViewSet,
+    basename="projectfunction",
+    parents_query_lookups=["slug"],
 )
+router.register("pr", PullRequestViewSet)
