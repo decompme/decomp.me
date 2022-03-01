@@ -158,7 +158,6 @@ class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 
             # Make commit
             message = f"[decomp.me] Decompile {fn.display_name} ({fn.src_file})"
-            breakpoint()
             if (
                 scratch.owner != request.profile
                 and scratch.owner
