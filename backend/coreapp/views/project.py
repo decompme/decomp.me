@@ -158,8 +158,13 @@ class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 
             # Make commit
             message = f"[decomp.me] Decompile {fn.display_name} ({fn.src_file})"
-            if scratch.owner != request.profile:
-                profile = scratch.owner.profile
+            breakpoint()
+            if (
+                scratch.owner != request.profile
+                and scratch.owner
+                and scratch.owner.user
+            ):
+                profile = scratch.owner.user
                 message += f"\n\nCo-authored by {profile.username} <{profile.email}>"
 
             fork.update_file(
@@ -188,7 +193,7 @@ class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
         return Response({"url": response.url})
 
 
-def truncate_comma_separate(string_list: list, max_length: int) -> str:
+def truncate_comma_separate(string_list: list[str], max_length: int) -> str:
     value = ""
     for element in sorted(string_list, key=len):
         if len(value) + len(element) + 1 > max_length:
@@ -209,7 +214,7 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
         func_list = truncate_comma_separate(files_to_funcs[file], 70)
         return f"Decompile {num_funcs} funcs ({func_list}) from {file}"
     else:
-        file_list = truncate_comma_separate(files_to_funcs.keys(), 40)
+        file_list = truncate_comma_separate(list(files_to_funcs.keys()), 40)
         all_funcs: list[str] = []
         for _, funcs in files_to_funcs.items():
             all_funcs.extend(funcs)
