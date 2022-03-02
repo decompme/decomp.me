@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union
+from typing import Dict, Union
 
 
 @dataclass(frozen=True)
@@ -7,11 +7,25 @@ class Checkbox:
     id: str
     flag: str
 
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "checkbox",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
 
 @dataclass(frozen=True)
 class FlagSet:
     id: str
     flags: list[str]
+
+    def to_json(self) -> Dict[str, Union[str, list[str]]]:
+        return {
+            "type": "flagset",
+            "id": self.id,
+            "flags": self.flags,
+        }
 
 
 Flags = list[Union[Checkbox, FlagSet]]

@@ -17,7 +17,12 @@ class CompilersDetail(APIView):
     @staticmethod
     def compilers_json() -> Dict[str, Dict[str, Optional[str]]]:
         return {
-            c.id: {"platform": c.platform.id} for c in compilers.available_compilers()
+            c.id: {
+                "platform": c.platform.id,
+                "flags": [f.to_json() for f in c.flags],
+                "presets": [p.to_json() for p in c.presets],
+            }
+            for c in compilers.available_compilers()
         }
 
     @staticmethod

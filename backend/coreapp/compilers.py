@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, List, Optional, OrderedDict
+from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
 from coreapp.flags import (
@@ -30,6 +30,12 @@ class Preset:
     name: str
     flags: str
 
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "name": self.name,
+            "flags": self.flags,
+        }
+
 
 @dataclass(frozen=True)
 class Compiler:
@@ -55,6 +61,8 @@ class Compiler:
 
 @dataclass(frozen=True)
 class DummyCompiler(Compiler):
+    flags: ClassVar[Flags] = []
+
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
 
