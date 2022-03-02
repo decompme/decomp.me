@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
 
@@ -37,7 +37,7 @@ class Compiler:
     cc: str
     platform: Platform
     flags: ClassVar[Flags]
-    presets: list[Preset] = []
+    presets: list[Preset] = field(default_factory=list, hash=False)
     base_id: Optional[str] = None
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
