@@ -1,11 +1,10 @@
 from collections import OrderedDict
-from typing import Dict, Optional
+from typing import Dict
 
 from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from coreapp import compilers
 
 from ..decorators.django import condition
@@ -15,7 +14,7 @@ boot_time = now()
 
 class CompilersDetail(APIView):
     @staticmethod
-    def compilers_json() -> Dict[str, Dict[str, Optional[str]]]:
+    def compilers_json() -> Dict[str, Dict[str, object]]:
         return {
             c.id: {
                 "platform": c.platform.id,
