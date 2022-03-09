@@ -1427,12 +1427,9 @@ class AsmProcessorMIPS(AsmProcessor):
             # TODO: handle unambiguous cases where all addends for a symbol are the
             # same, or show "+???".
             mnemonic = prev.split()[0]
-            if (
-                mnemonic in arch.instructions_with_address_immediates
-                and not imm.startswith("0x")
-            ):
-                imm = "0x" + imm
-            repl += "+" + imm if int(imm, 0) > 0 else imm
+            if mnemonic in arch.instructions_with_address_immediates:
+                imm = hex(int(imm, 16))
+            repl += ("" if imm.startswith("-") else "+") + imm
         if "R_MIPS_LO16" in row:
             repl = f"%lo({repl})"
         elif "R_MIPS_HI16" in row:
@@ -1810,6 +1807,7 @@ def hexify_int(row: str, pat: Match[str], arch: ArchSettings) -> str:
 
 
 def parse_relocated_line(line: str) -> Tuple[str, str, str]:
+    # Pick out the last argument
     for c in ",\t ":
         if c in line:
             ind2 = line.rindex(c)
@@ -1818,6 +1816,7 @@ def parse_relocated_line(line: str) -> Tuple[str, str, str]:
         raise Exception(f"failed to parse relocated line: {line}")
     before = line[: ind2 + 1]
     after = line[ind2 + 1 :]
+    # Move an optional ($reg) part of it to 'after'
     ind2 = after.find("(")
     if ind2 == -1:
         imm, after = after, ""
@@ -1946,8 +1945,15 @@ def process(dump: str, config: Config) -> List[Line]:
             row_parts = [part.lstrip() for part in row.split(" ", 1)]
         mnemonic = row_parts[0].strip()
 
-        if mnemonic not in arch.instructions_with_address_immediates:
-            row = re.sub(arch.re_int, lambda m: hexify_int(row, m, arch), row)
+        addr = ""
+        if mnemonic in arch.instructions_with_address_immediates:
+            row, addr = split_off_address(row)
+            # objdump prefixes addresses with 0x/-0x if they don't resolve to some
+            # symbol + offset. Strip that.
+            addr = addr.replace("0x", "")
+
+        row = re.sub(arch.re_int, lambda m: hexify_int(row, m, arch), row)
+        row += addr
 
         # Let 'original' be 'row' with relocations applied, while we continue
         # transforming 'row' into a coarser version that ignores registers and
