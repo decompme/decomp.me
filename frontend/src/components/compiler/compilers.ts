@@ -1,21 +1,19 @@
-import { FunctionComponent } from "react"
-
 import * as api from "../../lib/api"
 
-const COMPILERS: CompilerModule[] = [
-    // todo load from endpoint
-]
+export function useCompilersForPlatform(platform?: string, compilers?: Record<string, api.Compiler>): Record<string, api.Compiler> {
+    if (!compilers)
+        compilers = api.useCompilers()
 
-export type CompilerModule = { id: string, name: string, Flags: FunctionComponent }
+    if (platform) {
+        const c = {}
 
-export default COMPILERS
+        for (const [k, v] of Object.entries(compilers)) {
+            if (v.platform == platform)
+                c[k] = v
+        }
 
-export function useCompilersForPlatform(platform?: string, serverCompilers?: Record<string, { platform: string | null }>) {
-    if (!serverCompilers)
-        serverCompilers = api.useCompilers()
-
-    if (platform)
-        return COMPILERS.filter(compiler => serverCompilers[compiler.id]?.platform === platform) // compiler supports this platform
-    else
-        return COMPILERS.filter(compiler => serverCompilers[compiler.id] !== undefined) // server supports this compiler
+        return c
+    } else {
+        return compilers
+    }
 }

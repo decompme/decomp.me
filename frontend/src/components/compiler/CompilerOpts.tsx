@@ -1,8 +1,10 @@
 import { createContext, useContext } from "react"
 
+import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
 
+import CompilerFlags from "./CompilerFlags"
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
 import PresetSelect from "./PresetSelect"
@@ -61,12 +63,6 @@ export type CompilerOptsT = {
     compiler_flags: string
 }
 
-export type CompilerPreset = {
-    name: string
-    compiler: string
-    opts: string
-}
-
 export type Props = {
     platform?: string
     value: CompilerOptsT
@@ -92,10 +88,10 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         })
     }
 
-    const setPreset = (preset: CompilerPreset) => {
+    const setPreset = (preset: api.CompilerPreset) => {
         onChange({
-            compiler: preset.compiler,
-            compiler_flags: preset.opts,
+            compiler, // TODO check me
+            compiler_flags: preset.flags,
         })
     }
 
@@ -118,7 +114,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
-                <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
+                <PresetSelect platform={platform} compiler={compiler} flags={opts} setPreset={setPreset} />
             </div>
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
@@ -127,7 +123,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
     </OptsContext.Provider>
 }
 
-export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
+export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, setOpts }: {
     platform?: string
     compiler: string
     setCompiler: (compiler: string) => void
@@ -135,11 +131,12 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
     setOpts: (opts: string) => void
 }) {
     const compilers = useCompilersForPlatform(platform)
-    const compilerModule = compilers?.find(c => c.id === compiler)
+    const compiler = compilers[compilerId]
 
-    if (!compilerModule) {
-        console.warn("compiler not supported for platform", compiler, platform)
-        setCompiler(compilers[0].id)
+    if (!compiler) {
+        // TODO: this is a bug -- we should just render like an empty state
+        console.warn("compiler not supported for platform", compilerId, platform)
+        setCompiler(Object.keys(compilers)[0]) // pick first compiler (ew)
     }
 
     return <div>
@@ -148,10 +145,10 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
                 className={styles.compilerSelect}
                 onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
             >
-                {Object.values(compilers).map(c => <option
-                    key={c.id}
-                    value={c.id}
-                    selected={c.id === compilerModule?.id}
+                {Object.entries(compilers).map(([id, c]) => <option
+                    key={id}
+                    value={id}
+                    selected={id === compilerId}
                 >
                     {c.name}
                 </option>)}
@@ -167,7 +164,7 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
         </div>
 
         <div className={styles.flags}>
-            {(compiler && compilerModule) ? <compilerModule.Flags /> : <div />}
+            {(compilerId && compiler) ? <CompilerFlags schema={compiler.flags} /> : <div />}
         </div>
     </div>
 }

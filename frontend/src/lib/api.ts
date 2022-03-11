@@ -269,6 +269,34 @@ export type DiffText = {
     key?: string
 }
 
+export type CompilerFlag = {
+    type: "checkbox"
+    id: string
+    flag: string
+} | {
+    type: "flagset"
+    id: string
+    flags: string[]
+}
+
+export type CompilerPreset = {
+    name: string
+    flags: string
+}
+
+export type Compiler = {
+    name: string
+    platform: string
+    flags: CompilerFlag[]
+    presets: CompilerPreset[]
+}
+
+export type Platform = {
+    name: string
+    description: string
+    arch: string
+}
+
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
@@ -472,8 +500,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     }
 }
 
-export function usePlatforms(): Record<string, string> {
-    const { data } = useSWR<{ "platforms": Record<string, string> }>("/compilers", getCached, {
+export function usePlatforms(): Record<string, Platform> {
+    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true, // TODO: remove
@@ -483,7 +511,7 @@ export function usePlatforms(): Record<string, string> {
     return data?.platforms
 }
 
-export function useCompilers(): Record<string, { platform: string | null }> {
+export function useCompilers(): Record<string, Compiler> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
         suspense: true, // TODO: remove
