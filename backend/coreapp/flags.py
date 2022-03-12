@@ -61,8 +61,8 @@ COMMON_CLANG_FLAGS: Flags = [
 COMMON_GCC_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
-    FlagSet(id="gcc_char_type", flags=["fsigned-char", "-funsigned-char"]),
-    Checkbox("force_addr", "-fforce-addr"),
+    FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
+    Checkbox("gcc_force_addr", "-fforce-addr"),
 ]
 
 COMMON_IDO_FLAGS: Flags = [
@@ -111,31 +111,24 @@ COMMON_MWCC_FLAGS: Flags = [
     ),
     FlagSet(
         id="mwcc_language",
-        flags=["-lang=c", "-lang=c++", "lang=c99", "-lang=ec++", "-lang=objc"],
+        flags=["-lang=c", "-lang=c++", "-lang=c99", "-lang=ec++", "-lang=objc"],
     ),
-    FlagSet(id="mwcc_char_signed", flags=["-char signed", "-char unsigned"]),
+    FlagSet(id="mwcc_char_signedness", flags=["-char signed", "-char unsigned"]),
     Checkbox(id="mwcc_cpp_exceptions_off", flag="-Cpp_exceptions off"),
     Checkbox(id="mwcc_enum_int", flag="-enum int"),
     Checkbox(id="mwcc_rostr", flag="-rostr"),
     Checkbox(id="mwcc_rtti_off", flag="-RTTI off"),
     Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
     Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
-    Checkbox(id="mwcc_maxerrors_1", flag="-maxerrors 1"),
-    Checkbox(id="mwcc_mgstyle_gcc", flag="-msgstyle gcc"),
     Checkbox(id="mwcc_nodefaults", flag="-nodefaults"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
     Checkbox(id="mwcc_debug_on", flag="-g"),
 ]
 
-COMMON_MWCC_EPPC_FLAGS: Flags = [
-    *COMMON_MWCC_FLAGS,
-    Checkbox(id="mwcc_align_powerpc", flag="-align powerpc"),
-]
-
 COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="psyq_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
     FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
-    FlagSet(id="gcc_char_type", flags=["fsigned-char", "-funsigned-char"]),
+    FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
     FlagSet(id="sdata_limit", flags=["-G0", "-G4", "-G8"]),
     FlagSet(id="endianness", flags=["-mel", "-meb"]),
 ]

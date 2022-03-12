@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 
 import { usePlausible } from "next-plausible"
+import useTranslation from "next-translate/useTranslation"
 
 import AsyncButton from "../components/AsyncButton"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
@@ -166,6 +167,8 @@ export default function NewScratch({ serverCompilers }: {
         }
     }
 
+    const { t } = useTranslation()
+
     return <>
         <PageTitle title="New scratch" />
         <Nav />
@@ -199,10 +202,10 @@ export default function NewScratch({ serverCompilers }: {
                         <span className={styles.compilerChoiceHeading}>Select a compiler</span>
                         <Select
                             className={styles.compilerChoiceSelect}
-                            options={Object.entries(platformCompilers).reduce((sum, [k, v]) => {
+                            options={Object.keys(platformCompilers).reduce((sum, id) => {
                                 return {
                                     ...sum,
-                                    [k]: v.name,
+                                    [id]: t(`compilers:${id}`),
                                 }
                             }, {})}
                             value={compilerId}

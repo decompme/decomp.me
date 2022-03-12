@@ -1,5 +1,7 @@
 import { createContext, useContext } from "react"
 
+import useTranslation from "next-translate/useTranslation"
+
 import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
@@ -54,7 +56,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
         value={flag}
         selected={checkFlag(flag)}
     >
-        {flag} {description && `(${description})`}
+        {flag} {description && description !== "NULL" && `(${description})`}
     </option>
 }
 
@@ -130,6 +132,8 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
     opts: string
     setOpts: (opts: string) => void
 }) {
+    const compilersTranslation = useTranslation("compilers")
+
     const compilers = useCompilersForPlatform(platform)
     const compiler = compilers[compilerId]
 
@@ -145,12 +149,12 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
                 className={styles.compilerSelect}
                 onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
             >
-                {Object.entries(compilers).map(([id, c]) => <option
+                {Object.keys(compilers).map(id => <option
                     key={id}
                     value={id}
                     selected={id === compilerId}
                 >
-                    {c.name}
+                    {compilersTranslation.t(id)}
                 </option>)}
             </Select>
 

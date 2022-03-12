@@ -8,7 +8,6 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_IDO_FLAGS,
-    COMMON_MWCC_EPPC_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     FlagSet,
@@ -93,11 +92,6 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
-
-
-@dataclass(frozen=True)
-class MWCCEPPCCompiler(MWCCCompiler):
-    flags: ClassVar[Flags] = COMMON_MWCC_EPPC_FLAGS
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -289,13 +283,13 @@ GCC281 = GCCCompiler(
 # GC_WII
 MWCCEPPC_CC = '${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
-MWCC_233_144 = MWCCEPPCCompiler(
+MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_233_159 = MWCCEPPCCompiler(
+MWCC_233_159 = MWCCCompiler(
     id="mwcc_233_159",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -307,7 +301,7 @@ MWCC_233_159 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_233_163 = MWCCEPPCCompiler(
+MWCC_233_163 = MWCCCompiler(
     id="mwcc_233_163",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -319,7 +313,7 @@ MWCC_233_163 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_233_163E = MWCCEPPCCompiler(
+MWCC_233_163E = MWCCCompiler(
     id="mwcc_233_163e",
     platform=GC_WII,
     cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
@@ -335,13 +329,13 @@ MWCC_233_163E = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_242_81 = MWCCEPPCCompiler(
+MWCC_242_81 = MWCCCompiler(
     id="mwcc_242_81",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_92 = MWCCEPPCCompiler(
+MWCC_247_92 = MWCCCompiler(
     id="mwcc_247_92",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -353,13 +347,13 @@ MWCC_247_92 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_247_105 = MWCCEPPCCompiler(
+MWCC_247_105 = MWCCCompiler(
     id="mwcc_247_105",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_107 = MWCCEPPCCompiler(
+MWCC_247_107 = MWCCCompiler(
     id="mwcc_247_107",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -371,7 +365,7 @@ MWCC_247_107 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_247_108 = MWCCEPPCCompiler(
+MWCC_247_108 = MWCCCompiler(
     id="mwcc_247_108",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -387,7 +381,7 @@ MWCC_247_108 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_41_60831 = MWCCEPPCCompiler(
+MWCC_41_60831 = MWCCCompiler(
     id="mwcc_41_60831",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -407,37 +401,37 @@ MWCC_41_60831 = MWCCEPPCCompiler(
     ],
 )
 
-MWCC_41_60126 = MWCCEPPCCompiler(
+MWCC_41_60126 = MWCCCompiler(
     id="mwcc_41_60126",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
     presets=[
         Preset(
             "Super Mario Galaxy",
-            "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -align powerpc -enum int",
+            "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
         ),
     ],
 )
 
-MWCC_42_142 = MWCCEPPCCompiler(
+MWCC_42_142 = MWCCCompiler(
     id="mwcc_42_142",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_151 = MWCCEPPCCompiler(
+MWCC_43_151 = MWCCCompiler(
     id="mwcc_43_151",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_172 = MWCCEPPCCompiler(
+MWCC_43_172 = MWCCCompiler(
     id="mwcc_43_172",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_213 = MWCCEPPCCompiler(
+MWCC_43_213 = MWCCCompiler(
     id="mwcc_43_213",
     platform=GC_WII,
     cc=MWCCEPPC_CC,

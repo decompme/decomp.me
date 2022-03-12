@@ -285,7 +285,6 @@ export type CompilerPreset = {
 }
 
 export type Compiler = {
-    name: string
     platform: string
     flags: CompilerFlag[]
     presets: CompilerPreset[]
