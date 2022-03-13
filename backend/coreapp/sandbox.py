@@ -7,8 +7,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict, List, Optional, Union
 
-from coreapp.error import SandboxError
 from django.conf import settings
+
+from coreapp.error import SandboxError
 
 logger = logging.getLogger(__name__)
 

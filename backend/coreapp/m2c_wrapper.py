@@ -2,8 +2,10 @@ import contextlib
 import io
 import logging
 
-from mips_to_c.src.main import parse_flags
-from mips_to_c.src.main import run
+from mips_to_c.src.main import parse_flags, run
+
+from coreapp.compilers import Compiler
+
 from coreapp.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ class M2CError(Exception):
 
 class M2CWrapper:
     @staticmethod
-    def get_triple(compiler: str, arch: str) -> str:
+    def get_triple(compiler: Compiler, arch: str) -> str:
         if "mips" in arch:
             t_arch = "mips"
         elif "ppc" in arch:
@@ -23,11 +25,11 @@ class M2CWrapper:
         else:
             raise M2CError(f"Unsupported arch '{arch}'")
 
-        if "ido" in compiler:
+        if compiler.is_ido:
             t_compiler = "ido"
-        elif "gcc" in compiler or "psyq" in compiler:
+        elif compiler.is_gcc:
             t_compiler = "gcc"
-        elif "mwcc" in compiler:
+        elif compiler.is_mwcc:
             t_compiler = "mwcc"
         else:
             raise M2CError(f"Unsupported compiler '{compiler}'")
@@ -35,7 +37,7 @@ class M2CWrapper:
         return f"{t_arch}-{t_compiler}"
 
     @staticmethod
-    def decompile(asm: str, context: str, compiler: str, arch: str) -> str:
+    def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
@@ -52,10 +54,6 @@ class M2CWrapper:
 
                 flags.append("--context")
                 flags.append(str(ctx_path))
-
-            # TODO have compiler family as part of compiler obj
-            if compiler in ["gcc2.8.1"]:
-                flags.append("--compiler=gcc")
 
             flags.append(str(asm_path))
             options = parse_flags(flags)

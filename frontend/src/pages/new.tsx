@@ -6,11 +6,11 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 
 import { usePlausible } from "next-plausible"
+import useTranslation from "next-translate/useTranslation"
 
 import AsyncButton from "../components/AsyncButton"
-import { CompilerPreset } from "../components/compiler/CompilerOpts"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
-import PresetSelect, { PRESETS } from "../components/compiler/PresetSelect"
+import PresetSelect from "../components/compiler/PresetSelect"
 import Editor from "../components/Editor"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
@@ -62,23 +62,18 @@ export const getStaticProps: GetStaticProps = async _context => {
 export default function NewScratch({ serverCompilers }: {
     serverCompilers: {
         platforms: {
-            [key: string]: {
-                name: string
-                description: string
-            }
+            [id: string]: api.Platform
         }
         compilers: {
-            [key: string]: {
-                platform: string
-            }
+            [id: string]: api.Compiler
         }
     }
 }) {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [platform, setPlatform] = useState("")
-    const [compiler, setCompiler] = useState<string>()
-    const [compilerOpts, setCompilerOpts] = useState<string>("")
+    const [compilerId, setCompiler] = useState<string>()
+    const [compilerFlags, setCompilerFlags] = useState<string>("")
 
     const router = useRouter()
     const plausible = usePlausible()
@@ -91,9 +86,8 @@ export default function NewScratch({ serverCompilers }: {
 
     const [lineNumbers, setLineNumbers] = useState(false)
 
-    const setPreset = (preset: CompilerPreset) => {
-        setCompiler(preset.compiler)
-        setCompilerOpts(preset.opts)
+    const setPreset = (preset: api.CompilerPreset) => {
+        setCompilerFlags(preset.flags)
     }
 
     // Load fields from localStorage
@@ -104,7 +98,7 @@ export default function NewScratch({ serverCompilers }: {
             setContext(localStorage["new_scratch_context"] ?? "")
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
-            setCompilerOpts(localStorage["new_scratch_compilerOpts"] ?? "")
+            setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -116,30 +110,31 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_asm"] = asm
         localStorage["new_scratch_context"] = context
         localStorage["new_scratch_platform"] = platform
-        localStorage["new_scratch_compiler"] = compiler
-        localStorage["new_scratch_compilerOpts"] = compilerOpts
-    }, [label, asm, context, platform, compiler, compilerOpts])
+        localStorage["new_scratch_compiler"] = compilerId
+        localStorage["new_scratch_compilerFlags"] = compilerFlags
+    }, [label, asm, context, platform, compilerId, compilerFlags])
 
-    const compilers = useCompilersForPlatform(platform, serverCompilers.compilers)
-    const compilerModule = compilers?.find(c => c.id === compiler)
+    const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
+    const compiler = platformCompilers[compilerId]
 
+    // wtf
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    if (!compilerModule) { // We just changed platforms, probably
-        if (compilers.length === 0) {
+    if (!compiler) { // We just changed platforms, probably
+        if (Object.keys(platformCompilers).length === 0) {
             console.warn("No compilers supported for platform", platform)
         } else {
-            // Fall back to the first supported compiler and no opts
-            setCompiler(compilers[0].id)
-            setCompilerOpts("")
+            // Fall back to the first supported compiler and no flags
+            setCompiler(Object.keys(platformCompilers)[0])
+            setCompilerFlags("")
 
-            // If there is a preset that uses a supported compiler, default to it
-            for (const preset of PRESETS) {
-                if (compilers.find(c => c.id === preset.compiler)) {
-                    setCompiler(preset.compiler)
-                    setCompilerOpts(preset.opts)
+            // If there is a preset for this platform, use it
+            for (const [k, v] of Object.entries(serverCompilers.compilers)) {
+                if (v.platform === platform && v.presets.length > 0) {
+                    setCompiler(k)
+                    setPreset(v.presets[0])
                     break
                 }
             }
@@ -152,8 +147,8 @@ export default function NewScratch({ serverCompilers }: {
                 target_asm: asm,
                 context: context || "",
                 platform,
-                compiler,
-                compiler_flags: compilerOpts,
+                compiler: compilerId,
+                compiler_flags: compilerFlags,
                 diff_label: label || defaultLabel || "",
             })
 
@@ -162,7 +157,7 @@ export default function NewScratch({ serverCompilers }: {
 
             await api.claimScratch(scratch)
 
-            plausible("createScratch", { props: { platform, compiler, url: scratch.html_url } })
+            plausible("createScratch", { props: { platform, compiler: compilerId, url: scratch.html_url } })
 
             await router.push(scratch.html_url)
         } catch (error) {
@@ -171,6 +166,8 @@ export default function NewScratch({ serverCompilers }: {
             throw error
         }
     }
+
+    const { t } = useTranslation()
 
     return <>
         <PageTitle title="New scratch" />
@@ -205,16 +202,16 @@ export default function NewScratch({ serverCompilers }: {
                         <span className={styles.compilerChoiceHeading}>Select a compiler</span>
                         <Select
                             className={styles.compilerChoiceSelect}
-                            options={compilers.reduce((options, compiler) => {
+                            options={Object.keys(platformCompilers).reduce((sum, id) => {
                                 return {
-                                    ...options,
-                                    [compiler.id]: compiler.name,
+                                    ...sum,
+                                    [id]: t(`compilers:${id}`),
                                 }
                             }, {})}
-                            value={compiler}
+                            value={compilerId}
                             onChange={c => {
                                 setCompiler(c)
-                                setCompilerOpts("")
+                                setCompilerFlags("")
                             }}
                         />
                     </div>
@@ -224,8 +221,8 @@ export default function NewScratch({ serverCompilers }: {
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
                             platform={platform}
-                            compiler={compiler}
-                            opts={compilerOpts}
+                            compiler={compilerId}
+                            flags={compilerFlags}
                             setPreset={setPreset}
                             serverCompilers={serverCompilers.compilers}
                         />

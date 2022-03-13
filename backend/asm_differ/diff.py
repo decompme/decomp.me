@@ -116,7 +116,7 @@ if __name__ == "__main__":
         type=str,
         help="""File path for an object file being diffed. When used
         the map file isn't searched for the function given. Useful for dynamically
-        linked libraries."""
+        linked libraries.""",
     )
     parser.add_argument(
         "-e",
@@ -373,6 +373,7 @@ except ModuleNotFoundError as e:
 class ProjectSettings:
     arch_str: str
     objdump_executable: str
+    objdump_flags: List[str]
     build_command: List[str]
     map_format: str
     mw_build_dir: str
@@ -397,7 +398,7 @@ class Config:
 
     # Build/objdump options
     diff_obj: bool
-    objfile: str
+    objfile: Optional[str]
     make: bool
     source_old_binutils: bool
     diff_section: str
@@ -442,10 +443,11 @@ def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
             "source_extensions", [".c", ".h", ".cpp", ".hpp", ".s"]
         ),
         objdump_executable=get_objdump_executable(settings.get("objdump_executable")),
+        objdump_flags=settings.get("objdump_flags", []),
         map_format=settings.get("map_format", "gnu"),
         mw_build_dir=settings.get("mw_build_dir", "build/"),
         show_line_numbers_default=settings.get("show_line_numbers_default", True),
-        disassemble_all=settings.get("disassemble_all", False)
+        disassemble_all=settings.get("disassemble_all", False),
     )
 
 
@@ -541,7 +543,7 @@ def get_arch(arch_str: str) -> "ArchSettings":
     raise ValueError(f"Unknown architecture: {arch_str}")
 
 
-BUFFER_CMD: List[str] = ["tail", "-c", str(10 ** 9)]
+BUFFER_CMD: List[str] = ["tail", "-c", str(10**9)]
 
 # -S truncates long lines instead of wrapping them
 # -R interprets color escape sequences
@@ -832,12 +834,7 @@ class JsonFormatter(Formatter):
                 return {"text": s, "format": f.name.lower()}
             elif isinstance(f, RotationFormat):
                 attrs = asdict(f)
-                attrs.update(
-                    {
-                        "text": s,
-                        "format": "rotation",
-                    }
-                )
+                attrs.update({"text": s, "format": "rotation"})
                 return attrs
             else:
                 static_assert_unreachable(f)
@@ -1014,7 +1011,11 @@ def run_objdump(cmd: ObjdumpCommand, config: Config, project: ProjectSettings) -
     flags, target, restrict = cmd
     try:
         out = subprocess.run(
-            [project.objdump_executable] + config.arch.arch_flags + flags + [target],
+            [project.objdump_executable]
+            + config.arch.arch_flags
+            + project.objdump_flags
+            + flags
+            + [target],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -1056,7 +1057,10 @@ def preprocess_objdump_out(
         out = out.rstrip("\n")
 
     if obj_data:
-        out = serialize_rodata_references(parse_elf_rodata_references(obj_data, config)) + out
+        out = (
+            serialize_rodata_references(parse_elf_rodata_references(obj_data, config))
+            + out
+        )
 
     return out
 
@@ -1103,14 +1107,16 @@ def search_map_file(
         if len(cands) == 1:
             return cands[0]
     elif project.map_format == "mw":
-        section_pattern = re.escape(config.diff_section)
         find = re.findall(
             re.compile(
                 #            ram   elf rom
                 r"  \S+ \S+ (\S+) (\S+)  . "
-                + fn_name
-                #                                         object name
-                + r"(?: \(entry of " + section_pattern + r"\))? \t(\S+)"
+                + re.escape(fn_name)
+                + r"(?: \(entry of "
+                + re.escape(config.diff_section)
+                + r"\))? \t"
+                # object name
+                + "(\S+)"
             ),
             contents,
         )
@@ -1145,7 +1151,9 @@ def search_map_file(
     return None, None
 
 
-def parse_elf_rodata_references(data: bytes, config: Config) -> List[Tuple[int, int, str]]:
+def parse_elf_rodata_references(
+    data: bytes, config: Config
+) -> List[Tuple[int, int, str]]:
     e_ident = data[:16]
     if e_ident[:4] != b"\x7FELF":
         return []
@@ -1210,7 +1218,11 @@ def parse_elf_rodata_references(data: bytes, config: Config) -> List[Tuple[int, 
     symtab = sections[symtab_sections[0]]
 
     section_name = config.diff_section.encode("utf-8")
-    text_sections = [i for i in range(e_shnum) if sec_names[i] == section_name and sections[i].sh_size != 0]
+    text_sections = [
+        i
+        for i in range(e_shnum)
+        if sec_names[i] == section_name and sections[i].sh_size != 0
+    ]
     if len(text_sections) != 1:
         return []
     text_section = text_sections[0]
@@ -1369,6 +1381,7 @@ def dump_binary(
         (objdump_flags + flags2, project.myimg, None),
     )
 
+
 # Example: "ldr r4, [pc, #56]    ; (4c <AddCoins+0x4c>)"
 ARM32_LOAD_POOL_PATTERN = r"(ldr\s+r([0-9]|1[0-3]),\s+\[pc,.*;\s*)(\([a-fA-F0-9]+.*\))"
 
@@ -1414,12 +1427,9 @@ class AsmProcessorMIPS(AsmProcessor):
             # TODO: handle unambiguous cases where all addends for a symbol are the
             # same, or show "+???".
             mnemonic = prev.split()[0]
-            if (
-                mnemonic in arch.instructions_with_address_immediates
-                and not imm.startswith("0x")
-            ):
-                imm = "0x" + imm
-            repl += "+" + imm if int(imm, 0) > 0 else imm
+            if mnemonic in arch.instructions_with_address_immediates:
+                imm = hex(int(imm, 16))
+            repl += ("" if imm.startswith("-") else "+") + imm
         if "R_MIPS_LO16" in row:
             repl = f"%lo({repl})"
         elif "R_MIPS_HI16" in row:
@@ -1586,6 +1596,7 @@ class ArchSettings:
     big_endian: Optional[bool] = True
     delay_slot_instructions: Set[str] = field(default_factory=set)
 
+
 MIPS_BRANCH_LIKELY_INSTRUCTIONS = {
     "beql",
     "bnel",
@@ -1694,9 +1705,12 @@ MIPS_SETTINGS = ArchSettings(
     name="mips",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"<.*>"),
-    re_reg=re.compile(
-        r"\$?\b(a[0-7]|t[0-9]|s[0-8]|at|v[01]|f[12]?[0-9]|f3[01]|kt?[01]|fp|ra|zero)\b"
-    ),
+    # Includes:
+    #   - General purpose registers v0..1, a0..7, t0..9, s0..8, zero, at, fp, k0..1/kt0..1
+    #   - Float registers f0..31, or fv0..1, fa0..7, ft0..15, fs0..8 plus odd complements
+    # (actually used number depends on ABI)
+    # sp, gp should not be in this list
+    re_reg=re.compile(r"\$?\b([astv][0-9]|at|f[astv]?[0-9]+f?|kt?[01]|fp|ra|zero)\b"),
     re_sprel=re.compile(r"(?<=,)([0-9]+|0x[0-9a-f]+)\(sp\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(sp)|%(lo|hi)\([^)]*\)"),
@@ -1741,13 +1755,17 @@ AARCH64_SETTINGS = ArchSettings(
     # GPRs and FP registers: X0-X30, W0-W30, [BHSDVQ]0..31
     # (FP registers may be followed by data width and number of elements, e.g. V0.4S)
     # The zero registers and SP should not be in this list.
-    re_reg=re.compile(r"\$?\b([bhsdvq]([12]?[0-9]|3[01])(\.\d\d?[bhsdvq])?|[xw][12]?[0-9]|[xw]30)\b"),
+    re_reg=re.compile(
+        r"\$?\b([bhsdvq]([12]?[0-9]|3[01])(\.\d\d?[bhsdvq])?|[xw][12]?[0-9]|[xw]30)\b"
+    ),
     re_sprel=re.compile(r"sp, #-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(r"(?<!sp, )#-?(0x[0-9a-fA-F]+|[0-9]+)\b"),
     re_reloc=re.compile(r"R_AARCH64_"),
     branch_instructions=AARCH64_BRANCH_INSTRUCTIONS,
-    instructions_with_address_immediates=AARCH64_BRANCH_INSTRUCTIONS.union({"bl", "adrp"}),
+    instructions_with_address_immediates=AARCH64_BRANCH_INSTRUCTIONS.union(
+        {"bl", "adrp"}
+    ),
     proc=AsmProcessorAArch64,
 )
 
@@ -1789,6 +1807,7 @@ def hexify_int(row: str, pat: Match[str], arch: ArchSettings) -> str:
 
 
 def parse_relocated_line(line: str) -> Tuple[str, str, str]:
+    # Pick out the last argument
     for c in ",\t ":
         if c in line:
             ind2 = line.rindex(c)
@@ -1797,6 +1816,7 @@ def parse_relocated_line(line: str) -> Tuple[str, str, str]:
         raise Exception(f"failed to parse relocated line: {line}")
     before = line[: ind2 + 1]
     after = line[ind2 + 1 :]
+    # Move an optional ($reg) part of it to 'after'
     ind2 = after.find("(")
     if ind2 == -1:
         imm, after = after, ""
@@ -1925,8 +1945,15 @@ def process(dump: str, config: Config) -> List[Line]:
             row_parts = [part.lstrip() for part in row.split(" ", 1)]
         mnemonic = row_parts[0].strip()
 
-        if mnemonic not in arch.instructions_with_address_immediates:
-            row = re.sub(arch.re_int, lambda m: hexify_int(row, m, arch), row)
+        addr = ""
+        if mnemonic in arch.instructions_with_address_immediates:
+            row, addr = split_off_address(row)
+            # objdump prefixes addresses with 0x/-0x if they don't resolve to some
+            # symbol + offset. Strip that.
+            addr = addr.replace("0x", "")
+
+        row = re.sub(arch.re_int, lambda m: hexify_int(row, m, arch), row)
+        row += addr
 
         # Let 'original' be 'row' with relocations applied, while we continue
         # transforming 'row' into a coarser version that ignores registers and
@@ -1946,9 +1973,6 @@ def process(dump: str, config: Config) -> List[Line]:
         scorable_line = normalized_original
         if not config.score_stack_differences:
             scorable_line = re.sub(arch.re_sprel, "addr(sp)", scorable_line)
-        if mnemonic in arch.branch_instructions:
-            # Replace the final argument with "<target>"
-            scorable_line = re.sub(r"[^, \t]+$", "<target>", scorable_line)
 
         if skip_next:
             skip_next = False
@@ -2018,6 +2042,8 @@ def split_off_address(line: str) -> Tuple[str, str]:
     parts = line.split(",")
     if len(parts) < 2:
         parts = line.split(None, 1)
+        if len(parts) < 2:
+            parts.append("")
     off = len(line) - len(parts[-1])
     return line[:off], line[off:]
 
@@ -2034,7 +2060,7 @@ def diff_sequences(
 ) -> List[Tuple[str, int, int, int, int]]:
     if (
         algorithm != "levenshtein"
-        or len(seq1) * len(seq2) > 4 * 10 ** 8
+        or len(seq1) * len(seq2) > 4 * 10**8
         or len(seq1) + len(seq2) >= 0x110000
     ):
         return diff_sequences_difflib(seq1, seq2)
@@ -2221,9 +2247,14 @@ class Diff:
 
 def trim_nops(lines: List[Line], arch: ArchSettings) -> List[Line]:
     lines = lines[:]
-    while lines and lines[-1].mnemonic == "nop" and (len(lines) == 1 or lines[-2].mnemonic not in arch.delay_slot_instructions):
+    while (
+        lines
+        and lines[-1].mnemonic == "nop"
+        and (len(lines) == 1 or lines[-2].mnemonic not in arch.delay_slot_instructions)
+    ):
         lines.pop()
     return lines
+
 
 def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
     if config.show_source:
@@ -2325,10 +2356,15 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
                         line2_line = line_num_2to1[line2.line_num]
                         line2_target = (line2_line[0] + (target - line2.line_num), 0)
 
-                    # Set the key for three-way diffing to a normalized version.
+                    # Adjust the branch target for scoring and three-way diffing.
                     norm2, norm_branch2 = split_off_address(line2.normalized_original)
-                    if norm_branch2 != "<ign>":
-                        line2.normalized_original = norm2 + str(line2_target)
+                    if norm_branch2 != "<ignore>":
+                        retargetted = hex(line2_target[0]).replace("0x", "")
+                        if line2_target[1] != 0:
+                            retargetted += f"+{line2_target[1]}"
+                        line2.normalized_original = norm2 + retargetted
+                        sc_base, _ = split_off_address(line2.scorable_line)
+                        line2.scorable_line = sc_base + retargetted
                     same_target = line2_target == (line1.branch_target, 0)
                 else:
                     # Do a naive comparison for non-branches (e.g. function calls).

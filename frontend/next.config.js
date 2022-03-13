@@ -25,10 +25,11 @@ const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
+const nextTranslate = require("next-translate")
 
 module.exports = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
-})(removeImports(withPWA({
+})(nextTranslate(removeImports(withPWA({
     async redirects() {
         return [
             {
@@ -86,4 +87,4 @@ module.exports = withPlausibleProxy({
         runtimeCaching,
         disable: process.env.NODE_ENV === "development",
     },
-})))
+}))))

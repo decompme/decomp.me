@@ -1,5 +1,5 @@
-from django.db import migrations
 import django.db.migrations.operations.special
+from django.db import migrations
 
 
 def rename_psyq_compilers(apps, schema_editor):

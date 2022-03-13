@@ -1,28 +1,29 @@
-from django.contrib.auth.models import User
-import rest_framework
-from rest_framework.exceptions import APIException
-from rest_framework import status, mixins, filters, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.pagination import CursorPagination
-from rest_framework_extensions.routers import ExtendedSimpleRouter
-from rest_framework_extensions.mixins import NestedViewSetMixin
-
 import logging
-import django_filters
 import random
 import re
 import string
-
-from github import Github, UnknownObjectException
-from github.Repository import Repository
 from threading import Thread
 from typing import Optional
 
+import django_filters
+
+from django.contrib.auth.models import User
+
+from github import Github, UnknownObjectException
+from github.Repository import Repository
+from rest_framework import filters, mixins, permissions, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.pagination import CursorPagination
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from rest_framework_extensions import ExtendedSimpleRouter
+
+from coreapp.models.github import GitHubRepo, GitHubRepoBusyException
+from coreapp.models.project import Project, ProjectFunction
+
 from ..models.scratch import Scratch
-from ..models.project import Project, ProjectFunction
-from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..serializers import (
     ProjectFunctionSerializer,
     ProjectSerializer,
