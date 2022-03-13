@@ -2,16 +2,14 @@ import django.db.migrations.operations.special
 from django.db import migrations
 
 
-def rename_psyq_compilers(apps, schema_editor):
+def rename_compilers(apps, schema_editor):
     """
-    'Psyq4.*' compilers now use original aspsx assembler,
-    so repoint old scratches to the gcc + as combo.
+    Migrate old compiler ids to new ones
     """
 
     compiler_map = {
-        "psyq4.1": "gcc2.7.2-psyq",
-        "psyq4.3": "gcc2.8.1-psyq",
-        "psyq4.6": "gcc2.95.2-psyq",
+        "gcc2.7kmc": "gcc2.7.2kmc",
+        "mwcc_247_108_tp": "mwcc_247_108",
     }
 
     Scratch = apps.get_model("coreapp", "Scratch")
@@ -24,12 +22,12 @@ def rename_psyq_compilers(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("coreapp", "0016_give_scratches_project_functions"),
+        ("coreapp", "0017_rename_psyq_compilers"),
     ]
 
     operations = [
         migrations.RunPython(
-            code=rename_psyq_compilers,
+            code=rename_compilers,
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
-        ),
+        )
     ]

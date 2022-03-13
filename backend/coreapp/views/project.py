@@ -1,20 +1,21 @@
-import rest_framework
-from rest_framework.exceptions import APIException
-from rest_framework import status, mixins, filters, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.pagination import CursorPagination
-from rest_framework_extensions.routers import ExtendedSimpleRouter
-from rest_framework_extensions.mixins import NestedViewSetMixin
-
 import logging
 from threading import Thread
+
 import django_filters
+import rest_framework
+from rest_framework import filters, mixins, permissions, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.pagination import CursorPagination
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework_extensions.routers import ExtendedSimpleRouter
+
+from ..models.github import GitHubRepo, GitHubRepoBusyException
+from ..models.project import Project, ProjectFunction
 
 from ..models.scratch import Scratch
-from ..models.project import Project, ProjectFunction
-from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..serializers import (
     ProjectFunctionSerializer,
     ProjectSerializer,

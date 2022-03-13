@@ -1,15 +1,18 @@
-from typing import List, Optional
 import json
 import logging
 import subprocess
+from typing import List, Optional
 
 import asm_differ.diff as asm_differ
 
+from coreapp import platforms
+from coreapp.platforms import DUMMY, Platform
+
+from .compiler_wrapper import DiffResult, PATH
+
 from .error import AssemblyError, DiffError, NmError, ObjdumpError
-from . import compiler_wrapper
 from .models.scratch import Assembly
 from .sandbox import Sandbox
-from .compiler_wrapper import PATH, DiffResult
 
 logger = logging.getLogger(__name__)
 
@@ -47,21 +50,20 @@ class AsmDifferWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path, platform: str, label: Optional[str]
+        sandbox: Sandbox, target_path, platform: Platform, label: Optional[str]
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]
 
-        if compiler_wrapper.supports_objdump_disassemble(platform):
+        if platform.supports_objdump_disassemble:
             return [f"--disassemble={label}"]
 
-        nm_command = compiler_wrapper.get_nm_command(platform)
-        if not nm_command:
-            raise NmError(f"No nm command for {platform}")
+        if not platform.nm_cmd:
+            raise NmError(f"No nm command for {platform.id}")
 
         try:
             nm_proc = sandbox.run_subprocess(
-                [nm_command] + [sandbox.rewrite_path(target_path)],
+                [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
                 shell=True,
                 env={
                     "PATH": PATH,
@@ -85,7 +87,7 @@ class AsmDifferWrapper:
     @staticmethod
     def run_objdump(
         target_data: bytes,
-        platform: str,
+        platform: Platform,
         config: asm_differ.Config,
         label: Optional[str],
     ) -> str:
@@ -104,12 +106,10 @@ class AsmDifferWrapper:
                 sandbox, target_path, platform, label
             )
 
-            objdump_command = compiler_wrapper.get_objdump_command(platform)
-
-            if objdump_command:
+            if platform.objdump_cmd:
                 try:
                     objdump_proc = sandbox.run_subprocess(
-                        [objdump_command]
+                        [platform.objdump_cmd]
                         + config.arch.arch_flags
                         + flags
                         + [sandbox.rewrite_path(target_path)],
@@ -121,7 +121,7 @@ class AsmDifferWrapper:
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
             else:
-                raise ObjdumpError(f"No objdump command for {platform}")
+                raise ObjdumpError(f"No objdump command for {platform.id}")
 
         out = objdump_proc.stdout
         return out
@@ -129,20 +129,10 @@ class AsmDifferWrapper:
     @staticmethod
     def get_dump(
         elf_object: bytes,
-        platform: str,
+        platform: Platform,
         diff_label: Optional[str],
-        arch: asm_differ.ArchSettings,
         config: asm_differ.Config,
     ) -> str:
-        compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
-
-        try:
-            arch = asm_differ.get_arch(compiler_arch or "")
-        except ValueError:
-            logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
-            arch = asm_differ.get_arch("mips")
-
-        config = AsmDifferWrapper.create_config(arch)
 
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
@@ -169,31 +159,30 @@ class AsmDifferWrapper:
     @staticmethod
     def diff(
         target_assembly: Assembly,
-        platform: str,
+        platform: Platform,
         diff_label: Optional[str],
         compiled_elf: bytes,
         allow_target_only: bool = False,
     ) -> DiffResult:
-        compiler_arch = compiler_wrapper.CompilerWrapper.arch_from_platform(platform)
 
-        if compiler_arch == "dummy":
+        if platform == DUMMY:
             # Todo produce diff for dummy
             return {}
 
         try:
-            arch = asm_differ.get_arch(compiler_arch or "")
+            arch = asm_differ.get_arch(platform.arch or "")
         except ValueError:
-            logger.error(f"Unsupported arch: {compiler_arch}. Continuing assuming mips")
+            logger.error(f"Unsupported arch: {platform.arch}. Continuing assuming mips")
             arch = asm_differ.get_arch("mips")
 
         config = AsmDifferWrapper.create_config(arch)
 
         basedump = AsmDifferWrapper.get_dump(
-            bytes(target_assembly.elf_object), platform, diff_label, arch, config
+            bytes(target_assembly.elf_object), platform, diff_label, config
         )
         try:
             mydump = AsmDifferWrapper.get_dump(
-                compiled_elf, platform, diff_label, arch, config
+                compiled_elf, platform, diff_label, config
             )
         except Exception as e:
             if allow_target_only:

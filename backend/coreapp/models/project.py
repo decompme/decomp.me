@@ -1,15 +1,17 @@
-from django.db import models, transaction
-
-from typing import Optional, Tuple, List
-from pathlib import Path
-from glob import glob
 import logging
 import shlex
+from glob import glob
+from pathlib import Path
+
+from typing import List, Optional, Tuple
+
+from django.db import models, transaction
+
+from ..context import c_file_to_context
+from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
 
 from .profile import Profile
-from .scratch import Scratch, CompilerConfig
-from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
-from ..context import c_file_to_context
+from .scratch import CompilerConfig, Scratch
 
 logger = logging.getLogger(__name__)
 

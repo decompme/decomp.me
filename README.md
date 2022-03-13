@@ -68,7 +68,7 @@ poetry install
 
 - Install compilers
 ```shell
-./compilers/download.sh
+poetry run python compilers/download.py
 ```
 
 - Set up the database

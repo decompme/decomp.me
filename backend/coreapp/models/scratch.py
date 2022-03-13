@@ -1,7 +1,7 @@
-from django.utils.crypto import get_random_string
-from django.db import models
-
 import logging
+
+from django.db import models
+from django.utils.crypto import get_random_string
 
 from .profile import Profile
 
