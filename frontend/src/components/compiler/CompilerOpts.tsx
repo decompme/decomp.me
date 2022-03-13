@@ -6,7 +6,7 @@ import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
 
-import CompilerFlags from "./CompilerFlags"
+import CompilerFlags, { NO_TRANSLATION } from "./CompilerFlags"
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
 import PresetSelect from "./PresetSelect"
@@ -56,7 +56,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
         value={flag}
         selected={checkFlag(flag)}
     >
-        {flag} {description && description !== "NULL" && `(${description})`}
+        {flag} {description && description !== NO_TRANSLATION && `(${description})`}
     </option>
 }
 

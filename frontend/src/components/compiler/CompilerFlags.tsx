@@ -4,6 +4,8 @@ import * as api from "../../lib/api"
 
 import { Checkbox, FlagSet, FlagOption } from "./CompilerOpts"
 
+export const NO_TRANSLATION = "NO_TRANSLATION"
+
 export interface Props {
     schema: api.CompilerFlag[]
 }
@@ -18,7 +20,7 @@ export default function CompilerFlags({ schema }: Props) {
             } else if (flag.type === "flagset") {
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)}>
                     {flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                        compilersTranslation.t(flag.id + "." + f, null, { default: "NULL" })
+                        compilersTranslation.t(flag.id + "." + f, null, { default: NO_TRANSLATION })
                     } />)}
                 </FlagSet>
             }

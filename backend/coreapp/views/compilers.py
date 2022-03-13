@@ -17,7 +17,6 @@ class CompilersDetail(APIView):
     def compilers_json() -> Dict[str, Dict[str, object]]:
         return {
             c.id: {
-                "name": "COMPILER NAME",  # c.name
                 "platform": c.platform.id,
                 "flags": [f.to_json() for f in c.flags],
                 "presets": [p.to_json() for p in c.presets],
