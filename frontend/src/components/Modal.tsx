@@ -2,9 +2,7 @@ import ReactModal from "react-modal"
 
 import styles from "./Modal.module.scss"
 
-export type Props = Record<string, unknown>
-
-export default function Modal(props: ReactModal.Props & Props) {
+export default function Modal(props: ReactModal.Props) {
 
     return <ReactModal
         className={styles.dialog}
