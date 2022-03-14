@@ -220,6 +220,7 @@ export default function NewScratch({ serverCompilers }: {
                         <span className={styles.compilerChoiceHeading}>Select a preset</span>
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
+                            platform={platform}
                             flags={compilerFlags}
                             setPreset={setPreset}
                             setCompiler={setCompiler}
