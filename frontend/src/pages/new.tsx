@@ -221,7 +221,6 @@ export default function NewScratch({ serverCompilers }: {
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
                             platform={platform}
-                            compiler={compilerId}
                             flags={compilerFlags}
                             setPreset={setPreset}
                             serverCompilers={serverCompilers.compilers}

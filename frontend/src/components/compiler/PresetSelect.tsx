@@ -4,17 +4,17 @@ import Select from "../Select"
 
 import { useCompilersForPlatform } from "./compilers"
 
-export default function PresetSelect({ className, platform, compiler, flags, setPreset, serverCompilers }: {
+export default function PresetSelect({ className, platform, flags, setPreset, serverCompilers }: {
     className?: string
     platform: string
-    compiler: string
     flags: string
     setPreset: (preset: api.CompilerPreset) => void
     serverCompilers?: Record<string, api.Compiler>
 }) {
     const compilers = useCompilersForPlatform(platform, serverCompilers)
 
-    const presets = compilers[compiler].presets
+    const presets = Object.values(compilers).map(c => c.presets).flat()
+
     const selectedPreset = presets.find(p => p.flags === flags)
 
     return <Select className={className} onChange={e => {
