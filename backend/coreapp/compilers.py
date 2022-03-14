@@ -143,7 +143,6 @@ AGBCCPP = GCCCompiler(
     cc='cc -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
-
 # Switch
 CLANG_391 = ClangCompiler(
     id="clang-3.9.1",
