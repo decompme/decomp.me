@@ -2,32 +2,27 @@
 import * as api from "../../lib/api"
 import Select from "../Select"
 
-import { useCompilersForPlatform } from "./compilers"
-
-export default function PresetSelect({ className, platform, flags, setPreset, serverCompilers }: {
+export default function PresetSelect({ className, flags, setPreset, setCompiler, serverPresets }: {
     className?: string
-    platform: string
     flags: string
     setPreset: (preset: api.CompilerPreset) => void
-    serverCompilers?: Record<string, api.Compiler>
+    setCompiler: (compiler: string) => void
+    serverPresets?: api.CompilerPreset[]
 }) {
-    const compilers = useCompilersForPlatform(platform, serverCompilers)
-
-    const presets = Object.values(compilers).map(c => c.presets).flat()
-
-    const selectedPreset = presets.find(p => p.flags === flags)
+    const selectedPreset = serverPresets && serverPresets.find(p => p.flags === flags)
 
     return <Select className={className} onChange={e => {
         if ((e.target as HTMLSelectElement).value === "custom") {
             return
         }
 
-        const preset = presets.find(p => p.name === (e.target as HTMLSelectElement).value)
+        const preset = serverPresets.find(p => p.name === (e.target as HTMLSelectElement).value)
 
         setPreset(preset)
+        setCompiler(preset.compiler)
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
-        {presets.map(preset =>
+        {serverPresets.map(preset =>
             <option key={preset.name} value={preset.name} selected={preset === selectedPreset}>
                 {preset.name}
             </option>

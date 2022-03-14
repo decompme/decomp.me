@@ -116,7 +116,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
-                <PresetSelect platform={platform} flags={opts} setPreset={setPreset} />
+                <PresetSelect flags={opts} setPreset={setPreset} setCompiler={setCompiler} />
             </div>
         </div>
         <div className={styles.container} data-is-popup={isPopup}>

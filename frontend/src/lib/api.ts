@@ -282,18 +282,19 @@ export type CompilerFlag = {
 export type CompilerPreset = {
     name: string
     flags: string
+    compiler: string
 }
 
 export type Compiler = {
     platform: string
     flags: CompilerFlag[]
-    presets: CompilerPreset[]
 }
 
 export type Platform = {
     name: string
     description: string
     arch: string
+    presets: CompilerPreset[]
 }
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
