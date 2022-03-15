@@ -2,12 +2,11 @@
 import * as api from "../../lib/api"
 import Select from "../Select"
 
-export default function PresetSelect({ className, platform, flags, setPreset, setCompiler, serverPresets }: {
+export default function PresetSelect({ className, platform, flags, setPreset, serverPresets }: {
     className?: string
     platform: string
     flags: string
     setPreset: (preset: api.CompilerPreset) => void
-    setCompiler: (compiler: string) => void
     serverPresets?: api.CompilerPreset[]
 }) {
     if (!serverPresets)
@@ -23,7 +22,6 @@ export default function PresetSelect({ className, platform, flags, setPreset, se
         const preset = serverPresets.find(p => p.name === (e.target as HTMLSelectElement).value)
 
         setPreset(preset)
-        setCompiler(preset.compiler)
     }}>
         {!selectedPreset && <option value="custom" selected>Custom</option>}
         {serverPresets.map(preset =>

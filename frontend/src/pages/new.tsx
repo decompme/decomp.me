@@ -87,6 +87,7 @@ export default function NewScratch({ serverCompilers }: {
     const [lineNumbers, setLineNumbers] = useState(false)
 
     const setPreset = (preset: api.CompilerPreset) => {
+        setCompiler(preset.compiler)
         setCompilerFlags(preset.flags)
     }
 
@@ -223,7 +224,6 @@ export default function NewScratch({ serverCompilers }: {
                             platform={platform}
                             flags={compilerFlags}
                             setPreset={setPreset}
-                            setCompiler={setCompiler}
                             serverPresets={platform && serverCompilers.platforms[platform].presets}
                         />
                     </div>
