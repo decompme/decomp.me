@@ -92,7 +92,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
 
     const setPreset = (preset: api.CompilerPreset) => {
         onChange({
-            compiler, // TODO check me
+            compiler: preset.compiler,
             compiler_flags: preset.flags,
         })
     }
