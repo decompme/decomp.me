@@ -87,6 +87,7 @@ export default function NewScratch({ serverCompilers }: {
     const [lineNumbers, setLineNumbers] = useState(false)
 
     const setPreset = (preset: api.CompilerPreset) => {
+        setCompiler(preset.compiler)
         setCompilerFlags(preset.flags)
     }
 
@@ -132,9 +133,9 @@ export default function NewScratch({ serverCompilers }: {
 
             // If there is a preset for this platform, use it
             for (const [k, v] of Object.entries(serverCompilers.compilers)) {
-                if (v.platform === platform && v.presets.length > 0) {
+                if (v.platform === platform && serverCompilers.platforms[platform].presets.length > 0) {
                     setCompiler(k)
-                    setPreset(v.presets[0])
+                    setPreset(serverCompilers.platforms[platform].presets[0])
                     break
                 }
             }
@@ -221,10 +222,9 @@ export default function NewScratch({ serverCompilers }: {
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
                             platform={platform}
-                            compiler={compilerId}
                             flags={compilerFlags}
                             setPreset={setPreset}
-                            serverCompilers={serverCompilers.compilers}
+                            serverPresets={platform && serverCompilers.platforms[platform].presets}
                         />
                     </div>
                 </div>
