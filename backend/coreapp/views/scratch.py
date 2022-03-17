@@ -171,6 +171,8 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     given_platform = data.get("platform")
     if given_platform:
         platform = platforms.from_id(given_platform)
+    else:
+        platform = None
 
     compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
