@@ -662,6 +662,11 @@ _all_presets = [
         "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
         MWCC_30_137,
     ),
+    Preset(
+        "Mario Party 4",
+        "-O0,p -str pool -fp hard -Cpp_exceptions off",
+        MWCC_242_81,
+    ),
 ]
 
 
