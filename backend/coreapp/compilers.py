@@ -543,6 +543,11 @@ _all_compilers: List[Compiler] = [
 _all_presets = [
     # GBA
     Preset(
+        "Rhythm Tengoku",
+        "-mthumb-interwork -Wparentheses -O2 -fhex-asm",
+        AGBCC,
+    ),
+    Preset(
         "The Minish Cap",
         "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
         AGBCC,
