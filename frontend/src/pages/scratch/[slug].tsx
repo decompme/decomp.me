@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react"
+import { Suspense, useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
@@ -79,6 +79,21 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
     if (ownerMayChange && cached?.owner && !api.isUserEq(scratch.owner, cached?.owner)) {
         console.info("Scratch owner updated", cached.owner)
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
+    }
+
+    // Scratch uses suspense but SSR does not support it so we just render a loading state
+    // in server-side rendering mode.
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+    if (!isMounted) {
+        return <>
+            <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
+            <main className={styles.container}>
+                <LoadingSpinner className={styles.loading} />
+            </main>
+        </>
     }
 
     return <>
