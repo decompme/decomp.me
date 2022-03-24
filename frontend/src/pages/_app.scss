@@ -71,3 +71,8 @@ main {
 .routerProgressBar {
     z-index: 999;
 }
+
+div {
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
+}
