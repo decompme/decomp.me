@@ -4,7 +4,10 @@
     color: var(--a800);
     padding: 1rem;
     border-radius: 0.4rem;
+
     min-width: 6rem;
+    max-width: 30rem;
+    overflow: auto;
 
     display: flex;
     align-items: center;
