@@ -1,7 +1,6 @@
 const { execSync } = require("child_process")
 
 const { config } = require("dotenv")
-const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -71,11 +70,6 @@ module.exports = withPlausibleProxy({
             test: /\.svg$/,
             use: ["@svgr/webpack"],
         })
-
-        config.plugins.push(new MonacoWebpackPlugin({
-            languages: [],
-            filename: "[name].worker.[contenthash].js",
-        }))
 
         return config
     },
