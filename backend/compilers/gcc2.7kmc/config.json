@@ -1,4 +1,0 @@
-{
-    "platform": "n64",
-    "cc": "N64ALIGN=ON VR4300MUL=ON \"${COMPILER_DIR}\"/gcc -G0 -c -mgp32 -mfp32 ${COMPILER_FLAGS} \"${INPUT}\" -o \"${OUTPUT}\""
-}

@@ -37,10 +37,8 @@ jobs:
           sudo cp nsjail/nsjail /usr/bin/
       - name: Download compilers
         run: |-
-          ./backend/compilers/download.sh
-          ./backend/compilers/clang.sh
-          ./backend/compilers/mwccppc.sh
-          ./backend/compilers/mwccarm.sh
+          cd backend
+          poetry run python3 compilers/download.py
       - name: Install dkp dependencies (ppc)
         run: |-
           mkdir -p bin
@@ -99,7 +97,7 @@ jobs:
         run: |-
           docker build backend \
             -t decompme_backend \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES \
+            --build-arg ENABLE_WII_GC_SUPPORT=YES \
             --build-arg ENABLE_PS1_SUPPORT=YES
       - name: Run tests
         run: |-

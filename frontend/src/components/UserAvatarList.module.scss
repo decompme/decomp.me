@@ -3,19 +3,22 @@
 
     display: inline-flex;
     gap: 0.2em;
-}
 
-.avatar,
-.skeleton {
-    flex-grow: 0;
-    flex-shrink: 0;
+    li {
+        flex-grow: 0;
+        flex-shrink: 0;
 
-    width: 1.5em;
-    height: 1.5em;
+        width: 1.5em;
+        height: 1.5em;
 
-    border-radius: 999px;
-    overflow: hidden;
-    position: relative;
+        border-radius: 999px;
+        position: relative;
 
-    background: var(--a100); // skeleton
+        background: var(--a100); // skeleton
+
+        .avatar {
+            width: 1.5em;
+            height: 1.5em;
+        }
+    }
 }

@@ -1,16 +1,18 @@
+from typing import Any, List, Optional, TYPE_CHECKING
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
-from typing import Any, List, Optional, TYPE_CHECKING
+
+from .middleware import Request
+from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
-from .models.scratch import Scratch
-from .models.github import GitHubUser, GitHubRepo
 from .models.project import Project, ProjectFunction
-from .middleware import Request
+from .models.scratch import Scratch
 
 
 def serialize_profile(request: Request, profile: Profile, small=False):
@@ -21,6 +23,7 @@ def serialize_profile(request: Request, profile: Profile, small=False):
             "is_you": profile == request.profile,  # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
+            "is_online": profile.is_online(),
         }
     else:
         user = profile.user
@@ -34,6 +37,7 @@ def serialize_profile(request: Request, profile: Profile, small=False):
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": user.id,
+            "is_online": profile.is_online(),
             "username": user.username,
             "avatar_url": github_details.avatar_url if github_details else None,
         }

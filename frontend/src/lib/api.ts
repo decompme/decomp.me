@@ -42,16 +42,16 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
 
 export class ResponseError extends Error {
     status: number
-    responseJSON: Json
+    json: Json
     code: string
 
-    constructor(response: Response, responseJSON) {
+    constructor(response: Response, json) {
         super(`Server responded with HTTP status code ${response.status}`)
 
         this.status = response.status
-        this.responseJSON = responseJSON
-        this.code = responseJSON.code
-        this.message = responseJSON?.detail
+        this.json = json
+        this.code = json.code
+        this.message = json?.detail
         this.name = "ResponseError"
     }
 }
@@ -152,6 +152,7 @@ export interface AnonymousUser {
     html_url: null
     is_anonymous: true
     id: number
+    is_online: boolean
 }
 
 export interface User {
@@ -159,6 +160,8 @@ export interface User {
     html_url: string
     is_anonymous: false
     id: number
+    is_online: boolean
+
     username: string
     name: string
     avatar_url: string | null
@@ -264,6 +267,34 @@ export type DiffText = {
     group?: string
     index?: number
     key?: string
+}
+
+export type CompilerFlag = {
+    type: "checkbox"
+    id: string
+    flag: string
+} | {
+    type: "flagset"
+    id: string
+    flags: string[]
+}
+
+export type CompilerPreset = {
+    name: string
+    flags: string
+    compiler: string
+}
+
+export type Compiler = {
+    platform: string
+    flags: CompilerFlag[]
+}
+
+export type Platform = {
+    name: string
+    description: string
+    arch: string
+    presets: CompilerPreset[]
 }
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
@@ -416,7 +447,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setCompileRequestPromise(null)
             setIsCompilationOld(false)
         }).catch(error => {
-            setCompilation({ "errors": error.responseJSON?.detail, "diff_output": null })
+            setCompilation({ "errors": error.json?.detail, "diff_output": null })
         })
 
         setCompileRequestPromise(promise)
@@ -469,8 +500,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     }
 }
 
-export function usePlatforms(): Record<string, string> {
-    const { data } = useSWR<{ "platforms": Record<string, string> }>("/compilers", getCached, {
+export function usePlatforms(): Record<string, Platform> {
+    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", getCached, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true, // TODO: remove
@@ -480,7 +511,7 @@ export function usePlatforms(): Record<string, string> {
     return data?.platforms
 }
 
-export function useCompilers(): Record<string, { platform: string | null }> {
+export function useCompilers(): Record<string, Compiler> {
     const { data } = useSWR("/compilers", get, {
         refreshInterval: 0,
         suspense: true, // TODO: remove

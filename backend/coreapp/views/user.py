@@ -5,12 +5,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .scratch import ScratchPagination
 from ..middleware import Request
+from ..models.github import GitHubUser
 from ..models.profile import Profile
 from ..models.scratch import Scratch
-from ..models.github import GitHubUser
 from ..serializers import serialize_profile, TerseScratchSerializer
+
+from .scratch import ScratchPagination
 
 
 class CurrentUser(APIView):

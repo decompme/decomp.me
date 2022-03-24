@@ -1,0 +1,16 @@
+.user {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+
+    vertical-align: bottom;
+}
+
+.user:any-link {
+    cursor: pointer;
+}
+
+.user:any-link:hover {
+    color: var(--link);
+}

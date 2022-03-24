@@ -1,8 +1,12 @@
 import { createContext, useContext } from "react"
 
+import useTranslation from "next-translate/useTranslation"
+
+import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
 
+import CompilerFlags, { NO_TRANSLATION } from "./CompilerFlags"
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
 import PresetSelect from "./PresetSelect"
@@ -52,19 +56,13 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
         value={flag}
         selected={checkFlag(flag)}
     >
-        {flag} {description && `(${description})`}
+        {flag} {description && description !== NO_TRANSLATION && `(${description})`}
     </option>
 }
 
 export type CompilerOptsT = {
     compiler: string
     compiler_flags: string
-}
-
-export type CompilerPreset = {
-    name: string
-    compiler: string
-    opts: string
 }
 
 export type Props = {
@@ -92,10 +90,10 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         })
     }
 
-    const setPreset = (preset: CompilerPreset) => {
+    const setPreset = (preset: api.CompilerPreset) => {
         onChange({
             compiler: preset.compiler,
-            compiler_flags: preset.opts,
+            compiler_flags: preset.flags,
         })
     }
 
@@ -118,7 +116,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
-                <PresetSelect platform={platform} compiler={compiler} opts={opts} setPreset={setPreset} />
+                <PresetSelect platform={platform} flags={opts} setPreset={setPreset} />
             </div>
         </div>
         <div className={styles.container} data-is-popup={isPopup}>
@@ -127,19 +125,22 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
     </OptsContext.Provider>
 }
 
-export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
+export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, setOpts }: {
     platform?: string
     compiler: string
     setCompiler: (compiler: string) => void
     opts: string
     setOpts: (opts: string) => void
 }) {
-    const compilers = useCompilersForPlatform(platform)
-    const compilerModule = compilers?.find(c => c.id === compiler)
+    const compilersTranslation = useTranslation("compilers")
 
-    if (!compilerModule) {
-        console.warn("compiler not supported for platform", compiler, platform)
-        setCompiler(compilers[0].id)
+    const compilers = useCompilersForPlatform(platform)
+    const compiler = compilers[compilerId]
+
+    if (!compiler) {
+        // TODO: this is a bug -- we should just render like an empty state
+        console.warn("compiler not supported for platform", compilerId, platform)
+        setCompiler(Object.keys(compilers)[0]) // pick first compiler (ew)
     }
 
     return <div>
@@ -148,12 +149,12 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
                 className={styles.compilerSelect}
                 onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
             >
-                {Object.values(compilers).map(c => <option
-                    key={c.id}
-                    value={c.id}
-                    selected={c.id === compilerModule?.id}
+                {Object.keys(compilers).map(id => <option
+                    key={id}
+                    value={id}
+                    selected={id === compilerId}
                 >
-                    {c.name}
+                    {compilersTranslation.t(id)}
                 </option>)}
             </Select>
 
@@ -167,7 +168,7 @@ export function OptsEditor({ platform, compiler, setCompiler, opts, setOpts }: {
         </div>
 
         <div className={styles.flags}>
-            {(compiler && compilerModule) ? <compilerModule.Flags /> : <div />}
+            {(compilerId && compiler) ? <CompilerFlags schema={compiler.flags} /> : <div />}
         </div>
     </div>
 }

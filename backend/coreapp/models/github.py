@@ -1,27 +1,28 @@
+import shutil
+import subprocess
 from pathlib import Path
-from django.conf import settings
-from django.core.cache import cache
-from django.db import models, transaction
-from django.contrib.auth import login
-from django.contrib.auth.models import User
-from django.utils.timezone import now
-from django.dispatch import receiver
-from rest_framework import status
-from rest_framework.exceptions import APIException
 
 from typing import Optional
+
+import requests
+from django.conf import settings
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.db import models, transaction
+from django.dispatch import receiver
+from django.utils.timezone import now
 from github import Github
 from github.NamedUser import NamedUser
 from github.Repository import Repository
-import requests
-import subprocess
-import shutil
+from rest_framework import status
+from rest_framework.exceptions import APIException
+
+from ..middleware import Request
 
 from .profile import Profile
-from .scratch import Scratch
 from .project import Project
-from ..middleware import Request
-import requests
+from .scratch import Scratch
 
 API_CACHE_TIMEOUT = 60 * 60  # 1 hour
 
@@ -98,10 +99,6 @@ class GitHubUser(models.Model):
             access_token = str(response["access_token"])
         except KeyError:
             raise MalformedGitHubApiResponseException()
-
-        scopes = scope_str.split(",")
-        if not "public_repo" in scopes:
-            raise MissingOAuthScopeException("public_repo")
 
         details = Github(access_token).get_user()
 

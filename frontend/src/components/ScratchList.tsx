@@ -3,18 +3,19 @@ import { ReactNode } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
+import useTranslation from "next-translate/useTranslation"
 import TimeAgo from "react-timeago"
 
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
-import COMPILERS from "./compiler/compilers"
 import LoadingSpinner from "./loading.svg"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import ScratchIcon from "./ScratchIcon"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
+
 
 export interface Props {
     url?: string
@@ -57,7 +58,8 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
 }
 
 export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
-    const compilerName = COMPILERS.find(c => c.id == scratch.compiler)?.name ?? scratch.compiler
+    const compilersTranslation = useTranslation("compilers")
+    const compilerName = compilersTranslation.t(scratch.compiler)
 
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
@@ -83,7 +85,8 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
 }
 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
-    const compilerName = COMPILERS.find(c => c.id == scratch.compiler)?.name ?? scratch.compiler
+    const compilersTranslation = useTranslation("compilers")
+    const compilerName = compilersTranslation.t(scratch.compiler)
 
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)

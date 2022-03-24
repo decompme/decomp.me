@@ -17,20 +17,23 @@ from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
+from coreapp import compilers, platforms
+
+from ..asm_diff_wrapper import AsmDifferWrapper
+from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from ..decompiler_wrapper import DecompilerWrapper
+
 from ..decorators.django import condition
+from ..error import CompilationError
 from ..middleware import Request
-from ..models.scratch import Asm, Scratch
-from ..models.project import Project, ProjectFunction
 from ..models.github import GitHubRepo, GitHubRepoBusyException
+from ..models.project import Project, ProjectFunction
+from ..models.scratch import Asm, Scratch
 from ..serializers import (
     ScratchCreateSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
 )
-from ..asm_diff_wrapper import AsmDifferWrapper
-from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
-from ..decompiler_wrapper import DecompilerWrapper
-from ..error import CompilationError, DiffError
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,10 @@ def get_db_asm(request_asm) -> Asm:
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     return CompilerWrapper.compile_code(
-        scratch.compiler, scratch.compiler_flags, scratch.source_code, scratch.context
+        compilers.from_id(scratch.compiler),
+        scratch.compiler_flags,
+        scratch.source_code,
+        scratch.context,
     )
 
 
@@ -62,7 +68,7 @@ def diff_compilation(
 ) -> DiffResult:
     return AsmDifferWrapper.diff(
         scratch.target_assembly,
-        scratch.platform,
+        platforms.from_id(scratch.platform),
         scratch.diff_label,
         compilation.elf_object,
         allow_target_only=allow_target_only,
@@ -162,27 +168,31 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform = data.get("platform")
-    compiler = data.get("compiler")
-    assert isinstance(compiler, str)
+    given_platform = data.get("platform")
+    if given_platform:
+        platform = platforms.from_id(given_platform)
+    else:
+        platform = None
+
+    compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
     rom_address = data.get("rom_address")
 
     if platform:
-        if CompilerWrapper.platform_from_compiler(compiler) != platform:
+        if compiler.platform != platform:
             raise APIException(
-                f"Compiler {compiler} is not compatible with platform {platform}",
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}",
                 str(status.HTTP_400_BAD_REQUEST),
             )
     else:
-        platform = CompilerWrapper.platform_from_compiler(compiler)
+        platform = compiler.platform
 
     if not platform:
         raise serializers.ValidationError("Unknown compiler")
 
-    target_asm = data["target_asm"]
-    context = data["context"]
-    diff_label = data.get("diff_label", "")
+    target_asm: str = data["target_asm"]
+    context: str = data["context"]
+    diff_label: str = data.get("diff_label", "")
 
     assert isinstance(target_asm, str)
     assert isinstance(context, str)
@@ -200,8 +210,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
         )
 
     compiler_flags = data.get("compiler_flags", "")
-    if compiler and compiler_flags:
-        compiler_flags = CompilerWrapper.filter_compiler_flags(compiler, compiler_flags)
+    compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     name = data.get("name", diff_label) or "Untitled"
 
@@ -230,7 +239,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     ser = ScratchSerializer(
         data={
             "name": name,
-            "compiler": compiler,
+            "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "context": context,
             "diff_label": diff_label,
@@ -239,7 +248,9 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     )
     ser.is_valid(raise_exception=True)
     scratch = ser.save(
-        target_assembly=assembly, platform=platform, project_function=project_function
+        target_assembly=assembly,
+        platform=platform.id,
+        project_function=project_function,
     )
 
     compile_scratch_update_score(scratch)
@@ -342,11 +353,13 @@ class ScratchViewSet(
     def decompile(self, request, pk):
         scratch: Scratch = self.get_object()
         context = request.data.get("context", "")
-        compiler = request.data.get("compiler", scratch.compiler)
+        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+
+        platform = platforms.from_id(scratch.platform)
 
         decompilation = DecompilerWrapper.decompile(
             "",
-            scratch.platform,
+            platform,
             scratch.target_assembly.source_asm.data,
             context,
             compiler,
@@ -372,22 +385,21 @@ class ScratchViewSet(
 
     @action(detail=True, methods=["POST"])
     def fork(self, request, pk):
-        parent_scratch: Scratch = self.get_object()
+        parent: Scratch = self.get_object()
 
         request_data = (
             request.data.dict() if isinstance(request.data, QueryDict) else request.data
         )
-        parent_data = ScratchSerializer(
-            parent_scratch, context={"request": request}
-        ).data
+        parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
         new_scratch = ser.save(
-            parent=parent_scratch,
-            target_assembly=parent_scratch.target_assembly,
-            platform=parent_scratch.platform,
+            parent=parent,
+            target_assembly=parent.target_assembly,
+            platform=parent.platform,
+            project_function=parent.project_function,
         )
 
         compile_scratch_update_score(new_scratch)

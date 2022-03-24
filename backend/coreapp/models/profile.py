@@ -1,7 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
-
 from typing import Optional
+
+from django.contrib.auth.models import User
+from django.db import models
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -29,3 +30,9 @@ class Profile(models.Model):
         else:
             # No URLs for anonymous profiles
             return None
+
+    def is_online(self) -> bool:
+        delta = timezone.now() - self.last_request_date
+
+        # 2 mins
+        return delta.total_seconds() < (60 * 2)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from coreapp.views import compilers, scratch, user, project
+from coreapp.views import compilers, project, scratch, user
 
 urlpatterns = [
     path("compilers", compilers.CompilersDetail.as_view(), name="compilers"),

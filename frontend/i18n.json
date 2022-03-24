@@ -1,0 +1,12 @@
+{
+    "locales": [
+        "en"
+    ],
+    "defaultLocale": "en",
+    "pages": {
+        "*": [
+            "compilers"
+        ]
+    },
+    "keySeparator": "/"
+}
