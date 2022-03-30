@@ -102,6 +102,7 @@ def from_id(compiler_id: str) -> Compiler:
     return _compilers[compiler_id]
 
 
+@cache
 def available_compilers() -> List[Compiler]:
     return sorted(
         _compilers.values(),
@@ -109,6 +110,7 @@ def available_compilers() -> List[Compiler]:
     )
 
 
+@cache
 def available_platforms() -> List[Platform]:
     return sorted(
         set(compiler.platform for compiler in available_compilers()),
@@ -119,6 +121,13 @@ def available_platforms() -> List[Platform]:
 @cache
 def available_presets(platform: Platform) -> List[Preset]:
     return [p for p in _presets if p.compiler.platform == platform]
+
+
+def preset_from_name(name: str) -> Optional[Preset]:
+    for p in _presets:
+        if p.name == name:
+            return p
+    return None
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
