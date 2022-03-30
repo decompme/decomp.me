@@ -100,6 +100,7 @@ function DiffColumn({ diff, prop, header, className, selectedSourceLine, scrollO
                         itemCount={diff.rows.length}
                         itemData={diff.rows}
                         itemSize={19.2}
+                        overscanCount={10}
                         width={width}
                         height={height}
                         innerElementType={innerElementType}
