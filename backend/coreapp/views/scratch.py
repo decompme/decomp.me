@@ -212,6 +212,10 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
+    preset = data.get("preset", "")
+    if preset and not compilers.preset_from_name(preset):
+        raise serializers.ValidationError("Unknown preset:" + preset)
+
     name = data.get("name", diff_label) or "Untitled"
 
     if allow_project and (project or rom_address):
@@ -241,6 +245,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
             "name": name,
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
+            "preset": preset,
             "context": context,
             "diff_label": diff_label,
             "source_code": source_code,

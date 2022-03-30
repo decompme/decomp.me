@@ -76,6 +76,7 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compilerId, setCompiler] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
+    const [presetName, setPresetName] = useState<string>("")
 
     const router = useRouter()
     const plausible = usePlausible()
@@ -89,6 +90,7 @@ export default function NewScratch({ serverCompilers }: {
     const setPreset = (preset: api.CompilerPreset) => {
         setCompiler(preset.compiler)
         setCompilerFlags(preset.flags)
+        setPresetName(preset.name)
     }
 
     // Load fields from localStorage
@@ -113,7 +115,7 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
-    }, [label, asm, context, platform, compilerId, compilerFlags])
+    }, [label, asm, context, platform, compilerId, compilerFlags, presetName])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compiler = platformCompilers[compilerId]
@@ -150,6 +152,7 @@ export default function NewScratch({ serverCompilers }: {
                 platform,
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
+                preset: presetName,
                 diff_label: label || defaultLabel || "",
             })
 

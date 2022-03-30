@@ -188,6 +188,7 @@ export interface Scratch extends TerseScratch {
     slug: string // avoid using, use `url` instead
     description: string
     compiler_flags: string
+    preset: string
     source_code: string
     context: string
     diff_label: string
