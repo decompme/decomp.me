@@ -6,6 +6,83 @@
 
 .themePlum {
     @include theme.theme(#951fd9, #292f33);
+
+    /*
+    { tag: tags.link, class: "cmt-link" },
+    { tag: tags.heading, class: "cmt-heading" },
+    { tag: tags.emphasis, class: "cmt-emphasis" },
+    { tag: tags.strong, class: "cmt-strong" },
+    { tag: tags.keyword, class: "cmt-keyword" },
+    { tag: tags.atom, class: "cmt-atom" },
+    { tag: tags.bool, class: "cmt-bool" },
+    { tag: tags.url, class: "cmt-url" },
+    { tag: tags.labelName, class: "cmt-labelName" },
+    { tag: tags.inserted, class: "cmt-inserted" },
+    { tag: tags.deleted, class: "cmt-deleted" },
+    { tag: tags.literal, class: "cmt-literal" },
+    { tag: tags.string, class: "cmt-string" },
+    { tag: tags.number, class: "cmt-number" },
+    { tag: [tags.regexp, tags.escape, tags.special(tags.string)], class: "cmt-string2" },
+    { tag: tags.variableName, class: "cmt-variableName" },
+    { tag: tags.local(tags.variableName), class: "cmt-variableName cmt-local" },
+    { tag: tags.definition(tags.variableName), class: "cmt-variableName cmt-definition" },
+    { tag: tags.special(tags.variableName), class: "cmt-variableName2" },
+    { tag: tags.definition(tags.propertyName), class: "cmt-propertyName cmt-definition" },
+    { tag: tags.typeName, class: "cmt-typeName" },
+    { tag: tags.namespace, class: "cmt-namespace" },
+    { tag: tags.className, class: "cmt-className" },
+    { tag: tags.macroName, class: "cmt-macroName" },
+    { tag: tags.propertyName, class: "cmt-propertyName" },
+    { tag: tags.operator, class: "cmt-operator" },
+    { tag: tags.comment, class: "cmt-comment" },
+    { tag: tags.meta, class: "cmt-meta" },
+    { tag: tags.invalid, class: "cmt-invalid" },
+    { tag: tags.punctuation, class: "cmt-punctuation" },
+    */
+
+    .cm-content {
+        color: #8599b3;
+
+        font-size: 12px;
+        font-family: 'Comic Code Ligatures', Jetbrains Mono, Menlo, Monaco, 'Courier New', monospace;
+        line-height: 1.7;
+    }
+
+    .cmt-variableName {
+        color: #ff4A98;
+    }
+
+    .cmt-punctuation {
+        color: #656f7e;
+    }
+
+    .cmt-operator {
+        color: #7f83ff;
+    }
+
+    .cmt-comment {
+        color: #465173;
+    }
+
+    .cmt-string,
+    .cmt-number,
+    .cmt-bool {
+        color: #0Afafa;
+    }
+
+    // function ??
+
+    .cmt-typeName {
+        color: #45b8ff;
+    }
+
+    .cmt-keyword {
+        color: #7f83ff;
+    }
+
+    .cmt-meta {
+        color: #3bff6c;
+    }
 }
 
 html {

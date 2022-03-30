@@ -1,4 +1,4 @@
-import { HighlightStyle, tags as t } from "@codemirror/highlight"
+import { HighlightStyle, tags } from "@codemirror/highlight"
 import { Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 
@@ -11,8 +11,6 @@ import { EditorView } from "@codemirror/view"
 */
 
 const ivory = "#abb2bf",
-    stone = "#7d8799", // Brightened compared to original to increase contrast
-    invalid = "#ffffff",
     darkBackground = "#21252b",
     highlightBackground = "rgba(0, 0, 0, 0.5)",
     background = "#121415",
@@ -71,6 +69,7 @@ export const materialPalenightTheme = EditorView.theme(
         },
 
         ".cm-activeLineGutter": {
+            color: "#c6c6c6",
             backgroundColor: highlightBackground,
         },
 
@@ -102,31 +101,43 @@ export const materialPalenightTheme = EditorView.theme(
     { dark: true }
 )
 
-/// The highlighting style for code in the Material Palenight theme.
-export const materialPalenightHighlightStyle = HighlightStyle.define([
-    { tag: t.keyword, color: "#c792ea" },
-    { tag: t.operator, color: "#89ddff" },
-    { tag: t.special(t.variableName), color: "#eeffff" },
-    { tag: t.typeName, color: "#f07178" },
-    { tag: t.atom, color: "#f78c6c" },
-    { tag: t.number, color: "#ff5370" },
-    { tag: t.definition(t.variableName), color: "#82aaff" },
-    { tag: t.string, color: "#c3e88d" },
-    { tag: t.special(t.string), color: "#f07178" },
-    { tag: t.comment, color: stone },
-    { tag: t.variableName, color: "#f07178" },
-    { tag: t.tagName, color: "#ff5370" },
-    { tag: t.bracket, color: "#a2a1a4" },
-    { tag: t.meta, color: "#ffcb6b" },
-    { tag: t.attributeName, color: "#c792ea" },
-    { tag: t.propertyName, color: "#c792ea" },
-    { tag: t.className, color: "#decb6b" },
-    { tag: t.invalid, color: invalid },
+// https://github.com/codemirror/highlight/blob/main/src/highlight.ts#L549
+export const highlightStyle = HighlightStyle.define([
+    { tag: tags.link, class: "cmt-link" },
+    { tag: tags.heading, class: "cmt-heading" },
+    { tag: tags.emphasis, class: "cmt-emphasis" },
+    { tag: tags.strong, class: "cmt-strong" },
+    { tag: tags.keyword, class: "cmt-keyword" },
+    { tag: tags.atom, class: "cmt-atom" },
+    { tag: tags.bool, class: "cmt-bool" },
+    { tag: tags.url, class: "cmt-url" },
+    { tag: tags.labelName, class: "cmt-labelName" },
+    { tag: tags.inserted, class: "cmt-inserted" },
+    { tag: tags.deleted, class: "cmt-deleted" },
+    { tag: tags.literal, class: "cmt-literal" },
+    { tag: tags.string, class: "cmt-string" },
+    { tag: tags.number, class: "cmt-number" },
+    { tag: [tags.regexp, tags.escape, tags.special(tags.string)], class: "cmt-string2" },
+    { tag: tags.variableName, class: "cmt-variableName" },
+    { tag: tags.local(tags.variableName), class: "cmt-variableName cmt-local" },
+    { tag: tags.definition(tags.variableName), class: "cmt-variableName cmt-definition" },
+    { tag: tags.special(tags.variableName), class: "cmt-variableName2" },
+    { tag: tags.definition(tags.propertyName), class: "cmt-propertyName cmt-definition" },
+    { tag: tags.typeName, class: "cmt-typeName" },
+    { tag: tags.namespace, class: "cmt-namespace" },
+    { tag: tags.className, class: "cmt-className" },
+    { tag: tags.macroName, class: "cmt-macroName" },
+    { tag: tags.propertyName, class: "cmt-propertyName" },
+    { tag: tags.operator, class: "cmt-operator" },
+    { tag: tags.comment, class: "cmt-comment" },
+    { tag: tags.meta, class: "cmt-meta" },
+    { tag: tags.invalid, class: "cmt-invalid" },
+    { tag: tags.punctuation, class: "cmt-punctuation" },
 ])
 
 /// Extension to enable the Material Palenight theme (both the editor theme and
 /// the highlight style).
 export const materialPalenight: Extension = [
     materialPalenightTheme,
-    materialPalenightHighlightStyle,
+    highlightStyle,
 ]
