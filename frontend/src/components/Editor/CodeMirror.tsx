@@ -9,13 +9,13 @@ import { materialPalenight } from "../../lib/themes/dark"
 export interface Props {
     value: string
     onChange?: (value: string) => void
-    OnHoverSourceChange?: (value: number | null) => void
+    onHoveredSourceLineChange?: (value: number | null) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
     extensions: Extension // const
 }
 
-export default function CodeMirror({ value, onChange, OnHoverSourceChange, className, viewRef: viewRefProp, extensions }: Props) {
+export default function CodeMirror({ value, onChange, onHoveredSourceLineChange, className, viewRef: viewRefProp, extensions }: Props) {
     const el = useRef<HTMLDivElement>()
 
     const valueRef = useRef(value)
@@ -29,10 +29,10 @@ export default function CodeMirror({ value, onChange, OnHoverSourceChange, class
     const extensionsRef = useRef(extensions)
     extensionsRef.current = extensions
 
-    const hoveredSourceLineref = useRef<number>()
+    const hoveredSourceLineRef = useRef<number>()
 
-    const onHoverSourceLineRef = useRef(OnHoverSourceChange)
-    onHoverSourceLineRef.current = OnHoverSourceChange
+    const onHoverSourceLineRef = useRef(onHoveredSourceLineChange)
+    onHoverSourceLineRef.current = onHoveredSourceLineChange
 
     // Initial view creation
     useEffect(() => {
@@ -85,7 +85,7 @@ export default function CodeMirror({ value, onChange, OnHoverSourceChange, class
         }
     }, [value])
 
-    const debounceHover = debounce(50, false, (event: MouseEvent) => {
+    const debouncedOnMouseMove = debounce(50, false, (event: MouseEvent) => {
         const view = viewRef.current
         let newLine: number | null = null
         if (view) {
@@ -95,15 +95,15 @@ export default function CodeMirror({ value, onChange, OnHoverSourceChange, class
             }
         }
 
-        if (hoveredSourceLineref.current != newLine) {
-            hoveredSourceLineref.current = newLine
+        if (hoveredSourceLineRef.current != newLine) {
+            hoveredSourceLineRef.current = newLine
             onHoverSourceLineRef.current?.(newLine)
         }
     })
 
     return <div
         ref={el}
-        onMouseMove={debounceHover}
+        onMouseMove={debouncedOnMouseMove}
         className={className}
         style={{ fontSize: "0.8em" }} />
 }

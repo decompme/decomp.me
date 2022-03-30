@@ -192,7 +192,6 @@ export interface Scratch extends TerseScratch {
     context: string
     diff_label: string
     parent: string | null
-    hoveredSourceLine: number | null
 }
 
 export interface Project {

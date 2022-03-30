@@ -37,7 +37,10 @@ function DiffColumn({ diff, prop, header, className, hoveredSourceLine }: {
         </div>
         <div className={styles.body}>
             {diff?.rows?.map?.((row, i) => (
-                <div key={i} className={(typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == hoveredSourceLine) ? styles.hoveredSourceRow : styles.row}>
+                <div key={i} className={classNames({
+                    [styles.row]: true,
+                    [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == hoveredSourceLine),
+                })}>
                     {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
                     {row[prop] && <FormatDiffText texts={row[prop].text} />}
                 </div>
