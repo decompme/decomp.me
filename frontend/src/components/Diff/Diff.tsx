@@ -1,14 +1,26 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { ReactNode } from "react"
+import { createContext, forwardRef, HTMLAttributes, ReactNode, useContext } from "react"
 
 import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
+import AutoSizer from "react-virtualized-auto-sizer"
+import { FixedSizeList } from "react-window"
 
 import * as api from "../../lib/api"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
+
+const PADDING_TOP = 48
+const PADDING_BOTTOM = 8
+
+type Prop = keyof api.DiffRow & keyof api.DiffHeader
+
+const DiffContext = createContext<{
+    prop: Prop
+    selectedSourceLine: number | null
+}>(undefined)
 
 function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     return <> {
@@ -24,29 +36,67 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
+function DiffRow({ data, index, style }) {
+    const { prop, selectedSourceLine } = useContext(DiffContext)
+    const row = data[index]
+
+    return <div
+        className={classNames({
+            [styles.row]: true,
+            [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == selectedSourceLine),
+        })}
+        style={{
+            ...style,
+            top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
+        }}
+    >
+        {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
+        {row[prop] && <FormatDiffText texts={row[prop].text} />}
+    </div>
+}
+
+// https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
+const innerElementType = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ style, ...rest }, ref) => {
+    return <div
+        ref={ref}
+        style={{
+            ...style,
+            height: `${parseFloat(style.height.toString()) + PADDING_TOP + PADDING_BOTTOM}px`,
+        }}
+        {...rest}
+    />
+})
+innerElementType.displayName = "innerElementType"
+
 function DiffColumn({ diff, prop, header, className, selectedSourceLine }: {
     diff: api.DiffOutput | null
-    prop: keyof api.DiffRow & keyof api.DiffHeader
+    prop: Prop
     header: ReactNode
+    selectedSourceLine: number | null
     className?: string
-    selectedSourceLine?: number | null
 }) {
-    return <resizer.Section className={classNames(styles.column, className)} minSize={100}>
-        <div className={classNames(styles.row, styles.header)}>
-            {header}
-        </div>
-        <div className={styles.body}>
-            {diff?.rows?.map?.((row, i) => (
-                <div key={i} className={classNames({
-                    [styles.row]: true,
-                    [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == selectedSourceLine),
-                })}>
-                    {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
-                    {row[prop] && <FormatDiffText texts={row[prop].text} />}
-                </div>
-            ))}
-        </div>
-    </resizer.Section>
+    return <DiffContext.Provider value={{ prop, selectedSourceLine }}>
+        <resizer.Section className={classNames(styles.column, className)} minSize={100}>
+            <div className={classNames(styles.row, styles.header)}>
+                {header}
+            </div>
+            {diff?.rows && <AutoSizer>
+                {({ height, width }) => (
+                    <FixedSizeList
+                        className={styles.body}
+                        itemCount={diff.rows.length}
+                        itemData={diff.rows}
+                        itemSize={19.2}
+                        width={width}
+                        height={height}
+                        innerElementType={innerElementType}
+                    >
+                        {DiffRow}
+                    </FixedSizeList>
+                )}
+            </AutoSizer>}
+        </resizer.Section>
+    </DiffContext.Provider>
 }
 
 export type Props = {
@@ -58,7 +108,7 @@ export type Props = {
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
     return <resizer.Container className={styles.diff}>
-        <DiffColumn diff={diff} prop="base" header="Target" />
+        <DiffColumn diff={diff} prop="base" header="Target" selectedSourceLine={null} />
         <resizer.Bar
             size={1}
             className={styles.bar}
@@ -80,7 +130,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
                 className={styles.bar}
                 expandInteractiveArea={{ left: 2, right: 2 }}
             />
-            <DiffColumn diff={diff} prop="previous" header="Saved" />
+            <DiffColumn diff={diff} prop="previous" header="Saved" selectedSourceLine={null} />
         </>}
     </resizer.Container>
 }

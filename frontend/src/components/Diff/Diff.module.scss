@@ -7,11 +7,6 @@
     scrollbar-width: thin;
 }
 
-.column {
-    height: max-content;
-    overflow: initial !important; /* overrides resizer.Section inline style */
-}
-
 .outdated {
     filter: grayscale(25%) brightness(70%);
 }
@@ -19,15 +14,11 @@
 .bar {
     cursor: col-resize;
     background: var(--a50);
-
-    position: sticky !important; /* overrides resizer.Bar inline style */
-    top: 0;
 }
 
 .row {
-    padding: 0 4px;
+    padding: 2px 4px;
     height: 1.5em;
-
 
     &.highlight {
         background-color: rgba(255, 255, 255, 0.025);
@@ -46,8 +37,10 @@
     height: 3em;
     padding: 0 1em;
 
-    position: sticky;
+    position: absolute;
     top: 0;
+    z-index: 1;
+    width: 100%;
 
     font-size: 0.8rem;
     font-weight: 500;
@@ -69,7 +62,6 @@
 .body {
     flex: 1;
     overflow: auto;
-    padding: 8px 0;
 
     user-select: text;
     font-family: var(--monospace);
