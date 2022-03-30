@@ -5,6 +5,8 @@
 
     scrollbar-color: #fff3 transparent;
     scrollbar-width: thin;
+
+    position: relative; // for .header position:absolute
 }
 
 .outdated {
