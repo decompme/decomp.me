@@ -29,7 +29,7 @@
     height: 1.25em;
 
     &.highlight {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.025);
     }
 }
 
@@ -68,7 +68,7 @@
 
     user-select: text;
     font-family: var(--monospace);
-    font-size: 12px;
+    font-size: 0.8rem;
     white-space: pre;
 }
 
