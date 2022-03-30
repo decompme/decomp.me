@@ -26,10 +26,15 @@
 
 .row {
     padding: 0 4px;
-    height: 1.25em;
+    height: 1.5em;
+
 
     &.highlight {
         background-color: rgba(255, 255, 255, 0.025);
+
+        .lineNumber {
+            color: #c6c6c6;
+        }
     }
 }
 
@@ -75,7 +80,7 @@
 .lineNumber {
     display: inline-block;
 
-    color: var(--a300);
+    color: #676e95;
 
     min-width: 3ch;
     text-align: right;
