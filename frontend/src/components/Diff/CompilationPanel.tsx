@@ -30,10 +30,12 @@ export type Props = {
     compilation: api.Compilation
     isCompiling?: boolean
     isCompilationOld?: boolean
+    scratch: api.Scratch
 }
 
-export default function CompilationPanel({ compilation, isCompiling, isCompilationOld }: Props) {
+export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, scratch }: Props) {
     const [diff, setDiff] = useState<api.DiffOutput | null>(null)
+    const [hoveredSourceLine, setHoveredSourceLine] = useState<number | null>(null)
     const problemState = getProblemState(compilation)
 
     useEffect(() => {
@@ -41,12 +43,19 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
             setDiff(compilation.diff_output)
     }, [compilation.diff_output])
 
+    useEffect(() => {
+        if (scratch.hoveredSourceLine) {
+            setHoveredSourceLine(scratch.hoveredSourceLine)
+        }
+    }, [scratch.hoveredSourceLine])
+
     return <resizer.Container vertical className={styles.container}>
         <resizer.Section minSize={100}>
             <Diff
                 diff={diff}
                 isCompiling={isCompiling}
                 isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                hoveredSourceLine={hoveredSourceLine}
             />
         </resizer.Section>
         <resizer.Bar

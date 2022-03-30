@@ -24,11 +24,12 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
-function DiffColumn({ diff, prop, header, className }: {
+function DiffColumn({ diff, prop, header, className, hoveredSourceLine }: {
     diff: api.DiffOutput | null
     prop: keyof api.DiffRow & keyof api.DiffHeader
     header: ReactNode
     className?: string
+    hoveredSourceLine?: number | null
 }) {
     return <resizer.Section className={classNames(styles.column, className)} minSize={100}>
         <div className={classNames(styles.row, styles.header)}>
@@ -36,7 +37,7 @@ function DiffColumn({ diff, prop, header, className }: {
         </div>
         <div className={styles.body}>
             {diff?.rows?.map?.((row, i) => (
-                <div key={i} className={styles.row}>
+                <div key={i} className={(typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == hoveredSourceLine) ? styles.hoveredSourceRow : styles.row}>
                     {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
                     {row[prop] && <FormatDiffText texts={row[prop].text} />}
                 </div>
@@ -49,9 +50,10 @@ export type Props = {
     diff: api.DiffOutput
     isCompiling: boolean
     isCurrentOutdated: boolean
+    hoveredSourceLine: number | null
 }
 
-export default function Diff({ diff, isCompiling, isCurrentOutdated }: Props) {
+export default function Diff({ diff, isCompiling, isCurrentOutdated, hoveredSourceLine }: Props) {
     return <resizer.Container className={styles.diff}>
         <DiffColumn diff={diff} prop="base" header="Target" />
         <resizer.Bar
@@ -67,6 +69,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated }: Props) {
                 {isCompiling && <Loading width={20} height={20} />}
             </>}
             className={classNames({ [styles.outdated]: isCurrentOutdated })}
+            hoveredSourceLine={hoveredSourceLine}
         />
         {diff?.header?.previous && <>
             <resizer.Bar

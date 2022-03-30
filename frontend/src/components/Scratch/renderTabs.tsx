@@ -82,6 +82,9 @@ export function useLeftTabs({ scratch, setScratch }: {
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
+                    OnHoverSourceChange={value => {
+                        setScratch({ hoveredSourceLine: value })
+                    }}
                     extensions={CODEMIRROR_EXTENSIONS}
                 />
             </Tab>
@@ -132,10 +135,11 @@ export function useLeftTabs({ scratch, setScratch }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
+export function useRightTabs({ compilation, isCompiling, isCompilationOld, scratch }: {
     compilation?: Compilation
     isCompiling: boolean
     isCompilationOld: boolean
+    scratch
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -154,6 +158,7 @@ export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
                     compilation={compilation}
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
+                    scratch={scratch}
                 />}
             </Tab>
         ),

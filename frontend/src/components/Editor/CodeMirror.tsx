@@ -2,18 +2,20 @@ import { MutableRefObject, useEffect, useRef } from "react"
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
+import { debounce } from "throttle-debounce"
 
 import { materialPalenight } from "../../lib/themes/dark"
 
 export interface Props {
     value: string
     onChange?: (value: string) => void
+    OnHoverSourceChange?: (value: number | null) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
     extensions: Extension // const
 }
 
-export default function CodeMirror({ value, onChange, className, viewRef: viewRefProp, extensions }: Props) {
+export default function CodeMirror({ value, onChange, OnHoverSourceChange, className, viewRef: viewRefProp, extensions }: Props) {
     const el = useRef<HTMLDivElement>()
 
     const valueRef = useRef(value)
@@ -26,6 +28,11 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
 
     const extensionsRef = useRef(extensions)
     extensionsRef.current = extensions
+
+    const hoveredSourceLineref = useRef<number>()
+
+    const onHoverSourceLineRef = useRef(OnHoverSourceChange)
+    onHoverSourceLineRef.current = OnHoverSourceChange
 
     // Initial view creation
     useEffect(() => {
@@ -78,5 +85,25 @@ export default function CodeMirror({ value, onChange, className, viewRef: viewRe
         }
     }, [value])
 
-    return <div ref={el} className={className} style={{ fontSize: "0.8em" }} />
+    const debounceHover = debounce(50, false, (event: MouseEvent) => {
+        const view = viewRef.current
+        let newLine: number | null = null
+        if (view) {
+            const line = view.state.doc.lineAt(view.posAtCoords({ x: event.clientX, y: event.clientY })).number
+            if (line) {
+                newLine = line
+            }
+        }
+
+        if (hoveredSourceLineref.current != newLine) {
+            hoveredSourceLineref.current = newLine
+            onHoverSourceLineRef.current?.(newLine)
+        }
+    })
+
+    return <div
+        ref={el}
+        onMouseMove={debounceHover}
+        className={className}
+        style={{ fontSize: "0.8em" }} />
 }

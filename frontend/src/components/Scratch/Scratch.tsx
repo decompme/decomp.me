@@ -43,6 +43,7 @@ export default function Scratch({
         compilation,
         isCompiling,
         isCompilationOld,
+        scratch,
     })
 
     return <div ref={container.ref} className={styles.container}>

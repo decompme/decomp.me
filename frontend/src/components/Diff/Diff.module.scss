@@ -29,6 +29,12 @@
     height: 1.25em;
 }
 
+.hoveredSourceRow {
+    padding: 0 4px;
+    height: 1.25em;
+    background-color: var(--a150);
+}
+
 .header {
     display: flex;
     align-items: center;
