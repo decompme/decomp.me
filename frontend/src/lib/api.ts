@@ -353,6 +353,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
+            preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         })
