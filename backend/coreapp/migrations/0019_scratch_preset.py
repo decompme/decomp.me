@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0018_rename_compilers'),
+        ("coreapp", "0018_rename_compilers"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scratch',
-            name='preset',
+            model_name="scratch",
+            name="preset",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
     ]

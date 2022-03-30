@@ -109,7 +109,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "coreapi"
 version = "2.3.3"
 description = "Python client library for Core API."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -123,7 +123,7 @@ uritemplate = "*"
 name = "coreschema"
 version = "0.0.4"
 description = "Core Schema."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -228,26 +228,26 @@ Django = ">=2.2"
 
 [[package]]
 name = "django-stubs"
-version = "1.10.0"
+version = "1.9.0"
 description = "Mypy stubs for Django"
-category = "main"
+category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 
 [package.dependencies]
 django = "*"
 django-stubs-ext = ">=0.3.0"
-mypy = ">=0.930,<0.950"
-tomli = "*"
+mypy = ">=0.910"
+toml = "*"
 types-pytz = "*"
 types-PyYAML = "*"
 typing-extensions = "*"
 
 [[package]]
 name = "django-stubs-ext"
-version = "0.3.1"
+version = "0.4.0"
 description = "Monkey-patching and extensions for django-stubs"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -271,7 +271,7 @@ pytz = "*"
 name = "djangorestframework-stubs"
 version = "1.4.0"
 description = "PEP-484 stubs for django-rest-framework"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -305,7 +305,7 @@ python-versions = ">=3.5"
 name = "itypes"
 version = "1.2.0"
 description = "Simple immutable types for python."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -313,7 +313,7 @@ python-versions = "*"
 name = "jinja2"
 version = "3.1.1"
 description = "A very fast and expressive template engine."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -354,7 +354,7 @@ dev = ["black (==21.10b0)", "coverage (>=4.5.4)", "fixit (==0.1.1)", "flake8 (>=
 name = "markupsafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -604,7 +604,7 @@ pathspec = ">=0.8.1"
 name = "types-pytz"
 version = "2021.3.6"
 description = "Typing stubs for pytz"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -612,7 +612,7 @@ python-versions = "*"
 name = "types-pyyaml"
 version = "6.0.5"
 description = "Typing stubs for PyYAML"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -620,7 +620,7 @@ python-versions = "*"
 name = "types-requests"
 version = "2.27.15"
 description = "Typing stubs for requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -631,7 +631,7 @@ types-urllib3 = "<1.27"
 name = "types-urllib3"
 version = "1.26.11"
 description = "Typing stubs for urllib3"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -667,7 +667,7 @@ python-versions = ">=2"
 name = "uritemplate"
 version = "4.1.1"
 description = "Implementation of RFC 6570 URI Templates"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -723,7 +723,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "11914ccd6e68c044ea3ca98b2b83eb1278f67e5162f7913f8a0affc8d86a5b7a"
+content-hash = "abb7ad3c74a9c8d3add60d978689e979d215a5129ed30e7afc59224250cfcf1d"
 
 [metadata.files]
 ansiwrap = [
@@ -886,12 +886,12 @@ django-filter = [
     {file = "django_filter-21.1-py3-none-any.whl", hash = "sha256:f4a6737a30104c98d2e2a5fb93043f36dd7978e0c7ddc92f5998e85433ea5063"},
 ]
 django-stubs = [
-    {file = "django-stubs-1.10.0.tar.gz", hash = "sha256:81650b08f73126130231e528b844266ae531c1f96b7663d3b31b51155be740c5"},
-    {file = "django_stubs-1.10.0-py3-none-any.whl", hash = "sha256:f4b0655f6721d95ec3c6f3e7175eb123f4f19cfff2d9ea341e5c3c3bef54499a"},
+    {file = "django-stubs-1.9.0.tar.gz", hash = "sha256:664843091636a917faf5256d028476559dc360fdef9050b6df87ab61b21607bf"},
+    {file = "django_stubs-1.9.0-py3-none-any.whl", hash = "sha256:59c9f81af64d214b1954eaf90f037778c8d2b9c2de946a3cda177fefcf588fbd"},
 ]
 django-stubs-ext = [
-    {file = "django-stubs-ext-0.3.1.tar.gz", hash = "sha256:783c198d7e39a41be0b90fd843fa2770243a642922af679be4b19e03b82c8c28"},
-    {file = "django_stubs_ext-0.3.1-py3-none-any.whl", hash = "sha256:a51a3e9e844d4e1cacaaedbb33bf3def78a3956eed5d9575a640bd97ccd99cec"},
+    {file = "django-stubs-ext-0.4.0.tar.gz", hash = "sha256:3104c4748c34bd741c310a3e6af90dffba46e41bccbe243896e38a708262876b"},
+    {file = "django_stubs_ext-0.4.0-py3-none-any.whl", hash = "sha256:901fc77b6338ea29fa381300ff598dd57d461a4882b756404e2aa7724f76fd7d"},
 ]
 djangorestframework = [
     {file = "djangorestframework-3.13.1-py3-none-any.whl", hash = "sha256:24c4bf58ed7e85d1fe4ba250ab2da926d263cd57d64b03e8dcef0ac683f8b1aa"},
