@@ -38,11 +38,11 @@ export default function CodeMirror({
     const extensionsRef = useRef(extensions)
     extensionsRef.current = extensions
 
-    const selectedSourceLineRef = useRef<number>()
-    const hoveredSourceLineRef = useRef<number>()
+    const selectedLineRef = useRef<number>()
+    const hoveredLineRef = useRef<number>()
 
-    const onHoverSourceLineRef = useRef(onHoveredLineChange)
-    onHoverSourceLineRef.current = onHoveredLineChange
+    const onHoveredLineChangeRef = useRef(onHoveredLineChange)
+    onHoveredLineChangeRef.current = onHoveredLineChange
 
     const onSelectedLineChangeRef = useRef(onSelectedLineChange)
     onSelectedLineChangeRef.current = onSelectedLineChange
@@ -61,10 +61,12 @@ export default function CodeMirror({
                         }
 
                         // selectedSourceLine
-                        const line = newDoc.lineAt(newSelection.main.head).number
-                        if (hoveredSourceLineRef.current !== line) {
-                            hoveredSourceLineRef.current = line
-                            onSelectedLineChangeRef.current?.(line)
+                        const line = newDoc.lineAt(newSelection.main.from).number
+                        if (hoveredLineRef.current !== line) {
+                            hoveredLineRef.current = line
+                            requestAnimationFrame(() => {
+                                onSelectedLineChangeRef.current?.(line)
+                            })
                         }
 
                         return null
@@ -109,6 +111,9 @@ export default function CodeMirror({
 
     const debouncedOnMouseMove = useDebouncedCallback(
         event => {
+            if (!onHoveredLineChangeRef.current)
+                return
+
             const view = viewRef.current
             let newLine: number | null = null
             if (view) {
@@ -118,9 +123,9 @@ export default function CodeMirror({
                 }
             }
 
-            if (selectedSourceLineRef.current != newLine) {
-                selectedSourceLineRef.current = newLine
-                onHoverSourceLineRef.current?.(newLine)
+            if (selectedLineRef.current != newLine) {
+                selectedLineRef.current = newLine
+                onHoveredLineChangeRef.current?.(newLine)
             }
         },
         100,
