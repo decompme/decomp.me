@@ -2,6 +2,7 @@
 
 :root {
     --link: #3db8e9;
+    --monospace: Menlo, Monaco, "Courier New", monospace;
 }
 
 .themePlum {
@@ -16,7 +17,7 @@
     .cm-gutters,
     .cm-content {
         font-size: 12px;
-        font-family: monospace;
+        font-family: var(--monospace);
         line-height: 1.5;
     }
 
