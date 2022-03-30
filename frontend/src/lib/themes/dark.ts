@@ -2,23 +2,15 @@ import { HighlightStyle, tags } from "@codemirror/highlight"
 import { Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 
-// TODO: use css its better
-
-/*
-  Credits for color palette:
-  Author:     Mattia Astorino (http://github.com/equinusocio)
-  Website:    https://material-theme.site/
-*/
-
 const ivory = "#abb2bf",
     darkBackground = "#21252b",
-    highlightBackground = "rgba(0, 0, 0, 0.5)",
+    highlightBackground = "rgba(255, 255, 255, 0.025)",
     background = "#121415",
     tooltipBackground = "#353a42",
-    selection = "rgba(128, 203, 196, 0.2)",
-    cursor = "#ffcc00"
+    selection = "rgba(255, 255, 255, 0.1)",
+    cursor = "#ffffff"
 
-/// The editor theme styles for Material Palenight.
+// TODO move to css
 export const materialPalenightTheme = EditorView.theme(
     {
     // done
