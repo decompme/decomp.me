@@ -2,20 +2,29 @@ import { MutableRefObject, useEffect, useRef } from "react"
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
-import { debounce } from "throttle-debounce"
+import { useDebouncedCallback } from "use-debounce"
 
 import { materialPalenight } from "../../lib/themes/dark"
 
 export interface Props {
     value: string
     onChange?: (value: string) => void
-    onHoveredSourceLineChange?: (value: number | null) => void
+    onHoveredLineChange?: (value: number | null) => void
+    onSelectedLineChange?: (value: number) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
     extensions: Extension // const
 }
 
-export default function CodeMirror({ value, onChange, onHoveredSourceLineChange, className, viewRef: viewRefProp, extensions }: Props) {
+export default function CodeMirror({
+    value,
+    onChange,
+    onHoveredLineChange,
+    onSelectedLineChange,
+    className,
+    viewRef: viewRefProp,
+    extensions,
+}: Props) {
     const el = useRef<HTMLDivElement>()
 
     const valueRef = useRef(value)
@@ -29,10 +38,14 @@ export default function CodeMirror({ value, onChange, onHoveredSourceLineChange,
     const extensionsRef = useRef(extensions)
     extensionsRef.current = extensions
 
+    const selectedSourceLineRef = useRef<number>()
     const hoveredSourceLineRef = useRef<number>()
 
-    const onHoverSourceLineRef = useRef(onHoveredSourceLineChange)
-    onHoverSourceLineRef.current = onHoveredSourceLineChange
+    const onHoverSourceLineRef = useRef(onHoveredLineChange)
+    onHoverSourceLineRef.current = onHoveredLineChange
+
+    const onSelectedLineChangeRef = useRef(onSelectedLineChange)
+    onSelectedLineChangeRef.current = onSelectedLineChange
 
     // Initial view creation
     useEffect(() => {
@@ -40,11 +53,20 @@ export default function CodeMirror({ value, onChange, onHoveredSourceLineChange,
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
-                    EditorState.transactionExtender.of(({ newDoc }) => {
+                    EditorState.transactionExtender.of(({ newDoc, newSelection }) => {
+                        // value / onChange
                         const newValue = newDoc.toString()
                         if (newValue !== valueRef.current) {
                             onChangeRef.current?.(newValue)
                         }
+
+                        // selectedSourceLine
+                        const line = newDoc.lineAt(newSelection.main.head).number
+                        if (hoveredSourceLineRef.current !== line) {
+                            hoveredSourceLineRef.current = line
+                            onSelectedLineChangeRef.current?.(line)
+                        }
+
                         return null
                     }),
                     extensionsRef.current,
@@ -85,21 +107,25 @@ export default function CodeMirror({ value, onChange, onHoveredSourceLineChange,
         }
     }, [value])
 
-    const debouncedOnMouseMove = debounce(50, false, (event: MouseEvent) => {
-        const view = viewRef.current
-        let newLine: number | null = null
-        if (view) {
-            const line = view.state.doc.lineAt(view.posAtCoords({ x: event.clientX, y: event.clientY })).number
-            if (line) {
-                newLine = line
+    const debouncedOnMouseMove = useDebouncedCallback(
+        event => {
+            const view = viewRef.current
+            let newLine: number | null = null
+            if (view) {
+                const line = view.state.doc.lineAt(view.posAtCoords({ x: event.clientX, y: event.clientY })).number
+                if (line) {
+                    newLine = line
+                }
             }
-        }
 
-        if (hoveredSourceLineRef.current != newLine) {
-            hoveredSourceLineRef.current = newLine
-            onHoverSourceLineRef.current?.(newLine)
-        }
-    })
+            if (selectedSourceLineRef.current != newLine) {
+                selectedSourceLineRef.current = newLine
+                onHoverSourceLineRef.current?.(newLine)
+            }
+        },
+        100,
+        { leading: true, trailing: true },
+    )
 
     return <div
         ref={el}

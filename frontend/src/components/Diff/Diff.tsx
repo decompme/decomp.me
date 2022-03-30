@@ -24,12 +24,12 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
-function DiffColumn({ diff, prop, header, className, hoveredSourceLine }: {
+function DiffColumn({ diff, prop, header, className, selectedSourceLine }: {
     diff: api.DiffOutput | null
     prop: keyof api.DiffRow & keyof api.DiffHeader
     header: ReactNode
     className?: string
-    hoveredSourceLine?: number | null
+    selectedSourceLine?: number | null
 }) {
     return <resizer.Section className={classNames(styles.column, className)} minSize={100}>
         <div className={classNames(styles.row, styles.header)}>
@@ -39,7 +39,7 @@ function DiffColumn({ diff, prop, header, className, hoveredSourceLine }: {
             {diff?.rows?.map?.((row, i) => (
                 <div key={i} className={classNames({
                     [styles.row]: true,
-                    [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == hoveredSourceLine),
+                    [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == selectedSourceLine),
                 })}>
                     {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
                     {row[prop] && <FormatDiffText texts={row[prop].text} />}
@@ -53,10 +53,10 @@ export type Props = {
     diff: api.DiffOutput
     isCompiling: boolean
     isCurrentOutdated: boolean
-    hoveredSourceLine: number | null
+    selectedSourceLine: number | null
 }
 
-export default function Diff({ diff, isCompiling, isCurrentOutdated, hoveredSourceLine }: Props) {
+export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
     return <resizer.Container className={styles.diff}>
         <DiffColumn diff={diff} prop="base" header="Target" />
         <resizer.Bar
@@ -72,7 +72,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, hoveredSour
                 {isCompiling && <Loading width={20} height={20} />}
             </>}
             className={classNames({ [styles.outdated]: isCurrentOutdated })}
-            hoveredSourceLine={hoveredSourceLine}
+            selectedSourceLine={selectedSourceLine}
         />
         {diff?.header?.previous && <>
             <resizer.Bar

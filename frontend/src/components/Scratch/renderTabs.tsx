@@ -59,10 +59,10 @@ export enum RightScratchTab {
  * @param {Array<LeftScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Left tabs of scratch
  */
-export function useLeftTabs({ scratch, setScratch, setHoveredSourceLine }: {
+export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
     scratch: Scratch
     setScratch: (s: Partial<Scratch>) => void
-    setHoveredSourceLine: (s: number | null) => void
+    setSelectedSourceLine: (s: number | null) => void
 }, filter?: Array<LeftScratchTab>): React.ReactElement<typeof Tab>[] {
     const sourceEditor = useRef<EditorView>()
     const contextEditor = useRef<EditorView>()
@@ -83,7 +83,7 @@ export function useLeftTabs({ scratch, setScratch, setHoveredSourceLine }: {
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
-                    onHoveredSourceLineChange={setHoveredSourceLine}
+                    onSelectedLineChange={setSelectedSourceLine}
                     extensions={CODEMIRROR_EXTENSIONS}
                 />
             </Tab>
@@ -134,11 +134,11 @@ export function useLeftTabs({ scratch, setScratch, setHoveredSourceLine }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation, isCompiling, isCompilationOld, hoveredSourceLine }: {
+export function useRightTabs({ compilation, isCompiling, isCompilationOld, selectedSourceLine }: {
     compilation?: Compilation
     isCompiling: boolean
     isCompilationOld: boolean
-    hoveredSourceLine: number | null
+    selectedSourceLine: number | null
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -157,7 +157,7 @@ export function useRightTabs({ compilation, isCompiling, isCompilationOld, hover
                     compilation={compilation}
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
-                    hoveredSourceLine={hoveredSourceLine}
+                    selectedSourceLine={selectedSourceLine}
                 />}
             </Tab>
         ),
