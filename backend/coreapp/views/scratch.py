@@ -34,6 +34,8 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
+from ..platforms import Platform
+
 
 logger = logging.getLogger(__name__)
 
@@ -168,11 +170,10 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
+    platform: Optional[Platform] = None
     given_platform = data.get("platform")
     if given_platform:
-        platform = platforms.from_id(given_platform)
-    else:
-        platform = None
+        platform: Optional[Platform] = platforms.from_id(given_platform)
 
     compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
