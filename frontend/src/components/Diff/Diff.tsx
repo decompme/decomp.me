@@ -1,6 +1,6 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, forwardRef, HTMLAttributes, ReactNode, useContext } from "react"
+import { createContext, forwardRef, HTMLAttributes, ReactNode, useContext, useEffect, useRef, useState } from "react"
 
 import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
@@ -68,15 +68,28 @@ const innerElementType = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElemen
 })
 innerElementType.displayName = "innerElementType"
 
-function DiffColumn({ diff, prop, header, className, selectedSourceLine }: {
+function DiffColumn({ diff, prop, header, className, selectedSourceLine, scrollOffset, setScrollOffset }: {
     diff: api.DiffOutput | null
     prop: Prop
     header: ReactNode
     selectedSourceLine: number | null
     className?: string
+    scrollOffset: number
+    setScrollOffset: (scrollOffset: number) => void
 }) {
+    const ref = useRef<FixedSizeList<typeof innerElementType>>()
+
+    const onScroll = ({ scrollOffset, scrollUpdateWasRequested }) => {
+        if (!scrollUpdateWasRequested)
+            setScrollOffset(scrollOffset)
+    }
+
+    useEffect(() => {
+        ref.current?.scrollTo?.(scrollOffset)
+    }, [scrollOffset])
+
     return <DiffContext.Provider value={{ prop, selectedSourceLine }}>
-        <resizer.Section className={classNames(styles.column, className)} minSize={100}>
+        <resizer.Section className={className} minSize={100}>
             <div className={classNames(styles.row, styles.header)}>
                 {header}
             </div>
@@ -90,6 +103,8 @@ function DiffColumn({ diff, prop, header, className, selectedSourceLine }: {
                         width={width}
                         height={height}
                         innerElementType={innerElementType}
+                        ref={ref}
+                        onScroll={onScroll}
                     >
                         {DiffRow}
                     </FixedSizeList>
@@ -107,22 +122,30 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
+    const [scrollOffset, setScrollOffset] = useState(0)
+
+    const columnProps = {
+        diff,
+        scrollOffset,
+        setScrollOffset,
+        selectedSourceLine,
+    }
+
     return <resizer.Container className={styles.diff}>
-        <DiffColumn diff={diff} prop="base" header="Target" selectedSourceLine={null} />
+        <DiffColumn {...columnProps} prop="base" header="Target" />
         <resizer.Bar
             size={1}
             className={styles.bar}
             expandInteractiveArea={{ left: 2, right: 2 }}
         />
         <DiffColumn
-            diff={diff}
+            {...columnProps}
             prop="current"
             header={<>
                 Current
                 {isCompiling && <Loading width={20} height={20} />}
             </>}
             className={classNames({ [styles.outdated]: isCurrentOutdated })}
-            selectedSourceLine={selectedSourceLine}
         />
         {diff?.header?.previous && <>
             <resizer.Bar
@@ -130,7 +153,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
                 className={styles.bar}
                 expandInteractiveArea={{ left: 2, right: 2 }}
             />
-            <DiffColumn diff={diff} prop="previous" header="Saved" selectedSourceLine={null} />
+            <DiffColumn {...columnProps} prop="previous" header="Saved" />
         </>}
     </resizer.Container>
 }
