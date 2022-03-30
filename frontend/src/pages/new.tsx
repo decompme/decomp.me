@@ -102,6 +102,7 @@ export default function NewScratch({ serverCompilers }: {
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
+            setPresetName(localStorage["new_scratch_presetName"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -115,6 +116,7 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
+        localStorage["new_scratch_presetName"] = presetName
     }, [label, asm, context, platform, compilerId, compilerFlags, presetName])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
