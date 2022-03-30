@@ -50,7 +50,7 @@
     backdrop-filter: blur(3px);
 
     user-select: none;
-    cursor: default;
+    pointer-events: none; // to select scrollbar below
 }
 
 @supports not (backdrop-filter: blur(3px)) {
