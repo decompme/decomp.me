@@ -43,6 +43,11 @@
     .cm-content {
         color: #8599b3;
 
+        cursor: text;
+    }
+
+    .cm-gutters,
+    .cm-content {
         font-size: 12px;
         font-family: 'Comic Code Ligatures', Jetbrains Mono, Menlo, Monaco, 'Courier New', monospace;
         line-height: 1.7;

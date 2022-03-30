@@ -245,6 +245,9 @@ export default function NewScratch({ serverCompilers }: {
                     placeholder={defaultLabel}
                     onChange={e => setLabel((e.target as HTMLInputElement).value)}
                     className={styles.textInput}
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                 />
             </div>
             <div className={styles.editorContainer}>
