@@ -11,6 +11,19 @@
     :global(.cm-editor) {
         height: 100%;
     }
+
+    :global(.cm-gutters),
+    :global(.cm-content) {
+        margin: 1em;
+    }
+
+    :global(.cm-gutters) {
+        margin-right: 0;
+    }
+
+    :global(.cm-content) {
+        margin-left: 0;
+    }
 }
 
 .diffTab {
