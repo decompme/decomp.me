@@ -15,26 +15,29 @@ function presetsToOptions(presets: api.CompilerPreset[], addCustom: boolean): { 
     return options
 }
 
-export default function PresetSelect({ className, platform, preset, flags, setPreset, serverPresets }: {
+export default function PresetSelect({ className, platform, presetName, setPreset, serverPresets }: {
     className?: string
     platform: string
-    preset: api.CompilerPreset
-    flags: string
+    presetName: string // "" for custom
     setPreset: (preset: api.CompilerPreset) => void
     serverPresets?: api.CompilerPreset[]
 }) {
     if (!serverPresets)
         serverPresets = api.usePlatforms()[platform].presets
 
-    const selectedPreset = preset || serverPresets.find(p => p.flags === flags)
+    const selectedPreset = serverPresets.find(p => p.name === presetName)
 
-    return <Select options={presetsToOptions(serverPresets, !selectedPreset)} value={selectedPreset?.name} className={className} onChange={e => {
-        if (e === "Custom") {
-            return
-        }
+    if (!selectedPreset && presetName !== "")
+        console.warn(`Scratch.preset == '${presetName}' but no preset with that name was found.`)
 
-        const preset = serverPresets.find(p => p.name === e)
-
-        setPreset(preset)
-    }} />
+    return <Select
+        className={className}
+        options={presetsToOptions(serverPresets, !selectedPreset)}
+        value={selectedPreset?.name || "Custom"}
+        onChange={name => {
+            const preset = serverPresets.find(p => p.name === name)
+            if (preset)
+                setPreset(preset)
+        }}
+    />
 }
