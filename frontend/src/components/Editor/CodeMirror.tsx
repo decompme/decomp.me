@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef } from "react"
+import { CSSProperties, MutableRefObject, useEffect, useRef } from "react"
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
@@ -14,6 +14,7 @@ export interface Props {
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
     extensions: Extension // const
+    fontSize?: number
 }
 
 export default function CodeMirror({
@@ -24,6 +25,7 @@ export default function CodeMirror({
     className,
     viewRef: viewRefProp,
     extensions,
+    fontSize,
 }: Props) {
     const el = useRef<HTMLDivElement>()
 
@@ -136,5 +138,6 @@ export default function CodeMirror({
         ref={el}
         onMouseMove={debouncedOnMouseMove}
         className={className}
-        style={{ fontSize: "0.8em" }} />
+        style={typeof fontSize == "number" ? { "--cm-font-size": `${fontSize}px` } as CSSProperties : {}}
+    />
 }

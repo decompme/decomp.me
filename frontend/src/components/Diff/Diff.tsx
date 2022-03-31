@@ -8,6 +8,7 @@ import { FixedSizeList } from "react-window"
 
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
+import { useDiffFontSize } from "../../lib/settings"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
@@ -65,6 +66,7 @@ function DiffRow({ data, index, style }: {
         style={{
             ...style,
             top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
+            lineHeight: `${style.height.toString()}px`,
         }}
     >
         <DiffCell cell={row.base} />
@@ -86,7 +88,7 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 })
 innerElementType.displayName = "innerElementType"
 
-function DiffBody({ diff }: { diff: api.DiffOutput }) {
+function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number | undefined }) {
     return <div className={styles.bodyContainer}>
         {diff?.rows && <AutoSizer>
             {({ height, width }) => (
@@ -94,7 +96,7 @@ function DiffBody({ diff }: { diff: api.DiffOutput }) {
                     className={styles.body}
                     itemCount={diff.rows.length}
                     itemData={diff.rows}
-                    itemSize={16}
+                    itemSize={(fontSize ?? 12) * 1.33}
                     overscanCount={40}
                     width={width}
                     height={height}
@@ -115,6 +117,8 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
+    const [fontSize] = useDiffFontSize()
+
     const container = useSize<HTMLDivElement>()
 
     const [barPos, setBarPos] = useState(NaN)
@@ -140,6 +144,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
         ref={container.ref}
         className={styles.diff}
         style={{
+            "--diff-font-size": typeof fontSize == "number" ? `${fontSize}px` : "",
             "--diff-left-width": `${clampedBarPos}px`,
             "--diff-right-width": `${container.width - clampedPrevBarPos}px`,
             "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
@@ -160,7 +165,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
             </div>}
         </div>
         <SelectedSourceLineContext.Provider value={selectedSourceLine}>
-            <DiffBody diff={diff} />
+            <DiffBody diff={diff} fontSize={fontSize} />
         </SelectedSourceLineContext.Provider>
     </div>
 }
