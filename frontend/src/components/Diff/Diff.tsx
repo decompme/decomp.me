@@ -1,15 +1,17 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, useContext, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, useContext, useEffect, useState } from "react"
 
 import classNames from "classnames"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
 import * as api from "../../lib/api"
+import { useSize } from "../../lib/hooks"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
+import DragBar from "./DragBar"
 
 const PADDING_TOP = 0
 const PADDING_BOTTOM = 0
@@ -38,8 +40,6 @@ function DiffCell({ cell, className }: {
 }) {
     const { selectedSourceLine } = useContext(DiffContext)
     const hasLineNo = typeof cell.src_line != "undefined"
-
-    console.log(selectedSourceLine)
 
     return <div
         className={classNames(className, {
@@ -93,24 +93,41 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
-    // TODO: make columns draggable again
-    const [baseWidth] = useState(0)
-    const [currentWidth] = useState(0)
-    const [previousWidth] = useState(0)
+    const container = useSize<HTMLDivElement>()
+
+    const [barPos, setBarPos] = useState(NaN)
+    const [prevBarPos, setPrevBarPos] = useState(NaN)
 
     const hasPreviousColumn = !!diff?.rows?.[0]?.previous
-    const initialColumnWidth = hasPreviousColumn ? "33.3%" : "50%"
+
+    const columnMinWidth = 100
+    const clampedBarPos = Math.max(columnMinWidth, Math.min(container.width - columnMinWidth - (hasPreviousColumn ? columnMinWidth : 0), barPos))
+    const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : clampedBarPos
+
+    useEffect(() => {
+        // Initially distribute the bar positions across the container
+        if (isNaN(barPos) && container.width) {
+            const numSections = hasPreviousColumn ? 3 : 2
+
+            setBarPos(container.width / numSections)
+            setPrevBarPos(container.width / numSections * 2)
+        }
+    }, [barPos, container.width, hasPreviousColumn])
+
+    console.log(container.width)
 
     return <DiffContext.Provider value={{ selectedSourceLine }}>
         <div
+            ref={container.ref}
             className={styles.diff}
             style={{
-                "--diff-base-width": baseWidth == 0 ? initialColumnWidth : `${baseWidth}px`,
-                "--diff-current-width": currentWidth == 0 ? initialColumnWidth : `${currentWidth}px`,
-                "--diff-previous-width": previousWidth == 0 ? initialColumnWidth : `${previousWidth}px`,
+                "--diff-left-width": `${clampedBarPos}px`,
+                "--diff-right-width": `${container.width - clampedPrevBarPos}px`,
                 "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
             } as CSSProperties}
         >
+            <DragBar pos={clampedBarPos} onChange={setBarPos} />
+            {hasPreviousColumn && <DragBar pos={clampedPrevBarPos} onChange={setPrevBarPos} />}
             <div className={styles.headers}>
                 <div className={styles.header}>
                     Target

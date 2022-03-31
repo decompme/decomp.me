@@ -16,12 +16,6 @@
     z-index: 99;
 }
 
-.headers {
-    display: flex;
-    width: 100%;
-    overflow-y: scroll;
-}
-
 .header {
     display: inline-flex;
     align-items: center;
@@ -36,21 +30,15 @@
     border-bottom: 1px dashed var(--a50);
 
     user-select: none;
+}
 
-    &:nth-child(1) {
-        width: var(--diff-base-width);
-    }
-
-    &:nth-child(2) {
-        width: var(--diff-current-width);
-        filter: var(--diff-current-filter);
-        border-left: 1px solid var(--a50);
-    }
-
-    &:nth-child(3) {
-        width: var(--diff-previous-width);
-        border-left: 1px solid var(--a50);
-    }
+// Columns
+.headers,
+.row {
+    display: grid;
+    width: 100%;
+    grid-template-columns: var(--diff-left-width) auto var(--diff-right-width);
+    overflow-x: hidden;
 }
 
 @supports not (backdrop-filter: blur(3px)) {
@@ -61,7 +49,7 @@
 
 .body {
     flex: 1;
-    overflow: auto;
+    overflow: overlay !important; // note: webkit only, see #275
 
     user-select: text;
     font-family: var(--monospace);
@@ -78,9 +66,7 @@
     height: 1.5em;
     line-height: 1.5em;
 
-    display: flex;
     align-items: stretch;
-    justify-content: space-between;
 
     > .cell {
         overflow: hidden;
@@ -96,21 +82,6 @@
             .lineNumber {
                 color: #c6c6c6;
             }
-        }
-
-        &:nth-child(1) {
-            width: var(--diff-base-width);
-        }
-
-        &:nth-child(2) {
-            width: var(--diff-current-width);
-            filter: var(--diff-current-filter);
-            border-left: 1px solid var(--a50);
-        }
-
-        &:nth-child(3) {
-            width: var(--diff-previous-width);
-            border-left: 1px solid var(--a50);
         }
     }
 }

@@ -1,6 +1,6 @@
 import React from "react"
 
-import { act, render } from "@testing-library/react"
+import { render } from "@testing-library/react"
 
 import * as api from "../../lib/api"
 
@@ -26,17 +26,16 @@ const scratchJson: api.Scratch = {
     "parent": null,
     "project": null,
     "project_function": null,
+    "preset": "",
 }
 
 test("renders without causing a state change", async () => {
     const onChange = jest.fn()
 
-    act(() => {
-        render(<Scratch
-            scratch={scratchJson}
-            onChange={onChange}
-        />)
-    })
+    render(<Scratch
+        scratch={scratchJson}
+        onChange={onChange}
+    />)
 
     expect(onChange).toHaveBeenCalledTimes(0)
 })
