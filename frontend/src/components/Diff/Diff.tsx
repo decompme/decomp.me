@@ -66,6 +66,7 @@ function DiffRow({ data, index, style }: {
         style={{
             ...style,
             top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
+            lineHeight: `${style.height.toString()}px`,
         }}
     >
         <DiffCell cell={row.base} />
