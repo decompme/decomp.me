@@ -114,8 +114,6 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
         }
     }, [barPos, container.width, hasPreviousColumn])
 
-    console.log(container.width)
-
     return <DiffContext.Provider value={{ selectedSourceLine }}>
         <div
             ref={container.ref}
