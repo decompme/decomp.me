@@ -10,6 +10,25 @@ import Tabs, { Tab } from "../Tabs"
 
 import styles from "./ScratchPreferencesModal.module.scss"
 
+function CodePrefs() {
+    const [fontSize, setFontSize] = useCodeFontSize()
+
+    return <div>
+        <section>
+            <h2 className={styles.sectionTitle}>Code editor preferences</h2>
+            <div className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="8" max="24" step="1" value={fontSize ?? "12"}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
+                />
+                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                font size
+            </div>
+        </section>
+    </div>
+}
+
 function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
@@ -52,27 +71,8 @@ function DiffPrefs() {
     </div>
 }
 
-function CodePrefs() {
-    const [fontSize, setFontSize] = useCodeFontSize()
-
-    return <div>
-        <section>
-            <h2 className={styles.sectionTitle}>Code editor preferences</h2>
-            <div className={styles.intPreference}>
-                <input
-                    type="range"
-                    min="8" max="24" step="1" value={fontSize ?? "12"}
-                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
-                />
-                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
-                font size
-            </div>
-        </section>
-    </div>
-}
-
 export default function ScratchPreferencesModal({ open, onClose }: { open: boolean, onClose?: () => void }) {
-    const [tab, setTab] = useState("diff")
+    const [tab, setTab] = useState("code")
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
 
     useEffect(() => {
@@ -101,11 +101,12 @@ export default function ScratchPreferencesModal({ open, onClose }: { open: boole
                     border={false}
                     className={styles.tabs}
                 >
-                    <Tab tabKey="diff" label="Diff" />
                     <Tab tabKey="code" label="Code editor" />
+                    <Tab tabKey="diff" label="Diff" />
                 </Tabs>
             </div>
             <div className={styles.right}>
+                {tab === "code" && <CodePrefs />}
                 {tab === "diff" && <DiffPrefs />}
                 {tab === "code" && <CodePrefs />}
             </div>
