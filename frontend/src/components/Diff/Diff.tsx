@@ -96,7 +96,7 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number |
                     className={styles.body}
                     itemCount={diff.rows.length}
                     itemData={diff.rows}
-                    itemSize={(fontSize ?? 12) + 4}
+                    itemSize={(fontSize ?? 12) * 1.33}
                     overscanCount={40}
                     width={width}
                     height={height}
