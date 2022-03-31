@@ -16,7 +16,7 @@
 
     .cm-gutters,
     .cm-content {
-        font-size: 0.8rem;
+        font-size: var(--cm-font-size, 0.8rem);
         font-family: var(--monospace);
         line-height: 1.5;
     }

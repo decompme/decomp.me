@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from "react"
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCodeFontSize } from "../../lib/settings"
 import Modal from "../Modal"
 import NumberInput from "../NumberInput"
 import Tabs, { Tab } from "../Tabs"
@@ -42,6 +42,25 @@ function DiffPrefs() {
     </div>
 }
 
+function CodePrefs() {
+    const [fontSize, setFontSize] = useCodeFontSize()
+
+    return <div>
+        <section>
+            <h2 className={styles.sectionTitle}>Code editor preferences</h2>
+            <div className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="8" max="24" step="1" value={fontSize ?? "12"}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
+                />
+                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                font size
+            </div>
+        </section>
+    </div>
+}
+
 export default function ScratchPreferencesModal({ open, onClose }: { open: boolean, onClose?: () => void }) {
     const [tab, setTab] = useState("diff")
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
@@ -73,10 +92,12 @@ export default function ScratchPreferencesModal({ open, onClose }: { open: boole
                     className={styles.tabs}
                 >
                     <Tab tabKey="diff" label="Diff" />
+                    <Tab tabKey="code" label="Code editor" />
                 </Tabs>
             </div>
             <div className={styles.right}>
                 {tab === "diff" && <DiffPrefs />}
+                {tab === "code" && <CodePrefs />}
             </div>
         </div>
     </Modal>
