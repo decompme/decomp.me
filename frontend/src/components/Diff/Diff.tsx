@@ -102,7 +102,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
 
     const columnMinWidth = 100
     const clampedBarPos = Math.max(columnMinWidth, Math.min(container.width - columnMinWidth - (hasPreviousColumn ? columnMinWidth : 0), barPos))
-    const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : clampedBarPos
+    const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : container.width
 
     useEffect(() => {
         // Initially distribute the bar positions across the container
