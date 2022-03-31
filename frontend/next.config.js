@@ -81,6 +81,6 @@ module.exports = withPlausibleProxy({
         runtimeCaching,
         disable: process.env.NODE_ENV === "development",
     },
-    swcMinify: true,
+    swcMinify: false,
     experimental: {},
 }))))
