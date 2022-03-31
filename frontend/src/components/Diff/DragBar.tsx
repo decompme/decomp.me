@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import styles from "./DragBar.module.scss"
 
@@ -9,11 +9,13 @@ export interface Props {
 
 export default function DragBar({ pos, onChange }: Props) {
     const [isActive, setIsActive] = useState(false)
+    const ref = useRef<HTMLDivElement>()
 
     useEffect(() => {
         const onMouseMove = (evt: MouseEvent) => {
             if (isActive) {
-                onChange(pos + evt.movementX)
+                const parent = ref.current.parentElement
+                onChange(evt.clientX - parent.getBoundingClientRect().x)
             }
         }
 
@@ -31,6 +33,7 @@ export default function DragBar({ pos, onChange }: Props) {
     })
 
     return <div
+        ref={ref}
         className={styles.vertical}
         style={{ left: `${pos}px` }}
         onMouseDown={() => setIsActive(true)}
