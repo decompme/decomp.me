@@ -63,7 +63,7 @@ class ScratchCreationTests(BaseTestCase):
             "context": "",
             "target_asm": """.late_rodata
 glabel D_8092C224
-/* 000014 8092C224 3DCCCCCD */ .float 0.1
+.float 0.1
 
 .text
 glabel func_80929D04
@@ -93,6 +93,32 @@ sb  $t6, %lo(D_801D702C)($at)
         }
         self.create_scratch(scratch_dict)
 
+    @requiresCompiler(IDO71)
+    def test_fpr_reg_names(self):
+        """
+        Ensure that functions with O32 register names can be assembled.
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "",
+            "target_asm": """
+glabel test
+lui   $at, 0x3ff0
+mtc1  $at, $fv1f
+mtc1  $zero, $fv1
+beqz  $a0, .L00400194
+move  $v0, $a0
+andi  $a1, $a0, 3
+negu  $a1, $a1
+beqz  $a1, .L004000EC
+addu  $v1, $a1, $a0
+mtc1  $v0, $ft0
+nop
+""",
+        }
+        self.create_scratch(scratch_dict)
+
     def test_dummy_platform(self):
         """
         Ensure that we can create scratches with the dummy platform and compiler
@@ -100,7 +126,7 @@ sb  $t6, %lo(D_801D702C)($at)
         scratch_dict = {
             "compiler": compilers.DUMMY.id,
             "platform": platforms.DUMMY.id,
-            "context": "typedef unsigned char u8;",
+            "context": "",
             "target_asm": "this is some test asm",
         }
         self.create_scratch(scratch_dict)
