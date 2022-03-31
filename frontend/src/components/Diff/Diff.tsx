@@ -1,9 +1,8 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, forwardRef, HTMLAttributes, ReactNode, useContext, useEffect, useRef, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, useContext, useState } from "react"
 
 import classNames from "classnames"
-import * as resizer from "react-simple-resizer"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
@@ -12,13 +11,10 @@ import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
 
-const PADDING_TOP = 48
-const PADDING_BOTTOM = 8
-
-type Prop = keyof api.DiffRow & keyof api.DiffHeader
+const PADDING_TOP = 0
+const PADDING_BOTTOM = 0
 
 const DiffContext = createContext<{
-    prop: Prop
     selectedSourceLine: number | null
 }>(undefined)
 
@@ -36,28 +32,49 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     } </>
 }
 
-function DiffRow({ data, index, style }) {
-    const { prop, selectedSourceLine } = useContext(DiffContext)
-    const row = data[index]
+function DiffCell({ cell, className }: {
+    cell: api.DiffCell
+    className?: string
+}) {
+    const { selectedSourceLine } = useContext(DiffContext)
+    const hasLineNo = typeof cell.src_line != "undefined"
+
+    console.log(selectedSourceLine)
 
     return <div
-        className={classNames({
-            [styles.row]: true,
-            [styles.highlight]: (typeof row[prop]?.src_line != "undefined" && row[prop]?.src_line == selectedSourceLine),
+        className={classNames(className, {
+            [styles.cell]: true,
+            [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
         })}
+    >
+        {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
+        <FormatDiffText texts={cell.text} />
+    </div>
+}
+
+function DiffRow({ data, index, style }: {
+    data: api.DiffRow[]
+    index: number
+    style: CSSProperties
+}) {
+    const row = data[index]
+
+    return <li
+        className={styles.row}
         style={{
             ...style,
             top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
         }}
     >
-        {typeof row[prop]?.src_line != "undefined" && <span className={styles.lineNumber}>{row[prop].src_line}</span>}
-        {row[prop] && <FormatDiffText texts={row[prop].text} />}
-    </div>
+        <DiffCell cell={row.base} />
+        <DiffCell cell={row.current} />
+        {row.previous && <DiffCell cell={row.previous} />}
+    </li>
 }
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
-const innerElementType = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({ style, ...rest }, ref) => {
-    return <div
+const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(({ style, ...rest }, ref) => {
+    return <ul
         ref={ref}
         style={{
             ...style,
@@ -68,53 +85,6 @@ const innerElementType = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElemen
 })
 innerElementType.displayName = "innerElementType"
 
-function DiffColumn({ diff, prop, header, className, selectedSourceLine, scrollOffset, setScrollOffset }: {
-    diff: api.DiffOutput | null
-    prop: Prop
-    header: ReactNode
-    selectedSourceLine: number | null
-    className?: string
-    scrollOffset: number
-    setScrollOffset: (scrollOffset: number) => void
-}) {
-    const ref = useRef<FixedSizeList<typeof innerElementType>>()
-
-    const onScroll = ({ scrollOffset, scrollUpdateWasRequested }) => {
-        if (!scrollUpdateWasRequested)
-            setScrollOffset(scrollOffset)
-    }
-
-    useEffect(() => {
-        ref.current?.scrollTo?.(scrollOffset)
-    }, [scrollOffset])
-
-    return <DiffContext.Provider value={{ prop, selectedSourceLine }}>
-        <resizer.Section className={className} minSize={100}>
-            <div className={classNames(styles.row, styles.header)}>
-                {header}
-            </div>
-            {diff?.rows && <AutoSizer>
-                {({ height, width }) => (
-                    <FixedSizeList
-                        className={styles.body}
-                        itemCount={diff.rows.length}
-                        itemData={diff.rows}
-                        itemSize={19.2}
-                        overscanCount={10}
-                        width={width}
-                        height={height}
-                        innerElementType={innerElementType}
-                        ref={ref}
-                        onScroll={onScroll}
-                    >
-                        {DiffRow}
-                    </FixedSizeList>
-                )}
-            </AutoSizer>}
-        </resizer.Section>
-    </DiffContext.Provider>
-}
-
 export type Props = {
     diff: api.DiffOutput
     isCompiling: boolean
@@ -123,38 +93,54 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
-    const [scrollOffset, setScrollOffset] = useState(0)
+    // TODO: make columns draggable again
+    const [baseWidth] = useState(0)
+    const [currentWidth] = useState(0)
+    const [previousWidth] = useState(0)
 
-    const columnProps = {
-        diff,
-        scrollOffset,
-        setScrollOffset,
-        selectedSourceLine,
-    }
+    const hasPreviousColumn = !!diff?.rows?.[0]?.previous
+    const initialColumnWidth = hasPreviousColumn ? "33.3%" : "50%"
 
-    return <resizer.Container className={styles.diff}>
-        <DiffColumn {...columnProps} prop="base" header="Target" />
-        <resizer.Bar
-            size={1}
-            className={styles.bar}
-            expandInteractiveArea={{ left: 2, right: 2 }}
-        />
-        <DiffColumn
-            {...columnProps}
-            prop="current"
-            header={<>
-                Current
-                {isCompiling && <Loading width={20} height={20} />}
-            </>}
-            className={classNames({ [styles.outdated]: isCurrentOutdated })}
-        />
-        {diff?.header?.previous && <>
-            <resizer.Bar
-                size={1}
-                className={styles.bar}
-                expandInteractiveArea={{ left: 2, right: 2 }}
-            />
-            <DiffColumn {...columnProps} prop="previous" header="Saved" />
-        </>}
-    </resizer.Container>
+    return <DiffContext.Provider value={{ selectedSourceLine }}>
+        <div
+            className={styles.diff}
+            style={{
+                "--diff-base-width": baseWidth == 0 ? initialColumnWidth : `${baseWidth}px`,
+                "--diff-current-width": currentWidth == 0 ? initialColumnWidth : `${currentWidth}px`,
+                "--diff-previous-width": previousWidth == 0 ? initialColumnWidth : `${previousWidth}px`,
+                "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
+            } as CSSProperties}
+        >
+            <div className={styles.headers}>
+                <div className={styles.header}>
+                    Target
+                </div>
+                <div className={styles.header}>
+                    Current
+                    {isCompiling && <Loading width={20} height={20} />}
+                </div>
+                {hasPreviousColumn && <div className={styles.header}>
+                    Previous
+                </div>}
+            </div>
+            <div className={styles.bodyContainer}>
+                {diff?.rows && <AutoSizer>
+                    {({ height, width }) => (
+                        <FixedSizeList
+                            className={styles.body}
+                            itemCount={diff.rows.length}
+                            itemData={diff.rows}
+                            itemSize={19.2}
+                            overscanCount={10}
+                            width={width}
+                            height={height}
+                            innerElementType={innerElementType}
+                        >
+                            {DiffRow}
+                        </FixedSizeList>
+                    )}
+                </AutoSizer>}
+            </div>
+        </div>
+    </DiffContext.Provider>
 }
