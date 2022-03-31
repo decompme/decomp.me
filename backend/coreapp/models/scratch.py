@@ -53,6 +53,7 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
+    preset = models.CharField(max_length=100, blank=True, null=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)

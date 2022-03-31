@@ -1,0 +1,24 @@
+.vertical {
+    width: 4px;
+    height: 100%;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 99;
+
+    cursor: col-resize;
+
+    &::after {
+        content: "";
+        display: block;
+        width: 1px;
+        height: 100%;
+        background: var(--a50);
+
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}

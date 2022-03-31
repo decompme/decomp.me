@@ -1,33 +1,43 @@
-
 import * as api from "../../lib/api"
-import Select from "../Select"
+import Select from "../Select2"
 
-export default function PresetSelect({ className, platform, flags, setPreset, serverPresets }: {
+function presetsToOptions(presets: api.CompilerPreset[], addCustom: boolean): { [key: string]: string } {
+    const options = {}
+
+    if (addCustom) {
+        options["Custom"] = "Custom"
+    }
+
+    for (const preset of presets) {
+        options[preset.name] = preset.name
+    }
+
+    return options
+}
+
+export default function PresetSelect({ className, platform, presetName, setPreset, serverPresets }: {
     className?: string
     platform: string
-    flags: string
+    presetName: string // "" for custom
     setPreset: (preset: api.CompilerPreset) => void
     serverPresets?: api.CompilerPreset[]
 }) {
     if (!serverPresets)
         serverPresets = api.usePlatforms()[platform].presets
 
-    const selectedPreset = serverPresets.find(p => p.flags === flags)
+    const selectedPreset = serverPresets.find(p => p.name === presetName)
 
-    return <Select className={className} onChange={e => {
-        if ((e.target as HTMLSelectElement).value === "custom") {
-            return
-        }
+    if (!selectedPreset && presetName !== "")
+        console.warn(`Scratch.preset == '${presetName}' but no preset with that name was found.`)
 
-        const preset = serverPresets.find(p => p.name === (e.target as HTMLSelectElement).value)
-
-        setPreset(preset)
-    }}>
-        {!selectedPreset && <option value="custom" selected>Custom</option>}
-        {serverPresets.map(preset =>
-            <option key={preset.name} value={preset.name} selected={preset === selectedPreset}>
-                {preset.name}
-            </option>
-        )}
-    </Select>
+    return <Select
+        className={className}
+        options={presetsToOptions(serverPresets, !selectedPreset)}
+        value={selectedPreset?.name || "Custom"}
+        onChange={name => {
+            const preset = serverPresets.find(p => p.name === name)
+            if (preset)
+                setPreset(preset)
+        }}
+    />
 }

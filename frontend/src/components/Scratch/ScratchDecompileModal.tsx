@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react"
 
+import { basicSetup } from "@codemirror/basic-setup"
+import { cpp } from "@codemirror/lang-cpp"
+
 import * as api from "../../lib/api"
 import Button from "../Button"
-import Editor from "../Editor"
+import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"
 import Modal from "../Modal"
 
@@ -16,7 +19,7 @@ export type Props = {
 }
 
 export default function ScratchDecompileModal({ open, onClose, scratch, setSourceCode }: Props) {
-    const [decompiledCode, setDecompiledCode] = useState(null)
+    const [decompiledCode, setDecompiledCode] = useState<string | null>(null)
 
     useEffect(() => {
         if (open) {
@@ -43,14 +46,12 @@ export default function ScratchDecompileModal({ open, onClose, scratch, setSourc
                 <p>This is generally useful when you've edited the function signature or symbols pertaining to the function.
                     This new decompilation should reflect your changes. </p>
 
-                {decompiledCode ? <>
-                    <Editor
+                {(typeof decompiledCode == "string") ? <>
+                    <CodeMirror
                         className={styles.editor}
-                        language="c"
                         value={decompiledCode}
                         onChange={c => setDecompiledCode(c)}
-                        lineNumbers
-                        showMargin
+                        extensions={[basicSetup, cpp()]}
                     />
                     <p>Would you like to reset this scratch's source code to this newly decompiled iteration?</p>
                 </> : <Loading className={styles.loading} />}

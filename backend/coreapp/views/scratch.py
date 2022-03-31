@@ -34,6 +34,8 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
+from ..platforms import Platform
+
 
 logger = logging.getLogger(__name__)
 
@@ -168,11 +170,10 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
+    platform: Optional[Platform] = None
     given_platform = data.get("platform")
     if given_platform:
         platform = platforms.from_id(given_platform)
-    else:
-        platform = None
 
     compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
@@ -212,6 +213,10 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
+    preset = data.get("preset", "")
+    if preset and not compilers.preset_from_name(preset):
+        raise serializers.ValidationError("Unknown preset:" + preset)
+
     name = data.get("name", diff_label) or "Untitled"
 
     if allow_project and (project or rom_address):
@@ -241,6 +246,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
             "name": name,
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
+            "preset": preset,
             "context": context,
             "diff_label": diff_label,
             "source_code": source_code,

@@ -2,10 +2,111 @@
 
 :root {
     --link: #3db8e9;
+    --monospace: "Menlo", "Monaco", monospace;
 }
 
 .themePlum {
     @include theme.theme(#951fd9, #292f33);
+
+    .cm-content {
+        color: #8599b3;
+
+        cursor: text;
+    }
+
+    .cm-gutters,
+    .cm-content {
+        font-size: 0.8rem;
+        font-family: var(--monospace);
+        line-height: 1.5;
+    }
+
+    .cmt-variableName {
+        color: #ff4a98;
+    }
+
+    .cmt-punctuation {
+        color: #656f7e;
+    }
+
+    .cmt-operator {
+        color: #7f83ff;
+    }
+
+    .cmt-comment {
+        color: #465173;
+    }
+
+    .cmt-string,
+    .cmt-number,
+    .cmt-bool {
+        color: #0afafa;
+    }
+
+    .cmt-typeName {
+        color: #45b8ff;
+    }
+
+    .cmt-keyword {
+        color: #7f83ff;
+    }
+
+    .cmt-meta {
+        color: #3bff6c;
+    }
+}
+
+.cm-panel {
+    font-size: 1rem;
+
+    // from Button.module.scss
+    .cm-button {
+        border-radius: 4px;
+        padding: 0.4em 0.8em;
+
+        font-size: 0.8rem;
+        font-weight: 500;
+
+        user-select: none;
+        appearance: none;
+
+        display: inline-flex;
+        gap: 0.5em;
+        align-items: center;
+
+        background: transparent;
+        color: var(--a800);
+        border: 1px solid var(--g500);
+
+        &:not(:disabled) {
+            cursor: pointer;
+
+            &:hover {
+                color: var(--a900);
+                border-color: var(--g800);
+            }
+        }
+    }
+
+    .cm-textfield {
+        padding: 0.4em 0.6em;
+
+        color: var(--g1200);
+        background: var(--g200);
+        font: 0.8rem var(--monospace);
+        border: 1px solid var(--g500);
+        border-radius: 4px;
+
+        outline: none !important;
+
+        &::-webkit-input-placeholder {
+            color: var(--g700);
+        }
+    }
+
+    input[type=checkbox] {
+        vertical-align: middle;
+    }
 }
 
 html {
@@ -70,4 +171,9 @@ main {
 
 .routerProgressBar {
     z-index: 999;
+}
+
+div {
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
 }

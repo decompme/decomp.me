@@ -5,13 +5,15 @@ import { GetStaticProps } from "next"
 import Link from "next/link"
 import { useRouter } from "next/router"
 
+import { basicSetup } from "@codemirror/basic-setup"
+import { cpp } from "@codemirror/lang-cpp"
 import { usePlausible } from "next-plausible"
 import useTranslation from "next-translate/useTranslation"
 
 import AsyncButton from "../components/AsyncButton"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
 import PresetSelect from "../components/compiler/PresetSelect"
-import Editor from "../components/Editor"
+import CodeMirror from "../components/Editor/CodeMirror"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
@@ -74,6 +76,7 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compilerId, setCompiler] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
+    const [presetName, setPresetName] = useState<string>("")
 
     const router = useRouter()
     const plausible = usePlausible()
@@ -84,11 +87,10 @@ export default function NewScratch({ serverCompilers }: {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
-    const [lineNumbers, setLineNumbers] = useState(false)
-
     const setPreset = (preset: api.CompilerPreset) => {
         setCompiler(preset.compiler)
         setCompilerFlags(preset.flags)
+        setPresetName(preset.name)
     }
 
     // Load fields from localStorage
@@ -100,6 +102,7 @@ export default function NewScratch({ serverCompilers }: {
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
+            setPresetName(localStorage["new_scratch_presetName"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -113,7 +116,8 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
-    }, [label, asm, context, platform, compilerId, compilerFlags])
+        localStorage["new_scratch_presetName"] = presetName
+    }, [label, asm, context, platform, compilerId, compilerFlags, presetName])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compiler = platformCompilers[compilerId]
@@ -150,6 +154,7 @@ export default function NewScratch({ serverCompilers }: {
                 platform,
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
+                preset: presetName,
                 diff_label: label || defaultLabel || "",
             })
 
@@ -162,7 +167,6 @@ export default function NewScratch({ serverCompilers }: {
 
             await router.push(scratch.html_url)
         } catch (error) {
-            setLineNumbers(true) // line numbers are likely relevant to the error
             console.error(error)
             throw error
         }
@@ -222,7 +226,7 @@ export default function NewScratch({ serverCompilers }: {
                         <PresetSelect
                             className={styles.compilerChoiceSelect}
                             platform={platform}
-                            flags={compilerFlags}
+                            presetName={presetName}
                             setPreset={setPreset}
                             serverPresets={platform && serverCompilers.platforms[platform].presets}
                         />
@@ -243,32 +247,29 @@ export default function NewScratch({ serverCompilers }: {
                     placeholder={defaultLabel}
                     onChange={e => setLabel((e.target as HTMLInputElement).value)}
                     className={styles.textInput}
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                 />
             </div>
             <div className={styles.editorContainer}>
                 <p className={styles.label}>Target assembly <small>(required)</small></p>
-                <Editor
+                <CodeMirror
                     className={styles.editor}
-                    language="mips"
                     value={asm}
                     onChange={setAsm}
-                    padding={10}
-                    showMargin={lineNumbers}
-                    lineNumbers={lineNumbers}
+                    extensions={basicSetup}
                 />
             </div>
             <div className={styles.editorContainer}>
                 <p className={styles.label}>
                     Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
                 </p>
-                <Editor
+                <CodeMirror
                     className={styles.editor}
-                    language="c"
                     value={context}
                     onChange={setContext}
-                    padding={10}
-                    showMargin={lineNumbers}
-                    lineNumbers={lineNumbers}
+                    extensions={[basicSetup, cpp()]}
                 />
             </div>
 

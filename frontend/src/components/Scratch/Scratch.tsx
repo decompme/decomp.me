@@ -31,18 +31,21 @@ export default function Scratch({
 
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
+    const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
 
     const setCompilerOpts = setCompilerOptsFunction({ scratch, setScratch })
 
     const leftTabs = useLeftTabs({
         scratch,
         setScratch,
+        setSelectedSourceLine,
     })
 
     const rightTabs = useRightTabs({
         compilation,
         isCompiling,
         isCompilationOld,
+        selectedSourceLine,
     })
 
     return <div ref={container.ref} className={styles.container}>

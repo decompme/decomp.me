@@ -1,54 +1,44 @@
 .diff {
     height: 100%;
+    position: relative;
 
-    overflow: auto;
-
-    scrollbar-color: #fff3 transparent;
-    scrollbar-width: thin;
+    display: flex;
+    flex-direction: column;
 }
 
-.column {
-    height: max-content;
-    overflow: initial !important; /* overrides resizer.Section inline style */
-}
-
-.outdated {
-    filter: grayscale(25%) brightness(70%);
+.bodyContainer {
+    flex-grow: 1;
 }
 
 .bar {
     cursor: col-resize;
     background: var(--a50);
-
-    position: sticky !important; /* overrides resizer.Bar inline style */
-    top: 0;
-}
-
-.row {
-    padding: 0 4px;
-    height: 1.25em;
+    z-index: 99;
 }
 
 .header {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
 
     height: 3em;
     padding: 0 1em;
 
-    position: sticky;
-    top: 0;
-
     font-size: 0.8rem;
     font-weight: 500;
     color: var(--g1200);
     border-bottom: 1px dashed var(--a50);
 
-    backdrop-filter: blur(3px);
-
     user-select: none;
-    cursor: default;
+}
+
+// Columns
+.headers,
+.row {
+    display: grid;
+    width: 100%;
+    grid-template-columns: var(--diff-left-width) auto var(--diff-right-width);
+    overflow-x: hidden;
 }
 
 @supports not (backdrop-filter: blur(3px)) {
@@ -59,22 +49,52 @@
 
 .body {
     flex: 1;
-    overflow: auto;
-    padding: 8px 0;
+    overflow: overlay !important; // note: webkit only, see #275
 
     user-select: text;
-    font-family: monospace;
-    font-size: 12px;
+    font-family: var(--monospace);
+    font-size: 0.75rem;
     white-space: pre;
+
+    list-style: none;
+
+    scrollbar-color: #fff3 transparent;
+    scrollbar-width: thin;
 }
 
-.lineNumber {
+.row {
+    height: 16px;
+    line-height: 16px;
+
+    align-items: stretch;
+
+    > .cell {
+        overflow: hidden;
+
+        color: #b3c1d3;
+
+        padding: 0 1em;
+
+        &.highlight {
+            background-color: rgba(255, 255, 255, 0.05);
+
+            .lineNumber {
+                color: #c6c6c6;
+            }
+        }
+    }
+}
+
+.cell span.lineNumber {
     display: inline-block;
 
-    color: var(--a300);
+    color: #676e95;
 
-    min-width: 3ch;
+    min-width: 24px;
+    padding: 0 3px 0 5px;
     text-align: right;
+
+    user-select: none;
 }
 
 .immediate { color: #6d6dff; }
