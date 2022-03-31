@@ -16,9 +16,7 @@ import DragBar from "./DragBar"
 const PADDING_TOP = 0
 const PADDING_BOTTOM = 0
 
-const DiffContext = createContext<{
-    selectedSourceLine: number | null
-}>(undefined)
+const SelectedSourceLineContext = createContext<number | null>(null)
 
 function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     return <> {
@@ -38,7 +36,7 @@ function DiffCell({ cell, className }: {
     cell: api.DiffCell | undefined
     className?: string
 }) {
-    const { selectedSourceLine } = useContext(DiffContext)
+    const selectedSourceLine = useContext(SelectedSourceLineContext)
     const hasLineNo = typeof cell?.src_line != "undefined"
 
     if (!cell)
@@ -88,6 +86,27 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 })
 innerElementType.displayName = "innerElementType"
 
+function DiffBody({ diff }: { diff: api.DiffOutput }) {
+    return <div className={styles.bodyContainer}>
+        {diff?.rows && <AutoSizer>
+            {({ height, width }) => (
+                <FixedSizeList
+                    className={styles.body}
+                    itemCount={diff.rows.length}
+                    itemData={diff.rows}
+                    itemSize={16}
+                    overscanCount={40}
+                    width={width}
+                    height={height}
+                    innerElementType={innerElementType}
+                >
+                    {DiffRow}
+                </FixedSizeList>
+            )}
+        </AutoSizer>}
+    </div>
+}
+
 export type Props = {
     diff: api.DiffOutput
     isCompiling: boolean
@@ -117,48 +136,31 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
         }
     }, [barPos, container.width, hasPreviousColumn])
 
-    return <DiffContext.Provider value={{ selectedSourceLine }}>
-        <div
-            ref={container.ref}
-            className={styles.diff}
-            style={{
-                "--diff-left-width": `${clampedBarPos}px`,
-                "--diff-right-width": `${container.width - clampedPrevBarPos}px`,
-                "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
-            } as CSSProperties}
-        >
-            <DragBar pos={clampedBarPos} onChange={setBarPos} />
-            {hasPreviousColumn && <DragBar pos={clampedPrevBarPos} onChange={setPrevBarPos} />}
-            <div className={styles.headers}>
-                <div className={styles.header}>
-                    Target
-                </div>
-                <div className={styles.header}>
-                    Current
-                    {isCompiling && <Loading width={20} height={20} />}
-                </div>
-                {hasPreviousColumn && <div className={styles.header}>
-                    Previous
-                </div>}
+    return <div
+        ref={container.ref}
+        className={styles.diff}
+        style={{
+            "--diff-left-width": `${clampedBarPos}px`,
+            "--diff-right-width": `${container.width - clampedPrevBarPos}px`,
+            "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
+        } as CSSProperties}
+    >
+        <DragBar pos={clampedBarPos} onChange={setBarPos} />
+        {hasPreviousColumn && <DragBar pos={clampedPrevBarPos} onChange={setPrevBarPos} />}
+        <div className={styles.headers}>
+            <div className={styles.header}>
+                Target
             </div>
-            <div className={styles.bodyContainer}>
-                {diff?.rows && <AutoSizer>
-                    {({ height, width }) => (
-                        <FixedSizeList
-                            className={styles.body}
-                            itemCount={diff.rows.length}
-                            itemData={diff.rows}
-                            itemSize={16}
-                            overscanCount={40}
-                            width={width}
-                            height={height}
-                            innerElementType={innerElementType}
-                        >
-                            {DiffRow}
-                        </FixedSizeList>
-                    )}
-                </AutoSizer>}
+            <div className={styles.header}>
+                Current
+                {isCompiling && <Loading width={20} height={20} />}
             </div>
+            {hasPreviousColumn && <div className={styles.header}>
+                Previous
+            </div>}
         </div>
-    </DiffContext.Provider>
+        <SelectedSourceLineContext.Provider value={selectedSourceLine}>
+            <DiffBody diff={diff} />
+        </SelectedSourceLineContext.Provider>
+    </div>
 }
