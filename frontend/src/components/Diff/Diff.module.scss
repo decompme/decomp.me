@@ -70,7 +70,6 @@
 
     > .cell {
         overflow: hidden;
-        white-space: nowrap;
 
         color: #b3c1d3;
 
@@ -86,20 +85,16 @@
     }
 }
 
-.cell span {
-    min-width: 1ch;
+.cell span.lineNumber {
+    display: inline-block;
 
-    &.lineNumber {
-        display: inline-block;
+    color: #676e95;
 
-        color: #676e95;
+    min-width: 24px;
+    padding: 0 3px 0 5px;
+    text-align: right;
 
-        min-width: 24px;
-        padding: 0 3px 0 5px;
-        text-align: right;
-
-        user-select: none;
-    }
+    user-select: none;
 }
 
 .immediate { color: #6d6dff; }
