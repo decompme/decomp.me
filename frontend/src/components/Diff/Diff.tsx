@@ -35,11 +35,14 @@ function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
 }
 
 function DiffCell({ cell, className }: {
-    cell: api.DiffCell
+    cell: api.DiffCell | undefined
     className?: string
 }) {
     const { selectedSourceLine } = useContext(DiffContext)
-    const hasLineNo = typeof cell.src_line != "undefined"
+    const hasLineNo = typeof cell?.src_line != "undefined"
+
+    if (!cell)
+        return <div className={classNames(styles.cell, className)} />
 
     return <div
         className={classNames(className, {
@@ -68,7 +71,7 @@ function DiffRow({ data, index, style }: {
     >
         <DiffCell cell={row.base} />
         <DiffCell cell={row.current} />
-        {row.previous && <DiffCell cell={row.previous} />}
+        <DiffCell cell={row.previous} />
     </li>
 }
 
