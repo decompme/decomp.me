@@ -53,7 +53,7 @@
 
     user-select: text;
     font-family: var(--monospace);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     white-space: pre;
 
     list-style: none;
@@ -63,8 +63,8 @@
 }
 
 .row {
-    height: 1.5em;
-    line-height: 1.5em;
+    height: 16px;
+    line-height: 16px;
 
     align-items: stretch;
 
@@ -76,7 +76,7 @@
         padding: 0 1em;
 
         &.highlight {
-            background-color: rgba(255, 255, 255, 0.025);
+            background-color: rgba(255, 255, 255, 0.05);
 
             .lineNumber {
                 color: #c6c6c6;

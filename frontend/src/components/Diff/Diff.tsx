@@ -148,8 +148,8 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
                             className={styles.body}
                             itemCount={diff.rows.length}
                             itemData={diff.rows}
-                            itemSize={19.2}
-                            overscanCount={10}
+                            itemSize={16}
+                            overscanCount={40}
                             width={width}
                             height={height}
                             innerElementType={innerElementType}

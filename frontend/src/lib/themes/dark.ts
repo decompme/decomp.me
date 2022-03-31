@@ -4,7 +4,7 @@ import { EditorView } from "@codemirror/view"
 
 const ivory = "#abb2bf",
     darkBackground = "#21252b",
-    highlightBackground = "rgba(255, 255, 255, 0.025)",
+    highlightBackground = "rgba(255, 255, 255, 0.05)",
     background = "#121415",
     tooltipBackground = "#353a42",
     selection = "rgba(255, 255, 255, 0.1)",
@@ -13,18 +13,15 @@ const ivory = "#abb2bf",
 // TODO move to css
 export const materialPalenightTheme = EditorView.theme(
     {
-    // done
         "&": {
             color: "#ffffff",
             backgroundColor: background,
         },
 
-        // done
         ".cm-content": {
             caretColor: cursor,
         },
 
-        // done
         "&.cm-focused .cm-cursor": {
             borderLeftColor: cursor,
         },
@@ -36,7 +33,6 @@ export const materialPalenightTheme = EditorView.theme(
         ".cm-panels.cm-panels-top": { borderBottom: "2px solid black" },
         ".cm-panels.cm-panels-bottom": { borderTop: "2px solid black" },
 
-        // done, use onedarktheme
         ".cm-searchMatch": {
             backgroundColor: "#72a1ff59",
             outline: "1px solid #457dff",
@@ -53,7 +49,6 @@ export const materialPalenightTheme = EditorView.theme(
             outline: "1px solid #515a6b",
         },
 
-        // done
         ".cm-gutters": {
             background: background,
             color: "#676e95",
