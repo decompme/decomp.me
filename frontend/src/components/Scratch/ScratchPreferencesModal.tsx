@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from "react"
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCodeFontSize } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCodeFontSize, useDiffFontSize } from "../../lib/settings"
 import Modal from "../Modal"
 import NumberInput from "../NumberInput"
 import Tabs, { Tab } from "../Tabs"
@@ -13,6 +13,7 @@ import styles from "./ScratchPreferencesModal.module.scss"
 function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
+    const [fontSize, setFontSize] = useDiffFontSize()
 
     const minDelay = 50
     const onChange = (duration: number) => setAutoRecompileDelay(Math.max(minDelay, duration))
@@ -20,6 +21,15 @@ function DiffPrefs() {
     return <div>
         <section>
             <h2 className={styles.sectionTitle}>Diff preferences</h2>
+            <div className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="8" max="24" step="1" value={fontSize ?? "12"}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
+                />
+                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                font size
+            </div>
             <label className={styles.booleanPreference}>
                 <input
                     type="checkbox"

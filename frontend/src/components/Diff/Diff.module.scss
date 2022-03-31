@@ -53,7 +53,7 @@
 
     user-select: text;
     font-family: var(--monospace);
-    font-size: 0.75rem;
+    font-size: var(--diff-font-size, 0.75rem);
     white-space: pre;
 
     list-style: none;
