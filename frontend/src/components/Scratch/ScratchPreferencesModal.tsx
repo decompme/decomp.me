@@ -108,7 +108,6 @@ export default function ScratchPreferencesModal({ open, onClose }: { open: boole
             <div className={styles.right}>
                 {tab === "code" && <CodePrefs />}
                 {tab === "diff" && <DiffPrefs />}
-                {tab === "code" && <CodePrefs />}
             </div>
         </div>
     </Modal>
