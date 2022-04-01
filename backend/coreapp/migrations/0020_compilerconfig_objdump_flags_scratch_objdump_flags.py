@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coreapp', '0019_scratch_preset'),
+        ("coreapp", "0019_scratch_preset"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='compilerconfig',
-            name='objdump_flags',
-            field=models.TextField(blank=True, default='', max_length=1000),
+            model_name="compilerconfig",
+            name="objdump_flags",
+            field=models.TextField(blank=True, default="", max_length=1000),
         ),
         migrations.AddField(
-            model_name='scratch',
-            name='objdump_flags',
-            field=models.TextField(blank=True, default='', max_length=1000),
+            model_name="scratch",
+            name="objdump_flags",
+            field=models.TextField(blank=True, default="", max_length=1000),
         ),
     ]
