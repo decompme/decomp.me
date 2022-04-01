@@ -221,7 +221,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     objdump_flags = data.get("objdump_flags", "")
-    # objdump_flags = ??.filter_objdump_flags(objdump_flags)
+    objdump_flags = AsmDifferWrapper.filter_objdump_flags(objdump_flags)
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):

@@ -21,6 +21,34 @@ MAX_FUNC_SIZE_LINES = 5000
 
 class AsmDifferWrapper:
     @staticmethod
+    def filter_objdump_flags(compiler_flags: str) -> str:
+        # Remove irrelevant flags that are part of the base objdump configs, but clutter the compiler settings field.
+        # TODO: use cfg for this?
+        skip_flags_with_args = {}
+        skip_flags = {
+            "--disassemble",
+            "--disassemble-zeroes",
+            "--line-numbers",
+            "--reloc",
+        }
+
+        skip_next = False
+        flags = []
+        for flag in compiler_flags.split():
+            if skip_next:
+                skip_next = False
+                continue
+            if flag in skip_flags:
+                continue
+            if flag in skip_flags_with_args:
+                skip_next = True
+                continue
+            if any(flag.startswith(f) for f in skip_flags_with_args):
+                continue
+            flags.append(flag)
+        return " ".join(flags)
+
+    @staticmethod
     def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
         return asm_differ.Config(
             arch=arch,
@@ -97,7 +125,6 @@ class AsmDifferWrapper:
             "--disassemble-zeroes",
             "--line-numbers",
             "--reloc",
-            # "'-Mreg-names=32'",
         ]
         flags += objdump_flags.split()
 
