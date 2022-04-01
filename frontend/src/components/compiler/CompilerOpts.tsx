@@ -110,7 +110,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler: preset.compiler,
             compiler_flags: preset.flags,
-            objdump_flags: objdump_opts,
+            objdump_flags: preset.objdump_flags,
             preset: preset.name,
         })
     }

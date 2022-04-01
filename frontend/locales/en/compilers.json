@@ -189,5 +189,6 @@
     "sdata_limit.-G0": "0 bytes",
     "sdata_limit.-G4": "4 bytes",
     "sdata_limit.-G8": "8 bytes",
-    "mreg_names=32": "fpr abi names"
+    "mreg_names=32": "fpr abi names",
+    "ppc_microprocessor": "PPC microprocessor"
 }

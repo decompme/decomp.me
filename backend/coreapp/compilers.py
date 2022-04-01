@@ -11,6 +11,7 @@ from coreapp.flags import (
     COMMON_IDO_FLAGS,
     COMMON_MIPS_OBJDUMP_FLAGS,
     COMMON_MWCC_FLAGS,
+    COMMON_PPC_OBJDUMP_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     FlagSet,
     Flags,
@@ -104,6 +105,7 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+    objdump_flags: ClassVar[Flags] = COMMON_PPC_OBJDUMP_FLAGS
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -614,61 +616,73 @@ _all_presets = [
         "Super Monkey Ball",
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -inline auto",
         MWCC_233_159,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Super Mario Sunshine",
         "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
         MWCC_233_163,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Pikmin",
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
         MWCC_233_163E,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Super Smash Bros. Melee",
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
         MWCC_233_163E,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Battle for Bikini Bottom",
         "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
         MWCC_247_92,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Pikmin 2",
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
         MWCC_247_107,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "The Thousand-Year Door",
         "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
         MWCC_247_108,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Twilight Princess",
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
         MWCC_247_108,
+        objdump_flags="-M gekko",
     ),
     Preset(
         "Super Paper Mario (DOL)",
         "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
         MWCC_41_60831,
+        objdump_flags="-M broadway",
     ),
     Preset(
         "Super Paper Mario (REL)",
         "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
         MWCC_41_60831,
+        objdump_flags="-M broadway",
     ),
     Preset(
         "Wii Sports",
         "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
         MWCC_41_60831,
+        objdump_flags="-M broadway",
     ),
     Preset(
         "Super Mario Galaxy",
         "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
         MWCC_41_60126,
+        objdump_flags="-M broadway",
     ),
     # NDS
     Preset(
@@ -685,6 +699,7 @@ _all_presets = [
         "Mario Party 4",
         "-O0,p -str pool -fp hard -Cpp_exceptions off",
         MWCC_242_81,
+        objdump_flags="-M gekko",
     ),
 ]
 

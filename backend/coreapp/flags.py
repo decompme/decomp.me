@@ -129,6 +129,10 @@ COMMON_MWCC_FLAGS: Flags = [
     Checkbox(id="mwcc_debug_on", flag="-g"),
 ]
 
+COMMON_PPC_OBJDUMP_FLAGS: Flags = [
+    # FlagSet(id="ppc_microprocessor", flags=["", "-M gekko", "-M broadway"]),
+]
+
 COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="psyq_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
     FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
