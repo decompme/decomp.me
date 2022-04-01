@@ -74,6 +74,7 @@ def diff_compilation(
         scratch.diff_label,
         compilation.elf_object,
         allow_target_only=allow_target_only,
+        objdump_flags=scratch.objdump_flags,
     )
 
 

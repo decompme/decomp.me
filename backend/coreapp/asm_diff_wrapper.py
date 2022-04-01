@@ -90,6 +90,7 @@ class AsmDifferWrapper:
         platform: Platform,
         config: asm_differ.Config,
         label: Optional[str],
+        objdump_flags: str = "",
     ) -> str:
         flags = [
             "--disassemble",
@@ -98,6 +99,7 @@ class AsmDifferWrapper:
             "--reloc",
             # "'-Mreg-names=32'",
         ]
+        flags += objdump_flags.split()
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -133,13 +135,14 @@ class AsmDifferWrapper:
         platform: Platform,
         diff_label: Optional[str],
         config: asm_differ.Config,
+        objdump_flags: str = "",
     ) -> str:
 
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
         basedump = AsmDifferWrapper.run_objdump(
-            elf_object, platform, config, diff_label
+            elf_object, platform, config, diff_label, objdump_flags=objdump_flags
         )
         if not basedump:
             raise ObjdumpError("Error running objdump")
@@ -164,6 +167,7 @@ class AsmDifferWrapper:
         diff_label: Optional[str],
         compiled_elf: bytes,
         allow_target_only: bool = False,
+        objdump_flags: str = "",
     ) -> DiffResult:
 
         if platform == DUMMY:
@@ -179,11 +183,15 @@ class AsmDifferWrapper:
         config = AsmDifferWrapper.create_config(arch)
 
         basedump = AsmDifferWrapper.get_dump(
-            bytes(target_assembly.elf_object), platform, diff_label, config
+            bytes(target_assembly.elf_object),
+            platform,
+            diff_label,
+            config,
+            objdump_flags=objdump_flags,
         )
         try:
             mydump = AsmDifferWrapper.get_dump(
-                compiled_elf, platform, diff_label, config
+                compiled_elf, platform, diff_label, config, objdump_flags=objdump_flags
             )
         except Exception as e:
             if allow_target_only:
