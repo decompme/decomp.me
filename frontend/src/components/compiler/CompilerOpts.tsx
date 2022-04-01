@@ -179,7 +179,7 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
             Objdump flags
 
             <div className={styles.objdumpFlags}>
-                {(compilerId && compiler) ? <CompilerFlags schema={compiler.objdumpFlags} /> : <div />}
+                {(compilerId && compiler) ? <CompilerFlags schema={compiler.objdump_flags} /> : <div />}
             </div>
         </div>
     </div>

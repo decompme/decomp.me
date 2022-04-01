@@ -9,6 +9,7 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_IDO_FLAGS,
+    COMMON_MIPS_OBJDUMP_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     FlagSet,
@@ -31,6 +32,7 @@ class Compiler:
     cc: str
     platform: Platform
     flags: ClassVar[Flags]
+    objdump_flags: ClassVar[Flags] = []
     base_id: Optional[str] = None
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
@@ -88,6 +90,7 @@ class GCCPS1Compiler(GCCCompiler):
 class IDOCompiler(Compiler):
     is_ido: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_IDO_FLAGS
+    objdump_flags: ClassVar[Flags] = COMMON_MIPS_OBJDUMP_FLAGS
 
 
 @dataclass(frozen=True)

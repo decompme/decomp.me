@@ -290,7 +290,7 @@ export type CompilerPreset = {
 export type Compiler = {
     platform: string
     flags: CompilerFlag[]
-    objdumpFlags: CompilerFlag[]
+    objdump_flags: CompilerFlag[]
 }
 
 export type Platform = {
