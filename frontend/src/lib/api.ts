@@ -356,6 +356,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
+            objdump_flags: undefinedIfUnchanged(savedScratch, localScratch, "objdump_flags"),
             preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
@@ -412,6 +413,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
+        scratch.objdump_flags === saved.objdump_flags &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
     )
@@ -444,6 +446,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
             compiler_flags: scratch.compiler_flags,
+            objdump_flags: scratch.objdump_flags,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
@@ -493,6 +496,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 
         // fields passed to compilations
         scratch.compiler, scratch.compiler_flags,
+        scratch.objdump_flags, scratch.objdump_flags,
         scratch.source_code, scratch.context,
     ])
 

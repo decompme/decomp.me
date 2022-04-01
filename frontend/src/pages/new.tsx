@@ -154,6 +154,7 @@ export default function NewScratch({ serverCompilers }: {
                 platform,
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
+                // objdump_flags: objdumpFlags,
                 preset: presetName,
                 diff_label: label || defaultLabel || "",
             })
