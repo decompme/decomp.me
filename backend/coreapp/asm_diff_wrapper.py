@@ -24,7 +24,7 @@ class AsmDifferWrapper:
     def filter_objdump_flags(compiler_flags: str) -> str:
         # Remove irrelevant flags that are part of the base objdump configs, but clutter the compiler settings field.
         # TODO: use cfg for this?
-        skip_flags_with_args = {}
+        skip_flags_with_args: set[str] = set()
         skip_flags = {
             "--disassemble",
             "--disassemble-zeroes",
