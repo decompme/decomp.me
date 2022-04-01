@@ -82,6 +82,13 @@
     margin-top: 1em;
 }
 
+.objdumpFlags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 1em;
+}
+
 .flag {
     flex-grow: 1;
     display: inline-block;

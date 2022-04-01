@@ -270,6 +270,7 @@ export type DiffText = {
     key?: string
 }
 
+// TODO: rename to a more general name for both compiler and objdump?
 export type CompilerFlag = {
     type: "checkbox"
     id: string
@@ -289,6 +290,7 @@ export type CompilerPreset = {
 export type Compiler = {
     platform: string
     flags: CompilerFlag[]
+    objdumpFlags: CompilerFlag[]
 }
 
 export type Platform = {

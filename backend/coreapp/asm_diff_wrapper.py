@@ -96,6 +96,7 @@ class AsmDifferWrapper:
             "--disassemble-zeroes",
             "--line-numbers",
             "--reloc",
+            # "'-Mreg-names=32'",
         ]
 
         with Sandbox() as sandbox:
