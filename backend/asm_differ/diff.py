@@ -709,6 +709,7 @@ class AnsiFormatter(Formatter):
     STYLE_UNDERLINE = "\x1b[4m"
     STYLE_NO_UNDERLINE = "\x1b[24m"
     STYLE_INVERT = "\x1b[7m"
+    STYLE_RESET = "\x1b[0m"
 
     BASIC_ANSI_CODES = {
         BasicFormat.NONE: "",
@@ -769,6 +770,7 @@ class AnsiFormatter(Formatter):
             "".join(
                 (self.STYLE_INVERT if is_data_ref else "")
                 + self.apply(x.ljust(self.column_width))
+                + (self.STYLE_RESET if is_data_ref else "")
                 for x in row
             )
             for (row, is_data_ref) in rows
@@ -1418,18 +1420,7 @@ class AsmProcessorMIPS(AsmProcessor):
             # integer.
             return prev
         before, imm, after = parse_relocated_line(prev)
-        repl = row.split()[-1]
-        if imm != "0":
-            # MIPS uses relocations with addends embedded in the code as immediates.
-            # If there is an immediate, show it as part of the relocation. Ideally
-            # we'd show this addend in both %lo/%hi, but annoyingly objdump's output
-            # doesn't include enough information to pair up %lo's and %hi's...
-            # TODO: handle unambiguous cases where all addends for a symbol are the
-            # same, or show "+???".
-            mnemonic = prev.split()[0]
-            if mnemonic in arch.instructions_with_address_immediates:
-                imm = hex(int(imm, 16))
-            repl += ("" if imm.startswith("-") else "+") + imm
+        repl = row.split()[-1] + reloc_addend_from_imm(imm, before, self.config.arch)
         if "R_MIPS_LO16" in row:
             repl = f"%lo({repl})"
         elif "R_MIPS_HI16" in row:
@@ -1492,7 +1483,7 @@ class AsmProcessorARM32(AsmProcessor):
     def process_reloc(self, row: str, prev: str) -> str:
         arch = self.config.arch
         before, imm, after = parse_relocated_line(prev)
-        repl = row.split()[-1]
+        repl = row.split()[-1] + reloc_addend_from_imm(imm, before, self.config.arch)
         return before + repl + after
 
     def _normalize_arch_specific(self, mnemonic: str, row: str) -> str:
@@ -1822,9 +1813,29 @@ def parse_relocated_line(line: str) -> Tuple[str, str, str]:
         imm, after = after, ""
     else:
         imm, after = after[:ind2], after[ind2:]
-    if imm == "0x0":
-        imm = "0"
     return before, imm, after
+
+
+def reloc_addend_from_imm(imm: str, before: str, arch: ArchSettings) -> str:
+    """For architectures like MIPS where relocations have addends embedded in
+    the code as immediates, convert such an immediate into an addition/
+    subtraction that can occur just after the symbol."""
+    # TODO this is incorrect for MIPS %lo/%hi which need to be paired up
+    # and combined. In practice, this means we only get symbol offsets within
+    # %lo, while %hi just shows the symbol. Unfortunately, objdump's output
+    # loses relocation order, so we cannot do this without parsing ELF relocs
+    # ourselves...
+    mnemonic = before.split()[0]
+    if mnemonic in arch.instructions_with_address_immediates:
+        addend = int(imm, 16)
+    else:
+        addend = int(imm, 0)
+    if addend == 0:
+        return ""
+    elif addend < 0:
+        return hex(addend)
+    else:
+        return "+" + hex(addend)
 
 
 def pad_mnemonic(line: str) -> str:
@@ -1944,6 +1955,8 @@ def process(dump: str, config: Config) -> List[Line]:
             # powerpc-eabi-objdump doesn't use tabs
             row_parts = [part.lstrip() for part in row.split(" ", 1)]
         mnemonic = row_parts[0].strip()
+        args = row_parts[1] if len(row_parts) >= 2 else ""
+        row = mnemonic + "\t" + args.replace("\t", "  ")
 
         addr = ""
         if mnemonic in arch.instructions_with_address_immediates:
