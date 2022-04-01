@@ -84,6 +84,11 @@ class GCCCompiler(Compiler):
 
 
 @dataclass(frozen=True)
+class GCCMIPSCompiler(GCCCompiler):
+    objdump_flags: ClassVar[Flags] = COMMON_MIPS_OBJDUMP_FLAGS
+
+
+@dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
 
@@ -242,13 +247,13 @@ IDO71 = IDOCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
-GCC272KMC = GCCCompiler(
+GCC272KMC = GCCMIPSCompiler(
     id="gcc2.7.2kmc",
     platform=N64,
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G0 -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
-GCC281 = GCCCompiler(
+GCC281 = GCCMIPSCompiler(
     id="gcc2.8.1",
     platform=N64,
     cc='"${COMPILER_DIR}"/gcc -G0 -c -B "${COMPILER_DIR}"/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
