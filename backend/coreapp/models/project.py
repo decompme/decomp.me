@@ -224,6 +224,7 @@ class ProjectFunction(models.Model):
                 "platform": compiler_config.platform,
                 "compiler": compiler_config.compiler,
                 "compiler_flags": compiler_config.compiler_flags,
+                "objdump_flags": compiler_config.objdump_flags,
             },
             allow_project=True,
         )
