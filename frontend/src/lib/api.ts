@@ -286,6 +286,7 @@ export type CompilerPreset = {
     name: string
     flags: string
     compiler: string
+    objdump_flags: string
 }
 
 export type Compiler = {
