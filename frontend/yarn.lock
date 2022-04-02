@@ -1618,6 +1618,11 @@
     "@types/raf-schd" "^4.0.0"
     raf-schd "^4.0.2"
 
+"@replit/codemirror-indentation-markers@^0.19.1":
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/@replit/codemirror-indentation-markers/-/codemirror-indentation-markers-0.19.1.tgz#5332dc7f4da96fdf444bd9b1ed32bccb560af840"
+  integrity sha512-+nRdYLjbAO+O9q+LtYEPgss6Prl07OuTQNaiLuq4+fwapPwv19mg7LpqpjWPBJGrDYWCJlkY6jDOEZlgMWFcLA==
+
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-babel/-/plugin-babel-5.3.1.tgz#04bc0608f4aa4b2e4b1aebf284344d0f68fda283"
