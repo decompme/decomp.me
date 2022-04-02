@@ -38,11 +38,6 @@ class NotProjectMaintainer(APIException):
     default_detail = "You must be a project maintainer to perform this action."
 
 
-class ScratchNotOwnerException(APIException):
-    status_code = status.HTTP_403_FORBIDDEN
-    default_detail = "You must be the owner of this scratch to perform this action."
-
-
 class GithubLoginException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must be logged in to Github to perform this action."
@@ -129,7 +124,7 @@ class ProjectViewSet(
         user: Optional[User] = request.profile.user
         if not user:
             raise GithubLoginException()
-        token = user.github.access_token  # type: ignore
+        token = user.github.access_token
         github_repo: Repository = project.repo.details(token)
         # Get or create fork
         # TODO: likely need to pull this to make it up to date
