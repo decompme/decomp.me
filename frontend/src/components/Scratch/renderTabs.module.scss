@@ -4,12 +4,25 @@
 }
 
 .editor {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
     height: 100%;
+
+    :global(.cm-editor) {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+
+    :global(.cm-scroller) {
+        overflow: auto;
+    }
 }
 
 .diffTab {
     display: flex;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .about {

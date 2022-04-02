@@ -1,36 +1,43 @@
-
 import * as api from "../../lib/api"
-import Select from "../Select"
+import Select from "../Select2"
 
-import { useCompilersForPlatform } from "./compilers"
+function presetsToOptions(presets: api.CompilerPreset[], addCustom: boolean): { [key: string]: string } {
+    const options = {}
 
-export default function PresetSelect({ className, platform, compiler, flags, setPreset, serverCompilers }: {
+    if (addCustom) {
+        options["Custom"] = "Custom"
+    }
+
+    for (const preset of presets) {
+        options[preset.name] = preset.name
+    }
+
+    return options
+}
+
+export default function PresetSelect({ className, platform, presetName, setPreset, serverPresets }: {
     className?: string
     platform: string
-    compiler: string
-    flags: string
+    presetName: string // "" for custom
     setPreset: (preset: api.CompilerPreset) => void
-    serverCompilers?: Record<string, api.Compiler>
+    serverPresets?: api.CompilerPreset[]
 }) {
-    const compilers = useCompilersForPlatform(platform, serverCompilers)
+    if (!serverPresets)
+        serverPresets = api.usePlatforms()[platform].presets
 
-    const presets = compilers[compiler].presets
-    const selectedPreset = presets.find(p => p.flags === flags)
+    const selectedPreset = serverPresets.find(p => p.name === presetName)
 
-    return <Select className={className} onChange={e => {
-        if ((e.target as HTMLSelectElement).value === "custom") {
-            return
-        }
+    if (!selectedPreset && presetName !== "")
+        console.warn(`Scratch.preset == '${presetName}' but no preset with that name was found.`)
 
-        const preset = presets.find(p => p.name === (e.target as HTMLSelectElement).value)
-
-        setPreset(preset)
-    }}>
-        {!selectedPreset && <option value="custom" selected>Custom</option>}
-        {presets.map(preset =>
-            <option key={preset.name} value={preset.name} selected={preset === selectedPreset}>
-                {preset.name}
-            </option>
-        )}
-    </Select>
+    return <Select
+        className={className}
+        options={presetsToOptions(serverPresets, !selectedPreset)}
+        value={selectedPreset?.name || "Custom"}
+        onChange={name => {
+            const preset = serverPresets.find(p => p.name === name)
+            if (preset)
+                setPreset(preset)
+        }}
+    />
 }

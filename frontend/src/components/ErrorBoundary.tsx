@@ -32,6 +32,6 @@ export default class ErrorBoundary extends React.Component<Props, State> {
             return <div className={classNames(styles.error, this.props.className)} />
         }
 
-        return this.props.children
+        return this.props.children || null
     }
 }

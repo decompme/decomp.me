@@ -8,7 +8,7 @@ import { useDebouncedCallback } from "use-debounce"
 
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
-const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE ?? process.env.STORYBOOK_API_BASE
+const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
 
 type Json = any
 
@@ -188,6 +188,7 @@ export interface Scratch extends TerseScratch {
     slug: string // avoid using, use `url` instead
     description: string
     compiler_flags: string
+    preset: string
     source_code: string
     context: string
     diff_label: string
@@ -282,18 +283,19 @@ export type CompilerFlag = {
 export type CompilerPreset = {
     name: string
     flags: string
+    compiler: string
 }
 
 export type Compiler = {
     platform: string
     flags: CompilerFlag[]
-    presets: CompilerPreset[]
 }
 
 export type Platform = {
     name: string
     description: string
     arch: string
+    presets: CompilerPreset[]
 }
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
@@ -351,6 +353,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
+            preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
         })

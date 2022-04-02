@@ -16,7 +16,6 @@ import ScratchIcon from "./ScratchIcon"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
 
-
 export interface Props {
     url?: string
     className?: string

@@ -1,15 +1,39 @@
 import { useRef } from "react"
 
+import { basicSetup, EditorView } from "@codemirror/basic-setup"
+import { indentMore, indentLess } from "@codemirror/commands"
+import { cpp } from "@codemirror/lang-cpp"
+import { indentUnit } from "@codemirror/language"
+import { StateCommand } from "@codemirror/state"
+import { keymap } from "@codemirror/view"
+
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
+import { useCodeFontSize } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CompilationPanel from "../Diff/CompilationPanel"
-import Editor from "../Editor"
-import { EditorInstance } from "../Editor/MonacoEditor"
+import CodeMirror from "../Editor/CodeMirror"
 import ScoreBadge from "../ScoreBadge"
 import { Tab } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
 import styles from "./renderTabs.module.scss"
+
+const indent: StateCommand = ({ state, dispatch }) => {
+    if (state.selection.ranges.some(r => !r.empty)) return indentMore({ state, dispatch })
+    dispatch(state.update(state.replaceSelection("    "), { scrollIntoView: true, userEvent: "input" }))
+    return true
+}
+
+const CODEMIRROR_EXTENSIONS = [
+    basicSetup,
+    cpp(),
+    keymap.of([{
+        key: "Tab",
+        run: indent,
+        shift: indentLess,
+    }]),
+    indentUnit.of("    "),
+]
 
 type ScratchTab = LeftScratchTab | RightScratchTab
 
@@ -36,13 +60,15 @@ export enum RightScratchTab {
  * @param {Array<LeftScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Left tabs of scratch
  */
-export function useLeftTabs({ scratch, setScratch }: {
+export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
     scratch: Scratch
     setScratch: (s: Partial<Scratch>) => void
+    setSelectedSourceLine: (s: number | null) => void
 }, filter?: Array<LeftScratchTab>): React.ReactElement<typeof Tab>[] {
-    const sourceEditor = useRef<EditorInstance>()
-    const contextEditor = useRef<EditorInstance>()
+    const sourceEditor = useRef<EditorView>()
+    const contextEditor = useRef<EditorView>()
     const userIsYou = useUserIsYou()
+    const [codeFontSize] = useCodeFontSize()
 
     return renderTabs({
         [LeftScratchTab.SOURCE_CODE]: (
@@ -50,19 +76,18 @@ export function useLeftTabs({ scratch, setScratch }: {
                 key="source"
                 tabKey="source"
                 label="Source code"
-                onSelect={() => sourceEditor.current && sourceEditor.current.focus()}
+                onSelect={() => sourceEditor.current?.focus?.()}
             >
-                <Editor
-                    instanceRef={sourceEditor}
+                <CodeMirror
+                    viewRef={sourceEditor}
                     className={styles.editor}
-                    language="c"
                     value={scratch.source_code}
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
-                    lineNumbers
-                    showMargin
-                    bubbleSuspense
+                    onSelectedLineChange={setSelectedSourceLine}
+                    extensions={CODEMIRROR_EXTENSIONS}
+                    fontSize={codeFontSize}
                 />
             </Tab>
         ),
@@ -80,19 +105,17 @@ export function useLeftTabs({ scratch, setScratch }: {
                 tabKey="context"
                 label="Context"
                 className={styles.context}
-                onSelect={() => contextEditor.current && contextEditor.current.focus()}
+                onSelect={() => contextEditor.current?.focus?.()}
             >
-                <Editor
-                    instanceRef={contextEditor}
+                <CodeMirror
+                    viewRef={contextEditor}
                     className={styles.editor}
-                    language="c"
                     value={scratch.context}
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    lineNumbers
-                    showMargin
-                    bubbleSuspense
+                    extensions={CODEMIRROR_EXTENSIONS}
+                    fontSize={codeFontSize}
                 />
             </Tab>
         ),
@@ -115,10 +138,11 @@ export function useLeftTabs({ scratch, setScratch }: {
  * @param {Array<RightScratchTab>} [filter=undefined] The tabs that you want to filter out
  * @returns Right tabs of scratch
  */
-export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
+export function useRightTabs({ compilation, isCompiling, isCompilationOld, selectedSourceLine }: {
     compilation?: Compilation
     isCompiling: boolean
     isCompilationOld: boolean
+    selectedSourceLine: number | null
 }, filter?: Array<RightScratchTab>): React.ReactElement<typeof Tab>[] {
     return renderTabs({
         [RightScratchTab.DIFF]: (
@@ -137,6 +161,7 @@ export function useRightTabs({ compilation, isCompiling, isCompilationOld }: {
                     compilation={compilation}
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
+                    selectedSourceLine={selectedSourceLine}
                 />}
             </Tab>
         ),

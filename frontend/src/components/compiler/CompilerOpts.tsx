@@ -63,6 +63,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 export type CompilerOptsT = {
     compiler: string
     compiler_flags: string
+    preset: string
 }
 
 export type Props = {
@@ -80,6 +81,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler,
             compiler_flags: opts,
+            preset: "",
         })
     }
 
@@ -87,13 +89,15 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler,
             compiler_flags: opts,
+            preset: "",
         })
     }
 
     const setPreset = (preset: api.CompilerPreset) => {
         onChange({
-            compiler, // TODO check me
+            compiler: preset.compiler,
             compiler_flags: preset.flags,
+            preset: preset.name,
         })
     }
 
@@ -116,7 +120,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
-                <PresetSelect platform={platform} compiler={compiler} flags={opts} setPreset={setPreset} />
+                <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
             </div>
         </div>
         <div className={styles.container} data-is-popup={isPopup}>

@@ -32,6 +32,7 @@
 
 .tabButton {
     position: relative;
+    flex-shrink: 0;
 
     display: inline-flex;
     gap: 0.5em;

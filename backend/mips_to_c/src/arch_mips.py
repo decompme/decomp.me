@@ -288,14 +288,32 @@ class Div2S16Pattern(SimpleAsmPattern):
         return Replacement([m.body[0], m.body[1], div], len(m.body))
 
 
-class Div2S32Pattern(SimpleAsmPattern):
+class Div2S32Pattern1(SimpleAsmPattern):
     pattern = make_pattern(
-        "srl $o, $i, 0x1f",
-        "addu $o, $i, $o",
-        "sra $o, $o, 1",
+        "srl $t, $i, 0x1f",
+        "addu $t, $i, $t",
+        "sra $o, $t, 1",
     )
 
-    def replace(self, m: AsmMatch) -> Replacement:
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        if m.regs["t"] == m.regs["i"]:
+            return None
+        div = AsmInstruction("div.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(2)])
+        # While it would be more correct, we don't include m.body[:2] in the
+        # result, because the srl incorrectly type inferences $i to u32.
+        return Replacement([div], len(m.body))
+
+
+class Div2S32Pattern2(SimpleAsmPattern):
+    pattern = make_pattern(
+        "srl $t, $i, 0x1f",
+        "addu $i, $i, $t",
+        "sra $o, $i, 1",
+    )
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        if m.regs["t"] == m.regs["i"]:
+            return None
         div = AsmInstruction("div.fictive", [m.regs["o"], m.regs["i"], AsmLiteral(2)])
         return Replacement([div], len(m.body))
 
@@ -527,10 +545,47 @@ class MipsArch(Arch):
     ]
     all_regs = saved_regs + temp_regs
 
-    aliased_regs = {
+    aliased_gp_regs = {
         "s8": Register("fp"),
         "r0": Register("zero"),
     }
+
+    o32abi_float_regs = {
+        "fv0": Register("f0"),
+        "fv0f": Register("f1"),
+        "fv1": Register("f2"),
+        "fv1f": Register("f3"),
+        "ft0": Register("f4"),
+        "ft0f": Register("f5"),
+        "ft1": Register("f6"),
+        "ft1f": Register("f7"),
+        "ft2": Register("f8"),
+        "ft2f": Register("f9"),
+        "ft3": Register("f10"),
+        "ft3f": Register("f11"),
+        "fa0": Register("f12"),
+        "fa0f": Register("f13"),
+        "fa1": Register("f14"),
+        "fa1f": Register("f15"),
+        "ft4": Register("f16"),
+        "ft4f": Register("f17"),
+        "ft5": Register("f18"),
+        "ft5f": Register("f19"),
+        "fs0": Register("f20"),
+        "fs0f": Register("f21"),
+        "fs1": Register("f22"),
+        "fs1f": Register("f23"),
+        "fs2": Register("f24"),
+        "fs2f": Register("f25"),
+        "fs3": Register("f26"),
+        "fs3f": Register("f27"),
+        "fs4": Register("f28"),
+        "fs4f": Register("f29"),
+        "fs5": Register("f30"),
+        "fs5f": Register("f31"),
+    }
+
+    aliased_regs = {**o32abi_float_regs, **aliased_gp_regs}
 
     @classmethod
     def missing_return(cls) -> List[Instruction]:
@@ -874,7 +929,8 @@ class MipsArch(Arch):
         DivP2Pattern1(),
         DivP2Pattern2(),
         Div2S16Pattern(),
-        Div2S32Pattern(),
+        Div2S32Pattern1(),
+        Div2S32Pattern2(),
         ModP2Pattern1(),
         ModP2Pattern2(),
         UtfPattern(),

@@ -3,16 +3,36 @@ import { ChangeEvent, useEffect, useState } from "react"
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCodeFontSize, useDiffFontSize } from "../../lib/settings"
 import Modal from "../Modal"
 import NumberInput from "../NumberInput"
 import Tabs, { Tab } from "../Tabs"
 
 import styles from "./ScratchPreferencesModal.module.scss"
 
+function CodePrefs() {
+    const [fontSize, setFontSize] = useCodeFontSize()
+
+    return <div>
+        <section>
+            <h2 className={styles.sectionTitle}>Code editor preferences</h2>
+            <div className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="8" max="24" step="1" value={fontSize ?? "12"}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
+                />
+                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                font size
+            </div>
+        </section>
+    </div>
+}
+
 function DiffPrefs() {
     const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
+    const [fontSize, setFontSize] = useDiffFontSize()
 
     const minDelay = 50
     const onChange = (duration: number) => setAutoRecompileDelay(Math.max(minDelay, duration))
@@ -20,6 +40,15 @@ function DiffPrefs() {
     return <div>
         <section>
             <h2 className={styles.sectionTitle}>Diff preferences</h2>
+            <div className={styles.intPreference}>
+                <input
+                    type="range"
+                    min="8" max="24" step="1" value={fontSize ?? "12"}
+                    onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
+                />
+                <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                font size
+            </div>
             <label className={styles.booleanPreference}>
                 <input
                     type="checkbox"
@@ -43,7 +72,7 @@ function DiffPrefs() {
 }
 
 export default function ScratchPreferencesModal({ open, onClose }: { open: boolean, onClose?: () => void }) {
-    const [tab, setTab] = useState("diff")
+    const [tab, setTab] = useState("code")
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
 
     useEffect(() => {
@@ -72,10 +101,12 @@ export default function ScratchPreferencesModal({ open, onClose }: { open: boole
                     border={false}
                     className={styles.tabs}
                 >
+                    <Tab tabKey="code" label="Code editor" />
                     <Tab tabKey="diff" label="Diff" />
                 </Tabs>
             </div>
             <div className={styles.right}>
+                {tab === "code" && <CodePrefs />}
                 {tab === "diff" && <DiffPrefs />}
             </div>
         </div>

@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from typing import Dict
 
 from django.utils.timezone import now
@@ -20,20 +19,20 @@ class CompilersDetail(APIView):
             c.id: {
                 "platform": c.platform.id,
                 "flags": [f.to_json() for f in c.flags],
-                "presets": [p.to_json() for p in c.presets],
             }
             for c in compilers.available_compilers()
         }
 
     @staticmethod
-    def platforms_json() -> OrderedDict[str, Dict[str, str]]:
-        ret = OrderedDict()
+    def platforms_json() -> Dict[str, Dict[str, object]]:
+        ret: Dict[str, Dict[str, object]] = {}
 
         for platform in compilers.available_platforms():
             ret[platform.id] = {
                 "name": platform.name,
                 "description": platform.description,
                 "arch": platform.arch,
+                "presets": [p.to_json() for p in compilers.available_presets(platform)],
             }
 
         return ret
