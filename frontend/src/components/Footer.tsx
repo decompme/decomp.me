@@ -6,7 +6,7 @@ import Discord from "./discord.svg"
 import ErrorBoundary from "./ErrorBoundary"
 import styles from "./Footer.module.scss"
 
-const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH ?? process.env.STORYBOOK_COMMIT_HASH
+const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH
 
 export default function Footer() {
     return <ErrorBoundary className={styles.footer}>
