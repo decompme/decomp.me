@@ -967,9 +967,11 @@ class ScratchPRTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Give user membership of project
+        profile = Profile.objects.first()
+        assert profile is not None
         ProjectMember.objects.create(
             project=project,
-            profile=Profile.objects.first(),
+            profile=profile,
         )
 
     def test_pr_one_scratch(self, mock_get_repo):

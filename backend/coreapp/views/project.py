@@ -20,9 +20,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
-from coreapp.models.github import GitHubRepo, GitHubRepoBusyException
-from coreapp.models.project import Project, ProjectFunction
-
+from ..models.github import GitHubUser, GitHubRepo, GitHubRepoBusyException
+from ..models.project import Project, ProjectFunction
 from ..models.scratch import Scratch
 from ..serializers import (
     ProjectFunctionSerializer,
@@ -130,7 +129,10 @@ class ProjectViewSet(
         user: Optional[User] = request.profile.user
         if not user:
             raise GithubLoginException()
-        token = user.github.access_token
+        gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        if not gh_user:
+            raise GithubLoginException()
+        token = gh_user.access_token
         github_repo: Repository = project.repo.details(token)
         # Get or create fork
         # TODO: likely need to pull this to make it up to date
