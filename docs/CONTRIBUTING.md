@@ -111,7 +111,8 @@ yarn lint --fix
 - Check backend
 ```shell
 cd backend
-mypy
+poetry run mypy
+poetry run black .
 ```
 
 ### Storybook
