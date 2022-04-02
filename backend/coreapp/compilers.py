@@ -608,7 +608,12 @@ _all_presets = [
     Preset("Dinosaur Planet", "-O2 -g3 -mips2", IDO53),
     Preset("Dinosaur Planet (DLLs)", "-O2 -g3 -mips2 -KPIC", IDO53),
     Preset("Ocarina of Time", "-O2 -mips2", IDO71),
-    Preset("Majora's Mask", "-O2 -g3 -mips2", IDO71, objdump_flags="-Mreg-names=32"),
+    Preset(
+        "Majora's Mask",
+        "-O2 -g3 -mips2 -woff 624",
+        IDO71,
+        objdump_flags="-Mreg-names=32",
+    ),
     Preset("Mario Party 3", "-O1 -mips2", GCC272KMC),
     Preset("Paper Mario", "-O2 -fforce-addr", GCC281),
     # GC_WII
