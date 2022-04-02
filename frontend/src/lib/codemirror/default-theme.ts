@@ -36,13 +36,14 @@ export const materialPalenightTheme = EditorView.theme(
         ".cm-searchMatch": {
             backgroundColor: "#72a1ff59",
             outline: "1px solid #457dff",
+            borderRadius: "2px",
         },
         ".cm-searchMatch.cm-searchMatch-selected": {
             backgroundColor: "#6199ff2f",
         },
 
         ".cm-activeLine": { backgroundColor: highlightBackground },
-        ".cm-selectionMatch": { backgroundColor: "#aafe661a" },
+        ".cm-selectionMatch": { backgroundColor: "#ffffff1a", borderRadius: "2px" },
 
         "&.cm-focused .cm-matchingBracket, &.cm-focused .cm-nonmatchingBracket": {
             backgroundColor: "#bad0f847",
@@ -128,3 +129,5 @@ export const materialPalenight: Extension = [
     materialPalenightTheme,
     highlightStyle,
 ]
+
+export default materialPalenight

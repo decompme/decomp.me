@@ -5,7 +5,6 @@ import { GetStaticProps } from "next"
 import Link from "next/link"
 import { useRouter } from "next/router"
 
-import { basicSetup } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
 import { usePlausible } from "next-plausible"
 import useTranslation from "next-translate/useTranslation"
@@ -20,6 +19,7 @@ import PageTitle from "../components/PageTitle"
 import PlatformSelect from "../components/PlatformSelect"
 import Select from "../components/Select2"
 import * as api from "../lib/api"
+import basicSetup from "../lib/codemirror/basic-setup"
 
 import styles from "./new.module.scss"
 
