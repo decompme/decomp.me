@@ -18,7 +18,7 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from rest_framework_extensions import ExtendedSimpleRouter
+from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from coreapp.models.github import GitHubRepo, GitHubRepoBusyException
 from coreapp.models.project import Project, ProjectFunction
