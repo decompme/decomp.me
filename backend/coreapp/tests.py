@@ -897,6 +897,7 @@ class MockRepository:
 )
 @patch("coreapp.views.project.Github.get_repo")
 class ScratchPRTests(BaseTestCase):
+    @responses.activate
     def setUp(self):
         super().setUp()
         project = ProjectTests.create_test_project()
@@ -934,6 +935,42 @@ class ScratchPRTests(BaseTestCase):
         scratch.project_function = project_fn
         scratch.save()
         self.scratch = scratch
+
+        # Login and create user
+        responses.add(
+            responses.POST,
+            "https://github.com/login/oauth/access_token",
+            json={
+                "access_token": "__mock__",
+                "scope": "public_repo",
+            },
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://api.github.com:443/user",
+            json=UserTests().GITHUB_USER,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            f"https://api.github.com:443/user/{UserTests().GITHUB_USER['id']}",
+            json=UserTests().GITHUB_USER,
+            status=200,
+        )
+        response = self.client.post(
+            reverse("current-user"),
+            {
+                "code": "__mock__",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Give user membership of project
+        ProjectMember.objects.create(
+            project=project,
+            profile=Profile.objects.first(),
+        )
 
     def test_pr_one_scratch(self, mock_get_repo):
         """

@@ -50,8 +50,13 @@ class GithubLoginException(APIException):
 
 
 class ScratchNotProjectFunctionException(APIException):
-    status_code = status.HTTP_501_NOT_IMPLEMENTED
-    default_detail = "This action is only supported for project functions."
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Scratches given must be part of the project."
+
+
+class PrMustHaveScratchesException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "You must provide at least one scratch to create a PR."
 
 
 class ProjectPagination(CursorPagination):
@@ -108,13 +113,12 @@ class ProjectViewSet(
             status=status.HTTP_202_ACCEPTED,
         )
 
-
-class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
-    queryset = Project.objects.all()
-
     @action(detail=True, methods=["POST"])
     def pr(self, request, pk):
         scratch_slugs: list[str] = request.data.getlist("scratch_slugs")
+
+        if len(scratch_slugs) == 0:
+            raise PrMustHaveScratchesException()
 
         # TODO: make unique by GETting the branch
         suffix = "".join(
@@ -141,7 +145,7 @@ class PullRequestViewSet(mixins.RetrieveModelMixin, GenericViewSet):
             scratch: Scratch = Scratch.objects.get(slug=scratch_slug)
 
             fn: Optional[ProjectFunction] = scratch.project_function
-            if fn is None:
+            if fn is None or fn.project != project:
                 raise ScratchNotProjectFunctionException()
 
             # Change file contents
@@ -276,10 +280,16 @@ class ProjectFunctionViewSet(
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
-router.register(r"projects", ProjectViewSet).register(
-    r"functions",
-    ProjectFunctionViewSet,
-    basename="projectfunction",
-    parents_query_lookups=["slug"],
+(
+    router.register(r"projects", ProjectViewSet).register(
+        r"functions",
+        ProjectFunctionViewSet,
+        basename="projectfunction",
+        parents_query_lookups=["slug"],
+    )
+    # .register(
+    #     r"pr",
+    #     PullRequestViewSet,
+    #     basename="pr"
+    # )
 )
-router.register("pr", PullRequestViewSet)
