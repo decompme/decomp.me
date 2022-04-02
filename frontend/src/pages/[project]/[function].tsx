@@ -12,6 +12,7 @@ import ErrorBoundary from "../../components/ErrorBoundary"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
+import PrScratchBasket, { useBasket } from "../../components/PrScratchBasket"
 import { ScratchItem } from "../../components/ScratchList"
 import * as api from "../../lib/api"
 
@@ -78,9 +79,12 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
     const userIsYou = api.useUserIsYou()
     const userAttempt = attempts.find(scratch => userIsYou(scratch.owner))
 
+    const basket = useBasket(project)
+
     return <>
         <PageTitle title={func.display_name} />
         <Nav />
+        <PrScratchBasket project={project} />
         <header className={styles.header}>
             <div className={styles.headerInner}>
                 <h1>
@@ -118,7 +122,11 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                     {attempts.length === 0 ? <div className={styles.noAttempts}>
                         No attempts yet {"</3"}
                     </div> : <ul>
-                        {attempts.map(scratch => <ScratchItem key={scratch.url} scratch={scratch} />)}
+                        {attempts.map(scratch => {
+                            return <ScratchItem key={scratch.url} scratch={scratch}>
+                                <Button onClick={() => basket.addScratch(scratch)}>Add to pull request</Button>
+                            </ScratchItem>
+                        })}
                     </ul>}
                 </section>
             </ErrorBoundary>

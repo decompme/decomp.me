@@ -16,6 +16,7 @@ import LoadingSpinner from "../components/loading.svg"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
 import ProjectFunctionList from "../components/ProjectFunctionList"
+import PrScratchBasket from "../components/PrScratchBasket"
 import UserAvatarList from "../components/UserAvatarList"
 import * as api from "../lib/api"
 
@@ -62,12 +63,13 @@ export default function ProjectPage(props: { project: api.Project }) {
         setIsMounted(true)
     }, [])
 
-    const user = api.useThisUser()
-    const userIsMember = isMounted && user && project.members.find(member => member.url == user.url)
+    const userIsYou = api.useUserIsYou()
+    const userIsMember = isMounted && !!project.members.find(userIsYou)
 
     return <>
         <PageTitle title={project.slug} />
         <Nav />
+        <PrScratchBasket project={project} />
         <header className={styles.header}>
             <div className={styles.headerInner}>
                 <h1>
