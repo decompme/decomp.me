@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+
 import { GetStaticPaths, GetStaticProps } from "next"
 
 import Image from "next/image"
@@ -54,8 +56,14 @@ export default function ProjectPage(props: { project: api.Project }) {
         // Refresh every 2s if the repo is busy being pulled
         refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
     })
+
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
     const user = api.useThisUser()
-    const userIsMember = user && project.members.includes(user.url)
+    const userIsMember = isMounted && user && project.members.find(member => member.url == user.url)
 
     return <>
         <PageTitle title={project.slug} />
@@ -67,15 +75,15 @@ export default function ProjectPage(props: { project: api.Project }) {
                     {project.slug}
                 </h1>
                 <p>{project.description}</p>
-                <p className={styles.links}>
+                <div className={styles.links}>
                     <Link href={project.repo.html_url}>
                         <a>
                             <MarkGithubIcon size={18} />
                             {project.repo.owner}/{project.repo.repo}
                         </a>
                     </Link>
-                    <UserAvatarList urls={project.members} />
-                </p>
+                    <UserAvatarList users={project.members} />
+                </div>
             </div>
         </header>
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>

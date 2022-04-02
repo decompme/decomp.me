@@ -15,9 +15,10 @@ export function GitHubUserLink({ user }: { user: { login: string } }) {
 
 export type Props = {
     user: api.User | api.AnonymousUser
+    showUsername?: boolean // default = true
 }
 
-export default function UserLink({ user }: Props) {
+export default function UserLink({ user, showUsername }: Props) {
     const userIsYou = api.useUserIsYou()
 
     if (api.isAnonUser(user)) {
@@ -29,7 +30,7 @@ export default function UserLink({ user }: Props) {
         return <Link href={`/u/${user.username}`}>
             <a className={styles.user}>
                 <UserAvatar user={user} />
-                <span>{user.username}</span>
+                {showUsername != false && <span>{user.username}</span>}
             </a>
         </Link>
     }

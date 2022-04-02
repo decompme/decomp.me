@@ -209,7 +209,7 @@ export interface Project {
     }
     creation_time: string
     icon_url: string
-    members: string[]
+    members: User[]
     description: string
 }
 
