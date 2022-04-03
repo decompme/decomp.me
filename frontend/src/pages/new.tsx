@@ -76,7 +76,7 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compilerId, setCompiler] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
-    const [objdumpFlags, setObjdumpFlags] = useState<string>("")
+    const [diffFlags, setDiffFlags] = useState<string>("")
     const [presetName, setPresetName] = useState<string>("")
 
     const router = useRouter()
@@ -91,7 +91,7 @@ export default function NewScratch({ serverCompilers }: {
     const setPreset = (preset: api.CompilerPreset) => {
         setCompiler(preset.compiler)
         setCompilerFlags(preset.flags)
-        setObjdumpFlags(preset.objdump_flags)
+        setDiffFlags(preset.diff_flags)
         setPresetName(preset.name)
     }
 
@@ -104,7 +104,7 @@ export default function NewScratch({ serverCompilers }: {
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-            setObjdumpFlags(localStorage["new_scratch_objdumpFlags"] ?? "")
+            setDiffFlags(localStorage["new_scratch_diffFlags"] ?? "")
             setPresetName(localStorage["new_scratch_presetName"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
@@ -119,9 +119,9 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
-        localStorage["new_scratch_objdumpFlags"] = objdumpFlags
+        localStorage["new_scratch_diffFlags"] = diffFlags
         localStorage["new_scratch_presetName"] = presetName
-    }, [label, asm, context, platform, compilerId, compilerFlags, objdumpFlags, presetName])
+    }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, presetName])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compiler = platformCompilers[compilerId]
@@ -138,7 +138,7 @@ export default function NewScratch({ serverCompilers }: {
             // Fall back to the first supported compiler and no flags
             setCompiler(Object.keys(platformCompilers)[0])
             setCompilerFlags("")
-            setObjdumpFlags("")
+            setDiffFlags("")
 
             // If there is a preset for this platform, use it
             for (const [k, v] of Object.entries(serverCompilers.compilers)) {
@@ -159,7 +159,7 @@ export default function NewScratch({ serverCompilers }: {
                 platform,
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
-                objdump_flags: objdumpFlags,
+                diffFlags: diffFlags,
                 preset: presetName,
                 diff_label: label || defaultLabel || "",
             })
@@ -223,7 +223,7 @@ export default function NewScratch({ serverCompilers }: {
                             onChange={c => {
                                 setCompiler(c)
                                 setCompilerFlags("")
-                                setObjdumpFlags("")
+                                setDiffFlags("")
                             }}
                         />
                     </div>

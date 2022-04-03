@@ -72,7 +72,7 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("kpic", "-KPIC"),
 ]
 
-COMMON_MIPS_OBJDUMP_FLAGS: Flags = [
+COMMON_MIPS_DIFF_FLAGS: Flags = [
     Checkbox("mreg_names=32", "-Mreg-names=32"),
 ]
 
@@ -127,10 +127,6 @@ COMMON_MWCC_FLAGS: Flags = [
     Checkbox(id="mwcc_nodefaults", flag="-nodefaults"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
     Checkbox(id="mwcc_debug_on", flag="-g"),
-]
-
-COMMON_PPC_OBJDUMP_FLAGS: Flags = [
-    # FlagSet(id="ppc_microprocessor", flags=["", "-M gekko", "-M broadway"]),
 ]
 
 COMMON_GCC_PS1_FLAGS: Flags = [

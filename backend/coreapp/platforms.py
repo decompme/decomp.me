@@ -2,6 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import OrderedDict
 
+from numpy import diff
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +18,8 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    supports_objdump_disassemble: bool = False
+    supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
+    objdump_hard_flags: str = ""
 
 
 def from_id(platform_id: str) -> Platform:
@@ -172,6 +175,7 @@ GC_WII = Platform(
     arch="ppc",
     assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
     objdump_cmd="powerpc-eabi-objdump",
+    objdump_hard_flags="-M broadway",
     nm_cmd="powerpc-eabi-nm",
     asm_prelude="""
 .macro glabel label

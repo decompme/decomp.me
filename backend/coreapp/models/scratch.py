@@ -38,7 +38,7 @@ class CompilerConfig(models.Model):
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
-    objdump_flags = models.TextField(max_length=1000, default="", blank=True)
+    diff_flags = models.TextField(max_length=1000, default="", blank=True)
 
 
 class Scratch(models.Model):
@@ -54,7 +54,7 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
-    objdump_flags = models.TextField(
+    diff_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
     preset = models.CharField(max_length=100, blank=True, null=True)

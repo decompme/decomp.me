@@ -101,7 +101,7 @@ sb  $t6, %lo(D_801D702C)($at)
         scratch_dict = {
             "platform": N64.id,
             "compiler": IDO71.id,
-            "objdump_flags": "-Mreg-names=32",
+            "diff_flags": "-Mreg-names=32",
             "context": "",
             "target_asm": """
 glabel test

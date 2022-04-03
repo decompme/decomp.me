@@ -63,7 +63,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 export type CompilerOptsT = {
     compiler: string
     compiler_flags: string
-    objdump_flags: string
+    diff_flags: string
     preset: string
 }
 
@@ -77,13 +77,13 @@ export type Props = {
 export default function CompilerOpts({ platform, value, onChange, isPopup }: Props) {
     const compiler = value.compiler
     let opts = value.compiler_flags
-    let objdump_opts = value.objdump_flags
+    let diff_opts = value.diff_flags
 
     const setCompiler = (compiler: string) => {
         onChange({
             compiler,
             compiler_flags: opts,
-            objdump_flags: objdump_opts,
+            diff_flags: diff_opts,
             preset: "",
         })
     }
@@ -92,16 +92,16 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler,
             compiler_flags: opts,
-            objdump_flags: objdump_opts,
+            diff_flags: diff_opts,
             preset: "",
         })
     }
 
-    const setObjdumpOpts = (objdump_opts: string) => {
+    const setDiffOpts = (diff_opts: string) => {
         onChange({
             compiler,
             compiler_flags: opts,
-            objdump_flags: objdump_opts,
+            diff_flags: diff_opts,
             preset: "",
         })
     }
@@ -110,7 +110,7 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler: preset.compiler,
             compiler_flags: preset.flags,
-            objdump_flags: preset.objdump_flags,
+            diff_flags: preset.diff_flags,
             preset: preset.name,
         })
     }
@@ -144,21 +144,21 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         </OptsContext.Provider>
         <OptsContext.Provider value={{
             checkFlag(flag: string) {
-                return (" " + objdump_opts + " ").includes(" " + flag + " ")
+                return (" " + diff_opts + " ").includes(" " + flag + " ")
             },
 
             setFlag(flag: string, enable: boolean) {
                 if (enable) {
-                    objdump_opts = objdump_opts + " " + flag
+                    diff_opts = diff_opts + " " + flag
                 } else {
-                    objdump_opts = (" " + objdump_opts + " ").replace(" " + flag + " ", " ")
+                    diff_opts = (" " + diff_opts + " ").replace(" " + flag + " ", " ")
                 }
-                objdump_opts = objdump_opts.trim()
-                setObjdumpOpts(objdump_opts)
+                diff_opts = diff_opts.trim()
+                setDiffOpts(diff_opts)
             },
         }}>
             <div className={styles.container} data-is-popup={isPopup}>
-                <ObjdumpOptsEditor platform={platform} compiler={compiler} objdump_opts={objdump_opts} setObjdumpOpts={setObjdumpOpts} />
+                <DiffOptsEditor platform={platform} compiler={compiler} diff_opts={diff_opts} setDiffOpts={setDiffOpts} />
             </div>
         </OptsContext.Provider>
     </div>
@@ -212,11 +212,11 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
     </div>
 }
 
-export function ObjdumpOptsEditor({ platform, compiler: compilerId, objdump_opts, setObjdumpOpts }: {
+export function DiffOptsEditor({ platform, compiler: compilerId, diff_opts, setDiffOpts }: {
     platform?: string
     compiler: string
-    objdump_opts: string
-    setObjdumpOpts: (objdump_opts: string) => void
+    diff_opts: string
+    setDiffOpts: (diff_opts: string) => void
 }) {
     const compilers = useCompilersForPlatform(platform)
     const compiler = compilers[compilerId]
@@ -224,18 +224,18 @@ export function ObjdumpOptsEditor({ platform, compiler: compilerId, objdump_opts
     return <div>
         <div className={styles.row}>
             <div className={styles.preset}>
-                objdump flags
+                Diff flags
             </div>
             <input
                 type="text"
                 className={styles.textbox}
-                value={objdump_opts}
+                value={diff_opts}
                 placeholder="no arguments"
-                onChange={e => setObjdumpOpts((e.target as HTMLInputElement).value)}
+                onChange={e => setDiffOpts((e.target as HTMLInputElement).value)}
             />
         </div>
-        <div className={styles.objdumpFlags}>
-            {(compilerId && compiler) ? <CompilerFlags schema={compiler.objdump_flags} /> : <div />}
+        <div className={styles.diffFlags}>
+            {(compilerId && compiler) ? <CompilerFlags schema={compiler.diff_flags} /> : <div />}
         </div>
     </div>
 }

@@ -74,7 +74,7 @@ def diff_compilation(
         scratch.diff_label,
         compilation.elf_object,
         allow_target_only=allow_target_only,
-        objdump_flags=scratch.objdump_flags,
+        diff_flags=scratch.diff_flags,
     )
 
 
@@ -160,7 +160,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     recompile_params = [
         "compiler",
         "compiler_flags",
-        "objdump_flags",
+        "diff_flags",
         "source_code",
         "context",
     ]
@@ -220,8 +220,8 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
-    objdump_flags = data.get("objdump_flags", "")
-    objdump_flags = AsmDifferWrapper.filter_objdump_flags(objdump_flags)
+    diff_flags = data.get("diff_flags", "")
+    diff_flags = AsmDifferWrapper.filter_diff_flags(diff_flags)
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):
@@ -256,7 +256,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
             "name": name,
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
-            "objdump_flags": objdump_flags,
+            "diff_flags": diff_flags,
             "preset": preset,
             "context": context,
             "diff_label": diff_label,
@@ -348,8 +348,8 @@ class ScratchViewSet(
                 scratch.compiler = request.data["compiler"]
             if "compiler_flags" in request.data:
                 scratch.compiler_flags = request.data["compiler_flags"]
-            if "objdump_flags" in request.data:
-                scratch.objdump_flags = request.data["objdump_flags"]
+            if "diff_flags" in request.data:
+                scratch.diff_flags = request.data["diff_flags"]
             if "source_code" in request.data:
                 scratch.source_code = request.data["source_code"]
             if "context" in request.data:

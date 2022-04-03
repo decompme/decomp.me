@@ -118,7 +118,7 @@ class AsmDifferWrapper:
         platform: Platform,
         config: asm_differ.Config,
         label: Optional[str],
-        objdump_flags: str = "",
+        diff_flags: str = "",
     ) -> str:
         flags = [
             "--disassemble",
@@ -126,7 +126,7 @@ class AsmDifferWrapper:
             "--line-numbers",
             "--reloc",
         ]
-        flags += objdump_flags.split()
+        flags += diff_flags.split()
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
@@ -140,6 +140,7 @@ class AsmDifferWrapper:
                 try:
                     objdump_proc = sandbox.run_subprocess(
                         [platform.objdump_cmd]
+                        + platform.objdump_hard_flags.split()
                         + config.arch.arch_flags
                         + flags
                         + [sandbox.rewrite_path(target_path)],
@@ -162,14 +163,14 @@ class AsmDifferWrapper:
         platform: Platform,
         diff_label: Optional[str],
         config: asm_differ.Config,
-        objdump_flags: str = "",
+        diff_flags: str = "",
     ) -> str:
 
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
         basedump = AsmDifferWrapper.run_objdump(
-            elf_object, platform, config, diff_label, objdump_flags=objdump_flags
+            elf_object, platform, config, diff_label, diff_flags=diff_flags
         )
         if not basedump:
             raise ObjdumpError("Error running objdump")
@@ -194,7 +195,7 @@ class AsmDifferWrapper:
         diff_label: Optional[str],
         compiled_elf: bytes,
         allow_target_only: bool = False,
-        objdump_flags: str = "",
+        diff_flags: str = "",
     ) -> DiffResult:
 
         if platform == DUMMY:
@@ -214,11 +215,11 @@ class AsmDifferWrapper:
             platform,
             diff_label,
             config,
-            objdump_flags=objdump_flags,
+            diff_flags=diff_flags,
         )
         try:
             mydump = AsmDifferWrapper.get_dump(
-                compiled_elf, platform, diff_label, config, objdump_flags=objdump_flags
+                compiled_elf, platform, diff_label, config, diff_flags=diff_flags
             )
         except Exception as e:
             if allow_target_only:

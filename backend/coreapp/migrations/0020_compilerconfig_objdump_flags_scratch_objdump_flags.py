@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="compilerconfig",
-            name="objdump_flags",
+            name="diff_flags",
             field=models.TextField(blank=True, default="", max_length=1000),
         ),
         migrations.AddField(
             model_name="scratch",
-            name="objdump_flags",
+            name="diff_flags",
             field=models.TextField(blank=True, default="", max_length=1000),
         ),
     ]

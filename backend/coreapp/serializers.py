@@ -110,7 +110,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=True)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    objdump_flags = serializers.CharField(allow_blank=True, required=False)
+    diff_flags = serializers.CharField(allow_blank=True, required=False)
     preset = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
