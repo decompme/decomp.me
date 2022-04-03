@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 
-import { basicSetup } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
 
 import * as api from "../../lib/api"
+import basicSetup from "../../lib/codemirror/basic-setup"
 import Button from "../Button"
 import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"

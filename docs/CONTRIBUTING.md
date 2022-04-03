@@ -111,9 +111,6 @@ yarn lint --fix
 - Check backend
 ```shell
 cd backend
-mypy
+poetry run mypy
+poetry run black .
 ```
-
-### Storybook
-
-Use `yarn storybook` to run a Storybook instance on [http://localhost:6006](http://localhost:6006). This is useful for testing UI components in isolation.

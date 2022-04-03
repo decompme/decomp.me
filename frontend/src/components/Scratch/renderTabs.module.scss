@@ -4,25 +4,19 @@
 }
 
 .editor {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
     height: 100%;
 
-    overflow: hidden;
-
     :global(.cm-editor) {
-        height: 100%;
+        flex: 1 1 auto;
+        width: 100%;
     }
 
-    :global(.cm-gutters),
-    :global(.cm-content) {
-        margin: 1em;
-    }
-
-    :global(.cm-gutters) {
-        margin-right: 0;
-    }
-
-    :global(.cm-content) {
-        margin-left: 0;
+    :global(.cm-scroller) {
+        overflow: auto;
     }
 }
 

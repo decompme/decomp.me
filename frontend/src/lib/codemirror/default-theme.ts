@@ -36,13 +36,14 @@ export const materialPalenightTheme = EditorView.theme(
         ".cm-searchMatch": {
             backgroundColor: "#72a1ff59",
             outline: "1px solid #457dff",
+            borderRadius: "2px",
         },
         ".cm-searchMatch.cm-searchMatch-selected": {
             backgroundColor: "#6199ff2f",
         },
 
         ".cm-activeLine": { backgroundColor: highlightBackground },
-        ".cm-selectionMatch": { backgroundColor: "#aafe661a" },
+        ".cm-selectionMatch": { backgroundColor: "#ffffff1a", borderRadius: "2px" },
 
         "&.cm-focused .cm-matchingBracket, &.cm-focused .cm-nonmatchingBracket": {
             backgroundColor: "#bad0f847",
@@ -89,6 +90,7 @@ export const materialPalenightTheme = EditorView.theme(
 )
 
 // https://github.com/codemirror/highlight/blob/main/src/highlight.ts#L549
+// https://github.com/codemirror/lang-cpp/blob/main/src/cpp.ts#L24
 export const highlightStyle = HighlightStyle.define([
     { tag: tags.link, class: "cmt-link" },
     { tag: tags.heading, class: "cmt-heading" },
@@ -103,6 +105,7 @@ export const highlightStyle = HighlightStyle.define([
     { tag: tags.deleted, class: "cmt-deleted" },
     { tag: tags.literal, class: "cmt-literal" },
     { tag: tags.string, class: "cmt-string" },
+    { tag: tags.character, class: "cmt-character" },
     { tag: tags.number, class: "cmt-number" },
     { tag: [tags.regexp, tags.escape, tags.special(tags.string)], class: "cmt-string2" },
     { tag: tags.variableName, class: "cmt-variableName" },
@@ -110,6 +113,8 @@ export const highlightStyle = HighlightStyle.define([
     { tag: tags.definition(tags.variableName), class: "cmt-variableName cmt-definition" },
     { tag: tags.special(tags.variableName), class: "cmt-variableName2" },
     { tag: tags.definition(tags.propertyName), class: "cmt-propertyName cmt-definition" },
+    { tag: tags.function(tags.variableName), class: "cmt-variableName cmt-function" },
+    { tag: tags.name, class: "cmt-name" },
     { tag: tags.typeName, class: "cmt-typeName" },
     { tag: tags.namespace, class: "cmt-namespace" },
     { tag: tags.className, class: "cmt-className" },
@@ -128,3 +133,5 @@ export const materialPalenight: Extension = [
     materialPalenightTheme,
     highlightStyle,
 ]
+
+export default materialPalenight

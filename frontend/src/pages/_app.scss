@@ -9,7 +9,7 @@
     @include theme.theme(#951fd9, #292f33);
 
     .cm-content {
-        color: #8599b3;
+        color: #647a97;
 
         cursor: text;
     }
@@ -21,7 +21,12 @@
         line-height: 1.5;
     }
 
+    .cmt-propertyName,
     .cmt-variableName {
+        color: #8599b3;
+    }
+
+    .cmt-function {
         color: #ff4a98;
     }
 
@@ -37,10 +42,13 @@
         color: #465173;
     }
 
-    .cmt-string,
     .cmt-number,
     .cmt-bool {
         color: #0afafa;
+    }
+
+    .cmt-string {
+        color: #face0a;
     }
 
     .cmt-typeName {
@@ -51,7 +59,8 @@
         color: #7f83ff;
     }
 
-    .cmt-meta {
+    .cmt-meta,
+    .cmt-character {
         color: #3bff6c;
     }
 }
@@ -140,11 +149,33 @@ body {
     overflow-x: hidden;
     user-select: none;
     position: relative;
+
+    scrollbar-color: #fff3 #fff1;
+    scrollbar-width: thin;
 }
 
 html,
 body {
     height: 100%;
+}
+
+::-webkit-scrollbar {
+    background-color: transparent;
+    width: 0.6rem;
+    height: 0.6rem;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+    background-color: #fff1;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #fff3;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
 }
 
 #__next {
@@ -173,7 +204,6 @@ main {
     z-index: 999;
 }
 
-div {
-    scrollbar-color: #fff3 transparent;
-    scrollbar-width: thin;
+.cm-editor {
+    user-select: initial;
 }
