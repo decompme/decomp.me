@@ -418,7 +418,7 @@ class CompilationTests(BaseTestCase):
         scratch_dict = {
             "platform": N64.id,
             "compiler": IDO71.id,
-            "diff_flags": ["-Mreg-names=32"],
+            "diff_flags": "[-Mreg-names=32]",
             "context": "",
             "target_asm": """
 glabel test
