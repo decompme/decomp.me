@@ -155,10 +155,10 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
                 }
             },
         }}>
-            <section className={styles.section}>
+            {diff_opts.length > 0 && <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
                 <DiffOptsEditor platform={platform} compiler={compiler} />
-            </section>
+            </section>}
         </OptsContext.Provider>
     </div>
 }
