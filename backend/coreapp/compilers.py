@@ -1,6 +1,6 @@
 from functools import cache
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
@@ -9,11 +9,8 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_IDO_FLAGS,
-    COMMON_MIPS_DIFF_FLAGS,
     COMMON_MWCC_FLAGS,
-    COMMON_PPC_DIFF_FLAGS,
     COMMON_GCC_PS1_FLAGS,
-    FlagSet,
     Flags,
 )
 
@@ -33,7 +30,6 @@ class Compiler:
     cc: str
     platform: Platform
     flags: ClassVar[Flags]
-    diff_flags: ClassVar[Flags] = []
     base_id: Optional[str] = None
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
@@ -52,15 +48,15 @@ class Compiler:
 @dataclass(frozen=True)
 class Preset:
     name: str
-    flags: str
     compiler: Compiler
-    diff_flags: str = ""
+    flags: str
+    diff_flags: list[str] = field(default_factory=list)
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> Dict[str, object]:
         return {
             "name": self.name,
-            "flags": self.flags,
             "compiler": self.compiler.id,
+            "flags": self.flags,
             "diff_flags": self.diff_flags,
         }
 
@@ -85,11 +81,6 @@ class GCCCompiler(Compiler):
 
 
 @dataclass(frozen=True)
-class GCCMIPSCompiler(GCCCompiler):
-    diff_flags: ClassVar[Flags] = COMMON_MIPS_DIFF_FLAGS
-
-
-@dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
 
@@ -98,14 +89,12 @@ class GCCPS1Compiler(GCCCompiler):
 class IDOCompiler(Compiler):
     is_ido: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_IDO_FLAGS
-    diff_flags: ClassVar[Flags] = COMMON_MIPS_DIFF_FLAGS
 
 
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
-    diff_flags: ClassVar[Flags] = COMMON_PPC_DIFF_FLAGS
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -249,13 +238,13 @@ IDO71 = IDOCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
-GCC272KMC = GCCMIPSCompiler(
+GCC272KMC = GCCCompiler(
     id="gcc2.7.2kmc",
     platform=N64,
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G0 -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
-GCC281 = GCCMIPSCompiler(
+GCC281 = GCCCompiler(
     id="gcc2.8.1",
     platform=N64,
     cc='"${COMPILER_DIR}"/gcc -G0 -c -B "${COMPILER_DIR}"/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
@@ -565,133 +554,133 @@ _all_presets = [
     # GBA
     Preset(
         "Rhythm Tengoku",
-        "-mthumb-interwork -Wparentheses -O2 -fhex-asm",
         AGBCC,
+        "-mthumb-interwork -Wparentheses -O2 -fhex-asm",
     ),
     Preset(
         "The Minish Cap",
-        "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
         AGBCC,
+        "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
     ),
     Preset(
         "Mother 3",
-        "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
         AGBCCPP,
+        "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
     ),
     # Switch
     Preset(
         "Super Mario Odyssey",
-        "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
         CLANG_391,
+        "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
     Preset(
         "Breath of the Wild",
-        "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
         CLANG_401,
+        "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
     # PS1
     Preset(
         "Castlevania: Symphony of the Night",
-        "-O2 -G0 -funsigned-char",
         GCC263_MIPSEL,
+        "-O2 -G0 -funsigned-char",
     ),
     Preset(
         "Evo's Sapce Adventures",
-        "-O2",
         PSYQ46,
+        "-O2",
     ),
     # N64
-    Preset("Super Mario 64", "-O1 -g -mips2", IDO53),
-    Preset("Mario Kart 64", "-O2 -mips2", IDO53),
-    Preset("GoldenEye / Perfect Dark", "-Olimit 2000 -mips2 -O2", IDO53),
-    Preset("Diddy Kong Racing", "-O2 -mips1", IDO53),
-    Preset("Dinosaur Planet", "-O2 -g3 -mips2", IDO53),
-    Preset("Dinosaur Planet (DLLs)", "-O2 -g3 -mips2 -KPIC", IDO53),
-    Preset("Ocarina of Time", "-O2 -mips2", IDO71),
+    Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
+    Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
+    Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
+    Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
+    Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    Preset("Ocarina of Time", IDO71, "-O2 -mips2"),
     Preset(
         "Majora's Mask",
-        "-O2 -g3 -mips2 -woff 624",
         IDO71,
-        objdump_flags="-Mreg-names=32",
+        "-O2 -g3 -mips2 -woff 624",
+        diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Mario Party 3", "-O1 -mips2", GCC272KMC),
-    Preset("Paper Mario", "-O2 -fforce-addr", GCC281),
+    Preset("Mario Party 3", GCC272KMC, "-O1 -mips2"),
+    Preset("Paper Mario", GCC281, "-O2 -fforce-addr"),
     # GC_WII
     Preset(
         "Super Monkey Ball",
-        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -inline auto",
         MWCC_233_159,
+        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -inline auto",
     ),
     Preset(
         "Super Mario Sunshine",
-        "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
         MWCC_233_163,
+        "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
     ),
     Preset(
         "Pikmin",
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
         MWCC_233_163E,
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
     ),
     Preset(
         "Super Smash Bros. Melee",
-        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
         MWCC_233_163E,
+        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
     ),
     Preset(
         "Battle for Bikini Bottom",
-        "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
         MWCC_247_92,
+        "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     ),
     Preset(
         "Pikmin 2",
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
         MWCC_247_107,
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
     ),
     Preset(
         "The Thousand-Year Door",
-        "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
         MWCC_247_108,
+        "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     ),
     Preset(
         "Twilight Princess",
-        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
         MWCC_247_108,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     ),
     Preset(
         "Super Paper Mario (DOL)",
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
         MWCC_41_60831,
+        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
     ),
     Preset(
         "Super Paper Mario (REL)",
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
         MWCC_41_60831,
+        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     ),
     Preset(
         "Wii Sports",
-        "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
         MWCC_41_60831,
+        "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
     ),
     Preset(
         "Super Mario Galaxy",
-        "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
         MWCC_41_60126,
+        "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
     ),
     Preset(
         "Mario Party 4",
-        "-O0,p -str pool -fp hard -Cpp_exceptions off",
         MWCC_242_81,
+        "-O0,p -str pool -fp hard -Cpp_exceptions off",
     ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
-        "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
         MWCC_30_123,
+        "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
     ),
     Preset(
         "Pokémon HeartGold / SoulSilver",
-        "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
         MWCC_30_137,
+        "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     ),
 ]
 

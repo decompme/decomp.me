@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 MAX_FUNC_SIZE_LINES = 5000
 
 
-class AsmDifferWrapper:
+class DiffWrapper:
     @staticmethod
     def filter_objdump_flags(compiler_flags: str) -> str:
         # Remove irrelevant flags that are part of the base objdump configs, but clutter the compiler settings field.
@@ -113,35 +113,43 @@ class AsmDifferWrapper:
         return ["--start-address=0"]
 
     @staticmethod
+    def parse_objdump_flags(diff_flags: list[str]) -> list[str]:
+        ret = []
+
+        if "-Mreg-names=32" in diff_flags:
+            ret.append("-Mreg-names=32")
+
+        return ret
+
+    @staticmethod
     def run_objdump(
         target_data: bytes,
         platform: Platform,
         config: asm_differ.Config,
         label: Optional[str],
-        diff_flags: str = "",
+        flags: list[str],
     ) -> str:
-        flags = [
+        flags += [
             "--disassemble",
             "--disassemble-zeroes",
             "--line-numbers",
             "--reloc",
         ]
-        flags += diff_flags.split()
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            flags += AsmDifferWrapper.get_objdump_target_function_flags(
+            flags += DiffWrapper.get_objdump_target_function_flags(
                 sandbox, target_path, platform, label
             )
+
+            flags += config.arch.arch_flags
 
             if platform.objdump_cmd:
                 try:
                     objdump_proc = sandbox.run_subprocess(
-                        [platform.objdump_cmd]
-                        + platform.objdump_hard_flags.split()
-                        + config.arch.arch_flags
+                        platform.objdump_cmd.split()
                         + flags
                         + [sandbox.rewrite_path(target_path)],
                         shell=True,
@@ -163,14 +171,14 @@ class AsmDifferWrapper:
         platform: Platform,
         diff_label: Optional[str],
         config: asm_differ.Config,
-        diff_flags: str = "",
+        diff_flags: list[str],
     ) -> str:
 
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
-        basedump = AsmDifferWrapper.run_objdump(
-            elf_object, platform, config, diff_label, diff_flags=diff_flags
+        basedump = DiffWrapper.run_objdump(
+            elf_object, platform, config, diff_label, diff_flags
         )
         if not basedump:
             raise ObjdumpError("Error running objdump")
@@ -194,8 +202,8 @@ class AsmDifferWrapper:
         platform: Platform,
         diff_label: Optional[str],
         compiled_elf: bytes,
-        allow_target_only: bool = False,
-        diff_flags: str = "",
+        allow_target_only: bool,
+        diff_flags: list[str],
     ) -> DiffResult:
 
         if platform == DUMMY:
@@ -208,18 +216,20 @@ class AsmDifferWrapper:
             logger.error(f"Unsupported arch: {platform.arch}. Continuing assuming mips")
             arch = asm_differ.get_arch("mips")
 
-        config = AsmDifferWrapper.create_config(arch)
+        objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
-        basedump = AsmDifferWrapper.get_dump(
+        config = DiffWrapper.create_config(arch)  # TODO pass and use diff_flags
+
+        basedump = DiffWrapper.get_dump(
             bytes(target_assembly.elf_object),
             platform,
             diff_label,
             config,
-            diff_flags=diff_flags,
+            objdump_flags,
         )
         try:
-            mydump = AsmDifferWrapper.get_dump(
-                compiled_elf, platform, diff_label, config, diff_flags=diff_flags
+            mydump = DiffWrapper.get_dump(
+                compiled_elf, platform, diff_label, config, objdump_flags
             )
         except Exception as e:
             if allow_target_only:

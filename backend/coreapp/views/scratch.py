@@ -19,7 +19,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
 
-from ..asm_diff_wrapper import AsmDifferWrapper
+from ..diff_wrapper import DiffWrapper
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
 
@@ -68,7 +68,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
 def diff_compilation(
     scratch: Scratch, compilation: CompilationResult, allow_target_only: bool = False
 ) -> DiffResult:
-    return AsmDifferWrapper.diff(
+    return DiffWrapper.diff(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
@@ -221,7 +221,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     diff_flags = data.get("diff_flags", "")
-    diff_flags = AsmDifferWrapper.filter_diff_flags(diff_flags)
+    diff_flags = DiffWrapper.filter_objdump_flags(diff_flags)
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):

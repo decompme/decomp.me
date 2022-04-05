@@ -10,7 +10,7 @@ export interface Props {
     schema: api.Flag[]
 }
 
-export default function CompilerFlags({ schema }: Props) {
+export default function Flags({ schema }: Props) {
     const compilersTranslation = useTranslation("compilers")
 
     return <>

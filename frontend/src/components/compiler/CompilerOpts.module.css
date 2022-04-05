@@ -1,7 +1,7 @@
 .header {
     padding: 1.5em;
     padding-bottom: 0;
-    background: var(--g300);
+    background: transparent;
 
     display: flex;
     flex-direction: row;
@@ -14,19 +14,13 @@
 
 .header > * {
     flex-shrink: 0;
+    border-radius: 0;
 }
 
 .container {
     padding: 1.5em;
-    background: var(--g300);
-}
-
-.header:not([data-is-popup]),
-.container:not([data-is-popup]) {
     border-radius: 0;
     background: transparent;
-
-    /* border-bottom: 1px solid var(--g400); */
 }
 
 .preset {

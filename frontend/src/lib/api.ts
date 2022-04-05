@@ -188,7 +188,7 @@ export interface Scratch extends TerseScratch {
     slug: string // avoid using, use `url` instead
     description: string
     compiler_flags: string
-    diff_flags: string
+    diff_flags: string[]
     preset: string
     source_code: string
     context: string
@@ -285,7 +285,7 @@ export type CompilerPreset = {
     name: string
     flags: string
     compiler: string
-    diff_flags: string
+    diff_flags: string[]
 }
 
 export type Compiler = {
@@ -495,8 +495,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         autoRecompile,
 
         // fields passed to compilations
-        scratch.compiler, scratch.compiler_flags,
-        scratch.diff_flags, scratch.diff_flags,
+        scratch.compiler,
+        scratch.compiler_flags, scratch.diff_flags,
         scratch.source_code, scratch.context,
     ])
 

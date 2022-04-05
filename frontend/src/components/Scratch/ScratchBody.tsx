@@ -2,11 +2,8 @@ import { Dispatch, JSXElementConstructor, ReactElement, RefObject, SetStateActio
 
 import * as resizer from "react-simple-resizer"
 
-import { Scratch } from "../../lib/api"
-import { CompilerOptsT } from "../compiler/CompilerOpts"
 import Tabs, { Tab } from "../Tabs"
 
-import ChooseACompiler from "./ChooseACompiler"
 import styles from "./ScratchBody.module.scss"
 
 const LEFT_PANE_MIN_WIDTH = 100
@@ -21,8 +18,6 @@ export type Props = {
     setRightTab: Dispatch<SetStateAction<string>>
     leftTabs: ReactElement<typeof Tab, string | JSXElementConstructor<unknown>>[]
     rightTabs: ReactElement<typeof Tab, string | JSXElementConstructor<unknown>>[]
-    setCompilerOpts: ({ compiler, compiler_flags }: CompilerOptsT) => void
-    scratch: Scratch
 }
 
 export default function ScratchBody({
@@ -33,8 +28,6 @@ export default function ScratchBody({
     setRightTab,
     leftTabs,
     rightTabs,
-    setCompilerOpts,
-    scratch,
 }: Props) {
     return container.width > TWO_PANE_MIN_CONTAINER_WIDTH
         ? (<resizer.Container className={styles.resizer}>
@@ -56,18 +49,13 @@ export default function ScratchBody({
             />
 
             <resizer.Section className={styles.diffSection} minSize={RIGHT_PANE_MIN_WIDTH}>
-                {scratch.compiler === ""
-                    ? <ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />
-                    : <Tabs activeTab={rightTab} onChange={setRightTab} background="var(--g300)" border={false}>
-                        {rightTabs}
-                    </Tabs>
-                }
+                {<Tabs activeTab={rightTab} onChange={setRightTab} background="var(--g300)" border={false}>
+                    {rightTabs}
+                </Tabs>}
             </resizer.Section>
         </resizer.Container>)
-        : scratch.compiler === ""
-            ? (<ChooseACompiler platform={scratch.platform} onCommit={setCompilerOpts} />)
-            : (<Tabs activeTab={leftTab} onChange={setLeftTab} background="var(--g300)" border={false}>
-                {leftTabs}
-                {rightTabs}
-            </Tabs>)
+        : (<Tabs activeTab={leftTab} onChange={setLeftTab} background="var(--g300)" border={false}>
+            {leftTabs}
+            {rightTabs}
+        </Tabs>)
 }
