@@ -17,10 +17,24 @@
     border-radius: 0;
 }
 
-.container {
+.section {
     padding: 1.5em;
     border-radius: 0;
     background: transparent;
+}
+
+.section:not(:last-child) {
+    border-bottom: 1px solid var(--a100);
+}
+
+.heading {
+    font-size: 1.1em;
+    font-weight: 500;
+
+    padding: 0.5em;
+    padding-top: 0;
+
+    color: var(--g1200);
 }
 
 .preset {
