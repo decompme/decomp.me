@@ -115,6 +115,13 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
     }
 
     return <div>
+        <section className={styles.header}>
+            <PlatformIcon platform={platform} size={32} />
+            <div className={styles.preset}>
+                Preset
+                <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
+            </div>
+        </section>
         <OptsContext.Provider value={{
             checkFlag(flag: string) {
                 return (" " + opts + " ").includes(" " + flag + " ")
@@ -130,16 +137,10 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
                 setOpts(opts)
             },
         }}>
-            <div className={styles.header}>
-                <PlatformIcon platform={platform} size={32} />
-                <div className={styles.preset}>
-                    Preset
-                    <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
-                </div>
-            </div>
-            <div className={styles.container}>
+            <section className={styles.section}>
+                <h3 className={styles.heading}>Compiler options</h3>
                 <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
-            </div>
+            </section>
         </OptsContext.Provider>
         <OptsContext.Provider value={{
             checkFlag(flag: string) {
@@ -147,7 +148,6 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
             },
 
             setFlag(flag: string, enable: boolean) {
-                console.log(diff_opts)
                 if (enable && !diff_opts.includes(flag)) {
                     setDiffOpts([...diff_opts, flag])
                 } else if (!enable && diff_opts.includes(flag)) {
@@ -155,9 +155,10 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
                 }
             },
         }}>
-            <div className={styles.container}>
+            <section className={styles.section}>
+                <h3 className={styles.heading}>Diff options</h3>
                 <DiffOptsEditor platform={platform} compiler={compiler} />
-            </div>
+            </section>
         </OptsContext.Provider>
     </div>
 }
@@ -218,11 +219,6 @@ export function DiffOptsEditor({ platform, compiler: compilerId }: {
     const compiler = compilers[compilerId]
 
     return <div>
-        <div className={styles.row}>
-            <div className={styles.preset}>
-                Diff flags
-            </div>
-        </div>
         <div className={styles.diffFlags}>
             {(compilerId && compiler) ? <Flags schema={compiler.diff_flags} /> : <div />}
         </div>

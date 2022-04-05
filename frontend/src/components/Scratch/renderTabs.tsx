@@ -105,7 +105,7 @@ export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
             </Tab>
         ),
         [LeftScratchTab.COMPILER_OPTS]: (
-            <Tab key="compiler_opts" tabKey="compiler_opts" label="Compiler options" className={styles.compilerOptsTab}>
+            <Tab key="compiler_opts" tabKey="compiler_opts" label="Scratch options" className={styles.compilerOptsTab}>
                 <div className={styles.compilerOptsContainer}>
                     <CompilerOpts
                         platform={scratch.platform}
