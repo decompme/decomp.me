@@ -155,7 +155,8 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
                 }
             },
         }}>
-            {diff_opts.length > 0 && <section className={styles.section}>
+            {useCompilersForPlatform(platform)[compiler].diff_flags.length > 0 &&
+            <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
                 <DiffOptsEditor platform={platform} compiler={compiler} />
             </section>}
