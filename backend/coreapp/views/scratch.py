@@ -221,7 +221,6 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     diff_flags = data.get("diff_flags", "")
-    diff_flags = DiffWrapper.filter_objdump_flags(diff_flags)
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):

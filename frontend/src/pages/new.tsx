@@ -159,7 +159,7 @@ export default function NewScratch({ serverCompilers }: {
                 platform,
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
-                diffFlags: diffFlags,
+                diff_flags: diffFlags,
                 preset: presetName,
                 diff_label: label || defaultLabel || "",
             })
