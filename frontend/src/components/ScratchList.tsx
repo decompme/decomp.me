@@ -56,7 +56,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     </ul>
 }
 
-export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
+export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
 
@@ -77,7 +77,12 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
                 </div>}
             </div>
             <div className={styles.metadata}>
-                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                <span>
+                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                </span>
+                <div className={styles.actions}>
+                    {children}
+                </div>
             </div>
         </div>
     </li>

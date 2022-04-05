@@ -168,6 +168,7 @@ class TerseScratchSerializer(ScratchSerializer):
         fields = [
             "url",
             "html_url",
+            "slug",
             "owner",
             "last_updated",
             "creation_time",
@@ -203,15 +204,9 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         depth = 1  # repo
 
     def get_members(self, project: Project):
-        def get_url(user: User):
-            return reverse(
-                "user-detail", args=[user.username], request=self.context["request"]
-            )
-
         return [
-            get_url(member.profile.user)
+            serialize_profile(self.context["request"], member.profile, True)
             for member in project.members()
-            if member.profile.user is not None
         ]
 
 

@@ -5,17 +5,17 @@ from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
+
+from coreapp import platforms
 from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
+    COMMON_GCC_PS1_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
-    COMMON_GCC_PS1_FLAGS,
-    FlagSet,
     Flags,
+    FlagSet,
 )
-
-from coreapp import platforms
 
 from coreapp.platforms import GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH
 
