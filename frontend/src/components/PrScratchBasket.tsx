@@ -101,7 +101,7 @@ export default function PrScratchBasket({ project }: Props) {
             <GitPullRequestIcon size={18} />
             Pull request
         </h2>
-        <ul>
+        <ul className={styles.list}>
             {basket.scratches.map(scratch => {
                 return <li key={scratch.url} className={styles.scratch}>
                     <UserAvatar user={scratch.owner} className={styles.icon} />
