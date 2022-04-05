@@ -2,13 +2,15 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react"
 
 import Link from "next/link"
 
-import { DashIcon } from "@primer/octicons-react"
+import { ArrowRightIcon, GitPullRequestIcon, XIcon } from "@primer/octicons-react"
 import createPersistedState from "use-persisted-state"
 
 import * as api from "../lib/api"
 
+import AsyncButton from "./AsyncButton"
 import Button from "./Button"
 import styles from "./PrScratchBasket.module.scss"
+import UserAvatar from "./user/UserAvatar"
 
 const basketsState = createPersistedState("pr-scratch-basket")
 
@@ -63,6 +65,12 @@ export function useBasket(project: api.Project) {
                 },
             })
         },
+        clear() {
+            setBaskets({
+                ...baskets,
+                [project.slug]: newBasket(),
+            })
+        },
     }
 }
 
@@ -78,17 +86,46 @@ export default function PrScratchBasket({ project }: Props) {
         return null
     }
 
+    const createPr = async () => {
+        const { url } = await api.post(`${project.url}/pr`, {
+            scratch_slugs: basket.scratches.map(s => s.slug),
+        })
+
+        basket.clear()
+
+        window.location.href = url
+    }
+
     return <div className={styles.container}>
-        <h2>Create pull request</h2>
+        <h2>
+            <GitPullRequestIcon size={18} />
+            Pull request
+        </h2>
         <ul>
             {basket.scratches.map(scratch => {
-                return <li key={scratch.url}>
-                    <Link href={scratch.html_url}>{scratch.name}</Link>
-                    <Button primary onClick={() => basket.removeScratch(scratch)}>
-                        <DashIcon />
+                return <li key={scratch.url} className={styles.scratch}>
+                    <UserAvatar user={scratch.owner} className={styles.icon} />
+                    <Link href={scratch.html_url}>
+                        <a className={styles.scratchLink}>
+                            {scratch.name}
+                        </a>
+                    </Link>
+                    <Button
+                        className={styles.deleteBtn}
+                        onClick={() => basket.removeScratch(scratch)}
+                    >
+                        <XIcon />
                     </Button>
                 </li>
             })}
         </ul>
+        <div>
+            <AsyncButton
+                primary
+                onClick={createPr}
+            >
+                Create pull request <ArrowRightIcon />
+            </AsyncButton>
+        </div>
     </div>
 }

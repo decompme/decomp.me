@@ -168,6 +168,7 @@ class TerseScratchSerializer(ScratchSerializer):
         fields = [
             "url",
             "html_url",
+            "slug",
             "owner",
             "last_updated",
             "creation_time",

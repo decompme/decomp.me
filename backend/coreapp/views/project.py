@@ -109,9 +109,9 @@ class ProjectViewSet(
 
     @action(detail=True, methods=["POST"])
     def pr(self, request, pk):
-        scratch_slugs: list[str] = request.data.getlist("scratch_slugs")
+        scratch_slugs = request.data.get("scratch_slugs", [])
 
-        if len(scratch_slugs) == 0:
+        if not isinstance(scratch_slugs, list) or len(scratch_slugs) == 0:
             raise PrMustHaveScratchesException()
 
         # TODO: make unique by GETting the branch
@@ -136,6 +136,7 @@ class ProjectViewSet(
 
         files_to_funcs: dict[str, list[str]] = {}
         for scratch_slug in scratch_slugs:
+            assert isinstance(scratch_slug, str)
             scratch: Scratch = Scratch.objects.get(slug=scratch_slug)
 
             fn: Optional[ProjectFunction] = scratch.project_function

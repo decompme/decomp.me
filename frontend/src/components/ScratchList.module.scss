@@ -91,7 +91,18 @@
     }
 
     .metadata {
+        display: flex;
+        align-items: flex-end;
+
         color: var(--g700);
+
+        > span {
+            flex-grow: 1;
+        }
+
+        .actions {
+            padding-top: 0.25em;
+        }
     }
 }
 

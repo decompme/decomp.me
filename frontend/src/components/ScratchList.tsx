@@ -77,9 +77,13 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                 </div>}
             </div>
             <div className={styles.metadata}>
-                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                <span>
+                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                </span>
+                <div className={styles.actions}>
+                    {children}
+                </div>
             </div>
-            {children}
         </div>
     </li>
 }

@@ -1,11 +1,76 @@
 .container {
     position: fixed;
-    right: 2em;
-    bottom: 2em;
+    right: 1em;
+    bottom: 1em;
+    z-index: 1;
 
-    background: var(--accent);
+    width: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+    flex-shrink: 0;
+
+    padding: 1em;
+
+    background: var(--g200);
+    border: 1px solid var(--g400);
     border-radius: .4em;
     box-shadow: 0 0 .3em rgba(0, 0, 0, .3);
 
-    padding: 1em;
+    > h2 {
+        color: var(--g1400);
+        font-weight: 600;
+
+        svg {
+            margin-right: 0.4em;
+        }
+    }
+
+    // Don't float on smaller screens
+    @media (max-width: 300px), (max-height: 500px) {
+        position: initial;
+        width: 100%;
+        border-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+}
+
+.scratch {
+    list-style: none;
+
+    padding-top: 1em;
+    padding-bottom: 1em;
+
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--a800);
+
+    overflow: hidden;
+
+    .icon {
+        flex-shrink: 0;
+    }
+
+    .scratchLink {
+        flex-grow: 1;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:hover {
+            color: var(--link);
+        }
+    }
+
+    .deleteBtn {
+        padding: 0.4em;
+        border-radius: 99px;
+    }
 }

@@ -172,6 +172,7 @@ export interface User {
 export interface TerseScratch {
     url: string
     html_url: string
+    slug: string
     owner: AnonymousUser | User | null // null = unclaimed
     name: string
     creation_time: string
@@ -185,7 +186,6 @@ export interface TerseScratch {
 }
 
 export interface Scratch extends TerseScratch {
-    slug: string // avoid using, use `url` instead
     description: string
     compiler_flags: string
     preset: string

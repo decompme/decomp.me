@@ -69,7 +69,6 @@ export default function ProjectPage(props: { project: api.Project }) {
     return <>
         <PageTitle title={project.slug} />
         <Nav />
-        <PrScratchBasket project={project} />
         <header className={styles.header}>
             <div className={styles.headerInner}>
                 <h1>
@@ -88,6 +87,7 @@ export default function ProjectPage(props: { project: api.Project }) {
                 </div>
             </div>
         </header>
+        <PrScratchBasket project={project} />
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>
             <LoadingSpinner width={32} height={32} />
             This project is being updated, please wait

@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
 
-import { ArrowRightIcon } from "@primer/octicons-react"
+import { ArrowRightIcon, GitPullRequestIcon } from "@primer/octicons-react"
 
 import AsyncButton from "../../components/AsyncButton"
 import Button from "../../components/Button"
@@ -80,11 +80,11 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
     const userAttempt = attempts.find(scratch => userIsYou(scratch.owner))
 
     const basket = useBasket(project)
+    const canCreatePr = !!project.members.find(userIsYou)
 
     return <>
         <PageTitle title={func.display_name} />
         <Nav />
-        <PrScratchBasket project={project} />
         <header className={styles.header}>
             <div className={styles.headerInner}>
                 <h1>
@@ -101,6 +101,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                 </h1>
             </div>
         </header>
+        <PrScratchBasket project={project} />
         <main className={styles.container}>
             <ErrorBoundary>
                 <section className={styles.attempts}>
@@ -123,8 +124,13 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                         No attempts yet {"</3"}
                     </div> : <ul>
                         {attempts.map(scratch => {
+                            const isInPr = !!basket.scratches.find(s => s.url == scratch.url)
+
                             return <ScratchItem key={scratch.url} scratch={scratch}>
-                                <Button onClick={() => basket.addScratch(scratch)}>Add to pull request</Button>
+                                {canCreatePr && <Button disabled={isInPr} onClick={() => basket.addScratch(scratch)}>
+                                    <GitPullRequestIcon />
+                                    {isInPr ? "Added" : "Add to PR"}
+                                </Button>}
                             </ScratchItem>
                         })}
                     </ul>}
