@@ -72,6 +72,10 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("kpic", "-KPIC"),
 ]
 
+COMMON_MIPS_DIFF_FLAGS: Flags = [
+    Checkbox("mreg_names=32", "-Mreg-names=32"),
+]
+
 COMMON_MWCC_FLAGS: Flags = [
     FlagSet(
         id="mwcc_opt_level",

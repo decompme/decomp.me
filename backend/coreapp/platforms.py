@@ -1,6 +1,8 @@
 import logging
-from dataclasses import dataclass
-from typing import OrderedDict
+from dataclasses import dataclass, field
+from typing import ClassVar, OrderedDict
+
+from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,8 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    supports_objdump_disassemble: bool = False
+    diff_flags: Flags = field(default_factory=list, hash=False)
+    supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
 
 
 def from_id(platform_id: str) -> Platform:
@@ -56,6 +59,7 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -171,7 +175,7 @@ GC_WII = Platform(
     description="PowerPC",
     arch="ppc",
     assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="powerpc-eabi-objdump",
+    objdump_cmd="powerpc-eabi-objdump -M broadway",
     nm_cmd="powerpc-eabi-nm",
     asm_prelude="""
 .macro glabel label

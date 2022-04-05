@@ -7,10 +7,10 @@ import { Checkbox, FlagSet, FlagOption } from "./CompilerOpts"
 export const NO_TRANSLATION = "NO_TRANSLATION"
 
 export interface Props {
-    schema: api.CompilerFlag[]
+    schema: api.Flag[]
 }
 
-export default function CompilerFlags({ schema }: Props) {
+export default function Flags({ schema }: Props) {
     const compilersTranslation = useTranslation("compilers")
 
     return <>

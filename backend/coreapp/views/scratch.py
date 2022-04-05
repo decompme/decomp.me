@@ -19,7 +19,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
 
-from ..asm_diff_wrapper import AsmDifferWrapper
+from ..diff_wrapper import DiffWrapper
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
 
@@ -68,12 +68,13 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
 def diff_compilation(
     scratch: Scratch, compilation: CompilationResult, allow_target_only: bool = False
 ) -> DiffResult:
-    return AsmDifferWrapper.diff(
+    return DiffWrapper.diff(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
         compilation.elf_object,
         allow_target_only=allow_target_only,
+        diff_flags=scratch.diff_flags,
     )
 
 
@@ -156,7 +157,13 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
 
 
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
-    recompile_params = ["compiler", "compiler_flags", "source_code", "context"]
+    recompile_params = [
+        "compiler",
+        "compiler_flags",
+        "diff_flags",
+        "source_code",
+        "context",
+    ]
 
     for param in recompile_params:
         if param in partial:
@@ -213,6 +220,9 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
+    diff_flags = data.get("diff_flags", "")
+    diff_flags = DiffWrapper.filter_objdump_flags(diff_flags)
+
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):
         raise serializers.ValidationError("Unknown preset:" + preset)
@@ -246,6 +256,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
             "name": name,
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
+            "diff_flags": diff_flags,
             "preset": preset,
             "context": context,
             "diff_label": diff_label,
@@ -337,6 +348,8 @@ class ScratchViewSet(
                 scratch.compiler = request.data["compiler"]
             if "compiler_flags" in request.data:
                 scratch.compiler_flags = request.data["compiler_flags"]
+            if "diff_flags" in request.data:
+                scratch.diff_flags = request.data["diff_flags"]
             if "source_code" in request.data:
                 scratch.source_code = request.data["source_code"]
             if "context" in request.data:

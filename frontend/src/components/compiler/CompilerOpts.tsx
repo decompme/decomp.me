@@ -6,9 +6,9 @@ import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select"
 
-import CompilerFlags, { NO_TRANSLATION } from "./CompilerFlags"
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
+import Flags, { NO_TRANSLATION } from "./Flags"
 import PresetSelect from "./PresetSelect"
 
 interface IOptsContext {
@@ -63,6 +63,7 @@ export function FlagOption({ flag, description }: { flag: string, description?: 
 export type CompilerOptsT = {
     compiler: string
     compiler_flags: string
+    diff_flags: string[]
     preset: string
 }
 
@@ -70,17 +71,18 @@ export type Props = {
     platform?: string
     value: CompilerOptsT
     onChange: (value: CompilerOptsT) => void
-    isPopup?: boolean
 }
 
-export default function CompilerOpts({ platform, value, onChange, isPopup }: Props) {
+export default function CompilerOpts({ platform, value, onChange }: Props) {
     const compiler = value.compiler
     let opts = value.compiler_flags
+    const diff_opts = value.diff_flags || []
 
     const setCompiler = (compiler: string) => {
         onChange({
             compiler,
             compiler_flags: opts,
+            diff_flags: diff_opts,
             preset: "",
         })
     }
@@ -89,6 +91,16 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler,
             compiler_flags: opts,
+            diff_flags: diff_opts,
+            preset: "",
+        })
+    }
+
+    const setDiffOpts = (diff_opts: string[]) => {
+        onChange({
+            compiler,
+            compiler_flags: opts,
+            diff_flags: diff_opts,
             preset: "",
         })
     }
@@ -97,36 +109,58 @@ export default function CompilerOpts({ platform, value, onChange, isPopup }: Pro
         onChange({
             compiler: preset.compiler,
             compiler_flags: preset.flags,
+            diff_flags: preset.diff_flags,
             preset: preset.name,
         })
     }
 
-    return <OptsContext.Provider value={{
-        checkFlag(flag: string) {
-            return (" " + opts + " ").includes(" " + flag + " ")
-        },
-
-        setFlag(flag: string, enable: boolean) {
-            if (enable) {
-                opts = opts + " " + flag
-            } else {
-                opts = (" " + opts + " ").replace(" " + flag + " ", " ")
-            }
-            opts = opts.trim()
-            setOpts(opts)
-        },
-    }}>
-        <div className={styles.header} data-is-popup={isPopup}>
+    return <div>
+        <section className={styles.header}>
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
                 <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
             </div>
-        </div>
-        <div className={styles.container} data-is-popup={isPopup}>
-            <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
-        </div>
-    </OptsContext.Provider>
+        </section>
+        <OptsContext.Provider value={{
+            checkFlag(flag: string) {
+                return (" " + opts + " ").includes(" " + flag + " ")
+            },
+
+            setFlag(flag: string, enable: boolean) {
+                if (enable) {
+                    opts = opts + " " + flag
+                } else {
+                    opts = (" " + opts + " ").replace(" " + flag + " ", " ")
+                }
+                opts = opts.trim()
+                setOpts(opts)
+            },
+        }}>
+            <section className={styles.section}>
+                <h3 className={styles.heading}>Compiler options</h3>
+                <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+            </section>
+        </OptsContext.Provider>
+        <OptsContext.Provider value={{
+            checkFlag(flag: string) {
+                return diff_opts.includes(flag)
+            },
+
+            setFlag(flag: string, enable: boolean) {
+                if (enable && !diff_opts.includes(flag)) {
+                    setDiffOpts([...diff_opts, flag])
+                } else if (!enable && diff_opts.includes(flag)) {
+                    setDiffOpts(diff_opts.filter(o => o != flag))
+                }
+            },
+        }}>
+            {diff_opts.length > 0 && <section className={styles.section}>
+                <h3 className={styles.heading}>Diff options</h3>
+                <DiffOptsEditor platform={platform} compiler={compiler} />
+            </section>}
+        </OptsContext.Provider>
+    </div>
 }
 
 export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, setOpts }: {
@@ -172,7 +206,21 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
         </div>
 
         <div className={styles.flags}>
-            {(compilerId && compiler) ? <CompilerFlags schema={compiler.flags} /> : <div />}
+            {(compilerId && compiler) ? <Flags schema={compiler.flags} /> : <div />}
+        </div>
+    </div>
+}
+
+export function DiffOptsEditor({ platform, compiler: compilerId }: {
+    platform?: string
+    compiler: string
+}) {
+    const compilers = useCompilersForPlatform(platform)
+    const compiler = compilers[compilerId]
+
+    return <div>
+        <div className={styles.diffFlags}>
+            {(compilerId && compiler) ? <Flags schema={compiler.diff_flags} /> : <div />}
         </div>
     </div>
 }

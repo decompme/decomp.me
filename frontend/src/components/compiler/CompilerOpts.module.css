@@ -1,7 +1,7 @@
 .header {
     padding: 1.5em;
     padding-bottom: 0;
-    background: var(--g300);
+    background: transparent;
 
     display: flex;
     flex-direction: row;
@@ -14,19 +14,27 @@
 
 .header > * {
     flex-shrink: 0;
+    border-radius: 0;
 }
 
-.container {
+.section {
     padding: 1.5em;
-    background: var(--g300);
-}
-
-.header:not([data-is-popup]),
-.container:not([data-is-popup]) {
     border-radius: 0;
     background: transparent;
+}
 
-    /* border-bottom: 1px solid var(--g400); */
+.section:not(:last-child) {
+    border-bottom: 1px solid var(--a100);
+}
+
+.heading {
+    font-size: 1.1em;
+    font-weight: 500;
+
+    padding: 0.5em;
+    padding-top: 0;
+
+    color: var(--g1200);
 }
 
 .preset {
@@ -76,6 +84,13 @@
 }
 
 .flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 1em;
+}
+
+.diffFlags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5em;
