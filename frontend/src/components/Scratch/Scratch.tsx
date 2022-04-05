@@ -10,7 +10,6 @@ import styles from "./Scratch.module.scss"
 import ScratchBody from "./ScratchBody"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
-import setCompilerOptsFunction from "./util/setCompilerOpts"
 
 export type Props = {
     scratch: Readonly<api.Scratch>
@@ -32,8 +31,6 @@ export default function Scratch({
     const [leftTab, setLeftTab] = useState("source")
     const [rightTab, setRightTab] = useState("diff")
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
-
-    const setCompilerOpts = setCompilerOptsFunction({ scratch, setScratch })
 
     const leftTabs = useLeftTabs({
         scratch,
@@ -66,8 +63,6 @@ export default function Scratch({
             setRightTab={setRightTab}
             leftTabs={leftTabs}
             rightTabs={rightTabs}
-            scratch={scratch}
-            setCompilerOpts={setCompilerOpts}
         />
     </div>
 }

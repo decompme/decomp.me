@@ -76,7 +76,7 @@ export default function NewScratch({ serverCompilers }: {
     const [platform, setPlatform] = useState("")
     const [compilerId, setCompiler] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
-    const [diffFlags, setDiffFlags] = useState<string>("")
+    const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [presetName, setPresetName] = useState<string>("")
 
     const router = useRouter()
@@ -138,7 +138,7 @@ export default function NewScratch({ serverCompilers }: {
             // Fall back to the first supported compiler and no flags
             setCompiler(Object.keys(platformCompilers)[0])
             setCompilerFlags("")
-            setDiffFlags("")
+            setDiffFlags([])
 
             // If there is a preset for this platform, use it
             for (const [k, v] of Object.entries(serverCompilers.compilers)) {
@@ -223,7 +223,7 @@ export default function NewScratch({ serverCompilers }: {
                             onChange={c => {
                                 setCompiler(c)
                                 setCompilerFlags("")
-                                setDiffFlags("")
+                                setDiffFlags([])
                             }}
                         />
                     </div>
