@@ -79,6 +79,10 @@
                 color: #c6c6c6;
             }
         }
+
+        &:nth-child(2) {
+            filter: var(--diff-current-filter);
+        }
     }
 }
 

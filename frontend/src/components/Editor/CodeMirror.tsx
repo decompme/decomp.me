@@ -4,8 +4,6 @@ import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 import { useDebouncedCallback } from "use-debounce"
 
-import { materialPalenight } from "../../lib/themes/dark"
-
 export interface Props {
     value: string
     onChange?: (value: string) => void
@@ -74,7 +72,6 @@ export default function CodeMirror({
                         return null
                     }),
                     extensionsRef.current,
-                    materialPalenight,
                 ],
             }),
             parent: el.current,

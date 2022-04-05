@@ -3,7 +3,7 @@ import { Suspense, useState, useEffect } from "react"
 import { GetServerSideProps } from "next"
 
 import useSWR from "swr"
-import { useDebouncedCallback } from "use-debounce"
+//import { useDebouncedCallback } from "use-debounce"
 
 import LoadingSpinner from "../../components/loading.svg"
 import PageTitle from "../../components/PageTitle"
@@ -61,8 +61,8 @@ export const getServerSideProps: GetServerSideProps = async context => {
 }
 
 export default function ScratchPage({ initialScratch, initialCompilation }: { initialScratch: api.Scratch, initialCompilation?: api.Compilation }) {
-    const [scratch, setScratchImmediate] = useState(initialScratch)
-    const setScratch = useDebouncedCallback(setScratchImmediate, 100, { leading: true, trailing: true }) // reduce layout thrashing
+    const [scratch, setScratch] = useState(initialScratch)
+    //const setScratch = useDebouncedCallback(setScratchImmediate, 100, { leading: true, trailing: true }) // reduce layout thrashing
 
     useWarnBeforeScratchUnload(scratch)
 

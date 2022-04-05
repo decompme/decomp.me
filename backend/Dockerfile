@@ -25,11 +25,8 @@ RUN apt-get -y update && apt-get install -y \
     pkg-config \
     protobuf-compiler
 
-# TODO: change this when they tag a release (see https://github.com/google/nsjail/issues/190)
-RUN git clone --recursive --shallow-submodules "https://github.com/google/nsjail" /nsjail \
+RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjail \
     && cd /nsjail \
-    && git checkout aa0becd547d835ac9b9d63a9536c23530c8d992e \
-    && git submodule update \
     && make
 
 

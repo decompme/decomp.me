@@ -96,6 +96,10 @@ class CompilerWrapper:
                 "wineserver: could not save registry branch to system.reg : Read-only file system\n",
                 "",
             )
+            .replace(
+                "wineserver: could not save registry branch to user.reg : Read-only file system\n",
+                "",
+            )
             .strip()
         )
 

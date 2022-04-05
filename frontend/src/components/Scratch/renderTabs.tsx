@@ -1,13 +1,10 @@
 import { useRef } from "react"
 
-import { basicSetup, EditorView } from "@codemirror/basic-setup"
-import { indentMore, indentLess } from "@codemirror/commands"
+import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
-import { indentUnit } from "@codemirror/language"
-import { StateCommand } from "@codemirror/state"
-import { keymap } from "@codemirror/view"
 
 import { Compilation, Scratch, useUserIsYou } from "../../lib/api"
+import basicSetup from "../../lib/codemirror/basic-setup"
 import { useCodeFontSize } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -18,21 +15,9 @@ import { Tab } from "../Tabs"
 import AboutScratch from "./AboutScratch"
 import styles from "./renderTabs.module.scss"
 
-const indent: StateCommand = ({ state, dispatch }) => {
-    if (state.selection.ranges.some(r => !r.empty)) return indentMore({ state, dispatch })
-    dispatch(state.update(state.replaceSelection("    "), { scrollIntoView: true, userEvent: "input" }))
-    return true
-}
-
 const CODEMIRROR_EXTENSIONS = [
     basicSetup,
     cpp(),
-    keymap.of([{
-        key: "Tab",
-        run: indent,
-        shift: indentLess,
-    }]),
-    indentUnit.of("    "),
 ]
 
 type ScratchTab = LeftScratchTab | RightScratchTab

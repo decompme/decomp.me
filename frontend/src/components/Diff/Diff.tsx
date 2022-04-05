@@ -14,8 +14,8 @@ import Loading from "../loading.svg"
 import styles from "./Diff.module.scss"
 import DragBar from "./DragBar"
 
-const PADDING_TOP = 0
-const PADDING_BOTTOM = 0
+const PADDING_TOP = 8
+const PADDING_BOTTOM = 8
 
 const SelectedSourceLineContext = createContext<number | null>(null)
 
