@@ -38,7 +38,7 @@ class CompilerConfig(models.Model):
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
-    diff_flags = models.TextField(max_length=1000, default="", blank=True)
+    diff_flags = models.JSONField(default=str, blank=True)
 
 
 class Scratch(models.Model):
@@ -55,7 +55,7 @@ class Scratch(models.Model):
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
     diff_flags = models.JSONField(
-        default="", blank=True
+        default=str, blank=True
     )  # TODO: reference a CompilerConfig
     preset = models.CharField(max_length=100, blank=True, null=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)

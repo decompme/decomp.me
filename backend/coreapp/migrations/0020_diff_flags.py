@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="compilerconfig",
             name="diff_flags",
-            field=models.TextField(blank=True, default="", max_length=1000),
+            field=models.JSONField(blank=True, default=str),
         ),
         migrations.AddField(
             model_name="scratch",
             name="diff_flags",
-            field=models.JSONField(blank=True, default=""),
+            field=models.JSONField(blank=True, default=str),
         ),
     ]

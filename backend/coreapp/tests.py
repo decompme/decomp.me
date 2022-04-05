@@ -101,7 +101,6 @@ sb  $t6, %lo(D_801D702C)($at)
         scratch_dict = {
             "platform": N64.id,
             "compiler": IDO71.id,
-            "diff_flags": "-Mreg-names=32",
             "context": "",
             "target_asm": """
 glabel test
@@ -410,6 +409,52 @@ class CompilationTests(BaseTestCase):
             result_kpic.elf_object,
             "The compilation result should be different",
         )
+
+    @requiresCompiler(IDO71)
+    def test_fpr_reg_names_output(self):
+        """
+        Ensure that we can view fpr reg names by passing the appropriate diff flag
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "diff_flags": ["-Mreg-names=32"],
+            "context": "",
+            "target_asm": """
+glabel test
+lui   $at, 0x3ff0
+mtc1  $at, $fv1f
+mtc1  $zero, $fv1
+beqz  $a0, .L00400194
+move  $v0, $a0
+andi  $a1, $a0, 3
+negu  $a1, $a1
+beqz  $a1, .L004000EC
+addu  $v1, $a1, $a0
+mtc1  $v0, $ft0
+nop
+""",
+        }
+        scratch = self.create_scratch(scratch_dict)
+
+        # Test that we can compile a scratch
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()["errors"]), 0)
+        # Confirm the output contains the expected fpr reg names
+        self.assertTrue("fv1f" in str(response.json()))
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"diff_flags": "[]"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()["errors"]), 0)
+        # Confirm the output does not contain the expected fpr reg names
+        self.assertFalse("fv1f" in str(response.json()))
 
     @requiresCompiler(MWCC_247_92)
     def test_mwcc_wine(self):
