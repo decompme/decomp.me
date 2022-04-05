@@ -296,7 +296,6 @@ class ScratchForkTests(BaseTestCase):
         response = self.client.post(
             reverse("scratch-fork", kwargs={"pk": slug}), fork_dict
         )
-        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         new_slug = response.json()["slug"]
@@ -418,7 +417,7 @@ class CompilationTests(BaseTestCase):
         scratch_dict = {
             "platform": N64.id,
             "compiler": IDO71.id,
-            "diff_flags": "[-Mreg-names=32]",
+            "diff_flags": '["-Mreg-names=32"]',
             "context": "",
             "target_asm": """
 glabel test
@@ -1098,7 +1097,6 @@ class ProjectTests(TestCase):
                     },
                     content_type="application/json",
                 )
-                print(response.json())
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
 
                 p = Project.objects.first()
