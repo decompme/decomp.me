@@ -20,6 +20,7 @@ const scratchJson: api.Scratch = {
     "compiler": "gcc2.8.1",
     "platform": "n64",
     "compiler_flags": "-O2 -fforce-addr",
+    "diff_flags": [],
     "diff_label": "",
     "score": 0,
     "max_score": 0,
