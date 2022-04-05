@@ -54,7 +54,6 @@ class CompilerWrapper:
         # don't affect matching, but clutter the compiler settings field.
         # TODO: use cfg for this?
         skip_flags_with_args = {
-            "-woff",
             "-B",
             "-I",
             "-D",
