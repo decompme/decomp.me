@@ -58,14 +58,11 @@ class CompilerWrapper:
             "-I",
             "-D",
             "-U",
-            "-G",
         }
         skip_flags = {
             "-ffreestanding",
             "-non_shared",
             "-Xcpluscomm",
-            "-Xfullwarn",
-            "-fullwarn",
             "-Wab,-r4300_mul",
             "-c",
             "-w",
