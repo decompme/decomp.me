@@ -136,12 +136,13 @@ function MountedSearch({ className }: { className?: string }) {
         {renderLayer(
             <ul
                 {...getMenuProps(layerProps)}
-                className={classNames(verticalMenuStyles.menu, styles.results)}
+                className={classNames(verticalMenuStyles.menu, styles.results, {
+                    [verticalMenuStyles.isOpen]: isOpen,
+                })}
                 style={{
                     width: (triggerBounds ? triggerBounds.width : "unset"),
                     ...layerProps.style,
                 }}
-                data-open={isOpen ? "true" : "false"}
             >
                 {items.map((scratch, index) => {
                     const props = getItemProps({ item: scratch, index })

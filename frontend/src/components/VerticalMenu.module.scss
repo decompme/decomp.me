@@ -21,15 +21,15 @@ $padding: 6px;
         background: var(--g100);
     }
 
-    opacity: 0.9999;
-    transform: none;
+    opacity: 0;
+    transform: scaleY(0.75);
     transition-duration: 0.125s;
     transition-property: opacity, transform;
 }
 
-.menu[data-open=false] {
-    opacity: 0;
-    transform: scaleY(0.75);
+.menu.isOpen {
+    opacity: 0.9999;
+    transform: none;
 }
 
 .shortcut {
