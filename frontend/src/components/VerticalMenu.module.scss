@@ -20,6 +20,16 @@ $padding: 6px;
     @supports not (backdrop-filter: blur(10px)) {
         background: var(--g100);
     }
+
+    opacity: 0.9999;
+    transform: none;
+    transition-duration: 0.125s;
+    transition-property: opacity, transform;
+}
+
+.menu[data-open=false] {
+    opacity: 0;
+    transform: scaleY(0.75);
 }
 
 .shortcut {
