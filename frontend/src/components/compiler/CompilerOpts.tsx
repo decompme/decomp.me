@@ -8,8 +8,9 @@ import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
-import Flags, { NO_TRANSLATION } from "./Flags"
 import PresetSelect from "./PresetSelect"
+
+const NO_TRANSLATION = "NO_TRANSLATION"
 
 interface IOptsContext {
     checkFlag(flag: string): boolean
@@ -18,7 +19,7 @@ interface IOptsContext {
 
 const OptsContext = createContext<IOptsContext>(undefined)
 
-export function Checkbox({ flag, description }) {
+function Checkbox({ flag, description }) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -30,7 +31,7 @@ export function Checkbox({ flag, description }) {
     </div>
 }
 
-export function FlagSet({ name, children }) {
+function FlagSet({ name, children, value }) {
     const { setFlag } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
@@ -43,21 +44,41 @@ export function FlagSet({ name, children }) {
 
                 setFlag((event.target as HTMLSelectElement).value, true)
             }}
+            value={value}
         >
             {children}
         </Select>
     </div>
 }
 
-export function FlagOption({ flag, description }: { flag: string, description?: string }) {
-    const { checkFlag } = useContext(OptsContext)
-
-    return <option
-        value={flag}
-        selected={checkFlag(flag)}
-    >
+function FlagOption({ flag, description }: { flag: string, description?: string }) {
+    return <option value={flag}>
         {flag} {description && description !== NO_TRANSLATION && `(${description})`}
     </option>
+}
+
+interface FlagsProps {
+    schema: api.Flag[]
+}
+
+function Flags({ schema }: FlagsProps) {
+    const compilersTranslation = useTranslation("compilers")
+    const { checkFlag } = useContext(OptsContext)
+
+    return <>
+        {schema.map(flag => {
+            if (flag.type === "checkbox") {
+                return <Checkbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
+            } else if (flag.type === "flagset") {
+                const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
+                return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
+                    {flag.flags.map(f => <FlagOption key={f} flag={f} description={
+                        compilersTranslation.t(flag.id + "." + f, null, { default: NO_TRANSLATION })
+                    } />)}
+                </FlagSet>
+            }
+        })}
+    </>
 }
 
 export type CompilerOptsT = {
@@ -188,11 +209,11 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
             <Select
                 className={styles.compilerSelect}
                 onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
+                value={compilerId}
             >
                 {Object.keys(compilers).map(id => <option
                     key={id}
                     value={id}
-                    selected={id === compilerId}
                 >
                     {compilersTranslation.t(id)}
                 </option>)}
