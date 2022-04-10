@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -103,6 +103,11 @@ function MountedSearch({ className }: { className?: string }) {
 
     const router = useRouter()
 
+    const lastWidthRef = useRef(0)
+    if (triggerBounds) {
+        lastWidthRef.current = triggerBounds.width
+    }
+
     return <div
         className={classNames(styles.container, className)}
         {...getComboboxProps()}
@@ -140,7 +145,7 @@ function MountedSearch({ className }: { className?: string }) {
                     [styles.isOpen]: isOpen,
                 })}
                 style={{
-                    width: (triggerBounds ? triggerBounds.width : "unset"),
+                    width: lastWidthRef.current,
                     ...layerProps.style,
                 }}
             >
