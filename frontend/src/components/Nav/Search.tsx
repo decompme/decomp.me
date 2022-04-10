@@ -137,7 +137,7 @@ function MountedSearch({ className }: { className?: string }) {
             <ul
                 {...getMenuProps(layerProps)}
                 className={classNames(verticalMenuStyles.menu, styles.results, {
-                    [verticalMenuStyles.isOpen]: isOpen,
+                    [styles.isOpen]: isOpen,
                 })}
                 style={{
                     width: (triggerBounds ? triggerBounds.width : "unset"),

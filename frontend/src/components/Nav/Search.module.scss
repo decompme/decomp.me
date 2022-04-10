@@ -85,6 +85,18 @@
 
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+
+    opacity: 0;
+    transform: scaleY(0.75);
+    visibility: hidden;
+    transition-duration: 0.125s;
+    transition-property: opacity, transform, visibility;
+}
+
+.results.isOpen {
+    opacity: 0.9999;
+    transform: none;
+    visibility: visible;
 }
 
 .item {
