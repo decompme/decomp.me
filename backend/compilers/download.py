@@ -453,6 +453,17 @@ def download_wii_gc():
         dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
     )
 
+    # copy contents of _142 to _127 to prepare for patched version
+    shutil.copy(
+        COMPILERS_DIR / "mwcc_42_142",
+        COMPILERS_DIR / "mwcc_42_127"
+    )
+    download_file(
+        url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
+        log_name="mwc_242_127",
+        dest_path=COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe",
+    )
+
 
 def main(args):
     def should_download(platform):

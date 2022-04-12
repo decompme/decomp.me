@@ -318,6 +318,12 @@ MWCC_41_60126 = MWCCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_42_127 = MWCCCompiler(
+    id="mwcc_42_127",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_42_142 = MWCCCompiler(
     id="mwcc_42_142",
     platform=GC_WII,
@@ -520,6 +526,7 @@ _all_compilers: List[Compiler] = [
     MWCC_247_108,
     MWCC_41_60831,
     MWCC_41_60126,
+    MWCC_42_127,
     MWCC_42_142,
     MWCC_43_151,
     MWCC_43_172,
@@ -549,6 +556,16 @@ _all_compilers: List[Compiler] = [
     MWCC_40_1036,
     MWCC_40_1051,
 ]
+
+# MKWII Common flags
+MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -Cpp_exceptions off -RTTI off -w notinlined -W noimplicitconv -w nounwanted -nostdinc -msgstyle gcc -lang=c99 -DREVOKART -func_align 4 -sym dwarf-2"
+MKW_HOSTSYS_OPTS = '-ipa file -rostr -sdata 0 -sdata2 0'
+MKW_RVL_OPTS = '-ipa file'
+MKW_MSL_LIBC_OPTS = '-ipa file'
+MKW_NW4R_OPTS = '-ipa file -inline auto -O4,p -pragma \"legacy_struct_alignment on\"'
+MKW_SPY_OPTS = MKW_RVL_OPTS + " -w nounusedexpr -w nounusedarg"
+MKW_EGG_OPTS = '-ipa function -rostr'
+MKW_REL_OPTS = MKW_HOSTSYS_OPTS + " -pragma \"legacy_struct_alignment on\""
 
 _all_presets = [
     # GBA
@@ -670,6 +687,41 @@ _all_presets = [
         "Mario Party 4",
         MWCC_242_81,
         "-O0,p -str pool -fp hard -Cpp_exceptions off",
+    ),
+    Preset(
+        "Mario Kart Wii (DOL)",
+        MWCC_42_127,
+        '${MKW_SHARED} ${MKW_HOSTSYS_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (RVL_SDK)",
+        MWCC_41_60831,
+        '${MKW_SHARED} ${MKW_RVL_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (MSL)",
+        MWCC_42_127,
+        '${MKW_SHARED} ${MKW_MSL_LIBC_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (NintendoWare)",
+        MWCC_42_127,
+        '${MKW_SHARED} ${MKW_NW4R_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (DWC/GameSpy)",
+        MWCC_41_60831,
+        '${MKW_SHARED} ${MKW_SPY_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (EGG)",
+        MWCC_42_127,
+        '${MKW_SHARED} ${MKW_EGG_OPTS}',
+    ),
+    Preset(
+        "Mario Kart Wii (REL)",
+        MWCC_42_127,
+        '${MKW_SHARED} ${MKW_REL_OPTS}',
     ),
     # NDS
     Preset(
