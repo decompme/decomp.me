@@ -21,13 +21,13 @@ const SelectedSourceLineContext = createContext<number | null>(null)
 
 function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
     return <> {
-        texts.map(t => {
+        texts.map((t, i) => {
             if (t.format == "rotation") {
-                return <span className={styles[`rotation${t.index % 9}`]}>{t.text}</span>
+                return <span key={i} className={styles[`rotation${t.index % 9}`]}>{t.text}</span>
             } else if (t.format) {
-                return <span className={styles[t.format]}>{t.text}</span>
+                return <span key={i} className={styles[t.format]}>{t.text}</span>
             } else {
-                return <span>{t.text}</span>
+                return <span key={i}>{t.text}</span>
             }
         })
     } </>

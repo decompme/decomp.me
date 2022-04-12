@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -6,7 +6,6 @@ import { useRouter } from "next/router"
 import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { useCombobox } from "downshift"
-import { motion, AnimatePresence } from "framer-motion"
 import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
 import useSWR from "swr"
@@ -27,7 +26,7 @@ function useRecentScratches(): api.TerseScratch[] {
     return data?.results || []
 }
 
-export default function Search({ className }: { className?: string }) {
+function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("")
     const [isFocused, setIsFocused] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -102,21 +101,11 @@ export default function Search({ className }: { className?: string }) {
         },
     })
 
-    const [isMounted, setIsMounted] = useState(false)
-    useEffect(() => setIsMounted(true), [])
-
     const router = useRouter()
 
-    if (!isMounted) {
-        return <div className={classNames(styles.container, className)}>
-            <SearchIcon className={styles.icon} />
-            <input
-                className={styles.input}
-                type="text"
-                placeholder="Search decomp.me..."
-                spellCheck={false}
-            />
-        </div>
+    const lastWidthRef = useRef(0)
+    if (triggerBounds) {
+        lastWidthRef.current = triggerBounds.width
     }
 
     return <div
@@ -149,33 +138,32 @@ export default function Search({ className }: { className?: string }) {
             onClick={() => setIsFocused(true)}
         />
         {isLoading && isFocused && <LoadingSpinner className={styles.loadingIcon} />}
-        {isMounted && renderLayer(
-            <AnimatePresence>
-                {isOpen && <motion.ul
-                    {...getMenuProps(layerProps)}
-                    className={classNames(verticalMenuStyles.menu, styles.results)}
-                    style={{
-                        width: triggerBounds.width,
-                        ...layerProps.style,
-                    }}
-                    initial={{ opacity: 0, scaleY: 0.75 }}
-                    animate={{ opacity: 1, scaleY: 1 }}
-                    exit={{ opacity: 0, scaleY: 0.75 }}
-                    transition={{ duration: 0.125 }}
-                >
-                    {items.map((scratch, index) => {
-                        const props = getItemProps({ item: scratch, index })
-                        const oldOnClick = props.onClick
-                        props.onClick = evt => {
-                            evt.preventDefault() // Don't visit the link
-                            return oldOnClick(evt)
-                        }
+        {renderLayer(
+            <ul
+                {...getMenuProps(layerProps)}
+                className={classNames(verticalMenuStyles.menu, styles.results, {
+                    [styles.isOpen]: isOpen,
+                })}
+                style={{
+                    width: lastWidthRef.current,
+                    ...layerProps.style,
+                }}
+            >
+                {items.map((scratch, index) => {
+                    const props = getItemProps({ item: scratch, index })
+                    const oldOnClick = props.onClick
+                    props.onClick = evt => {
+                        evt.preventDefault() // Don't visit the link
+                        return oldOnClick(evt)
+                    }
 
-                        return <a
-                            key={scratch.url}
+                    return <li
+                        key={scratch.url}
+                        {...props}
+                    >
+                        <a
                             href={scratch.html_url}
                             className={classNames(verticalMenuStyles.item, styles.item)}
-                            {...props}
                         >
                             <ScratchIcon scratch={scratch} size={16} />
                             <span className={styles.itemName}>
@@ -189,12 +177,33 @@ export default function Search({ className }: { className?: string }) {
                                 className={styles.scratchOwnerAvatar}
                             />}
                         </a>
-                    })}
-                    {items.length === 0 && <div className={classNames(verticalMenuStyles.item, styles.noResults)}>
+                    </li>
+                })}
+                {items.length === 0 && <li>
+                    <div className={classNames(verticalMenuStyles.item, styles.noResults)}>
                         No search results
-                    </div>}
-                </motion.ul>}
-            </AnimatePresence>
+                    </div>
+                </li>}
+            </ul>
         )}
     </div>
+}
+
+export default function Search({ className }: { className?: string }) {
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => setIsMounted(true), [])
+
+    if (!isMounted) {
+        return <div className={classNames(styles.container, className)}>
+            <SearchIcon className={styles.icon} />
+            <input
+                className={styles.input}
+                type="text"
+                placeholder="Search decomp.me..."
+                spellCheck={false}
+            />
+        </div>
+    }
+
+    return <MountedSearch className={className} />
 }

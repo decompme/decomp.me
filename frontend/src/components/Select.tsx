@@ -8,11 +8,12 @@ export type Props = {
     className?: string
     onChange: ChangeEventHandler<HTMLSelectElement>
     children: ReactNode
+    value?: string
 }
 
-export default function Select({ onChange, children, className }: Props) {
+export default function Select({ onChange, children, className, value }: Props) {
     return <div className={`${styles.group} ${className}`}>
-        <select onChange={onChange}>
+        <select onChange={onChange} value={value}>
             {children}
         </select>
 
