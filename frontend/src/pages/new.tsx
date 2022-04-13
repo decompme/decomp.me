@@ -104,7 +104,7 @@ export default function NewScratch({ serverCompilers }: {
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-            setDiffFlags(localStorage["new_scratch_diffFlags"] ?? "")
+            setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
             setPresetName(localStorage["new_scratch_presetName"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
@@ -119,7 +119,7 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
-        localStorage["new_scratch_diffFlags"] = diffFlags
+        localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_presetName"] = presetName
     }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, presetName])
 
