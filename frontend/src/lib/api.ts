@@ -173,6 +173,7 @@ export interface TerseScratch {
     url: string
     html_url: string
     owner: AnonymousUser | User | null // null = unclaimed
+    parent: string | null
     name: string
     creation_time: string
     last_updated: string
@@ -193,7 +194,6 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    parent: string | null
 }
 
 export interface Project {
