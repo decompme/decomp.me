@@ -28,7 +28,7 @@
         "react": "^18.0.0",
         "react-contenteditable": "^3.3.6",
         "react-dom": "^18.0.0",
-        "react-laag": "^2.0.3",
+        "react-laag": "^2.0.4",
         "react-modal": "^3.14.4",
         "react-simple-resizer": "^2.1.0",
         "react-timeago": "^6.2.1",
