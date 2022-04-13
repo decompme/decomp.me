@@ -30,18 +30,9 @@
     overflow: hidden;
 
     padding: 1em;
-    margin: 0.5em 0;
 
     border: 1px solid inherit;
     border-radius: inherit;
-
-    &:first-child {
-        margin-top: 0;
-    }
-
-    &:last-child {
-        margin-bottom: 0;
-    }
 }
 
 .button {
