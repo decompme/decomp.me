@@ -671,6 +671,11 @@ _all_presets = [
         MWCC_242_81,
         "-O0,p -str pool -fp hard -Cpp_exceptions off",
     ),
+    Preset(
+        "Metroid Prime (USA)",
+        MWCC_247_108,
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline auto",
+    ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
