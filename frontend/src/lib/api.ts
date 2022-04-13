@@ -499,7 +499,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 
         // fields passed to compilations
         scratch.compiler,
-        scratch.compiler_flags, scratch.diff_flags,
+        scratch.compiler_flags, scratch.diff_flags, scratch.diff_label,
         scratch.source_code, scratch.context,
     ])
 
