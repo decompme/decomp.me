@@ -6495,10 +6495,10 @@ react-is@^18.0.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.0.0.tgz#026f6c4a27dbe33bf4a35655b9e1327c4e55e3f5"
   integrity sha512-yUcBYdBBbo3QiPsgYDcfQcIkGZHfxOaoE6HLSnr1sPzMhdyxusbfKOSUbSd/ocGi32dxcj366PsTj+5oggeKKw==
 
-react-laag@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/react-laag/-/react-laag-2.0.3.tgz#2be19aed3091ebe648f55325fbad9891708b7c33"
-  integrity sha512-f3LYHu6kOU+Ii63/ZkzLDobGLf2Q4EYjIA/TUHmaQmBv5use09ClPy5tEgXazkTnp/PC1Sivb+wr0+q8mv9ITQ==
+react-laag@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/react-laag/-/react-laag-2.0.4.tgz#9a2787ca9d83bf4d8b6e304f29d22cff0365348c"
+  integrity sha512-9CGIwYJbysmpQC4KeeTx3fNzchvZT3AIYapi2/z7kOJrYopP2uCoPK39qHKuiyawE57EVRI8F1OtbJeyJ7NTrg==
   dependencies:
     tiny-warning "^1.0.3"
 

@@ -173,6 +173,7 @@ export interface TerseScratch {
     url: string
     html_url: string
     owner: AnonymousUser | User | null // null = unclaimed
+    parent: string | null
     name: string
     creation_time: string
     last_updated: string
@@ -193,7 +194,6 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    parent: string | null
 }
 
 export interface Project {
@@ -357,6 +357,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
             diff_flags: undefinedIfUnchanged(savedScratch, localScratch, "diff_flags"),
+            diff_label: undefinedIfUnchanged(savedScratch, localScratch, "diff_label"),
             preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
@@ -413,7 +414,8 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
-        scratch.diff_flags === saved.diff_flags &&
+        scratch.diff_flags.join(",") === saved.diff_flags.join(",") &&
+        scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
     )
@@ -447,6 +449,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             compiler: scratch.compiler,
             compiler_flags: scratch.compiler_flags,
             diff_flags: scratch.diff_flags,
+            diff_label: scratch.diff_label,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
@@ -496,7 +499,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 
         // fields passed to compilations
         scratch.compiler,
-        scratch.compiler_flags, scratch.diff_flags,
+        scratch.compiler_flags, scratch.diff_flags, scratch.diff_label,
         scratch.source_code, scratch.context,
     ])
 

@@ -111,6 +111,9 @@ export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
                         platform={scratch.platform}
                         value={scratch}
                         onChange={setScratch}
+
+                        diffLabel={scratch.diff_label}
+                        onDiffLabelChange={d => setScratch({ diff_label: d })}
                     />
                 </div>
             </Tab>

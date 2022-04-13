@@ -56,6 +56,15 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     </ul>
 }
 
+export function LoadedScratchList({ className, item, scratches }: Pick<Props, "className" | "item"> & { scratches: api.TerseScratch[] }) {
+    const Item = item || ScratchItem
+
+    return <ul className={classNames(styles.list, className)}>
+        {scratches.map(scratch => <Item key={scratch.url} scratch={scratch} />)}
+    </ul>
+
+}
+
 export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)

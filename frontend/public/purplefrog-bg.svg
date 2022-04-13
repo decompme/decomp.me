@@ -8,17 +8,78 @@
    width="42"
    height="42"
    inkscape:export-filename="/Users/alex/bitmap.png"
-   inkscape:export-xdpi="685.71002"
-   inkscape:export-ydpi="685.71002"
+   inkscape:export-xdpi="1170.2858"
+   inkscape:export-ydpi="1170.2858"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
-     id="defs1029" />
+     id="defs1029">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient1111">
+      <stop
+         style="stop-color:#333b40;stop-opacity:1"
+         offset="0"
+         id="stop1107" />
+      <stop
+         style="stop-color:#282e31;stop-opacity:1"
+         offset="1"
+         id="stop1109" />
+    </linearGradient>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter1377"
+       x="-0.13333333"
+       y="-0.15"
+       width="1.2666667"
+       height="1.3625">
+      <feFlood
+         flood-opacity="0.2"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood1367" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite1369" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="2"
+         result="blur"
+         id="feGaussianBlur1371" />
+      <feOffset
+         dx="0"
+         dy="2"
+         result="offset"
+         id="feOffset1373" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite1375" />
+    </filter>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1111"
+       id="radialGradient1547"
+       cx="22.276571"
+       cy="41.439331"
+       fx="22.276571"
+       fy="41.439331"
+       r="20.999056"
+       gradientTransform="matrix(1.7367955,-0.04400681,0.04964455,1.9592976,-18.470515,-38.771409)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
   <sodipodi:namedview
      id="namedview1027"
      pagecolor="#505050"
@@ -29,8 +90,8 @@
      inkscape:pagecheckerboard="0"
      showgrid="false"
      inkscape:zoom="7.044923"
-     inkscape:cx="20.014413"
-     inkscape:cy="31.795947"
+     inkscape:cx="22.853337"
+     inkscape:cy="20.724144"
      inkscape:window-width="1312"
      inkscape:window-height="918"
      inkscape:window-x="0"
@@ -41,15 +102,16 @@
   <title
      id="title1007">decomp.me</title>
   <rect
-     style="fill:#292f33;fill-opacity:1;stroke-width:1.2717"
+     style="fill:url(#radialGradient1547);fill-opacity:1;stroke-width:1.2717"
      id="rect1392"
-     width="42"
+     width="41.998112"
      height="42"
      x="0"
      y="0" />
   <g
      id="g1513"
-     transform="matrix(0.9053692,0,0,0.92459108,4.7033544,4.3573606)">
+     transform="matrix(0.69396031,0,0,0.70869376,8.5087144,8.2435123)"
+     style="filter:url(#filter1377)">
     <path
        fill="var(--frog-secondary)"
        d="M 36,22 C 36,29.456 27.941,34 18,34 8.059,34 0,29.456 0,22 0,14.544 8.059,7 18,7 c 9.941,0 18,7.544 18,15 z"
