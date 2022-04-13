@@ -161,6 +161,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
         "compiler",
         "compiler_flags",
         "diff_flags",
+        "diff_label",
         "source_code",
         "context",
     ]
