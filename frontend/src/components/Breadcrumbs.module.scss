@@ -35,17 +35,21 @@
             }
         }
 
-        // Slash between pages
+        // '>' shape between pages
         > li + li::before {
             content: "";
 
             display: inline-block;
-            margin: 0 0.85em;
-            transform: rotate(20deg);
-            width: 1.4px;
-            height: 0.8em;
+            margin: 0 1em;
 
-            background: var(--g1100);
+            width: 0.5em;
+            height: 0.5em;
+
+            border-top: 0.1em solid;
+            border-right: 0.1em solid;
+            border-color: var(--g1000);
+
+            transform: rotate(45deg);
         }
     }
 }
