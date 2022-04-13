@@ -4,7 +4,7 @@ import useTranslation from "next-translate/useTranslation"
 
 import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
-import Select from "../Select"
+import Select from "../Select" // TODO: use Select2
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
