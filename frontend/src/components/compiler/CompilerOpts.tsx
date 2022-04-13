@@ -189,7 +189,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                         type="text"
                         className={styles.textbox}
                         value={diffLabel}
-                        placeholder="Automatic"
+                        placeholder="Top of file"
                         onChange={e => onDiffLabelChange(e.target.value)}
                     />
                 </div>
