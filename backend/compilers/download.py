@@ -454,13 +454,16 @@ def download_wii_gc():
     )
 
     # copy contents of _142 to _127 to prepare for patched version
-    shutil.copy(
-        COMPILERS_DIR / "mwcc_42_142",
-        COMPILERS_DIR / "mwcc_42_127"
-    )
+    if not os.path.exists(COMPILERS_DIR / "mwcc_42_127"):
+        shutil.copytree(
+            COMPILERS_DIR / "mwcc_42_142",
+            COMPILERS_DIR / "mwcc_42_127"
+        )
+        os.remove(COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe")
+
     download_file(
         url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
-        log_name="mwc_242_127",
+        log_name="mwc_42_127",
         dest_path=COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe",
     )
 
