@@ -92,9 +92,12 @@ export type Props = {
     platform?: string
     value: CompilerOptsT
     onChange: (value: CompilerOptsT) => void
+
+    diffLabel: string
+    onDiffLabelChange: (diffLabel: string) => void
 }
 
-export default function CompilerOpts({ platform, value, onChange }: Props) {
+export default function CompilerOpts({ platform, value, onChange, diffLabel, onDiffLabelChange }: Props) {
     const compiler = value.compiler
     let opts = value.compiler_flags
     const diff_opts = value.diff_flags || []
@@ -180,6 +183,16 @@ export default function CompilerOpts({ platform, value, onChange }: Props) {
             {display_diff_opts &&
             <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
+                <div className={styles.diffLabel}>
+                    <label>Diff label</label>
+                    <input
+                        type="text"
+                        className={styles.textbox}
+                        value={diffLabel}
+                        placeholder="Automatic"
+                        onChange={e => onDiffLabelChange(e.target.value)}
+                    />
+                </div>
                 <DiffOptsEditor platform={platform} compiler={compiler} />
             </section>}
         </OptsContext.Provider>
@@ -223,7 +236,7 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
                 type="text"
                 className={styles.textbox}
                 value={opts}
-                placeholder="no arguments"
+                placeholder="No arguments"
                 onChange={e => setOpts((e.target as HTMLInputElement).value)}
             />
         </div>
