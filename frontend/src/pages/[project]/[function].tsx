@@ -7,6 +7,7 @@ import { useRouter } from "next/router"
 import { ArrowRightIcon } from "@primer/octicons-react"
 
 import AsyncButton from "../../components/AsyncButton"
+import Breadcrumbs from "../../components/Breadcrumbs"
 import Button from "../../components/Button"
 import ErrorBoundary from "../../components/ErrorBoundary"
 import Footer from "../../components/Footer"
@@ -83,18 +84,18 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
         <Nav />
         <header className={styles.header}>
             <div className={styles.headerInner}>
-                <h1>
-                    <Link href={project.html_url}>
-                        <a>
-                            <Image src={project.icon_url} alt="" width={32} height={32} />
+                <Breadcrumbs pages={[
+                    {
+                        label: <div className={styles.projectLink}>
+                            <Image src={project.icon_url} alt="" width={24} height={24} />
                             {project.slug}
-                        </a>
-                    </Link>
-                    {" / "}
-                    <a>
-                        {func.display_name}
-                    </a>
-                </h1>
+                        </div>,
+                        href: project.html_url,
+                    },
+                    {
+                        label: func.display_name,
+                    },
+                ]} />
             </div>
         </header>
         <main className={styles.container}>

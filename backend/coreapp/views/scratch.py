@@ -161,6 +161,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
         "compiler",
         "compiler_flags",
         "diff_flags",
+        "diff_label",
         "source_code",
         "context",
     ]
@@ -220,7 +221,7 @@ def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
-    diff_flags = data.get("diff_flags", "")
+    diff_flags = data.get("diff_flags", [])
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):
@@ -349,6 +350,8 @@ class ScratchViewSet(
                 scratch.compiler_flags = request.data["compiler_flags"]
             if "diff_flags" in request.data:
                 scratch.diff_flags = request.data["diff_flags"]
+            if "diff_label" in request.data:
+                scratch.diff_label = request.data["diff_label"]
             if "source_code" in request.data:
                 scratch.source_code = request.data["source_code"]
             if "context" in request.data:

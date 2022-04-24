@@ -179,6 +179,7 @@ class TerseScratchSerializer(ScratchSerializer):
             "max_score",
             "project",
             "project_function",
+            "parent",
         ]
 
 

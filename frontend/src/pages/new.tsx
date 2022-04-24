@@ -27,7 +27,7 @@ function getLabels(asm: string): string[] {
     const lines = asm.split("\n")
     let labels = []
 
-    const jtbl_label_regex = /L[0-9a-fA-F]{8}/
+    const jtbl_label_regex = /(^L[0-9a-fA-F]{8}$)|(^jtbl_)/
 
     for (const line of lines) {
         let match = line.match(/^\s*glabel\s+([A-z0-9_]+)\s*$/)
@@ -84,7 +84,7 @@ export default function NewScratch({ serverCompilers }: {
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
-        return labels.length > 0 ? labels[labels.length - 1] : null
+        return labels.length > 0 ? labels[0] : null
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
@@ -104,7 +104,7 @@ export default function NewScratch({ serverCompilers }: {
             setPlatform(localStorage["new_scratch_platform"] ?? "")
             setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-            setDiffFlags(localStorage["new_scratch_diffFlags"] ?? "")
+            setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
             setPresetName(localStorage["new_scratch_presetName"] ?? "")
         } catch (error) {
             console.warn("bad localStorage", error)
@@ -119,7 +119,7 @@ export default function NewScratch({ serverCompilers }: {
         localStorage["new_scratch_platform"] = platform
         localStorage["new_scratch_compiler"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
-        localStorage["new_scratch_diffFlags"] = diffFlags
+        localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_presetName"] = presetName
     }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, presetName])
 
@@ -245,7 +245,7 @@ export default function NewScratch({ serverCompilers }: {
 
             <div>
                 <label className={styles.label} htmlFor="label">
-                    Function name <small>(asm label from which the diff will begin)</small>
+                    Diff label <small>(asm label from which the diff will begin)</small>
                 </label>
                 <input
                     name="label"

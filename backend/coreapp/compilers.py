@@ -718,6 +718,11 @@ _all_presets = [
         MWCC_42_127,
         f'{MKW_SHARED} \'-ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
     ),
+    Preset(
+        "Metroid Prime (USA)",
+        MWCC_247_108,
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline auto",
+    ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",

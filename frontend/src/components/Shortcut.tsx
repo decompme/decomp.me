@@ -1,6 +1,21 @@
 import { useEffect, useState } from "react"
 
-const isMacOS = typeof window !== "undefined" && window.navigator.userAgent.includes("Mac OS X")
+function isMacOS(): boolean {
+    if (typeof window === "undefined") {
+        // SSR
+        return false
+    }
+
+    // Use User-Agent Client Hints API if supported
+    // @ts-ignore
+    if (navigator.userAgentData) {
+        // @ts-ignore
+        return navigator.userAgentData.platform == "macOS"
+    }
+
+    // Fall back to user-agent sniffing
+    return navigator.userAgent.includes("Mac OS X")
+}
 
 export type Key = string | SpecialKey
 
@@ -32,11 +47,11 @@ export class KeyMap extends Map<Key, boolean> {
 export function translateKey(key: Key): string {
     switch (key) {
     case SpecialKey.CTRL_COMMAND:
-        return isMacOS ? "⌘" : "Ctrl"
+        return isMacOS() ? "⌘" : "Ctrl"
     case SpecialKey.ALT_OPTION:
-        return isMacOS ? "⌥" : "Alt"
+        return isMacOS() ? "⌥" : "Alt"
     case SpecialKey.SHIFT:
-        return isMacOS ? "⇧" : "Shift"
+        return isMacOS() ? "⇧" : "Shift"
     default:
         return key.toLocaleUpperCase()
     }
@@ -45,13 +60,13 @@ export function translateKey(key: Key): string {
 export function getSeparator(): string {
     const THIN_SPACE = " "
 
-    return isMacOS ? THIN_SPACE : "+"
+    return isMacOS() ? THIN_SPACE : "+"
 }
 
 export function translateKeys(keys: Key[]): string {
     return keys
         .sort((a, b) => {
-            if (isMacOS && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
+            if (isMacOS() && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
                 return a === SpecialKey.SHIFT ? -1 : 1 // Shift comes first on MacOS
             } else if (typeof a === "string" && typeof b === "string") {
                 return a.localeCompare(b) // Sort alphabetically
@@ -91,7 +106,7 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
 
                 switch (key) {
                 case SpecialKey.CTRL_COMMAND:
-                    if (isMacOS ? metaKey : ctrlKey)
+                    if (isMacOS() ? metaKey : ctrlKey)
                         continue
                     break
                 case SpecialKey.ALT_OPTION:
