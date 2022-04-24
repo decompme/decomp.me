@@ -664,7 +664,12 @@ _all_presets = [
     Preset(
         "Super Mario Galaxy",
         MWCC_41_60126,
-        "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
+        "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum inta",
+    ),
+    Preset(
+        "Xenoblade Chronicles (JP)",
+        MWCC_43_151,
+        "-lang=c++ -Cpp_exceptions off -enum int -inline auto -RTTI off -fp hard -rostr -O4,p -nodefaults -func_align 4"
     ),
     Preset(
         "Mario Party 4",
