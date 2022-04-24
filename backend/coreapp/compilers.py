@@ -251,7 +251,9 @@ GCC281 = GCCCompiler(
 )
 
 # GC_WII
-MWCCEPPC_CC = '${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+# Thanks to Gordon Davisson for the xargs trick:
+# https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
+MWCCEPPC_CC = 'echo ${COMPILER_FLAGS} | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -558,14 +560,7 @@ _all_compilers: List[Compiler] = [
 ]
 
 # MKWII Common flags
-MKW_SHARED = '-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2'
-MKW_HOSTSYS_OPTS = '-ipa file -rostr -sdata 0 -sdata2 0'
-MKW_RVL_OPTS = '-ipa file'
-MKW_MSL_LIBC_OPTS = '-ipa file'
-MKW_NW4R_OPTS = '-ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"'
-MKW_SPY_OPTS = MKW_RVL_OPTS + '-w nounusedexpr -w nounusedarg'
-MKW_EGG_OPTS = '-ipa function -rostr'
-MKW_REL_OPTS = MKW_HOSTSYS_OPTS + ' -pragma "legacy_struct_alignment on"'
+MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2"
 
 _all_presets = [
     # GBA
@@ -691,37 +686,37 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (DOL)",
         MWCC_42_127,
-        f"{MKW_SHARED} {MKW_HOSTSYS_OPTS}",
+        f"{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0",
     ),
     Preset(
         "Mario Kart Wii (RVL_SDK)",
         MWCC_41_60831,
-        f"{MKW_SHARED} {MKW_RVL_OPTS}",
+        f"{MKW_SHARED} -ipa file",
     ),
     Preset(
         "Mario Kart Wii (MSL)",
         MWCC_42_127,
-        f"{MKW_SHARED} {MKW_MSL_LIBC_OPTS}",
+        f"{MKW_SHARED} -ipa file",
     ),
     Preset(
         "Mario Kart Wii (NintendoWare)",
         MWCC_42_127,
-        f"{MKW_SHARED} {MKW_NW4R_OPTS}",
+        f'{MKW_SHARED} -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Mario Kart Wii (DWC/GameSpy)",
         MWCC_41_60831,
-        f"{MKW_SHARED} {MKW_SPY_OPTS}",
+        f"{MKW_SHARED} -ipa file -w nounusedexpr -w nounusedarg",
     ),
     Preset(
         "Mario Kart Wii (EGG)",
         MWCC_42_127,
-        f"{MKW_SHARED} {MKW_EGG_OPTS}",
+        f"{MKW_SHARED} -ipa function -rostr",
     ),
     Preset(
         "Mario Kart Wii (REL)",
         MWCC_42_127,
-        f"{MKW_SHARED} {MKW_REL_OPTS}",
+        f'{MKW_SHARED} \'-ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
     ),
     # NDS
     Preset(
