@@ -156,7 +156,7 @@ class CompilerWrapper:
             except ValueError as e:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
-                raise CompilationError(e)
+                raise CompilationError(str(e))
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
