@@ -253,7 +253,7 @@ GCC281 = GCCCompiler(
 # GC_WII
 # Thanks to Gordon Davisson for the xargs trick:
 # https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
-MWCCEPPC_CC = 'echo ${COMPILER_FLAGS} | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -716,7 +716,7 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (REL)",
         MWCC_42_127,
-        f'{MKW_SHARED} \'-ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Metroid Prime (USA)",

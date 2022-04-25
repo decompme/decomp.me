@@ -436,6 +436,10 @@ def download_wii_gc():
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
 
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
             # Set +x to allow WSL without wine
             exe_path = compiler_dir / "mwcceppc.exe"
             exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)

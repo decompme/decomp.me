@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from functools import lru_cache
@@ -86,18 +87,16 @@ class CompilerWrapper:
 
     @staticmethod
     def filter_compile_errors(input: str) -> str:
-        return (
-            input.replace("wine: could not load kernel32.dll, status c0000135\n", "")
-            .replace(
-                "wineserver: could not save registry branch to system.reg : Read-only file system\n",
-                "",
-            )
-            .replace(
-                "wineserver: could not save registry branch to user.reg : Read-only file system\n",
-                "",
-            )
-            .strip()
-        )
+        filter_strings = [
+            r"wine: could not load *\.dll.*\n?",
+            r"wineserver: could not save registry .*\n?",
+            r"### mwcceppc.*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+        ]
+
+        for str in filter_strings:
+            input = re.sub(str, "", input)
+
+        return input.strip()
 
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
