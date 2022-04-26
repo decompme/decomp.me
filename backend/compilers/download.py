@@ -466,10 +466,11 @@ def download_wii_gc():
     download_file(
         url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
         log_name="mwcc_42_127",
-        dest_path=exe_path
+        dest_path=exe_path,
     )
 
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
 
 def main(args):
     def should_download(platform):
