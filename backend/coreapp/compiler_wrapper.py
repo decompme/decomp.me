@@ -66,7 +66,6 @@ class CompilerWrapper:
             "-Xcpluscomm",
             "-Wab,-r4300_mul",
             "-c",
-            "-w",
         }
 
         skip_next = False
