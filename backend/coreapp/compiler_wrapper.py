@@ -87,7 +87,7 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"wine: could not load *\.dll.*\n?",
+            r"wine: could not load .*\.dll.*\n?",
             r"wineserver: could not save registry .*\n?",
             r"### mwcceppc.*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
         ]
