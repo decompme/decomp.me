@@ -1482,6 +1482,11 @@ class AsmProcessorPPC(AsmProcessor):
 class AsmProcessorARM32(AsmProcessor):
     def process_reloc(self, row: str, prev: str) -> str:
         arch = self.config.arch
+        if "R_ARM_ABS32" in row and not prev.startswith(".word"):
+            # Don't crash on R_ARM_ABS32 relocations incorrectly applied to code.
+            # (We may want to do something more fancy here that actually shows the
+            # related symbol, but this serves as a stop-gap.)
+            return prev
         before, imm, after = parse_relocated_line(prev)
         repl = row.split()[-1] + reloc_addend_from_imm(imm, before, self.config.arch)
         return before + repl + after
