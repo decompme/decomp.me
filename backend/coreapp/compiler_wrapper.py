@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from functools import lru_cache
@@ -65,7 +66,6 @@ class CompilerWrapper:
             "-Xcpluscomm",
             "-Wab,-r4300_mul",
             "-c",
-            "-w",
         }
 
         skip_next = False
@@ -86,18 +86,16 @@ class CompilerWrapper:
 
     @staticmethod
     def filter_compile_errors(input: str) -> str:
-        return (
-            input.replace("wine: could not load kernel32.dll, status c0000135\n", "")
-            .replace(
-                "wineserver: could not save registry branch to system.reg : Read-only file system\n",
-                "",
-            )
-            .replace(
-                "wineserver: could not save registry branch to user.reg : Read-only file system\n",
-                "",
-            )
-            .strip()
-        )
+        filter_strings = [
+            r"wine: could not load *\.dll.*\n?",
+            r"wineserver: could not save registry .*\n?",
+            r"### mwcceppc.*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+        ]
+
+        for str in filter_strings:
+            input = re.sub(str, "", input)
+
+        return input.strip()
 
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
@@ -153,6 +151,10 @@ class CompilerWrapper:
 
                 logging.debug("Compilation failed: %s", msg)
                 raise CompilationError(e.stderr)
+            except ValueError as e:
+                # Shlex issue?
+                logging.debug("Compilation failed: %s", e)
+                raise CompilationError(str(e))
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")

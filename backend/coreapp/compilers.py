@@ -251,7 +251,9 @@ GCC281 = GCCCompiler(
 )
 
 # GC_WII
-MWCCEPPC_CC = '${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+# Thanks to Gordon Davisson for the xargs trick:
+# https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -314,6 +316,12 @@ MWCC_41_60831 = MWCCCompiler(
 
 MWCC_41_60126 = MWCCCompiler(
     id="mwcc_41_60126",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_42_127 = MWCCCompiler(
+    id="mwcc_42_127",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
@@ -520,6 +528,7 @@ _all_compilers: List[Compiler] = [
     MWCC_247_108,
     MWCC_41_60831,
     MWCC_41_60126,
+    MWCC_42_127,
     MWCC_42_142,
     MWCC_43_151,
     MWCC_43_172,
@@ -549,6 +558,9 @@ _all_compilers: List[Compiler] = [
     MWCC_40_1036,
     MWCC_40_1051,
 ]
+
+# MKWII Common flags
+MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2"
 
 _all_presets = [
     # GBA
@@ -675,6 +687,41 @@ _all_presets = [
         "Mario Party 4",
         MWCC_242_81,
         "-O0,p -str pool -fp hard -Cpp_exceptions off",
+    ),
+    Preset(
+        "Mario Kart Wii (DOL)",
+        MWCC_42_127,
+        f"{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0",
+    ),
+    Preset(
+        "Mario Kart Wii (RVL_SDK)",
+        MWCC_41_60831,
+        f"{MKW_SHARED} -ipa file",
+    ),
+    Preset(
+        "Mario Kart Wii (MSL)",
+        MWCC_42_127,
+        f"{MKW_SHARED} -ipa file",
+    ),
+    Preset(
+        "Mario Kart Wii (NintendoWare)",
+        MWCC_42_127,
+        f'{MKW_SHARED} -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
+    ),
+    Preset(
+        "Mario Kart Wii (DWC/GameSpy)",
+        MWCC_41_60831,
+        f"{MKW_SHARED} -ipa file -w nounusedexpr -w nounusedarg",
+    ),
+    Preset(
+        "Mario Kart Wii (EGG)",
+        MWCC_42_127,
+        f"{MKW_SHARED} -ipa function -rostr",
+    ),
+    Preset(
+        "Mario Kart Wii (REL)",
+        MWCC_42_127,
+        f'{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Metroid Prime (USA)",

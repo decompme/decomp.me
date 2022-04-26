@@ -436,6 +436,10 @@ def download_wii_gc():
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
 
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
             # Set +x to allow WSL without wine
             exe_path = compiler_dir / "mwcceppc.exe"
             exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
@@ -452,6 +456,20 @@ def download_wii_gc():
         log_name="frank",
         dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
     )
+
+    # copy contents of _142 to _127 to prepare for patched version
+    if not os.path.exists(COMPILERS_DIR / "mwcc_42_127"):
+        shutil.copytree(COMPILERS_DIR / "mwcc_42_142", COMPILERS_DIR / "mwcc_42_127")
+        os.remove(COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe")
+
+    exe_path = COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe"
+    download_file(
+        url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
+        log_name="mwcc_42_127",
+        dest_path=exe_path,
+    )
+
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
 
 def main(args):
