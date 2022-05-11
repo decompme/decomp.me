@@ -298,7 +298,9 @@ def download_n64():
         )
         # TODO: upload +x'd version of this
         psyq_obj_parser = dest / "psyq-obj-parser"
-        psyq_obj_parser.chmod(psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        psyq_obj_parser.chmod(
+            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
 
 
 def download_ps1():
