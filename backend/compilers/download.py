@@ -275,7 +275,30 @@ def download_n64():
                 url=f"https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
                 dest_name=f"ido{version}",
             )
-    pass
+    # SN64
+    dest = COMPILERS_DIR / "sn64"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/asn64.exe",
+            log_name="asn64.exe",
+            dest_path=dest / "asn64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/cc1n64.exe",
+            log_name="cc1n64.exe",
+            dest_path=dest / "cc1n64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/psyq-obj-parser",
+            log_name="psyq-obj-parser",
+            dest_path=dest / "psyq-obj-parser",
+        )
+        # TODO: upload +x'd version of this
+        psyq_obj_parser = dest / "psyq-obj-parser"
+        psyq_obj_parser.chmod(psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 def download_ps1():
