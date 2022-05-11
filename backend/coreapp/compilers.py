@@ -250,8 +250,8 @@ GCC281 = GCCCompiler(
     cc='"${COMPILER_DIR}"/gcc -G0 -c -B "${COMPILER_DIR}"/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-SN64 = GCCCompiler(
-    id="sn64",
+GCC272SN = GCCCompiler(
+    id="gcc2.7.2sn",
     platform=N64,
     cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
@@ -521,8 +521,8 @@ _all_compilers: List[Compiler] = [
     IDO53,
     IDO71,
     GCC272KMC,
+    GCC272SN,
     GCC281,
-    SN64,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
@@ -624,7 +624,7 @@ _all_presets = [
     ),
     Preset("Mario Party 1-3", GCC272KMC, "-O1 -mips3"),
     Preset("Paper Mario", GCC281, "-O2 -fforce-addr"),
-    Preset("Rocket Robot on Wheels", SN64, "-O2"),
+    Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
     # GC_WII
     Preset(
         "Super Monkey Ball",

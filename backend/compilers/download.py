@@ -275,8 +275,8 @@ def download_n64():
                 url=f"https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
                 dest_name=f"ido{version}",
             )
-    # SN64
-    dest = COMPILERS_DIR / "sn64"
+    # SN
+    dest = COMPILERS_DIR / "gcc2.7.2sn"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
