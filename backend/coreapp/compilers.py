@@ -779,6 +779,12 @@ _all_presets = [
         MWCC_30_137,
         "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     ),
+    # MACOS9
+    Preset(
+        "The Sims 1",
+        MWCPPC_24,
+        "-lang=c++ -O3 -str pool -g"
+    )
 ]
 
 

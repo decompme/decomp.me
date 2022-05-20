@@ -5,6 +5,7 @@ import LogoNDS from "./nds.svg"
 import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
 import LogoSwitch from "./switch.svg"
+import LogoMacOS from "./macos9.svg"
 import UnknownIcon from "./unknown.svg"
 
 const ICONS = {
@@ -15,6 +16,7 @@ const ICONS = {
     "ps1": LogoPS1,
     "ps2": LogoPS2,
     "switch": LogoSwitch,
+    "macos9": LogoMacOS,
 }
 
 export type Props = {
