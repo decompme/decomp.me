@@ -169,7 +169,7 @@ class CompilerWrapper:
                             "PATH": PATH,
                             "WINE": WINE,
                             "INPUT": sandbox.rewrite_path(object_path),
-                            "ASM_DUMP": sandbox.rewrite_path(sandbox.path / "c_asm.s"),
+                            "OUTPUT": sandbox.rewrite_path(sandbox.path / "c_asm.s"),
                             "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
                             "FUNCTION": function,
                             "MWCIncludes": "/tmp",
@@ -216,7 +216,10 @@ class CompilerWrapper:
                     # Shlex issue?
                     logging.debug("Compilation failed: %s", e)
                     raise CompilationError(str(e))
-                pass
+
+            with open(sandbox.path / "c_asm.s", "r") as file:
+                for line in file:
+                    print("# %s" % line)
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
