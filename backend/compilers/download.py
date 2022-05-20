@@ -160,6 +160,41 @@ def download_zip(
         ):
             f.extract(member=file, path=dest_path)
 
+def download_codewarrior():
+    download_zip(
+        url="https://github.com/ChrisNonyminus/sims1_mac_decomp/files/8735152/compilers.zip",
+        dl_name="codewarrior_compilers.zip",
+        dest_name="codewarrior",
+        create_subdir=True,
+    )
+    compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
+    lowercase_lmgr = compiler_dir / "Pro5" / "lmgr326b.dll"
+    if lowercase_lmgr.exists():
+        shutil.move(lowercase_lmgr, compiler_dir / "Pro5"/ "LMGR326B.dll")
+
+    lowercase_lmgr = compiler_dir / "Pro5" / "lmgr8c.dll"
+    if lowercase_lmgr.exists():
+        shutil.move(lowercase_lmgr, compiler_dir/ "Pro5" / "LMGR8C.dll")
+
+    # Set +x to allow WSL without wine
+    exe_path = compiler_dir / "Pro5" / "MWCPPC.exe"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
+    compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
+    lowercase_lmgr = compiler_dir / "Pro6" / "lmgr326b.dll"
+    if lowercase_lmgr.exists():
+        shutil.move(lowercase_lmgr, compiler_dir / "Pro6"/ "LMGR326B.dll")
+
+    lowercase_lmgr = compiler_dir / "Pro6" / "lmgr8c.dll"
+    if lowercase_lmgr.exists():
+        shutil.move(lowercase_lmgr, compiler_dir/ "Pro6" / "LMGR8C.dll")
+
+    # Set +x to allow WSL without wine
+    exe_path = compiler_dir / "Pro6" / "MWCPPC.exe"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
+    shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
+    shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
 
 def download_gba():
     if host_os != LINUX:
@@ -504,6 +539,8 @@ def main(args):
             os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
         )
 
+    if should_download("macos9"):
+        download_codewarrior()
     if should_download("gba"):
         download_gba()
     if should_download("n64"):

@@ -16,7 +16,7 @@ from coreapp.flags import (
 
 from coreapp import platforms
 
-from coreapp.platforms import GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH
+from coreapp.platforms import GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH, MACOS9
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,9 @@ class Compiler:
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
+    is_mac_compiler: ClassVar[bool] = False
+    asm_dump: str = "" # Hack for compilers of mac apps
+    assemble_cmd: str = "" # Ditto
     needs_wine = False
 
     @property
@@ -68,7 +71,6 @@ class DummyCompiler(Compiler):
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
 
-
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
@@ -94,6 +96,12 @@ class IDOCompiler(Compiler):
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
+    flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+
+@dataclass(frozen=True)
+class MWCCMacCompiler(Compiler):
+    is_mwcc: ClassVar[bool] = True
+    is_mac_compiler: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
 
 
@@ -254,6 +262,27 @@ GCC272SN = GCCCompiler(
     id="gcc2.7.2sn",
     platform=N64,
     cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
+# MACOS9
+MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o "${OUTPUT}" "${INPUT}"'
+MWCPPC_AS = 'printf "%s" "-S -h -module ${FUNCTION} -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${INPUT}" > ${ASM_DUMP}'
+MWCPPC_CONVERT_GAS_SYNTAX = 'python3 "${COMPILER_DIR}/convert_gas_syntax.py" ${INPUT} ${FUNCTION} > ${INPUT}; powerpc-linux-gnu-as ${INPUT} -o ${OUTPUT}'
+
+MWCPPC_23 = MWCCMacCompiler(
+    id="mwcppc_23",
+    platform=MACOS9,
+    cc=MWCPPC_CC,
+    asm_dump=MWCPPC_AS,
+    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX
+)
+
+MWCPPC_24 = MWCCMacCompiler(
+    id="mwcppc_24",
+    platform=MACOS9,
+    cc=MWCPPC_CC,
+    asm_dump=MWCPPC_AS,
+    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX
 )
 
 # GC_WII
@@ -564,6 +593,9 @@ _all_compilers: List[Compiler] = [
     MWCC_40_1034,
     MWCC_40_1036,
     MWCC_40_1051,
+    # MACOS9
+    MWCPPC_23,
+    MWCPPC_24,
 ]
 
 # MKWII Common flags

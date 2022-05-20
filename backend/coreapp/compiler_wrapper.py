@@ -89,7 +89,7 @@ class CompilerWrapper:
         filter_strings = [
             r"wine: could not load .*\.dll.*\n?",
             r"wineserver: could not save registry .*\n?",
-            r"### mwcceppc.*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+            r"### .*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
         ]
 
         for str in filter_strings:
@@ -100,7 +100,7 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
     def compile_code(
-        compiler: Compiler, compiler_flags: str, code: str, context: str
+        compiler: Compiler, compiler_flags: str, code: str, context: str, function: str
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
@@ -155,6 +155,68 @@ class CompilerWrapper:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
+
+            # Hack to get mac compiler output to work with asm_differ
+            if compiler.is_mac_compiler:
+                asm_dump_cmd = compiler.asm_dump
+                convert_syntax = compiler.assemble_cmd
+                try:
+                    compile_proc = sandbox.run_subprocess(
+                        asm_dump_cmd,
+                        mounts=[compiler.path],
+                        shell=True,
+                        env={
+                            "PATH": PATH,
+                            "WINE": WINE,
+                            "INPUT": sandbox.rewrite_path(object_path),
+                            "ASM_DUMP": sandbox.rewrite_path(sandbox.path / "c_asm.s"),
+                            "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
+                            "FUNCTION": function,
+                            "MWCIncludes": "/tmp",
+                        },
+                    )
+                except subprocess.CalledProcessError as e:
+                    # Compilation failed
+                    if e.stdout:
+                        msg = f"{e.stdout}\n{e.stderr}"
+                    else:
+                        msg = e.stderr
+
+                    logging.debug("Compilation failed: %s", msg)
+                    raise CompilationError(e.stderr)
+                except ValueError as e:
+                    # Shlex issue?
+                    logging.debug("Compilation failed: %s", e)
+                    raise CompilationError(str(e))
+                try:
+                    compile_proc = sandbox.run_subprocess(
+                        convert_syntax,
+                        mounts=[compiler.path],
+                        shell=True,
+                        env={
+                            "PATH": PATH,
+                            "WINE": WINE,
+                            "INPUT": sandbox.rewrite_path(sandbox.path / "c_asm.s"),
+                            "OUTPUT": sandbox.rewrite_path(object_path),
+                            "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
+                            "FUNCTION": function,
+                            "MWCIncludes": "/tmp",
+                        },
+                    )
+                except subprocess.CalledProcessError as e:
+                    # Compilation failed
+                    if e.stdout:
+                        msg = f"{e.stdout}\n{e.stderr}"
+                    else:
+                        msg = e.stderr
+
+                    logging.debug("Compilation failed: %s", msg)
+                    raise CompilationError(e.stderr)
+                except ValueError as e:
+                    # Shlex issue?
+                    logging.debug("Compilation failed: %s", e)
+                    raise CompilationError(str(e))
+                pass
 
             if not object_path.exists():
                 raise CompilationError("Compiler did not create an object file")
