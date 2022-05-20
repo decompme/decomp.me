@@ -792,7 +792,7 @@ _all_presets = [
         "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     ),
     # MACOS9
-    Preset("The Sims 1", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
+    Preset("The Sims 1", MWCPPC_24, "-lang=c++ -O2 -str pool -g"),
 ]
 
 
