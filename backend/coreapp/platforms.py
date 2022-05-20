@@ -175,7 +175,7 @@ MACOS9 = Platform(
     description="PowerPC",
     arch="ppc",
     assemble_cmd='powerpc-linux-gnu-as -o "$OUTPUT" "$INPUT"',
-    objdump_cmd='powerpc-linux-gnu-objdump',
+    objdump_cmd="powerpc-linux-gnu-objdump",
     nm_cmd="powerpc-linux-gnu-nm",
     asm_prelude="""
 .macro glabel label

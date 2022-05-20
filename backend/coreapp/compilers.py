@@ -16,7 +16,17 @@ from coreapp.flags import (
 
 from coreapp import platforms
 
-from coreapp.platforms import GBA, GC_WII, N64, NDS_ARM9, Platform, PS1, PS2, SWITCH, MACOS9
+from coreapp.platforms import (
+    GBA,
+    GC_WII,
+    N64,
+    NDS_ARM9,
+    Platform,
+    PS1,
+    PS2,
+    SWITCH,
+    MACOS9,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +45,8 @@ class Compiler:
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
     is_mac_compiler: ClassVar[bool] = False
-    asm_dump: str = "" # Hack for compilers of mac apps
-    assemble_cmd: str = "" # Ditto
+    asm_dump: str = ""  # Hack for compilers of mac apps
+    assemble_cmd: str = ""  # Ditto
     needs_wine = False
 
     @property
@@ -71,6 +81,7 @@ class DummyCompiler(Compiler):
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
 
+
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
@@ -97,6 +108,7 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+
 
 @dataclass(frozen=True)
 class MWCCMacCompiler(Compiler):
@@ -274,7 +286,7 @@ MWCPPC_23 = MWCCMacCompiler(
     platform=MACOS9,
     cc=MWCPPC_CC,
     asm_dump=MWCPPC_AS,
-    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX
+    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX,
 )
 
 MWCPPC_24 = MWCCMacCompiler(
@@ -282,7 +294,7 @@ MWCPPC_24 = MWCCMacCompiler(
     platform=MACOS9,
     cc=MWCPPC_CC,
     asm_dump=MWCPPC_AS,
-    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX
+    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX,
 )
 
 # GC_WII
@@ -780,11 +792,7 @@ _all_presets = [
         "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     ),
     # MACOS9
-    Preset(
-        "The Sims 1",
-        MWCPPC_24,
-        "-lang=c++ -O3 -str pool -g"
-    )
+    Preset("The Sims 1", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
 ]
 
 
