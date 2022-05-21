@@ -163,7 +163,7 @@ def download_zip(
 
 def download_codewarrior():
     download_zip(
-        url="https://github.com/ChrisNonyminus/sims1_mac_decomp/files/8735152/compilers.zip",
+        url="https://github.com/ChrisNonyminus/sims1_mac_decomp/files/8748510/compilers.zip",
         dl_name="codewarrior_compilers.zip",
         dest_name="codewarrior",
         create_subdir=True,
