@@ -100,7 +100,11 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
     def compile_code(
-        compiler: Compiler, compiler_flags: str, code: str, context: str, function: str
+        compiler: Compiler,
+        compiler_flags: str,
+        code: str,
+        context: str,
+        function: str = "",
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
