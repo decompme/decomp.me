@@ -180,7 +180,10 @@ def download_codewarrior():
         # Set +x to allow WSL without wine
         exe_path = compiler_dir / ver / "MWCPPC.exe"
         exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-        shutil.move(compiler_dir / ver, COMPILERS_DIR / "mwcppc_23")
+        exe_path = compiler_dir / ver / "MWLinkPPC.exe"
+        exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
+    shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
 
 
 def download_gba():
