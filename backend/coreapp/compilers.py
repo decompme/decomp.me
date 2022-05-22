@@ -44,9 +44,6 @@ class Compiler:
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
-    is_mac_compiler: ClassVar[bool] = False
-    asm_dump: str = ""  # Hack for compilers of mac apps
-    assemble_cmd: str = ""  # Ditto
     needs_wine = False
 
     @property
@@ -107,13 +104,6 @@ class IDOCompiler(Compiler):
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
-    flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
-
-
-@dataclass(frozen=True)
-class MWCCMacCompiler(Compiler):
-    is_mwcc: ClassVar[bool] = True
-    is_mac_compiler: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
 
 
@@ -277,24 +267,18 @@ GCC272SN = GCCCompiler(
 )
 
 # MACOS9
-MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}"'
-MWCPPC_AS = 'printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${INPUT}" > ${COMPILER_DIR}/code.s'
-MWCPPC_CONVERT_GAS_SYNTAX = 'python3 ${COMPILER_DIR}/convert_gas_syntax.py "${COMPILER_DIR}/code.s" ".${FUNCTION}" > "${INPUT}"; rm ${COMPILER_DIR}/code.s; powerpc-linux-gnu-as "${INPUT}" -o "${OUTPUT}"'
+MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}"; printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${COMPILER_DIR}/code.s"; python3 ${COMPILER_DIR}/convert_gas_syntax.py "${COMPILER_DIR}/code.s" ".${FUNCTION}" > "${COMPILER_DIR}/code_new.s"; powerpc-linux-gnu-as "${COMPILER_DIR}/code_new.s" -o "${OUTPUT}"; rm "${COMPILER_DIR}/code.s"; rm "${COMPILER_DIR}/code_new.s"'
 
-MWCPPC_23 = MWCCMacCompiler(
+MWCPPC_23 = MWCCCompiler(
     id="mwcppc_23",
     platform=MACOS9,
     cc=MWCPPC_CC,
-    asm_dump=MWCPPC_AS,
-    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX,
 )
 
-MWCPPC_24 = MWCCMacCompiler(
+MWCPPC_24 = MWCCCompiler(
     id="mwcppc_24",
     platform=MACOS9,
     cc=MWCPPC_CC,
-    asm_dump=MWCPPC_AS,
-    assemble_cmd=MWCPPC_CONVERT_GAS_SYNTAX,
 )
 
 # GC_WII
@@ -792,7 +776,7 @@ _all_presets = [
         "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
     ),
     # MACOS9
-    Preset("The Sims 1", MWCPPC_24, "-lang=c++ -O2 -str pool -g"),
+    Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
 ]
 
 

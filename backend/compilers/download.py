@@ -169,33 +169,16 @@ def download_codewarrior():
         create_subdir=True,
     )
     compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
-    lowercase_lmgr = compiler_dir / "Pro5" / "lmgr326b.dll"
-    if lowercase_lmgr.exists():
-        shutil.move(lowercase_lmgr, compiler_dir / "Pro5" / "LMGR326B.dll")
+    for ver in ["Pro5", "Pro6"]:
+        lowercase_lmgr = compiler_dir / ver / "lmgr326b.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR326B.dll")
 
-    lowercase_lmgr = compiler_dir / "Pro5" / "lmgr8c.dll"
-    if lowercase_lmgr.exists():
-        shutil.move(lowercase_lmgr, compiler_dir / "Pro5" / "LMGR8C.dll")
+        lowercase_lmgr = compiler_dir / ver / "lmgr8c.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR8C.dll")
 
-    # Set +x to allow WSL without wine
-    exe_path = compiler_dir / "Pro5" / "MWCPPC.exe"
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-
-    compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
-    lowercase_lmgr = compiler_dir / "Pro6" / "lmgr326b.dll"
-    if lowercase_lmgr.exists():
-        shutil.move(lowercase_lmgr, compiler_dir / "Pro6" / "LMGR326B.dll")
-
-    lowercase_lmgr = compiler_dir / "Pro6" / "lmgr8c.dll"
-    if lowercase_lmgr.exists():
-        shutil.move(lowercase_lmgr, compiler_dir / "Pro6" / "LMGR8C.dll")
-
-    # Set +x to allow WSL without wine
-    exe_path = compiler_dir / "Pro6" / "MWCPPC.exe"
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-
-    shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
-    shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
+        shutil.move(compiler_dir / ver, COMPILERS_DIR / "mwcppc_23")
 
 
 def download_gba():
