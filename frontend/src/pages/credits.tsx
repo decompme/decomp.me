@@ -154,6 +154,11 @@ export default function CreditsPage({ maintainers, contributors }: {
                             <a>GBA SVG by Andrew Vester from NounProject.com</a>
                         </Link>
                     </li>
+                    <li>
+                        <Link href="https://commons.wikimedia.org/wiki/File:Happy_Mac.svg">
+                            <a>Happy Mac by NiloGlock</a>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </main>

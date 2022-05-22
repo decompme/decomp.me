@@ -89,7 +89,7 @@ class CompilerWrapper:
         filter_strings = [
             r"wine: could not load .*\.dll.*\n?",
             r"wineserver: could not save registry .*\n?",
-            r"### mwcceppc.*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+            r"### .*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
         ]
 
         for str in filter_strings:
@@ -100,7 +100,11 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
     def compile_code(
-        compiler: Compiler, compiler_flags: str, code: str, context: str
+        compiler: Compiler,
+        compiler_flags: str,
+        code: str,
+        context: str,
+        function: str = "",
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
@@ -139,6 +143,7 @@ class CompilerWrapper:
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
                         "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                     },
                 )

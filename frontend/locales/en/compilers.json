@@ -53,6 +53,8 @@
     "mwcc_43_151": "4.3 build 151 (Wii MW 1.1)",
     "mwcc_43_172": "4.3 build 172 (Wii MW 1.3)",
     "mwcc_43_213": "4.3 build 213 (Wii MW 1.7)",
+    "mwcppc_23": "MWCPPC 2.3 (CodeWarrior Pro 5)",
+    "mwcppc_24": "MWCPPC 2.4 (CodeWarrior Pro 6)",
     "old_agbcc": "old_agbcc",
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2)",
     "psyq4.1": "PSYQ4.1 (gcc 2.7.2)",
