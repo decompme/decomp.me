@@ -14,7 +14,7 @@ from rest_framework.test import APITestCase
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.compilers import Compiler, GCC281, IDO53, IDO71, MWCC_247_92
+from coreapp.compilers import Compiler, GCC281, IDO53, IDO71, MWCC_247_92, MWCPPC_24
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
 from coreapp.views.scratch import compile_scratch_update_score
@@ -454,6 +454,21 @@ nop
         self.assertEqual(len(response.json()["errors"]), 0)
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
+
+    @requiresCompiler(MWCPPC_24)
+    def test_mac_mwcc(self):
+        """
+        Ensure that we can invoke the MACOS9 compiler
+        """
+        result = CompilerWrapper.compile_code(
+            MWCPPC_24,
+            "-str reuse -inline on -O0",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
 
     @requiresCompiler(MWCC_247_92)
     def test_mwcc_wine(self):

@@ -34,6 +34,7 @@ FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    binutils-powerpc-linux-gnu \
     binutils-aarch64-linux-gnu \
     curl \
     gcc-mips-linux-gnu \

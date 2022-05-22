@@ -26,6 +26,7 @@ jobs:
           sudo apt install -y wine
           sudo apt-get install \
             binutils-mips-linux-gnu \
+            binutils-powerpc-linux-gnu \
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
