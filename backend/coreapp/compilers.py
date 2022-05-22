@@ -267,7 +267,7 @@ GCC272SN = GCCCompiler(
 )
 
 # MACOS9
-MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}"; printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${COMPILER_DIR}/code.s"; python3 ${COMPILER_DIR}/convert_gas_syntax.py "${COMPILER_DIR}/code.s" ".${FUNCTION}" > "${COMPILER_DIR}/code_new.s"; powerpc-linux-gnu-as "${COMPILER_DIR}/code_new.s" -o "${OUTPUT}"; rm "${COMPILER_DIR}/code.s"; rm "${COMPILER_DIR}/code_new.s"'
+MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${COMPILER_DIR}/code.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${COMPILER_DIR}/code.s" ".${FUNCTION}" > "${COMPILER_DIR}/code_new.s" && powerpc-linux-gnu-as "${COMPILER_DIR}/code_new.s" -o "${OUTPUT}" && rm "${COMPILER_DIR}/code.s" && rm "${COMPILER_DIR}/code_new.s"'
 
 MWCPPC_23 = MWCCCompiler(
     id="mwcppc_23",
