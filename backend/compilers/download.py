@@ -177,7 +177,9 @@ def download_codewarrior():
         lowercase_lmgr = compiler_dir / ver / "lmgr8c.dll"
         if lowercase_lmgr.exists():
             shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR8C.dll")
-
+        # Set +x to allow WSL without wine
+        exe_path = compiler_dir / ver / "MWCPPC.exe"
+        exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
         shutil.move(compiler_dir / ver, COMPILERS_DIR / "mwcppc_23")
 
 
