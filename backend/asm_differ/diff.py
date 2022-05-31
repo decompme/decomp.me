@@ -1095,7 +1095,7 @@ def search_map_file(
                     ram = int(tokens[1], 0)
                     rom = int(tokens[5], 0)
                     ram_to_rom = rom - ram
-                if line.endswith(" " + fn_name):
+                if line.endswith(" " + fn_name) or f" {fn_name} = 0x" in line:
                     ram = int(line.split()[0], 0)
                     if cur_objfile is not None and ram_to_rom is not None:
                         cands.append((cur_objfile, ram + ram_to_rom))
