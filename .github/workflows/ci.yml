@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   full_test_and_build:
-    name: backend tests
+    name: full test and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -68,13 +68,13 @@ jobs:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: cd frontend && yarn
 
       - name: Run frontend tests
         run: cd frontend && yarn test:ci
 
-      - name: Run backend
+      - name: Start backend
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
       - name: Build frontend

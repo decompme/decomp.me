@@ -3,8 +3,7 @@ import {
     closeCompletion,
     moveCompletionSelection,
     startCompletion,
-} from "@codemirror/autocomplete"
-import { deleteBracketPair } from "@codemirror/closebrackets"
+    deleteBracketPair } from "@codemirror/autocomplete"
 import {
     insertNewlineAndIndent,
     cursorCharLeft,
@@ -53,15 +52,12 @@ import {
     selectLineStart,
     splitLine,
     transposeChars,
-} from "@codemirror/commands"
-import {
     toggleComment,
     lineComment,
     lineUncomment,
     toggleBlockComment,
-} from "@codemirror/comment"
-import { foldCode, unfoldCode, foldAll, unfoldAll } from "@codemirror/fold"
-import { redo, undo, undoSelection } from "@codemirror/history"
+    redo, undo, undoSelection } from "@codemirror/commands"
+import { foldCode, unfoldCode, foldAll, unfoldAll } from "@codemirror/language"
 import {
     closeSearchPanel,
     gotoLine,
