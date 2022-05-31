@@ -182,8 +182,12 @@ def download_codewarrior():
         exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
         exe_path = compiler_dir / ver / "MWLinkPPC.exe"
         exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-    shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
-    shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
+
+    try:
+        shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
+        shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
+    except shutil.Error:
+        pass
 
 
 def download_gba():
