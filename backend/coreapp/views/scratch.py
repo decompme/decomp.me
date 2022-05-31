@@ -73,7 +73,7 @@ def diff_compilation(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
-        compilation.elf_object,
+        bytes(compilation.elf_object),
         allow_target_only=allow_target_only,
         diff_flags=scratch.diff_flags,
     )
