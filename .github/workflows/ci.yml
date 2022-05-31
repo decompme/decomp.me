@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
 jobs:
-  backend_test:
+  full_test_and_build:
     name: backend tests
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +58,7 @@ jobs:
             devkitpro/devkitarm:20210726 \
             -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
           sudo mv bin/arm* /usr/bin/
-      - name: Run tests
+      - name: Run backend tests
         run: |-
           mkdir -p "${WINEPREFIX}"
           wineboot --init
@@ -67,6 +67,18 @@ jobs:
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
+
+      - name: Install dependencies
+        run: cd frontend && yarn
+
+      - name: Run frontend tests
+        run: cd frontend && yarn test:ci
+
+      - name: Run backend
+        run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
+
+      - name: Build frontend
+        run: cd frontend && yarn build
 
   backend_test_windows:
     name: backend tests (windows)
@@ -116,21 +128,6 @@ jobs:
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
-
-  frontend_test:
-    name: frontend tests
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - os: ubuntu-latest
-          #- os: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: cd frontend && yarn
-        name: Install dependencies
-      - run: cd frontend && yarn test:ci
-        name: Run tests
 
   reviewdog:
     name: reviewdog
