@@ -16,20 +16,22 @@ from .flow_graph import (
     TerminalNode,
     build_flowgraph,
 )
-from .parse_file import AsmData, Function
-from .parse_instruction import (
+from .asm_file import AsmData, Function
+from .asm_instruction import (
     Argument,
     AsmAddressMode,
     AsmGlobalSymbol,
     AsmInstruction,
     AsmLiteral,
     BinOp,
-    Instruction,
-    InstructionMeta,
     JumpTarget,
-    Location,
     RegFormatter,
     Register,
+)
+from .instruction import (
+    Instruction,
+    InstructionMeta,
+    Location,
     StackLocation,
     parse_instruction,
 )
@@ -61,7 +63,7 @@ class IrPattern(abc.ABC):
         missing_meta = InstructionMeta.missing()
         regf = RegFormatter()
         replacement_instr = parse_instruction(
-            self.replacement, missing_meta, arch, regf
+            self.replacement, missing_meta, arch, regf, {}
         )
 
         name = f"__pattern_{self.__class__.__name__}"
@@ -81,10 +83,11 @@ class IrPattern(abc.ABC):
                     inputs=[],
                     clobbers=[],
                     outputs=[inp],
+                    eval_fn=None,
                 )
             )
         for part in self.parts:
-            func.new_instruction(parse_instruction(part, missing_meta, arch, regf))
+            func.new_instruction(parse_instruction(part, missing_meta, arch, regf, {}))
 
         asm_data = AsmData()
         flow_graph = build_flowgraph(func, asm_data, arch, fragment=True)

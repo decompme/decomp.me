@@ -27,6 +27,7 @@ from .demangle_codewarrior import parse as demangle_codewarrior_parse, CxxSymbol
 from .error import DecompFailure, static_assert_unreachable
 from .flow_graph import (
     ArchFlowGraph,
+    ConditionalNode,
     FlowGraph,
     Function,
     Node,
@@ -37,19 +38,21 @@ from .flow_graph import (
 )
 from .ir_pattern import IrPattern, simplify_ir_patterns
 from .options import CodingStyle, Formatter, Options, Target
-from .parse_file import AsmData, AsmDataEntry
-from .parse_instruction import (
-    ArchAsm,
+from .asm_file import AsmData, AsmDataEntry
+from .asm_instruction import (
     Argument,
     AsmAddressMode,
     AsmGlobalSymbol,
     AsmLiteral,
     BinOp,
-    Instruction,
-    InstrProcessingFailure,
     Macro,
     Register,
+)
+from .instruction import (
+    Instruction,
+    InstrProcessingFailure,
     StackLocation,
+    Location,
     current_instr,
 )
 from .types import (
@@ -61,36 +64,13 @@ from .types import (
     TypePool,
 )
 
-InstrSet = Collection[str]
 InstrMap = Mapping[str, Callable[["InstrArgs"], "Expression"]]
 StmtInstrMap = Mapping[str, Callable[["InstrArgs"], "Statement"]]
 CmpInstrMap = Mapping[str, Callable[["InstrArgs"], "Condition"]]
 StoreInstrMap = Mapping[str, Callable[["InstrArgs"], Optional["StoreStmt"]]]
-MaybeInstrMap = Mapping[str, Callable[["InstrArgs"], Optional["Expression"]]]
-PairInstrMap = Mapping[str, Callable[["InstrArgs"], Tuple["Expression", "Expression"]]]
-ImplicitInstrMap = Mapping[str, Tuple[Register, Callable[["InstrArgs"], "Expression"]]]
-PpcCmpInstrMap = Mapping[str, Callable[["InstrArgs", str], "Expression"]]
 
 
 class Arch(ArchFlowGraph):
-    instrs_ignore: InstrSet = set()
-    instrs_store: StoreInstrMap = {}
-    instrs_store_update: StoreInstrMap = {}
-    instrs_load_update: InstrMap = {}
-
-    instrs_branches: CmpInstrMap = {}
-    instrs_float_branches: InstrSet = set()
-    instrs_float_comp: CmpInstrMap = {}
-    instrs_ppc_compare: PpcCmpInstrMap = {}
-    instrs_jumps: InstrSet = set()
-    instrs_fn_call: InstrSet = set()
-
-    instrs_no_dest: StmtInstrMap = {}
-    instrs_hi_lo: PairInstrMap = {}
-    instrs_source_first: InstrMap = {}
-    instrs_destination_first: InstrMap = {}
-    instrs_implicit_destination: ImplicitInstrMap = {}
-
     @abc.abstractmethod
     def function_abi(
         self,
@@ -205,9 +185,56 @@ def as_function_ptr(expr: "Expression") -> "Expression":
     return as_type(expr, Type.ptr(Type.function()), True)
 
 
+InstructionSource = Optional[Instruction]
+
+
+@dataclass(eq=False)
+class PlannedVar:
+    """A persistent Var, that can be merged with other ones using a
+    union-find-based setup."""
+
+    _parent: Optional["PlannedVar"] = None
+
+    def get_representative(self) -> "PlannedVar":
+        """Find the representative PlannedVar of all the ones that have been
+        merged with this one."""
+        root = self
+        seen = []
+        while root._parent is not None:
+            seen.append(root)
+            root = root._parent
+        for var in seen:
+            var._parent = root
+        return root
+
+    def join(self, other: "PlannedVar") -> None:
+        a = self.get_representative()
+        b = other.get_representative()
+        if a != b:
+            a._parent = b
+
+
+@dataclass
+class PersistentFunctionState:
+    """Function state that's persistent between multiple translation passes."""
+
+    # Instruction outputs that should be assigned to variables. This is computed
+    # as part of `assign_naive_phis`, promoting naive phis to planned ones for
+    # the next translation pass.
+    planned_vars: Dict[Tuple[Register, InstructionSource], PlannedVar] = field(
+        default_factory=dict
+    )
+
+    # Phi node inputs that can be inherited from the immediate dominator, despite
+    # being clobbered on some path to there. Similar to planned_vars, this is
+    # computed as part of `assign_naive_phis`.
+    planned_inherited_phis: Set[Tuple[Register, Node]] = field(default_factory=set)
+
+
 @dataclass
 class StackInfo:
     function: Function
+    persistent_state: PersistentFunctionState
     global_info: "GlobalInfo"
     flow_graph: FlowGraph
     allocated_stack_size: int = 0
@@ -219,9 +246,12 @@ class StackInfo:
     callee_save_reg_region: Tuple[int, int] = (0, 0)
     unique_type_map: Dict[Tuple[str, object], "Type"] = field(default_factory=dict)
     local_vars: List["LocalVar"] = field(default_factory=list)
-    temp_vars: List["EvalOnceStmt"] = field(default_factory=list)
-    phi_vars: List["PhiExpr"] = field(default_factory=list)
-    reg_vars: Dict[Register, "RegisterVar"] = field(default_factory=dict)
+    temp_vars: List["Var"] = field(default_factory=list)
+    naive_phi_vars: List["NaivePhiExpr"] = field(default_factory=list)
+    reg_vars: Dict[Register, "Var"] = field(default_factory=dict)
+    planned_vars: Dict[Tuple[Register, InstructionSource], "Var"] = field(
+        default_factory=dict
+    )
     used_reg_vars: Set[Register] = field(default_factory=set)
     arguments: List["PassedInArg"] = field(default_factory=list)
     temp_name_counter: Dict[str, int] = field(default_factory=dict)
@@ -242,7 +272,6 @@ class StackInfo:
             return False
         if self.is_leaf:
             return False
-        assert self.subroutine_arg_top is not None
         return location < self.subroutine_arg_top
 
     def in_callee_save_reg_region(self, location: int) -> bool:
@@ -260,7 +289,7 @@ class StackInfo:
     def location_above_stack(self, location: int) -> bool:
         return location >= self.allocated_stack_size
 
-    def add_known_param(self, offset: int, name: Optional[str], type: Type) -> None:
+    def add_known_param(self, offset: int, name: Optional[str], type: Type) -> Type:
         # A common pattern in C for OOP-style polymorphism involves casting a general "base" struct
         # to a specific "class" struct, where the first member of the class struct is the base struct.
         #
@@ -299,6 +328,7 @@ class StackInfo:
         _, arg = self.get_argument(offset)
         self.add_argument(arg)
         arg.type.unify(type)
+        return type
 
     def get_param_name(self, offset: int) -> Optional[str]:
         return self.param_names.get(offset)
@@ -320,7 +350,6 @@ class StackInfo:
         real_location = location & -4
         arg = PassedInArg(
             real_location,
-            copied=True,
             stack_info=self,
             type=self.unique_type_for("arg", real_location, Type.any_reg()),
         )
@@ -354,10 +383,8 @@ class StackInfo:
             expr.symbol_name.startswith("saved_reg_") or expr.symbol_name == "sp"
         ):
             return True
-        if (
-            isinstance(expr, PassedInArg)
-            and not expr.copied
-            and (offset is None or offset == self.allocated_stack_size + expr.value)
+        if isinstance(expr, PassedInArg) and (
+            offset is None or offset == self.allocated_stack_size + expr.value
         ):
             return True
         return False
@@ -389,7 +416,7 @@ class StackInfo:
             # TODO: Because the types are tracked in StackInfo instead of RegInfo, it is
             # possible that a load could incorrectly use a weak type from a sibling node
             # instead of a parent node. A more correct implementation would use similar
-            # logic to the PhiExpr system. In practice however, storing types in StackInfo
+            # logic to the phi system. In practice however, storing types in StackInfo
             # works well enough because nodes are traversed approximately depth-first.
             # TODO: Maybe only do this for certain configurable regions?
 
@@ -415,15 +442,39 @@ class StackInfo:
 
             return LocalVar(location, type=field_type, path=field_path)
 
-    def maybe_get_register_var(self, reg: Register) -> Optional["RegisterVar"]:
+    def maybe_get_register_var(self, reg: Register) -> Optional["Var"]:
         return self.reg_vars.get(reg)
 
     def add_register_var(self, reg: Register, name: str) -> None:
         type = Type.floatish() if reg.is_float() else Type.intptr()
-        self.reg_vars[reg] = RegisterVar(reg=reg, type=type, name=name)
+        var = Var(self, prefix=f"var_{name}", type=type)
+        self.reg_vars[reg] = var
+        self.temp_vars.append(var)
 
-    def use_register_var(self, var: "RegisterVar") -> None:
-        self.used_reg_vars.add(var.reg)
+    def get_planned_var(
+        self, reg: Register, source: InstructionSource
+    ) -> Optional["Var"]:
+        # Ignore reg_vars for function calls and initial argument registers, to
+        # avoid clutter.
+        var = self.reg_vars.get(reg)
+        if var and source is not None and source.function_target is None:
+            return var
+        return self.planned_vars.get((reg, source))
+
+    def get_persistent_planned_var(
+        self, reg: Register, source: InstructionSource
+    ) -> PlannedVar:
+        ret = self.persistent_state.planned_vars.get((reg, source))
+        if not ret:
+            ret = PlannedVar()
+            self.persistent_state.planned_vars[(reg, source)] = ret
+        return ret
+
+    def add_planned_inherited_phi(self, node: Node, reg: Register) -> None:
+        self.persistent_state.planned_inherited_phis.add((reg, node))
+
+    def is_planned_inherited_phi(self, node: Node, reg: Register) -> bool:
+        return (reg, node) in self.persistent_state.planned_inherited_phis
 
     def is_stack_reg(self, reg: Register) -> bool:
         if reg == self.global_info.arch.stack_pointer_reg:
@@ -458,11 +509,12 @@ class StackInfo:
 
 def get_stack_info(
     function: Function,
+    persistent_state: PersistentFunctionState,
     global_info: "GlobalInfo",
     flow_graph: FlowGraph,
 ) -> StackInfo:
     arch = global_info.arch
-    info = StackInfo(function, global_info, flow_graph)
+    info = StackInfo(function, persistent_state, global_info, flow_graph)
 
     # The goal here is to pick out special instructions that provide information
     # about this function's stack setup.
@@ -481,7 +533,7 @@ def get_stack_info(
     temp_reg_values: Dict[Register, int] = {}
     for inst in flow_graph.entry_node().block.instructions:
         arch_mnemonic = inst.arch_mnemonic(arch)
-        if inst.mnemonic in arch.instrs_fn_call:
+        if inst.function_target:
             break
         elif arch_mnemonic == "mips:addiu" and inst.args[0] == arch.stack_pointer_reg:
             # Moving the stack pointer on MIPS
@@ -587,39 +639,39 @@ def get_stack_info(
                         info.subroutine_arg_top, inst.args[2].value
                     )
 
-        # Compute the bounds of the callee-saved register region, including padding
-        if callee_saved_offsets:
-            callee_saved_offsets.sort()
-            bottom = callee_saved_offsets[0]
+    # Compute the bounds of the callee-saved register region, including padding
+    if callee_saved_offsets:
+        callee_saved_offsets.sort()
+        bottom = callee_saved_offsets[0]
 
-            # Both IDO & GCC save registers in two subregions:
-            # (a) One for double-sized registers
-            # (b) One for word-sized registers, padded to a multiple of 8 bytes
-            # IDO has (a) lower than (b); GCC has (b) lower than (a)
-            # Check that there are no gaps in this region, other than a single
-            # 4-byte word between subregions.
-            top = bottom
-            internal_padding_added = False
-            for offset in callee_saved_offsets:
-                if offset != top:
-                    if not internal_padding_added and offset == top + 4:
-                        internal_padding_added = True
-                    else:
-                        raise DecompFailure(
-                            f"Gap in callee-saved word stack region. "
-                            f"Saved: {callee_saved_offsets}, "
-                            f"gap at: {offset} != {top}."
-                        )
-                top = offset + 4
-            info.callee_save_reg_region = (bottom, top)
+        # Both IDO & GCC save registers in two subregions:
+        # (a) One for double-sized registers
+        # (b) One for word-sized registers, padded to a multiple of 8 bytes
+        # IDO has (a) lower than (b); GCC has (b) lower than (a)
+        # Check that there are no gaps in this region, other than a single
+        # 4-byte word between subregions.
+        top = bottom
+        internal_padding_added = False
+        for offset in callee_saved_offsets:
+            if offset != top:
+                if not internal_padding_added and offset == top + 4:
+                    internal_padding_added = True
+                else:
+                    raise DecompFailure(
+                        f"Gap in callee-saved word stack region. "
+                        f"Saved: {callee_saved_offsets}, "
+                        f"gap at: {offset} != {top}."
+                    )
+            top = offset + 4
+        info.callee_save_reg_region = (bottom, top)
 
-            # Subroutine arguments must be at the very bottom of the stack, so they
-            # must come after the callee-saved region
-            info.subroutine_arg_top = min(info.subroutine_arg_top, bottom)
+        # Subroutine arguments must be at the very bottom of the stack, so they
+        # must come after the callee-saved region
+        info.subroutine_arg_top = min(info.subroutine_arg_top, bottom)
 
     # Use a struct to represent the stack layout. If the struct is provided in the context,
     # its fields will be used for variable types & names.
-    stack_struct_name = f"_mips2c_stack_{function.name}"
+    stack_struct_name = f"_m2c_stack_{function.name}"
     stack_struct = global_info.typepool.get_struct_by_tag_name(
         stack_struct_name, global_info.typemap
     )
@@ -674,16 +726,20 @@ def escape_byte(b: int) -> bytes:
 class Var:
     stack_info: StackInfo = field(repr=False)
     prefix: str
-    num_usages: int = 0
+    type: Type
+    is_emitted: bool = False
     name: Optional[str] = None
+    debug_exprs: List["Expression"] = field(repr=False, default_factory=list)
 
     def format(self, fmt: Formatter) -> str:
+        # Assign names lazily, hopefully in approximate output source order.
+        assert self.is_emitted
         if self.name is None:
             self.name = self.stack_info.temp_var(self.prefix)
         return self.name
 
     def __str__(self) -> str:
-        return "<temp>"
+        return f"<var: {id(self)}>"
 
 
 class Expression(abc.ABC):
@@ -756,8 +812,8 @@ class ErrorExpr(Condition):
 
     def format(self, fmt: Formatter) -> str:
         if self.desc is not None:
-            return f"MIPS2C_ERROR({self.desc})"
-        return "MIPS2C_ERROR()"
+            return f"M2C_ERROR({self.desc})"
+        return "M2C_ERROR()"
 
 
 @dataclass(frozen=True)
@@ -808,7 +864,7 @@ class CarryBit(Expression):
         return []
 
     def format(self, fmt: Formatter) -> str:
-        return "MIPS2C_CARRY"
+        return "M2C_CARRY"
 
     @staticmethod
     def add_to(expr: Expression) -> "BinaryOp":
@@ -981,9 +1037,32 @@ class BinaryOp(Condition):
     def dependencies(self) -> List[Expression]:
         return [self.left, self.right]
 
+    def normalize_for_formatting(self) -> "BinaryOp":
+        right_expr = late_unwrap(self.right)
+        if (
+            not self.is_floating()
+            and isinstance(right_expr, Literal)
+            and right_expr.value < 0
+        ):
+            if self.op == "+":
+                neg = Literal(value=-right_expr.value, type=right_expr.type)
+                sub = BinaryOp(op="-", left=self.left, right=neg, type=self.type)
+                return sub
+            if self.op in ("&", "|"):
+                neg = Literal(value=~right_expr.value, type=right_expr.type)
+                right = UnaryOp("~", neg, type=Type.any_reg())
+                expr = BinaryOp(op=self.op, left=self.left, right=right, type=self.type)
+                return expr
+        return self
+
     def format(self, fmt: Formatter) -> str:
         left_expr = late_unwrap(self.left)
         right_expr = late_unwrap(self.right)
+
+        adj = self.normalize_for_formatting()
+        if adj is not self:
+            return adj.format(fmt)
+
         if (
             self.is_comparison()
             and isinstance(left_expr, Literal)
@@ -996,20 +1075,11 @@ class BinaryOp(Condition):
                 type=self.type,
             ).format(fmt)
 
-        if (
-            not self.is_floating()
-            and isinstance(right_expr, Literal)
-            and right_expr.value < 0
-        ):
-            if self.op == "+":
-                neg = Literal(value=-right_expr.value, type=right_expr.type)
-                sub = BinaryOp(op="-", left=left_expr, right=neg, type=self.type)
-                return sub.format(fmt)
-            if self.op in ("&", "|"):
-                neg = Literal(value=~right_expr.value, type=right_expr.type)
-                right = UnaryOp("~", neg, type=Type.any_reg())
-                expr = BinaryOp(op=self.op, left=left_expr, right=right, type=self.type)
-                return expr.format(fmt)
+        # For comparisons to a Literal, cast the Literal to the type of the lhs
+        # (This is not done with complex expressions to avoid propagating incorrect
+        # type information: end-of-array pointers are particularly bad.)
+        if self.op in ("==", "!=") and isinstance(right_expr, Literal):
+            right_expr = elide_literal_casts(as_type(right_expr, left_expr.type, True))
 
         # For commutative, left-associative operations, strip unnecessary parentheses.
         lhs = left_expr.format(fmt)
@@ -1118,10 +1188,10 @@ class CommaConditionExpr(Condition):
         return f"({comma_joined}, {self.condition.format(fmt)})"
 
 
-@dataclass(frozen=True, eq=False)
+@dataclass(frozen=True, eq=True)
 class Cast(Expression):
     expr: Expression
-    type: Type
+    type: Type = field(compare=False)
     reinterpret: bool = False
     silent: bool = True
 
@@ -1142,20 +1212,18 @@ class Cast(Expression):
             return True
         return False
 
-    def is_trivial(self) -> bool:
+    def should_wrap_transparently(self) -> bool:
         return (
             self.reinterpret
             and self.expr.type.is_float() == self.type.is_float()
-            and is_trivial_expression(self.expr)
+            and should_wrap_transparently(self.expr)
         )
 
     def format(self, fmt: Formatter) -> str:
         if self.reinterpret and self.expr.type.is_float() != self.type.is_float():
             # This shouldn't happen, but mark it in the output if it does.
             if fmt.valid_syntax:
-                return (
-                    f"MIPS2C_BITWISE({self.type.format(fmt)}, {self.expr.format(fmt)})"
-                )
+                return f"M2C_BITWISE({self.type.format(fmt)}, {self.expr.format(fmt)})"
             return f"(bitwise {self.type.format(fmt)}) {self.expr.format(fmt)}"
         if self.reinterpret and (
             self.silent
@@ -1233,22 +1301,21 @@ class LocalVar(Expression):
 
 
 @dataclass(frozen=True, eq=False)
-class RegisterVar(Expression):
-    reg: Register
-    name: str
+class PlannedPhiExpr(Expression):
+    var: Var
     type: Type
+    sources: List[InstructionSource]
 
     def dependencies(self) -> List[Expression]:
         return []
 
     def format(self, fmt: Formatter) -> str:
-        return self.name
+        return self.var.format(fmt)
 
 
 @dataclass(frozen=True, eq=True)
 class PassedInArg(Expression):
     value: int
-    copied: bool = field(compare=False)
     stack_info: StackInfo = field(compare=False, repr=False)
     type: Type = field(compare=False)
 
@@ -1275,11 +1342,15 @@ class SubroutineArg(Expression):
 
 @dataclass(eq=True, unsafe_hash=True)
 class StructAccess(Expression):
-    # Represents struct_var->offset.
-    # This has eq=True since it represents a live expression and not an access
-    # at a certain point in time -- this sometimes helps get rid of phi nodes.
-    # prevent_later_uses makes sure it's not used after writes/function calls
-    # that may invalidate it.
+    """
+    Represents struct_var->offset.
+
+    This has `eq=True` since it represents a live expression and not an
+    access at a certain point in time -- this sometimes helps get rid of phi
+    nodes (see `assign_naive_phis` for details). `prevent_later_uses` makes
+    sure it's not used after writes/function calls that may invalidate it.
+    """
+
     struct_var: Expression
     offset: int
     target_size: Optional[int]
@@ -1386,7 +1457,7 @@ class StructAccess(Expression):
             has_nonzero_access = True
         elif fmt.valid_syntax and (self.offset != 0 or has_nonzero_access):
             offset_str = fmt.format_int(self.offset)
-            return f"MIPS2C_FIELD({var.format(fmt)}, {Type.ptr(self.type).format(fmt)}, {offset_str})"
+            return f"M2C_FIELD({var.format(fmt)}, {Type.ptr(self.type).format(fmt)}, {offset_str})"
         else:
             prefix = "unk" + ("_" if fmt.coding_style.unknown_underscore else "")
             field_path = [0, prefix + format_hex(self.offset)]
@@ -1542,7 +1613,7 @@ class Literal(Expression):
                 and size_bits
                 and v & (1 << (size_bits - 1))
                 and v > (3 << (size_bits - 2))
-                and v < 2 ** size_bits
+                and v < 2**size_bits
             ):
                 v -= 1 << size_bits
             value = fmt.format_int(v, size_bits=size_bits)
@@ -1550,7 +1621,7 @@ class Literal(Expression):
         return prefix + value + suffix
 
     def likely_partial_offset(self) -> bool:
-        return self.value % 2 ** 15 in (0, 2 ** 15 - 1) and self.value < 0x1000000
+        return self.value % 2**15 in (0, 2**15 - 1) and self.value < 0x1000000
 
 
 @dataclass(frozen=True, eq=True)
@@ -1589,7 +1660,7 @@ class Lwl(Expression):
         return [self.load_expr]
 
     def format(self, fmt: Formatter) -> str:
-        return f"MIPS2C_LWL({self.load_expr.format(fmt)})"
+        return f"M2C_LWL({self.load_expr.format(fmt)})"
 
 
 @dataclass(frozen=True)
@@ -1602,7 +1673,7 @@ class Load3Bytes(Expression):
 
     def format(self, fmt: Formatter) -> str:
         if fmt.valid_syntax:
-            return f"MIPS2C_FIRST3BYTES({self.load_expr.format(fmt)})"
+            return f"M2C_FIRST3BYTES({self.load_expr.format(fmt)})"
         return f"(first 3 bytes) {self.load_expr.format(fmt)}"
 
 
@@ -1616,7 +1687,7 @@ class UnalignedLoad(Expression):
 
     def format(self, fmt: Formatter) -> str:
         if fmt.valid_syntax:
-            return f"MIPS2C_UNALIGNED32({self.load_expr.format(fmt)})"
+            return f"M2C_UNALIGNED32({self.load_expr.format(fmt)})"
         return f"(unaligned s32) {self.load_expr.format(fmt)}"
 
 
@@ -1626,67 +1697,125 @@ class EvalOnceExpr(Expression):
     var: Var
     type: Type
 
+    source: InstructionSource
+
     # True for function calls/errors
     emit_exactly_once: bool
 
-    # Mutable state:
-
-    # True if this EvalOnceExpr should be totally transparent and not emit a variable,
-    # It may dynamically change from true to false due to forced emissions.
-    # Initially, it is based on is_trivial_expression.
+    # True if this EvalOnceExpr should be totally transparent and not use a variable
+    # even if it gets assigned to a planned phi var. Based on `is_trivial_expression`.
     trivial: bool
 
-    # True if this EvalOnceExpr must emit a variable (see RegMeta.force)
+    # True if this EvalOnceExpr should be totally transparent and not use a variable.
+    # If `var.is_emitted` is true it is ignored (this may happen dynamically, due to
+    # forced emissions caused by `prevent_later_uses`).
+    # Based on `should_wrap_transparently` (except for function returns). Always true
+    # if `trivial` is true.
+    transparent: bool
+
+    # Mutable state:
+
+    # True if this EvalOnceExpr must use a variable (see RegMeta.force)
     forced_emit: bool = False
 
-    # The number of expressions that depend on this EvalOnceExpr; we emit a variable
-    # if this is > 1.
-    num_usages: int = 0
+    # True if this EvalOnceExpr has been use()d. If `var.is_emitted` is true, this will
+    # also be: either because this EvalOnceExpr was used twice and that triggered
+    # `var.is_emitted` to be set to true, or because the var is a planned phi, and then
+    # this EvalOnceExpr will be use()d as part of its creation, for the assignment to
+    # the phi.
+    is_used: bool = False
 
     def dependencies(self) -> List[Expression]:
         # (this is a bit iffy since state can change over time, but improves uses_expr)
-        if self.need_decl():
+        if self.uses_var():
             return []
         return [self.wrapped_expr]
 
     def use(self) -> None:
-        self.num_usages += 1
-        if self.trivial or (self.num_usages == 1 and not self.emit_exactly_once):
+        if self.trivial or (self.transparent and not self.var.is_emitted):
+            # Forward uses through transparent wrappers (unless we have stopped
+            # being transparent)
             self.wrapped_expr.use()
+        elif not self.is_used:
+            # On first use, forward the use (except in the emit_exactly_once
+            # case where that has already happened).
+            if not self.emit_exactly_once:
+                self.wrapped_expr.use()
+        else:
+            # On second use, make sure a var gets emitted.
+            self.var.is_emitted = True
+        self.is_used = True
 
     def force(self) -> None:
-        # Transition to non-trivial, and mark as used multiple times to force a var.
-        # TODO: If it was originally trivial, we may previously have marked its
-        # wrappee used multiple times, even though we now know that it should
+        # Transition to opaque, and mark as used multiple times to force a var.
+        # TODO: If it was originally transparent, we may previously have marked
+        # its wrappee used multiple times, even though we now know that it should
         # have been marked just once... We could fix that by moving marking of
-        # trivial EvalOnceExpr's to the very end. At least the consequences of
+        # transparent EvalOnceExpr's to the very end. At least the consequences of
         # getting this wrong are pretty mild -- it just causes extraneous var
         # emission in rare cases.
-        self.trivial = False
-        self.forced_emit = True
-        self.use()
-        self.use()
+        if not self.forced_emit and not self.trivial:
+            self.forced_emit = True
+            self.var.is_emitted = True
+            self.use()
+            self.use()
 
-    def need_decl(self) -> bool:
-        return self.num_usages > 1 and not self.trivial
+    def uses_var(self) -> bool:
+        return self.var.is_emitted and not self.trivial
 
     def format(self, fmt: Formatter) -> str:
-        if not self.need_decl():
+        if not self.uses_var():
             return self.wrapped_expr.format(fmt)
         else:
             return self.var.format(fmt)
 
 
 @dataclass(frozen=False, eq=False)
-class PhiExpr(Expression):
+class NaivePhiExpr(Expression):
+    """
+    A NaivePhiExpr acts as a phi node, using terminology from [1], with one
+    of two possible behaviors:
+    - if `replacement_expr` is set, it forwards forwarding/use to that. This
+      happens when all phi input values are the same.
+    - otherwise, it expands to a "phi_x" variable, with assignments
+      (SetNaivePhiStmt) being added to the end of the basic blocks that the
+      phi gets assigned from.
+
+    The second behavior results in unideal output in a couple of ways:
+    - code bloat caused by multiple phi nodes with overlapping sources each
+      needing separate sets of assignments,
+    - code bloat caused by temp and phi assignments being separate,
+    - incorrect codegen caused by end-of-block phi assignments happening one
+      by one instead of in parallel (consider e.g. wanting to perform the
+      end-of-block phi updates "(phi_a1, phi_a2) = (phi_a2, phi_a1)").
+
+    Thus, we try our hardest to avoid these kinds of NaivePhiExpr's by having
+    `assign_naive_phis` signal to future translation passes to use the
+    alternative phi node kind, PlannedPhiExpr, that's based on pre-planned
+    assignments to temps. (Unfortunately we can't use PlannedPhiExpr during the
+    first pass, because we don't know ahead of time which NaivePhiExpr's
+    will end up using a replacement_expr, or for that sake, even which
+    registers will end up being read as phis -- function pointers makes this a
+    dynamic property dependent on type info. Both problems are potentially
+    resolvable but it would involve a fair bit of work.)
+
+    A NaivePhiExpr that isn't use()'d is treated as if it doesn't exist, and in
+    particular does not add assignment statements to its source nodes. On first
+    use() it adds itself to the global `used_naive_phis` queue, which is
+    processed by `assign_naive_phis`.
+
+    [1] https://en.wikipedia.org/wiki/Static_single_assignment_form
+    """
+
     reg: Register
     node: Node
     type: Type
-    used_phis: List["PhiExpr"]
+    sources: List[InstructionSource]
+    uses_dominator: bool
+    used_naive_phis: List["NaivePhiExpr"]  # reference to global shared list
     name: Optional[str] = None
     num_usages: int = 0
     replacement_expr: Optional[Expression] = None
-    used_by: Optional["PhiExpr"] = None
 
     def dependencies(self) -> List[Expression]:
         return []
@@ -1694,29 +1823,15 @@ class PhiExpr(Expression):
     def get_var_name(self) -> str:
         return self.name or f"unnamed-phi({self.reg.register_name})"
 
-    def use(self, from_phi: Optional["PhiExpr"] = None) -> None:
+    def use(self) -> None:
         if self.num_usages == 0:
-            self.used_phis.append(self)
-            self.used_by = from_phi
+            self.used_naive_phis.append(self)
         self.num_usages += 1
-        if self.used_by != from_phi:
-            self.used_by = None
         if self.replacement_expr is not None:
             self.replacement_expr.use()
 
-    def propagates_to(self) -> "PhiExpr":
-        """Compute the phi that stores to this phi should propagate to. This is
-        usually the phi itself, but if the phi is only once for the purpose of
-        computing another phi, we forward the store there directly. This is
-        admittedly a bit sketchy, in case the phi is in scope here and used
-        later on... but we have that problem with regular phi assignments as
-        well."""
-        if self.used_by is None or self.replacement_expr is not None:
-            return self
-        return self.used_by.propagates_to()
-
     def format(self, fmt: Formatter) -> str:
-        if self.replacement_expr:
+        if self.replacement_expr is not None:
             return self.replacement_expr.format(fmt)
         return self.get_var_name()
 
@@ -1851,42 +1966,34 @@ class SwitchControl:
 class EvalOnceStmt(Statement):
     expr: EvalOnceExpr
 
-    def need_decl(self) -> bool:
-        return self.expr.need_decl()
-
     def should_write(self) -> bool:
-        if self.expr.emit_exactly_once:
-            return self.expr.num_usages != 1
-        else:
-            return self.need_decl()
-
-    def format(self, fmt: Formatter) -> str:
-        val_str = format_expr(elide_casts_for_store(self.expr.wrapped_expr), fmt)
-        if self.expr.emit_exactly_once and self.expr.num_usages == 0:
-            return f"{val_str};"
-        return f"{self.expr.var.format(fmt)} = {val_str};"
-
-
-@dataclass
-class SetPhiStmt(Statement):
-    phi: PhiExpr
-    expr: Expression
-
-    def should_write(self) -> bool:
-        expr = self.expr
-        if isinstance(expr, PhiExpr) and expr.propagates_to() != expr:
-            # When we have phi1 = phi2, and phi2 is only used in this place,
-            # the SetPhiStmt for phi2 will store directly to phi1 and we can
-            # skip this store.
-            assert expr.propagates_to() == self.phi.propagates_to()
+        if self.expr.emit_exactly_once and not self.expr.is_used:
+            return True
+        if not self.expr.var.is_emitted:
             return False
-        if late_unwrap(expr) == self.phi.propagates_to():
-            # Elide "phi = phi".
+        if var_for_expr(late_unwrap(self.expr.wrapped_expr)) == self.expr.var:
             return False
         return True
 
     def format(self, fmt: Formatter) -> str:
-        return format_assignment(self.phi.propagates_to(), self.expr, fmt)
+        val = elide_literal_casts(self.expr.wrapped_expr)
+        if self.expr.emit_exactly_once and not self.expr.is_used:
+            val_str = format_expr(val, fmt)
+            return f"{val_str};"
+        return format_assignment(self.expr.var, val, fmt)
+
+
+@dataclass
+class SetNaivePhiStmt(Statement):
+    phi: NaivePhiExpr
+    expr: Expression
+
+    def should_write(self) -> bool:
+        # Elide "phi = phi"
+        return late_unwrap(self.expr) != self.phi
+
+    def format(self, fmt: Formatter) -> str:
+        return format_assignment(self.phi, self.expr, fmt)
 
 
 @dataclass
@@ -1913,9 +2020,9 @@ class StoreStmt(Statement):
         source = self.source
         if (
             isinstance(dest, StructAccess) and dest.late_has_known_type()
-        ) or isinstance(dest, (ArrayAccess, LocalVar, RegisterVar, SubroutineArg)):
+        ) or isinstance(dest, (ArrayAccess, LocalVar, SubroutineArg)):
             # Known destination; fine to elide some casts.
-            source = elide_casts_for_store(source)
+            source = elide_literal_casts(source)
         return format_assignment(dest, source, fmt)
 
 
@@ -1960,8 +2067,23 @@ class RawSymbolRef:
 
 @dataclass
 class RegMeta:
+    """Metadata associated with a register value assignment.
+
+    This could largely be computed ahead of time based on instr_inputs/
+    instr_uses, except for the fact that function pointer argument passing
+    is determined dynamically based on type info.
+
+    Except for a few properties, metadata is propagated across blocks only
+    after block translation is done, as part of propagate_register_meta,
+    and only for a handful of registers. (Parent block metadata is not
+    generally available when constructing reg metas, due to cycles)."""
+
     # True if this regdata is unchanged from the start of the block
     inherited: bool = False
+
+    # True if this regdata is unchanged from the start of the function
+    # Propagated early
+    initial: bool = False
 
     # True if this regdata is read by some later node
     is_read: bool = False
@@ -1974,6 +2096,7 @@ class RegMeta:
     uninteresting: bool = False
 
     # True if the regdata must be replaced by variable if it is ever read
+    # Propagated early
     force: bool = False
 
     # True if the regdata was assigned by an Instruction marked as in_pattern;
@@ -1981,9 +2104,12 @@ class RegMeta:
     in_pattern: bool = False
 
 
+RegExpression = Union[EvalOnceExpr, PlannedPhiExpr, NaivePhiExpr]
+
+
 @dataclass
 class RegData:
-    value: Expression
+    value: RegExpression
     meta: RegMeta
 
 
@@ -1992,11 +2118,11 @@ class RegInfo:
     stack_info: StackInfo = field(repr=False)
     contents: Dict[Register, RegData] = field(default_factory=dict)
     read_inherited: Set[Register] = field(default_factory=set)
-    _active_instr: Optional[Instruction] = None
+    active_instr: Optional[Instruction] = None
 
     def __getitem__(self, key: Register) -> Expression:
-        if self._active_instr is not None and key not in self._active_instr.inputs:
-            lineno = self._active_instr.meta.lineno
+        if self.active_instr is not None and key not in self.active_instr.inputs:
+            lineno = self.get_instruction_lineno()
             return ErrorExpr(f"Read from unset register {key} on line {lineno}")
         if key == Register("zero"):
             return Literal(0)
@@ -2004,18 +2130,22 @@ class RegInfo:
         if data is None:
             return ErrorExpr(f"Read from unset register {key}")
         ret = data.value
-        data.meta.is_read = True
-        if data.meta.inherited:
+        meta = data.meta
+        meta.is_read = True
+        if meta.inherited:
             self.read_inherited.add(key)
-        if isinstance(ret, PassedInArg) and not ret.copied:
-            # Create a new argument object to better distinguish arguments we
-            # are called with from arguments passed to subroutines. Also, unify
-            # the argument's type with what we can guess from the register used.
-            val, arg = self.stack_info.get_argument(ret.value)
+        uw_ret = early_unwrap(ret)
+        if isinstance(ret, EvalOnceExpr) and ret.trivial:
+            # Unwrap trivial wrappers eagerly: this helps phi equality checks, and
+            # removes the need for unwrapping at each place that deals with literals.
+            return ret.wrapped_expr
+        if isinstance(uw_ret, PassedInArg) and meta.initial:
+            # Use accessed argument registers as a signal for determining which
+            # arguments actually exist.
+            val, arg = self.stack_info.get_argument(uw_ret.value)
             self.stack_info.add_argument(arg)
             val.type.unify(ret.type)
-            return val
-        if data.meta.force:
+        if meta.force:
             assert isinstance(ret, EvalOnceExpr)
             ret.force()
         return ret
@@ -2023,25 +2153,31 @@ class RegInfo:
     def __contains__(self, key: Register) -> bool:
         return key in self.contents
 
-    def __setitem__(self, key: Register, value: Expression) -> None:
-        self.set_with_meta(key, value, RegMeta())
-
-    def set_with_meta(self, key: Register, value: Expression, meta: RegMeta) -> None:
-        if self._active_instr is not None and key not in self._active_instr.outputs:
-            raise DecompFailure(f"Undeclared write to {key} in {self._active_instr}")
-        self.unchecked_set_with_meta(key, value, meta)
-
-    def unchecked_set_with_meta(
-        self, key: Register, value: Expression, meta: RegMeta
-    ) -> None:
+    def set_with_meta(self, key: Register, value: RegExpression, meta: RegMeta) -> None:
+        """Assign a value to a register from inside an instruction context."""
+        assert self.active_instr is not None
+        if key not in self.active_instr.outputs:
+            raise DecompFailure(f"Undeclared write to {key} in {self.active_instr}")
         assert key != Register("zero")
         self.contents[key] = RegData(value, meta)
+
+    def global_set_with_meta(
+        self, key: Register, value: RegExpression, meta: RegMeta
+    ) -> None:
+        """Assign a value to a register from outside an instruction context."""
+        assert self.active_instr is None
+        assert key != Register("zero")
+        self.contents[key] = RegData(value, meta)
+
+    def update_meta(self, key: Register, meta: RegMeta) -> None:
+        assert key != Register("zero")
+        self.contents[key] = RegData(self.contents[key].value, meta)
 
     def __delitem__(self, key: Register) -> None:
         assert key != Register("zero")
         del self.contents[key]
 
-    def get_raw(self, key: Register) -> Optional[Expression]:
+    def get_raw(self, key: Register) -> Optional[RegExpression]:
         data = self.contents.get(key)
         return data.value if data is not None else None
 
@@ -2049,14 +2185,10 @@ class RegInfo:
         data = self.contents.get(key)
         return data.meta if data is not None else None
 
-    @contextmanager
-    def current_instr(self, instr: Instruction) -> Iterator[None]:
-        self._active_instr = instr
-        try:
-            with current_instr(instr):
-                yield
-        finally:
-            self._active_instr = None
+    def get_instruction_lineno(self) -> int:
+        if self.active_instr is None:
+            return 0
+        return self.active_instr.meta.lineno
 
     def __str__(self) -> str:
         return ", ".join(
@@ -2102,6 +2234,7 @@ def get_block_info(node: Node) -> BlockInfo:
 
 @dataclass
 class InstrArgs:
+    instruction: Instruction
     raw_args: List[Argument]
     regs: RegInfo = field(repr=False)
     stack_info: StackInfo = field(repr=False)
@@ -2157,7 +2290,7 @@ class InstrArgs:
         if not isinstance(other, Literal) or other.type.get_size_bits() == 64:
             raise DecompFailure(
                 f"Unable to determine a value for double-precision register {reg} "
-                "whose second half is non-static. This is a mips_to_c restriction "
+                "whose second half is non-static. This is a m2c restriction "
                 "which may be lifted in the future."
             )
         value = ret.value | (other.value << 32)
@@ -2199,6 +2332,11 @@ class InstrArgs:
         raw_imm = self.unsigned_imm(index)
         assert isinstance(raw_imm, Literal)
         return Literal(raw_imm.value << 16)
+
+    def sym_imm(self, index: int) -> AddressOf:
+        arg = self.raw_arg(index)
+        assert isinstance(arg, AsmGlobalSymbol)
+        return self.stack_info.global_info.address_of_gsym(arg.symbol_name)
 
     def memory_ref(self, index: int) -> Union[AddressMode, RawSymbolRef]:
         ret = strip_macros(self.raw_arg(index))
@@ -2258,7 +2396,7 @@ def deref(
     # Struct member is being dereferenced.
 
     # Cope slightly better with raw pointers.
-    if isinstance(var, Literal) and var.value % (2 ** 16) == 0:
+    if isinstance(var, Literal) and var.value % (2**16) == 0:
         var = Literal(var.value + offset, type=var.type)
         offset = 0
 
@@ -2301,7 +2439,20 @@ def deref(
 
 
 def is_trivial_expression(expr: Expression) -> bool:
-    # Determine whether an expression should be evaluated only once or not.
+    """Compute whether an EvalOnceExpr should be marked as `trivial = True`."""
+    # NaivePhiExpr could be made trivial, but it's better to keep it symmetric
+    # with PlannedPhiExpr to avoid different deduplication between passes,
+    # since that can cause naive phis to end up in the final output.
+    if isinstance(expr, (Literal, GlobalSymbol, SecondF64Half)):
+        return True
+    if isinstance(expr, AddressOf):
+        return all(is_trivial_expression(e) for e in expr.dependencies())
+    return False
+
+
+def should_wrap_transparently(expr: Expression) -> bool:
+    """Compute whether an EvalOnceExpr should be marked as `transparent = True`,
+    thus not using a variable despite multiple uses (unless forced)."""
     if isinstance(
         expr,
         (
@@ -2310,16 +2461,17 @@ def is_trivial_expression(expr: Expression) -> bool:
             GlobalSymbol,
             LocalVar,
             PassedInArg,
-            PhiExpr,
-            RegisterVar,
+            NaivePhiExpr,
+            PlannedPhiExpr,
+            SecondF64Half,
             SubroutineArg,
         ),
     ):
         return True
     if isinstance(expr, AddressOf):
-        return all(is_trivial_expression(e) for e in expr.dependencies())
+        return all(should_wrap_transparently(e) for e in expr.dependencies())
     if isinstance(expr, Cast):
-        return expr.is_trivial()
+        return expr.should_wrap_transparently()
     return False
 
 
@@ -2339,15 +2491,15 @@ def is_type_obvious(expr: Expression) -> bool:
             Literal,
             AddressOf,
             LocalVar,
-            PhiExpr,
+            NaivePhiExpr,
             PassedInArg,
-            RegisterVar,
+            PlannedPhiExpr,
             FuncCall,
         ),
     ):
         return True
     if isinstance(expr, EvalOnceExpr):
-        if expr.need_decl():
+        if expr.uses_var():
             return True
         return is_type_obvious(expr.wrapped_expr)
     return False
@@ -2360,7 +2512,7 @@ def simplify_condition(expr: Expression) -> Expression:
     This function may produce wrong results while code is being generated,
     since at that point we don't know the final status of EvalOnceExpr's.
     """
-    if isinstance(expr, EvalOnceExpr) and not expr.need_decl():
+    if isinstance(expr, EvalOnceExpr) and not expr.uses_var():
         return simplify_condition(expr.wrapped_expr)
     if isinstance(expr, UnaryOp):
         inner = simplify_condition(expr.expr)
@@ -2390,6 +2542,15 @@ def simplify_condition(expr: Expression) -> Expression:
     return expr
 
 
+def condition_from_expr(expr: Expression) -> Condition:
+    uw_expr = early_unwrap(expr)
+    if isinstance(uw_expr, Condition) and not (
+        isinstance(uw_expr, BinaryOp) and not uw_expr.is_comparison()
+    ):
+        return uw_expr
+    return ExprCondition(expr, type=expr.type)
+
+
 def balanced_parentheses(string: str) -> bool:
     """
     Check if parentheses in a string are balanced, ignoring any non-parenthesis
@@ -2414,19 +2575,39 @@ def format_expr(expr: Expression, fmt: Formatter) -> str:
     return ret
 
 
-def format_assignment(dest: Expression, source: Expression, fmt: Formatter) -> str:
+def format_assignment(
+    dest: Union[Expression, Var], source: Expression, fmt: Formatter
+) -> str:
     """Stringify `dest = source;`."""
-    dest = late_unwrap(dest)
+    is_dest: Callable[[Expression], bool]
+    if isinstance(dest, Expression):
+        dest = late_unwrap(dest)
+        is_dest = lambda e: e == dest
+    else:
+        is_dest = lambda e: var_for_expr(e) == dest
     source = late_unwrap(source)
     if isinstance(source, BinaryOp) and source.op in COMPOUND_ASSIGNMENT_OPS:
+        source = source.normalize_for_formatting()
         rhs = None
-        if late_unwrap(source.left) == dest:
+        if is_dest(late_unwrap(source.left)):
             rhs = source.right
-        elif late_unwrap(source.right) == dest and source.op in ASSOCIATIVE_OPS:
+        elif is_dest(late_unwrap(source.right)) and source.op in ASSOCIATIVE_OPS:
             rhs = source.left
         if rhs is not None:
             return f"{dest.format(fmt)} {source.op}= {format_expr(rhs, fmt)};"
     return f"{dest.format(fmt)} = {format_expr(source, fmt)};"
+
+
+def var_for_expr(expr: Expression) -> Optional[Var]:
+    """If an expression *may* expand to the read of a Var, return that var.
+
+    EvalOnceExpr's with `transparent = True`, (which may become non-transparent
+    in the future) return their underlying var."""
+    if isinstance(expr, PlannedPhiExpr):
+        return expr.var
+    if isinstance(expr, EvalOnceExpr) and not expr.trivial:
+        return expr.var
+    return None
 
 
 def parenthesize_for_struct_access(expr: Expression, fmt: Formatter) -> str:
@@ -2442,21 +2623,25 @@ def parenthesize_for_struct_access(expr: Expression, fmt: Formatter) -> str:
     return s
 
 
-def elide_casts_for_store(expr: Expression) -> Expression:
+def elide_literal_casts(expr: Expression) -> Expression:
     uw_expr = late_unwrap(expr)
     if isinstance(uw_expr, Cast) and not uw_expr.needed_for_store():
-        return elide_casts_for_store(uw_expr.expr)
-    if isinstance(uw_expr, Literal) and uw_expr.type.is_int():
-        # Avoid suffixes for unsigned ints
+        return elide_literal_casts(uw_expr.expr)
+    if isinstance(uw_expr, Literal) and uw_expr.type.is_int() and uw_expr.value >= 0:
+        # Avoid suffixes for non-negative unsigned ints
         return replace(uw_expr, elide_cast=True)
     return uw_expr
 
 
-def uses_expr(expr: Expression, expr_filter: Callable[[Expression], bool]) -> bool:
-    if expr_filter(expr):
+def uses_expr(
+    expr: Expression,
+    expr_filter: Callable[[Expression], bool],
+    parent: Optional[Expression] = None,
+) -> bool:
+    if expr_filter(expr) and not isinstance(parent, AddressOf):
         return True
     for e in expr.dependencies():
-        if uses_expr(e, expr_filter):
+        if uses_expr(e, expr_filter, expr):
             return True
     return False
 
@@ -2468,10 +2653,24 @@ def late_unwrap(expr: Expression) -> Expression:
     This function may produce wrong results while code is being generated,
     since at that point we don't know the final status of EvalOnceExpr's.
     """
-    if isinstance(expr, EvalOnceExpr) and not expr.need_decl():
+    if isinstance(expr, EvalOnceExpr) and not expr.uses_var():
         return late_unwrap(expr.wrapped_expr)
-    if isinstance(expr, PhiExpr) and expr.replacement_expr is not None:
+    if isinstance(expr, NaivePhiExpr) and expr.replacement_expr is not None:
         return late_unwrap(expr.replacement_expr)
+    return expr
+
+
+def transparent_unwrap(expr: Expression) -> Expression:
+    """
+    Unwrap transparent EvalOnceExpr's (e.g. EvalOnceExpr's that wrap other
+    EvalOnceExpr's, or trivial EvalOnceExpr's).
+
+    This is safe to use but may result in suboptimal codegen if used while code
+    is being generated, since wrapper transparency is not yet final. (In
+    particular, it may result in an inconsistent choice of temps to refer to.)
+    """
+    if isinstance(expr, EvalOnceExpr) and expr.transparent and not expr.uses_var():
+        return transparent_unwrap(expr.wrapped_expr)
     return expr
 
 
@@ -2584,7 +2783,7 @@ def load_upper(args: InstrArgs) -> Expression:
     stack_info = args.stack_info
     source = stack_info.global_info.address_of_gsym(sym.symbol_name)
     imm = Literal(offset)
-    return handle_addi_real(args.reg_ref(0), None, source, imm, stack_info)
+    return handle_addi_real(args.reg_ref(0), None, source, imm, stack_info, args)
 
 
 def handle_convert(expr: Expression, dest_type: Type, source_type: Type) -> Cast:
@@ -2595,18 +2794,19 @@ def handle_convert(expr: Expression, dest_type: Type, source_type: Type) -> Cast
 
 
 def handle_la(args: InstrArgs) -> Expression:
+    output_reg = args.reg_ref(0)
     target = args.memory_ref(1)
     stack_info = args.stack_info
     if isinstance(target, AddressMode):
         return handle_addi(
-            InstrArgs(
-                raw_args=[args.reg_ref(0), target.rhs, AsmLiteral(target.offset)],
-                regs=args.regs,
-                stack_info=args.stack_info,
+            replace(
+                args,
+                raw_args=[output_reg, target.rhs, AsmLiteral(target.offset)],
             )
         )
+
     var = stack_info.global_info.address_of_gsym(target.sym.symbol_name)
-    return add_imm(var, Literal(target.offset), stack_info)
+    return add_imm(output_reg, var, Literal(target.offset), args)
 
 
 def handle_or(left: Expression, right: Expression) -> Expression:
@@ -2656,6 +2856,7 @@ def handle_sltiu(args: InstrArgs) -> Expression:
 
 def handle_addi(args: InstrArgs) -> Expression:
     stack_info = args.stack_info
+    output_reg = args.reg_ref(0)
     source_reg = args.reg_ref(1)
     source = args.reg(1)
     imm = args.imm(2)
@@ -2671,9 +2872,9 @@ def handle_addi(args: InstrArgs) -> Expression:
         and isinstance(imm, Literal)
     ):
         return add_imm(
-            uw_source.left, Literal(imm.value + uw_source.right.value), stack_info
+            output_reg, uw_source.left, Literal(imm.value + uw_source.right.value), args
         )
-    return handle_addi_real(args.reg_ref(0), source_reg, source, imm, stack_info)
+    return handle_addi_real(output_reg, source_reg, source, imm, stack_info, args)
 
 
 def handle_addis(args: InstrArgs) -> Expression:
@@ -2681,7 +2882,7 @@ def handle_addis(args: InstrArgs) -> Expression:
     source_reg = args.reg_ref(1)
     source = args.reg(1)
     imm = args.shifted_imm(2)
-    return handle_addi_real(args.reg_ref(0), source_reg, source, imm, stack_info)
+    return handle_addi_real(args.reg_ref(0), source_reg, source, imm, stack_info, args)
 
 
 def handle_addi_real(
@@ -2690,6 +2891,7 @@ def handle_addi_real(
     source: Expression,
     imm: Expression,
     stack_info: StackInfo,
+    args: InstrArgs,
 ) -> Expression:
     if source_reg is not None and stack_info.is_stack_reg(source_reg):
         # Adding to sp, i.e. passing an address.
@@ -2703,19 +2905,26 @@ def handle_addi_real(
             stack_info.add_local_var(var)
         return AddressOf(var, type=var.type.reference())
     else:
-        return add_imm(source, imm, stack_info)
+        return add_imm(output_reg, source, imm, args)
 
 
-def add_imm(source: Expression, imm: Expression, stack_info: StackInfo) -> Expression:
+def add_imm(
+    output_reg: Register, source: Expression, imm: Expression, args: InstrArgs
+) -> Expression:
+    stack_info = args.stack_info
     if imm == Literal(0):
         # addiu $reg1, $reg2, 0 is a move
         # (this happens when replacing %lo(...) by 0)
         return source
     elif source.type.is_pointer_or_array():
         # Pointer addition (this may miss some pointers that get detected later;
-        # unfortunately that's hard to do anything about with mips_to_c's single-pass
-        # architecture).
-        if isinstance(imm, Literal) and not imm.likely_partial_offset():
+        # unfortunately that's hard to do anything about with m2c's single-pass
+        # architecture). Don't do this in the case "var_x = var_x + imm": that
+        # happens with loops over subarrays and it's better to expose the raw
+        # immediate.
+        dest_var = stack_info.get_planned_var(output_reg, args.instruction)
+        inplace = dest_var is not None and var_for_expr(source) == dest_var
+        if isinstance(imm, Literal) and not imm.likely_partial_offset() and not inplace:
             array_access = array_access_from_add(
                 source, imm.value, stack_info, target_size=None, ptr=True
             )
@@ -2934,7 +3143,7 @@ def handle_conditional_move(args: InstrArgs, nonzero: bool) -> Expression:
 
 
 def format_f32_imm(num: int) -> str:
-    packed = struct.pack(">I", num & (2 ** 32 - 1))
+    packed = struct.pack(">I", num & (2**32 - 1))
     value = struct.unpack(">f", packed)[0]
 
     if not value or value == 4294967296.0:
@@ -2989,7 +3198,7 @@ def format_f32_imm(num: int) -> str:
 
 
 def format_f64_imm(num: int) -> str:
-    (value,) = struct.unpack(">d", struct.pack(">Q", num & (2 ** 64 - 1)))
+    (value,) = struct.unpack(">d", struct.pack(">Q", num & (2**64 - 1)))
     return str(value)
 
 
@@ -3021,7 +3230,7 @@ def fold_divmod(original_expr: BinaryOp) -> BinaryOp:
     right_expr = early_unwrap_ints(expr.right)
     divisor_shift = 0
 
-    # Detect signed power-of-two division: (x >> N) + MIPS2C_CARRY --> x / (1 << N)
+    # Detect signed power-of-two division: (x >> N) + M2C_CARRY --> x / (1 << N)
     if (
         isinstance(left_expr, BinaryOp)
         and left_expr.op == ">>"
@@ -3271,13 +3480,10 @@ def fold_mul_chains(expr: Expression) -> Expression:
         if isinstance(expr, UnaryOp) and expr.op == "-" and not toplevel:
             base, num = fold(expr.expr, False, True)
             return (base, -num)
-        if (
-            isinstance(expr, EvalOnceExpr)
-            and not expr.emit_exactly_once
-            and not expr.forced_emit
-        ):
-            base, num = fold(early_unwrap(expr), False, allow_sll)
-            if num != 1 and is_trivial_expression(base):
+        uw_expr = early_unwrap(expr)
+        if uw_expr is not expr:
+            base, num = fold(uw_expr, False, allow_sll)
+            if num != 1:
                 return (base, num)
         return (expr, 1)
 
@@ -3303,26 +3509,18 @@ def array_access_from_add(
     if addend.type.is_pointer_or_array() and not base.type.is_pointer_or_array():
         base, addend = addend, base
 
-    index: Expression
-    scale: int
+    index = addend
+    scale = 1
     uw_addend = early_unwrap(addend)
     if (
         isinstance(uw_addend, BinaryOp)
-        and uw_addend.op == "*"
+        and uw_addend.op in ("*", "<<")
         and isinstance(uw_addend.right, Literal)
     ):
         index = uw_addend.left
         scale = uw_addend.right.value
-    elif (
-        isinstance(uw_addend, BinaryOp)
-        and uw_addend.op == "<<"
-        and isinstance(uw_addend.right, Literal)
-    ):
-        index = uw_addend.left
-        scale = 1 << uw_addend.right.value
-    else:
-        index = addend
-        scale = 1
+        if uw_addend.op == "<<":
+            scale = 1 << scale
 
     if scale < 0:
         scale = -scale
@@ -3443,9 +3641,13 @@ def handle_add(args: InstrArgs) -> Expression:
     # addiu instructions can sometimes be emitted as addu instead, when the
     # offset is too large.
     if isinstance(rhs, Literal):
-        return handle_addi_real(args.reg_ref(0), args.reg_ref(1), lhs, rhs, stack_info)
+        return handle_addi_real(
+            args.reg_ref(0), args.reg_ref(1), lhs, rhs, stack_info, args
+        )
     if isinstance(lhs, Literal):
-        return handle_addi_real(args.reg_ref(0), args.reg_ref(2), rhs, lhs, stack_info)
+        return handle_addi_real(
+            args.reg_ref(0), args.reg_ref(2), rhs, lhs, stack_info, args
+        )
 
     expr = BinaryOp(left=as_intptr(lhs), op="+", right=as_intptr(rhs), type=type)
     folded_expr = fold_mul_chains(expr)
@@ -3656,78 +3858,82 @@ class Abi:
     possible_slots: List[AbiArgSlot]
 
 
-def reg_always_set(node: Node, reg: Register, *, dom_set: bool) -> bool:
-    if node.immediate_dominator is None:
-        return False
+def vars_clobbered_until_dominator(stack_info: StackInfo, node: Node) -> Set[Var]:
+    assert node.immediate_dominator is not None
+
     seen = {node.immediate_dominator}
     stack = node.parents[:]
+    clobbered = set()
     while stack:
         n = stack.pop()
-        if n == node.immediate_dominator and not dom_set:
-            return False
+        if n in seen:
+            continue
+        seen.add(n)
+        for instr in n.block.instructions:
+            for loc in instr.outputs:
+                if isinstance(loc, Register):
+                    var = stack_info.get_planned_var(loc, instr)
+                    if var is not None:
+                        clobbered.add(var)
+        stack.extend(n.parents)
+    return clobbered
+
+
+def reg_sources(node: Node, reg: Register) -> Tuple[List[InstructionSource], bool]:
+    assert node.immediate_dominator is not None
+    seen = {node.immediate_dominator}
+    stack = node.parents[:]
+    sources: List[InstructionSource] = []
+    uses_dominator = False
+    while stack:
+        n = stack.pop()
+        if n == node.immediate_dominator:
+            uses_dominator = True
         if n in seen:
             continue
         seen.add(n)
         clobbered: Optional[bool] = None
-        for instr in n.block.instructions:
-            with current_instr(instr):
-                if reg in instr.outputs:
-                    clobbered = False
-                elif reg in instr.clobbers:
-                    clobbered = True
-        if clobbered == True:
-            return False
-        if clobbered is None:
+        for instr in reversed(list(n.block.instructions)):
+            if reg in instr.outputs:
+                sources.append(instr)
+                break
+            elif reg in instr.clobbers:
+                return [], False
+        else:
             stack.extend(n.parents)
-    return True
+    return sources, uses_dominator
 
 
-def pick_phi_assignment_nodes(
-    reg: Register, nodes: List[Node], expr: Expression
-) -> List[Node]:
-    """
-    As part of `assign_phis()`, we need to pick a set of nodes where we can emit a
-    `SetPhiStmt` that assigns the phi for `reg` to `expr`.
-    The final register state for `reg` for each node in `nodes` is `expr`,
-    so the best case would be finding a single dominating node for the assignment.
-    """
-    # Find the set of nodes which dominate *all* of `nodes`, sorted by number
-    # of dominators. (This puts "earlier" nodes at the beginning of the list.)
-    dominators = sorted(
-        set.intersection(*(node.dominators for node in nodes)),
-        key=lambda n: len(n.dominators),
-    )
+def assign_naive_phis(
+    used_naive_phis: List[NaivePhiExpr], stack_info: StackInfo
+) -> None:
+    instr_nodes = {}
+    for node in stack_info.flow_graph.nodes:
+        for inst in node.block.instructions:
+            instr_nodes[inst] = node
 
-    # Check the dominators for a node with the correct final state for `reg`
-    for node in dominators:
-        regs = get_block_info(node).final_register_states
-        raw = regs.get_raw(reg)
-        meta = regs.get_meta(reg)
-        if raw is None or meta is None or meta.force:
-            continue
-        if raw == expr:
-            return [node]
-
-    # We couldn't find anything, so fall back to the naive solution
-    # TODO: In some cases there may be a better solution (e.g. one that requires 2 nodes)
-    return nodes
-
-
-def assign_phis(used_phis: List[PhiExpr], stack_info: StackInfo) -> None:
     i = 0
     # Iterate over used phis until there are no more remaining. New ones may
     # appear during iteration, hence the while loop.
-    while i < len(used_phis):
-        phi = used_phis[i]
+    while i < len(used_naive_phis):
+        phi = used_naive_phis[i]
         assert phi.num_usages > 0
+        assert len(phi.sources) >= 2
         assert len(phi.node.parents) >= 2
 
         # Group parent nodes by the value of their phi register
         equivalent_nodes: DefaultDict[Expression, List[Node]] = defaultdict(list)
-        for node in phi.node.parents:
+        for source in phi.sources:
+            if source is None:
+                # Use the end of the first block instead of the start of the
+                # function. Since there's no write in between both are fine.
+                # (If we were a write in between it would be a source.)
+                node = stack_info.flow_graph.entry_node()
+            else:
+                node = instr_nodes[source]
             expr = get_block_info(node).final_register_states[phi.reg]
             expr.type.unify(phi.type)
-            equivalent_nodes[expr].append(node)
+            equivalent_nodes[transparent_unwrap(expr)].append(node)
 
         exprs = list(equivalent_nodes.keys())
         first_uw = early_unwrap(exprs[0])
@@ -3735,39 +3941,65 @@ def assign_phis(used_phis: List[PhiExpr], stack_info: StackInfo) -> None:
             # All the phis have the same value (e.g. because we recomputed an
             # expression after a store, or restored a register after a function
             # call). Just use that value instead of introducing a phi node.
-            # TODO: the unwrapping here is necessary, but also kinda sketchy:
-            # we may set as replacement_expr an expression that really shouldn't
-            # be repeated, e.g. a StructAccess. It would make sense to use less
-            # eager unwrapping, and/or to emit an EvalOnceExpr at this point
-            # (though it's too late for it to be able to participate in the
-            # prevent_later_uses machinery).
-            phi.replacement_expr = as_type(first_uw, phi.type, silent=True)
+            #
+            # The early_unwrap's here are kinda sketchy. It we left them out,
+            # the transparent_unwrap's would still leave us able to detect
+            # registers stored on stack across function calls, and literals
+            # being rematerialized. What early_unwrap gives us is the ability
+            # to detect equality of non-trivial expressions (in the sense of
+            # is_trivial_expression) with eq=True -- most importantly struct/
+            # global accesses -- and avoid phi nodes for those. This helps a
+            # lot with detecting and undoing the pattern of compilers where
+            # they cache values of struct accesses and invalidate the cache on
+            # writes/function calls. However, it comes at a cost: the
+            # `replacement_expr` forwarding happens too late to be part of the
+            # prevent_later_uses machinery, so we may end up with incorrect
+            # output.
+            #
+            # We also aren't generating a temp for the `replacement_expr`,
+            # resulting in potentially a lot of repeated struct accesses. This
+            # would be fixable by pre-allocating a temp at the top of the block
+            # when creating the NaivePhiExpr and using that here; however, this
+            # often makes output worse, since it effectively undoes the
+            # heuristic detection of cached struct reads. (In addition these
+            # pre-reserved temps that don't correspond to an instruction would
+            # add a bit of a complexity.)
+            #
+            # To avoid repeated accesses and participate in prevent_later_uses
+            # in the simple case where `early_unwrap` is not needed, we
+            # special-case len(exprs) == 1 by skipping the deeper unwrapping and
+            # -- if the dominator acts as one of the phi sources, which is true
+            # most of the time -- marking the phi as directly inheritable from
+            # the dominator during the next translation pass.
+            phi_expr = exprs[0] if len(exprs) == 1 else first_uw
+            phi.replacement_expr = as_type(phi_expr, phi.type, silent=True)
             for _ in range(phi.num_usages):
-                first_uw.use()
+                phi_expr.use()
+            if phi.uses_dominator and len(exprs) == 1:
+                stack_info.add_planned_inherited_phi(phi.node, phi.reg)
         else:
             for expr, nodes in equivalent_nodes.items():
-                for node in pick_phi_assignment_nodes(phi.reg, nodes, expr):
+                for node in nodes:
                     block_info = get_block_info(node)
                     expr = block_info.final_register_states[phi.reg]
-                    if isinstance(expr, PhiExpr):
-                        # Explicitly mark how the expression is used if it's a phi,
-                        # so we can propagate phi sets (to get rid of temporaries).
-                        expr.use(from_phi=phi)
-                    else:
-                        expr.use()
+                    expr.use()
                     typed_expr = as_type(expr, phi.type, silent=True)
-                    block_info.to_write.append(SetPhiStmt(phi, typed_expr))
+                    block_info.to_write.append(SetNaivePhiStmt(phi, typed_expr))
         i += 1
 
-    name_counter: Dict[Register, int] = {}
-    for phi in used_phis:
-        if not phi.replacement_expr and phi.propagates_to() == phi:
-            counter = name_counter.get(phi.reg, 0) + 1
-            name_counter[phi.reg] = counter
+    for phi in used_naive_phis:
+        if not phi.replacement_expr:
             output_reg_name = stack_info.function.reg_formatter.format(phi.reg)
             prefix = f"phi_{output_reg_name}"
-            phi.name = f"{prefix}_{counter}" if counter > 1 else prefix
-            stack_info.phi_vars.append(phi)
+            if stack_info.global_info.deterministic_vars:
+                prefix = f"{prefix}_{phi.node.block.index}"
+            phi.name = stack_info.temp_var(prefix)
+            stack_info.naive_phi_vars.append(phi)
+
+            # Merge the phi source vars together for the next translation pass.
+            var = stack_info.get_persistent_planned_var(phi.reg, phi.sources[0])
+            for source in phi.sources[1:]:
+                stack_info.get_persistent_planned_var(phi.reg, source).join(var)
 
 
 def propagate_register_meta(nodes: List[Node], reg: Register) -> None:
@@ -3878,158 +4110,204 @@ def determine_return_register(
     return best_reg
 
 
-def translate_node_body(node: Node, regs: RegInfo, stack_info: StackInfo) -> BlockInfo:
-    """
-    Given a node and current register contents, return a BlockInfo containing
-    the translated AST for that node.
-    """
+@dataclass
+class NodeState:
+    node: Node
+    stack_info: StackInfo = field(repr=False)
+    regs: RegInfo = field(repr=False)
 
-    to_write: List[Union[Statement]] = []
-    local_var_writes: Dict[LocalVar, Tuple[Register, Expression]] = {}
-    subroutine_args: Dict[int, Expression] = {}
-    branch_condition: Optional[Condition] = None
-    switch_expr: Optional[Expression] = None
-    has_custom_return: bool = False
-    has_function_call: bool = False
+    local_var_writes: Dict[LocalVar, Tuple[Register, Expression]] = field(
+        default_factory=dict
+    )
+    subroutine_args: Dict[int, Expression] = field(default_factory=dict)
     in_pattern: bool = False
-    arch = stack_info.global_info.arch
 
-    def eval_once(
+    to_write: List[Union[Statement]] = field(default_factory=list)
+    branch_condition: Optional[Condition] = None
+    switch_control: Optional[SwitchControl] = None
+    has_function_call: bool = False
+
+    def _eval_once(
+        self,
         expr: Expression,
         *,
         emit_exactly_once: bool,
-        trivial: bool,
-        prefix: str = "",
-        reuse_var: Optional[Var] = None,
+        transparent: bool,
+        reg: Register,
+        source: InstructionSource,
     ) -> EvalOnceExpr:
-        if emit_exactly_once:
-            # (otherwise this will be marked used once num_usages reaches 1)
-            expr.use()
-        elif "_fictive_" in prefix and isinstance(expr, EvalOnceExpr):
+        planned_var = self.stack_info.get_planned_var(reg, source)
+
+        if "_fictive_" in reg.register_name and isinstance(expr, EvalOnceExpr):
             # Avoid creating additional EvalOnceExprs for fictive Registers
-            # so they're less likely to appear in the output
+            # so they're less likely to appear in the output. These are only
+            # used as inputs to single instructions, so there's no risk of
+            # missing phi assignments.
+            assert not emit_exactly_once
+            assert not planned_var
             return expr
 
-        assert reuse_var or prefix
-        if prefix == "condition_bit":
-            prefix = "cond"
+        trivial = transparent and is_trivial_expression(expr)
 
-        var = reuse_var or Var(stack_info, "temp_" + prefix)
+        if emit_exactly_once:
+            # (otherwise this will be marked used once is_used becomes true)
+            expr.use()
+
+        if planned_var is not None:
+            var = planned_var
+            expr = as_type(expr, var.type, silent=True)
+            self.prevent_later_var_uses({var})
+        else:
+            prefix = self.stack_info.function.reg_formatter.format(reg)
+            if prefix == "condition_bit":
+                prefix = "cond"
+            temp_name = f"temp_{prefix}"
+            if self.stack_info.global_info.deterministic_vars:
+                temp_name = f"{temp_name}_{self.regs.get_instruction_lineno()}"
+            var = Var(self.stack_info, temp_name, expr.type)
+            self.stack_info.temp_vars.append(var)
+
         expr = EvalOnceExpr(
             wrapped_expr=expr,
             var=var,
             type=expr.type,
+            source=source,
             emit_exactly_once=emit_exactly_once,
             trivial=trivial,
+            transparent=transparent,
         )
-        var.num_usages += 1
         stmt = EvalOnceStmt(expr)
-        to_write.append(stmt)
-        stack_info.temp_vars.append(stmt)
+        self.write_statement(stmt)
+        var.debug_exprs.append(expr)
+
+        if planned_var is not None:
+            # Count the pre-planned var assignment as a use. (We could make
+            # this lazy until the consuming PlannedPhiExpr is used, to avoid dead
+            # assignments for phis that appear due to function call heuristics
+            # but later vanish when type information improves. For now, we
+            # don't.)
+            var.is_emitted = True
+            expr.use()
+
         return expr
 
-    def prevent_later_uses(expr_filter: Callable[[Expression], bool]) -> None:
-        """Prevent later uses of registers whose contents match a callback filter."""
-        for r in regs.contents.keys():
-            data = regs.contents.get(r)
-            assert data is not None
+    def _prevent_later_uses(self, expr_filter: Callable[[Expression], bool]) -> None:
+        """Prevent later uses of registers that recursively contain something that
+        matches a callback filter."""
+        for r, data in self.regs.contents.items():
             expr = data.value
-            if not data.meta.force and expr_filter(expr):
-                # Mark the register as "if used, emit the expression's once
-                # var". We usually always have a once var at this point,
-                # but if we don't, create one.
+            if isinstance(expr, (PlannedPhiExpr, NaivePhiExpr)):
+                continue
+            if not data.meta.force and uses_expr(expr, expr_filter):
+                # Mark the register as "if used, emit the expression's once var".
                 if not isinstance(expr, EvalOnceExpr):
-                    expr = eval_once(
-                        expr,
-                        emit_exactly_once=False,
-                        trivial=False,
-                        prefix=stack_info.function.reg_formatter.format(r),
-                    )
+                    static_assert_unreachable(expr)
 
-                # This write isn't changing the value of the register; it didn't need
-                # to be declared as part of the current instruction's inputs/outputs.
-                regs.unchecked_set_with_meta(r, expr, replace(data.meta, force=True))
+                self.regs.update_meta(r, replace(data.meta, force=True))
 
-    def prevent_later_value_uses(sub_expr: Expression) -> None:
+    def prevent_later_value_uses(self, sub_expr: Expression) -> None:
         """Prevent later uses of registers that recursively contain a given
         subexpression."""
-        # Unused PassedInArg are fine; they can pass the uses_expr test simply based
-        # on having the same variable name. If we didn't filter them out here it could
-        # cause them to be incorrectly passed as function arguments -- the function
-        # call logic sees an opaque wrapper and doesn't realize that they are unused
-        # arguments that should not be passed on.
-        prevent_later_uses(
-            lambda e: uses_expr(e, lambda e2: e2 == sub_expr)
-            and not (isinstance(e, PassedInArg) and not e.copied)
-        )
+        self._prevent_later_uses(lambda e: e == sub_expr)
 
-    def prevent_later_function_calls() -> None:
+    def prevent_later_var_uses(self, vars: Set[Var]) -> None:
+        self._prevent_later_uses(lambda e: var_for_expr(e) in vars)
+
+    def prevent_later_function_calls(self) -> None:
         """Prevent later uses of registers that recursively contain a function call."""
-        prevent_later_uses(lambda e: uses_expr(e, lambda e2: isinstance(e2, FuncCall)))
+        self._prevent_later_uses(lambda e: isinstance(e, FuncCall))
 
-    def prevent_later_reads() -> None:
+    def prevent_later_reads(self) -> None:
         """Prevent later uses of registers that recursively contain a read."""
-        contains_read = lambda e: isinstance(e, (StructAccess, ArrayAccess))
-        prevent_later_uses(lambda e: uses_expr(e, contains_read))
+        self._prevent_later_uses(lambda e: isinstance(e, (StructAccess, ArrayAccess)))
 
-    def set_reg_maybe_return(reg: Register, expr: Expression) -> None:
-        regs.set_with_meta(reg, expr, RegMeta(in_pattern=in_pattern))
+    def set_initial_reg(self, reg: Register, expr: Expression, meta: RegMeta) -> None:
+        assert self.regs.active_instr is None
+        assert meta.initial
+        expr = self._eval_once(
+            expr,
+            emit_exactly_once=False,
+            transparent=True,
+            reg=reg,
+            source=None,
+        )
+        self.regs.global_set_with_meta(reg, expr, meta)
+        if expr.var.is_emitted:
+            # For arguments only used as phis, we need to access them here in
+            # order for the PassedInArg code path in __getitem__ to get hit.
+            # (Arguably a bit hacky...)
+            self.regs[reg]
 
-    def set_reg(reg: Register, expr: Optional[Expression]) -> Optional[Expression]:
+    def set_reg(
+        self,
+        reg: Register,
+        expr: Optional[Expression],
+    ) -> Optional[Expression]:
         if expr is None:
-            if reg in regs:
-                del regs[reg]
+            if reg in self.regs:
+                del self.regs[reg]
             return None
 
         if isinstance(expr, LocalVar):
             if (
-                isinstance(node, ReturnNode)
-                and stack_info.maybe_get_register_var(reg)
-                and stack_info.in_callee_save_reg_region(expr.value)
-                and reg in stack_info.callee_save_regs
+                isinstance(self.node, ReturnNode)
+                and self.stack_info.maybe_get_register_var(reg)
+                and self.stack_info.in_callee_save_reg_region(expr.value)
+                and reg in self.stack_info.callee_save_regs
             ):
                 # Elide saved register restores with --reg-vars (it doesn't
                 # matter in other cases).
                 return None
-            if expr in local_var_writes:
+            if expr in self.local_var_writes:
                 # Elide register restores (only for the same register for now,
                 # to be conversative).
-                orig_reg, orig_expr = local_var_writes[expr]
+                orig_reg, orig_expr = self.local_var_writes[expr]
                 if orig_reg == reg:
                     expr = orig_expr
 
-        uw_expr = expr
-        if not isinstance(expr, Literal):
-            expr = eval_once(
-                expr,
-                emit_exactly_once=False,
-                trivial=is_trivial_expression(expr),
-                prefix=stack_info.function.reg_formatter.format(reg),
-            )
+        return self.set_reg_real(reg, expr)
+
+    def set_reg_real(
+        self,
+        reg: Register,
+        uw_expr: Expression,
+        *,
+        transparent: Optional[bool] = None,
+        emit_exactly_once: bool = False,
+        function_return: bool = False,
+    ) -> Optional[Expression]:
+        source = self.regs.active_instr
+        assert source is not None
+
+        if transparent is None:
+            transparent = should_wrap_transparently(uw_expr)
+
+        expr: RegExpression = self._eval_once(
+            uw_expr,
+            emit_exactly_once=emit_exactly_once,
+            transparent=transparent,
+            reg=reg,
+            source=source,
+        )
 
         if reg == Register("zero"):
             # Emit the expression as is. It's probably a volatile load.
             expr.use()
-            to_write.append(ExprStmt(expr))
+            self.write_statement(ExprStmt(expr))
         else:
-            dest = stack_info.maybe_get_register_var(reg)
-            if dest is not None:
-                stack_info.use_register_var(dest)
-                # Avoid emitting x = x, but still refresh EvalOnceExpr's etc.
-                if not (isinstance(uw_expr, RegisterVar) and uw_expr.reg == reg):
-                    source = as_type(expr, dest.type, True)
-                    source.use()
-                    to_write.append(StoreStmt(source=source, dest=dest))
-                expr = dest
-            set_reg_maybe_return(reg, expr)
+            self.regs.set_with_meta(
+                reg,
+                expr,
+                RegMeta(in_pattern=self.in_pattern, function_return=function_return),
+            )
         return expr
 
-    def clear_caller_save_regs() -> None:
-        for reg in arch.temp_regs:
-            if reg in regs:
-                del regs[reg]
+    def clear_caller_save_regs(self) -> None:
+        for reg in self.stack_info.global_info.arch.temp_regs:
+            if reg in self.regs:
+                del self.regs[reg]
 
-    def maybe_clear_local_var_writes(func_args: List[Expression]) -> None:
+    def maybe_clear_local_var_writes(self, func_args: List[Expression]) -> None:
         # Clear the `local_var_writes` dict if any of the `func_args` contain
         # a reference to a stack var. (The called function may modify the stack,
         # replacing the value we have in `local_var_writes`.)
@@ -4039,404 +4317,245 @@ def translate_node_body(node: Node, regs: RegInfo, stack_info: StackInfo) -> Blo
                 lambda expr: isinstance(expr, AddressOf)
                 and isinstance(expr.expr, LocalVar),
             ):
-                local_var_writes.clear()
+                self.local_var_writes.clear()
                 return
 
-    def process_instr(instr: Instruction) -> None:
-        nonlocal branch_condition, switch_expr, has_function_call, in_pattern
+    def set_branch_condition(self, cond: Condition) -> None:
+        assert isinstance(self.node, ConditionalNode)
+        assert self.branch_condition is None
+        self.branch_condition = cond
 
-        in_pattern = instr.in_pattern
-        mnemonic = instr.mnemonic
-        arch_mnemonic = instr.arch_mnemonic(arch)
-        args = InstrArgs(instr.args, regs, stack_info)
-        expr: Expression
+    def set_switch_expr(self, expr: Expression) -> None:
+        assert isinstance(self.node, SwitchNode)
+        assert self.switch_control is None
+        self.switch_control = SwitchControl.from_expr(expr)
 
-        # Figure out what code to generate!
-        if mnemonic in arch.instrs_ignore:
-            pass
+    def write_statement(self, stmt: Statement) -> None:
+        self.to_write.append(stmt)
 
-        elif mnemonic in arch.instrs_store or mnemonic in arch.instrs_store_update:
-            # Store a value in a permanent place.
-            if mnemonic in arch.instrs_store:
-                to_store = arch.instrs_store[mnemonic](args)
+    def store_memory(
+        self, *, source: Expression, dest: Expression, reg: Register
+    ) -> None:
+        if isinstance(dest, SubroutineArg):
+            # About to call a subroutine with this argument. Skip arguments for the
+            # first four stack slots; they are also passed in registers.
+            if dest.value >= 0x10:
+                self.subroutine_args[dest.value] = source
+            return
+
+        if isinstance(dest, LocalVar):
+            self.stack_info.add_local_var(dest)
+            raw_value = source
+            if isinstance(raw_value, Cast) and raw_value.reinterpret:
+                # When preserving values on the stack across function calls,
+                # ignore the type of the stack variable. The same stack slot
+                # might be used to preserve values of different types.
+                raw_value = raw_value.expr
+            self.local_var_writes[dest] = (reg, raw_value)
+
+        # Emit a write. This includes four steps:
+        # - mark the expression as used (since writes are always emitted)
+        # - mark the dest used (if it's a struct access it needs to be
+        # evaluated, though ideally we would not mark the top-level expression
+        # used; it may cause early emissions that shouldn't happen)
+        # - mark other usages of the dest as "emit before this point if used".
+        # - emit the actual write.
+        #
+        # Note that the prevent_later_value_uses step happens after use(), since
+        # the stored expression is allowed to reference its destination var,
+        # but before the write is written, since prevent_later_value_uses might
+        # emit writes of its own that should go before this write. In practice
+        # that probably never occurs -- all relevant register contents should be
+        # EvalOnceExpr's that can be emitted at their point of creation, but
+        # I'm not 100% certain that that's always the case and will remain so.
+        source.use()
+        dest.use()
+        self.prevent_later_value_uses(dest)
+        self.prevent_later_function_calls()
+        self.write_statement(StoreStmt(source=source, dest=dest))
+
+    def make_function_call(
+        self, fn_target: Expression, outputs: List[Location]
+    ) -> None:
+        arch = self.stack_info.global_info.arch
+        fn_target = as_function_ptr(fn_target)
+        fn_sig = fn_target.type.get_function_pointer_signature()
+        assert fn_sig is not None, "known function pointers must have a signature"
+
+        likely_regs: Dict[Register, bool] = {}
+        for reg, data in self.regs.contents.items():
+            # We use a much stricter filter for PPC than MIPS, because the same
+            # registers can be used arguments & return values.
+            # The ABI can also mix & match the rN & fN registers, which  makes the
+            # "require" heuristic less powerful.
+            #
+            # - `meta.inherited` will only be False for registers set in *this* basic block
+            # - `meta.function_return` will only be accurate for registers set within this
+            #   basic block because we have not called `propagate_register_meta` yet.
+            #   Within this block, it will be True for registers that were return values.
+            if arch.arch == Target.ArchEnum.PPC and (
+                data.meta.inherited or data.meta.function_return
+            ):
+                likely_regs[reg] = False
+            elif data.meta.in_pattern:
+                # Like `meta.function_return` mentioned above, `meta.in_pattern` will only be
+                # accurate for registers set within this basic block.
+                likely_regs[reg] = False
+            elif data.meta.initial:
+                likely_regs[reg] = False
             else:
-                # PPC specific store-and-update instructions
-                # `stwu r3, 8(r4)` is equivalent to `$r3 = *($r4 + 8); $r4 += 8;`
-                to_store = arch.instrs_store_update[mnemonic](args)
+                likely_regs[reg] = True
 
-                # Update the register in the second argument
-                update = args.memory_ref(1)
-                if not isinstance(update, AddressMode):
-                    raise DecompFailure(
-                        f"Unhandled store-and-update arg in {instr}: {update!r}"
-                    )
-                set_reg(
-                    update.rhs,
-                    add_imm(args.regs[update.rhs], Literal(update.offset), stack_info),
-                )
+        abi = arch.function_abi(fn_sig, likely_regs, for_call=True)
 
-            if to_store is None:
-                # Elided register preserval.
-                pass
-            elif isinstance(to_store.dest, SubroutineArg):
-                # About to call a subroutine with this argument. Skip arguments for the
-                # first four stack slots; they are also passed in registers.
-                if to_store.dest.value >= 0x10:
-                    subroutine_args[to_store.dest.value] = to_store.source
+        func_args: List[Expression] = []
+        for slot in abi.arg_slots:
+            if slot.reg:
+                expr = self.regs[slot.reg]
+            elif slot.offset in self.subroutine_args:
+                expr = self.subroutine_args.pop(slot.offset)
             else:
-                if isinstance(to_store.dest, LocalVar):
-                    stack_info.add_local_var(to_store.dest)
-                    raw_value = to_store.source
-                    if isinstance(raw_value, Cast) and raw_value.reinterpret:
-                        # When preserving values on the stack across function calls,
-                        # ignore the type of the stack variable. The same stack slot
-                        # might be used to preserve values of different types.
-                        raw_value = raw_value.expr
-                    local_var_writes[to_store.dest] = (args.reg_ref(0), raw_value)
-                # Emit a write. This includes four steps:
-                # - mark the expression as used (since writes are always emitted)
-                # - mark the dest used (if it's a struct access it needs to be
-                # evaluated, though ideally we would not mark the top-level expression
-                # used; it may cause early emissions that shouldn't happen)
-                # - mark other usages of the dest as "emit before this point if used".
-                # - emit the actual write.
-                #
-                # Note that the prevent_later_value_uses step happens after use(), since
-                # the stored expression is allowed to reference its destination var,
-                # but before the write is written, since prevent_later_value_uses might
-                # emit writes of its own that should go before this write. In practice
-                # that probably never occurs -- all relevant register contents should be
-                # EvalOnceExpr's that can be emitted at their point of creation, but
-                # I'm not 100% certain that that's always the case and will remain so.
-                to_store.source.use()
-                to_store.dest.use()
-                prevent_later_value_uses(to_store.dest)
-                prevent_later_function_calls()
-                to_write.append(to_store)
-
-        elif mnemonic in arch.instrs_source_first:
-            # Just 'mtc1'. It's reversed, so we have to specially handle it.
-            set_reg(args.reg_ref(1), arch.instrs_source_first[mnemonic](args))
-
-        elif mnemonic in arch.instrs_branches:
-            assert branch_condition is None
-            branch_condition = arch.instrs_branches[mnemonic](args)
-
-        elif mnemonic in arch.instrs_float_branches:
-            assert branch_condition is None
-            cond_bit = regs[Register("condition_bit")]
-            if not isinstance(cond_bit, BinaryOp):
-                cond_bit = ExprCondition(cond_bit, type=cond_bit.type)
-            if arch_mnemonic == "mips:bc1t":
-                branch_condition = cond_bit
-            elif arch_mnemonic == "mips:bc1f":
-                branch_condition = cond_bit.negated()
-
-        elif mnemonic in arch.instrs_jumps:
-            if arch_mnemonic == "ppc:bctr":
-                # Switch jump
-                assert isinstance(node, SwitchNode)
-                switch_expr = args.regs[Register("ctr")]
-            elif arch_mnemonic == "mips:jr":
-                # MIPS:
-                if args.reg_ref(0) == arch.return_address_reg:
-                    # Return from the function.
-                    assert isinstance(node, ReturnNode)
-                else:
-                    # Switch jump.
-                    assert isinstance(node, SwitchNode)
-                    switch_expr = args.reg(0)
-            elif arch_mnemonic == "ppc:blr":
-                assert isinstance(node, ReturnNode)
-            else:
-                assert False, f"Unhandled jump mnemonic {arch_mnemonic}"
-
-        elif mnemonic in arch.instrs_fn_call:
-            if arch_mnemonic in ["mips:jal", "ppc:bl"]:
-                fn_target = args.imm(0)
-                if not (
-                    (
-                        isinstance(fn_target, AddressOf)
-                        and isinstance(fn_target.expr, GlobalSymbol)
-                    )
-                    or isinstance(fn_target, Literal)
-                ):
-                    raise DecompFailure(
-                        f"Target of function call must be a symbol, not {fn_target}"
-                    )
-            elif arch_mnemonic == "ppc:blrl":
-                fn_target = args.regs[Register("lr")]
-            elif arch_mnemonic == "ppc:bctrl":
-                fn_target = args.regs[Register("ctr")]
-            elif arch_mnemonic == "mips:jalr":
-                fn_target = args.reg(1)
-            else:
-                assert False, f"Unhandled fn call mnemonic {arch_mnemonic}"
-
-            fn_target = as_function_ptr(fn_target)
-            fn_sig = fn_target.type.get_function_pointer_signature()
-            assert fn_sig is not None, "known function pointers must have a signature"
-
-            likely_regs: Dict[Register, bool] = {}
-            for reg, data in regs.contents.items():
-                # We use a much stricter filter for PPC than MIPS, because the same
-                # registers can be used arguments & return values.
-                # The ABI can also mix & match the rN & fN registers, which  makes the
-                # "require" heuristic less powerful.
-                #
-                # - `meta.inherited` will only be False for registers set in *this* basic block
-                # - `meta.function_return` will only be accurate for registers set within this
-                #   basic block because we have not called `propagate_register_meta` yet.
-                #   Within this block, it will be True for registers that were return values.
-                if arch.arch == Target.ArchEnum.PPC and (
-                    data.meta.inherited or data.meta.function_return
-                ):
-                    likely_regs[reg] = False
-                elif data.meta.in_pattern:
-                    # Like `meta.function_return` mentioned above, `meta.in_pattern` will only be
-                    # accurate for registers set within this basic block.
-                    likely_regs[reg] = False
-                elif isinstance(data.value, PassedInArg) and not data.value.copied:
-                    likely_regs[reg] = False
-                else:
-                    likely_regs[reg] = True
-
-            abi = arch.function_abi(fn_sig, likely_regs, for_call=True)
-
-            func_args: List[Expression] = []
-            for slot in abi.arg_slots:
-                if slot.reg:
-                    expr = regs[slot.reg]
-                elif slot.offset in subroutine_args:
-                    expr = subroutine_args.pop(slot.offset)
-                else:
-                    expr = ErrorExpr(
-                        f"Unable to find stack arg {slot.offset:#x} in block"
-                    )
-                func_args.append(
-                    CommentExpr.wrap(
-                        as_type(expr, slot.type, True), prefix=slot.comment
-                    )
-                )
-
-            for slot in abi.possible_slots:
-                assert slot.reg is not None
-                func_args.append(regs[slot.reg])
-
-            # Add the arguments after a3.
-            # TODO: limit this based on abi.arg_slots. If the function type is known
-            # and not variadic, this list should be empty.
-            for _, arg in sorted(subroutine_args.items()):
-                if fn_sig.params_known and not fn_sig.is_variadic:
-                    func_args.append(CommentExpr.wrap(arg, prefix="extra?"))
-                else:
-                    func_args.append(arg)
-
-            if not fn_sig.params_known:
-                while len(func_args) > len(fn_sig.params):
-                    fn_sig.params.append(FunctionParam())
-                # When the function signature isn't provided, the we only assume that each
-                # parameter is "simple" (<=4 bytes, no return struct, etc.). This may not
-                # match the actual function signature, but it's the best we can do.
-                # Without that assumption, the logic from `function_abi` would be needed here.
-                for i, (arg_expr, param) in enumerate(zip(func_args, fn_sig.params)):
-                    func_args[i] = as_type(arg_expr, param.type.decay(), True)
-
-            # Reset subroutine_args, for the next potential function call.
-            subroutine_args.clear()
-
-            call: Expression = FuncCall(
-                fn_target, func_args, fn_sig.return_type.weaken_void_ptr()
+                expr = ErrorExpr(f"Unable to find stack arg {slot.offset:#x} in block")
+            func_args.append(
+                CommentExpr.wrap(as_type(expr, slot.type, True), prefix=slot.comment)
             )
-            call = eval_once(call, emit_exactly_once=True, trivial=False, prefix="ret")
 
-            # Clear out caller-save registers, for clarity and to ensure that
-            # argument regs don't get passed into the next function.
-            clear_caller_save_regs()
+        for slot in abi.possible_slots:
+            assert slot.reg is not None
+            func_args.append(self.regs[slot.reg])
 
-            # Clear out local var write tracking if any argument contains a stack
-            # reference. That dict is used to track register saves/restores, which
-            # are unreliable if we call a function with a stack reference.
-            maybe_clear_local_var_writes(func_args)
-
-            # Prevent reads and function calls from moving across this call.
-            # This isn't really right, because this call might be moved later,
-            # and then this prevention should also be... but it's the best we
-            # can do with the current code architecture.
-            prevent_later_function_calls()
-            prevent_later_reads()
-
-            return_reg_vals = arch.function_return(call)
-            for out in instr.outputs:
-                if not isinstance(out, Register):
-                    continue
-                val = return_reg_vals[out]
-                if not isinstance(val, SecondF64Half):
-                    val = eval_once(
-                        val,
-                        emit_exactly_once=False,
-                        trivial=False,
-                        prefix=stack_info.function.reg_formatter.format(out),
-                    )
-                regs.set_with_meta(out, val, RegMeta(function_return=True))
-
-            has_function_call = True
-
-        elif mnemonic in arch.instrs_float_comp:
-            expr = arch.instrs_float_comp[mnemonic](args)
-            regs[Register("condition_bit")] = expr
-
-        elif mnemonic in arch.instrs_hi_lo:
-            hi, lo = arch.instrs_hi_lo[mnemonic](args)
-            set_reg(Register("hi"), hi)
-            set_reg(Register("lo"), lo)
-
-        elif mnemonic in arch.instrs_implicit_destination:
-            reg, expr_fn = arch.instrs_implicit_destination[mnemonic]
-            set_reg(reg, expr_fn(args))
-
-        elif mnemonic in arch.instrs_ppc_compare:
-            if instr.args[0] != Register("cr0"):
-                raise DecompFailure(
-                    f"Instruction {instr} not supported (first arg is not $cr0)"
-                )
-
-            set_reg(Register("cr0_eq"), arch.instrs_ppc_compare[mnemonic](args, "=="))
-            set_reg(Register("cr0_gt"), arch.instrs_ppc_compare[mnemonic](args, ">"))
-            set_reg(Register("cr0_lt"), arch.instrs_ppc_compare[mnemonic](args, "<"))
-            set_reg(Register("cr0_so"), Literal(0))
-
-        elif mnemonic in arch.instrs_no_dest:
-            stmt = arch.instrs_no_dest[mnemonic](args)
-            to_write.append(stmt)
-
-        elif mnemonic.rstrip(".") in arch.instrs_destination_first:
-            target = args.reg_ref(0)
-            val = arch.instrs_destination_first[mnemonic.rstrip(".")](args)
-            # TODO: IDO tends to keep variables within single registers. Thus,
-            # if source = target, maybe we could overwrite that variable instead
-            # of creating a new one?
-            target_val = set_reg(target, val)
-            mn_parts = arch_mnemonic.split(".")
-            if arch_mnemonic.startswith("ppc:") and arch_mnemonic.endswith("."):
-                # PPC instructions suffixed with . set condition bits (CR0) based on the result value
-                if target_val is None:
-                    target_val = val
-                set_reg(
-                    Register("cr0_eq"),
-                    BinaryOp.icmp(target_val, "==", Literal(0, type=target_val.type)),
-                )
-                # Use manual casts for cr0_gt/cr0_lt so that the type of target_val is not modified
-                # until the resulting bit is .use()'d.
-                target_s32 = Cast(
-                    target_val, reinterpret=True, silent=True, type=Type.s32()
-                )
-                set_reg(
-                    Register("cr0_gt"),
-                    BinaryOp(target_s32, ">", Literal(0), type=Type.s32()),
-                )
-                set_reg(
-                    Register("cr0_lt"),
-                    BinaryOp(target_s32, "<", Literal(0), type=Type.s32()),
-                )
-                set_reg(
-                    Register("cr0_so"),
-                    fn_op("MIPS2C_OVERFLOW", [target_val], type=Type.s32()),
-                )
-
-            elif (
-                len(mn_parts) >= 2
-                and mn_parts[0].startswith("mips:")
-                and mn_parts[1] == "d"
-            ) or arch_mnemonic == "mips:ldc1":
-                set_reg(target.other_f64_reg(), SecondF64Half())
-
-        elif mnemonic in arch.instrs_load_update:
-            target = args.reg_ref(0)
-            val = arch.instrs_load_update[mnemonic](args)
-            set_reg(target, val)
-
-            if arch_mnemonic in ["ppc:lwzux", "ppc:lhzux", "ppc:lbzux"]:
-                # In `rD, rA, rB`, update `rA = rA + rB`
-                update_reg = args.reg_ref(1)
-                offset = args.reg(2)
+        # Add the arguments after a3.
+        # TODO: limit this based on abi.arg_slots. If the function type is known
+        # and not variadic, this list should be empty.
+        for _, arg in sorted(self.subroutine_args.items()):
+            if fn_sig.params_known and not fn_sig.is_variadic:
+                func_args.append(CommentExpr.wrap(arg, prefix="extra?"))
             else:
-                # In `rD, rA(N)`, update `rA = rA + N`
-                update = args.memory_ref(1)
-                if not isinstance(update, AddressMode):
-                    raise DecompFailure(
-                        f"Unhandled store-and-update arg in {instr}: {update!r}"
-                    )
-                update_reg = update.rhs
-                offset = Literal(update.offset)
+                func_args.append(arg)
 
-            if update_reg == target:
-                raise DecompFailure(
-                    f"Invalid instruction, rA and rD must be different in {instr}"
-                )
+        if not fn_sig.params_known:
+            while len(func_args) > len(fn_sig.params):
+                fn_sig.params.append(FunctionParam())
+            # When the function signature isn't provided, the we only assume that each
+            # parameter is "simple" (<=4 bytes, no return struct, etc.). This may not
+            # match the actual function signature, but it's the best we can do.
+            # Without that assumption, the logic from `function_abi` would be needed here.
+            for i, (arg_expr, param) in enumerate(zip(func_args, fn_sig.params)):
+                func_args[i] = as_type(arg_expr, param.type.decay(), True)
 
-            set_reg(update_reg, add_imm(args.regs[update_reg], offset, stack_info))
+        # Reset subroutine_args, for the next potential function call.
+        self.subroutine_args.clear()
 
-        else:
-            expr = ErrorExpr(f"unknown instruction: {instr}")
-            if arch_mnemonic.startswith("ppc:") and arch_mnemonic.endswith("."):
-                # Unimplemented PPC instructions that modify CR0
-                set_reg(Register("cr0_eq"), expr)
-                set_reg(Register("cr0_gt"), expr)
-                set_reg(Register("cr0_lt"), expr)
-                set_reg(Register("cr0_so"), expr)
-            if args.count() >= 1 and isinstance(args.raw_arg(0), Register):
-                reg = args.reg_ref(0)
-                expr = eval_once(
-                    expr,
-                    emit_exactly_once=True,
-                    trivial=False,
-                    prefix=stack_info.function.reg_formatter.format(reg),
-                )
-                if reg != Register("zero"):
-                    set_reg_maybe_return(reg, expr)
-            else:
-                to_write.append(ExprStmt(expr))
+        source = self.regs.active_instr
+        assert source is not None
+        call: Expression = FuncCall(
+            fn_target, func_args, fn_sig.return_type.weaken_void_ptr()
+        )
+        call = self._eval_once(
+            call,
+            emit_exactly_once=True,
+            transparent=False,
+            reg=Register("ret"),
+            source=source,
+        )
 
-    for instr in node.block.instructions:
-        with regs.current_instr(instr):
-            process_instr(instr)
+        # Clear out caller-save registers, for clarity and to ensure that
+        # argument regs don't get passed into the next function.
+        self.clear_caller_save_regs()
 
-    if branch_condition is not None:
-        branch_condition.use()
-    switch_control: Optional[SwitchControl] = None
-    if switch_expr is not None:
-        switch_control = SwitchControl.from_expr(switch_expr)
-        switch_control.control_expr.use()
+        # Clear out local var write tracking if any argument contains a stack
+        # reference. That dict is used to track register saves/restores, which
+        # are unreliable if we call a function with a stack reference.
+        self.maybe_clear_local_var_writes(func_args)
+
+        # Prevent reads and function calls from moving across this call.
+        # This isn't really right, because this call might be moved later,
+        # and then this prevention should also be... but it's the best we
+        # can do with the current code architecture.
+        self.prevent_later_function_calls()
+        self.prevent_later_reads()
+
+        return_reg_vals = arch.function_return(call)
+        for out in outputs:
+            if not isinstance(out, Register):
+                continue
+            val = return_reg_vals[out]
+            self.set_reg_real(out, val, transparent=False, function_return=True)
+
+        self.has_function_call = True
+
+    @contextmanager
+    def current_instr(self, instr: Instruction) -> Iterator[None]:
+        assert self.regs.active_instr is None
+        self.regs.active_instr = instr
+        self.in_pattern = instr.in_pattern
+        try:
+            with current_instr(instr):
+                yield
+        finally:
+            self.regs.active_instr = None
+            self.in_pattern = False
+
+
+def evaluate_instruction(instr: Instruction, state: NodeState) -> None:
+    # Check that instr's attributes are consistent
+    if instr.is_return:
+        assert isinstance(state.node, ReturnNode)
+    if instr.is_conditional:
+        assert state.branch_condition is None and state.switch_control is None
+
+    if instr.eval_fn is not None:
+        args = InstrArgs(instr, instr.args, state.regs, state.stack_info)
+        eval_fn = typing.cast(Callable[[NodeState, InstrArgs], object], instr.eval_fn)
+        eval_fn(state, args)
+
+    # Check that conditional instructions set at least one of branch_condition or switch_control
+    if instr.is_conditional:
+        assert state.branch_condition is not None or state.switch_control is not None
+
+
+def translate_node_body(state: NodeState) -> BlockInfo:
+    """
+    Given a node and current register contents, return a BlockInfo containing
+    the translated AST for that node.
+    """
+    for instr in state.node.block.instructions:
+        with state.current_instr(instr):
+            evaluate_instruction(instr, state)
+
+    if state.branch_condition is not None:
+        state.branch_condition.use()
+    if state.switch_control is not None:
+        state.switch_control.control_expr.use()
+
     return BlockInfo(
-        to_write=to_write,
+        to_write=state.to_write,
         return_value=None,
-        switch_control=switch_control,
-        branch_condition=branch_condition,
-        final_register_states=regs,
-        has_function_call=has_function_call,
+        switch_control=state.switch_control,
+        branch_condition=state.branch_condition,
+        final_register_states=state.regs,
+        has_function_call=state.has_function_call,
     )
 
 
-def translate_graph_from_block(
-    node: Node,
-    regs: RegInfo,
-    stack_info: StackInfo,
-    used_phis: List[PhiExpr],
-    return_blocks: List[BlockInfo],
+def translate_block(
+    state: NodeState,
     options: Options,
-) -> None:
+) -> BlockInfo:
     """
-    Given a FlowGraph node and a dictionary of register contents, give that node
-    its appropriate BlockInfo (which contains the AST of its code).
+    Given a FlowGraph node and current symbolic execution state, symbolically
+    execute all instructions in the block, resulting in updated execution state
+    as well as a BlockInfo with C statements and if conditions to emit for the
+    given node.
     """
 
+    node = state.node
     if options.debug:
         print(f"\nNode in question: {node}")
 
     # Translate the given node and discover final register states.
     try:
-        block_info = translate_node_body(node, regs, stack_info)
+        block_info = translate_node_body(state)
         if options.debug:
             print(block_info)
     except Exception as e:  # TODO: handle issues better
@@ -4469,41 +4588,137 @@ def translate_graph_from_block(
             return_value=None,
             switch_control=None,
             branch_condition=ErrorExpr(),
-            final_register_states=regs,
+            final_register_states=state.regs,
             has_function_call=False,
         )
 
-    node.block.add_block_info(block_info)
-    if isinstance(node, ReturnNode):
-        return_blocks.append(block_info)
+    return block_info
 
-    # Translate everything dominated by this node, now that we know our own
-    # final register state. This will eventually reach every node.
-    for child in node.immediately_dominates:
-        if isinstance(child, TerminalNode):
-            continue
-        new_regs = RegInfo(stack_info=stack_info)
-        for reg, data in regs.contents.items():
-            new_regs.set_with_meta(
-                reg, data.value, RegMeta(inherited=True, force=data.meta.force)
-            )
 
-        phi_regs = (
-            r for r in locs_clobbered_until_dominator(child) if isinstance(r, Register)
+def create_dominated_node_state(
+    parent_state: NodeState,
+    child: Node,
+    used_naive_phis: List[NaivePhiExpr],
+) -> NodeState:
+    """
+    Create a NodeState for translating a child of a node in the dominator tree,
+    generating phi nodes for register contents that cannot be inherited directly.
+    """
+    stack_info = parent_state.stack_info
+    new_regs = RegInfo(stack_info=stack_info)
+    child_state = NodeState(node=child, regs=new_regs, stack_info=stack_info)
+    for reg, data in parent_state.regs.contents.items():
+        new_regs.global_set_with_meta(
+            reg,
+            data.value,
+            RegMeta(inherited=True, force=data.meta.force, initial=data.meta.initial),
         )
-        for reg in phi_regs:
-            if reg_always_set(child, reg, dom_set=(reg in regs)):
-                expr: Optional[Expression] = stack_info.maybe_get_register_var(reg)
-                if expr is None:
-                    expr = PhiExpr(
-                        reg=reg, node=child, used_phis=used_phis, type=Type.any_reg()
-                    )
-                new_regs.set_with_meta(reg, expr, RegMeta(inherited=True))
-            elif reg in new_regs:
-                del new_regs[reg]
-        translate_graph_from_block(
-            child, new_regs, stack_info, used_phis, return_blocks, options
-        )
+
+    phi_regs = (
+        r for r in locs_clobbered_until_dominator(child) if isinstance(r, Register)
+    )
+    for reg in phi_regs:
+        if stack_info.is_planned_inherited_phi(child, reg):
+            # A previous translation pass has determined that despite register
+            # writes along the way to the dominator, using the dominator's
+            # value is fine (because all possible phi values are the same).
+            # Do reset the 'initial' meta bit though: the non-dominator sources
+            # are non-initial.
+            meta = new_regs.get_meta(reg)
+            if meta is not None:
+                new_regs.update_meta(reg, replace(meta, initial=False))
+                continue
+
+        sources, uses_dominator = reg_sources(child, reg)
+        if uses_dominator:
+            dom_expr = parent_state.regs.get_raw(reg)
+            if dom_expr is None:
+                sources = []
+            elif isinstance(dom_expr, EvalOnceExpr):
+                sources.append(dom_expr.source)
+            elif isinstance(dom_expr, (PlannedPhiExpr, NaivePhiExpr)):
+                sources.extend(dom_expr.sources)
+            else:
+                static_assert_unreachable(dom_expr)
+
+        if sources:
+            # For each source of this phi, there will be an associated EvalOnceExpr.
+            # If there are planned vars associated with those EvalOnceExpr's --
+            # assigning them pre-determined vars and forcing the corresponding
+            # EvalOnceStmt's to be emitted -- *and* those planned vars are all the
+            # same, we can emit a reference to that var as our phi.
+            #
+            # Otherwise, we emit a naive phi expression, which as part of
+            # `assign_naive_phis` will either do "all sources values are the
+            # same"-based deduplication, or emit a planned var for the next
+            # translation pass. See the doc comment for NaivePhiExpr for more
+            # information.
+            expr: Optional[RegExpression]
+            var = stack_info.get_planned_var(reg, sources[0])
+            if var is not None and all(
+                stack_info.get_planned_var(reg, s) == var for s in sources[1:]
+            ):
+                expr = PlannedPhiExpr(var, var.type, sources)
+            else:
+                expr = NaivePhiExpr(
+                    reg=reg,
+                    node=child,
+                    type=Type.any_reg(),
+                    sources=sources,
+                    uses_dominator=uses_dominator,
+                    used_naive_phis=used_naive_phis,
+                )
+            new_regs.global_set_with_meta(reg, expr, RegMeta(inherited=True))
+
+        elif reg in new_regs:
+            # Along some path to the dominator the register is clobbered by a
+            # function call. Mark it as undefined. (This helps return value and
+            # function call argument heuristics.)
+            del new_regs[reg]
+
+    # If we inherit an expression from the dominator that mentions a var,
+    # and that var gets assigned to somewhere along a path to the dominator,
+    # using that expression requires it to be made into a temp.
+    # TODO: we should really do this with other prevents as well, e.g. prevent
+    # reads/calls if there are function calls along a path to the dominator.
+    clobbered_vars = vars_clobbered_until_dominator(stack_info, child)
+    child_state.prevent_later_var_uses(clobbered_vars)
+
+    return child_state
+
+
+def translate_all_blocks(
+    state: NodeState,
+    used_naive_phis: List[NaivePhiExpr],
+    return_blocks: List[BlockInfo],
+    options: Options,
+) -> None:
+    """
+    Do translation for all non-terminal nodes, attaching block info to them.
+
+    Translation is performed in order of the dominator tree. Each node inherits
+    register state from its immediate dominator (the closest parent node that
+    control flow is guaranteed to pass through), with some register contents
+    being replaced by phi nodes if they may be changed along the path to the
+    dominator.
+    """
+    # Do the traversal non-recursively, in order to get nicer stacks for profiling.
+    translate_stack = [state]
+    while translate_stack:
+        state = translate_stack.pop()
+        block_info = translate_block(state, options)
+        node = state.node
+        node.block.add_block_info(block_info)
+        if isinstance(node, ReturnNode):
+            return_blocks.append(block_info)
+        # Add children to the translation queue in reverse order, to get a normally
+        # ordered pre-order traversal. (Doesn't affect the result majorly but it's
+        # easier to think about.)
+        for child in reversed(state.node.immediately_dominates):
+            if not isinstance(child, TerminalNode):
+                translate_stack.append(
+                    create_dominated_node_state(state, child, used_naive_phis)
+                )
 
 
 def resolve_types_late(stack_info: StackInfo) -> None:
@@ -4542,7 +4757,14 @@ class GlobalInfo:
     local_functions: Set[str]
     typemap: TypeMap
     typepool: TypePool
+    deterministic_vars: bool
     global_symbol_map: Dict[str, GlobalSymbol] = field(default_factory=dict)
+    persistent_function_state: Dict[str, PersistentFunctionState] = field(
+        default_factory=lambda: defaultdict(PersistentFunctionState)
+    )
+
+    def get_persistent_function_state(self, func_name: str) -> PersistentFunctionState:
+        return self.persistent_function_state[func_name]
 
     def asm_data_value(self, sym_name: str) -> Optional[AsmDataEntry]:
         return self.asm_data.values.get(sym_name)
@@ -4721,7 +4943,7 @@ class GlobalInfo:
                     if enum_name is not None:
                         return enum_name
                     expr = as_type(Literal(value), type, True)
-                    return elide_casts_for_store(expr).format(fmt)
+                    return elide_literal_casts(expr).format(fmt)
 
             # Type kinds K_FN and K_VOID do not have initializers
             return None
@@ -4801,7 +5023,7 @@ class GlobalInfo:
                     # Skip externally-declared symbols that are defined in other files
                     continue
 
-                # TODO: Use original MIPSFile ordering for variables
+                # TODO: Use original AsmFile ordering for variables
                 sort_order = (
                     not sym.type.is_function(),
                     is_global,
@@ -4935,56 +5157,34 @@ def narrow_func_call_outputs(
             instr.outputs.clear()
 
 
-def translate_to_ast(
-    function: Function,
-    flow_graph: FlowGraph,
-    options: Options,
-    global_info: GlobalInfo,
-) -> FunctionInfo:
-    """
-    Given a function, produce a FlowGraph that both contains control-flow
-    information and has AST transformations for each block of code and
-    branch condition.
-    """
-    # Initialize info about the function.
-    stack_info = get_stack_info(function, global_info, flow_graph)
-    start_regs: RegInfo = RegInfo(stack_info=stack_info)
+def setup_planned_vars(
+    stack_info: StackInfo, persistent_state: PersistentFunctionState
+) -> None:
+    """Set up stack_info planned vars from state from earlier translation passes."""
+    planned_vars = defaultdict(list)
+    for key, persistent_var in persistent_state.planned_vars.items():
+        planned_vars[persistent_var.get_representative()].append(key)
 
-    arch = global_info.arch
-    start_regs[arch.stack_pointer_reg] = GlobalSymbol("sp", type=Type.ptr())
-    for reg in arch.saved_regs:
-        start_regs[reg] = stack_info.saved_reg_symbol(reg.register_name)
+    for keys in planned_vars.values():
+        reg = keys[0][0]
+        reg_name = stack_info.function.reg_formatter.format(reg)
+        prefix = f"var_{reg_name}"
+        if stack_info.global_info.deterministic_vars:
+            lineno = min(0 if instr is None else instr.meta.lineno for _, instr in keys)
+            prefix = f"{prefix}_{lineno}"
+        var = Var(
+            stack_info,
+            prefix=prefix,
+            type=Type.any_reg(),
+        )
+        stack_info.temp_vars.append(var)
+        for key in keys:
+            stack_info.planned_vars[key] = var
 
-    fn_sym = global_info.address_of_gsym(function.name).expr
-    assert isinstance(fn_sym, GlobalSymbol)
 
-    fn_type = fn_sym.type
-    fn_type.unify(Type.function())
-    fn_sig = Type.ptr(fn_type).get_function_pointer_signature()
-    assert fn_sig is not None, "fn_type is known to be a function"
-    return_type = fn_sig.return_type
-    stack_info.is_variadic = fn_sig.is_variadic
-
-    def make_arg(offset: int, type: Type) -> PassedInArg:
-        assert offset % 4 == 0
-        return PassedInArg(offset, copied=False, stack_info=stack_info, type=type)
-
-    abi = arch.function_abi(
-        fn_sig,
-        likely_regs={reg: True for reg in arch.argument_regs},
-        for_call=False,
-    )
-    for slot in abi.arg_slots:
-        stack_info.add_known_param(slot.offset, slot.name, slot.type)
-        if slot.reg is not None:
-            start_regs.set_with_meta(
-                slot.reg, make_arg(slot.offset, slot.type), RegMeta(uninteresting=True)
-            )
-    for slot in abi.possible_slots:
-        if slot.reg is not None:
-            start_regs.set_with_meta(
-                slot.reg, make_arg(slot.offset, slot.type), RegMeta(uninteresting=True)
-            )
+def setup_reg_vars(stack_info: StackInfo, options: Options) -> None:
+    """Set up per-register planned vars based on command line flags."""
+    arch = stack_info.global_info.arch
 
     if options.reg_vars == ["saved"]:
         reg_vars = arch.saved_regs
@@ -5000,24 +5200,97 @@ def translate_to_ast(
         reg_name = stack_info.function.reg_formatter.format(reg)
         stack_info.add_register_var(reg, reg_name)
 
+
+def setup_initial_registers(state: NodeState, fn_sig: FunctionSignature) -> None:
+    """Set up initial register contents for translation."""
+    stack_info = state.stack_info
+    arch = stack_info.global_info.arch
+
+    state.set_initial_reg(
+        arch.stack_pointer_reg,
+        GlobalSymbol("sp", type=Type.ptr()),
+        RegMeta(initial=True),
+    )
+    for reg in arch.saved_regs:
+        state.set_initial_reg(
+            reg, stack_info.saved_reg_symbol(reg.register_name), RegMeta(initial=True)
+        )
+
+    def make_arg(offset: int, type: Type) -> PassedInArg:
+        assert offset % 4 == 0
+        return PassedInArg(offset, stack_info=stack_info, type=type)
+
+    abi = arch.function_abi(
+        fn_sig,
+        likely_regs={reg: True for reg in arch.argument_regs},
+        for_call=False,
+    )
+    for slot in abi.arg_slots:
+        type = stack_info.add_known_param(slot.offset, slot.name, slot.type)
+        if slot.reg is not None:
+            state.set_initial_reg(
+                slot.reg,
+                make_arg(slot.offset, type),
+                RegMeta(uninteresting=True, initial=True),
+            )
+    for slot in abi.possible_slots:
+        if slot.reg is not None:
+            state.set_initial_reg(
+                slot.reg,
+                make_arg(slot.offset, slot.type),
+                RegMeta(uninteresting=True, initial=True),
+            )
+
+
+def translate_to_ast(
+    function: Function,
+    flow_graph: FlowGraph,
+    options: Options,
+    global_info: GlobalInfo,
+) -> FunctionInfo:
+    """
+    Given a function, produce a FlowGraph that both contains control-flow
+    information and has AST transformations for each block of code and
+    branch condition.
+    """
+    persistent_state = global_info.get_persistent_function_state(function.name)
+    stack_info = get_stack_info(function, persistent_state, global_info, flow_graph)
+    state = NodeState(
+        node=flow_graph.entry_node(),
+        regs=RegInfo(stack_info=stack_info),
+        stack_info=stack_info,
+    )
+
+    setup_planned_vars(stack_info, persistent_state)
+    setup_reg_vars(stack_info, options)
+
+    fn_sym = global_info.address_of_gsym(function.name).expr
+    assert isinstance(fn_sym, GlobalSymbol)
+
+    fn_type = fn_sym.type
+    fn_type.unify(Type.function())
+    fn_sig = Type.ptr(fn_type).get_function_pointer_signature()
+    assert fn_sig is not None, "fn_type is known to be a function"
+    stack_info.is_variadic = fn_sig.is_variadic
+
+    setup_initial_registers(state, fn_sig)
+
     if options.debug:
         print(stack_info)
         print("\nNow, we attempt to translate:")
 
-    used_phis: List[PhiExpr] = []
+    used_naive_phis: List[NaivePhiExpr] = []
     return_blocks: List[BlockInfo] = []
-    translate_graph_from_block(
-        flow_graph.entry_node(),
-        start_regs,
-        stack_info,
-        used_phis,
-        return_blocks,
-        options,
-    )
+    translate_all_blocks(state, used_naive_phis, return_blocks, options)
 
+    arch = global_info.arch
+
+    # Guess return register and mark returns (we should really base this on
+    # function signature if known, but so far the heuristic is reliable enough)
     for reg in arch.base_return_regs:
         propagate_register_meta(flow_graph.nodes, reg)
 
+    return_type = fn_sig.return_type
     return_reg: Optional[Register] = None
 
     if not options.void and not return_type.is_void():
@@ -5035,6 +5308,7 @@ def translate_to_ast(
     else:
         return_type.unify(Type.void())
 
+    # Guess parameters
     if not fn_sig.params_known:
         while len(fn_sig.params) < len(stack_info.arguments):
             fn_sig.params.append(FunctionParam())
@@ -5043,7 +5317,7 @@ def translate_to_ast(
             if not param.name:
                 param.name = arg.format(Formatter())
 
-    assign_phis(used_phis, stack_info)
+    assign_naive_phis(used_naive_phis, stack_info)
     resolve_types_late(stack_info)
 
     if options.pdb_translate:
@@ -5054,11 +5328,12 @@ def translate_to_ast(
         for local in stack_info.local_vars:
             var_name = local.format(fmt)
             v[var_name] = local
-        for temp in stack_info.temp_vars:
-            if temp.need_decl():
-                var_name = temp.expr.var.format(fmt)
-                v[var_name] = temp.expr
-        for phi in stack_info.phi_vars:
+        for var in stack_info.temp_vars:
+            if var.is_emitted:
+                var_name = var.format(fmt)
+                exprs = var.debug_exprs
+                v[var_name] = exprs[0] if len(exprs) == 1 else exprs
+        for phi in stack_info.naive_phi_vars:
             assert phi.name is not None
             v[phi.name] = phi
         pdb.set_trace()

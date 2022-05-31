@@ -21,17 +21,17 @@ form = cgi.FieldStorage()
 if "source" in form:
     source = form["source"].value if "source" in form else ""
     context = form["context"].value if "context" in form else None
-    if "glabel" not in source:
+    if "glabel" not in source and ".global" not in source:
         source = "glabel foo\n" + source
     source = bytes(source, "utf-8")
-    script_path = os.path.join(os.path.dirname(__file__), "mips_to_c.py")
+    script_path = os.path.join(os.path.dirname(__file__), "m2c.py")
     cmd = ["python3", script_path, "/dev/stdin"]
     if "debug" in form:
         cmd.append("--debug")
     if "void" in form:
         cmd.append("--void")
     if "noifs" in form:
-        cmd.append("--no-ifs")
+        cmd.append("--gotos-only")
     if "noswitches" in form:
         cmd.append("--no-switches")
     if "noandor" in form:

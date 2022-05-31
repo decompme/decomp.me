@@ -87,6 +87,19 @@ LOAD_STORE_MNEMONICS: Set[CsMnemonic] = {
     cs.ppc.PPC_INS_STDU,
 }
 
+# TODO: Is there an attribute exposed by capstone that we can use instead of this
+# hardcoded list? (This list is known to be missing most branch mnemonics)
+BRANCH_MNEMONICS: Set[CsMnemonic] = {
+    cs.ppc.PPC_INS_B,
+    cs.ppc.PPC_INS_BL,
+    cs.ppc.PPC_INS_BDZ,
+    cs.ppc.PPC_INS_BDNZ,
+    cs.ppc.PPC_INS_BC,
+    cs.ppc.PPC_INS_BEQ,
+    cs.ppc.PPC_INS_BGE,
+    cs.ppc.PPC_INS_BNE,
+}
+
 # These name substitutions are performed by doldisasm.py so that all symbols
 # and labels in the output asm only use alphanumerics and '$'
 SUBSTITUTIONS: Tuple[Tuple[str, str], ...] = (
@@ -142,12 +155,7 @@ def instruction_to_text(insn: CsInsn, raw: int, section: ElfSection) -> Optional
     # Probably data, not a real instruction
     if insn.id == cs.ppc.PPC_INS_BDNZ and (insn.bytes[0] & 1):
         return None
-    if insn.id in {
-        cs.ppc.PPC_INS_B,
-        cs.ppc.PPC_INS_BL,
-        cs.ppc.PPC_INS_BDZ,
-        cs.ppc.PPC_INS_BDNZ,
-    }:
+    if insn.id in BRANCH_MNEMONICS:
         if not label:
             return "%s %s" % (
                 insn.mnemonic,
@@ -244,16 +252,12 @@ def instruction_to_text(insn: CsInsn, raw: int, section: ElfSection) -> Optional
             )
 
     # Sign-extend immediate values (Capstone doesn't do that automatically)
-    if (
-        insn.id
-        in {
-            cs.ppc.PPC_INS_ADDI,
-            cs.ppc.PPC_INS_ADDIC,
-            cs.ppc.PPC_INS_SUBFIC,
-            cs.ppc.PPC_INS_MULLI,
-        }
-        and (insn.operands[2].imm & 0x8000)
-    ):
+    if insn.id in {
+        cs.ppc.PPC_INS_ADDI,
+        cs.ppc.PPC_INS_ADDIC,
+        cs.ppc.PPC_INS_SUBFIC,
+        cs.ppc.PPC_INS_MULLI,
+    } and (insn.operands[2].imm & 0x8000):
         return "%s %s, %s, %i" % (
             insn.mnemonic,
             insn.reg_name(insn.operands[0].reg),
@@ -500,14 +504,7 @@ def disassemble_ppc_text_section(section: ElfSection, output: TextIO) -> None:
         offset = addr - section.address
         if (
             insn is not None
-            and insn.id
-            in {
-                cs.ppc.PPC_INS_B,
-                cs.ppc.PPC_INS_BL,
-                cs.ppc.PPC_INS_BDZ,
-                cs.ppc.PPC_INS_BDNZ,
-                cs.ppc.PPC_INS_BC,
-            }
+            and insn.id in BRANCH_MNEMONICS
             and insn.operands[0].imm not in section.symbols
             and offset not in section.relocations
             and offset + 2 not in section.relocations

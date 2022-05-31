@@ -10,8 +10,8 @@ from .error import DecompFailure
 from .flow_graph import FlowGraph, build_flowgraph, visualize_flowgraph
 from .if_statements import get_function_text
 from .options import CodingStyle, Options, Target
-from .parse_file import AsmData, Function, parse_file
-from .parse_instruction import InstrProcessingFailure
+from .asm_file import AsmData, Function, parse_file
+from .instruction import InstrProcessingFailure
 from .translate import (
     Arch,
     FunctionInfo,
@@ -76,12 +76,12 @@ def run(options: Options) -> int:
     try:
         for filename in options.filenames:
             if filename == "-":
-                mips_file = parse_file(sys.stdin, arch, options)
+                asm_file = parse_file(sys.stdin, arch, options)
             else:
                 with open(filename, "r", encoding="utf-8-sig") as f:
-                    mips_file = parse_file(f, arch, options)
-            all_functions.update((fn.name, fn) for fn in mips_file.functions)
-            mips_file.asm_data.merge_into(asm_data)
+                    asm_file = parse_file(f, arch, options)
+            all_functions.update((fn.name, fn) for fn in asm_file.functions)
+            asm_file.asm_data.merge_into(asm_data)
 
         typemap = build_typemap(options.c_contexts, use_cache=options.use_cache)
     except Exception as e:
@@ -121,7 +121,13 @@ def run(options: Options) -> int:
         unk_inference=options.unk_inference,
     )
     global_info = GlobalInfo(
-        asm_data, arch, options.target, function_names, typemap, typepool
+        asm_data,
+        arch,
+        options.target,
+        function_names,
+        typemap,
+        typepool,
+        deterministic_vars=options.deterministic_vars,
     )
 
     flow_graphs: List[Union[FlowGraph, Exception]] = []
@@ -150,16 +156,16 @@ def run(options: Options) -> int:
                 flow_graph.reset_block_info()
                 info = translate_to_ast(function, flow_graph, options, global_info)
                 preliminary_infos.append(info)
-            except:
+            except Exception:
                 pass
         try:
             global_info.global_decls(fmt, options.global_decls, [])
-        except:
+        except Exception:
             pass
         for info in preliminary_infos:
             try:
                 get_function_text(info, options)
-            except:
+            except Exception:
                 pass
 
         # This operation can change struct field paths, so it is only performed
@@ -180,11 +186,11 @@ def run(options: Options) -> int:
 
     return_code = 0
     try:
-        if options.visualize_flowgraph:
+        if options.visualize_flowgraph is not None:
             fn_info = function_infos[0]
             if isinstance(fn_info, Exception):
                 raise fn_info
-            print(visualize_flowgraph(fn_info.flow_graph))
+            print(visualize_flowgraph(fn_info.flow_graph, options.visualize_flowgraph))
             return 0
 
         type_decls = typepool.format_type_declarations(
@@ -242,16 +248,10 @@ def parse_flags(flags: List[str]) -> Options:
 
     group = parser.add_argument_group("Input Options")
     group.add_argument(
-        "filename",
+        metavar="filename",
         nargs="+",
+        dest="filenames",
         help="Input asm filename(s)",
-    )
-    group.add_argument(
-        "--rodata",
-        dest="rodata_filenames",
-        action="append",
-        default=[],
-        help=argparse.SUPPRESS,  # For backwards compatibility
     )
     group.add_argument(
         "--context",
@@ -274,17 +274,19 @@ def parse_flags(flags: List[str]) -> Options:
     )
     group.add_argument(
         "-D",
+        metavar="SYM[=VALUE]",
         dest="defined",
         action="append",
         default=[],
-        help="Mark preprocessor constant as defined",
+        help="Mark preprocessor symbol as defined",
     )
     group.add_argument(
         "-U",
+        metavar="SYM",
         dest="undefined",
         action="append",
         default=[],
-        help="Mark preprocessor constant as undefined",
+        help="Mark preprocessor symbol as undefined",
     )
     group.add_argument(
         "--incbin-dir",
@@ -322,7 +324,7 @@ def parse_flags(flags: List[str]) -> Options:
         action="store_true",
         help=(
             "Include template structs for each function's stack. These can be modified and passed back "
-            "into mips_to_c with --context to set the types & names of stack vars."
+            "into m2c with --context to set the types & names of stack vars."
         ),
     )
     group.add_argument(
@@ -346,8 +348,12 @@ def parse_flags(flags: List[str]) -> Options:
     )
     group.add_argument(
         "--visualize",
-        dest="visualize",
-        action="store_true",
+        dest="visualize_flowgraph",
+        nargs="?",
+        default=None,
+        const=Options.VisualizeTypeEnum.C,
+        type=Options.VisualizeTypeEnum,
+        choices=list(Options.VisualizeTypeEnum),
         help="Print an SVG visualization of the control flow graph using graphviz",
     )
     group.add_argument(
@@ -363,7 +369,7 @@ def parse_flags(flags: List[str]) -> Options:
         dest="valid_syntax",
         action="store_true",
         help="Emit valid C syntax, using macros to indicate unknown types or other "
-        "unusual statements. Macro definitions are in `mips2c_macros.h`.",
+        "unusual statements. Macro definitions are in `m2c_macros.h`.",
     )
     group.add_argument(
         "--allman",
@@ -425,6 +431,13 @@ def parse_flags(flags: List[str]) -> Options:
         action="store_true",
         help="Pad hex constants with 0's to fill their type's width.",
     )
+    group.add_argument(
+        "--deterministic-vars",
+        dest="deterministic_vars",
+        action="store_true",
+        help="Name temp and phi vars after their location in the source asm, "
+        "rather than using an incrementing suffix. Can help reduce diff size in tests.",
+    )
 
     group = parser.add_argument_group("Analysis Options")
     group.add_argument(
@@ -436,13 +449,6 @@ def parse_flags(flags: List[str]) -> Options:
         help="Target architecture, compiler, and language triple. "
         "Supported triples: mips-ido-c, mips-gcc-c, ppc-mwcc-c++, ppc-mwcc-c. "
         "Default is mips-ido-c, `ppc` is an alias for ppc-mwcc-c++. ",
-    )
-    group.add_argument(
-        "--compiler",
-        dest="target_compiler",
-        type=Target.CompilerEnum,
-        choices=list(Target.CompilerEnum),
-        help=argparse.SUPPRESS,  # For backwards compatibility; now use `--target`
     )
     group.add_argument(
         "--passes",
@@ -525,19 +531,14 @@ def parse_flags(flags: List[str]) -> Options:
         action="store_true",
         help=argparse.SUPPRESS,
     )
-    group.add_argument(
-        "--structs",
-        dest="structs_compat",
-        action="store_true",
-        help=argparse.SUPPRESS,  # For backwards compatibility; now enabled by default
-    )
 
     args = parser.parse_args(flags)
     reg_vars = args.reg_vars.split(",") if args.reg_vars else []
-    preproc_defines = {
-        **{d: 0 for d in args.undefined},
-        **{d.split("=")[0]: 1 for d in args.defined},
-    }
+    preproc_defines: Dict[str, Optional[int]] = {d: None for d in args.undefined}
+    for d in args.defined:
+        parts = d.split("=", 1)
+        preproc_defines[parts[0]] = int(parts[1], 0) if len(parts) >= 2 else 1
+
     coding_style = CodingStyle(
         newline_after_function=args.allman,
         newline_after_if=args.allman,
@@ -548,29 +549,6 @@ def parse_flags(flags: List[str]) -> Options:
         comment_style=args.comment_style,
         comment_column=args.comment_column,
     )
-    filenames = args.filename + args.rodata_filenames
-
-    # Backwards compatibility: MIPS targets can be described with --compiler
-    if args.target_compiler == Target.CompilerEnum.IDO:
-        target = Target.parse("mips-ido-c")
-    elif args.target_compiler == Target.CompilerEnum.GCC:
-        target = Target.parse("mips-gcc-c")
-    elif args.target_compiler is None:
-        target = args.target
-    else:
-        parser.error(
-            "--compiler is partially supported for backwards compatibility, use --target instead"
-        )
-
-    # Backwards compatibility: giving a function index/name as a final argument, or "all"
-    assert filenames, "checked by argparse, nargs='+'"
-    if filenames[-1] == "all":
-        filenames.pop()
-    elif re.match(r"^[0-9a-zA-Z_]+$", filenames[-1]):
-        # The filename is a valid C identifier or a number
-        args.functions.append(filenames.pop())
-    if not filenames:
-        parser.error("the following arguments are required: filename")
 
     functions: List[Union[int, str]] = []
     for fn in args.functions:
@@ -580,11 +558,11 @@ def parse_flags(flags: List[str]) -> Options:
             functions.append(fn)
 
     # The debug output interferes with the visualize output
-    if args.visualize:
+    if args.visualize_flowgraph is not None:
         args.debug = False
 
     return Options(
-        filenames=filenames,
+        filenames=args.filenames,
         function_indexes_or_names=functions,
         debug=args.debug,
         void=args.void,
@@ -597,7 +575,7 @@ def parse_flags(flags: List[str]) -> Options:
         goto_patterns=args.goto_patterns,
         stop_on_error=args.stop_on_error,
         print_assembly=args.print_assembly,
-        visualize_flowgraph=args.visualize,
+        visualize_flowgraph=args.visualize_flowgraph,
         c_contexts=args.c_contexts,
         use_cache=args.use_cache,
         dump_typemap=args.dump_typemap,
@@ -607,18 +585,19 @@ def parse_flags(flags: List[str]) -> Options:
         sanitize_tracebacks=args.sanitize_tracebacks,
         valid_syntax=args.valid_syntax,
         global_decls=args.global_decls,
-        target=target,
+        target=args.target,
         print_stack_structs=args.print_stack_structs,
         unk_inference=args.unk_inference,
         passes=args.passes,
         incbin_dirs=args.incbin_dirs,
+        deterministic_vars=args.deterministic_vars,
     )
 
 
 def main() -> None:
     # Large functions can sometimes require a higher recursion limit than the
     # CPython default. Cap to INT_MAX to avoid an OverflowError, though.
-    sys.setrecursionlimit(min(2 ** 31 - 1, 10 * sys.getrecursionlimit()))
+    sys.setrecursionlimit(min(2**31 - 1, 10 * sys.getrecursionlimit()))
     options = parse_flags(sys.argv[1:])
     sys.exit(run(options))
 

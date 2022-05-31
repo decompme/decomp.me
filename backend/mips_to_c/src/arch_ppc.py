@@ -1,6 +1,7 @@
 from dataclasses import replace
 import typing
 from typing import (
+    Callable,
     ClassVar,
     Dict,
     List,
@@ -14,20 +15,22 @@ from .error import DecompFailure
 from .flow_graph import FlowGraph
 from .ir_pattern import IrMatch, IrPattern
 from .options import Target
-from .parse_instruction import (
+from .asm_instruction import (
     Argument,
     AsmAddressMode,
     AsmGlobalSymbol,
     AsmInstruction,
     AsmLiteral,
-    Instruction,
-    InstructionMeta,
     JumpTarget,
-    Location,
     Macro,
     Register,
-    StackLocation,
     get_jump_target,
+)
+from .instruction import (
+    Instruction,
+    InstructionMeta,
+    Location,
+    StackLocation,
 )
 from .asm_pattern import (
     AsmMatch,
@@ -40,6 +43,7 @@ from .asm_pattern import (
 from .translate import (
     Abi,
     AbiArgSlot,
+    AddressMode,
     Arch,
     BinaryOp,
     CarryBit,
@@ -47,18 +51,18 @@ from .translate import (
     CmpInstrMap,
     CommentStmt,
     ErrorExpr,
+    ExprStmt,
     Expression,
-    ImplicitInstrMap,
+    InstrArgs,
     InstrMap,
-    InstrSet,
     Literal,
-    PpcCmpInstrMap,
-    PairInstrMap,
+    NodeState,
     SecondF64Half,
     StmtInstrMap,
     StoreInstrMap,
     TernaryOp,
     UnaryOp,
+    add_imm,
     as_f32,
     as_f64,
     as_int64,
@@ -69,6 +73,7 @@ from .translate import (
     as_type,
     as_u32,
     as_uintish,
+    error_stmt,
     fn_op,
     fold_divmod,
     fold_mul_chains,
@@ -81,8 +86,8 @@ from .translate import (
     handle_load,
     handle_loadx,
     handle_or,
-    handle_rlwinm,
     handle_rlwimi,
+    handle_rlwinm,
     handle_sra,
     load_upper,
     make_store,
@@ -510,6 +515,10 @@ class PpcArch(Arch):
         function_target: Optional[Union[AsmGlobalSymbol, Register]] = None
         is_conditional = False
         is_return = False
+        is_store = False
+        eval_fn: Optional[Callable[[NodeState, InstrArgs], object]] = None
+
+        instr_str = str(AsmInstruction(mnemonic, args))
 
         cr0_bits: List[Location] = [
             Register("cr0_lt"),
@@ -544,6 +553,11 @@ class PpcArch(Arch):
                     return [loc]
             return []
 
+        def unreachable_eval(s: NodeState, a: InstrArgs) -> None:
+            raise DecompFailure(
+                f"Instruction {instr_str} should be replaced before eval"
+            )
+
         if mnemonic == "blr":
             # Return
             assert len(args) == 0
@@ -567,12 +581,15 @@ class PpcArch(Arch):
             inputs = cr0_bits + [Register("lr")]
             is_return = True
             is_conditional = True
+            # NB: These are rewritten to mnemonic[:-2] by build_blocks in flow_graph.py
+            eval_fn = unreachable_eval
         elif mnemonic == "bctr":
             # Jump table (switch)
             assert len(args) == 0
             inputs = [Register("ctr")]
             jump_target = Register("ctr")
             is_conditional = True
+            eval_fn = lambda s, a: s.set_switch_expr(a.regs[Register("ctr")])
         elif mnemonic == "bl":
             # Function call to label
             assert len(args) == 1 and isinstance(args[0], AsmGlobalSymbol)
@@ -580,52 +597,43 @@ class PpcArch(Arch):
             outputs = list(cls.all_return_regs)
             clobbers = list(cls.temp_regs)
             function_target = args[0]
-        elif mnemonic == "bctrl":
-            # Function call to pointer in $ctr
+            eval_fn = lambda s, a: s.make_function_call(a.sym_imm(0), outputs)
+        elif mnemonic in ("bctrl", "blrl"):
+            # Function call to pointer in special reg ($ctr or $lr)
             assert len(args) == 0
+            reg = Register(mnemonic[1:-1])
             inputs = list(cls.argument_regs)
-            inputs.append(Register("ctr"))
+            inputs.append(reg)
             outputs = list(cls.all_return_regs)
             clobbers = list(cls.temp_regs)
-            function_target = Register("ctr")
-        elif mnemonic == "blrl":
-            # Function call to pointer in $lr
-            assert len(args) == 0
-            inputs = list(cls.argument_regs)
-            inputs.append(Register("lr"))
-            outputs = list(cls.all_return_regs)
-            clobbers = list(cls.temp_regs)
-            function_target = Register("lr")
+            function_target = reg
+            eval_fn = lambda s, a: s.make_function_call(a.regs[reg], outputs)
         elif mnemonic == "b":
             # Unconditional jump
             assert len(args) == 1
             jump_target = get_jump_target(args[0])
-        elif mnemonic in cls.instrs_branches or mnemonic in ("bdnz", "bdz"):
+        elif mnemonic in cls.instrs_branches:
             # Normal branch
             # TODO: Support crN argument
             assert 1 <= len(args) <= 2
-            inputs = [
-                Register(
-                    {
-                        "beq": "cr0_eq",
-                        "bge": "cr0_lt",
-                        "bgt": "cr0_gt",
-                        "ble": "cr0_gt",
-                        "blt": "cr0_lt",
-                        "bne": "cr0_eq",
-                        "bns": "cr0_so",
-                        "bso": "cr0_so",
-                        "bdnz": "ctr",
-                        "bdz": "ctr",
-                        "bdnz.fictive": "ctr",
-                        "bdz.fictive": "ctr",
-                    }[mnemonic]
-                )
-            ]
+            # If the name starts with "!", negate the condition
+            raw_name = cls.instrs_branches[mnemonic]
+            negated = raw_name.startswith("!")
+            reg_name = raw_name.lstrip("!")
+
+            inputs = [Register(reg_name)]
             jump_target = get_jump_target(args[-1])
             is_conditional = True
+
+            def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                cond = a.cmp_reg(reg_name)
+                if negated:
+                    cond = cond.negated()
+                s.set_branch_condition(cond)
+
         elif mnemonic in cls.instrs_store:
             assert isinstance(args[0], Register) and size is not None
+            is_store = True
             if mnemonic.endswith("x"):
                 assert (
                     len(args) == 3 + psq_imms
@@ -637,8 +645,17 @@ class PpcArch(Arch):
                 assert len(args) == 2 + psq_imms and isinstance(args[1], AsmAddressMode)
                 inputs = [args[0], args[1].rhs]
                 outputs = make_memory_access(args[1], size)
+
+            def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                store = cls.instrs_store[mnemonic](a)
+                if store is not None:
+                    s.store_memory(
+                        source=store.source, dest=store.dest, reg=a.reg_ref(0)
+                    )
+
         elif mnemonic in cls.instrs_store_update:
             assert isinstance(args[0], Register) and size is not None
+            is_store = True
             if mnemonic.endswith("x"):
                 assert (
                     len(args) == 3 + psq_imms
@@ -651,6 +668,26 @@ class PpcArch(Arch):
                 assert len(args) == 2 + psq_imms and isinstance(args[1], AsmAddressMode)
                 inputs = [args[0], args[1].rhs]
                 outputs = make_memory_access(args[1], size) + [args[1].rhs]
+
+            def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                store = cls.instrs_store_update[mnemonic](a)
+
+                # Update the register in the second argument
+                update = a.memory_ref(1)
+                if not isinstance(update, AddressMode):
+                    raise DecompFailure(
+                        f"Unhandled store-and-update arg in {instr_str}: {update!r}"
+                    )
+                s.set_reg(
+                    update.rhs,
+                    add_imm(update.rhs, a.regs[update.rhs], Literal(update.offset), a),
+                )
+
+                if store is not None:
+                    s.store_memory(
+                        source=store.source, dest=store.dest, reg=a.reg_ref(0)
+                    )
+
         elif mnemonic in cls.instrs_load:
             assert isinstance(args[0], Register) and size is not None
             if mnemonic.endswith("x"):
@@ -661,9 +698,11 @@ class PpcArch(Arch):
                 )
                 inputs = [args[1], args[2]]
             else:
-                assert len(args) == 2 + psq_imms and isinstance(args[1], AsmAddressMode)
-                inputs = make_memory_access(args[1], size) + [args[1].rhs]
+                assert len(args) == 2 + psq_imms
+                if isinstance(args[1], AsmAddressMode):
+                    inputs = make_memory_access(args[1], size) + [args[1].rhs]
             outputs = [args[0]]
+            eval_fn = lambda s, a: s.set_reg(a.reg_ref(0), cls.instrs_load[mnemonic](a))
         elif mnemonic in cls.instrs_load_update:
             assert isinstance(args[0], Register) and size is not None
             if mnemonic.endswith("x"):
@@ -674,10 +713,47 @@ class PpcArch(Arch):
                 )
                 inputs = [args[1], args[2]]
                 outputs = [args[0], args[1]]
+
+                def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                    target = a.reg_ref(0)
+                    val = cls.instrs_load_update[mnemonic](a)
+                    s.set_reg(target, val)
+                    # In `rD, rA, rB`, update `rA = rA + rB`
+                    update_reg = a.reg_ref(1)
+                    offset = a.reg(2)
+                    if update_reg == target:
+                        raise DecompFailure(
+                            f"Invalid instruction, rA and rD must be different in {instr_str}"
+                        )
+                    s.set_reg(
+                        update_reg, add_imm(update_reg, a.regs[update_reg], offset, a)
+                    )
+
             else:
                 assert len(args) == 2 + psq_imms and isinstance(args[1], AsmAddressMode)
                 inputs = make_memory_access(args[1], size) + [args[1].rhs]
                 outputs = [args[0], args[1].rhs]
+
+                def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                    target = a.reg_ref(0)
+                    val = cls.instrs_load_update[mnemonic](a)
+                    s.set_reg(target, val)
+                    # In `rD, rA(N)`, update `rA = rA + N`
+                    update = a.memory_ref(1)
+                    if not isinstance(update, AddressMode):
+                        raise DecompFailure(
+                            f"Unhandled load-and-update arg in {instr_str}: {update!r}"
+                        )
+                    update_reg = update.rhs
+                    offset = Literal(update.offset)
+                    if update_reg == target:
+                        raise DecompFailure(
+                            f"Invalid instruction, rA and rD must be different in {instr_str}"
+                        )
+                    s.set_reg(
+                        update_reg, add_imm(update_reg, a.regs[update_reg], offset, a)
+                    )
+
         elif mnemonic in ("stmw", "lmw"):
             assert (
                 len(args) == 2
@@ -685,6 +761,7 @@ class PpcArch(Arch):
                 and isinstance(args[1], AsmAddressMode)
                 and args[0].register_name[0] == "r"
             )
+            is_store = mnemonic == "stmw"
             index = int(args[0].register_name[1:])
             offset = args[1].lhs_as_literal()
             while index <= 31:
@@ -701,8 +778,11 @@ class PpcArch(Arch):
                 index += 1
                 offset += 4
             inputs.append(args[1].rhs)
+            # TODO: These are only supported in function prologues/epilogues
+            eval_fn = None
         elif mnemonic in cls.instrs_no_dest:
             assert not any(isinstance(a, (Register, AsmAddressMode)) for a in args)
+            eval_fn = lambda s, a: s.write_statement(cls.instrs_no_dest[mnemonic](a))
         elif mnemonic.rstrip(".") in cls.instrs_destination_first:
             assert isinstance(args[0], Register)
             outputs = [args[0]]
@@ -732,24 +812,90 @@ class PpcArch(Arch):
             else:
                 assert not any(isinstance(a, AsmAddressMode) for a in args)
                 inputs = [r for r in args[1:] if isinstance(r, Register)]
-        elif mnemonic in cls.instrs_implicit_destination:
+            if mnemonic.endswith("."):
+                # Instructions ending in `.` update the condition reg
+                outputs.extend(cr0_bits)
+
+                def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                    target = a.reg_ref(0)
+                    val = cls.instrs_destination_first[mnemonic.rstrip(".")](a)
+                    target_val = s.set_reg(target, val)
+                    if target_val is None:
+                        target_val = val
+                    s.set_reg(
+                        Register("cr0_eq"),
+                        BinaryOp.icmp(
+                            target_val, "==", Literal(0, type=target_val.type)
+                        ),
+                    )
+                    # Use manual casts for cr0_gt/cr0_lt so that the type of target_val is not modified
+                    # until the resulting bit is .use()'d.
+                    target_s32 = Cast(
+                        target_val, reinterpret=True, silent=True, type=Type.s32()
+                    )
+                    s.set_reg(
+                        Register("cr0_gt"),
+                        BinaryOp(target_s32, ">", Literal(0), type=Type.s32()),
+                    )
+                    s.set_reg(
+                        Register("cr0_lt"),
+                        BinaryOp(target_s32, "<", Literal(0), type=Type.s32()),
+                    )
+                    s.set_reg(
+                        Register("cr0_so"),
+                        fn_op("MIPS2C_OVERFLOW", [target_val], type=Type.s32()),
+                    )
+
+            else:
+                eval_fn = lambda s, a: s.set_reg(
+                    a.reg_ref(0), cls.instrs_destination_first[mnemonic](a)
+                )
+        elif mnemonic in ("mtctr", "mtlr"):
             assert len(args) == 1 and isinstance(args[0], Register)
+            dest_reg = Register(mnemonic[2:])
             inputs = [args[0]]
-            outputs = [cls.instrs_implicit_destination[mnemonic][0]]
+            outputs = [dest_reg]
+            eval_fn = lambda s, a: s.set_reg(dest_reg, a.reg(0))
         elif mnemonic in cls.instrs_ppc_compare:
             assert len(args) == 3 and isinstance(args[1], Register)
             inputs = [r for r in args[1:] if isinstance(r, Register)]
             outputs = list(cr0_bits)
+
+            def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                base_reg = a.reg_ref(0)
+                if base_reg != Register("cr0"):
+                    error = f'"{instr_str}" is not supported, the first arg is not $cr0'
+                    s.write_statement(error_stmt(error))
+                    return
+
+                s.set_reg(Register("cr0_eq"), cls.instrs_ppc_compare[mnemonic](a, "=="))
+                s.set_reg(Register("cr0_gt"), cls.instrs_ppc_compare[mnemonic](a, ">"))
+                s.set_reg(Register("cr0_lt"), cls.instrs_ppc_compare[mnemonic](a, "<"))
+                s.set_reg(Register("cr0_so"), Literal(0))
+
         elif mnemonic in cls.instrs_ignore:
             pass
-        elif args and isinstance(args[0], Register):
-            # If the mnemonic is unsupported, guess it is destination-first
-            inputs = [r for r in args[1:] if isinstance(r, Register)]
-            outputs = [args[0]]
+        else:
+            # If the mnemonic is unsupported, guess if it is destination-first
+            if args and isinstance(args[0], Register):
+                inputs = [r for r in args[1:] if isinstance(r, Register)]
+                outputs = [args[0]]
+                maybe_dest_first = True
+            else:
+                maybe_dest_first = False
 
-        if mnemonic.endswith("."):
-            # PPC instructions ending in `.` update the condition reg
-            outputs.extend(cr0_bits)
+            def eval_fn(s: NodeState, a: InstrArgs) -> None:
+                error = ErrorExpr(f"unknown instruction: {instr_str}")
+                if mnemonic.endswith("."):
+                    # Unimplemented instructions that modify CR0
+                    s.set_reg(Register("cr0_eq"), error)
+                    s.set_reg(Register("cr0_gt"), error)
+                    s.set_reg(Register("cr0_lt"), error)
+                    s.set_reg(Register("cr0_so"), error)
+                if maybe_dest_first:
+                    s.set_reg_real(a.reg_ref(0), error, emit_exactly_once=True)
+                else:
+                    s.write_statement(ExprStmt(error))
 
         return Instruction(
             mnemonic=mnemonic,
@@ -762,6 +908,8 @@ class PpcArch(Arch):
             function_target=function_target,
             is_conditional=is_conditional,
             is_return=is_return,
+            is_store=is_store,
+            eval_fn=eval_fn,
         )
 
     ir_patterns = [
@@ -780,7 +928,7 @@ class PpcArch(Arch):
         FloatishToUintPattern(),
     ]
 
-    instrs_ignore: InstrSet = {
+    instrs_ignore: Set[str] = {
         "nop",
         "b",
         # Assume stmw/lmw are only used for saving/restoring saved regs
@@ -853,38 +1001,28 @@ class PpcArch(Arch):
         "lfdux": lambda a: handle_loadx(a, type=Type.f64()),
     }
 
-    instrs_branches: CmpInstrMap = {
+    instrs_branches: Dict[str, str] = {
         # Branch instructions/pseudoinstructions
         # Technically `bge` is defined as `cr0_gt || cr0_eq`; not as `!cr0_lt`
         # This assumption may not hold if the bits are modified with instructions like
         # `crand` which modify individual bits in CR.
-        "beq": lambda a: a.cmp_reg("cr0_eq"),
-        "bge": lambda a: a.cmp_reg("cr0_lt").negated(),
-        "bgt": lambda a: a.cmp_reg("cr0_gt"),
-        "ble": lambda a: a.cmp_reg("cr0_gt").negated(),
-        "blt": lambda a: a.cmp_reg("cr0_lt"),
-        "bne": lambda a: a.cmp_reg("cr0_eq").negated(),
-        "bns": lambda a: a.cmp_reg("cr0_so").negated(),
-        "bso": lambda a: a.cmp_reg("cr0_so"),
-        "bdnz.fictive": lambda a: a.cmp_reg("ctr"),
-        "bdz.fictive": lambda a: a.cmp_reg("ctr").negated(),
-    }
-    instrs_float_branches: InstrSet = {}
-    instrs_jumps: InstrSet = {
-        # Unconditional jumps
-        "b",
-        "blr",
-        "bctr",
-    }
-    instrs_fn_call: InstrSet = {
-        # Function call
-        "bl",
-        "blrl",
-        "bctrl",
+        # The `!` indicates that the condition in the register is negated
+        "beq": "cr0_eq",
+        "bge": "!cr0_lt",
+        "bgt": "cr0_gt",
+        "ble": "!cr0_gt",
+        "blt": "cr0_lt",
+        "bne": "!cr0_eq",
+        "bns": "!cr0_so",
+        "bso": "cr0_so",
+        "bdnz": "ctr",
+        "bdz": "!ctr",
+        "bdnz.fictive": "ctr",
+        "bdz.fictive": "!ctr",
     }
     instrs_no_dest: StmtInstrMap = {
-        "sync": lambda a: void_fn_op("MIPS2C_SYNC", []),
-        "isync": lambda a: void_fn_op("MIPS2C_SYNC", []),
+        "sync": lambda a: void_fn_op("M2C_SYNC", []),
+        "isync": lambda a: void_fn_op("M2C_SYNC", []),
     }
 
     instrs_dest_first_non_load: InstrMap = {
@@ -1082,12 +1220,7 @@ class PpcArch(Arch):
         **instrs_load,
     }
 
-    instrs_implicit_destination: ImplicitInstrMap = {
-        "mtlr": (Register("lr"), lambda a: a.reg(0)),
-        "mtctr": (Register("ctr"), lambda a: a.reg(0)),
-    }
-
-    instrs_ppc_compare: PpcCmpInstrMap = {
+    instrs_ppc_compare: Dict[str, Callable[[InstrArgs, str], Expression]] = {
         # Integer (signed/unsigned)
         "cmpw": lambda a, op: BinaryOp.sintptr_cmp(a.reg(1), op, a.reg(2)),
         "cmpwi": lambda a, op: BinaryOp.sintptr_cmp(a.reg(1), op, a.imm(2)),

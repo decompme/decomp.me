@@ -2,22 +2,24 @@ import abc
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, TypeVar, Union
 
-from .parse_file import Label
-from .parse_instruction import (
+from .asm_file import Label
+from .asm_instruction import (
     Argument,
-    ArchAsm,
     AsmAddressMode,
     AsmGlobalSymbol,
     AsmInstruction,
     AsmLiteral,
     BinOp,
-    Instruction,
-    InstructionMeta,
     JumpTarget,
     NaiveParsingArch,
     Register,
     RegFormatter,
     parse_asm_instruction,
+)
+from .instruction import (
+    ArchAsm,
+    Instruction,
+    InstructionMeta,
 )
 
 
@@ -37,7 +39,7 @@ def make_pattern(*parts: str) -> Pattern:
         elif part.endswith(":"):
             ret.append((Label(part.strip(".:")), optional))
         else:
-            ins = parse_asm_instruction(part, NaiveParsingArch(), RegFormatter())
+            ins = parse_asm_instruction(part, NaiveParsingArch(), RegFormatter(), {})
             ret.append((ins, optional))
     return ret
 

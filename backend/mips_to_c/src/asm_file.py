@@ -8,11 +8,11 @@ from typing import Callable, Dict, List, Match, Optional, Set, Tuple, TypeVar, U
 
 from .error import DecompFailure
 from .options import Options
-from .parse_instruction import (
+from .asm_instruction import RegFormatter
+from .instruction import (
     ArchAsm,
     Instruction,
     InstructionMeta,
-    RegFormatter,
     parse_instruction,
 )
 
@@ -100,7 +100,7 @@ class AsmData:
 
 
 @dataclass
-class MIPSFile:
+class AsmFile:
     filename: str
     functions: List[Function] = field(default_factory=list)
     asm_data: AsmData = field(default_factory=AsmData)
@@ -276,14 +276,18 @@ def parse_incbin(
     return None
 
 
-def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
+def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> AsmFile:
     filename = Path(f.name).name
-    mips_file: MIPSFile = MIPSFile(filename)
-    defines: Dict[str, int] = options.preproc_defines
+    asm_file: AsmFile = AsmFile(filename)
     ifdef_level: int = 0
     ifdef_levels: List[int] = []
     curr_section = ".text"
     warnings: List[str] = []
+    defines: Dict[str, Optional[int]] = {
+        # NULL is a non-standard but common asm macro that expands to 0
+        "NULL": 0,
+        **options.preproc_defines,
+    }
 
     # https://stackoverflow.com/a/241506
     def re_comment_replacer(match: Match[str]) -> str:
@@ -301,13 +305,19 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
 
     T = TypeVar("T")
 
-    def try_parse(parser: Callable[[], T], directive: str) -> T:
+    def try_parse(parser: Callable[[], T]) -> T:
         try:
             return parser()
         except ValueError:
             raise DecompFailure(
                 f"Could not parse asm_data {directive} in {curr_section}: {line}"
             )
+
+    def parse_int(w: str) -> int:
+        var_value = defines.get(w)
+        if var_value is not None:
+            return var_value
+        return int(w, 0)
 
     for lineno, line in enumerate(f, 1):
         # Check for goto markers before stripping comments
@@ -320,18 +330,18 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
 
         def process_label(label: str, *, glabel: bool) -> None:
             if curr_section == ".rodata":
-                mips_file.new_data_label(label, is_readonly=True, is_bss=False)
+                asm_file.new_data_label(label, is_readonly=True, is_bss=False)
             elif curr_section == ".data":
-                mips_file.new_data_label(label, is_readonly=False, is_bss=False)
+                asm_file.new_data_label(label, is_readonly=False, is_bss=False)
             elif curr_section == ".bss":
-                mips_file.new_data_label(label, is_readonly=False, is_bss=True)
+                asm_file.new_data_label(label, is_readonly=False, is_bss=True)
             elif curr_section == ".text":
                 re_local = re_local_glabel if glabel else re_local_label
                 if label.startswith("."):
-                    if mips_file.current_function is None:
+                    if asm_file.current_function is None:
                         raise DecompFailure(f"Label {label} is not within a function!")
-                    mips_file.new_label(label.lstrip("."))
-                elif re_local.match(label) and mips_file.current_function is not None:
+                    asm_file.new_label(label.lstrip("."))
+                elif re_local.match(label) and asm_file.current_function is not None:
                     # Don't treat labels as new functions if they follow a
                     # specific naming pattern. This is used for jump table
                     # targets in both IDA and old n64split output.
@@ -339,9 +349,9 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
                     # file though, to avoid crashes due to unidentified
                     # functions. (Should possibly be generalized to cover any
                     # glabel that has a branch that goes across?)
-                    mips_file.new_label(label)
+                    asm_file.new_label(label)
                 else:
-                    mips_file.new_function(label)
+                    asm_file.new_function(label)
 
         # Check for labels
         while True:
@@ -358,23 +368,30 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
         if not line:
             continue
 
-        if line.startswith("."):
+        if "=" in line:
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if " " not in key:
+                line = f".set {key}, {value}"
+
+        directive = line.split()[0]
+        if directive.startswith("."):
             # Assembler directive.
-            if line.startswith(".ifdef") or line.startswith(".ifndef"):
+            if directive == ".ifdef" or directive == ".ifndef":
                 macro_name = line.split()[1]
                 if macro_name not in defines:
-                    defines[macro_name] = 0
+                    defines[macro_name] = None
                     add_warning(
                         warnings,
                         f"Note: assuming {macro_name} is unset for .ifdef, "
                         f"pass -D{macro_name}/-U{macro_name} to set/unset explicitly.",
                     )
-                level = defines[macro_name]
-                if line.startswith(".ifdef"):
+                level = 1 if defines[macro_name] is not None else 0
+                if directive == ".ifdef":
                     level = 1 - level
                 ifdef_level += level
                 ifdef_levels.append(level)
-            elif line.startswith(".if"):
+            elif directive.startswith(".if"):
                 macro_name = line.split()[1]
                 if macro_name == "0":
                     level = 1
@@ -385,93 +402,97 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
                     add_warning(warnings, f"Note: ignoring .if {macro_name} directive")
                 ifdef_level += level
                 ifdef_levels.append(level)
-            elif line.startswith(".else"):
+            elif directive == ".else":
                 level = ifdef_levels.pop()
                 ifdef_level -= level
                 level = 1 - level
                 ifdef_level += level
                 ifdef_levels.append(level)
-            elif line.startswith(".endif"):
+            elif directive == ".endif":
                 ifdef_level -= ifdef_levels.pop()
-            elif line.startswith(".macro"):
+            elif directive == ".macro":
                 ifdef_level += 1
-            elif line.startswith(".endm"):
+            elif directive == ".endm":
                 ifdef_level -= 1
             elif ifdef_level == 0:
-                if line.startswith(".section"):
-                    curr_section = line.split(" ")[1].split(",")[0]
+                if directive == ".section":
+                    curr_section = line.split()[1].split(",")[0]
                     if curr_section in (".rdata", ".late_rodata", ".sdata2"):
                         curr_section = ".rodata"
                     if curr_section.startswith(".text"):
                         curr_section = ".text"
                 elif (
-                    line.startswith(".rdata")
-                    or line.startswith(".rodata")
-                    or line.startswith(".late_rodata")
+                    directive == ".rdata"
+                    or directive == ".rodata"
+                    or directive == ".late_rodata"
                 ):
                     curr_section = ".rodata"
-                elif line.startswith(".data"):
+                elif directive == ".data":
                     curr_section = ".data"
-                elif line.startswith(".bss"):
+                elif directive == ".bss":
                     curr_section = ".bss"
-                elif line.startswith(".text"):
+                elif directive == ".text":
                     curr_section = ".text"
+                elif directive == ".set":
+                    _, _, args_str = line.partition(" ")
+                    args = split_arg_list(args_str)
+                    if len(args) == 1:
+                        # ".set noreorder" or similar, just ignore
+                        pass
+                    elif len(args) == 2:
+                        defines[args[0]] = try_parse(lambda: parse_int(args[1]))
+                    else:
+                        raise DecompFailure(f"Could not parse {directive}: {line}")
                 elif curr_section in (".rodata", ".data", ".bss"):
-                    directive, _, args_str = line.partition(" ")
+                    _, _, args_str = line.partition(" ")
                     args = split_arg_list(args_str)
                     if directive in (".word", ".4byte"):
                         for w in args:
-                            if not w or w[0].isdigit() or w[0] == "-":
-                                ival = (
-                                    try_parse(lambda: int(w, 0), directive) & 0xFFFFFFFF
-                                )
-                                mips_file.new_data_bytes(struct.pack(">I", ival))
-                            elif w == "NULL":
-                                # NULL is a non-standard but common asm macro
-                                # that expands to 0
-                                mips_file.new_data_bytes(b"\0\0\0\0")
+                            if not w or w[0].isdigit() or w[0] == "-" or w in defines:
+                                ival = try_parse(lambda: parse_int(w)) & 0xFFFFFFFF
+                                asm_file.new_data_bytes(struct.pack(">I", ival))
                             else:
-                                mips_file.new_data_sym(w)
+                                asm_file.new_data_sym(w)
                     elif directive in (".short", ".half", ".2byte"):
                         for w in args:
-                            ival = try_parse(lambda: int(w, 0), directive) & 0xFFFF
-                            mips_file.new_data_bytes(struct.pack(">H", ival))
+                            ival = try_parse(lambda: parse_int(w)) & 0xFFFF
+                            asm_file.new_data_bytes(struct.pack(">H", ival))
                     elif directive == ".byte":
                         for w in args:
-                            ival = try_parse(lambda: int(w, 0), directive) & 0xFF
-                            mips_file.new_data_bytes(bytes([ival]))
+                            ival = try_parse(lambda: parse_int(w)) & 0xFF
+                            asm_file.new_data_bytes(bytes([ival]))
                     elif directive == ".float":
                         for w in args:
-                            fval = try_parse(lambda: float(w), directive)
-                            mips_file.new_data_bytes(struct.pack(">f", fval))
+                            fval = try_parse(lambda: float(w))
+                            asm_file.new_data_bytes(struct.pack(">f", fval))
                     elif directive == ".double":
                         for w in args:
-                            fval = try_parse(lambda: float(w), directive)
-                            mips_file.new_data_bytes(struct.pack(">d", fval))
+                            fval = try_parse(lambda: float(w))
+                            asm_file.new_data_bytes(struct.pack(">d", fval))
                     elif directive in (".asci", ".asciz", ".ascii", ".asciiz"):
                         z = directive.endswith("z")
-                        mips_file.new_data_bytes(
+                        asm_file.new_data_bytes(
                             parse_ascii_directive(line, z), is_string=True
                         )
                     elif directive in (".space", ".skip"):
                         if len(args) == 2:
-                            fill = try_parse(lambda: int(args[1], 0), directive) & 0xFF
+                            fill = try_parse(lambda: parse_int(args[1])) & 0xFF
                         elif len(args) == 1:
                             fill = 0
                         else:
                             raise DecompFailure(
                                 f"Could not parse asm_data {directive} in {curr_section}: {line}"
                             )
-                        size = try_parse(lambda: int(args[0], 0), directive)
-                        mips_file.new_data_bytes(bytes([fill] * size))
+                        size = try_parse(lambda: parse_int(args[0]))
+                        asm_file.new_data_bytes(bytes([fill] * size))
                     elif line.startswith(".incbin"):
                         data = parse_incbin(args, options, warnings)
                         if data is not None:
-                            mips_file.new_data_bytes(data)
+                            asm_file.new_data_bytes(data)
 
         elif ifdef_level == 0:
-            parts = line.split()
-            if parts and parts[0] in ("glabel", "dlabel"):
+            if directive in ("glabel", "dlabel"):
+                parts = line.split()
                 if len(parts) >= 2:
                     process_label(parts[1], glabel=True)
 
@@ -482,16 +503,17 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> MIPSFile:
                     lineno=lineno,
                     synthetic=False,
                 )
-                if mips_file.current_function is not None:
-                    reg_formatter = mips_file.current_function.reg_formatter
+                if asm_file.current_function is not None:
+                    reg_formatter = asm_file.current_function.reg_formatter
                 else:
                     reg_formatter = RegFormatter()
-                instr = parse_instruction(line, meta, arch, reg_formatter)
-                mips_file.new_instruction(instr)
+                defined_vars = {k: v for k, v in defines.items() if v is not None}
+                instr = parse_instruction(line, meta, arch, reg_formatter, defined_vars)
+                asm_file.new_instruction(instr)
 
     if warnings:
         print("/*")
         print("\n".join(warnings))
         print("*/")
 
-    return mips_file
+    return asm_file

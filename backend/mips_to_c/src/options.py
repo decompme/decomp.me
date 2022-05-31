@@ -89,6 +89,10 @@ class Options:
         USED = "used"
         NONE = "none"
 
+    class VisualizeTypeEnum(ChoicesEnum):
+        ASM = "asm"
+        C = "c"
+
     filenames: List[str]
     function_indexes_or_names: List[Union[int, str]]
     debug: bool
@@ -102,12 +106,12 @@ class Options:
     goto_patterns: List[str]
     stop_on_error: bool
     print_assembly: bool
-    visualize_flowgraph: bool
+    visualize_flowgraph: Optional[VisualizeTypeEnum]
     c_contexts: List[Path]
     use_cache: bool
     dump_typemap: bool
     pdb_translate: bool
-    preproc_defines: Dict[str, int]
+    preproc_defines: Dict[str, Optional[int]]  # None = explicitly unset
     coding_style: CodingStyle
     sanitize_tracebacks: bool
     valid_syntax: bool
@@ -117,6 +121,7 @@ class Options:
     unk_inference: bool
     passes: int
     incbin_dirs: List[Path]
+    deterministic_vars: bool
 
     def formatter(self) -> "Formatter":
         return Formatter(

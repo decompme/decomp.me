@@ -17,22 +17,24 @@ from typing import (
     Union,
 )
 
-from .error import DecompFailure
-from .options import Formatter, Target
-from .parse_file import AsmData, Function, Label
-from .parse_instruction import (
-    ArchAsm,
+from .error import DecompFailure, static_assert_unreachable
+from .options import Formatter, Options, Target
+from .asm_file import AsmData, Function, Label
+from .asm_instruction import (
     AsmAddressMode,
     AsmGlobalSymbol,
     AsmInstruction,
     AsmLiteral,
     BinOp,
-    Instruction,
-    InstructionMeta,
     JumpTarget,
-    Location,
     Macro,
     Register,
+)
+from .instruction import (
+    ArchAsm,
+    Instruction,
+    InstructionMeta,
+    Location,
 )
 from .asm_pattern import simplify_patterns, AsmPattern
 
@@ -105,6 +107,7 @@ class Block:
     label: Optional[Label]
     approx_label_name: str
     instruction_refs: List[InstrRef] = field(default_factory=list)
+    is_safeguard: bool = False
 
     # block_info is actually an Optional[BlockInfo], set by translate.py for
     # non-TerminalNode's, but due to circular dependencies we cannot type it
@@ -130,54 +133,57 @@ class Block:
 
 @dataclass(eq=False)
 class BlockBuilder:
-    curr_index: int = 0
-    curr_label: Optional[Label] = None
-    last_label_name: str = "initial"
-    label_counter: int = 0
-    curr_instructions: List[Instruction] = field(default_factory=list)
-    blocks: List[Block] = field(default_factory=list)
+    _curr_index: int = 0
+    _curr_label: Optional[Label] = None
+    _last_label_name: str = "initial"
+    _label_counter: int = 0
+    _curr_instructions: List[Instruction] = field(default_factory=list)
+    _blocks: List[Block] = field(default_factory=list)
 
     def new_block(self) -> Optional[Block]:
-        if len(self.curr_instructions) == 0:
+        if len(self._curr_instructions) == 0:
             return None
 
-        label_name = self.last_label_name
-        if self.label_counter > 0:
-            label_name += f".{self.label_counter}"
-        block = Block(self.curr_index, self.curr_label, label_name)
+        label_name = self._last_label_name
+        if self._label_counter > 0:
+            label_name += f".{self._label_counter}"
+        block = Block(self._curr_index, self._curr_label, label_name)
         block.instruction_refs.extend(
-            InstrRef(i, block) for i in self.curr_instructions
+            InstrRef(i, block) for i in self._curr_instructions
         )
-        self.blocks.append(block)
+        self._blocks.append(block)
 
-        self.curr_index += 1
-        self.curr_label = None
-        self.label_counter += 1
-        self.curr_instructions = []
+        self._curr_index += 1
+        self._curr_label = None
+        self._label_counter += 1
+        self._curr_instructions = []
 
         return block
 
     def add_instruction(self, instruction: Instruction) -> None:
-        self.curr_instructions.append(instruction)
+        self._curr_instructions.append(instruction)
 
     def set_label(self, label: Label) -> None:
-        if label == self.curr_label:
+        if label == self._curr_label:
             # It's okay to repeat a label (e.g. once with glabel, once as a
             # standard label -- this often occurs for switches).
             return
         # We could support multiple labels at the same position, and output
         # empty blocks. For now we don't, however.
-        if self.curr_label:
+        if self._curr_label:
             raise DecompFailure(
                 "A block is currently not allowed to have more than one label,\n"
-                f"but {self.curr_label.name}/{label.name} is given two."
+                f"but {self._curr_label.name}/{label.name} is given two."
             )
-        self.curr_label = label
-        self.last_label_name = label.name
-        self.label_counter = 0
+        self._curr_label = label
+        self._last_label_name = label.name
+        self._label_counter = 0
+
+    def is_empty(self) -> bool:
+        return not self._blocks and not self._curr_instructions
 
     def get_blocks(self) -> List[Block]:
-        return self.blocks
+        return self._blocks
 
 
 def verify_no_trailing_delay_slot(function: Function) -> None:
@@ -500,22 +506,24 @@ def build_blocks(
         else:
             process_no_delay_slots(item)
 
+    if block_builder.is_empty():
+        raise DecompFailure(
+            f"Function {function.name} contains no instructions. Maybe it is rodata?"
+        )
+
     if fragment:
         # If we're parsing an asm fragment instead of a full function,
         # then it does not need to end in a return or jump
         block_builder.new_block()
         return block_builder.get_blocks()
 
-    if block_builder.curr_label:
-        # As an easy-to-implement safeguard, check that the current block is
-        # anonymous (jump instructions create new anonymous blocks, so if it's
-        # not we must be missing a return instruction).
-        label = block_builder.curr_label.name
-        return_instrs = arch.missing_return()
-        print(f'Warning: missing "{return_instrs[0]}" in last block (.{label}).\n')
-        for instr in return_instrs:
-            block_builder.add_instruction(instr)
-        block_builder.new_block()
+    # Add an extra return statement as a safeguard. We emit a warning later on if
+    # this is reachable.
+    for instr in arch.missing_return():
+        block_builder.add_instruction(instr)
+    emitted_block = block_builder.new_block()
+    assert emitted_block is not None
+    emitted_block.is_safeguard = True
 
     if cond_return_target is not None:
         # Add an empty return block at the end of the function
@@ -524,7 +532,6 @@ def build_blocks(
             block_builder.add_instruction(instr)
         block_builder.new_block()
 
-    # Throw away whatever is past the last return instruction and return what we have.
     return block_builder.get_blocks()
 
 
@@ -831,15 +838,13 @@ def build_graph_from_block(
     return new_node
 
 
-def is_trivial_return_block(block: Block) -> bool:
+def is_trivial_return_block(block: Block, arch: ArchFlowGraph) -> bool:
     # A heuristic for when a block is a simple "early-return" block.
     # This could be improved.
-    stores = ["sb", "sh", "sw", "swc1", "sdc1", "swr", "swl", "jal"]
-    return_regs = [Register("v0"), Register("f0")]
     for instr in block.instructions:
-        if instr.mnemonic in stores:
+        if instr.is_store or instr.function_target is not None:
             return False
-        if any(reg in instr.args for reg in return_regs):
+        if any(reg in arch.all_return_regs for reg in instr.inputs + instr.outputs):
             return False
     return True
 
@@ -870,11 +875,6 @@ def build_nodes(
     terminal_node = TerminalNode.terminal()
     graph: List[Node] = [terminal_node]
 
-    if not blocks:
-        raise DecompFailure(
-            f"Function {function.name} contains no instructions. Maybe it is rodata?"
-        )
-
     # Fragments do not need a ReturnNode, they can directly fall through to the TerminalNode
     if fragment:
         blocks.append(terminal_node.block)
@@ -892,7 +892,17 @@ def build_nodes(
     return graph
 
 
-def is_premature_return(node: Node, edge: Node, nodes: List[Node]) -> bool:
+def warn_on_safeguard_use(nodes: List[Node], arch: ArchFlowGraph) -> None:
+    node = next((node for node in nodes if node.block.is_safeguard), None)
+    if node:
+        label = node.block.approx_label_name
+        return_instrs = arch.missing_return()
+        print(f'Warning: missing "{return_instrs[0]}" in last block (.{label}).\n')
+
+
+def is_premature_return(
+    node: Node, edge: Node, nodes: List[Node], arch: ArchFlowGraph
+) -> bool:
     """Check whether a given edge in the flow graph is an early return."""
     if len(nodes) < 3:
         return False
@@ -900,7 +910,7 @@ def is_premature_return(node: Node, edge: Node, nodes: List[Node]) -> bool:
     assert isinstance(terminal_node, TerminalNode)
     if not isinstance(edge, ReturnNode) or edge != final_return_node:
         return False
-    if not is_trivial_return_block(edge.block):
+    if not is_trivial_return_block(edge.block, arch):
         # Only trivial return blocks can be used for premature returns,
         # hopefully.
         return False
@@ -917,7 +927,7 @@ def is_premature_return(node: Node, edge: Node, nodes: List[Node]) -> bool:
     return node != antepenultimate_node
 
 
-def duplicate_premature_returns(nodes: List[Node]) -> List[Node]:
+def duplicate_premature_returns(nodes: List[Node], arch: ArchFlowGraph) -> List[Node]:
     """For each jump to an early return node, create a duplicate return node
     for it to jump to. This ensures nice nesting for the if_statements code,
     and avoids a phi node for the return value."""
@@ -927,7 +937,7 @@ def duplicate_premature_returns(nodes: List[Node]) -> List[Node]:
         if (
             isinstance(node, BasicNode)
             and not node.emit_goto
-            and is_premature_return(node, node.successor, nodes)
+            and is_premature_return(node, node.successor, nodes, arch)
         ):
             assert isinstance(node.successor, ReturnNode)
             index += 1
@@ -1468,9 +1478,11 @@ def build_flowgraph(
     for analyzing IR patterns which do not need to be normalized in the same way.
     """
     blocks = build_blocks(function, asm_data, arch, fragment=fragment)
+
     nodes = build_nodes(function, blocks, asm_data, arch, fragment=fragment)
+    warn_on_safeguard_use(nodes, arch)
     if not fragment:
-        nodes = duplicate_premature_returns(nodes)
+        nodes = duplicate_premature_returns(nodes, arch)
 
     compute_relations(nodes)
     if not fragment:
@@ -1485,7 +1497,9 @@ def build_flowgraph(
     return flow_graph
 
 
-def visualize_flowgraph(flow_graph: FlowGraph) -> str:
+def visualize_flowgraph(
+    flow_graph: FlowGraph, viz_type: Options.VisualizeTypeEnum
+) -> str:
     import graphviz as g
 
     fmt = Formatter(debug=True)
@@ -1498,32 +1512,40 @@ def visualize_flowgraph(flow_graph: FlowGraph) -> str:
             "fontname": "Monospace",
         },
     )
+
     for node in flow_graph.nodes:
         block_info: Optional[Any] = node.block.block_info
+        asm_label = ""
+        c_label = ""
+
         # In Graphviz, "\l" makes the preceeding text left-aligned, and inserts a newline
-        label = f"// Node {node.name()}\l"
         if block_info:
-            label += "".join(
+            asm_label = "".join(
+                f"{'*' if i.meta.synthetic else '&nbsp;'} {i}\l"
+                for i in node.block.instructions
+            )
+            c_label = "".join(
                 w.format(fmt) + "\l" for w in block_info.to_write if w.should_write()
             )
+
         dot.node(node.name())
         if isinstance(node, BasicNode):
             dot.edge(node.name(), node.successor.name(), color="black")
         elif isinstance(node, ConditionalNode):
             if block_info:
-                label += f"if ({block_info.branch_condition.format(fmt)})\l"
+                c_label += f"if ({block_info.branch_condition.format(fmt)})\l"
             dot.edge(node.name(), node.fallthrough_edge.name(), label="F", color="blue")
             dot.edge(node.name(), node.conditional_edge.name(), label="T", color="red")
         elif isinstance(node, ReturnNode):
             if block_info and block_info.return_value:
-                label += f"return ({block_info.return_value.format(fmt)});\l"
+                c_label += f"return ({block_info.return_value.format(fmt)});\l"
             else:
-                label += "return;\l"
+                c_label += "return;\l"
             dot.edge(node.name(), node.terminal.name())
         elif isinstance(node, SwitchNode):
             assert block_info is not None
             switch_control = block_info.switch_control
-            label += f"switch ({switch_control.control_expr.format(fmt)})\l"
+            c_label += f"switch ({switch_control.control_expr.format(fmt)})\l"
             for i, case in enumerate(node.cases):
                 dot.edge(
                     node.name(),
@@ -1533,7 +1555,22 @@ def visualize_flowgraph(flow_graph: FlowGraph) -> str:
                 )
         else:
             assert isinstance(node, TerminalNode)
-            label += "// exit\l"
+            asm_label += "// exit\l"
+            c_label += "// exit\l"
+
+        line_label = ""
+        first_instr = next(node.block.instructions, None)
+        if first_instr is not None and first_instr.meta.lineno > 0:
+            line_label = f" (line {first_instr.meta.lineno})"
+
+        label = f"// Node {node.name()}{line_label}\l"
+        if viz_type == Options.VisualizeTypeEnum.ASM:
+            label += asm_label
+        elif viz_type == Options.VisualizeTypeEnum.C:
+            label += c_label
+        else:
+            raise ValueError("Invalid viz_type: {viz_type!r}")
+
         dot.node(node.name(), label=label)
     svg_bytes: bytes = dot.pipe("svg")
     return svg_bytes.decode("utf-8", "replace")
