@@ -39,4 +39,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-extend-exclude = '^/(m2c|asm_differ|local_files)/'
+extend-exclude = '^/(mips_to_c|asm_differ|local_files)/'
