@@ -29,8 +29,8 @@ class DecompilerWrapper:
             except M2CError as e:
                 ret = f"{e}\n{default_source_code}"
             except Exception:
-                logger.exception("Error running mips_to_c")
-                ret = f"/* Internal error while running mips_to_c */\n{default_source_code}"
+                logger.exception("Error running m2c")
+                ret = f"/* Internal error while running m2c */\n{default_source_code}"
         else:
             ret = f"/* No decompiler yet implemented for {platform.arch} */\n{default_source_code}"
 
