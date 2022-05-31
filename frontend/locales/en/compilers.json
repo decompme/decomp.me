@@ -166,7 +166,7 @@
     "mwcc_fp_contract_on": "Generate fused multiply-add instructions",
     "mwcc_nodefaults": "Equivalent to '-nostdinc'",
     "mwcc_use_lmw_stmw_on": "Use multiple-word load/store instructions for structure copies; default",
-    "mwcc_debug_on": "Enable debug info",
+    "mwcc_line_numbers_on": "Enable debug info (C line numbers)",
     "mwcc_align_powerpc": "PowerPC alignment; default",
 
     "psyq_opt_level": "Optimization level",

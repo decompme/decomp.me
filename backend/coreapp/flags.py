@@ -126,7 +126,7 @@ COMMON_MWCC_FLAGS: Flags = [
     Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
     Checkbox(id="mwcc_nodefaults", flag="-nodefaults"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
-    Checkbox(id="mwcc_debug_on", flag="-g"),
+    Checkbox(id="mwcc_line_numbers_on", flag="-sym on")
 ]
 
 COMMON_GCC_PS1_FLAGS: Flags = [
