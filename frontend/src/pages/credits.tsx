@@ -119,8 +119,8 @@ export default function CreditsPage({ maintainers, contributors }: {
                         </Link>
                     </li>
                     <li>
-                        <Link href="https://github.com/matt-kempster/mips_to_c">
-                            <a>matt-kempster/mips_to_c</a>
+                        <Link href="https://github.com/matt-kempster/m2c">
+                            <a>matt-kempster/m2c</a>
                         </Link>
                     </li>
                 </ul>
