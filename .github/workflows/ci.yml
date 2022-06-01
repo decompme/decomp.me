@@ -71,9 +71,6 @@ jobs:
       - name: Install frontend dependencies
         run: cd frontend && yarn
 
-      - name: Run frontend tests
-        run: cd frontend && yarn test:ci
-
       - name: Start backend
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
