@@ -68,11 +68,14 @@ jobs:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
 
-      - name: Install frontend dependencies
-        run: cd frontend && yarn
+      - name: Migrate backend
+        run: cd backend && poetry run python3 ./manage.py migrate
 
       - name: Start backend
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
+
+      - name: Install frontend dependencies
+        run: cd frontend && yarn
 
       - name: Build frontend
         run: cd frontend && yarn build
