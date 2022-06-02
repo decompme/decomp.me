@@ -2,8 +2,7 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "css-modules",
-        "testing-library"
+        "css-modules"
     ],
     "extends": [
         "eslint:recommended",
@@ -97,13 +96,6 @@
             "rules": {
                 "import/exports-last": "off"
             }
-        },
-        {
-            "files": [
-                "**/__tests__/**/*.[jt]s?(x)",
-                "**/?(*.)+(spec|test).[jt]s?(x)"
-            ],
-            "extends": ["plugin:testing-library/react"]
         }
     ]
 }

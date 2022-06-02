@@ -1,6 +1,7 @@
-import { HighlightStyle, tags } from "@codemirror/highlight"
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
+import { tags } from "@lezer/highlight"
 
 const ivory = "#abb2bf",
     darkBackground = "#21252b",
@@ -131,7 +132,7 @@ export const highlightStyle = HighlightStyle.define([
 /// the highlight style).
 export const materialPalenight: Extension = [
     materialPalenightTheme,
-    highlightStyle,
+    syntaxHighlighting(highlightStyle),
 ]
 
 export default materialPalenight

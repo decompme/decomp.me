@@ -12,7 +12,7 @@ export interface Props {
     className?: string
 }
 
-export default class ErrorBoundary extends React.Component<Props, State> {
+export default class ErrorBoundary extends React.Component<any, State> {
     constructor(props) {
         super(props)
         this.state = { hasError: false }
