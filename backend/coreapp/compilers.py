@@ -26,6 +26,7 @@ from coreapp.platforms import (
     PS2,
     SWITCH,
     MACOS9,
+    MACOSX,
 )
 
 logger = logging.getLogger(__name__)
@@ -279,6 +280,29 @@ MWCPPC_24 = MWCCCompiler(
     id="mwcppc_24",
     platform=MACOS9,
     cc=MWCPPC_CC,
+)
+
+# MACOSX
+GCC_CC1 = '"${COMPILER_DIR}"/powerpc-darwin-cross/bin/cc1 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" "${FUNCTION}" new > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
+GCC_CC1_ALT = '"${COMPILER_DIR}"/cc1 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" "${FUNCTION}" new > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
+GCC_CC1PLUS = '"${COMPILER_DIR}"/powerpc-darwin-cross/bin/cc1plus ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" "${FUNCTION}" new > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
+
+XCODE_GCC401_C = GCCCompiler(
+    id="gcc-5370",
+    platform=MACOSX,
+    cc=GCC_CC1,
+)
+
+XCODE_GCC401_CPP = GCCCompiler(
+    id="gcc-5370-cpp",
+    platform=MACOSX,
+    cc=GCC_CC1PLUS,
+)
+
+PBX_GCC3 = GCCCompiler(
+    id="gcc3-1041",
+    platform=MACOSX,
+    cc=GCC_CC1_ALT,
 )
 
 # GC_WII
@@ -592,6 +616,10 @@ _all_compilers: List[Compiler] = [
     # MACOS9
     MWCPPC_23,
     MWCPPC_24,
+    # MACOSX
+    XCODE_GCC401_C,
+    XCODE_GCC401_CPP,
+    PBX_GCC3,
 ]
 
 # MKWII Common flags
