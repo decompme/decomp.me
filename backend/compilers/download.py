@@ -205,9 +205,9 @@ def download_ppc_darwin():
         COMPILERS_DIR / "gcc-5370-cpp" / "powerpc-darwin-cross" / "bin" / "cc1plus"
     )
     cc1_alt = COMPILERS_DIR / "gcc3-1041" / "cc1"
-    cc1.chmod(cc1.stat().st_mode | stat.S_IEXEC)
-    cc1_cpp.chmod(cc1_cpp.stat().st_mode | stat.S_IEXEC)
-    cc1_alt.chmod(cc1_alt.stat().st_mode | stat.S_IEXEC)
+    cc1.chmod(cc1.stat().st_mode | stat.S_IXUSR)
+    cc1_cpp.chmod(cc1_cpp.stat().st_mode | stat.S_IXUSR)
+    cc1_alt.chmod(cc1_alt.stat().st_mode | stat.S_IXUSR)
 
 
 def download_codewarrior():
