@@ -806,7 +806,7 @@ _all_presets = [
     # MACOS9
     Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
     # MACOSX
-    Preset("Fallout 2", PBX_GCC3, "-std=c99 -mmultiple -fPIC -O1 -fschedule-insns2"),
+    Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
 ]
 
 
