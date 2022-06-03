@@ -1805,7 +1805,9 @@ PPC_SETTINGS = ArchSettings(
     re_reg=re.compile(r"\$?\b([rf][0-9]+)\b"),
     re_sprel=re.compile(r"(?<=,)(-?[0-9]+|-?0x[0-9a-f]+)\(r1\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
-    re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(r1)|[^@]*@(ha|h|lo|sda21)"),
+    re_imm=re.compile(
+        r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(r1)|[^ \t,]+@(l|ha|h|sda21)"
+    ),
     re_reloc=re.compile(r"R_PPC_"),
     branch_instructions=PPC_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=PPC_BRANCH_INSTRUCTIONS.union({"bl"}),
@@ -2100,7 +2102,7 @@ def imm_matches_everything(row: str, arch: ArchSettings) -> bool:
 
 def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
     if arch.name == "ppc":
-        if "...data" in field:
+        if "..." in field:
             return True
 
         parts = field.rsplit("@", 1)
