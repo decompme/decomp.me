@@ -198,6 +198,16 @@ def download_ppc_darwin():
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc3-1041" / "convert_gas_syntax.py",
     )
+    # chmod the files
+    # can't do for loop due to different paths
+    cc1 = COMPILERS_DIR / "gcc-5370" / "powerpc-darwin-cross" / "bin" / "cc1"
+    cc1_cpp = (
+        COMPILERS_DIR / "gcc-5370-cpp" / "powerpc-darwin-cross" / "bin" / "cc1plus"
+    )
+    cc1_alt = COMPILERS_DIR / "gcc3-1041" / "cc1"
+    cc1.chmod(cc1.stat().st_mode | stat.S_IEXEC)
+    cc1_cpp.chmod(cc1_cpp.stat().st_mode | stat.S_IEXEC)
+    cc1_alt.chmod(cc1_alt.stat().st_mode | stat.S_IEXEC)
 
 
 def download_codewarrior():
