@@ -159,6 +159,11 @@ export default function CreditsPage({ maintainers, contributors }: {
                             <a>Happy Mac by NiloGlock</a>
                         </Link>
                     </li>
+                    <li>
+                        <Link href="https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg">
+                            <a>Tiger-like-x by Althepal</a>
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </main>
