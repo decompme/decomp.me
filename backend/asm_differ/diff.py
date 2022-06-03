@@ -1393,6 +1393,11 @@ class AsmProcessor:
     def __init__(self, config: Config) -> None:
         self.config = config
 
+    def pre_process(
+        self, mnemonic: str, args: str, next_row: Optional[str]
+    ) -> Tuple[str, str]:
+        return mnemonic, args
+
     def process_reloc(self, row: str, prev: str) -> str:
         return prev
 
@@ -1447,6 +1452,33 @@ class AsmProcessorMIPS(AsmProcessor):
 
 
 class AsmProcessorPPC(AsmProcessor):
+    def pre_process(
+        self, mnemonic: str, args: str, next_row: Optional[str]
+    ) -> Tuple[str, str]:
+
+        if next_row and "R_PPC_EMB_SDA21" in next_row:
+            # With sda21 relocs, the linker transforms `r0` into `r2`/`r13`, and
+            # we may encounter this in either pre-transformed or post-transformed
+            # versions depending on if the .o file comes from compiler output or
+            # from disassembly. Normalize, to make sure both forms are treated as
+            # equivalent.
+
+            args = args.replace("(r2)", "(0)")
+            args = args.replace("(r13)", "(0)")
+            args = args.replace(",r2,", ",0,")
+            args = args.replace(",r13,", ",0,")
+
+            # We want to convert li and lis with an sda21 reloc,
+            # because the r0 to r2/r13 transformation results in
+            # turning an li/lis into an addi/addis with r2/r13 arg
+            # our preprocessing normalizes all versions to addi with a 0 arg
+            if mnemonic in {"li", "lis"}:
+                mnemonic = mnemonic.replace("li", "addi")
+                args_parts = args.split(",")
+                args = args_parts[0] + ",0," + args_parts[1]
+
+        return mnemonic, args
+
     def process_reloc(self, row: str, prev: str) -> str:
         arch = self.config.arch
         assert any(
@@ -1474,8 +1506,9 @@ class AsmProcessorPPC(AsmProcessor):
                 if int(repl.split("+")[1], 16) > 0x70000000:
                     repl = repl.split("+")[0]
         elif "R_PPC_EMB_SDA21" in row:
-            # small data area
-            pass
+            # sda21 relocations; r2/r13 --> 0 swaps are performed in pre_process
+            repl = f"{repl}@sda21"
+
         return before + repl + after
 
 
@@ -1772,7 +1805,7 @@ PPC_SETTINGS = ArchSettings(
     re_reg=re.compile(r"\$?\b([rf][0-9]+)\b"),
     re_sprel=re.compile(r"(?<=,)(-?[0-9]+|-?0x[0-9a-f]+)\(r1\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
-    re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(r1)|[^@]*@(ha|h|lo)"),
+    re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(r1)|[^@]*@(ha|h|lo|sda21)"),
     re_reloc=re.compile(r"R_PPC_"),
     branch_instructions=PPC_BRANCH_INSTRUCTIONS,
     instructions_with_address_immediates=PPC_BRANCH_INSTRUCTIONS.union({"bl"}),
@@ -1857,6 +1890,7 @@ class Line:
     original: str
     normalized_original: str
     scorable_line: str
+    has_symbol: bool
     line_num: Optional[int] = None
     branch_target: Optional[int] = None
     data_pool_addr: Optional[int] = None
@@ -1906,6 +1940,7 @@ def process(dump: str, config: Config) -> List[Line]:
                     original="...",
                     normalized_original="...",
                     scorable_line="...",
+                    has_symbol=False,
                 )
             )
             break
@@ -1951,6 +1986,7 @@ def process(dump: str, config: Config) -> List[Line]:
                     original=ref_str,
                     normalized_original=ref_str,
                     scorable_line="<data-ref>",
+                    has_symbol=False,
                 )
             )
 
@@ -1959,8 +1995,12 @@ def process(dump: str, config: Config) -> List[Line]:
         else:
             # powerpc-eabi-objdump doesn't use tabs
             row_parts = [part.lstrip() for part in row.split(" ", 1)]
+
         mnemonic = row_parts[0].strip()
-        args = row_parts[1] if len(row_parts) >= 2 else ""
+        args = row_parts[1].strip() if len(row_parts) >= 2 else ""
+
+        next_line = lines[i] if i < len(lines) else None
+        mnemonic, args = processor.pre_process(mnemonic, args, next_line)
         row = mnemonic + "\t" + args.replace("\t", "  ")
 
         addr = ""
@@ -1978,10 +2018,13 @@ def process(dump: str, config: Config) -> List[Line]:
         # immediates.
         original = row
 
+        has_symbol = False
+
         while i < len(lines):
             reloc_row = lines[i]
             if re.search(arch.re_reloc, reloc_row):
                 original = processor.process_reloc(reloc_row, original)
+                has_symbol = True
             else:
                 break
             i += 1
@@ -2012,7 +2055,7 @@ def process(dump: str, config: Config) -> List[Line]:
 
         branch_target = None
         if mnemonic in arch.branch_instructions:
-            branch_target = int(row_parts[1].strip().split(",")[-1], 16)
+            branch_target = int(args.split(",")[-1], 16)
 
         output.append(
             Line(
@@ -2021,6 +2064,7 @@ def process(dump: str, config: Config) -> List[Line]:
                 original=original,
                 normalized_original=normalized_original,
                 scorable_line=scorable_line,
+                has_symbol=has_symbol,
                 line_num=line_num,
                 branch_target=branch_target,
                 data_pool_addr=data_pool_addr,
@@ -2033,7 +2077,7 @@ def process(dump: str, config: Config) -> List[Line]:
         num_instr += 1
         source_lines = []
 
-        if config.stop_jrra and mnemonic == "jr" and row_parts[1].strip() == "ra":
+        if config.stop_jrra and mnemonic == "jr" and args == "ra":
             stop_after_delay_slot = True
         elif stop_after_delay_slot:
             break
@@ -2051,8 +2095,24 @@ def normalize_stack(row: str, arch: ArchSettings) -> str:
 
 
 def imm_matches_everything(row: str, arch: ArchSettings) -> bool:
-    # (this should probably be arch-specific)
-    return "(." in row
+    return "." in row
+
+
+def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
+    if arch.name == "ppc":
+        if "...data" in field:
+            return True
+
+        parts = field.rsplit("@", 1)
+        if len(parts) == 2 and parts[1] in {"l", "h", "ha", "sda21"}:
+            field = parts[0]
+
+        return re.fullmatch((r"^@\d+$"), field) is not None
+
+    if arch.name == "mips":
+        return "." in field
+
+    return False
 
 
 def split_off_address(line: str) -> Tuple[str, str]:
@@ -2140,35 +2200,11 @@ def score_diff_lines(
     deletions = []
     insertions = []
 
-    def lo_hi_match(old: str, new: str) -> bool:
-        # TODO: Make this arch-independent, like `imm_matches_everything()`
-        old_lo = old.find("%lo")
-        old_hi = old.find("%hi")
-        new_lo = new.find("%lo")
-        new_hi = new.find("%hi")
-
-        if old_lo != -1 and new_lo != -1:
-            old_idx = old_lo
-            new_idx = new_lo
-        elif old_hi != -1 and new_hi != -1:
-            old_idx = old_hi
-            new_idx = new_hi
-        else:
-            return False
-
-        if old[:old_idx] != new[:new_idx]:
-            return False
-
-        old_inner = old[old_idx + 4 : -1]
-        new_inner = new[new_idx + 4 : -1]
-        return old_inner.startswith(".") or new_inner.startswith(".")
-
-    def diff_sameline(old: str, new: str) -> None:
+    def diff_sameline(old_line: Line, new_line: Line) -> None:
         nonlocal score
+        old = old_line.scorable_line
+        new = new_line.scorable_line
         if old == new:
-            return
-
-        if lo_hi_match(old, new):
             return
 
         ignore_last_field = False
@@ -2188,9 +2224,22 @@ def score_diff_lines(
         if ignore_last_field:
             newfields = newfields[:-1]
             oldfields = oldfields[:-1]
+        else:
+            # If the last field has a parenthesis suffix, e.g. "0x38(r7)"
+            # we split that part out to make it a separate field
+            # however, we don't split if it has a proceeding %hi/%lo  e.g."%lo(.data)" or "%hi(.rodata + 0x10)"
+            re_paren = re.compile(r"(?<!%hi)(?<!%lo)\(")
+            oldfields = oldfields[:-1] + re_paren.split(oldfields[-1])
+            newfields = newfields[:-1] + re_paren.split(newfields[-1])
+
         for nf, of in zip(newfields, oldfields):
             if nf != of:
+                # If the new field is a match to any symbol case
+                # and the old field had a relocation, then ignore this mismatch
+                if field_matches_any_symbol(nf, config.arch) and old_line.has_symbol:
+                    continue
                 score += config.penalty_regalloc
+
         # Penalize any extra fields
         score += abs(len(newfields) - len(oldfields)) * config.penalty_regalloc
 
@@ -2223,7 +2272,7 @@ def score_diff_lines(
         if max_index is not None and index > max_index:
             break
         if line1 and line2 and line1.mnemonic == line2.mnemonic:
-            diff_sameline(line1.scorable_line, line2.scorable_line)
+            diff_sameline(line1, line2)
         else:
             if line1:
                 diff_delete(line1.scorable_line)
