@@ -165,23 +165,20 @@ def download_ppc_darwin():
     if host_os != LINUX:
         print("MAC OS X cross compiler unsupported on " + host_os.name)
         return
-    download_zip(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.zip",
-        dl_name="gcc-5370.zip",
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370.tar.gz",
         dest_name="gcc-5370",
-        create_subdir=True,
     )
-    download_zip(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.zip",
-        dl_name="gcc-5370.zip",
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370-cpp.tar.gz",
         dest_name="gcc-5370-cpp",
-        create_subdir=True,
     )
-    download_zip(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.zip",
-        dl_name="gcc3-1041.zip",
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
+        dl_name="gcc3-1041.tar.gz",
         dest_name="gcc3-1041",
-        create_subdir=True,
     )
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
@@ -205,9 +202,9 @@ def download_ppc_darwin():
         COMPILERS_DIR / "gcc-5370-cpp" / "powerpc-darwin-cross" / "bin" / "cc1plus"
     )
     cc1_alt = COMPILERS_DIR / "gcc3-1041" / "cc1"
-    cc1.chmod(cc1.stat().st_mode | stat.S_IXUSR)
-    cc1_cpp.chmod(cc1_cpp.stat().st_mode | stat.S_IXUSR)
-    cc1_alt.chmod(cc1_alt.stat().st_mode | stat.S_IXUSR)
+    cc1.chmod(cc1.stat().st_mode | stat.S_IEXEC)
+    cc1_cpp.chmod(cc1_cpp.stat().st_mode | stat.S_IEXEC)
+    cc1_alt.chmod(cc1_alt.stat().st_mode | stat.S_IEXEC)
 
 
 def download_codewarrior():
