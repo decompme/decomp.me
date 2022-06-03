@@ -14,7 +14,15 @@ from rest_framework.test import APITestCase
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.compilers import Compiler, GCC281, IDO53, IDO71, MWCC_247_92, MWCPPC_24
+from coreapp.compilers import (
+    Compiler,
+    GCC281,
+    IDO53,
+    IDO71,
+    MWCC_247_92,
+    MWCPPC_24,
+    PBX_GCC3,
+)
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
 from coreapp.views.scratch import compile_scratch_update_score
@@ -464,6 +472,21 @@ nop
             MWCPPC_24,
             "-str reuse -inline on -O0",
             "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
+
+    @requiresCompiler(PBX_GCC3)
+    def test_pbx_gcc3(self):
+        """
+        Ensure that we can invoke the PowerPC GCC3 cross-compiler
+        """
+        result = CompilerWrapper.compile_code(
+            PBX_GCC3,
+            "-std=c99 -fPIC -O0 -g3",
+            "int func(void) { float f = 5.0; return f; }",  # test if floats are handled correctly
             "extern char libvar1;\r\nextern char libvar2;\r\n",
         )
         self.assertGreater(
