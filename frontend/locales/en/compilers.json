@@ -58,7 +58,7 @@
     "old_agbcc": "old_agbcc",
     "gcc-5370": "Xcode GCC 4.0.1 (PowerPC)",
     "gcc-5370-cpp": "Xcode GCC 4.0.1 (PowerPC) (C++)",
-    "gcc3-1041": "PBX GCC3 (PowerPC) (C only)",
+    "gcc3-1041": "PBX GCC 3.1 (PowerPC) (C only)",
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2)",
     "psyq4.1": "PSYQ4.1 (gcc 2.7.2)",
     "psyq4.3": "PSYQ4.3 (gcc 2.8.1)",
