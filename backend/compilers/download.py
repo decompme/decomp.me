@@ -191,27 +191,27 @@ def download_ppc_darwin():
         dest_name="gcc3-1041",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/658e3e634316934fbe55a4d773dfa41d4b043552/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc-5370" / "convert_gas_syntax.py",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/658e3e634316934fbe55a4d773dfa41d4b043552/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc-5370-cpp" / "convert_gas_syntax.py",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/658e3e634316934fbe55a4d773dfa41d4b043552/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc-5026" / "convert_gas_syntax.py",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/658e3e634316934fbe55a4d773dfa41d4b043552/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc-5026-cpp" / "convert_gas_syntax.py",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/9c3f296011dab6fee13dbbc342e37728bd90f21b/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/658e3e634316934fbe55a4d773dfa41d4b043552/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc3-1041" / "convert_gas_syntax.py",
     )
