@@ -822,7 +822,7 @@ _all_presets = [
     Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
-    Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O2"),
+    Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
 ]
 
 
