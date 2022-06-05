@@ -203,38 +203,21 @@ def download_ppc_darwin():
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5370" / "convert_gas_syntax.py",
+        dest_path=DOWNLOAD_CACHE / "convert_gas_syntax.py",
     )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5370-cpp" / "convert_gas_syntax.py",
-    )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5026" / "convert_gas_syntax.py",
-    )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5026-cpp" / "convert_gas_syntax.py",
-    )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5363" / "convert_gas_syntax.py",
-    )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc-5363-cpp" / "convert_gas_syntax.py",
-    )
-    download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
-        log_name="convert_gas_syntax.py",
-        dest_path=COMPILERS_DIR / "gcc3-1041" / "convert_gas_syntax.py",
-    )
+    for compiler in [
+        "gcc-5370",
+        "gcc-5370-cpp",
+        "gcc-5026",
+        "gcc-5026-cpp",
+        "gcc-5363",
+        "gcc-5363-cpp",
+        "gcc3-1041",
+    ]:
+        shutil.copy(
+            DOWNLOAD_CACHE / "convert_gas_syntax.py",
+            COMPILERS_DIR / compiler / "convert_gas_syntax.py",
+        )
 
 
 def download_codewarrior():
