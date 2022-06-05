@@ -161,6 +161,65 @@ def download_zip(
             f.extract(member=file, path=dest_path)
 
 
+def download_ppc_darwin():
+    if host_os != LINUX:
+        print("MAC OS X cross compiler unsupported on " + host_os.name)
+        return
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370.tar.gz",
+        dest_name="gcc-5370",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370-cpp.tar.gz",
+        dest_name="gcc-5370-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        dl_name="gcc-5026.tar.gz",
+        dest_name="gcc-5026",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        dl_name="gcc-5026-cpp.tar.gz",
+        dest_name="gcc-5026-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363.tar.gz",
+        dest_name="gcc-5363",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363-cpp.tar.gz",
+        dest_name="gcc-5363-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
+        dl_name="gcc3-1041.tar.gz",
+        dest_name="gcc3-1041",
+    )
+    download_file(
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
+        log_name="convert_gas_syntax.py",
+        dest_path=DOWNLOAD_CACHE / "convert_gas_syntax.py",
+    )
+    for compiler in [
+        "gcc-5370",
+        "gcc-5370-cpp",
+        "gcc-5026",
+        "gcc-5026-cpp",
+        "gcc-5363",
+        "gcc-5363-cpp",
+        "gcc3-1041",
+    ]:
+        shutil.copy(
+            DOWNLOAD_CACHE / "convert_gas_syntax.py",
+            COMPILERS_DIR / compiler / "convert_gas_syntax.py",
+        )
+
+
 def download_codewarrior():
     download_zip(
         url="https://github.com/simdecomp/sims1_mac_decomp/files/8766562/MWCPPC_COMPILERS.zip",
@@ -533,10 +592,12 @@ def main(args):
             os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
         )
 
-    if should_download("macos9"):
-        download_codewarrior()
     if should_download("gba"):
         download_gba()
+    if should_download("macosx"):
+        download_ppc_darwin()
+    if should_download("macos9"):
+        download_codewarrior()
     if should_download("n64"):
         download_n64()
     if should_download("nds"):
