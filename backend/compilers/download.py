@@ -186,6 +186,16 @@ def download_ppc_darwin():
         dest_name="gcc-5026-cpp",
     )
     download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363.tar.gz",
+        dest_name="gcc-5363",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363-cpp.tar.gz",
+        dest_name="gcc-5363-cpp",
+    )
+    download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
         dl_name="gcc3-1041.tar.gz",
         dest_name="gcc3-1041",
@@ -209,6 +219,16 @@ def download_ppc_darwin():
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=COMPILERS_DIR / "gcc-5026-cpp" / "convert_gas_syntax.py",
+    )
+    download_file(
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
+        log_name="convert_gas_syntax.py",
+        dest_path=COMPILERS_DIR / "gcc-5363" / "convert_gas_syntax.py",
+    )
+    download_file(
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
+        log_name="convert_gas_syntax.py",
+        dest_path=COMPILERS_DIR / "gcc-5363-cpp" / "convert_gas_syntax.py",
     )
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
