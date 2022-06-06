@@ -201,7 +201,7 @@ def download_ppc_darwin():
         dest_name="gcc3-1041",
     )
     download_file(
-        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/1633f3fac3d0075051105b9b4d66891086ec27bf/convert_gas_syntax.py",
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/d7c6fc639310b938fa519e68a8f8d4909acba2ad/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
         dest_path=DOWNLOAD_CACHE / "convert_gas_syntax.py",
     )
