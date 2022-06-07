@@ -737,9 +737,9 @@ _all_presets = [
         "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
     ),
     Preset(
-        "Mario Kart Double Dash!!",
+        "Mario Kart: Double Dash",
         MWCC_247_105,
-        "-lang=c++ -use_lmw_stmw on -inline on -O4 -char signed -Cpp_exceptions off -fp_contract on -fp fmadd",
+        "-lang=c++ -use_lmw_stmw on -inline on -O4 -char signed -Cpp_exceptions off -fp_contract on -fp fmadd -enum int",
     ),
     Preset(
         "Pikmin 2",
