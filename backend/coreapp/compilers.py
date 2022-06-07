@@ -689,7 +689,7 @@ _all_presets = [
         "-O2 -G0 -funsigned-char",
     ),
     Preset(
-        "Evo's Sapce Adventures",
+        "Evo's Space Adventures",
         PSYQ46,
         "-O2",
     ),
