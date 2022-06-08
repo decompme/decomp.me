@@ -671,6 +671,11 @@ _all_presets = [
         AGBCCPP,
         "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
     ),
+    Preset(
+        "Kirby and the Amazing Mirror",
+        AGBCC,
+        "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
+    ),
     # Switch
     Preset(
         "Super Mario Odyssey",
