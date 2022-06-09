@@ -784,7 +784,7 @@ _all_presets = [
     Preset(
         "Xenoblade Chronicles (JP)",
         MWCC_43_151,
-        "-lang=c++ -Cpp_exceptions off -enum int -inline auto -RTTI off -fp hard -rostr -O4,p -nodefaults -use_lmw_stmw on -func_align 4",
+        "-lang=c++ -Cpp_exceptions off -enum int -inline on -RTTI off -fp hard -rostr -O4,p -nodefaults -use_lmw_stmw on -func_align 4",
     ),
     Preset(
         "Mario Party 4",
