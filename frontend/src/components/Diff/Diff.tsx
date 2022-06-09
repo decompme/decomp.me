@@ -1,6 +1,6 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, useContext, useEffect, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, Fragment, useContext, useEffect, useState } from "react"
 
 import classNames from "classnames"
 import AutoSizer from "react-virtualized-auto-sizer"
@@ -17,25 +17,76 @@ import DragBar from "./DragBar"
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
 
+// Regex for tokenizing lines for click-to-highlight purposes.
+// Strings matched by the first regex group (spaces, punctuation)
+// are treated as non-highlightable.
+const RE_TOKEN = /([ \t,():]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,():]+/g
+
 const SelectedSourceLineContext = createContext<number | null>(null)
 
-function FormatDiffText({ texts }: { texts: api.DiffText[] }) {
-    return <> {
-        texts.map((t, i) => {
-            if (t.format == "rotation") {
-                return <span key={i} className={styles[`rotation${t.index % 9}`]}>{t.text}</span>
-            } else if (t.format) {
-                return <span key={i} className={styles[t.format]}>{t.text}</span>
-            } else {
-                return <span key={i}>{t.text}</span>
-            }
-        })
-    } </>
+type Highlighter = {
+    value: string | null
+    setValue: (value: string | null) => void
+    select: (value: string) => void
 }
 
-function DiffCell({ cell, className }: {
+function useHighlighter(setAll: (string) => void): Highlighter {
+    const [value, setValue] = useState(null)
+    return {
+        value,
+        setValue,
+        select: newValue => {
+            // When selecting the same value twice (double-clicking), select it
+            // in all diff columns
+            if (value === newValue) {
+                setAll(newValue)
+            } else {
+                setValue(newValue)
+            }
+        },
+    }
+}
+
+function FormatDiffText({ texts, highlighter }: {
+    texts: api.DiffText[]
+    highlighter: Highlighter
+}) {
+    let index = 0
+    return <> {
+        texts.map(t =>
+            Array.from(t.text.matchAll(RE_TOKEN)).map(match => {
+                const text = match[0], isToken = !match[1]
+                const key = index++
+                let className = undefined
+                if (t.format == "rotation") {
+                    className = styles[`rotation${t.index % 9}`]
+                } else if (t.format) {
+                    className = styles[t.format]
+                }
+                if (!isToken && !className) {
+                    return <Fragment key={key}>{text}</Fragment>
+                }
+                return <span
+                    key={key}
+                    className={classNames(className, {
+                        [styles.highlighted]: (highlighter.value === text),
+                    })}
+                    onClick={e => {
+                        if (isToken) {
+                            highlighter.select(text)
+                            e.stopPropagation()
+                        }
+                    }}
+                >{text}</span>
+            })
+        )
+    }</>
+}
+
+function DiffCell({ cell, className, highlighter }: {
     cell: api.DiffCell | undefined
     className?: string
+    highlighter: Highlighter
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
     const hasLineNo = typeof cell?.src_line != "undefined"
@@ -44,23 +95,22 @@ function DiffCell({ cell, className }: {
         return <div className={classNames(styles.cell, className)} />
 
     return <div
-        className={classNames(className, {
-            [styles.cell]: true,
+        className={classNames(styles.cell, className, {
             [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
         })}
     >
         {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
-        <FormatDiffText texts={cell.text} />
+        <FormatDiffText texts={cell.text} highlighter={highlighter} />
     </div>
 }
 
-function DiffRow({ data, index, style }: {
-    data: api.DiffRow[]
-    index: number
+function DiffRow({ row, style, highlighter1, highlighter2, highlighter3 }: {
+    row: api.DiffRow
     style: CSSProperties
+    highlighter1: Highlighter
+    highlighter2: Highlighter
+    highlighter3: Highlighter
 }) {
-    const row = data[index]
-
     return <li
         className={styles.row}
         style={{
@@ -69,9 +119,9 @@ function DiffRow({ data, index, style }: {
             lineHeight: `${style.height.toString()}px`,
         }}
     >
-        <DiffCell cell={row.base} />
-        <DiffCell cell={row.current} />
-        <DiffCell cell={row.previous} />
+        <DiffCell cell={row.base} highlighter={highlighter1} />
+        <DiffCell cell={row.current} highlighter={highlighter2} />
+        <DiffCell cell={row.previous} highlighter={highlighter3} />
     </li>
 }
 
@@ -89,7 +139,15 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 innerElementType.displayName = "innerElementType"
 
 function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number | undefined }) {
-    return <div className={styles.bodyContainer}>
+    const setHighlightAll = value => {
+        highlighter1.setValue(value)
+        highlighter2.setValue(value)
+        highlighter3.setValue(value)
+    }
+    const highlighter1 = useHighlighter(setHighlightAll)
+    const highlighter2 = useHighlighter(setHighlightAll)
+    const highlighter3 = useHighlighter(setHighlightAll)
+    return <div className={styles.bodyContainer} onClick={() => setHighlightAll(null)}>
         {diff?.rows && <AutoSizer>
             {({ height, width }) => (
                 <FixedSizeList
@@ -102,7 +160,15 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number |
                     height={height}
                     innerElementType={innerElementType}
                 >
-                    {DiffRow}
+                    {({ data, index, style }) =>
+                        <DiffRow
+                            row={data[index]}
+                            style={style}
+                            highlighter1={highlighter1}
+                            highlighter2={highlighter2}
+                            highlighter3={highlighter3}
+                        />
+                    }
                 </FixedSizeList>
             )}
         </AutoSizer>}
