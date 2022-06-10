@@ -30,7 +30,7 @@ type Highlighter = {
     select: (value: string) => void
 }
 
-function useHighlighter(setAll: (string) => void): Highlighter {
+function useHighlighter(setAll: Highlighter["setValue"]): Highlighter {
     const [value, setValue] = useState(null)
     return {
         value,
@@ -142,7 +142,7 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 innerElementType.displayName = "innerElementType"
 
 function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number | undefined }) {
-    const setHighlightAll = value => {
+    const setHighlightAll: Highlighter["setValue"] = value => {
         highlighter1.setValue(value)
         highlighter2.setValue(value)
         highlighter3.setValue(value)
@@ -150,7 +150,14 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number |
     const highlighter1 = useHighlighter(setHighlightAll)
     const highlighter2 = useHighlighter(setHighlightAll)
     const highlighter3 = useHighlighter(setHighlightAll)
-    return <div className={styles.bodyContainer} onClick={() => setHighlightAll(null)}>
+
+    return <div
+        className={styles.bodyContainer}
+        onClick={() => {
+            // If clicks propagate to the container, clear all
+            setHighlightAll(null)
+        }}
+    >
         {diff?.rows && <AutoSizer>
             {({ height, width }) => (
                 <FixedSizeList
