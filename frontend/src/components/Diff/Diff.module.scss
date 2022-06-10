@@ -6,11 +6,6 @@
     flex-direction: column;
 }
 
-.highlighted {
-    background-color: #777 !important;
-    box-shadow: 0 0 2px #fff;
-}
-
 .bodyContainer {
     flex-grow: 1;
 }
@@ -133,3 +128,12 @@
 .rotation6 { color: lightcyan; }
 .rotation7 { color: lightgreen; }
 .rotation8 { color: grey; }
+
+.highlighted {
+    color: white;
+    background-color: #aa8b00;
+}
+
+.highlightable {
+    cursor: pointer;
+}
