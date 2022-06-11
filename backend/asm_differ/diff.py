@@ -2096,8 +2096,8 @@ def normalize_stack(row: str, arch: ArchSettings) -> str:
     return re.sub(arch.re_sprel, "addr(sp)", row)
 
 
-def imm_matches_everything(row: str, arch: ArchSettings) -> bool:
-    return "." in row
+def imm_matches_everything(row_args: str, arch: ArchSettings) -> bool:
+    return "." in row_args
 
 
 def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
@@ -2441,7 +2441,8 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
                 if normalize_imms(branchless1, arch) == normalize_imms(
                     branchless2, arch
                 ):
-                    if imm_matches_everything(branchless2, arch):
+                    parts2 = branchless2.split("\t")
+                    if len(parts2) > 1 and imm_matches_everything(parts2[1], arch):
                         # ignore differences due to %lo(.rodata + ...) vs symbol
                         out1 = out1.reformat(BasicFormat.NONE)
                         out2 = out2.reformat(BasicFormat.NONE)
