@@ -52,10 +52,11 @@ function FormatDiffText({ texts, highlighter }: {
     highlighter: Highlighter
 }) {
     return <> {
-        texts.map(t =>
-            Array.from(t.text.matchAll(RE_TOKEN)).map((match, index) => {
+        texts.map((t, index1) =>
+            Array.from(t.text.matchAll(RE_TOKEN)).map((match, index2) => {
                 const text = match[0]
                 const isToken = !match[1]
+                const key = index1 + "," + index2
 
                 let className: string
                 if (t.format == "rotation") {
@@ -65,7 +66,7 @@ function FormatDiffText({ texts, highlighter }: {
                 }
 
                 return <span
-                    key={index}
+                    key={key}
                     className={classNames(className, {
                         [styles.highlightable]: isToken,
                         [styles.highlighted]: (highlighter.value === text),
