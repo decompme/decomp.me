@@ -114,7 +114,7 @@ class DiffWrapper:
         return ["--start-address=0"]
 
     @staticmethod
-    def parse_objdump_flags(diff_flags: list[str]) -> list[str]:
+    def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
         ret = []
 
         if "-Mreg-names=32" in diff_flags:
@@ -128,7 +128,7 @@ class DiffWrapper:
         platform: Platform,
         config: asm_differ.Config,
         label: str,
-        flags: list[str],
+        flags: List[str],
     ) -> str:
         flags += [
             "--disassemble",
@@ -172,7 +172,7 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         config: asm_differ.Config,
-        diff_flags: list[str],
+        diff_flags: List[str],
     ) -> str:
 
         if len(elf_object) == 0:
@@ -204,7 +204,7 @@ class DiffWrapper:
         diff_label: str,
         compiled_elf: bytes,
         allow_target_only: bool,
-        diff_flags: list[str],
+        diff_flags: List[str],
     ) -> DiffResult:
 
         if platform == DUMMY:

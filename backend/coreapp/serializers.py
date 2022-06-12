@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
@@ -17,7 +17,7 @@ from .models.scratch import Scratch
 
 def serialize_profile(
     request: Request, profile: Profile, small: bool = False
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "url": None,
@@ -57,18 +57,18 @@ def serialize_profile(
 
 
 if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, Dict[str, Any]]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> dict[str, Any]:
+    def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile)
 
 
 class TerseProfileField(ProfileField):
-    def to_representation(self, profile: Profile) -> dict[str, Any]:
+    def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile, small=True)
 
 
@@ -223,7 +223,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         exclude: List[str] = []
         depth = 1  # repo
 
-    def get_members(self, project: Project) -> list[str]:
+    def get_members(self, project: Project) -> List[str]:
         def get_url(user: User) -> str:
             return reverse(
                 "user-detail", args=[user.username], request=self.context["request"]

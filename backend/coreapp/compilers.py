@@ -61,7 +61,7 @@ class Preset:
     name: str
     compiler: Compiler
     flags: str
-    diff_flags: list[str] = field(default_factory=list)
+    diff_flags: List[str] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, object]:
         return {
