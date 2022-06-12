@@ -173,11 +173,6 @@ nop
             pass
         self.assertIsNone(scratch)
 
-        # Properly supply an empty_diff label and expect things to work
-        scratch_dict["diff_label"] = ""
-        scratch = self.create_scratch(scratch_dict)  # type: ignore
-        self.assertIsNotNone(scratch)
-
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler(GCC281, IDO53)
