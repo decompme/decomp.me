@@ -78,7 +78,7 @@ class DiffWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path, platform: Platform, label: Optional[str]
+        sandbox: Sandbox, target_path, platform: Platform, label: str
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]
@@ -126,7 +126,7 @@ class DiffWrapper:
         target_data: bytes,
         platform: Platform,
         config: asm_differ.Config,
-        label: Optional[str],
+        label: str,
         flags: list[str],
     ) -> str:
         flags += [
