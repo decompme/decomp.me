@@ -169,7 +169,7 @@ class DiffWrapper:
     def get_dump(
         elf_object: bytes,
         platform: Platform,
-        diff_label: Optional[str],
+        diff_label: str,
         config: asm_differ.Config,
         diff_flags: list[str],
     ) -> str:
@@ -200,7 +200,7 @@ class DiffWrapper:
     def diff(
         target_assembly: Assembly,
         platform: Platform,
-        diff_label: Optional[str],
+        diff_label: str,
         compiled_elf: bytes,
         allow_target_only: bool,
         diff_flags: list[str],
