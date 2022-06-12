@@ -20,6 +20,8 @@ from .sandbox import Sandbox
 
 from typing import TYPE_CHECKING, TypeVar
 
+# Thanks to Guido van Rossum for the following fix
+# https://github.com/python/mypy/issues/5107#issuecomment-529372406
 if TYPE_CHECKING:
     F = TypeVar("F")
 
