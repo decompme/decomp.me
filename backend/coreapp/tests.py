@@ -153,26 +153,6 @@ nop
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
-    @requiresCompiler(IDO71)
-    def test_null_diff_label(self):
-        """
-        Ensure that diff_label cannot be null
-        """
-        scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
-            "context": "",
-            "target_asm": "this is some test asm",
-            "diff_label": None,
-        }
-
-        scratch: Optional[Scratch] = None
-        try:
-            scratch = self.create_scratch(scratch_dict)  # type: ignore
-        except TypeError:
-            pass
-        self.assertIsNone(scratch)
-
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler(GCC281, IDO53)
