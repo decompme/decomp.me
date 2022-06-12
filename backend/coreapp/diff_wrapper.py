@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+from pathlib import Path
 from typing import List, Optional
 
 import asm_differ.diff as asm_differ
@@ -78,7 +79,7 @@ class DiffWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path, platform: Platform, label: str
+        sandbox: Sandbox, target_path: Path, platform: Platform, label: str
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]

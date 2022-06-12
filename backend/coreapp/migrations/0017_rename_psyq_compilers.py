@@ -1,8 +1,10 @@
 import django.db.migrations.operations.special
+from django.apps.registry import Apps
 from django.db import migrations
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
-def rename_psyq_compilers(apps, schema_editor):
+def rename_psyq_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     'Psyq4.*' compilers now use original aspsx assembler,
     so repoint old scratches to the gcc + as combo.

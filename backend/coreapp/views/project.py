@@ -1,8 +1,12 @@
 import logging
 from threading import Thread
+from typing import Any
 
 import django_filters
-import rest_framework
+
+from backend.coreapp.middleware import Request
+from django.db.models.query import QuerySet
+from django.views import View
 from rest_framework import filters, mixins, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -46,10 +50,10 @@ class ProjectFunctionPagination(CursorPagination):
 
 
 class IsProjectMemberOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: View) -> bool:
         return True
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
         assert isinstance(obj, Project)
         return request.method in permissions.SAFE_METHODS or obj.is_member(
             request.profile
@@ -68,7 +72,7 @@ class ProjectViewSet(
     permission_classes = [IsProjectMemberOrReadOnly]
 
     @action(detail=True, methods=["POST"])
-    def pull(self, request, pk):
+    def pull(self, request: Request, pk: str) -> Response:
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
 
@@ -101,11 +105,11 @@ class ProjectFunctionViewSet(
     ]
     search_fields = ["display_name"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[ProjectFunction]:
         return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
 
     @action(detail=True, methods=["GET", "POST"])
-    def attempts(self, request, **kwargs):
+    def attempts(self, request: Request, **kwargs: Any) -> Response:
         fn: ProjectFunction = self.get_object()
         project: Project = fn.project
         repo: GitHubRepo = project.repo

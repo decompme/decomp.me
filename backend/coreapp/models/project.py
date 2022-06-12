@@ -23,7 +23,7 @@ class Project(models.Model):
     icon_url = models.URLField(blank=False)
     description = models.TextField(default="", blank=True, max_length=1000)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.slug
 
     def get_html_url(self) -> str:
@@ -57,7 +57,7 @@ class ProjectImportConfig(models.Model):
     nonmatchings_glob = models.CharField(max_length=100, default="**/*.s")
     symbol_addrs_path = models.CharField(max_length=100, default="symbol_addrs.txt")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.display_name or self.id} ({self.project})"
 
     def get_paths(self) -> Tuple[Path, Path, Path]:
@@ -166,7 +166,7 @@ class ProjectFunction(models.Model):
     def get_html_url(self) -> str:
         return f"{self.project.get_html_url()}/{self.rom_address:X}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.display_name} ({self.project})"
 
     def create_scratch(self) -> Scratch:
@@ -241,5 +241,5 @@ class ProjectMember(models.Model):
             ),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.profile} is a member of {self.project}"
