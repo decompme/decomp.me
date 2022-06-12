@@ -78,7 +78,7 @@ class DiffWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path, platform: Platform, label: Optional[str]
+        sandbox: Sandbox, target_path, platform: Platform, label: str
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]
@@ -126,7 +126,7 @@ class DiffWrapper:
         target_data: bytes,
         platform: Platform,
         config: asm_differ.Config,
-        label: Optional[str],
+        label: str,
         flags: list[str],
     ) -> str:
         flags += [
@@ -169,7 +169,7 @@ class DiffWrapper:
     def get_dump(
         elf_object: bytes,
         platform: Platform,
-        diff_label: Optional[str],
+        diff_label: str,
         config: asm_differ.Config,
         diff_flags: list[str],
     ) -> str:
@@ -200,7 +200,7 @@ class DiffWrapper:
     def diff(
         target_assembly: Assembly,
         platform: Platform,
-        diff_label: Optional[str],
+        diff_label: str,
         compiled_elf: bytes,
         allow_target_only: bool,
         diff_flags: list[str],

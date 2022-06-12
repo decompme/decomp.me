@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __enter__(self):
+    def __enter__(self) -> "Sandbox":
         self.use_jail = settings.USE_SANDBOX_JAIL
 
         tmpdir: Optional[str] = None
