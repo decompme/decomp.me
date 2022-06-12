@@ -166,16 +166,16 @@ nop
             "diff_label": None,
         }
 
-        scratch: Scratch = None
+        scratch: Optional[Scratch] = None
         try:
-            scratch = self.create_scratch(scratch_dict)
+            scratch = self.create_scratch(scratch_dict)  # type: ignore
         except TypeError:
             pass
         self.assertIsNone(scratch)
 
         # Properly supply an empty_diff label and expect things to work
         scratch_dict["diff_label"] = ""
-        scratch = self.create_scratch(scratch_dict)
+        scratch = self.create_scratch(scratch_dict)  # type: ignore
         self.assertIsNotNone(scratch)
 
 
