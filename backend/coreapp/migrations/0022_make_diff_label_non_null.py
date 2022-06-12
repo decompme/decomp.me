@@ -6,10 +6,9 @@ from django.db import migrations
 
 def unnull_diff_label(apps, schema_editor):
     Scratch = apps.get_model("coreapp", "Scratch")
-    for row in Scratch.objects.all():
-        if row.diff_label is None:
-            row.diff_label = ""
-            row.save(update_fields=["diff_label"])
+    for row in Scratch.objects.only("diff_label").filter(diff_label__isnull=True):
+        row.diff_label = ""
+        row.save(update_fields=["diff_label"])
 
 
 class Migration(migrations.Migration):
