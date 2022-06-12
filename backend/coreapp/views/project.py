@@ -3,8 +3,6 @@ from threading import Thread
 from typing import Any
 
 import django_filters
-
-from backend.coreapp.middleware import Request
 from django.db.models.query import QuerySet
 from django.views import View
 from rest_framework import filters, mixins, permissions, status
@@ -13,8 +11,9 @@ from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_extensions.routers import ExtendedSimpleRouter
+
+from coreapp.middleware import Request
 
 from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction

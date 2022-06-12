@@ -56,7 +56,13 @@ def serialize_profile(
         }
 
 
-class ProfileField(serializers.RelatedField[Profile, str, str]):
+if TYPE_CHECKING:
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, str]
+else:
+    ProfileFieldBaseClass = serializers.RelatedField
+
+
+class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> str:
         return str(serialize_profile(self.context["request"], profile))
 
@@ -233,9 +239,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
     url = SerializerMethodField()
     html_url = HtmlUrlField()
-    project: HyperlinkedRelatedField[Project] = HyperlinkedRelatedField(
-        view_name="project-detail", read_only=True
-    )
+    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)  # type: ignore
     attempts_count = SerializerMethodField()
 
     class Meta:
