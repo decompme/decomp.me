@@ -150,7 +150,6 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
             "platform",
         ]
 
-    # TODO: Unused
     def get_project(self, scratch: Scratch) -> Optional[str]:
         if (
             hasattr(scratch, "project_function")
@@ -163,7 +162,6 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
             )
         return None
 
-    # TODO: Unused
     def get_project_function(self, scratch: Scratch) -> Optional[str]:
         if (
             hasattr(scratch, "project_function")
