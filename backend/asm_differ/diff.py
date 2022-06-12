@@ -2441,7 +2441,7 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
                 if normalize_imms(branchless1, arch) == normalize_imms(
                     branchless2, arch
                 ):
-                    parts2 = branchless2.split("\t")
+                    parts2 = branchless2.split(None, 1)
                     if len(parts2) > 1 and imm_matches_everything(parts2[1], arch):
                         # ignore differences due to %lo(.rodata + ...) vs symbol
                         out1 = out1.reformat(BasicFormat.NONE)
