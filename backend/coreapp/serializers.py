@@ -57,19 +57,19 @@ def serialize_profile(
 
 
 if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, str]
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> str:
-        return str(serialize_profile(self.context["request"], profile))
+    def to_representation(self, profile: Profile) -> dict[str, Any]:
+        return serialize_profile(self.context["request"], profile)
 
 
 class TerseProfileField(ProfileField):
-    def to_representation(self, profile: Profile) -> str:
-        return str(serialize_profile(self.context["request"], profile, small=True))
+    def to_representation(self, profile: Profile) -> dict[str, Any]:
+        return serialize_profile(self.context["request"], profile, small=True)
 
 
 class UrlField(serializers.HyperlinkedIdentityField):

@@ -49,10 +49,10 @@ class ProjectFunctionPagination(CursorPagination):
 
 
 class IsProjectMemberOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request: Request, view: View) -> bool:
+    def has_permission(self, request: Any, view: View) -> bool:
         return True
 
-    def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
+    def has_object_permission(self, request: Any, view: View, obj: Any) -> bool:
         assert isinstance(obj, Project)
         return request.method in permissions.SAFE_METHODS or obj.is_member(
             request.profile

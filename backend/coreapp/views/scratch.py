@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -409,8 +409,14 @@ class ScratchViewSet(
     def fork(self, request: Request, pk: str) -> Response:
         parent: Scratch = self.get_object()
 
+        # TODO Needed for test_fork_scratch test?
+        if isinstance(request.data, QueryDict):  # type: ignore
+            request_data = request.data.dict()  # type: ignore
+        else:
+            request_data = request.data
+
         parent_data = ScratchSerializer(parent, context={"request": request}).data
-        fork_data = {**parent_data, **request.data}
+        fork_data = {**parent_data, **request_data}
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
