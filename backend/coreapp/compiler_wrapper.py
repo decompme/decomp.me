@@ -3,9 +3,8 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from functools import lru_cache
 from platform import uname
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from django.conf import settings
 
@@ -18,6 +17,17 @@ from . import util
 from .error import AssemblyError, CompilationError
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
+
+from typing import TYPE_CHECKING, TypeVar
+
+if TYPE_CHECKING:
+    F = TypeVar("F")
+
+    def lru_cache(maxsize: int = 128, typed: bool = False) -> Callable[[F], F]:
+        pass
+
+else:
+    from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +108,7 @@ class CompilerWrapper:
         return input.strip()
 
     @staticmethod
-    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
     def compile_code(
         compiler: Compiler,
         compiler_flags: str,
