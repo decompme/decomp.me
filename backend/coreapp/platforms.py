@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import ClassVar, OrderedDict
+from typing import OrderedDict
 
 from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
 

@@ -101,7 +101,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
     const compiler = value.compiler
     let opts = value.compiler_flags
     const diff_opts = value.diff_flags || []
-    const display_diff_opts = useCompilersForPlatform(platform)[compiler].diff_flags.length > 0
 
     const setCompiler = (compiler: string) => {
         onChange({
@@ -180,7 +179,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 }
             },
         }}>
-            {display_diff_opts &&
             <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
                 <div className={styles.diffLabel}>
@@ -194,7 +192,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                     />
                 </div>
                 <DiffOptsEditor platform={platform} compiler={compiler} />
-            </section>}
+            </section>
         </OptsContext.Provider>
     </div>
 }
