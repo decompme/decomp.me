@@ -2096,10 +2096,6 @@ def normalize_stack(row: str, arch: ArchSettings) -> str:
     return re.sub(arch.re_sprel, "addr(sp)", row)
 
 
-def imm_matches_everything(row_args: str, arch: ArchSettings) -> bool:
-    return "." in row_args
-
-
 def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
     if arch.name == "ppc":
         if "..." in field:
@@ -2193,57 +2189,68 @@ def diff_lines(
     return ret
 
 
+def diff_sameline(old_line: Line, new_line: Line, config: Config) -> Tuple[int, int]:
+
+    old = old_line.scorable_line
+    new = new_line.scorable_line
+    if old == new:
+        return (0, 0)
+
+    num_stack_penalties = 0
+    num_regalloc_penalties = 0
+
+    ignore_last_field = False
+    if config.score_stack_differences:
+        oldsp = re.search(config.arch.re_sprel, old)
+        newsp = re.search(config.arch.re_sprel, new)
+        if oldsp and newsp:
+            oldrel = int(oldsp.group(1) or "0", 0)
+            newrel = int(newsp.group(1) or "0", 0)
+            num_stack_penalties += abs(oldrel - newrel)
+            ignore_last_field = True
+
+    # Probably regalloc difference, or signed vs unsigned
+
+    # Compare each field in order
+    new_parts, old_parts = new.split(None, 1), old.split(None, 1)
+    newfields, oldfields = new_parts[1].split(","), old_parts[1].split(",")
+    if ignore_last_field:
+        newfields = newfields[:-1]
+        oldfields = oldfields[:-1]
+    else:
+        # If the last field has a parenthesis suffix, e.g. "0x38(r7)"
+        # we split that part out to make it a separate field
+        # however, we don't split if it has a proceeding %hi/%lo  e.g."%lo(.data)" or "%hi(.rodata + 0x10)"
+        re_paren = re.compile(r"(?<!%hi)(?<!%lo)\(")
+        oldfields = oldfields[:-1] + re_paren.split(oldfields[-1])
+        newfields = newfields[:-1] + re_paren.split(newfields[-1])
+
+    for nf, of in zip(newfields, oldfields):
+        if nf != of:
+            # If the new field is a match to any symbol case
+            # and the old field had a relocation, then ignore this mismatch
+            if field_matches_any_symbol(nf, config.arch) and old_line.has_symbol:
+                continue
+            num_regalloc_penalties += 1
+
+    # Penalize any extra fields
+    num_regalloc_penalties += abs(len(newfields) - len(oldfields))
+
+    return (num_stack_penalties, num_regalloc_penalties)
+
+
 def score_diff_lines(
     lines: List[Tuple[Optional[Line], Optional[Line]]], config: Config
 ) -> int:
     # This logic is copied from `scorer.py` from the decomp permuter project
     # https://github.com/simonlindholm/decomp-permuter/blob/main/src/scorer.py
-    score = 0
+    num_stack_penalties = 0
+    num_regalloc_penalties = 0
+    num_reordering_penalties = 0
+    num_insertion_penalties = 0
+    num_deletion_penalties = 0
     deletions = []
     insertions = []
-
-    def diff_sameline(old_line: Line, new_line: Line) -> None:
-        nonlocal score
-        old = old_line.scorable_line
-        new = new_line.scorable_line
-        if old == new:
-            return
-
-        ignore_last_field = False
-        if config.score_stack_differences:
-            oldsp = re.search(config.arch.re_sprel, old)
-            newsp = re.search(config.arch.re_sprel, new)
-            if oldsp and newsp:
-                oldrel = int(oldsp.group(1) or "0", 0)
-                newrel = int(newsp.group(1) or "0", 0)
-                score += abs(oldrel - newrel) * config.penalty_stackdiff
-                ignore_last_field = True
-
-        # Probably regalloc difference, or signed vs unsigned
-
-        # Compare each field in order
-        newfields, oldfields = new.split(","), old.split(",")
-        if ignore_last_field:
-            newfields = newfields[:-1]
-            oldfields = oldfields[:-1]
-        else:
-            # If the last field has a parenthesis suffix, e.g. "0x38(r7)"
-            # we split that part out to make it a separate field
-            # however, we don't split if it has a proceeding %hi/%lo  e.g."%lo(.data)" or "%hi(.rodata + 0x10)"
-            re_paren = re.compile(r"(?<!%hi)(?<!%lo)\(")
-            oldfields = oldfields[:-1] + re_paren.split(oldfields[-1])
-            newfields = newfields[:-1] + re_paren.split(newfields[-1])
-
-        for nf, of in zip(newfields, oldfields):
-            if nf != of:
-                # If the new field is a match to any symbol case
-                # and the old field had a relocation, then ignore this mismatch
-                if field_matches_any_symbol(nf, config.arch) and old_line.has_symbol:
-                    continue
-                score += config.penalty_regalloc
-
-        # Penalize any extra fields
-        score += abs(len(newfields) - len(oldfields)) * config.penalty_regalloc
 
     def diff_insert(line: str) -> None:
         # Reordering or totally different codegen.
@@ -2274,7 +2281,9 @@ def score_diff_lines(
         if max_index is not None and index > max_index:
             break
         if line1 and line2 and line1.mnemonic == line2.mnemonic:
-            diff_sameline(line1, line2)
+            sp, rp = diff_sameline(line1, line2, config)
+            num_stack_penalties += sp
+            num_regalloc_penalties += rp
         else:
             if line1:
                 diff_delete(line1.scorable_line)
@@ -2287,13 +2296,17 @@ def score_diff_lines(
         ins = insertions_co[item]
         dels = deletions_co[item]
         common = min(ins, dels)
-        score += (
-            (ins - common) * config.penalty_insertion
-            + (dels - common) * config.penalty_deletion
-            + config.penalty_reordering * common
-        )
+        num_insertion_penalties += ins - common
+        num_deletion_penalties += dels - common
+        num_reordering_penalties += common
 
-    return score
+    return (
+        num_stack_penalties * config.penalty_stackdiff
+        + num_regalloc_penalties * config.penalty_regalloc
+        + num_reordering_penalties * config.penalty_reordering
+        + num_insertion_penalties * config.penalty_insertion
+        + num_deletion_penalties * config.penalty_deletion
+    )
 
 
 @dataclass(frozen=True)
@@ -2356,6 +2369,7 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
     lines2 = trim_nops(lines2, arch)
 
     diffed_lines = diff_lines(lines1, lines2, config.algorithm)
+    score = score_diff_lines(diffed_lines, config)
     max_score = len(lines1) * config.penalty_deletion
 
     line_num_base = -1
@@ -2441,8 +2455,10 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
                 if normalize_imms(branchless1, arch) == normalize_imms(
                     branchless2, arch
                 ):
-                    parts2 = branchless2.split(None, 1)
-                    if len(parts2) > 1 and imm_matches_everything(parts2[1], arch):
+                    stack_penalties, regalloc_penalties = diff_sameline(
+                        line1, line2, config
+                    )
+                    if regalloc_penalties == 0:
                         # ignore differences due to %lo(.rodata + ...) vs symbol
                         out1 = out1.reformat(BasicFormat.NONE)
                         out2 = out2.reformat(BasicFormat.NONE)
@@ -2593,8 +2609,8 @@ def do_diff(lines1: List[Line], lines2: List[Line], config: Config) -> Diff:
             )
         )
 
-    score = score_diff_lines(diffed_lines, config)
     output = output[config.skip_lines :]
+
     return Diff(lines=output, score=score, max_score=max_score)
 
 
@@ -2831,10 +2847,12 @@ class Display:
 
         meta, diff_lines = align_diffs(last_diff_output, diff_output, self.config)
         output = self.config.formatter.table(meta, diff_lines)
+
         refresh_key = (
             [line.key2 for line in diff_output.lines],
             diff_output.score,
         )
+
         return (output, refresh_key)
 
     def run_less(
