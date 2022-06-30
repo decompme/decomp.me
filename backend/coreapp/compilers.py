@@ -45,7 +45,6 @@ class Compiler:
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
-    needs_wine = False
 
     @property
     def path(self) -> Path:
@@ -184,7 +183,7 @@ GCC263_MIPSEL = GCCPS1Compiler(
     cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} ${COMPILER_DIR}/ASPSX.EXE "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
     platform=PS1,
@@ -209,7 +208,7 @@ PSYQ46 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
-GCC_PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
+GCC_PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
 
 GCC272PSYQ = GCCPS1Compiler(
     id="gcc2.7.2-psyq",
@@ -264,11 +263,11 @@ GCC281 = GCCCompiler(
 GCC272SN = GCCCompiler(
     id="gcc2.7.2sn",
     platform=N64,
-    cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+    cc='cpp -P "$INPUT" | ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
 # MACOS9
-MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
+MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WIBO} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WIBO} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
 
 MWCPPC_23 = MWCCCompiler(
     id="mwcppc_23",
@@ -333,7 +332,7 @@ PBX_GCC3 = GCCCompiler(
 # GC_WII
 # Thanks to Gordon Davisson for the xargs trick:
 # https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
-MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -355,7 +354,7 @@ MWCC_233_163 = MWCCCompiler(
 MWCC_233_163E = MWCCCompiler(
     id="mwcc_233_163e",
     platform=GC_WII,
-    cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
+    cc='${WIBO} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
 )
 
 MWCC_242_81 = MWCCCompiler(
@@ -431,7 +430,7 @@ MWCC_43_213 = MWCCCompiler(
 )
 
 # NDS_ARM9
-MWCCARM_CC = '${WINE} "${COMPILER_DIR}/mwccarm.exe" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+MWCCARM_CC = '${WIBO} "${COMPILER_DIR}/mwccarm.exe" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_20_72 = MWCCCompiler(
     id="mwcc_20_72",

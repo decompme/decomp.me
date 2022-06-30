@@ -41,12 +41,12 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
-WINE: str
+WIBO: str
 if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wine not required.")
-    WINE = ""
+    logger.info("WSL detected & nsjail disabled: WiBo not required.")
+    WIBO = ""
 else:
-    WINE = "wine"
+    WIBO = "wibo"
 
 
 @dataclass
@@ -99,8 +99,6 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"wine: could not load .*\.dll.*\n?",
-            r"wineserver: could not save registry .*\n?",
             r"### .*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
         ]
 
@@ -150,7 +148,7 @@ class CompilerWrapper:
                     shell=True,
                     env={
                         "PATH": PATH,
-                        "WINE": WINE,
+                        "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),

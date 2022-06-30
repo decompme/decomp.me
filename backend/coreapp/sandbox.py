@@ -46,10 +46,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             return []
 
         settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
-        settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
-        assert ":" not in str(settings.WINEPREFIX)
         # fmt: off
         wrapper = [
             str(settings.SANDBOX_NSJAIL_BIN_PATH),
@@ -66,10 +64,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "PATH=/usr/bin:/bin",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
              "--rlimit_nofile", "soft",

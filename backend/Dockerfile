@@ -52,18 +52,6 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-# windows compilers need i386 wine
-ARG ENABLE_NDS_SUPPORT
-ARG ENABLE_PS1_SUPPORT
-ARG ENABLE_WII_GC_SUPPORT
-RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
-    dpkg --add-architecture i386 && apt-get update && \
-    apt-get install -y -o APT::Immediate-Configure=false \
-        wine; \
-    fi
-
 # ps1 specifics
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     apt-get install -y dos2unix; \
@@ -93,24 +81,13 @@ RUN pip install requests tqdm && python3 /compilers/download.py && rm -rf /compi
 
 WORKDIR /backend
 
-ENV WINEPREFIX=/tmp/wine
-
 # create a non-root user & /sandbox with correct ownership
 RUN useradd --create-home user \
     && mkdir -p /sandbox \
-    && chown -R user:user /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown user:user "${WINEPREFIX}"
+    && chown -R user:user /sandbox
 
 # switch to non-root user
 USER user
-
-# initialize wine files to /home/user/.wine
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
-    wineboot --init; \
-    fi
 
 ENV PATH="$PATH:/etc/poetry/bin"
 
