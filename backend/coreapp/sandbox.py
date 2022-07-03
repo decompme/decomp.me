@@ -5,7 +5,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
 
@@ -29,7 +29,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         self.path = Path(self.temp_dir.name)
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any) -> None:
         self.temp_dir.cleanup()
 
     @staticmethod

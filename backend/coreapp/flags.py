@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 
 @dataclass(frozen=True)
@@ -18,9 +18,9 @@ class Checkbox:
 @dataclass(frozen=True)
 class FlagSet:
     id: str
-    flags: list[str]
+    flags: List[str]
 
-    def to_json(self) -> Dict[str, Union[str, list[str]]]:
+    def to_json(self) -> Dict[str, Union[str, List[str]]]:
         return {
             "type": "flagset",
             "id": self.id,
@@ -28,7 +28,7 @@ class FlagSet:
         }
 
 
-Flags = list[Union[Checkbox, FlagSet]]
+Flags = List[Union[Checkbox, FlagSet]]
 
 COMMON_CLANG_FLAGS: Flags = [
     FlagSet(

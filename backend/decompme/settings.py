@@ -1,7 +1,5 @@
 import os
-import sys
 from pathlib import Path
-from platform import uname
 
 import django_stubs_ext
 import environ

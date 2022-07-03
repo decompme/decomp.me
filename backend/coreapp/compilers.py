@@ -1,32 +1,32 @@
-from functools import cache
 import logging
 from dataclasses import dataclass, field
+from functools import cache
 from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
+
+from coreapp import platforms
 from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
+    COMMON_GCC_PS1_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
-    COMMON_GCC_PS1_FLAGS,
     Flags,
 )
-
-from coreapp import platforms
 
 from coreapp.platforms import (
     GBA,
     GC_WII,
+    MACOS9,
+    MACOSX,
     N64,
     NDS_ARM9,
     Platform,
     PS1,
     PS2,
     SWITCH,
-    MACOS9,
-    MACOSX,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class Preset:
     name: str
     compiler: Compiler
     flags: str
-    diff_flags: list[str] = field(default_factory=list)
+    diff_flags: List[str] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, object]:
         return {
