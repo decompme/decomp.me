@@ -18,23 +18,23 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
-
-from ..diff_wrapper import DiffWrapper
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
 
 from ..decorators.django import condition
+
+from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError
 from ..middleware import Request
 from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
+from ..platforms import Platform
 from ..serializers import (
     ScratchCreateSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
 )
-from ..platforms import Platform
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class ProjectNotMemberException(APIException):
     default_detail = "You must be a maintainer of the project to perform this action."
 
 
-def get_db_asm(request_asm) -> Asm:
+def get_db_asm(request_asm: str) -> Asm:
     h = hashlib.sha256(request_asm.encode()).hexdigest()
     asm, _ = Asm.objects.get_or_create(
         hash=h,
@@ -79,7 +79,7 @@ def diff_compilation(
     )
 
 
-def update_scratch_score(scratch: Scratch, diff: DiffResult):
+def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
     """
     Given a scratch and a diff, update the scratch's score
     """
@@ -174,7 +174,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     return False
 
 
-def create_scratch(data: Dict[str, Any], allow_project=False) -> Scratch:
+def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
@@ -299,17 +299,17 @@ class ScratchViewSet(
     ]
     search_fields = ["name", "diff_label"]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[serializers.HyperlinkedModelSerializer]:
         if self.action == "list":
             return TerseScratchSerializer
         else:
             return ScratchSerializer
 
     @scratch_condition
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().retrieve(request, *args, **kwargs)
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         scratch = create_scratch(request.data)
 
         return Response(
@@ -318,7 +318,7 @@ class ScratchViewSet(
         )
 
     # TODO: possibly move this logic into ScratchSerializer.save method
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         # Check permission
         scratch = self.get_object()
         if scratch.owner != request.profile:
@@ -339,7 +339,7 @@ class ScratchViewSet(
 
     # POST on compile takes a partial and does not update the scratch's compilation status
     @action(detail=True, methods=["GET", "POST"])
-    def compile(self, request, pk):
+    def compile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
         # Apply partial
@@ -372,7 +372,7 @@ class ScratchViewSet(
         )
 
     @action(detail=True, methods=["POST"])
-    def decompile(self, request, pk):
+    def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
         context = request.data.get("context", "")
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
@@ -390,7 +390,7 @@ class ScratchViewSet(
         return Response({"decompilation": decompilation})
 
     @action(detail=True, methods=["POST"])
-    def claim(self, request, pk):
+    def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
         if not scratch.is_claimable():
@@ -406,12 +406,15 @@ class ScratchViewSet(
         return Response({"success": True})
 
     @action(detail=True, methods=["POST"])
-    def fork(self, request, pk):
+    def fork(self, request: Request, pk: str) -> Response:
         parent: Scratch = self.get_object()
 
-        request_data = (
-            request.data.dict() if isinstance(request.data, QueryDict) else request.data
-        )
+        # TODO Needed for test_fork_scratch test?
+        if isinstance(request.data, QueryDict):  # type: ignore
+            request_data = request.data.dict()  # type: ignore
+        else:
+            request_data = request.data
+
         parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
 
@@ -433,7 +436,7 @@ class ScratchViewSet(
 
     @action(detail=True)
     @scratch_condition
-    def export(self, request: Request, pk):
+    def export(self, request: Request, pk: str) -> HttpResponse:
         scratch: Scratch = self.get_object()
 
         metadata = ScratchSerializer(scratch, context={"request": request}).data

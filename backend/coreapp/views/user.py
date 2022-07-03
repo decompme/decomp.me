@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
@@ -19,11 +20,11 @@ class CurrentUser(APIView):
     View to access the current user profile.
     """
 
-    def get(self, request: Request):
+    def get(self, request: Request) -> Response:
         user = serialize_profile(request, request.profile)
         return Response(user)
 
-    def post(self, request: Request):
+    def post(self, request: Request) -> Response:
         """
         Login if the 'code' parameter is provided. Log out otherwise.
         """
@@ -51,7 +52,7 @@ class CurrentUserScratchList(generics.ListAPIView):
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner=self.request.profile)
 
 
@@ -63,12 +64,12 @@ class UserScratchList(generics.ListAPIView):
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
 
 
 @api_view(["GET"])
-def user(request, username):
+def user(request: Request, username: str) -> Response:
     """
     Gets a user's basic data
     """

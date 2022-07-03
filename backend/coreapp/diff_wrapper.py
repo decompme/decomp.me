@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+from pathlib import Path
 from typing import List, Optional
 
 import asm_differ.diff as asm_differ
@@ -78,7 +79,7 @@ class DiffWrapper:
 
     @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path, platform: Platform, label: str
+        sandbox: Sandbox, target_path: Path, platform: Platform, label: str
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]
@@ -113,7 +114,7 @@ class DiffWrapper:
         return ["--start-address=0"]
 
     @staticmethod
-    def parse_objdump_flags(diff_flags: list[str]) -> list[str]:
+    def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
         ret = []
 
         if "-Mreg-names=32" in diff_flags:
@@ -127,7 +128,7 @@ class DiffWrapper:
         platform: Platform,
         config: asm_differ.Config,
         label: str,
-        flags: list[str],
+        flags: List[str],
     ) -> str:
         flags += [
             "--disassemble",
@@ -171,7 +172,7 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         config: asm_differ.Config,
-        diff_flags: list[str],
+        diff_flags: List[str],
     ) -> str:
 
         if len(elf_object) == 0:
@@ -203,7 +204,7 @@ class DiffWrapper:
         diff_label: str,
         compiled_elf: bytes,
         allow_target_only: bool,
-        diff_flags: list[str],
+        diff_flags: List[str],
     ) -> DiffResult:
 
         if platform == DUMMY:

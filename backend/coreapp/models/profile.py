@@ -18,7 +18,7 @@ class Profile(models.Model):
     def is_anonymous(self) -> bool:
         return self.user is None
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.user:
             return self.user.username
         else:

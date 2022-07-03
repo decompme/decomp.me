@@ -1,5 +1,5 @@
 from subprocess import CalledProcessError
-from typing import ClassVar
+from typing import Any, ClassVar, Optional
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -7,7 +7,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import exception_handler
 
 
-def custom_exception_handler(exc, context):
+def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]:
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)

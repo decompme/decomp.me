@@ -1,11 +1,12 @@
 import logging
-from typing import Optional, TYPE_CHECKING, Union
+from typing import Callable, Optional, TYPE_CHECKING, Union
 
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 from django.utils.timezone import now
 from rest_framework.request import Request as DRFRequest
+from rest_framework.response import Response
 
 from .models.profile import Profile
 
@@ -27,20 +28,24 @@ else:
     Request = DRFRequest
 
 
-def disable_csrf(get_response):
-    def middleware(request: HttpRequest):
+def disable_csrf(
+    get_response: Callable[[HttpRequest], Response]
+) -> Callable[[HttpRequest], Response]:
+    def middleware(request: HttpRequest) -> Response:
         setattr(request, "_dont_enforce_csrf_checks", True)
         return get_response(request)
 
     return middleware
 
 
-def set_user_profile(get_response):
+def set_user_profile(
+    get_response: Callable[[HttpRequest], Response]
+) -> Callable[[Request], Response]:
     """
     Makes sure that `request.profile` is always available, even for anonymous users.
     """
 
-    def middleware(request: Request):
+    def middleware(request: Request) -> Response:
         # Skip if the request is from SSR
         if (
             "User-Agent" in request.headers
