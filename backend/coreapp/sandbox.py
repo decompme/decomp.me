@@ -67,10 +67,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
-             "--rlimit_nofile", "soft",
+            "--rlimit_nofile", "soft",
             "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
-            #"--disable_proc",  # Needed for running inside Docker
+            "--disable_proc",  # Needed for running inside Docker
         ]
         # fmt: on
 
