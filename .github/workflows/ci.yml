@@ -53,6 +53,9 @@ jobs:
             devkitpro/devkitarm:20210726 \
             -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
           sudo mv bin/arm* /usr/bin/
+      - name: Install wibo
+        run: |-
+          wget https://github.com/decompals/WiBo/releases/download/0.1.0/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
       - name: Run backend tests
         run: |-
           cd backend
