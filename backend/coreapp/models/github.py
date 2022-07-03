@@ -2,7 +2,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from typing import Optional
+from typing import Any, Optional
 
 import requests
 from django.conf import settings
@@ -70,7 +70,7 @@ class GitHubUser(models.Model):
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "@" + self.details().login
 
     @staticmethod
@@ -224,16 +224,16 @@ class GitHubRepo(models.Model):
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.owner}/{self.repo}#{self.branch} ({self.id})"
 
-    def get_html_url(self):
+    def get_html_url(self) -> str:
         return f"https://github.com/{self.owner}/{self.repo}/tree/{self.branch}"
 
 
 # When a GitHubRepo is deleted, delete its directory
 @receiver(models.signals.pre_delete, sender=GitHubRepo)
-def delete_local_repo_dir(instance: GitHubRepo, **kwargs):
+def delete_local_repo_dir(instance: GitHubRepo, **kwargs: Any) -> None:
     dir = instance.get_dir()
     if dir.exists():
         shutil.rmtree(dir)

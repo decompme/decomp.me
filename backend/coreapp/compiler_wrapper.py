@@ -4,7 +4,8 @@ import re
 import subprocess
 from dataclasses import dataclass
 from platform import uname
-from typing import Any, Callable, Dict, Optional, Tuple
+
+from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
 
 from django.conf import settings
 
@@ -17,8 +18,6 @@ from . import util
 from .error import AssemblyError, CompilationError
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
-
-from typing import TYPE_CHECKING, TypeVar
 
 # Thanks to Guido van Rossum for the following fix
 # https://github.com/python/mypy/issues/5107#issuecomment-529372406

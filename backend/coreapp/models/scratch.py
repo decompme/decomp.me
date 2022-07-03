@@ -21,7 +21,7 @@ class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.data if len(self.data) < 20 else self.data[:17] + "..."
 
 
@@ -74,11 +74,11 @@ class Scratch(models.Model):
         ordering = ["-creation_time"]
         verbose_name_plural = "Scratches"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.slug
 
     # hash for etagging
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
     def get_url(self) -> str:

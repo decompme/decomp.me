@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
@@ -15,7 +15,9 @@ from .models.project import Project, ProjectFunction
 from .models.scratch import Scratch
 
 
-def serialize_profile(request: Request, profile: Profile, small=False):
+def serialize_profile(
+    request: Request, profile: Profile, small: bool = False
+) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "url": None,
@@ -55,18 +57,18 @@ def serialize_profile(request: Request, profile: Profile, small=False):
 
 
 if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, str]
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, Dict[str, Any]]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile):
+    def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile)
 
 
-class TerseProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile):
+class TerseProfileField(ProfileField):
+    def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile, small=True)
 
 
@@ -81,7 +83,9 @@ class UrlField(serializers.HyperlinkedIdentityField):
         self.target_field = kwargs.pop("target_field", "")
         super().__init__(**kwargs)
 
-    def get_url(self, value, view_name, request, format):
+    def get_url(
+        self, value: Any, view_name: str, request: Any, format: Any
+    ) -> Optional[str]:
         if self.target_field:
             value = getattr(value, self.target_field)
         if not value:
@@ -98,7 +102,7 @@ class HtmlUrlField(UrlField):
     get_html_url should return a path relative to the frontend that can be used to look at the HTML page for the model.
     """
 
-    def get_url(self, value, view_name, request, format):
+    def get_url(self, value: Any, view_name: str, request: Any, format: Any) -> str:
         if hasattr(value, "get_html_url"):
             return value.get_html_url()
 
@@ -146,23 +150,36 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
             "platform",
         ]
 
-    def get_project(self, scratch: Scratch):
+    def get_project(self, scratch: Scratch) -> Optional[str]:
         if (
             hasattr(scratch, "project_function")
             and scratch.project_function is not None
         ):
-            return reverse("project-detail", args=[scratch.project_function.project.slug], request=self.context["request"])  # type: ignore
+            return reverse(
+                "project-detail",
+                args=[scratch.project_function.project.slug],
+                request=self.context["request"],  # type: ignore
+            )
+        return None
 
-    def get_project_function(self, scratch: Scratch):
+    def get_project_function(self, scratch: Scratch) -> Optional[str]:
         if (
             hasattr(scratch, "project_function")
             and scratch.project_function is not None
         ):
-            return reverse("projectfunction-detail", args=[scratch.project_function.project.slug, scratch.project_function.id], request=self.context["request"])  # type: ignore
+            return reverse(
+                "projectfunction-detail",
+                args=[
+                    scratch.project_function.project.slug,
+                    scratch.project_function.id,
+                ],
+                request=self.context["request"],  # type: ignore
+            )
+        return None
 
 
 class TerseScratchSerializer(ScratchSerializer):
-    owner = TerseProfileField(read_only=True)  # type: ignore
+    owner = TerseProfileField(read_only=True)
 
     class Meta:
         model = Scratch
@@ -204,8 +221,8 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         exclude: List[str] = []
         depth = 1  # repo
 
-    def get_members(self, project: Project):
-        def get_url(user: User):
+    def get_members(self, project: Project) -> List[str]:
+        def get_url(user: User) -> str:
             return reverse(
                 "user-detail", args=[user.username], request=self.context["request"]
             )
@@ -228,12 +245,12 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
         exclude = ["id", "import_config"]
         read_only_fields = ["creation_time"]
 
-    def get_url(self, fn: ProjectFunction):
+    def get_url(self, fn: ProjectFunction) -> str:
         return reverse(
             "projectfunction-detail",
             args=[fn.project.slug, fn.id],
             request=self.context["request"],
         )
 
-    def get_attempts_count(self, fn: ProjectFunction):
+    def get_attempts_count(self, fn: ProjectFunction) -> int:
         return Scratch.objects.filter(project_function=fn).count()
