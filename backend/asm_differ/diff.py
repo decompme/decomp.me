@@ -1482,12 +1482,15 @@ class AsmProcessorPPC(AsmProcessor):
     def process_reloc(self, row: str, prev: str) -> Tuple[str, Optional[str]]:
         arch = self.config.arch
         assert any(
-            r in row for r in ["R_PPC_REL24", "R_PPC_ADDR16", "R_PPC_EMB_SDA21"]
+            r in row
+            for r in ["R_PPC_REL24", "R_PPC_ADDR16", "R_PPC_EMB_SDA21", "R_PPC_REL14"]
         ), f"unknown relocation type '{row}' for line '{prev}'"
         before, imm, after = parse_relocated_line(prev)
         repl = row.split()[-1]
         if "R_PPC_REL24" in row:
             # function calls
+            pass
+        if "R_PPC_REL14" in row:
             pass
         elif "R_PPC_ADDR16_HI" in row:
             # absolute hi of addr
@@ -1802,7 +1805,8 @@ PPC_SETTINGS = ArchSettings(
     name="ppc",
     re_int=re.compile(r"[0-9]+"),
     re_comment=re.compile(r"(<.*>|//.*$)"),
-    re_reg=re.compile(r"\$?\b([rf][0-9]+)\b"),
+    # r1 not included
+    re_reg=re.compile(r"\$?\b([rf](?:[02-9]|[1-9][0-9]+)|f1)\b"),
     re_sprel=re.compile(r"(?<=,)(-?[0-9]+|-?0x[0-9a-f]+)\(r1\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
     re_imm=re.compile(
@@ -2125,6 +2129,10 @@ def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
         return re.fullmatch((r"^@\d+$"), field) is not None
 
     if arch.name == "mips":
+        return "." in field
+
+    # Example: ".text+0x34"
+    if arch.name == "arm32":
         return "." in field
 
     return False
