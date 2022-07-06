@@ -654,6 +654,9 @@ _all_compilers: List[Compiler] = [
 # MKWII Common flags
 MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2"
 
+# SPM Common flags
+SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
+
 _all_presets = [
     # GBA
     Preset(
@@ -764,12 +767,12 @@ _all_presets = [
     Preset(
         "Super Paper Mario (DOL)",
         MWCC_41_60831,
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
+        f"{SPM_SHARED} -inline all -sdata 4 -sdata2 4",
     ),
     Preset(
         "Super Paper Mario (REL)",
         MWCC_41_60831,
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
+        f"{SPM_SHARED} -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     ),
     Preset(
         "Wii Sports",
