@@ -140,8 +140,7 @@ class CompilerWrapper:
             # Fix for MWCC line numbers in GC 3.0+
             if compiler.is_mwcc:
                 ctx_path = sandbox.path / "ctx.c"
-                with ctx_path.open("w") as f:
-                    pass
+                ctx_path.touch()
 
             # IDO hack to support -KPIC
             if compiler.is_ido and "-KPIC" in compiler_flags:
