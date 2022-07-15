@@ -131,11 +131,16 @@ class CompilerWrapper:
                 f.write(context)
                 f.write("\n")
 
-                f.write('#line 1 "src.c"\n')
+                f.write('#line 1 "code.c"\n')
                 f.write(code)
                 f.write("\n")
 
             cc_cmd = compiler.cc
+
+            # Fix for MWCC line numbers in GC 3.0+
+            if compiler.is_mwcc:
+                ctx_path = sandbox.path / "ctx.c"
+                ctx_path.touch()
 
             # IDO hack to support -KPIC
             if compiler.is_ido and "-KPIC" in compiler_flags:
