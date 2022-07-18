@@ -510,6 +510,17 @@ GBA = Platform(
 """,
 )
 
+N3DS = Platform(
+    id="n3ds",
+    name="Nintendo 3DS",
+    description="ARMv6K",
+    arch="arm32",
+    assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mfpu=vfpv2 -march=armv6k -o "$OUTPUT"',
+    objdump_cmd="arm-none-eabi-objdump",
+    nm_cmd="arm-none-eabi-nm",
+    asm_prelude="",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -522,5 +533,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "gba": GBA,
         "macos9": MACOS9,
         "macosx": MACOSX,
+        "n3ds": N3DS,
     }
 )
