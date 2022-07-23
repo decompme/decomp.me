@@ -55,7 +55,7 @@ jobs:
           sudo mv bin/arm* /usr/bin/
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/WiBo/releases/download/0.1.1/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/WiBo/releases/download/0.2.1/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
       - name: Run backend tests
         run: |-
           cd backend
