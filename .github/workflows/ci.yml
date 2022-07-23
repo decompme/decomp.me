@@ -18,12 +18,7 @@ jobs:
       - run: cd backend && poetry install
       - name: Add i386 architecture and install dependencies
         run: |-
-          sudo dpkg --add-architecture i386
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 86B72ED9
-          sudo add-apt-repository 'deb [arch=amd64] https://mirror.mxe.cc/repos/apt focal main'
           sudo apt -qq update
-          sudo apt install -y --allow-downgrades libpcre2-8-0=10.34-7
-          sudo apt install -y wine
           sudo apt-get install \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
@@ -58,15 +53,15 @@ jobs:
             devkitpro/devkitarm:20210726 \
             -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
           sudo mv bin/arm* /usr/bin/
+      - name: Install wibo
+        run: |-
+          wget https://github.com/decompals/WiBo/releases/download/0.2.1/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
       - name: Run backend tests
         run: |-
-          mkdir -p "${WINEPREFIX}"
-          wineboot --init
           cd backend
           poetry run python3 manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
-          WINEPREFIX: /tmp/wine
 
       - name: Migrate backend
         run: cd backend && poetry run python3 ./manage.py migrate
@@ -108,10 +103,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build decompme_backend image
         run: |-
-          docker build backend \
-            -t decompme_backend \
-            --build-arg ENABLE_WII_GC_SUPPORT=YES \
-            --build-arg ENABLE_PS1_SUPPORT=YES
+          docker build backend -t decompme_backend
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
@@ -123,7 +115,6 @@ jobs:
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
-            -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
