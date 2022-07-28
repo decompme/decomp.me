@@ -183,7 +183,7 @@ GCC263_MIPSEL = GCCPS1Compiler(
     cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} ${COMPILER_DIR}/ASPSX.EXE "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
     platform=PS1,

@@ -57,7 +57,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/inst
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.2.1 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.2.3 /usr/local/sbin/wibo /usr/bin/
 
 # gc/wii specifics
 COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/

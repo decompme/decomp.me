@@ -159,6 +159,7 @@ class CompilerWrapper:
                         "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
+                        "TMPDIR": "/tmp",
                     },
                 )
             except subprocess.CalledProcessError as e:
