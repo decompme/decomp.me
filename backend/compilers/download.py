@@ -161,10 +161,6 @@ def download_zip(
             f.extract(member=file, path=dest_path)
 
 
-def set_x(file: Path) -> None:
-    file.chmod(file.stat().st_mode | stat.S_IEXEC)
-
-
 def download_ppc_darwin():
     if host_os != LINUX:
         print("MAC OS X cross compiler unsupported on " + host_os.name)
@@ -240,9 +236,11 @@ def download_codewarrior():
         lowercase_lmgr = compiler_dir / ver / "lmgr8c.dll"
         if lowercase_lmgr.exists():
             shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR8C.dll")
-
-        set_x(compiler_dir / ver / "MWCPPC.exe")
-        set_x(compiler_dir / ver / "MWLinkPPC.exe")
+        # Set +x to allow WSL without wine
+        exe_path = compiler_dir / ver / "MWCPPC.exe"
+        exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+        exe_path = compiler_dir / ver / "MWLinkPPC.exe"
+        exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
     try:
         shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
@@ -429,9 +427,9 @@ def download_ps1():
 
         # +x exes
         for file in dest.glob("*.exe"):
-            set_x(file)
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
         for file in dest.glob("*.EXE"):
-            set_x(file)
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
 
     shutil.rmtree(compilers_path)
 
@@ -453,7 +451,7 @@ def download_ps1():
 
         # +x exes
         for file in dest.glob("*.EXE"):
-            set_x(file)
+            file.chmod(file.stat().st_mode | stat.S_IEXEC)
 
     shutil.rmtree(COMPILERS_DIR / binutils_name)
 
@@ -506,7 +504,9 @@ def download_nds():
 
             shutil.copy(license_path, compiler_dir / "license.dat")
 
-            set_x(compiler_dir / "mwccarm.exe")
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "mwccarm.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
     shutil.rmtree(COMPILERS_DIR / "mwccarm")
 
@@ -544,7 +544,7 @@ def download_wii_gc():
             if not compiler_dir.exists():
                 shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
 
-            # Rename dll to uppercase
+            # Rename dll to uppercase - WSL is case sensitive without wine
             lowercase_lmgr = compiler_dir / "lmgr326b.dll"
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
@@ -553,7 +553,9 @@ def download_wii_gc():
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
 
-            set_x(compiler_dir / "mwcceppc.exe")
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "mwcceppc.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
         shutil.rmtree(COMPILERS_DIR / group_id)
 

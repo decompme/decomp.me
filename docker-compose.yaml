@@ -15,9 +15,10 @@ services:
       args:
         ENABLE_GBA_SUPPORT: "YES"
         ENABLE_N64_SUPPORT: "YES"
-        ENABLE_NDS_SUPPORT: "YES"
-        ENABLE_PS1_SUPPORT: "YES"
-        ENABLE_WII_GC_SUPPORT: "YES"
+        # dont install wine32 etc by default
+        ENABLE_NDS_SUPPORT: "NO"
+        ENABLE_PS1_SUPPORT: "NO"
+        ENABLE_WII_GC_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
     cap_drop:
