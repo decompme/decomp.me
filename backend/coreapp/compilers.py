@@ -210,26 +210,6 @@ PSYQ46 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
-GCC_PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
-
-GCC272PSYQ = GCCPS1Compiler(
-    id="gcc2.7.2-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC281PSYQ = GCCPS1Compiler(
-    id="gcc2.8.1-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC2952PSYQ = GCCPS1Compiler(
-    id="gcc2.95.2-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
 # PS2
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
@@ -587,9 +567,6 @@ _all_compilers: List[Compiler] = [
     PSYQ41,
     PSYQ43,
     PSYQ46,
-    GCC272PSYQ,
-    GCC281PSYQ,
-    GCC2952PSYQ,
     # PS2
     EE_GCC296,
     # N64
