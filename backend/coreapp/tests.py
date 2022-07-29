@@ -494,9 +494,9 @@ nop
         )
 
     @requiresCompiler(MWCC_247_92)
-    def test_mwcc_wine(self) -> None:
+    def test_mwcc_wibo(self) -> None:
         """
-        Ensure that we can invoke mwcc through wine
+        Ensure that we can invoke mwcc through WiBo
         """
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
