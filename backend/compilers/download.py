@@ -610,9 +610,7 @@ def download_3ds():
             if not compiler_dir.exists():
                 shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
 
-            # Set +x to allow WSL without wine
-            exe_path = compiler_dir / "armcc.exe"
-            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+            set_x(compiler_dir / "armcc.exe")
         shutil.rmtree(COMPILERS_DIR / group_id)
 
 
