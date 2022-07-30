@@ -179,7 +179,13 @@ class CompilerWrapper:
                 raise CompilationError(str(e))
 
             if not object_path.exists():
-                raise CompilationError("Compiler did not create an object file")
+                if compile_proc.stdout:
+                    msg = f"{compile_proc.stdout}\n{compile_proc.stderr}"
+                else:
+                    msg = compile_proc.stderr
+                error_msg = "Compiler did not create an object file: %s" % msg
+                logging.debug(error_msg)
+                raise CompilationError(error_msg)
 
             object_bytes = object_path.read_bytes()
 
