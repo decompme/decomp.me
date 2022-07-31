@@ -788,6 +788,7 @@ class UserTests(BaseTestCase):
     def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
+        Finally, delete the scratch.
         """
         response = self.client.post(
             "/api/scratch",
@@ -812,6 +813,61 @@ class UserTests(BaseTestCase):
             response.json()["owner"]["username"], self.GITHUB_USER["login"]
         )
         self.assertEqual(response.json()["owner"]["is_you"], True)
+
+        # Delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    @responses.activate
+    def test_cant_delete_scratch(self) -> None:
+        """
+        Ensure we can't delete a scratch we don't own
+        """
+
+        # Create a scratch, log in, and claim it
+        response = self.client.post(
+            "/api/scratch",
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        slug = response.json()["slug"]
+
+        self.test_github_login()
+
+        response = self.client.post(f"/api/scratch/{slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
+        response = self.client.get(f"/api/scratch/{slug}")
+        self.assertEqual(
+            response.json()["owner"]["username"], self.GITHUB_USER["login"]
+        )
+        self.assertEqual(response.json()["owner"]["is_you"], True)
+
+        # Log out
+        response = self.client.post(self.current_user_url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["is_you"], True)
+        self.assertEqual(response.json()["is_anonymous"], True)
+
+        # Try to delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Log in again
+        self.test_github_login()
+
+        # Successfully delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class ScratchDetailTests(BaseTestCase):

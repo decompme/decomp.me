@@ -285,6 +285,7 @@ class ScratchPagination(CursorPagination):
 
 class ScratchViewSet(
     mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
@@ -334,6 +335,18 @@ class ScratchViewSet(
             return Response(
                 ScratchSerializer(scratch, context={"request": request}).data
             )
+
+        return response
+
+    def destroy(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        # Check permission
+        scratch = self.get_object()
+        if scratch.owner != request.profile:
+            response = self.retrieve(request, *args, **kwargs)
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return response
+
+        response = super().destroy(request, *args, **kwargs)
 
         return response
 
