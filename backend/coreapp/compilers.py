@@ -679,6 +679,11 @@ _all_presets = [
         PSYQ46,
         "-O2",
     ),
+    Preset(
+        "Metal Gear Solid",
+        PSYQ43,
+        "-O2 -G8",
+    ),
     # N64
     Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
