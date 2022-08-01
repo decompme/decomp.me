@@ -2,6 +2,7 @@ import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
 import LogoMacOS from "./macos9.svg"
 import LogoMacOSX from "./macosx.svg"
+import LogoN3DS from "./n3ds.svg"
 import LogoN64 from "./n64.svg"
 import LogoNDS from "./nds.svg"
 import LogoPS1 from "./ps1.svg"
@@ -19,6 +20,7 @@ const ICONS = {
     "switch": LogoSwitch,
     "macos9": LogoMacOS,
     "macosx": LogoMacOSX,
+    "n3ds": LogoN3DS,
 }
 
 export type Props = {

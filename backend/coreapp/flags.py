@@ -30,6 +30,15 @@ class FlagSet:
 
 Flags = List[Union[Checkbox, FlagSet]]
 
+COMMON_ARMCC_FLAGS: Flags = [
+    FlagSet(
+        id="armcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ospace", "-Otime"]
+    ),
+    FlagSet(id="armcc_language", flags=["--c90", "--c99", "--cpp"]),
+    FlagSet(id="armcc_instset", flags=["--arm", "--thumb"]),
+    Checkbox(id="armcc_debug", flag="--debug"),
+]
+
 COMMON_CLANG_FLAGS: Flags = [
     FlagSet(
         id="clang_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ofast", "-Os", "-Oz"]
