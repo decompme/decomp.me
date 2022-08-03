@@ -716,7 +716,7 @@ _all_presets = [
     Preset(
         "Pikmin",
         MWCC_233_163E,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
     Preset(
         "Super Smash Bros. Melee",
@@ -736,7 +736,7 @@ _all_presets = [
     Preset(
         "Pikmin 2",
         MWCC_247_107,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8 -common on",
     ),
     Preset(
         "The Thousand-Year Door",
