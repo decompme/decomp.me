@@ -78,6 +78,7 @@ yarn dev
 
 
 ### Optional steps
+- [Configure wine for Windows compiler on Linux](WINE.md)
 - [Set up GitHub authentication](GITHUB.md)
 - [Install nsjail to run the compiler sandbox](SANDBOX.md)
 - [Configure an nginx reverse proxy](NGINX.md)

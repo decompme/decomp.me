@@ -391,6 +391,7 @@ def download_n64():
         psyq_obj_parser.chmod(
             psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         )
+        set_x(psyq_obj_parser)
 
 
 def download_ps1():
@@ -434,28 +435,6 @@ def download_ps1():
             set_x(file)
 
     shutil.rmtree(compilers_path)
-
-    binutils_name = "binutils-2.25.1-psyq"
-    download_tar(
-        "https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz",
-        dest_name=binutils_name,
-        create_subdir=True,
-    )
-    as_path = COMPILERS_DIR / binutils_name / "usr" / "local" / "bin" / "mips-elf-as"
-
-    # psyq flavours of gcc
-    for pysq_ver, gcc_ver in psyq_to_gcc.items():
-        dest = COMPILERS_DIR / f"gcc{gcc_ver}-psyq"
-        dest.mkdir(exist_ok=True)
-        exe_name = "CC1PSX.EXE"
-        shutil.copy(COMPILERS_DIR / f"psyq{pysq_ver}" / exe_name, dest / exe_name)
-        shutil.copy(as_path, dest / "mips-elf-as")
-
-        # +x exes
-        for file in dest.glob("*.EXE"):
-            set_x(file)
-
-    shutil.rmtree(COMPILERS_DIR / binutils_name)
 
 
 def download_nds():
@@ -506,6 +485,11 @@ def download_nds():
 
             shutil.copy(license_path, compiler_dir / "license.dat")
 
+            # Rename dll to uppercase
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
             set_x(compiler_dir / "mwccarm.exe")
 
     shutil.rmtree(COMPILERS_DIR / "mwccarm")
@@ -544,7 +528,7 @@ def download_wii_gc():
             if not compiler_dir.exists():
                 shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
 
-            # Rename dll to uppercase
+            # Rename dll to uppercase - WSL is case sensitive without wine
             lowercase_lmgr = compiler_dir / "lmgr326b.dll"
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
@@ -579,8 +563,7 @@ def download_wii_gc():
         log_name="mwcc_42_127",
         dest_path=exe_path,
     )
-
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    set_x(exe_path)
 
 
 def main(args):

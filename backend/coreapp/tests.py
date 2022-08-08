@@ -15,6 +15,9 @@ from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
+    GCC272SN,
+    MWCC_20_72,
+    MWCC_20_79,
     Compiler,
     GCC281,
     IDO53,
@@ -24,7 +27,7 @@ from coreapp.compilers import (
     PBX_GCC3,
 )
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64
+from coreapp.platforms import N64, NDS_ARM9, PS1
 from coreapp.views.scratch import compile_scratch_update_score
 from .models.github import GitHubRepo, GitHubUser
 
@@ -494,9 +497,9 @@ nop
         )
 
     @requiresCompiler(MWCC_247_92)
-    def test_mwcc_wibo(self) -> None:
+    def test_mwcc(self) -> None:
         """
-        Ensure that we can invoke mwcc through WiBo
+        Ensure that we can invoke mwcc
         """
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
@@ -519,6 +522,28 @@ nop
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
+
+    def test_all_compilers(self) -> None:
+        """
+        Ensure that we can run a simple compilation for all available compilers
+        """
+        for compiler in compilers.available_compilers():
+            # TODO get these working
+            if compiler in [GCC272SN]:
+                continue
+            if compiler.platform in [NDS_ARM9, PS1]:
+                continue
+
+            result = CompilerWrapper.compile_code(
+                compiler,
+                "",
+                "int func(void) { return 5; }",
+                "",
+                "func",
+            )
+            self.assertGreater(
+                len(result.elf_object), 0, "The compilation result should be non-null"
+            )
 
 
 class DecompilationTests(BaseTestCase):

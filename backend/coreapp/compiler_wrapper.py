@@ -40,9 +40,16 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
+WINE: str
+if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
+    logger.info("WSL detected & nsjail disabled: wine not required.")
+    WINE = ""
+else:
+    WINE = "wine"
+
 WIBO: str
 if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: WiBo not required.")
+    logger.info("WSL detected & nsjail disabled: wibo not required.")
     WIBO = ""
 else:
     WIBO = "wibo"
@@ -98,7 +105,11 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"### .*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+            r"wine: could not load .*\.dll.*\n?",
+            r"wineserver: could not save registry .*\n?",
+            r"### .*\.exe Driver Error:.*\n?",
+            r"#   Cannot find my executable .*\n?",
+            r"### MWCPPC\.exe Driver Error:.*\n?",
         ]
 
         for str in filter_strings:
@@ -152,6 +163,7 @@ class CompilerWrapper:
                     shell=True,
                     env={
                         "PATH": PATH,
+                        "WINE": WINE,
                         "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
@@ -170,14 +182,20 @@ class CompilerWrapper:
                     msg = e.stderr
 
                 logging.debug("Compilation failed: %s", msg)
-                raise CompilationError(e.stderr)
+                raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
             except ValueError as e:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
 
             if not object_path.exists():
-                raise CompilationError("Compiler did not create an object file")
+                if compile_proc.stdout:
+                    msg = f"{compile_proc.stdout}\n{compile_proc.stderr}"
+                else:
+                    msg = compile_proc.stderr
+                error_msg = "Compiler did not create an object file: %s" % msg
+                logging.debug(error_msg)
+                raise CompilationError(error_msg)
 
             object_bytes = object_path.read_bytes()
 
