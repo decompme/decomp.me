@@ -436,28 +436,6 @@ def download_ps1():
 
     shutil.rmtree(compilers_path)
 
-    binutils_name = "binutils-2.25.1-psyq"
-    download_tar(
-        "https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz",
-        dest_name=binutils_name,
-        create_subdir=True,
-    )
-    as_path = COMPILERS_DIR / binutils_name / "usr" / "local" / "bin" / "mips-elf-as"
-
-    # psyq flavours of gcc
-    for pysq_ver, gcc_ver in psyq_to_gcc.items():
-        dest = COMPILERS_DIR / f"gcc{gcc_ver}-psyq"
-        dest.mkdir(exist_ok=True)
-        exe_name = "CC1PSX.EXE"
-        shutil.copy(COMPILERS_DIR / f"psyq{pysq_ver}" / exe_name, dest / exe_name)
-        shutil.copy(as_path, dest / "mips-elf-as")
-
-        # +x exes
-        for file in dest.glob("*.EXE"):
-            set_x(file)
-
-    shutil.rmtree(COMPILERS_DIR / binutils_name)
-
 
 def download_nds():
     compiler_groups = {
