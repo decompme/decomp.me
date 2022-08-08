@@ -19,18 +19,19 @@ jobs:
       - name: Install dependencies
         run: |-
           sudo dpkg --add-architecture i386
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 86B72ED9
-          sudo add-apt-repository 'deb [arch=amd64] https://mirror.mxe.cc/repos/apt focal main'
-          sudo apt -qq update
-          sudo apt install -y --allow-downgrades libpcre2-8-0=10.34-7
-          sudo apt install -y wine
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update -qq
+          sudo apt-get install -yqq --allow-downgrades libgd3/focal libpcre2-8-0/focal libpcre2-16-0/focal libpcre2-32-0/focal libpcre2-posix2/focal
+          sudo apt-get purge -yqq libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
+
           sudo apt-get install \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
-            protobuf-compiler
+            protobuf-compiler \
+            wine
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
@@ -60,7 +61,7 @@ jobs:
           sudo mv bin/arm* /usr/bin/
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/WiBo/releases/download/0.2.3/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/WiBo/releases/download/0.2.4/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
       - name: Run backend tests
         run: |-
           mkdir -p "${WINEPREFIX}"

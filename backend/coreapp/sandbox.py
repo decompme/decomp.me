@@ -66,15 +66,16 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "PATH=/usr/bin:/bin",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
              "--rlimit_nofile", "soft",
             "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
+            # the following are settings that can be removed once we are done with wine
+            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
+            "--env", "WINEDEBUG=-all",
+            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
         if settings.SANDBOX_DISABLE_PROC:
