@@ -75,9 +75,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
              "--rlimit_nofile", "soft",
             "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
-            #"--disable_proc",  # Needed for running inside Docker
         ]
         # fmt: on
+        if settings.SANDBOX_DISABLE_PROC:
+            wrapper.append("--disable_proc")  # needed for running inside Docker
 
         if not settings.DEBUG:
             wrapper.append("--really_quiet")
