@@ -70,9 +70,14 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_nofile", "soft",
             "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
-            "--disable_proc",  # Needed for running inside Docker
+            # the following are settings that can be removed once we are done with wine
+            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
+            "--env", "WINEDEBUG=-all",
+            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
+        if settings.SANDBOX_DISABLE_PROC:
+            wrapper.append("--disable_proc")  # needed for running inside Docker
 
         if not settings.DEBUG:
             wrapper.append("--really_quiet")

@@ -391,6 +391,7 @@ def download_n64():
         psyq_obj_parser.chmod(
             psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         )
+        set_x(psyq_obj_parser)
 
 
 def download_ps1():
@@ -506,6 +507,11 @@ def download_nds():
 
             shutil.copy(license_path, compiler_dir / "license.dat")
 
+            # Rename dll to uppercase
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
             set_x(compiler_dir / "mwccarm.exe")
 
     shutil.rmtree(COMPILERS_DIR / "mwccarm")
@@ -579,8 +585,7 @@ def download_wii_gc():
         log_name="mwcc_42_127",
         dest_path=exe_path,
     )
-
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    set_x(exe_path)
 
 
 def main(args):

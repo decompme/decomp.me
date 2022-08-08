@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:20.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
     python-is-python3 \
-    python3-venv
+    python3.9-venv \
+    python3.9-dev
 
 
 FROM base AS nsjail
@@ -53,11 +54,11 @@ RUN dpkg --add-architecture i386 && apt-get update \
       libstdc++6:i386
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
-  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python -
+  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python3.9 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.2.3 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.2.4 /usr/local/sbin/wibo /usr/bin/
 
 # gc/wii specifics
 COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
@@ -82,7 +83,11 @@ ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 ENV ENABLE_WII_GC_SUPPORT=${ENABLE_WII_GC_SUPPORT}
 
-RUN pip install requests tqdm && python3 /compilers/download.py && rm -rf /compilers/download_cache/
+RUN python3.9 -m pip install requests tqdm \
+    && python3.9 /compilers/download.py \
+    && rm -rf /compilers/download_cache/
+
+RUN mkdir -p /etc/fonts
 
 WORKDIR /backend
 
