@@ -124,10 +124,13 @@ def available_compilers() -> List[Compiler]:
 
 @cache
 def available_platforms() -> List[Platform]:
-    return sorted(
-        set(compiler.platform for compiler in available_compilers()),
-        key=lambda p: p.name,
-    )
+    pset = set(compiler.platform for compiler in available_compilers())
+
+    # Disable MACOS9 for now, as it's not working properly
+    if MACOS9 in pset:
+        pset.remove(MACOS9)
+
+    return sorted(pset, key=lambda p: p.name)
 
 
 @cache
