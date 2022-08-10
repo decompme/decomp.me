@@ -141,6 +141,33 @@ export async function patch(url: string, json: Json) {
     return JSON.parse(text)
 }
 
+export async function delete_(url: string, json: Json) {
+    url = getURL(url)
+
+    const body: string = JSON.stringify(json)
+
+    console.info("DELETE", url, JSON.parse(body))
+
+    const response = await fetch(url, {
+        ...commonOpts,
+        method: "DELETE",
+        body,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+
+    if (!response.ok) {
+        throw new ResponseError(response, await response.json())
+    }
+
+    if (response.status == 204) { // No Content
+        return null
+    } else {
+        return await response.json()
+    }
+}
+
 export interface Page<T> {
     next: string | null
     previous: string | null
