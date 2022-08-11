@@ -1,8 +1,9 @@
 import tempfile
 from time import sleep
 from typing import Any, Callable, Dict, Optional
-from unittest import skip, skipIf, skipUnless
+from unittest import skip, skipIf
 from unittest.mock import Mock, patch
+from parameterized import parameterized
 
 import responses
 from django.contrib.auth.models import User
@@ -15,9 +16,6 @@ from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
-    GCC272SN,
-    MWCC_20_72,
-    MWCC_20_79,
     Compiler,
     GCC281,
     IDO53,
@@ -26,14 +24,15 @@ from coreapp.compilers import (
     MWCPPC_24,
     PBX_GCC3,
 )
+from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64, NDS_ARM9, PS1
-from coreapp.views.scratch import compile_scratch_update_score
+from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
-from .models.scratch import CompilerConfig, Scratch
+from .models.scratch import Assembly, CompilerConfig, Scratch
 
 
 def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
@@ -523,27 +522,35 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    def test_all_compilers(self) -> None:
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers()])  # type: ignore
+    def test_all_compilers(self, compiler: Compiler) -> None:
         """
-        Ensure that we can run a simple compilation for all available compilers
+        Ensure that we can run a simple compilation/diff for all available compilers
         """
-        for compiler in compilers.available_compilers():
-            # TODO get these working
-            if compiler in [GCC272SN]:
-                continue
-            if compiler.platform in [NDS_ARM9, PS1]:
-                continue
+        result = CompilerWrapper.compile_code(
+            compiler,
+            "",
+            "int func(void) { return 5; }",
+            "",
+            "func",
+        )
+        self.assertGreater(
+            len(result.elf_object),
+            0,
+            "The compilation result should be non-null",
+        )
 
-            result = CompilerWrapper.compile_code(
-                compiler,
-                "",
-                "int func(void) { return 5; }",
-                "",
-                "func",
-            )
-            self.assertGreater(
-                len(result.elf_object), 0, "The compilation result should be non-null"
-            )
+        diff = DiffWrapper.diff(
+            Assembly(elf_object=result.elf_object),
+            compiler.platform,
+            "",
+            result.elf_object,
+            allow_target_only=True,
+            diff_flags=[],
+        )
+
+        self.assertTrue("rows" in diff)
+        self.assertGreater(len(diff["rows"]), 0)
 
 
 class DecompilationTests(BaseTestCase):

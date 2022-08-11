@@ -38,6 +38,7 @@ jobs:
           sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
           sudo apt-get install \
+            binutils-aarch64-linux-gnu \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             dos2unix \

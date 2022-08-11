@@ -209,7 +209,7 @@ class DiffWrapper:
 
         if platform == DUMMY:
             # Todo produce diff for dummy
-            return {}
+            return {"rows": ["a", "b"]}
 
         try:
             arch = asm_differ.get_arch(platform.arch or "")
