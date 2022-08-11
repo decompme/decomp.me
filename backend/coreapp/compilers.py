@@ -8,6 +8,7 @@ from django.conf import settings
 
 from coreapp import platforms
 from coreapp.flags import (
+    COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
@@ -21,6 +22,7 @@ from coreapp.platforms import (
     GC_WII,
     MACOS9,
     MACOSX,
+    N3DS,
     N64,
     NDS_ARM9,
     Platform,
@@ -83,6 +85,11 @@ class DummyCompiler(Compiler):
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
+
+
+@dataclass(frozen=True)
+class ArmccCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
 
 
 @dataclass(frozen=True)
@@ -165,6 +172,62 @@ AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
     cc='cc -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+)
+# N3DS
+ARMCC_CC = '${WINE} "${COMPILER_DIR}"/armcc.exe -c --cpu=MPCore --fpmode=fast --apcs=/interwork $COMPILER_FLAGS -o "${OUTPUT}" "${INPUT}"'
+
+ARMCC_40_771 = ArmccCompiler(
+    id="armcc_40_771",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_40_821 = ArmccCompiler(
+    id="armcc_40_821",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_561 = ArmccCompiler(
+    id="armcc_41_561",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_713 = ArmccCompiler(
+    id="armcc_41_713",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_921 = ArmccCompiler(
+    id="armcc_41_921",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1049 = ArmccCompiler(
+    id="armcc_41_1049",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1440 = ArmccCompiler(
+    id="armcc_41_1440",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1454 = ArmccCompiler(
+    id="armcc_41_1454",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_504_82 = ArmccCompiler(
+    id="armcc_504_82",
+    platform=N3DS,
+    cc=ARMCC_CC,
 )
 
 # Switch
@@ -555,12 +618,23 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     # GBA
     AGBCC,
     OLD_AGBCC,
     AGBCCPP,
+    # N3DS
+    ARMCC_40_771,
+    ARMCC_40_821,
+    ARMCC_41_561,
+    ARMCC_41_713,
+    ARMCC_41_921,
+    ARMCC_41_1049,
+    ARMCC_41_1440,
+    ARMCC_41_1454,
+    ARMCC_504_82,
     # Switch
     CLANG_391,
     CLANG_401,
@@ -659,6 +733,12 @@ _all_presets = [
         "Kirby and the Amazing Mirror",
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
+    ),
+    # N3DS
+    Preset(
+        "Ocarina of Time 3D",
+        ARMCC_40_821,
+        "--cpp --arm --split_sections --debug --no_debug_macros --gnu --debug_info=line_inlining_extensions -O3 -Otime --data_reorder --signed_chars --multibyte_chars --remove_unneeded_entities --force_new_nothrow --remarks --no_rtti",
     ),
     # Switch
     Preset(

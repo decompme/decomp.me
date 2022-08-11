@@ -566,6 +566,39 @@ def download_wii_gc():
     set_x(exe_path)
 
 
+def download_3ds():
+    compiler_groups = {
+        "4.0": {
+            "b771": "armcc_40_771",
+            "b821": "armcc_40_821",
+        },
+        "4.1": {
+            "b561": "armcc_41_561",
+            "b713": "armcc_41_713",
+            "b921": "armcc_41_921",
+            "b1049": "armcc_41_1049",
+            "b1440": "armcc_41_1440",
+            "b1454": "armcc_41_1454",
+        },
+        "5.04": {
+            "b82": "armcc_504_82",
+        },
+    }
+    download_zip(
+        url="https://cdn.discordapp.com/attachments/981209507092914236/998569491258679367/armcc.zip",
+    )
+    for group_id, group in compiler_groups.items():
+        for ver, compiler_id in group.items():
+            compiler_dir = COMPILERS_DIR / compiler_id
+            if not compiler_dir.exists():
+                shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
+
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "armcc.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+        shutil.rmtree(COMPILERS_DIR / group_id)
+
+
 def main(args):
     def should_download(platform):
         # assume enabled unless explicitly disabled
@@ -589,6 +622,8 @@ def main(args):
         download_switch()
     if should_download("wii_gc"):
         download_wii_gc()
+    if should_download("n3ds"):
+        download_3ds()
 
     print("Compilers finished downloading!")
 
