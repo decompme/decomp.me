@@ -122,10 +122,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         logger.debug(f"Sandbox Command: {debug_env_str} {shlex.join(command)}")
         return subprocess.run(
             command,
-            capture_output=True,
             text=True,
             env=env,
             cwd=self.path,
             check=True,
             shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
