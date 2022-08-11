@@ -45,7 +45,7 @@ class SubprocessError(Exception):
         error = SubprocessError(f"{ex.cmd[0]} returned {ex.returncode}")
         error.stdout = ex.stdout
         error.stderr = ex.stderr
-        error.msg = ex.stderr
+        error.msg = ex.stdout
         return error
 
 
@@ -77,7 +77,7 @@ class AssemblyError(SubprocessError):
         error = super(AssemblyError, AssemblyError).from_process_error(ex)
 
         error_lines = []
-        for line in ex.stderr.splitlines():
+        for line in ex.stdout.splitlines():
             if "asm.s:" in line:
                 error_lines.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:
