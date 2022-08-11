@@ -125,6 +125,11 @@ class GitHubUser(models.Model):
             gh_user.user = user
             gh_user.github_id = details.id
 
+        # If the Github username has changed, update the site's username to match it
+        if gh_user.user.username != details.login:
+            gh_user.user.username = details.login
+            gh_user.user.save(update_fields=["username"])
+
         gh_user.access_token = access_token
         gh_user.save()
 
