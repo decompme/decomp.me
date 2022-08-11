@@ -186,7 +186,9 @@ class CompilerWrapper:
                 raise CompilationError(str(e))
 
             if not object_path.exists():
-                error_msg = "Compiler did not create an object file: %s" % compile_proc.stdout
+                error_msg = (
+                    "Compiler did not create an object file: %s" % compile_proc.stdout
+                )
                 logging.debug(error_msg)
                 raise CompilationError(error_msg)
 
