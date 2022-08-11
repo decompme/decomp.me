@@ -179,7 +179,7 @@ class CompilerWrapper:
                 if e.stdout:
                     msg = f"{e.stdout}\n{e.stderr}"
                 else:
-                    msg = e.stderr
+                    msg = f"{e.stderr}"
 
                 logging.debug("Compilation failed: %s", msg)
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
@@ -192,7 +192,7 @@ class CompilerWrapper:
                 if compile_proc.stdout:
                     msg = f"{compile_proc.stdout}\n{compile_proc.stderr}"
                 else:
-                    msg = compile_proc.stderr
+                    msg = f"{compile_proc.stderr}"
                 error_msg = "Compiler did not create an object file: %s" % msg
                 logging.debug(error_msg)
                 raise CompilationError(error_msg)
@@ -202,7 +202,7 @@ class CompilerWrapper:
             if not object_bytes:
                 raise CompilationError("Compiler created an empty object file")
 
-            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stderr)
+            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stdout)
 
             return CompilationResult(object_path.read_bytes(), compile_errors)
 
