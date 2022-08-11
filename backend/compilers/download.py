@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import platform
@@ -538,6 +539,8 @@ def download_wii_gc():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
 
             set_x(compiler_dir / "mwcceppc.exe")
+
+            (compiler_dir / "license.dat").touch()
 
         shutil.rmtree(COMPILERS_DIR / group_id)
 
