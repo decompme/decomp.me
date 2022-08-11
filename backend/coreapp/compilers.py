@@ -131,10 +131,13 @@ def available_compilers() -> List[Compiler]:
 
 @cache
 def available_platforms() -> List[Platform]:
-    return sorted(
-        set(compiler.platform for compiler in available_compilers()),
-        key=lambda p: p.name,
-    )
+    pset = set(compiler.platform for compiler in available_compilers())
+
+    # Disable MACOS9 for now, as it's not working properly
+    if MACOS9 in pset:
+        pset.remove(MACOS9)
+
+    return sorted(pset, key=lambda p: p.name)
 
 
 @cache
@@ -247,7 +250,8 @@ GCC263_MIPSEL = GCCPS1Compiler(
     cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
     platform=PS1,
@@ -270,26 +274,6 @@ PSYQ46 = GCCPS1Compiler(
     id="psyq4.6",
     platform=PS1,
     cc=PSYQ_CC,
-)
-
-GCC_PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
-
-GCC272PSYQ = GCCPS1Compiler(
-    id="gcc2.7.2-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC281PSYQ = GCCPS1Compiler(
-    id="gcc2.8.1-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC2952PSYQ = GCCPS1Compiler(
-    id="gcc2.95.2-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
 )
 
 # PS2
@@ -660,9 +644,6 @@ _all_compilers: List[Compiler] = [
     PSYQ41,
     PSYQ43,
     PSYQ46,
-    GCC272PSYQ,
-    GCC281PSYQ,
-    GCC2952PSYQ,
     # PS2
     EE_GCC296,
     # N64
@@ -781,6 +762,11 @@ _all_presets = [
         PSYQ46,
         "-O2",
     ),
+    Preset(
+        "Metal Gear Solid",
+        PSYQ43,
+        "-O2 -G8",
+    ),
     # N64
     Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
@@ -813,7 +799,7 @@ _all_presets = [
     Preset(
         "Pikmin",
         MWCC_233_163E,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
     Preset(
         "Super Smash Bros. Melee",
@@ -833,7 +819,7 @@ _all_presets = [
     Preset(
         "Pikmin 2",
         MWCC_247_107,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8 -common on",
     ),
     Preset(
         "The Thousand-Year Door",

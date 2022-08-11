@@ -15,6 +15,7 @@ env = environ.Env(
     DUMMY_COMPILER=(bool, False),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
+    SANDBOX_DISABLE_PROC=(bool, False),
     SECURE_SSL_REDIRECT=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
@@ -179,6 +180,7 @@ USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
+SANDBOX_DISABLE_PROC = env("SANDBOX_DISABLE_PROC")
 
 GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
