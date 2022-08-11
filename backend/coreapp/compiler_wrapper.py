@@ -176,10 +176,7 @@ class CompilerWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 # Compilation failed
-                if e.stdout:
-                    msg = f"{e.stdout}\n{e.stderr}"
-                else:
-                    msg = f"{e.stderr}"
+                msg = e.stdout
 
                 logging.debug("Compilation failed: %s", msg)
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
@@ -189,11 +186,7 @@ class CompilerWrapper:
                 raise CompilationError(str(e))
 
             if not object_path.exists():
-                if compile_proc.stdout:
-                    msg = f"{compile_proc.stdout}\n{compile_proc.stderr}"
-                else:
-                    msg = f"{compile_proc.stderr}"
-                error_msg = "Compiler did not create an object file: %s" % msg
+                error_msg = "Compiler did not create an object file: %s" % compile_proc.stdout
                 logging.debug(error_msg)
                 raise CompilationError(error_msg)
 
