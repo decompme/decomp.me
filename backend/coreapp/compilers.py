@@ -784,6 +784,7 @@ _all_presets = [
     Preset("Mario Party 1-3", GCC272KMC, "-O1 -mips3"),
     Preset("Paper Mario", GCC281, "-O2 -fforce-addr"),
     Preset("Quest64", IDO53, "-O2 -g3 -mips2"),
+    Preset("Chameleon Twist 1-2", IDO53, "-O2 -mips2", diff_flags=["-Mreg-names=32"],),
     Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
     # GC_WII
     Preset(
