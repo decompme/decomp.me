@@ -775,7 +775,7 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
-        "Chameleon Twist 2,
+        "Chameleon Twist 2",
         IDO53,
         "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
@@ -792,19 +792,19 @@ _all_presets = [
     ),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
     Preset(
-        "Mario Party 1,
+        "Mario Party 1",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
-        "Mario Party 2,
+        "Mario Party 2",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
-        "Mario Party 3,
+        "Mario Party 3",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
