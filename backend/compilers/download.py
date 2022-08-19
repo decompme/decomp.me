@@ -394,6 +394,38 @@ def download_n64():
         )
         set_x(psyq_obj_parser)
 
+    # SN
+    dest = COMPILERS_DIR / "gcc2.8.1sn"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/asn64.exe",
+            log_name="asn64.exe",
+            dest_path=dest / "asn64.exe",
+        )
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/cc1n64.exe",
+            log_name="cc1n64.exe",
+            dest_path=dest / "cc1n64.exe",
+        )
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/cc1pln64.exe",
+            log_name="cc1pln64.exe",
+            dest_path=dest / "cc1pln64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/psyq-obj-parser",
+            log_name="psyq-obj-parser",
+            dest_path=dest / "psyq-obj-parser",
+        )
+        # TODO: upload +x'd version of this
+        psyq_obj_parser = dest / "psyq-obj-parser"
+        psyq_obj_parser.chmod(
+            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+
 
 def download_ps1():
     if host_os != LINUX:
