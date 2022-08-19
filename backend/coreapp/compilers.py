@@ -836,6 +836,11 @@ _all_presets = [
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
     ),
     Preset(
+        "Kirby Air Ride",
+        MWCC_242_81,
+        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
+    ),
+    Preset(
         "Battle for Bikini Bottom",
         MWCC_247_92,
         "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
