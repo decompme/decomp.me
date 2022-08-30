@@ -14,12 +14,12 @@ with open(os.path.join(os.path.dirname(__file__), "pseudonym_data.json")) as f:
 
 def generate_pseudonym() -> str:
     """Generate a pseudonym for an anonymous user.
-    Uses the data from https://github.com/danielvoweb/make-it-name, and a light modification on its generation method.
-    Returns a name of the format "[Adjective] [Name of scientist / author]" (e.g. "Quirky Asimov")
+    Uses the data & method from https://raw.githubusercontent.com/poush/random-animal,
+    returning a name of the form "[Adjective] [Animal]" - e.g. "Adorable Alligator"
     """
     adjective = random.choice(PSEUDONYM_DATA["adjectives"])
-    person = random.choice(PSEUDONYM_DATA["people"])
-    return f"{adjective.capitalize()} {person.capitalize()}"
+    animal = random.choice(PSEUDONYM_DATA["animals"])
+    return f"{adjective} {animal}"
 
 
 class Profile(models.Model):
