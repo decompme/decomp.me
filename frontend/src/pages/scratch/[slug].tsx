@@ -22,7 +22,7 @@ function ScratchPageTitle({ scratch, compilation }: { scratch: api.Scratch, comp
         title += " (unsaved)"
 
     let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
-    if (scratch.owner && !api.isAnonUser(scratch.owner))
+    if (scratch.owner)
         description += `\nOwner: ${scratch.owner.username}`
     if (scratch.description)
         description += `\n\n${scratch.description}`

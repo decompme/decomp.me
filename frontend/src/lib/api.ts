@@ -153,6 +153,7 @@ export interface AnonymousUser {
     is_anonymous: true
     id: number
     is_online: boolean
+    username: string
 }
 
 export interface User {
@@ -161,8 +162,8 @@ export interface User {
     is_anonymous: false
     id: number
     is_online: boolean
-
     username: string
+
     name: string
     avatar_url: string | null
     github_api_url: string | null
