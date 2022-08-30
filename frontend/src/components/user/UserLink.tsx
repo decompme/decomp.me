@@ -21,9 +21,10 @@ export default function UserLink({ user }: Props) {
     const userIsYou = api.useUserIsYou()
 
     if (api.isAnonUser(user)) {
+        const username = api.userHasName(user) ? user.username : "anon"
         return <a className={styles.user}>
             <UserAvatar user={user} />
-            <span>{userIsYou(user) ? "anon (you)" : "anon"}</span>
+            <span>{userIsYou(user) ? `${username} (you)` : username}</span>
         </a>
     } else {
         return <Link href={`/u/${user.username}`}>
