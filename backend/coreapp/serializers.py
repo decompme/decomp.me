@@ -26,7 +26,7 @@ def serialize_profile(
             "is_anonymous": True,
             "id": profile.id,
             "is_online": profile.is_online(),
-            "username": f"{profile.pseudonym} (anon)" if profile.pseudonym else None,
+            "username": f"{profile.pseudonym} (anon)",
         }
     else:
         user = profile.user

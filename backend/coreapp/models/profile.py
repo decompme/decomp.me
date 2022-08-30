@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Optional
 from pathlib import Path
 import json
 import random
@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
-with open(Path(__file__).resolve().parent / "pseudonym_data.json") as f:
+with (Path(__file__).resolve().parent / "pseudonym_data.json").open() as f:
     PSEUDONYM_DATA = json.load(f)
 
 
