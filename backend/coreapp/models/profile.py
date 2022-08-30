@@ -1,5 +1,5 @@
 from typing import Optional, Iterable
-import os
+from pathlib import Path
 import json
 import random
 
@@ -7,9 +7,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
-with open(os.path.join(os.path.dirname(__file__), "pseudonym_data.json")) as f:
+with open(Path(__file__).resolve().parent / "pseudonym_data.json") as f:
     PSEUDONYM_DATA = json.load(f)
-    # Preprocess our psue
 
 
 def generate_pseudonym() -> str:
@@ -31,7 +30,7 @@ class Profile(models.Model):
         related_name="profile",
         null=True,
     )
-    pseudonym = models.CharField(max_length=150, blank=True)
+    pseudonym = models.CharField(max_length=150, default=generate_pseudonym)
 
     def is_anonymous(self) -> bool:
         return self.user is None
@@ -56,18 +55,3 @@ class Profile(models.Model):
 
         # 2 mins
         return delta.total_seconds() < (60 * 2)
-
-    def save(
-        self,
-        force_insert: bool = False,
-        force_update: bool = False,
-        using: Optional[str] = None,
-        update_fields: Optional[Iterable[str]] = None,
-    ) -> None:
-        if not self.user and not self.pseudonym:
-            candidate = generate_pseudonym()
-            while Profile.objects.filter(pseudonym=candidate).exists():
-                candidate = generate_pseudonym()
-            self.pseudonym = candidate
-
-        super(Profile, self).save(force_insert, force_update, using, update_fields)

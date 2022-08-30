@@ -36,7 +36,7 @@ export default function LoginState({ className }: { className?: string }) {
         {...triggerProps}
     >
         {api.isAnonUser(user)
-            ? "Not signed in" + (api.userHasName(user) ? ` - ${user.username}` : "")
+            ? `Not signed in - ${user.username}`
             : (user.avatar_url && <Image
                 className={styles.avatar}
                 src={user.avatar_url}

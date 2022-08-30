@@ -306,10 +306,6 @@ export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
 
-export function userHasName(user: User | AnonymousUser) {
-    return user.username !== null
-}
-
 export function useThisUser(): User | AnonymousUser | undefined {
     const { data: user, error } = useSWR<AnonymousUser | User>("/user", get)
 

@@ -22,7 +22,7 @@ export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScra
     let message = "This function has been matched"
     if (userIsYou(match.owner))
         message += " by you, elsewhere"
-    else if (match.owner && api.userHasName(match.owner))
+    else if (match.owner)
         message += ` by ${match.owner.username}`
 
     return <DismissableBanner>
