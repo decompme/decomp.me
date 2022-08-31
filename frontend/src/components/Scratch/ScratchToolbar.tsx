@@ -8,7 +8,6 @@ import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
 import { useAutoRecompileSetting } from "../../lib/settings"
-import ConfirmModal from "../ConfirmModal"
 import DiscordIcon from "../discord.svg"
 import Frog from "../Nav/frog.svg"
 import LoginState from "../Nav/LoginState"
@@ -136,7 +135,6 @@ export default function ScratchToolbar({
 
     const [isPreferencesOpen, setPreferencesOpen] = useState(false)
     const [isDecompileOpen, setDecompileOpen] = useState(false)
-    const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -191,10 +189,8 @@ export default function ScratchToolbar({
                             Compile
                         </ButtonItem>
                         {scratch.owner && userIsYou(scratch.owner) && <ButtonItem onTrigger={event => {
-                            if (event.shiftKey) {
+                            if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
                                 deleteScratch(scratch)
-                            } else {
-                                setDeleteConfirmOpen(true)
                             }
                         }}>
                             <TrashIcon />
@@ -263,13 +259,6 @@ export default function ScratchToolbar({
                 onClose={() => setDecompileOpen(false)}
                 scratch={scratch}
                 setSourceCode={source_code => setScratch({ source_code })}
-            />
-            <ConfirmModal
-                open={isDeleteConfirmOpen}
-                onConfirm={() => deleteScratch(scratch)}
-                onClose={() => setDeleteConfirmOpen(false)}
-                title="Are you sure you want to delete this scratch?"
-                description="This action cannot be undone."
             />
         </div>
     )
