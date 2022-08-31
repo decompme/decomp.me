@@ -19,6 +19,8 @@ function isMacOS(): boolean {
 
 export type Key = string | SpecialKey
 
+export type ShortcutCallback = (event: KeyboardEvent | MouseEvent) => void | Promise<unknown>
+
 // In sort order (besides Shift on MacOS)
 export enum SpecialKey {
     ALT_OPTION,
@@ -82,7 +84,7 @@ export function translateKeys(keys: Key[]): string {
         .join(getSeparator())
 }
 
-export function useShortcut(keys: Key[], callback: () => void, element?: HTMLElement) {
+export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement) {
     useEffect(() => {
         const el = element || document.body
         const keysDown = new KeyMap()
@@ -126,7 +128,7 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
             event.stopImmediatePropagation()
 
             keysDown.clear()
-            callback()
+            callback(event)
         }
 
         const handleKeyUp = (event: KeyboardEvent) => {

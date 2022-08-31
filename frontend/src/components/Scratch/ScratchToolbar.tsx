@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TrashIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
@@ -36,6 +36,11 @@ function exportScratchZip(scratch: api.Scratch) {
     a.href = url
     a.download = scratch.name + ".zip"
     a.click()
+}
+
+async function deleteScratch(scratch: api.Scratch) {
+    await api.delete_(scratch.url, {})
+    window.history.back()
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -183,6 +188,14 @@ export default function ScratchToolbar({
                             <SyncIcon />
                             Compile
                         </ButtonItem>
+                        {scratch.owner && userIsYou(scratch.owner) && <ButtonItem onTrigger={event => {
+                            if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
+                                deleteScratch(scratch)
+                            }
+                        }}>
+                            <TrashIcon />
+                            Delete scratch
+                        </ButtonItem>}
                         <hr />
                         <ButtonItem onTrigger={() => {
                             plausible("exportScratchZip", { props: { scratch: scratch.html_url } })
