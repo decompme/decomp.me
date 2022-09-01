@@ -1,7 +1,44 @@
 {% extends "base_generic.html" %}
-{% block content %}
-yeah this is the content!
+{% block head %}
 
-{% lorem 20 b random %}
+<meta property="og:title" content="decomp.me">
+<meta property="og:description" content="A collaborative online space where you can contribute to ongoing decompilation projects.">
+
+<style>
+    #index-cta h1 b {
+        font-weight: 600;
+    }
+
+    #index-cta p {
+        max-width: 40ch;
+        padding: 0.6em 0;
+    }
+
+    .index-cta-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0.5em;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+<header id="index-cta" class="bg-alt">
+    <div class="container">
+        <h1>Welcome to <b>decomp.me</b>!</h1>
+        <p>
+            decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects.
+        </p>
+        <div class="index-cta-row">
+            <a class="button" href="/login">
+                Sign in with GitHub
+            </a>
+            <a class="button-primary" href="/new">
+                Start decomping
+            </a>
+        </div>
+    </div>
+</header>
 
 {% endblock %}
