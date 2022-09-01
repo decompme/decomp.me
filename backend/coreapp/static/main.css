@@ -1,0 +1,254 @@
+:root {
+    --font-ui: -apple-system,"BlinkMacSystemFont","Segoe UI","Helvetica","Arial",sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    --gnav-inner-size: 24px;
+    --gnav-padding: 8px;
+    --gnav-breadicon-size: 16px;
+    --gnav-breadicon-margin: 4px;
+    --gnav-bg: #eee;
+    --gnav-border-color: #ccc;
+    --gnav-link: #333;
+    --gnav-link-hover: #000;
+    --avatar-bg: #ddd;
+}
+
+/* RESETS */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+body {
+    line-height: 1.25;
+    position: relative;
+
+    /*scrollbar-color: #fff3 #fff1;
+    scrollbar-width: thin;*/
+
+    font-size: 16px;
+    font-family: var(--font-ui);
+    line-height: 1.5;
+    text-rendering: optimizeQuality;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+/* UTILITY CLASSES */
+
+/* https://css-tricks.com/places-its-tempting-to-use-display-none-but-dont/ */
+.visuallyhidden {
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+}
+
+.avatar {
+    display: inline-block;
+    width: 32px;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background-color: var(--avatar-bg);
+}
+
+/* FORMS */
+
+input[type=search],
+input[type=text] {
+    border-radius: 6px;
+    border: 1px solid var(--gnav-border-color);
+
+    padding: 8px 12px;
+
+    text-overflow: ellipsis;
+}
+
+/* GLOBAL NAVIGATION */
+
+#gnav {
+    user-select: none;
+    padding: var(--gnav-padding);
+    background: var(--gnav-bg);
+}
+
+/* Hide elements when menu is/isn't open */
+#gnav:target .gnav-header-item-menutoggle a[href="#gnav"], /* Open button */
+#gnav:not(:target) .gnav-header-item-menutoggle a[href="#"], /* Close button */
+#gnav:not(:target) .gnav-menu {
+    display: none;
+}
+
+#gnav ul {
+    list-style: none;
+}
+
+.gnav-header {
+    display: grid;
+    height: var(--gnav-inner-size);
+    grid-template-columns: var(--gnav-inner-size) var(--gnav-inner-size) var(--gnav-inner-size);
+    grid-template-areas: "menutoggle sitelogo loginstate";
+    justify-content: space-between;
+}
+
+.gnav-header > li {
+    height: var(--gnav-inner-size);
+}
+
+.gnav-header-item-sitelogo {
+    grid-area: sitelogo;
+}
+
+.gnav-header-item-loginstate {
+    grid-area: loginstate;
+}
+
+.gnav-header-item-menutoggle {
+    grid-area: menutoggle;
+    position: relative; /* .gnav-breadicon */
+}
+
+.gnav-header-item-menutoggle a,
+.gnav-header-item-loginstate a,
+.gnav-header-item-sitelogo a {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.gnav-breadicon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--gnav-breadicon-size);
+    height: var(--gnav-breadicon-size);
+    pointer-events: none;
+}
+
+.gnav-breadicon-top-translate,
+.gnav-breadicon-bottom-translate {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.1s 0.2s ease-out;
+}
+
+.gnav-breadicon-top-rotate,
+.gnav-breadicon-bottom-rotate {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    transform: rotate(0);
+    transition: transform 0.2s 0.0s ease-out;
+}
+
+.gnav-breadicon-top-translate {
+    transform: translateY(calc(var(--gnav-breadicon-margin) * -1));
+}
+
+.gnav-breadicon-bottom-translate {
+    transform: translateY(var(--gnav-breadicon-margin));
+}
+
+#gnav:target .gnav-breadicon-top-translate,
+#gnav:target .gnav-breadicon-bottom-translate {
+    transform: translateY(0);
+    transition-delay: 0.0s;
+}
+
+#gnav:target .gnav-breadicon-top-rotate,
+#gnav:target .gnav-breadicon-bottom-rotate {
+    transition-delay: 0.1s;
+}
+
+#gnav:target .gnav-breadicon-top-rotate {
+    transform: rotate(45deg);
+}
+
+#gnav:target .gnav-breadicon-bottom-rotate {
+    transform: rotate(-45deg);
+}
+
+@media (prefers-reduced-motion) {
+    .gnav-breadicon-top-translate,
+    .gnav-breadicon-bottom-translate
+    .gnav-breadicon-top-rotate,
+    .gnav-breadicon-bottom-rotate {
+        transition: none;
+    }
+}
+
+body:has(#gnav:target) {
+    overflow: hidden;
+}
+
+.gnav-menu {
+    position: absolute;
+    top: calc(var(--gnav-inner-size) + var(--gnav-padding) * 2);
+    left: 0;
+    bottom: 0;
+    width: 100%;
+
+    background: var(--gnav-bg);
+}
+
+.gnav-menu-links,
+.gnav-menu-search {
+    display: block;
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.gnav-menu-links li {
+    padding: calc(1.5 * var(--gnav-padding));
+    border-bottom: 2px solid var(--gnav-border-color);
+}
+
+.gnav-menu-links li:last-child {
+    border-bottom: none;
+}
+
+.gnav-menu-links li a {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    color: var(--gnav-link);
+    transition: color 0.2s ease-out;
+
+    font-weight: 500;
+}
+
+.gnav-menu-links li a:hover {
+    color: var(--gnav-link-hover);
+}
+
+.gnav-menu-search-container {
+    border-bottom: 2px solid var(--gnav-border-color);
+}
+
+.gnav-menu-search {
+    padding: calc(1.5 * var(--gnav-padding));
+}
+
+.gnav-menu-search input {
+    width: 100%;
+}
+
+.gnav-header-item-loginstate .avatar {
+    width: var(--gnav-inner-size);
+}

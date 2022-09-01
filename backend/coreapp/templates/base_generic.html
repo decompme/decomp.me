@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+
+        <link rel="stylesheet" href="{% static 'main.css' %}" />
+
+        <title>{% block title %}decomp.me{% endblock %}</title>
+        <meta name="description" content={description || ""} />
+
+        <meta property="og:site_name" content="decomp.me" />
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        <nav id="gnav" aria-label="Global">
+            <ul class="gnav-header">
+                <li class="gnav-header-item-menutoggle">
+                    <a href="#gnav" role="button">
+                        <span class="visuallyhidden">Open Global Navigation Menu</span>
+                    </a>
+                    <a href="#" role="button">
+                        <span class="visuallyhidden">Close Global Navigation Menu</span>
+                    </a>
+                    <div class="gnav-breadicon" aria-hidden="true">
+                        <span class="gnav-breadicon-top-translate">
+                            <span class="gnav-breadicon-top-rotate"></span>
+                        </span>
+                        <span class="gnav-breadicon-bottom-translate">
+                            <span class="gnav-breadicon-bottom-rotate"></span>
+                        </span>
+                    </div>
+                </li>
+                <li class="gnav-header-item-sitelogo">
+                    <a href="/">
+                        <span class="visuallyhidden">Home</span>
+                        <img src="{% static 'purplefrog.svg' %}" alt="" />
+                    </a>
+                </li>
+                <li class="gnav-header-item-loginstate">
+                    <a href="/login">
+                        <div class="avatar"></div>
+                    </a>
+                </li>
+            </ul>
+            <div class="gnav-menu">
+                <div class="gnav-menu-search-container">
+                    <div class="gnav-menu-search">
+                        <input type="search" placeholder="Search decomp.me" />
+                    </div>
+                </div>
+                <ul class="gnav-menu-links">
+                    <li>
+                        <a href="/login">Sign in</a>
+                    </li>
+                    <li>
+                        <a href="/new">New scratch</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+        <footer>
+            <!-- TODO -->
+        </footer>
+    </body>
+</html>
