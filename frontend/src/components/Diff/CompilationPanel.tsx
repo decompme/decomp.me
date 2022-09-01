@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { ChevronDownIcon } from "@primer/octicons-react"
 import Ansi from "ansi-to-react"
+import classNames from "classnames"
 import * as resizer from "react-simple-resizer"
 
 import * as api from "../../lib/api"
@@ -67,7 +68,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
         </resizer.Section>
         <resizer.Bar
             size={1}
-            className={styles.bar}
+            className={classNames(styles.bar, { [styles.noPointerEvents]: problemState == ProblemState.NO_PROBLEMS })}
             expandInteractiveArea={{ top: 2, bottom: 2 }}
         />
         <resizer.Section

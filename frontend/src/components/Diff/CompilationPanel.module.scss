@@ -41,6 +41,10 @@
     background: var(--a50);
 }
 
+.noPointerEvents {
+    pointer-events: none;
+}
+
 .log {
     flex-grow: 1;
 
