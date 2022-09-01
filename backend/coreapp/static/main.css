@@ -71,6 +71,16 @@ h1 {
     background: #eee;
 }
 
+/* ICONS */
+
+/* Class automatically applied when using {% icon "icon-name" %} */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+}
+
 /* FORMS */
 
 :root {
@@ -127,6 +137,15 @@ input[type=button]:disabled,
 .button-primary[data-disabled] {
     opacity: 0.7;
     pointer-events: none;
+}
+
+button .icon,
+input[type=submit] .icon,
+input[type=button] .icon,
+.button .icon,
+.button-primary .icon {
+    width: 1.2em;
+    height: 1.2em;
 }
 
 /* Ghost button */
