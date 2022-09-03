@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from pathlib import Path
 import json
 import random
@@ -49,6 +49,19 @@ class Profile(models.Model):
         else:
             # No URLs for anonymous profiles
             return None
+
+    def get_frog_color(self) -> Tuple[float, float, float]:
+        """Use the ID of this profile to generate a random color for use in a frog profile picture"""
+        prev_state = random.getstate()
+        random.seed(self.id)
+
+        hue = random.uniform(0, 360)
+        satuation = random.uniform(0.35, 0.65)
+        lightness = random.uniform(0.35, 0.65)
+
+        random.setstate(prev_state)
+
+        return (hue, satuation, lightness)
 
     def is_online(self) -> bool:
         delta = timezone.now() - self.last_request_date

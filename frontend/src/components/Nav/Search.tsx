@@ -13,6 +13,7 @@ import useSWR from "swr"
 import * as api from "../../lib/api"
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
+import AnonymousFrogAvatar from "../user/AnonymousFrog"
 import verticalMenuStyles from "../VerticalMenu.module.scss" // eslint-disable-line css-modules/no-unused-class
 
 import styles from "./Search.module.scss"
@@ -169,13 +170,20 @@ function MountedSearch({ className }: { className?: string }) {
                             <span className={styles.itemName}>
                                 {scratch.name}
                             </span>
-                            {scratch.owner && !api.isAnonUser(scratch.owner) && scratch.owner.avatar_url && <Image
-                                src={scratch.owner.avatar_url}
-                                alt={scratch.owner.username}
-                                width={16}
-                                height={16}
-                                className={styles.scratchOwnerAvatar}
-                            />}
+                            {scratch.owner && (!api.isAnonUser(scratch.owner) ?
+                                scratch.owner.avatar_url && <Image
+                                    src={scratch.owner.avatar_url}
+                                    alt={scratch.owner.username}
+                                    width={16}
+                                    height={16}
+                                    className={styles.scratchOwnerAvatar}
+                                /> :
+                                <AnonymousFrogAvatar
+                                    user={scratch.owner}
+                                    width={16}
+                                    height={16}
+                                    className={styles.scratchOwnerAvatar}
+                                />)}
                         </a>
                     </li>
                 })}
