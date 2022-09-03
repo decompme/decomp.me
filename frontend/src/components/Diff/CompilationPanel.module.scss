@@ -14,36 +14,16 @@
         font-weight: 500;
         color: var(--g1200);
 
-        padding: 0.6rem 0.8rem;
+        padding: 0.8rem;
         margin: 0;
-        height: 36px;
 
         border-bottom: 1px dashed var(--a50);
-
-        position: relative;
-
-        svg {
-            position: absolute;
-            right: 0.8rem;
-        }
-
-        &.bottomPanelClickable {
-            cursor: pointer;
-
-            &:hover {
-                color: var(--g1500);
-            }
-        }
     }
 }
 
 .bar {
     cursor: row-resize;
     background: var(--a50);
-}
-
-.noPointerEvents {
-    pointer-events: none;
 }
 
 .log {
