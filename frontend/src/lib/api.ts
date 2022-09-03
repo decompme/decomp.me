@@ -181,6 +181,8 @@ export interface AnonymousUser {
     id: number
     is_online: boolean
     username: string
+
+    frog_color: [number, number, number]
 }
 
 export interface User {

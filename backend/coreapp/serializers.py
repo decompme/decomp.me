@@ -27,6 +27,7 @@ def serialize_profile(
             "id": profile.id,
             "is_online": profile.is_online(),
             "username": f"{profile.pseudonym} (anon)",
+            "frog_color": profile.get_frog_color(),
         }
     else:
         user = profile.user
