@@ -1471,8 +1471,15 @@ class AsmProcessor:
     def post_process(self, lines: List["Line"]) -> None:
         return
 
+    def is_end_of_function(self, mnemonic: str, args: str) -> bool:
+        return False
+
 
 class AsmProcessorMIPS(AsmProcessor):
+    def __init__(self, config: Config) -> None:
+        super().__init__(config)
+        self.seen_jr_ra = False
+
     def process_reloc(self, row: str, prev: str) -> Tuple[str, Optional[str]]:
         arch = self.config.arch
         if "R_MIPS_NONE" in row or "R_MIPS_JALR" in row:
@@ -1505,6 +1512,13 @@ class AsmProcessorMIPS(AsmProcessor):
         else:
             assert False, f"unknown relocation type '{row}' for line '{prev}'"
         return before + repl + after, repl
+
+    def is_end_of_function(self, mnemonic: str, args: str) -> bool:
+        if self.seen_jr_ra:
+            return True
+        if mnemonic == "jr" and args == "ra":
+            self.seen_jr_ra = True
+        return False
 
 
 class AsmProcessorPPC(AsmProcessor):
@@ -1569,6 +1583,9 @@ class AsmProcessorPPC(AsmProcessor):
             repl = f"{repl}@sda21"
 
         return before + repl + after, repl
+
+    def is_end_of_function(self, mnemonic: str, args: str) -> bool:
+        return mnemonic == "blr"
 
 
 class AsmProcessorARM32(AsmProcessor):
@@ -1706,6 +1723,9 @@ class AsmProcessorI686(AsmProcessor):
 
         return f"{mnemonic}\t{args[:start]+repl+args[end:]}", repl
 
+    def is_end_of_function(self, mnemonic: str, args: str) -> bool:
+        return mnemonic == "ret"
+
 
 @dataclass
 class ArchSettings:
@@ -1719,6 +1739,7 @@ class ArchSettings:
     re_reloc: Pattern[str]
     branch_instructions: Set[str]
     instructions_with_address_immediates: Set[str]
+    jump_instructions: Set[str] = field(default_factory=set)
     forbidden: Set[str] = field(default_factory=lambda: set(string.ascii_letters + "_"))
     arch_flags: List[str] = field(default_factory=list)
     branch_likely_instructions: Set[str] = field(default_factory=set)
@@ -1753,6 +1774,18 @@ MIPS_BRANCH_INSTRUCTIONS = MIPS_BRANCH_LIKELY_INSTRUCTIONS.union(
         "bc1t",
         "bc1f",
     }
+)
+
+MIPS_JUMP_ADDR_INSTRUCTIONS = {
+    "jal",
+    "j",
+}
+MIPS_JUMP_REG_INSTRUCTIONS = {
+    "jalr",
+    "jr",
+}
+MIPS_JUMP_INSTRUCTIONS = set.union(
+    MIPS_JUMP_ADDR_INSTRUCTIONS, MIPS_JUMP_REG_INSTRUCTIONS
 )
 
 ARM32_PREFIXES = {"b", "bl"}
@@ -1918,12 +1951,17 @@ MIPS_SETTINGS = ArchSettings(
     arch_flags=["-m", "mips:4300"],
     branch_likely_instructions=MIPS_BRANCH_LIKELY_INSTRUCTIONS,
     branch_instructions=MIPS_BRANCH_INSTRUCTIONS,
-    instructions_with_address_immediates=MIPS_BRANCH_INSTRUCTIONS.union({"jal", "j"}),
-    delay_slot_instructions=MIPS_BRANCH_INSTRUCTIONS.union({"j", "jal", "jr", "jalr"}),
+    jump_instructions=MIPS_JUMP_INSTRUCTIONS,
+    instructions_with_address_immediates=set.union(
+        MIPS_BRANCH_INSTRUCTIONS, MIPS_JUMP_ADDR_INSTRUCTIONS
+    ),
+    delay_slot_instructions=set.union(MIPS_BRANCH_INSTRUCTIONS, MIPS_JUMP_INSTRUCTIONS),
     proc=AsmProcessorMIPS,
 )
 
 MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
+
+MIPS_ARCH_NAMES = {"mips", "mipsel"}
 
 ARM32_SETTINGS = ArchSettings(
     name="arm32",
@@ -2172,6 +2210,7 @@ def process(dump: str, config: Config) -> List[Line]:
         tabs = row.split("\t")
         line_num = eval_line_num(line_num_str.strip())
 
+        # TODO: use --no-show-raw-insn for all arches
         if arch.name == "i686":
             row = "\t".join(tabs[1:])
         else:
@@ -2232,6 +2271,17 @@ def process(dump: str, config: Config) -> List[Line]:
                 break
             i += 1
 
+        is_text_relative_j = False
+        if (
+            arch.name in MIPS_ARCH_NAMES
+            and mnemonic == "j"
+            and symbol is not None
+            and symbol.startswith(".text")
+        ):
+            symbol = None
+            original = row
+            is_text_relative_j = True
+
         normalized_original = processor.normalize(mnemonic, original)
 
         scorable_line = normalized_original
@@ -2257,7 +2307,7 @@ def process(dump: str, config: Config) -> List[Line]:
             row = normalize_imms(row, arch)
 
         branch_target = None
-        if mnemonic in arch.branch_instructions:
+        if mnemonic in arch.branch_instructions or is_text_relative_j:
             x86_longjmp = re.search(r"\*(.*)\(", args)
             if x86_longjmp:
                 capture = x86_longjmp.group(1)
@@ -2286,18 +2336,8 @@ def process(dump: str, config: Config) -> List[Line]:
         num_instr += 1
         source_lines = []
 
-        if config.stop_at_ret:
-            if config.arch.name == "mips":
-                if mnemonic == "jr" and args == "ra":
-                    stop_after_delay_slot = True
-                elif stop_after_delay_slot:
-                    break
-            if config.arch.name == "ppc":
-                if mnemonic == "blr":
-                    break
-            if config.arch.name == "i686":
-                if mnemonic == "ret":
-                    break
+        if config.stop_at_ret and processor.is_end_of_function(mnemonic, args):
+            break
 
     processor.post_process(output)
     return output
@@ -2341,7 +2381,7 @@ def field_matches_any_symbol(field: str, arch: ArchSettings) -> bool:
 
         return re.fullmatch((r"^@\d+$"), field) is not None
 
-    if arch.name == "mips":
+    if arch.name in MIPS_ARCH_NAMES:
         return "." in field
 
     # Example: ".text+0x34"
