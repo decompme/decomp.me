@@ -35,7 +35,8 @@ function exportScratchZip(scratch: api.Scratch) {
 
 async function deleteScratch(scratch: api.Scratch) {
     await api.delete_(scratch.url, {})
-    window.history.back()
+
+    window.location.href = scratch.project ? `/${scratch.project}` : "/"
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
