@@ -79,7 +79,16 @@ export default function Nav({ children }: Props) {
             </div>
             <ul className={styles.links}>
                 <li>
+                    <Link href="/">Dashboard</Link>
+                </li>
+                <li>
                     <Link href="/new">New scratch</Link>
+                </li>
+                <li>
+                    <Link href="/credits">Credits</Link>
+                </li>
+                <li>
+                    <Link href="/privacy">Privacy policy</Link>
                 </li>
             </ul>
         </div>
