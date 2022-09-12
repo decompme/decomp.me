@@ -10,7 +10,11 @@ import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
 import Search from "./Search"
 
-export default function Nav() {
+export interface Props {
+    children?: React.ReactNode
+}
+
+export default function Nav({ children }: Props) {
     const [isOpen, toggleOpen] = useReducer(isOpen => !isOpen, false)
     const toggleLabel = `${isOpen ? "Close" : "Open"} Global Navigation Menu`
     const router = useRouter()
@@ -38,7 +42,7 @@ export default function Nav() {
         }
     }, [isOpen, router])
 
-    return <nav className={styles.container} aria-labelledby="navtoggle" data-open={isOpen}>
+    return <nav className={styles.container} aria-labelledby="navtoggle" data-open={isOpen} data-force-toggle={!!children}>
         <ul className={styles.header}>
             <li className={styles.headerItemMenuToggle}>
                 <button id="navtoggle" onClick={toggleOpen} aria-label={toggleLabel} aria-expanded={isOpen}>
@@ -48,23 +52,26 @@ export default function Nav() {
             <li className={styles.headerItemSiteLogo}>
                 <Link href="/">
                     <a aria-label="decomp.me">
-                        <Frog width={26} height={26} />
+                        <Frog width={24} height={24} />
                     </a>
                 </Link>
             </li>
             <li className={styles.headerItemLoginState}>
                 <LoginState />
             </li>
-            <li className={styles.desktopLinks}>
-                <ul>
-                    <li>
-                        <Search />
-                    </li>
-                    <li>
-                        <Link href="/new">New scratch</Link>
-                    </li>
-                </ul>
-            </li>
+            {children
+                ? <li className={styles.customchildren}>{children}</li>
+                : <li className={styles.desktopLinks}>
+                    <ul>
+                        <li>
+                            <Search />
+                        </li>
+                        <li>
+                            <Link href="/new">New scratch</Link>
+                        </li>
+                    </ul>
+                </li>
+            }
         </ul>
         <div className={styles.menu}>
             <div className={styles.searchContainer}>

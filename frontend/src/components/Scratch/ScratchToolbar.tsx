@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TrashIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
@@ -8,13 +8,9 @@ import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
 import { useAutoRecompileSetting } from "../../lib/settings"
-import DiscordIcon from "../discord.svg"
-import Frog from "../Nav/frog.svg"
-import LoginState from "../Nav/LoginState"
-import Search from "../Nav/Search"
 import ScratchIcon from "../ScratchIcon"
 import { SpecialKey } from "../Shortcut"
-import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
+import VerticalMenu, { ButtonItem } from "../VerticalMenu"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
@@ -145,20 +141,11 @@ export default function ScratchToolbar({
         <div className={styles.toolbar}>
             <div className={styles.left}>
                 <div className={styles.iconButton} onClick={() => setMenuOpen(!isMenuOpen)} {...triggerProps}>
-                    <Frog width={32} height={32} />
+                    Scratch
                     <TriangleDownIcon />
                 </div>
                 {isMounted && renderLayer(<div {...layerProps}>
                     <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
-                        <LinkItem href="/">
-                            <HomeIcon />
-                            Dashboard
-                        </LinkItem>
-                        <LinkItem href="/new">
-                            <PlusIcon />
-                            New scratch...
-                        </LinkItem>
-                        <hr />
                         <ButtonItem
                             onTrigger={async () => {
                                 setIsSaving(true)
@@ -194,7 +181,7 @@ export default function ScratchToolbar({
                             }
                         }}>
                             <TrashIcon />
-                            Delete scratch
+                            Delete
                         </ButtonItem>}
                         <hr />
                         <ButtonItem onTrigger={() => {
@@ -213,21 +200,8 @@ export default function ScratchToolbar({
                             <GearIcon />
                             Preferences...
                         </ButtonItem>
-                        <hr />
-                        <LinkItem href="https://github.com/decompme/decomp.me">
-                            <MarkGithubIcon />
-                            Contribute to decomp.me
-                        </LinkItem>
-                        <LinkItem href="https://discord.gg/sutqNShRRs">
-                            <DiscordIcon width={16} height={16} />
-                            Join the Discord server
-                        </LinkItem>
-                        <LinkItem href="/credits">
-                            <PeopleIcon /> Credits
-                        </LinkItem>
                     </VerticalMenu>
                 </div>)}
-                <Search className={styles.search} />
             </div>
             <div className={styles.grow} />
             <div className={styles.center}>
@@ -250,7 +224,6 @@ export default function ScratchToolbar({
                     {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
                     {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
                     {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
-                    <LoginState className={styles.loginState} />
                 </>}
             </div>
             <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />

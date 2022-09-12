@@ -60,10 +60,6 @@ $column_width: 260px;
     .center {
         min-width: 0;
     }
-
-    .search {
-        display: none;
-    }
 }
 
 @media (max-width: ($column_width * 2)) {
@@ -146,8 +142,4 @@ $column_width: 260px;
     &:hover {
         opacity: 0.8;
     }
-}
-
-.loginState {
-    flex-shrink: 0;
 }

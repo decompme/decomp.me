@@ -158,7 +158,30 @@ $padding: 8px;
 }
 
 .desktopLinks {
-    display: none;
+    grid-area: desktoplinks;
+
+    font-size: 0.85rem;
+    margin-left: $padding;
+
+    display: flex;
+    align-items: center;
+
+    > ul {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+
+        > li {
+            height: $innerSize;
+
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .container[data-force-toggle="false"] & {
+        display: none;
+    }
 }
 
 // on mobile
@@ -169,38 +192,39 @@ $padding: 8px;
     }
 }
 
-// on desktop
-@media (min-width: 700px) {
-    .header {
-        grid-template-columns: $innerSize auto 1fr;
-        grid-template-areas: "sitelogo desktoplinks loginstate";
-    }
+// has custom children
+.container[data-force-toggle="true"] .header {
+    grid-template-columns: $innerSize 1fr auto;
+    grid-template-areas: "menutoggle customchildren loginstate";
 
-    .headerItemMenuToggle,
-    .menu {
+    .headerItemSiteLogo {
         display: none;
     }
 
-    .desktopLinks {
-        grid-area: desktoplinks;
-
-        font-size: 0.85rem;
-        margin-left: $padding;
+    .customchildren {
+        grid-area: customchildren;
+        justify-self: center;
 
         display: flex;
         align-items: center;
+    }
+}
 
-        > ul {
+@media (min-width: 700px) {
+    // no toggle menu
+    .container[data-force-toggle="false"] {
+        .header {
+            grid-template-columns: $innerSize auto 1fr;
+            grid-template-areas: "sitelogo desktoplinks loginstate";
+        }
+
+        .headerItemMenuToggle,
+        .menu {
+            display: none;
+        }
+
+        .desktopLinks {
             display: flex;
-            align-items: center;
-            gap: 1em;
-
-            > li {
-                height: $innerSize;
-
-                display: flex;
-                align-items: center;
-            }
         }
     }
 }
