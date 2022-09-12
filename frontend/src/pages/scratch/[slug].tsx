@@ -89,6 +89,11 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
     const [isMounted, setIsMounted] = useState(false)
     useEffect(() => {
         setIsMounted(true)
+
+        document.body.classList.add("no-scroll")
+        return () => {
+            document.body.classList.remove("no-scroll")
+        }
     }, [])
     if (!isMounted) {
         return <>

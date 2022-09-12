@@ -210,3 +210,11 @@ main, footer {
 .cm-editor {
     user-select: initial;
 }
+
+body.no-scroll {
+    overflow: hidden;
+
+    #__next {
+        height: 100svh;
+    }
+}

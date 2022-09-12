@@ -55,6 +55,14 @@
 
     display: flex;
     align-items: center;
+
+    // Hide owner on small widths
+    @media (max-width: 800px) {
+        li::before,
+        li:not(:last-child) {
+            display: none !important;
+        }
+    }
 }
 
 .actions {
