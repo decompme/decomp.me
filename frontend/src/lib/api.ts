@@ -623,3 +623,20 @@ export function usePaginated<T>(url: string): {
         loadPrevious,
     }
 }
+
+export interface Stats {
+    asm_count: number
+    scratch_count: number
+    github_user_count: number
+    profile_count: number
+}
+
+export function useStats(): Stats | undefined {
+    const { data, error } = useSWR<Stats>("/stats", get)
+
+    if (error) {
+        throw error
+    }
+
+    return data
+}

@@ -42,6 +42,7 @@ function ProjectList() {
 
 export default function IndexPage() {
     const user = api.useThisUser()
+    const stats = api.useStats()
     const plausible = usePlausible()
 
     const yourScratchesUrl = (!user || api.isAnonUser(user))
@@ -62,6 +63,12 @@ export default function IndexPage() {
                     <p>
                         {DECOMP_ME_DESCRIPTION}
                     </p>
+                    {stats && <p>
+                        {stats.scratch_count.toLocaleString()} scratches created<br />
+                        {stats.profile_count.toLocaleString()} unique visitors<br />
+                        {stats.github_user_count.toLocaleString()} users signed up<br />
+                        {stats.asm_count.toLocaleString()} asm globs submitted
+                    </p>}
                     <div className={styles.cta}>
                         {user?.is_anonymous && <GitHubLoginButton popup />}
                         <Link href="/new">
