@@ -5,11 +5,11 @@ import { tags } from "@lezer/highlight"
 
 const ivory = "#abb2bf",
     darkBackground = "#21252b",
-    highlightBackground = "rgba(255, 255, 255, 0.05)",
-    background = "#121415",
+    highlightBackground = "var(--a50)",
+    background = "var(--g200)",
     tooltipBackground = "#353a42",
-    selection = "rgba(255, 255, 255, 0.1)",
-    cursor = "#ffffff"
+    selection = "var(--a100)",
+    cursor = "var(--g2000)"
 
 // TODO move to css
 export const materialPalenightTheme = EditorView.theme(

@@ -34,10 +34,11 @@
 
 .primary {
     background: var(--accent);
-    color: var(--g2000);
-    border-color: var(--a200);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
 
     &:not(:disabled):hover {
-        border-color: var(--a600);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.3);
     }
 }

@@ -19,7 +19,13 @@
     @for $i from 1 through 40 {
         $multiplier: 2.5%;
 
-        --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
+        @if color.blackness($bg) > 50% {
+            // Dark
+            --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), ($i - 1) * $multiplier)};
+        } @else {
+            // Light
+            --g#{$i * 50}: #{hsl(color.hue($bg), color.saturation($bg), 100% - ($i - 1) * $multiplier)};
+        }
     }
 
     $peak: 0;

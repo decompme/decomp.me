@@ -6,64 +6,76 @@
     --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-.themePlum {
+.cm-content {
+    color: #647a97;
+
+    cursor: text;
+}
+
+.cm-gutters,
+.cm-content {
+    font-size: var(--cm-font-size, 0.8rem);
+    font-family: var(--monospace);
+    line-height: 1.5;
+}
+
+.cmt-propertyName,
+.cmt-variableName {
+    color: #8599b3;
+}
+
+.cmt-function {
+    color: #ff4a98;
+}
+
+.cmt-punctuation {
+    color: #656f7e;
+}
+
+.cmt-operator {
+    color: #7f83ff;
+}
+
+.cmt-comment {
+    color: #465173;
+}
+
+.cmt-number,
+.cmt-bool {
+    color: #0afafa;
+}
+
+.cmt-string {
+    color: #face0a;
+}
+
+.cmt-typeName {
+    color: #45b8ff;
+}
+
+.cmt-keyword {
+    color: #7f83ff;
+}
+
+.cmt-meta,
+.cmt-character {
+    color: #3bff6c;
+}
+
+.theme-auto {
     @include theme.theme(#951fd9, #292f33);
 
-    .cm-content {
-        color: #647a97;
-
-        cursor: text;
+    @media (prefers-color-scheme: light) {
+        @include theme.theme(#951fd9, #ffffff);
     }
+}
 
-    .cm-gutters,
-    .cm-content {
-        font-size: var(--cm-font-size, 0.8rem);
-        font-family: var(--monospace);
-        line-height: 1.5;
-    }
+.theme-dark {
+    @include theme.theme(#951fd9, #292f33);
+}
 
-    .cmt-propertyName,
-    .cmt-variableName {
-        color: #8599b3;
-    }
-
-    .cmt-function {
-        color: #ff4a98;
-    }
-
-    .cmt-punctuation {
-        color: #656f7e;
-    }
-
-    .cmt-operator {
-        color: #7f83ff;
-    }
-
-    .cmt-comment {
-        color: #465173;
-    }
-
-    .cmt-number,
-    .cmt-bool {
-        color: #0afafa;
-    }
-
-    .cmt-string {
-        color: #face0a;
-    }
-
-    .cmt-typeName {
-        color: #45b8ff;
-    }
-
-    .cmt-keyword {
-        color: #7f83ff;
-    }
-
-    .cmt-meta,
-    .cmt-character {
-        color: #3bff6c;
-    }
+.theme-light {
+    @include theme.theme(#951fd9, #ffffff);
 }
 
 .cm-panel {

@@ -4,7 +4,7 @@ $padding: 6px;
     color: var(--g1700);
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--a100);
     border-radius: 6px;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 
@@ -19,6 +19,20 @@ $padding: 6px;
 
     @supports not (backdrop-filter: blur(10px)) {
         background: var(--g100);
+    }
+
+    :global(.theme-light) & {
+        background: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--a200);
+    }
+
+    :global(.theme-auto) & {
+        @media (prefers-color-scheme: light) {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--a200);
+        }
     }
 }
 
@@ -66,7 +80,7 @@ a.item {
             color: var(--g1900);
 
             &::before {
-                background: rgba(255, 255, 255, 0.1);
+                background: var(--a100);
             }
         }
 
@@ -74,7 +88,7 @@ a.item {
             color: var(--g2000);
 
             &::before {
-                background: rgba(255, 255, 255, 0.05);
+                background: var(--a50);
             }
         }
 
