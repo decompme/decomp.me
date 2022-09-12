@@ -444,7 +444,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
-        scratch.diff_flags.join(",") === saved.diff_flags.join(",") &&
+        JSON.stringify(scratch.diff_flags) === JSON.stringify(saved.diff_flags) &&
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
