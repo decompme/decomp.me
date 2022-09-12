@@ -4,3 +4,43 @@
     width: 100%;
     height: 100%;
 }
+
+.context {
+    display: flex;
+    flex-direction: column;
+}
+
+.editor {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+    height: 100%;
+
+    :global(.cm-editor) {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+
+    :global(.cm-scroller) {
+        overflow: auto;
+    }
+}
+
+.diffTab {
+    display: flex;
+    overflow: hidden;
+}
+
+.about {
+    padding: 16px;
+    overflow: auto;
+}
+
+.compilerOptsTab {
+    overflow: auto;
+}
+
+.compilerOptsContainer {
+    min-width: 400px;
+}
