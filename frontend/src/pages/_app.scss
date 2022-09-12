@@ -124,7 +124,6 @@ html {
     font-family: var(--font-ui);
     line-height: 1.5;
     text-rendering: optimizeQuality;
-    overflow: hidden;
 }
 
 *,
@@ -147,7 +146,6 @@ body {
     color: var(--a800);
 
     line-height: 1.25;
-    overflow-x: hidden;
     user-select: none;
     position: relative;
 
