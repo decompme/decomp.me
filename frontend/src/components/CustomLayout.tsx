@@ -64,7 +64,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
 
             els.push(<resizer.Section
                 key={child.key}
-                defaultSize={child.size}
+                defaultSize={child.size} // FIXME: this doesn't work?
                 onSizeChanged={size => setChild({ ...child, size })}
                 minSize={100}
                 style={{
