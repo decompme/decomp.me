@@ -85,7 +85,10 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
                     key={child.key + "__bar"}
                     size={1}
                     expandInteractiveArea={{ left: 2, right: 2 }}
-                    style={{ background: "var(--g500)" }}
+                    style={{
+                        background: "var(--g500)",
+                        zIndex: 1,
+                    }}
                 />)
             }
         }

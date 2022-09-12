@@ -44,6 +44,9 @@ $padding: 8px;
 
     display: flex;
     justify-content: flex-end;
+
+    padding-left: 12px;
+    padding-right: 2px;
 }
 
 .headerItemSiteLogo {
@@ -192,8 +195,12 @@ $padding: 8px;
     }
 }
 
+.customchildren {
+    display: none;
+}
+
 // has custom children
-.container[data-force-toggle="true"] .header {
+.container[data-force-toggle="true"][data-open="false"] .header {
     grid-template-columns: $innerSize 1fr auto;
     grid-template-areas: "menutoggle customchildren loginstate";
 
@@ -207,6 +214,7 @@ $padding: 8px;
 
         display: flex;
         align-items: center;
+        width: 100%;
     }
 }
 

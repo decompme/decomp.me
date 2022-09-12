@@ -84,7 +84,7 @@ export function translateKeys(keys: Key[]): string {
         .join(getSeparator())
 }
 
-export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement) {
+export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement): string | undefined {
     useEffect(() => {
         const el = element || document.body
         const keysDown = new KeyMap()
@@ -153,6 +153,12 @@ export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: H
             el.removeEventListener("blur", handleBlur)
         }
     }, [callback, element, keys])
+
+    if (!keys || keys.length === 0) {
+        return undefined
+    } else {
+        return translateKeys(keys)
+    }
 }
 
 export default function Shortcut({ keys, className }: { keys: Key[], className?: string }) {

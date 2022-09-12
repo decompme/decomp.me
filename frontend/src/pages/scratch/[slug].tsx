@@ -6,7 +6,6 @@ import useSWR from "swr"
 //import { useDebouncedCallback } from "use-debounce"
 
 import LoadingSpinner from "../../components/loading.svg"
-import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import { getScoreText } from "../../components/ScoreBadge"
 import Scratch from "../../components/Scratch"
@@ -101,7 +100,6 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
 
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
-        <Nav />
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch

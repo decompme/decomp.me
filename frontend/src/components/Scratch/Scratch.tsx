@@ -36,47 +36,6 @@ const CODEMIRROR_EXTENSIONS = [
 function getDefaultLayout(width: number, height: number): Layout {
     let key = 0
 
-    // Wide desktop (3 columns)
-    if (width > 1400) {
-        return {
-            key: key++,
-            kind: "horizontal",
-            size: 100,
-            children: [
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 20,
-                    activeTab: TabId.ABOUT,
-                    tabs: [
-                        TabId.ABOUT,
-                        TabId.OPTIONS,
-                    ],
-                },
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 40,
-                    activeTab: TabId.SOURCE_CODE,
-                    tabs: [
-                        TabId.SOURCE_CODE,
-                        TabId.CONTEXT,
-                        TabId.OPTIONS,
-                    ],
-                },
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 40,
-                    activeTab: TabId.DIFF,
-                    tabs: [
-                        TabId.DIFF,
-                    ],
-                },
-            ],
-        }
-    }
-
     // Desktop (2 columns)
     if (width > 700) {
         return {
@@ -88,7 +47,7 @@ function getDefaultLayout(width: number, height: number): Layout {
                     key: key++,
                     kind: "pane",
                     size: 50,
-                    activeTab: TabId.DIFF,
+                    activeTab: TabId.SOURCE_CODE,
                     tabs: [
                         TabId.ABOUT,
                         TabId.SOURCE_CODE,
@@ -149,9 +108,9 @@ function getDefaultLayout(width: number, height: number): Layout {
         activeTab: TabId.DIFF,
         tabs: [
             TabId.ABOUT,
-            TabId.DIFF,
             TabId.SOURCE_CODE,
             TabId.CONTEXT,
+            TabId.DIFF,
             TabId.OPTIONS,
         ],
     }
@@ -278,6 +237,7 @@ export default function Scratch({
             scratch={scratch}
             setScratch={setScratch}
         />
+        <hr />
         {layout && <CustomLayout
             layout={layout}
             onChange={setLayout}
