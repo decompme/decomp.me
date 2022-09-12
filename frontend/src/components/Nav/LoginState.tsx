@@ -35,7 +35,7 @@ export default function LoginState({ className }: { className?: string }) {
         return <GitHubLoginButton popup label="Sign in" />
     }
 
-    return <div
+    return <button
         className={classNames(styles.user, className)}
         onClick={() => setUserMenuOpen(!isUserMenuOpen)}
         {...triggerProps}
@@ -54,5 +54,5 @@ export default function LoginState({ className }: { className?: string }) {
                 <UserMenu />
             </VerticalMenu>}
         </div>)}
-    </div>
+    </button>
 }

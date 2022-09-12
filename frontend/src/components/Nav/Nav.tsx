@@ -47,8 +47,8 @@ export default function Nav() {
             </li>
             <li className={styles.headerItemSiteLogo}>
                 <Link href="/">
-                    <a>
-                        <Frog width={24} height={24} />
+                    <a aria-label="decomp.me">
+                        <Frog width={26} height={26} />
                     </a>
                 </Link>
             </li>

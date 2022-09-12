@@ -98,30 +98,32 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                 ]} />
             </div>
         </header>
-        <main className={styles.container}>
+        <main>
             <ErrorBoundary>
-                <section className={styles.attempts}>
-                    <h2>
-                        <span>Attempts</span>
-                        <AsyncButton onClick={start} primary={!userAttempt}>
-                            New attempt
-                            <ArrowRightIcon />
-                        </AsyncButton>
-                        {userAttempt && <Link href={userAttempt.html_url}>
-                            <a>
-                                <Button primary>
-                                    Continue your attempt
-                                    <ArrowRightIcon />
-                                </Button>
-                            </a>
-                        </Link>}
-                    </h2>
-                    {attempts.length === 0 ? <div className={styles.noAttempts}>
-                        No attempts yet {"</3"}
-                    </div> : <ul>
-                        {attempts.map(scratch => <ScratchItem key={scratch.url} scratch={scratch} />)}
-                    </ul>}
-                </section>
+                <div className={styles.container}>
+                    <section className={styles.attempts}>
+                        <h2>
+                            <span>Attempts</span>
+                            <AsyncButton onClick={start} primary={!userAttempt}>
+                                New attempt
+                                <ArrowRightIcon />
+                            </AsyncButton>
+                            {userAttempt && <Link href={userAttempt.html_url}>
+                                <a>
+                                    <Button primary>
+                                        Continue your attempt
+                                        <ArrowRightIcon />
+                                    </Button>
+                                </a>
+                            </Link>}
+                        </h2>
+                        {attempts.length === 0 ? <div className={styles.noAttempts}>
+                            No attempts yet
+                        </div> : <ul>
+                            {attempts.map(scratch => <ScratchItem key={scratch.url} scratch={scratch} />)}
+                        </ul>}
+                    </section>
+                </div>
             </ErrorBoundary>
         </main>
         <Footer />

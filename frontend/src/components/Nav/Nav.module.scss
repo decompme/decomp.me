@@ -4,7 +4,7 @@ $padding: 8px;
 .container {
     width: 100%;
     user-select: none;
-    background: var(--g400);
+    background: var(--g300);
 
     ul {
         list-style: none;
@@ -112,7 +112,7 @@ $padding: 8px;
 
     overflow: auto;
 
-    background: var(--g400);
+    background: var(--g300);
 
     .container[data-open="false"] & {
         display: none;

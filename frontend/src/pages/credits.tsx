@@ -84,87 +84,89 @@ export default function CreditsPage({ maintainers, contributors }: {
 }) {
     return <>
         <Nav />
-        <main className={styles.container}>
-            <h1 className={styles.heading}>
-                Credits
-            </h1>
+        <main>
+            <div className={styles.container}>
+                <h1 className={styles.heading}>
+                    Credits
+                </h1>
 
-            <p>
-                decomp.me is developed by <Contributor contributor={maintainers[0]} /> and <Contributor contributor={maintainers[1]} />.
-            </p>
+                <p>
+                    decomp.me is developed by <Contributor contributor={maintainers[0]} /> and <Contributor contributor={maintainers[1]} />.
+                </p>
 
-            <div>
-                <h3 className={styles.subheading}>
-                    Contributors
-                </h3>
-                <ul className={styles.contributors}>
-                    {contributors.map(contributor => {
-                        return <li key={contributor.type === "decompme" ? contributor.user.username : contributor.user.login}>
-                            <Contributor contributor={contributor} />
+                <div>
+                    <h3 className={styles.subheading}>
+                        Contributors
+                    </h3>
+                    <ul className={styles.contributors}>
+                        {contributors.map(contributor => {
+                            return <li key={contributor.type === "decompme" ? contributor.user.username : contributor.user.login}>
+                                <Contributor contributor={contributor} />
+                            </li>
+                        })}
+                    </ul>
+                </div>
+
+                <hr className={styles.rule} />
+
+                <div>
+                    <h3 className={styles.subheading}>
+                        Projects
+                    </h3>
+                    <ul>
+                        <li>
+                            <Link href="https://github.com/simonlindholm/asm-differ">
+                                <a>simonlindholm/asm-differ</a>
+                            </Link>
                         </li>
-                    })}
-                </ul>
-            </div>
+                        <li>
+                            <Link href="https://github.com/matt-kempster/m2c">
+                                <a>matt-kempster/m2c</a>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
 
-            <hr className={styles.rule} />
+                <hr className={styles.rule} />
 
-            <div>
-                <h3 className={styles.subheading}>
-                    Projects
-                </h3>
-                <ul>
-                    <li>
-                        <Link href="https://github.com/simonlindholm/asm-differ">
-                            <a>simonlindholm/asm-differ</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://github.com/matt-kempster/m2c">
-                            <a>matt-kempster/m2c</a>
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-
-            <hr className={styles.rule} />
-
-            <div>
-                <h3 className={styles.subheading}>
-                    Icons
-                </h3>
-                <ul>
-                    <li>Octicons by GitHub</li>
-                    <li>
-                        <Link href="https://github.com/file-icons/icons">
-                            <a>file-icons/icons</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://github.com/coreui/coreui-icons">
-                            <a>coreui/coreui-icons</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059">
-                            <a>New Fontendo 23DSi Lite XL</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://thenounproject.com/icon/gameboy-advanced-752507/">
-                            <a>GBA SVG by Andrew Vester from NounProject.com</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://commons.wikimedia.org/wiki/File:Happy_Mac.svg">
-                            <a>Happy Mac by NiloGlock</a>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg">
-                            <a>Tiger-like-x by Althepal</a>
-                        </Link>
-                    </li>
-                </ul>
+                <div>
+                    <h3 className={styles.subheading}>
+                        Icons
+                    </h3>
+                    <ul>
+                        <li>Octicons by GitHub</li>
+                        <li>
+                            <Link href="https://github.com/file-icons/icons">
+                                <a>file-icons/icons</a>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://github.com/coreui/coreui-icons">
+                                <a>coreui/coreui-icons</a>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059">
+                                <a>New Fontendo 23DSi Lite XL</a>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://thenounproject.com/icon/gameboy-advanced-752507/">
+                                <a>GBA SVG by Andrew Vester from NounProject.com</a>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://commons.wikimedia.org/wiki/File:Happy_Mac.svg">
+                                <a>Happy Mac by NiloGlock</a>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg">
+                                <a>Tiger-like-x by Althepal</a>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </main>
         <Footer />

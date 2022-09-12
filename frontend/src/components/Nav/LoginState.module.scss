@@ -4,6 +4,11 @@
     display: flex;
     align-items: center;
     gap: 1px;
+    padding: 0 2px;
+
+    // Override <button>
+    background: none;
+    border: none;
 }
 
 .avatar {
