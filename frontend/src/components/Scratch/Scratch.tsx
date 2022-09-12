@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useReducer, useRef, useState } from "react"
 
 import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
@@ -138,6 +138,12 @@ export default function Scratch({
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
     const sourceEditor = useRef<EditorView>()
     const contextEditor = useRef<EditorView>()
+    const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
+
+    // If the slug changes, refresh code editors
+    useEffect(() => {
+        incrementValueVersion()
+    }, [scratch.slug])
 
     const renderTab = (id: string) => {
         switch (id) {
@@ -159,6 +165,7 @@ export default function Scratch({
                     viewRef={sourceEditor}
                     className={styles.editor}
                     value={scratch.source_code}
+                    valueVersion={valueVersion}
                     onChange={value => {
                         setScratch({ source_code: value })
                     }}
@@ -179,6 +186,7 @@ export default function Scratch({
                     viewRef={contextEditor}
                     className={styles.editor}
                     value={scratch.context}
+                    valueVersion={valueVersion}
                     onChange={value => {
                         setScratch({ context: value })
                     }}
@@ -236,6 +244,7 @@ export default function Scratch({
             isCompiling={isCompiling}
             scratch={scratch}
             setScratch={setScratch}
+            incrementValueVersion={incrementValueVersion}
         />
         <hr />
         {layout && <CustomLayout

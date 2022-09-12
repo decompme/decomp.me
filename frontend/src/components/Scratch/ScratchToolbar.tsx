@@ -107,10 +107,11 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
+    incrementValueVersion: () => void
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch,
+    isCompiling, compile, scratch, setScratch, incrementValueVersion,
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
@@ -162,7 +163,10 @@ export default function ScratchToolbar({
                     open={isDecompileOpen}
                     onClose={() => setDecompileOpen(false)}
                     scratch={scratch}
-                    setSourceCode={source_code => setScratch({ source_code })}
+                    setSourceCode={source_code => {
+                        setScratch({ source_code })
+                        incrementValueVersion()
+                    }}
                 />
             </div>
         </Nav>
