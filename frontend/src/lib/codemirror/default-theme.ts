@@ -6,7 +6,7 @@ import { tags } from "@lezer/highlight"
 const ivory = "#abb2bf",
     darkBackground = "#21252b",
     highlightBackground = "var(--a50)",
-    background = "var(--g200)",
+    background = "var(--g100)",
     tooltipBackground = "#353a42",
     selection = "var(--a100)",
     cursor = "var(--g2000)"
