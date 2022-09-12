@@ -55,6 +55,16 @@ export default function Nav() {
             <li className={styles.headerItemLoginState}>
                 <LoginState />
             </li>
+            <li className={styles.desktopLinks}>
+                <ul>
+                    <li>
+                        <Search />
+                    </li>
+                    <li>
+                        <Link href="/new">New scratch</Link>
+                    </li>
+                </ul>
+            </li>
         </ul>
         <div className={styles.menu}>
             <div className={styles.searchContainer}>
