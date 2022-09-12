@@ -1,51 +1,63 @@
-.nav {
-    flex: 0;
+$innerSize: 32px;
+$padding: 8px;
+
+.container {
     width: 100%;
-
     user-select: none;
-
-    display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 0.5em;
-
-    padding: 4px;
-
     background: var(--g400);
-    //border-bottom: 1px solid var(--g600);
 
-    font-size: 90%;
-    font-weight: 600;
-
-    @media screen and (min-height: 800px) {
-        padding: 8px;
+    ul {
+        list-style: none;
     }
 }
 
-.item {
+.header {
+    height: $innerSize;
+    padding: $padding;
+    box-sizing: content-box;
+
+    display: grid;
+    grid-template-columns: 1fr $innerSize 1fr;
+    grid-template-areas: "menutoggle sitelogo loginstate";
+    justify-content: space-between;
+
+    & > li {
+        height: $innerSize;
+    }
+}
+
+.headerItemMenuToggle {
+    grid-area: menutoggle;
+
+    & > button {
+        width: $innerSize;
+        height: $innerSize;
+        border: none;
+        background: transparent;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+}
+
+.headerItemLoginState {
+    grid-area: loginstate;
+
     display: flex;
-    align-items: center;
-
-    padding: 0 8px;
-
-    opacity: 1;
-
-    &:hover {
-        opacity: 0.8;
-    }
+    justify-content: flex-end;
 }
 
-.logo {
-    @extend .item;
+.headerItemSiteLogo {
+    grid-area: sitelogo;
 
-    margin: 0;
-    padding: 0 4px;
+    a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-    svg {
-        pointer-events: none;
+        width: 100%;
+        height: 100%;
     }
 
-    /* Frog blinks when you load the page or stop hovering */
     &:not(:hover) {
         @keyframes blink {
             0% {
@@ -88,16 +100,63 @@
     }
 }
 
-.grow {
-    flex: 1;
+.menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    z-index: 100;
+
+    width: 100%;
+    height: calc(100vh - $innerSize - 16px);
+
+    overflow: auto;
+
+    background: var(--g400);
+
+    .container[data-open="false"] & {
+        display: none;
+        visibility: hidden;
+    }
+}
+
+body:has(.container[data-open="true"]) {
+    // Disable scrolling
+    overflow: hidden;
+}
+
+.searchContainer {
+    padding: $padding;
+    border-bottom: 1px solid var(--g500);
 }
 
 .search {
-    flex-basis: 25%;
-    min-width: 200px;
-    max-width: 300px;
+    width: 100%;
 }
 
-.right {
-    justify-self: flex-end;
+.links {
+    padding: 0 $padding;
+
+    > li {
+        padding: 1.5 * $padding;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid var(--g500);
+        }
+
+        a {
+            display: block;
+            width: 100%;
+            height: 100%;
+
+            color: var(--g1800);
+            transition: color 0.2s ease-out;
+
+            font-weight: 400;
+
+            &:hover {
+                color: var(--g2000);
+            }
+        }
+    }
 }

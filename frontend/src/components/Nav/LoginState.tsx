@@ -7,6 +7,7 @@ import classNames from "classnames"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
+import GitHubLoginButton from "../GitHubLoginButton"
 import VerticalMenu from "../VerticalMenu"
 
 import styles from "./LoginState.module.scss"
@@ -30,22 +31,23 @@ export default function LoginState({ className }: { className?: string }) {
         return <div />
     }
 
+    if (api.isAnonUser(user)) {
+        return <GitHubLoginButton popup label="Sign in" />
+    }
+
     return <div
         className={classNames(styles.user, className)}
         onClick={() => setUserMenuOpen(!isUserMenuOpen)}
         {...triggerProps}
     >
-        {api.isAnonUser(user)
-            ? `Not signed in - ${user.username}`
-            : (user.avatar_url && <Image
-                className={styles.avatar}
-                src={user.avatar_url}
-                alt="Avatar"
-                width={24}
-                height={24}
-                priority
-            />)
-        }
+        <Image
+            className={styles.avatar}
+            src={user.avatar_url}
+            alt="Avatar"
+            width={24}
+            height={24}
+            priority
+        />
         <TriangleDownIcon />
         {renderLayer(<div {...layerProps}>
             {isUserMenuOpen && <VerticalMenu open={isUserMenuOpen} setOpen={setUserMenuOpen}>
