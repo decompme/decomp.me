@@ -41,6 +41,7 @@
         "Furry",
         "Fuzzy",
         "Gizzard",
+        "Grey",
         "Grumpy",
         "Hairy",
         "Heavy",
@@ -85,7 +86,8 @@
         "Tiny",
         "Vicious",
         "Warm",
-        "Wild"
+        "Wild",
+        "Yellow"
     ],
     "animals": [
         "Aardvark",
@@ -242,6 +244,7 @@
         "Peafowl",
         "Pelican",
         "Penguin",
+        "Perch",
         "Pheasant",
         "Pig",
         "Pigeon",
@@ -277,6 +280,7 @@
         "Skunk",
         "Snail",
         "Snake",
+        "Sole",
         "Sparrow",
         "Spider",
         "Spoonbill",
