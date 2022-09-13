@@ -8,6 +8,7 @@ import classNames from "classnames"
 
 import CodeColorSchemePicker from "../../components/CodeColorSchemePicker"
 import CodeMirror from "../../components/Editor/CodeMirror"
+import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 import NumberInput from "../../components/NumberInput"
 import PageTitle from "../../components/PageTitle"
@@ -268,5 +269,6 @@ export default function SettingsPage() {
                 </div>
             </div>
         </main>
+        <Footer />
     </>
 }
