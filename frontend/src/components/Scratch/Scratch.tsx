@@ -28,81 +28,65 @@ enum TabId {
     DIFF = "scratch_diff",
 }
 
-const CODEMIRROR_EXTENSIONS = [
-    basicSetup,
-    cpp(),
-]
-
-function getDefaultLayout(width: number, height: number): Layout {
-    let key = 0
-
-    // Desktop (2 columns)
-    if (width > 700) {
-        return {
-            key: key++,
-            kind: "horizontal",
-            size: 100,
-            children: [
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 50,
-                    activeTab: TabId.SOURCE_CODE,
-                    tabs: [
-                        TabId.ABOUT,
-                        TabId.SOURCE_CODE,
-                        TabId.CONTEXT,
-                        TabId.OPTIONS,
-                    ],
-                },
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 50,
-                    activeTab: TabId.DIFF,
-                    tabs: [
-                        TabId.DIFF,
-                    ],
-                },
-            ],
-        }
-    }
-
-    // Mobile (2 rows)
-    if (height > 500) {
-        return {
-            key: key++,
-            kind: "vertical",
-            size: 100,
-            children: [
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 50,
-                    activeTab: TabId.DIFF,
-                    tabs: [
-                        TabId.ABOUT,
-                        TabId.DIFF,
-                    ],
-                },
-                {
-                    key: key++,
-                    kind: "pane",
-                    size: 50,
-                    activeTab: TabId.SOURCE_CODE,
-                    tabs: [
-                        TabId.SOURCE_CODE,
-                        TabId.CONTEXT,
-                        TabId.OPTIONS,
-                    ],
-                },
-            ],
-        }
-    }
-
-    // Compact (no splits)
-    return {
-        key: key++,
+const DEFAULT_LAYOUTS = {
+    desktop_2col: {
+        key: 0,
+        kind: "horizontal",
+        size: 100,
+        children: [
+            {
+                key: 1,
+                kind: "pane",
+                size: 50,
+                activeTab: TabId.SOURCE_CODE,
+                tabs: [
+                    TabId.ABOUT,
+                    TabId.SOURCE_CODE,
+                    TabId.CONTEXT,
+                    TabId.OPTIONS,
+                ],
+            },
+            {
+                key: 2,
+                kind: "pane",
+                size: 50,
+                activeTab: TabId.DIFF,
+                tabs: [
+                    TabId.DIFF,
+                ],
+            },
+        ],
+    },
+    mobile_2row: {
+        key: 0,
+        kind: "vertical",
+        size: 100,
+        children: [
+            {
+                key: 1,
+                kind: "pane",
+                size: 50,
+                activeTab: TabId.DIFF,
+                tabs: [
+                    TabId.ABOUT,
+                    TabId.DIFF,
+                ],
+            },
+            {
+                key: 2,
+                kind: "pane",
+                size: 50,
+                activeTab: TabId.SOURCE_CODE,
+                tabs: [
+                    TabId.SOURCE_CODE,
+                    TabId.CONTEXT,
+                    TabId.OPTIONS,
+                ],
+            },
+        ],
+    },
+    compact: {
+        key: 0,
         kind: "pane",
         size: 100,
         activeTab: TabId.DIFF,
@@ -113,7 +97,24 @@ function getDefaultLayout(width: number, height: number): Layout {
             TabId.DIFF,
             TabId.OPTIONS,
         ],
+    },
+}
+
+const CODEMIRROR_EXTENSIONS = [
+    basicSetup,
+    cpp(),
+]
+
+function getDefaultLayout(width: number, height: number): keyof typeof DEFAULT_LAYOUTS {
+    if (width > 700) {
+        return "desktop_2col"
     }
+
+    if (height > 500) {
+        return "mobile_2row"
+    }
+
+    return "compact"
 }
 
 export type Props = {
@@ -129,6 +130,7 @@ export default function Scratch({
 }: Props) {
     const container = useSize<HTMLDivElement>()
     const [layout, setLayout] = useState(undefined)
+    const [layoutName, setLayoutName] = useState<keyof typeof DEFAULT_LAYOUTS>(undefined)
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
@@ -231,8 +233,13 @@ export default function Scratch({
         }
     }
 
-    if (!layout && container.width) {
-        setLayout(getDefaultLayout(container.width, container.height))
+    if (container.width) {
+        const preferredLayout = getDefaultLayout(container.width, container.height)
+
+        if (layoutName != preferredLayout) {
+            setLayoutName(preferredLayout)
+            setLayout(DEFAULT_LAYOUTS[preferredLayout])
+        }
     }
 
     return <div ref={container.ref} className={styles.container}>
