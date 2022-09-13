@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 
-const isMacOS = typeof window !== "undefined" && window.navigator.userAgent.includes("Mac OS X")
+import { isMacOS } from "../lib/device"
 
 export type Key = string | SpecialKey
+
+export type ShortcutCallback = (event: KeyboardEvent | MouseEvent) => void | Promise<unknown>
 
 // In sort order (besides Shift on MacOS)
 export enum SpecialKey {
@@ -32,11 +34,11 @@ export class KeyMap extends Map<Key, boolean> {
 export function translateKey(key: Key): string {
     switch (key) {
     case SpecialKey.CTRL_COMMAND:
-        return isMacOS ? "⌘" : "Ctrl"
+        return isMacOS() ? "⌘" : "Ctrl"
     case SpecialKey.ALT_OPTION:
-        return isMacOS ? "⌥" : "Alt"
+        return isMacOS() ? "⌥" : "Alt"
     case SpecialKey.SHIFT:
-        return isMacOS ? "⇧" : "Shift"
+        return isMacOS() ? "⇧" : "Shift"
     default:
         return key.toLocaleUpperCase()
     }
@@ -45,13 +47,13 @@ export function translateKey(key: Key): string {
 export function getSeparator(): string {
     const THIN_SPACE = " "
 
-    return isMacOS ? THIN_SPACE : "+"
+    return isMacOS() ? THIN_SPACE : "+"
 }
 
 export function translateKeys(keys: Key[]): string {
     return keys
         .sort((a, b) => {
-            if (isMacOS && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
+            if (isMacOS() && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
                 return a === SpecialKey.SHIFT ? -1 : 1 // Shift comes first on MacOS
             } else if (typeof a === "string" && typeof b === "string") {
                 return a.localeCompare(b) // Sort alphabetically
@@ -67,7 +69,7 @@ export function translateKeys(keys: Key[]): string {
         .join(getSeparator())
 }
 
-export function useShortcut(keys: Key[], callback: () => void, element?: HTMLElement) {
+export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement): string | undefined {
     useEffect(() => {
         const el = element || document.body
         const keysDown = new KeyMap()
@@ -91,7 +93,7 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
 
                 switch (key) {
                 case SpecialKey.CTRL_COMMAND:
-                    if (isMacOS ? metaKey : ctrlKey)
+                    if (isMacOS() ? metaKey : ctrlKey)
                         continue
                     break
                 case SpecialKey.ALT_OPTION:
@@ -111,7 +113,7 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
             event.stopImmediatePropagation()
 
             keysDown.clear()
-            callback()
+            callback(event)
         }
 
         const handleKeyUp = (event: KeyboardEvent) => {
@@ -136,6 +138,12 @@ export function useShortcut(keys: Key[], callback: () => void, element?: HTMLEle
             el.removeEventListener("blur", handleBlur)
         }
     }, [callback, element, keys])
+
+    if (!keys || keys.length === 0) {
+        return undefined
+    } else {
+        return translateKeys(keys)
+    }
 }
 
 export default function Shortcut({ keys, className }: { keys: Key[], className?: string }) {

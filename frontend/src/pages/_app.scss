@@ -3,6 +3,7 @@
 :root {
     --link: #3db8e9;
     --monospace: "Menlo", "Monaco", monospace;
+    --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 .themePlum {
@@ -120,10 +121,9 @@
 
 html {
     font-size: 16px;
-    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+    font-family: var(--font-ui);
     line-height: 1.5;
     text-rendering: optimizeQuality;
-    overflow: hidden;
 }
 
 *,
@@ -142,16 +142,12 @@ html {
 }
 
 body {
-    background: var(--g200);
+    background: var(--g300);
     color: var(--a800);
 
     line-height: 1.25;
-    overflow-x: hidden;
     user-select: none;
     position: relative;
-
-    scrollbar-color: #fff3 #fff1;
-    scrollbar-width: thin;
 }
 
 html,
@@ -159,23 +155,28 @@ body {
     height: 100%;
 }
 
-::-webkit-scrollbar {
-    background-color: transparent;
-    width: 0.6rem;
-    height: 0.6rem;
-}
+body:not(.device-macos) {
+    scrollbar-color: #fff3 #fff1;
+    scrollbar-width: thin;
 
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-    background-color: #fff1;
-}
+    ::-webkit-scrollbar {
+        background-color: transparent;
+        width: 0.6rem;
+        height: 0.6rem;
+    }
 
-::-webkit-scrollbar-thumb {
-    background-color: #fff3;
-}
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background-color: #fff1;
+    }
 
-::-webkit-scrollbar-button {
-    display: none;
+    ::-webkit-scrollbar-thumb {
+        background-color: #fff3;
+    }
+
+    ::-webkit-scrollbar-button {
+        display: none;
+    }
 }
 
 #__next {
@@ -183,7 +184,7 @@ body {
     flex-direction: column;
     align-items: center;
     height: 100vh;
-    overflow-x: hidden;
+    //overflow-x: hidden;
     position: relative; // squashes react-laag warning
 }
 
@@ -196,6 +197,10 @@ main {
     width: 100%;
 }
 
+main, footer {
+    background: var(--g200);
+}
+
 ::selection {
     background: var(--a100);
 }
@@ -206,4 +211,12 @@ main {
 
 .cm-editor {
     user-select: initial;
+}
+
+body.no-scroll {
+    overflow: hidden;
+
+    #__next {
+        height: 100svh;
+    }
 }

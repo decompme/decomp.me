@@ -21,7 +21,7 @@ class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.data if len(self.data) < 20 else self.data[:17] + "..."
 
 
@@ -38,6 +38,7 @@ class CompilerConfig(models.Model):
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+    diff_flags = models.JSONField(default=list)
 
 
 class Scratch(models.Model):
@@ -53,11 +54,14 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
+    diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
     preset = models.CharField(max_length=100, blank=True, null=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    diff_label = models.CharField(max_length=512, blank=True, null=True)
+    diff_label = models.CharField(
+        max_length=512, blank=True
+    )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
@@ -70,11 +74,11 @@ class Scratch(models.Model):
         ordering = ["-creation_time"]
         verbose_name_plural = "Scratches"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.slug
 
     # hash for etagging
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
     def get_url(self) -> str:

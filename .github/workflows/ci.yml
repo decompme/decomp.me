@@ -1,0 +1,181 @@
+name: PR
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  full_test_and_build:
+    name: full test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - run: cd backend && poetry install
+      - name: Install dependencies
+        run: |-
+          sudo dpkg --add-architecture i386
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update -qq
+          sudo apt-get install -yqq --allow-downgrades libgd3/focal libpcre2-8-0/focal libpcre2-16-0/focal libpcre2-32-0/focal libpcre2-posix2/focal
+          sudo apt-get purge -yqq libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
+
+          sudo apt-get install \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+          sudo apt-get install \
+            binutils-aarch64-linux-gnu \
+            binutils-mips-linux-gnu \
+            binutils-powerpc-linux-gnu \
+            dos2unix \
+            libprotobuf-dev \
+            libnl-route-3-dev \
+            protobuf-compiler \
+            wine
+      - name: Install nsjail
+        run: |-
+          git clone --recursive --branch=3.1 https://github.com/google/nsjail
+          make -C nsjail
+          sudo cp nsjail/nsjail /usr/bin/
+      - name: Download compilers
+        run: |-
+          cd backend
+          poetry run python3 compilers/download.py
+      - name: Install dkp dependencies (ppc)
+        run: |-
+          mkdir -p bin
+          docker run \
+            -v $(pwd)/bin:/tmp/bin \
+            --entrypoint /bin/sh \
+            devkitpro/devkitppc:20210726 \
+            -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
+          sudo mv bin/powerpc* /usr/bin/
+      - name: Install dkp dependencies (arm)
+        run: |-
+          mkdir -p bin
+          docker run \
+            -v $(pwd)/bin:/tmp/bin \
+            --entrypoint /bin/sh \
+            devkitpro/devkitarm:20210726 \
+            -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
+          sudo mv bin/arm* /usr/bin/
+      - name: Install wibo
+        run: |-
+          wget https://github.com/decompals/WiBo/releases/download/0.2.4/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+      - name: Run backend tests
+        run: |-
+          mkdir -p "${WINEPREFIX}"
+          wineboot --init
+          cd backend
+          poetry run python3 manage.py test
+        env:
+          SYSTEM_ENV: GITHUB_WORKFLOW
+          WINEPREFIX: /tmp/wine
+
+      - name: Migrate backend
+        run: cd backend && poetry run python3 ./manage.py migrate
+
+      - name: Start backend
+        run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
+
+      - name: Install frontend dependencies
+        run: cd frontend && yarn
+
+      - name: Build frontend
+        run: cd frontend && yarn build
+
+  backend_test_windows:
+    name: backend tests (windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        run: pip install --user poetry
+      - run: cd backend && poetry install
+      - name: Run tests
+        run: |-
+          cd backend
+          poetry run python manage.py test
+        env:
+          SYSTEM_ENV: GITHUB_WORKFLOW
+
+  backend_test_docker:
+    name: backend tests (docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build decompme_backend image
+        run: |-
+          docker build backend \
+            -t decompme_backend \
+            --build-arg ENABLE_WII_GC_SUPPORT=YES \
+            --build-arg ENABLE_PS1_SUPPORT=YES
+      - name: Run tests
+        run: |-
+          mkdir -p sandbox && chmod 777 sandbox
+          mkdir -p local_files && chmod 777 local_files
+          docker run \
+            -v $(pwd):/decomp.me \
+            -v $(pwd)/local_files:/local_files \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/compilers \
+            -e WINEPREFIX=/tmp/wine \
+            -e LOCAL_FILE_DIR=/local_files \
+            decompme_backend -c 'cd /decomp.me/backend && \
+            poetry install && \
+            poetry run python manage.py test'
+
+  reviewdog:
+    name: reviewdog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: reviewdog/action-setup@v1
+      - run: cd frontend && yarn
+      - run: reviewdog -reporter=github-check
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - run: |-
+          cd backend
+          poetry install
+          poetry run mypy
+  black:
+    name: black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+        with:
+          src: "./backend"

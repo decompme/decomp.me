@@ -72,6 +72,8 @@
 
         padding: 0 1em;
 
+        cursor: default;
+
         &.highlight {
             background-color: rgba(255, 255, 255, 0.05);
 
@@ -128,3 +130,12 @@
 .rotation6 { color: lightcyan; }
 .rotation7 { color: lightgreen; }
 .rotation8 { color: grey; }
+
+.highlighted {
+    color: white;
+    background-color: #aa8b00;
+}
+
+.highlightable {
+    cursor: pointer;
+}

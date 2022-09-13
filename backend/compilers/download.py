@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import platform
@@ -161,6 +162,96 @@ def download_zip(
             f.extract(member=file, path=dest_path)
 
 
+def set_x(file: Path) -> None:
+    file.chmod(file.stat().st_mode | stat.S_IEXEC)
+
+
+def download_ppc_darwin():
+    if host_os != LINUX:
+        print("MAC OS X cross compiler unsupported on " + host_os.name)
+        return
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370.tar.gz",
+        dest_name="gcc-5370",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        dl_name="gcc-5370-cpp.tar.gz",
+        dest_name="gcc-5370-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        dl_name="gcc-5026.tar.gz",
+        dest_name="gcc-5026",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        dl_name="gcc-5026-cpp.tar.gz",
+        dest_name="gcc-5026-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363.tar.gz",
+        dest_name="gcc-5363",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        dl_name="gcc-5363-cpp.tar.gz",
+        dest_name="gcc-5363-cpp",
+    )
+    download_tar(
+        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
+        dl_name="gcc3-1041.tar.gz",
+        dest_name="gcc3-1041",
+    )
+    download_file(
+        url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/d7c6fc639310b938fa519e68a8f8d4909acba2ad/convert_gas_syntax.py",
+        log_name="convert_gas_syntax.py",
+        dest_path=DOWNLOAD_CACHE / "convert_gas_syntax.py",
+    )
+    for compiler in [
+        "gcc-5370",
+        "gcc-5370-cpp",
+        "gcc-5026",
+        "gcc-5026-cpp",
+        "gcc-5363",
+        "gcc-5363-cpp",
+        "gcc3-1041",
+    ]:
+        shutil.copy(
+            DOWNLOAD_CACHE / "convert_gas_syntax.py",
+            COMPILERS_DIR / compiler / "convert_gas_syntax.py",
+        )
+
+
+def download_codewarrior():
+    download_zip(
+        url="https://github.com/simdecomp/sims1_mac_decomp/files/8766562/MWCPPC_COMPILERS.zip",
+        dl_name="codewarrior_compilers.zip",
+        dest_name="codewarrior",
+        create_subdir=True,
+    )
+    compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
+    for ver in ["Pro5", "Pro6"]:
+        lowercase_lmgr = compiler_dir / ver / "lmgr326b.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR326B.dll")
+
+        lowercase_lmgr = compiler_dir / ver / "lmgr8c.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR8C.dll")
+
+        set_x(compiler_dir / ver / "MWCPPC.exe")
+        set_x(compiler_dir / ver / "MWLinkPPC.exe")
+
+    try:
+        shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
+        shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
+    except shutil.Error:
+        pass
+
+
 def download_gba():
     if host_os != LINUX:
         print("agbcc unsupported on " + host_os.name)
@@ -275,7 +366,65 @@ def download_n64():
                 url=f"https://github.com/ethteck/ido-static-recomp/releases/download/master/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
                 dest_name=f"ido{version}",
             )
-    pass
+    # SN
+    dest = COMPILERS_DIR / "gcc2.7.2sn"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/asn64.exe",
+            log_name="asn64.exe",
+            dest_path=dest / "asn64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/cc1n64.exe",
+            log_name="cc1n64.exe",
+            dest_path=dest / "cc1n64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/psyq-obj-parser",
+            log_name="psyq-obj-parser",
+            dest_path=dest / "psyq-obj-parser",
+        )
+        # TODO: upload +x'd version of this
+        psyq_obj_parser = dest / "psyq-obj-parser"
+        psyq_obj_parser.chmod(
+            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+        set_x(psyq_obj_parser)
+
+    # SN
+    dest = COMPILERS_DIR / "gcc2.8.1sn"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/asn64.exe",
+            log_name="asn64.exe",
+            dest_path=dest / "asn64.exe",
+        )
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/cc1n64.exe",
+            log_name="cc1n64.exe",
+            dest_path=dest / "cc1n64.exe",
+        )
+        download_file(
+            url="https://github.com/marijnvdwerf/sn64/releases/download/1%2C0%2C0%2C2/cc1pln64.exe",
+            log_name="cc1pln64.exe",
+            dest_path=dest / "cc1pln64.exe",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/psyq-obj-parser",
+            log_name="psyq-obj-parser",
+            dest_path=dest / "psyq-obj-parser",
+        )
+        # TODO: upload +x'd version of this
+        psyq_obj_parser = dest / "psyq-obj-parser"
+        psyq_obj_parser.chmod(
+            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
 
 
 def download_ps1():
@@ -314,33 +463,11 @@ def download_ps1():
 
         # +x exes
         for file in dest.glob("*.exe"):
-            file.chmod(file.stat().st_mode | stat.S_IEXEC)
+            set_x(file)
         for file in dest.glob("*.EXE"):
-            file.chmod(file.stat().st_mode | stat.S_IEXEC)
+            set_x(file)
 
     shutil.rmtree(compilers_path)
-
-    binutils_name = "binutils-2.25.1-psyq"
-    download_tar(
-        "https://github.com/mkst/esa/releases/download/binutils-2.251/binutils-2.25.1.tar.gz",
-        dest_name=binutils_name,
-        create_subdir=True,
-    )
-    as_path = COMPILERS_DIR / binutils_name / "usr" / "local" / "bin" / "mips-elf-as"
-
-    # psyq flavours of gcc
-    for pysq_ver, gcc_ver in psyq_to_gcc.items():
-        dest = COMPILERS_DIR / f"gcc{gcc_ver}-psyq"
-        dest.mkdir(exist_ok=True)
-        exe_name = "CC1PSX.EXE"
-        shutil.copy(COMPILERS_DIR / f"psyq{pysq_ver}" / exe_name, dest / exe_name)
-        shutil.copy(as_path, dest / "mips-elf-as")
-
-        # +x exes
-        for file in dest.glob("*.EXE"):
-            file.chmod(file.stat().st_mode | stat.S_IEXEC)
-
-    shutil.rmtree(COMPILERS_DIR / binutils_name)
 
 
 def download_nds():
@@ -391,9 +518,12 @@ def download_nds():
 
             shutil.copy(license_path, compiler_dir / "license.dat")
 
-            # Set +x to allow WSL without wine
-            exe_path = compiler_dir / "mwccarm.exe"
-            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+            # Rename dll to uppercase
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
+            set_x(compiler_dir / "mwccarm.exe")
 
     shutil.rmtree(COMPILERS_DIR / "mwccarm")
 
@@ -436,9 +566,13 @@ def download_wii_gc():
             if lowercase_lmgr.exists():
                 shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
 
-            # Set +x to allow WSL without wine
-            exe_path = compiler_dir / "mwcceppc.exe"
-            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+            lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+            if lowercase_lmgr.exists():
+                shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
+            set_x(compiler_dir / "mwcceppc.exe")
+
+            (compiler_dir / "license.dat").touch()
 
         shutil.rmtree(COMPILERS_DIR / group_id)
 
@@ -453,6 +587,52 @@ def download_wii_gc():
         dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
     )
 
+    # copy contents of _142 to _127 to prepare for patched version
+    if not os.path.exists(COMPILERS_DIR / "mwcc_42_127"):
+        shutil.copytree(COMPILERS_DIR / "mwcc_42_142", COMPILERS_DIR / "mwcc_42_127")
+        os.remove(COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe")
+
+    exe_path = COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe"
+    download_file(
+        url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
+        log_name="mwcc_42_127",
+        dest_path=exe_path,
+    )
+    set_x(exe_path)
+
+
+def download_3ds():
+    compiler_groups = {
+        "4.0": {
+            "b771": "armcc_40_771",
+            "b821": "armcc_40_821",
+        },
+        "4.1": {
+            "b561": "armcc_41_561",
+            "b713": "armcc_41_713",
+            "b921": "armcc_41_921",
+            "b1049": "armcc_41_1049",
+            "b1440": "armcc_41_1440",
+            "b1454": "armcc_41_1454",
+        },
+        "5.04": {
+            "b82": "armcc_504_82",
+        },
+    }
+    download_zip(
+        url="https://cdn.discordapp.com/attachments/981209507092914236/998569491258679367/armcc.zip",
+    )
+    for group_id, group in compiler_groups.items():
+        for ver, compiler_id in group.items():
+            compiler_dir = COMPILERS_DIR / compiler_id
+            if not compiler_dir.exists():
+                shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
+
+            # Set +x to allow WSL without wine
+            exe_path = compiler_dir / "armcc.exe"
+            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+        shutil.rmtree(COMPILERS_DIR / group_id)
+
 
 def main(args):
     def should_download(platform):
@@ -463,6 +643,10 @@ def main(args):
 
     if should_download("gba"):
         download_gba()
+    if should_download("macosx"):
+        download_ppc_darwin()
+    if should_download("macos9"):
+        download_codewarrior()
     if should_download("n64"):
         download_n64()
     if should_download("nds"):
@@ -473,6 +657,8 @@ def main(args):
         download_switch()
     if should_download("wii_gc"):
         download_wii_gc()
+    if should_download("n3ds"):
+        download_3ds()
 
     print("Compilers finished downloading!")
 

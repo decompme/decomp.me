@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 8.471 10.961" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-5.309 -4.3002)">
+  <g transform="matrix(.06455 0 0 .06455 7.6051 7.0901)">
+   <path d="m-30.938 99.788h122v26.804h-122z" stroke-width="2.3841"/>
+   <g transform="translate(-56.456 -31.41)">
+    <path d="m33.669 136.75v4.7h31.951v-4.7zm41.74 4.7v4.7h11.146v-4.7zm15.743 4.7v6.2999h11.319v-6.2999z" fill="#555"/>
+    <path d="m65.619 136.75v4.7h20.935v4.7h15.916v6.2999h20.86v-6.2999h-15.874v-4.7h-16.304v-4.7z" fill="#444"/>
+    <path d="m91.152 136.75v4.7h16.304v4.7h15.874v6.2999h16.038v-15.7z" fill="#222"/>
+    <path d="m33.669 141.45v4.7h41.74v-4.7zm41.74 4.7v6.2999h15.743v-6.2999z" fill="#777"/>
+    <path d="m33.669 146.15h41.74v6.3h-41.74z" fill="#888"/>
+   </g>
+   <path d="m-30.97-37.12h122.03v136.91h-122.03z" fill="#ccc" stroke-width=".26458"/>
+   <path d="m-15.076-21.041h90.061v67.75h-90.061z" fill="#ccf" stroke-width=".26458"/>
+   <path transform="scale(.26458)" d="m102.17-23.402v83.285h-19.025v18.896h36.902v-102.18z" stroke-width=".93719"/>
+   <path d="m-30.97-43.22h122.03v6.1h-122.03z" stroke-width="1.1375"/>
+   <path d="m-15.076-27.141h90.061v6.1h-90.061z" fill="#444" stroke-width=".97719"/>
+   <path transform="rotate(90)" d="m-21.041 15.076h67.75v6.1h-67.75z" fill="#444" stroke-width=".84755"/>
+   <path transform="rotate(90)" d="m-21.041-81.085h67.75v6.1h-67.75z" fill="#fff" stroke-width=".84755"/>
+   <path d="m-15.076 46.709h90.061v6.1h-90.061z" fill="#fff" stroke-width=".97719"/>
+   <path d="m31.656 73.813h43.4v5h-43.4z" stroke-width=".26445"/>
+   <path d="m31.656 78.813h43.4v6h-43.4z" fill="#fff" stroke-width=".28969"/>
+   <path d="m-21.133 73.786h11.06v5h-11.06z" fill="#0b0" stroke-width=".1335"/>
+   <path d="m-21.133 78.786h11.06v6h-11.06z" fill="#d00" stroke-width=".14624"/>
+   <g>
+    <path d="m5.8799-6.192h5v11.2h-5z" stroke-width=".26576"/>
+    <path d="m47.88-6.192h6.1v11.2h-6.1z" stroke-width=".29355"/>
+    <path d="m10.887 25.947h5v6h-5z" stroke-width=".19452"/>
+    <path d="m38.15 25.945h4.75v6.0028h-4.75z" stroke-width=".18964"/>
+    <path d="m15.887 31.947h22.263v5.011h-22.263z" stroke-width="11.121"/>
+    <path transform="rotate(90)" d="m-37.12 30.97h136.91v4.6h-136.91z" stroke-width="1.0463"/>
+    <path transform="rotate(90)" d="m-37.12-95.662h136.91v4.6h-136.91z" stroke-width="1.0463"/>
+   </g>
+  </g>
+ </g>
+</svg>

@@ -141,6 +141,33 @@ export async function patch(url: string, json: Json) {
     return JSON.parse(text)
 }
 
+export async function delete_(url: string, json: Json) {
+    url = getURL(url)
+
+    const body: string = JSON.stringify(json)
+
+    console.info("DELETE", url, JSON.parse(body))
+
+    const response = await fetch(url, {
+        ...commonOpts,
+        method: "DELETE",
+        body,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+
+    if (!response.ok) {
+        throw new ResponseError(response, await response.json())
+    }
+
+    if (response.status == 204) { // No Content
+        return null
+    } else {
+        return await response.json()
+    }
+}
+
 export interface Page<T> {
     next: string | null
     previous: string | null
@@ -153,6 +180,9 @@ export interface AnonymousUser {
     is_anonymous: true
     id: number
     is_online: boolean
+    username: string
+
+    frog_color: [number, number, number]
 }
 
 export interface User {
@@ -161,8 +191,8 @@ export interface User {
     is_anonymous: false
     id: number
     is_online: boolean
-
     username: string
+
     name: string
     avatar_url: string | null
     github_api_url: string | null
@@ -174,6 +204,7 @@ export interface TerseScratch {
     html_url: string
     slug: string
     owner: AnonymousUser | User | null // null = unclaimed
+    parent: string | null
     name: string
     creation_time: string
     last_updated: string
@@ -188,11 +219,11 @@ export interface TerseScratch {
 export interface Scratch extends TerseScratch {
     description: string
     compiler_flags: string
+    diff_flags: string[]
     preset: string
     source_code: string
     context: string
     diff_label: string
-    parent: string | null
 }
 
 export interface Project {
@@ -270,7 +301,7 @@ export type DiffText = {
     key?: string
 }
 
-export type CompilerFlag = {
+export type Flag = {
     type: "checkbox"
     id: string
     flag: string
@@ -284,11 +315,13 @@ export type CompilerPreset = {
     name: string
     flags: string
     compiler: string
+    diff_flags: string[]
 }
 
 export type Compiler = {
     platform: string
-    flags: CompilerFlag[]
+    flags: Flag[]
+    diff_flags: Flag[]
 }
 
 export type Platform = {
@@ -353,6 +386,8 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
             compiler_flags: undefinedIfUnchanged(savedScratch, localScratch, "compiler_flags"),
+            diff_flags: undefinedIfUnchanged(savedScratch, localScratch, "diff_flags"),
+            diff_label: undefinedIfUnchanged(savedScratch, localScratch, "diff_label"),
             preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
@@ -409,6 +444,8 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
+        JSON.stringify(scratch.diff_flags) === JSON.stringify(saved.diff_flags) &&
+        scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
     )
@@ -441,6 +478,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
             compiler_flags: scratch.compiler_flags,
+            diff_flags: scratch.diff_flags,
+            diff_label: scratch.diff_label,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
@@ -489,7 +528,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         autoRecompile,
 
         // fields passed to compilations
-        scratch.compiler, scratch.compiler_flags,
+        scratch.compiler,
+        scratch.compiler_flags, scratch.diff_flags, scratch.diff_label,
         scratch.source_code, scratch.context,
     ])
 
@@ -582,4 +622,23 @@ export function usePaginated<T>(url: string): {
         loadNext,
         loadPrevious,
     }
+}
+
+export interface Stats {
+    asm_count: number
+    scratch_count: number
+    github_user_count: number
+    profile_count: number
+}
+
+export function useStats(): Stats | undefined {
+    const { data, error } = useSWR<Stats>("/stats", get, {
+        refreshInterval: 5000,
+    })
+
+    if (error) {
+        throw error
+    }
+
+    return data
 }

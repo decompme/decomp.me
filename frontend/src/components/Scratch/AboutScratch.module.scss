@@ -38,6 +38,10 @@
         width: 100px;
         flex-shrink: 0;
     }
+
+    a:hover {
+        color: var(--link);
+    }
 }
 
 .scratchLinkContainer {

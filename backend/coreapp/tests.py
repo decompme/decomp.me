@@ -1,9 +1,10 @@
 import tempfile
 from dataclasses import dataclass
 from time import sleep
-from typing import Optional
-from unittest import skip, skipIf, skipUnless
+from typing import Any, Callable, Dict, Optional
+from unittest import skip, skipIf
 from unittest.mock import Mock, patch
+from parameterized import parameterized
 
 import responses
 from django.contrib.auth.models import User
@@ -15,18 +16,27 @@ from rest_framework.test import APITestCase
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
-from coreapp.compilers import Compiler, GCC281, IDO53, IDO71, MWCC_247_92
+from coreapp.compilers import (
+    Compiler,
+    GCC281,
+    IDO53,
+    IDO71,
+    MWCC_247_92,
+    MWCPPC_24,
+    PBX_GCC3,
+)
+from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64
-from coreapp.views.scratch import compile_scratch_update_score
+from coreapp.platforms import N64, NDS_ARM9, PS1
+from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
-from .models.scratch import CompilerConfig, Scratch
+from .models.scratch import Assembly, CompilerConfig, Scratch
 
 
-def requiresCompiler(*compilers: Compiler):
+def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
     for c in compilers:
         if not c.available():
             return skip(f"Compiler {c.id} not available")
@@ -35,7 +45,7 @@ def requiresCompiler(*compilers: Compiler):
 
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
-    def create_scratch(self, partial: dict[str, str]) -> Scratch:
+    def create_scratch(self, partial: Dict[str, str]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         scratch = Scratch.objects.get(slug=response.json()["slug"])
@@ -54,7 +64,7 @@ class BaseTestCase(APITestCase):
 
 class ScratchCreationTests(BaseTestCase):
     @requiresCompiler(IDO71)
-    def test_accept_late_rodata(self):
+    def test_accept_late_rodata(self) -> None:
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
@@ -74,7 +84,7 @@ nop""",
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO53)
-    def test_n64_func(self):
+    def test_n64_func(self) -> None:
         """
         Ensure that functions with t6/t7 registers can be assembled.
         """
@@ -95,7 +105,7 @@ sb  $t6, %lo(D_801D702C)($at)
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO71)
-    def test_fpr_reg_names(self):
+    def test_fpr_reg_names(self) -> None:
         """
         Ensure that functions with O32 register names can be assembled.
         """
@@ -120,7 +130,7 @@ nop
         }
         self.create_scratch(scratch_dict)
 
-    def test_dummy_platform(self):
+    def test_dummy_platform(self) -> None:
         """
         Ensure that we can create scratches with the dummy platform and compiler
         """
@@ -133,7 +143,7 @@ nop
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO71)
-    def test_max_score(self):
+    def test_max_score(self) -> None:
         """
         Ensure that max_score is available upon scratch creation even if the initial compialtion fails
         """
@@ -149,7 +159,7 @@ nop
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler(GCC281, IDO53)
-    def test_update_scratch_score(self):
+    def test_update_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
@@ -183,7 +193,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 200)
 
     @requiresCompiler(GCC281)
-    def test_update_scratch_score_on_compile_get(self):
+    def test_update_scratch_score_on_compile_get(self) -> None:
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
@@ -212,7 +222,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 0)
 
     @requiresCompiler(IDO71)
-    def test_create_scratch_score(self):
+    def test_create_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets set upon creation.
         """
@@ -227,7 +237,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 0)
 
     @requiresCompiler(IDO71)
-    def test_update_scratch_score_does_not_affect_last_updated(self):
+    def test_update_scratch_score_does_not_affect_last_updated(self) -> None:
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
         """
@@ -250,7 +260,7 @@ class ScratchModificationTests(BaseTestCase):
 
 
 class ScratchForkTests(BaseTestCase):
-    def test_fork_scratch(self):
+    def test_fork_scratch(self) -> None:
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
@@ -297,7 +307,6 @@ class ScratchForkTests(BaseTestCase):
         response = self.client.post(
             reverse("scratch-fork", kwargs={"pk": slug}), fork_dict
         )
-        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         new_slug = response.json()["slug"]
@@ -317,7 +326,7 @@ class ScratchForkTests(BaseTestCase):
 
 class CompilationTests(BaseTestCase):
     @requiresCompiler(GCC281)
-    def test_simple_compilation(self):
+    def test_simple_compilation(self) -> None:
         """
         Ensure that we can run a simple compilation via the api
         """
@@ -345,7 +354,7 @@ class CompilationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @requiresCompiler(GCC281)
-    def test_giant_compilation(self):
+    def test_giant_compilation(self) -> None:
         """
         Ensure that we can compile a giant file
         """
@@ -380,7 +389,7 @@ class CompilationTests(BaseTestCase):
         self.assertEqual(len(response.json()["errors"]), 0)
 
     @requiresCompiler(IDO53)
-    def test_ido_line_endings(self):
+    def test_ido_line_endings(self) -> None:
         """
         Ensure that compilations with \\r\\n line endings succeed
         """
@@ -395,7 +404,7 @@ class CompilationTests(BaseTestCase):
         )
 
     @requiresCompiler(IDO53)
-    def test_ido_kpic(self):
+    def test_ido_kpic(self) -> None:
         """
         Ensure that ido compilations including -KPIC produce different code
         """
@@ -411,10 +420,86 @@ class CompilationTests(BaseTestCase):
             "The compilation result should be different",
         )
 
-    @requiresCompiler(MWCC_247_92)
-    def test_mwcc_wine(self):
+    @requiresCompiler(IDO71)
+    def test_fpr_reg_names_output(self) -> None:
         """
-        Ensure that we can invoke mwcc through wine
+        Ensure that we can view fpr reg names by passing the appropriate diff flag
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "diff_flags": '["-Mreg-names=32"]',
+            "context": "",
+            "target_asm": """
+glabel test
+lui   $at, 0x3ff0
+mtc1  $at, $fv1f
+mtc1  $zero, $fv1
+beqz  $a0, .L00400194
+move  $v0, $a0
+andi  $a1, $a0, 3
+negu  $a1, $a1
+beqz  $a1, .L004000EC
+addu  $v1, $a1, $a0
+mtc1  $v0, $ft0
+nop
+""",
+        }
+        scratch = self.create_scratch(scratch_dict)
+
+        # Test that we can compile a scratch
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()["errors"]), 0)
+        # Confirm the output contains the expected fpr reg names
+        self.assertTrue("fv1f" in str(response.json()))
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"diff_flags": "[]"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()["errors"]), 0)
+        # Confirm the output does not contain the expected fpr reg names
+        self.assertFalse("fv1f" in str(response.json()))
+
+    @requiresCompiler(MWCPPC_24)
+    def test_mac_mwcc(self) -> None:
+        """
+        Ensure that we can invoke the MACOS9 compiler
+        """
+        result = CompilerWrapper.compile_code(
+            MWCPPC_24,
+            "-str reuse -inline on -O0",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
+
+    @requiresCompiler(PBX_GCC3)
+    def test_pbx_gcc3(self) -> None:
+        """
+        Ensure that we can invoke the PowerPC GCC3 cross-compiler
+        """
+        result = CompilerWrapper.compile_code(
+            PBX_GCC3,
+            "-std=c99 -fPIC -O0 -g3",
+            "int func(void) { float f = 5.0; return f; }",  # test if floats are handled correctly
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
+
+    @requiresCompiler(MWCC_247_92)
+    def test_mwcc(self) -> None:
+        """
+        Ensure that we can invoke mwcc
         """
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
@@ -426,7 +511,7 @@ class CompilationTests(BaseTestCase):
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    def test_dummy_compiler(self):
+    def test_dummy_compiler(self) -> None:
         """
         Ensure basic functionality works for the dummy compiler
         """
@@ -438,10 +523,40 @@ class CompilationTests(BaseTestCase):
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers()])  # type: ignore
+    def test_all_compilers(self, compiler: Compiler) -> None:
+        """
+        Ensure that we can run a simple compilation/diff for all available compilers
+        """
+        result = CompilerWrapper.compile_code(
+            compiler,
+            "",
+            "int func(void) { return 5; }",
+            "",
+            "func",
+        )
+        self.assertGreater(
+            len(result.elf_object),
+            0,
+            "The compilation result should be non-null",
+        )
+
+        diff = DiffWrapper.diff(
+            Assembly(elf_object=result.elf_object),
+            compiler.platform,
+            "",
+            result.elf_object,
+            allow_target_only=True,
+            diff_flags=[],
+        )
+
+        self.assertTrue("rows" in diff)
+        self.assertGreater(len(diff["rows"]), 0)
+
 
 class DecompilationTests(BaseTestCase):
     @requiresCompiler(GCC281)
-    def test_default_decompilation(self):
+    def test_default_decompilation(self) -> None:
         """
         Ensure that a scratch's initial decompilation makes sense
         """
@@ -455,7 +570,7 @@ class DecompilationTests(BaseTestCase):
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
     @requiresCompiler(GCC281)
-    def test_decompile_endpoint(self):
+    def test_decompile_endpoint(self) -> None:
         """
         Ensure that the decompile endpoint works
         """
@@ -489,7 +604,7 @@ class M2CTests(TestCase):
     Ensure that pointers are next to types (left style)
     """
 
-    def test_left_pointer_style(self):
+    def test_left_pointer_style(self) -> None:
         c_code = M2CWrapper.decompile(
             """
         glabel func
@@ -512,7 +627,7 @@ class M2CTests(TestCase):
     Ensure that we can decompile ppc code
     """
 
-    def test_ppc(self):
+    def test_ppc(self) -> None:
         c_code = M2CWrapper.decompile(
             """
         .global func_800B43A8
@@ -571,11 +686,11 @@ class UserTests(BaseTestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         super().setUpClass()
         cls.current_user_url = reverse("current-user")
 
-    def test_set_user_profile_middleware(self):
+    def test_set_user_profile_middleware(self) -> None:
         """
         Ensure that an anonymous profile is created for requests.
         """
@@ -626,7 +741,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(GitHubUser.objects.count(), 1)
 
     @responses.activate
-    def test_github_login_where_exists_already(self):
+    def test_github_login_where_exists_already(self) -> None:
         """
         Ensure that you can log in to an existing user with GitHub.
         """
@@ -671,7 +786,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(GitHubUser.objects.count(), 1)
 
     @responses.activate
-    def test_logout(self):
+    def test_logout(self) -> None:
         """
         Ensure that you can log out with POST /user with no data.
         """
@@ -703,9 +818,10 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
-    def test_own_scratch(self):
+    def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
+        Finally, delete the scratch.
         """
         response = self.client.post(
             "/api/scratch",
@@ -731,16 +847,71 @@ class UserTests(BaseTestCase):
         )
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
+        # Delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    @responses.activate
+    def test_cant_delete_scratch(self) -> None:
+        """
+        Ensure we can't delete a scratch we don't own
+        """
+
+        # Create a scratch, log in, and claim it
+        response = self.client.post(
+            "/api/scratch",
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        slug = response.json()["slug"]
+
+        self.test_github_login()
+
+        response = self.client.post(f"/api/scratch/{slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
+        response = self.client.get(f"/api/scratch/{slug}")
+        self.assertEqual(
+            response.json()["owner"]["username"], self.GITHUB_USER["login"]
+        )
+        self.assertEqual(response.json()["owner"]["is_you"], True)
+
+        # Log out
+        response = self.client.post(self.current_user_url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["is_you"], True)
+        self.assertEqual(response.json()["is_anonymous"], True)
+
+        # Try to delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Log in again
+        self.test_github_login()
+
+        # Successfully delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class ScratchDetailTests(BaseTestCase):
-    def test_404_head(self):
+    def test_404_head(self) -> None:
         """
         Ensure that HEAD requests 404 correctly.
         """
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_last_modified(self):
+    def test_last_modified(self) -> None:
         """
         Ensure that the Last-Modified header is set.
         """
@@ -751,7 +922,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_(response.headers.get("Last-Modified") is not None)
 
-    def test_if_modified_since(self):
+    def test_if_modified_since(self) -> None:
         """
         Ensure that the If-Modified-Since header is handled.
         """
@@ -784,7 +955,7 @@ class ScratchDetailTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_double_claim(self):
+    def test_double_claim(self) -> None:
         """
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
         """
@@ -804,7 +975,7 @@ class ScratchDetailTests(BaseTestCase):
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
 
-    def test_family(self):
+    def test_family(self) -> None:
         root = self.create_nop_scratch()
 
         # verify the family only holds root
@@ -833,7 +1004,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
-    def test_family_order(self):
+    def test_family_order(self) -> None:
         root = self.create_nop_scratch()
 
         # fork the root
@@ -848,7 +1019,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
         self.assertEqual(response.json()[1]["html_url"], fork["html_url"])
 
-    def test_family_etag(self):
+    def test_family_etag(self) -> None:
         root = self.create_nop_scratch()
 
         # get etag of only the root
@@ -1019,7 +1190,7 @@ class ScratchPRTests(BaseTestCase):
 
 
 class RequestTests(APITestCase):
-    def test_create_profile(self):
+    def test_create_profile(self) -> None:
         """
         Ensure that we create a profile for a normal request
         """
@@ -1029,7 +1200,7 @@ class RequestTests(APITestCase):
 
         self.assertEqual(Profile.objects.count(), 1)
 
-    def test_node_fetch_request(self):
+    def test_node_fetch_request(self) -> None:
         """
         Ensure that we don't create profiles for node-fetch requests (SSR)
         """
@@ -1059,14 +1230,16 @@ class ProjectTests(TestCase):
 
         return project
 
-    def fake_clone_test_repo(self, repo: GitHubRepo):
+    def fake_clone_test_repo(self, repo: GitHubRepo) -> None:
         with patch("coreapp.models.github.subprocess.run"):
             repo.pull()
 
     @patch("coreapp.models.github.subprocess.run")
     @patch("pathlib.Path.mkdir")
     @patch("pathlib.Path.exists")
-    def test_create_repo_dir(self, mock_exists, mock_mkdir, mock_subprocess):
+    def test_create_repo_dir(
+        self, mock_exists: Mock, mock_mkdir: Mock, mock_subprocess: Mock
+    ) -> None:
         """
         Test that the repo is cloned into a directory
         """
@@ -1083,7 +1256,7 @@ class ProjectTests(TestCase):
 
     @patch("coreapp.models.github.GitHubRepo.get_dir")
     @patch("coreapp.models.github.shutil.rmtree")
-    def test_delete_repo_dir(self, mock_rmtree, mock_get_dir):
+    def test_delete_repo_dir(self, mock_rmtree: Mock, mock_get_dir: Mock) -> None:
         """
         Test that the repo's directory is deleted when the repo is
         """
@@ -1094,7 +1267,7 @@ class ProjectTests(TestCase):
         project.repo.delete()
         mock_rmtree.assert_called_once_with(mock_dir)
 
-    def test_import_function(self):
+    def test_import_function(self) -> None:
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
                 project = ProjectTests.create_test_project()
@@ -1173,7 +1346,7 @@ class ProjectTests(TestCase):
 
                 self.assertTrue(pf.is_matched_in_repo)
 
-    def test_put_project_permissions(self):
+    def test_put_project_permissions(self) -> None:
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
                 project = ProjectTests.create_test_project()
@@ -1204,7 +1377,6 @@ class ProjectTests(TestCase):
                     },
                     content_type="application/json",
                 )
-                print(response.json())
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
 
                 p = Project.objects.first()

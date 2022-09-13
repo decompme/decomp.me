@@ -25,6 +25,7 @@ jwt = "^1.3.1"
 PyGithub = "^1.55"
 drf-extensions = "^0.7.1"
 tqdm = "^4.62.3"
+tzdata = "^2022.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
@@ -33,10 +34,11 @@ django-stubs-ext = "^0.4.0"
 django-stubs = "1.9.0"
 djangorestframework-stubs = "^1.4.0"
 types-requests = "^2.27.15"
+parameterized = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-extend-exclude = '^/(mips_to_c|asm_differ|local_files)/'
+extend-exclude = '^/(m2c|asm_differ|local_files)/'

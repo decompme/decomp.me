@@ -1,6 +1,8 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import OrderedDict
+
+from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,8 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    supports_objdump_disassemble: bool = False
+    diff_flags: Flags = field(default_factory=list, hash=False)
+    supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
 
 
 def from_id(platform_id: str) -> Platform:
@@ -56,6 +59,7 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -165,13 +169,195 @@ PS2 = Platform(
 """,
 )
 
+MACOS9 = Platform(
+    id="macos9",
+    name="Mac OS 9",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd='powerpc-linux-gnu-as -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="powerpc-linux-gnu-objdump",
+    nm_cmd="powerpc-linux-gnu-nm",
+    asm_prelude="""
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set r0, 0
+.set r1, 1
+.set r2, 2
+.set r3, 3
+.set r4, 4
+.set r5, 5
+.set r6, 6
+.set r7, 7
+.set r8, 8
+.set r9, 9
+.set r10, 10
+.set r11, 11
+.set r12, 12
+.set r13, 13
+.set r14, 14
+.set r15, 15
+.set r16, 16
+.set r17, 17
+.set r18, 18
+.set r19, 19
+.set r20, 20
+.set r21, 21
+.set r22, 22
+.set r23, 23
+.set r24, 24
+.set r25, 25
+.set r26, 26
+.set r27, 27
+.set r28, 28
+.set r29, 29
+.set r30, 30
+.set r31, 31
+.set f0, 0
+.set f1, 1
+.set f2, 2
+.set f3, 3
+.set f4, 4
+.set f5, 5
+.set f6, 6
+.set f7, 7
+.set f8, 8
+.set f9, 9
+.set f10, 10
+.set f11, 11
+.set f12, 12
+.set f13, 13
+.set f14, 14
+.set f15, 15
+.set f16, 16
+.set f17, 17
+.set f18, 18
+.set f19, 19
+.set f20, 20
+.set f21, 21
+.set f22, 22
+.set f23, 23
+.set f24, 24
+.set f25, 25
+.set f26, 26
+.set f27, 27
+.set f28, 28
+.set f29, 29
+.set f30, 30
+.set f31, 31
+.set qr0, 0
+.set qr1, 1
+.set qr2, 2
+.set qr3, 3
+.set qr4, 4
+.set qr5, 5
+.set qr6, 6
+.set qr7, 7
+.set RTOC,r2
+.set SP,r1
+""",
+)
+
+MACOSX = Platform(
+    id="macosx",
+    name="Mac OS X",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd='powerpc-linux-gnu-as -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="powerpc-linux-gnu-objdump",
+    nm_cmd="powerpc-linux-gnu-nm",
+    asm_prelude="""
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.set r0, 0
+.set r1, 1
+.set r2, 2
+.set r3, 3
+.set r4, 4
+.set r5, 5
+.set r6, 6
+.set r7, 7
+.set r8, 8
+.set r9, 9
+.set r10, 10
+.set r11, 11
+.set r12, 12
+.set r13, 13
+.set r14, 14
+.set r15, 15
+.set r16, 16
+.set r17, 17
+.set r18, 18
+.set r19, 19
+.set r20, 20
+.set r21, 21
+.set r22, 22
+.set r23, 23
+.set r24, 24
+.set r25, 25
+.set r26, 26
+.set r27, 27
+.set r28, 28
+.set r29, 29
+.set r30, 30
+.set r31, 31
+.set f0, 0
+.set f1, 1
+.set f2, 2
+.set f3, 3
+.set f4, 4
+.set f5, 5
+.set f6, 6
+.set f7, 7
+.set f8, 8
+.set f9, 9
+.set f10, 10
+.set f11, 11
+.set f12, 12
+.set f13, 13
+.set f14, 14
+.set f15, 15
+.set f16, 16
+.set f17, 17
+.set f18, 18
+.set f19, 19
+.set f20, 20
+.set f21, 21
+.set f22, 22
+.set f23, 23
+.set f24, 24
+.set f25, 25
+.set f26, 26
+.set f27, 27
+.set f28, 28
+.set f29, 29
+.set f30, 30
+.set f31, 31
+.set qr0, 0
+.set qr1, 1
+.set qr2, 2
+.set qr3, 3
+.set qr4, 4
+.set qr5, 5
+.set qr6, 6
+.set qr7, 7
+""",
+)
+
 GC_WII = Platform(
     id="gc_wii",
     name="GameCube / Wii",
     description="PowerPC",
     arch="ppc",
     assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="powerpc-eabi-objdump",
+    objdump_cmd="powerpc-eabi-objdump -M broadway",
     nm_cmd="powerpc-eabi-nm",
     asm_prelude="""
 .macro glabel label
@@ -324,6 +510,17 @@ GBA = Platform(
 """,
 )
 
+N3DS = Platform(
+    id="n3ds",
+    name="Nintendo 3DS",
+    description="ARMv6K",
+    arch="arm32",
+    assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -mfpu=vfpv2 -march=armv6k -o "$OUTPUT"',
+    objdump_cmd="arm-none-eabi-objdump",
+    nm_cmd="arm-none-eabi-nm",
+    asm_prelude="",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -334,5 +531,8 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "gc_wii": GC_WII,
         "nds_arm9": NDS_ARM9,
         "gba": GBA,
+        "macos9": MACOS9,
+        "macosx": MACOSX,
+        "n3ds": N3DS,
     }
 )

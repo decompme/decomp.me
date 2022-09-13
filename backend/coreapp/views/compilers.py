@@ -19,6 +19,7 @@ class CompilersDetail(APIView):
             c.id: {
                 "platform": c.platform.id,
                 "flags": [f.to_json() for f in c.flags],
+                "diff_flags": [f.to_json() for f in c.platform.diff_flags],
             }
             for c in compilers.available_compilers()
         }
@@ -38,11 +39,11 @@ class CompilersDetail(APIView):
         return ret
 
     @condition(last_modified_func=lambda request: boot_time)
-    def head(self, request: Request):
+    def head(self, request: Request) -> Response:
         return Response()
 
     @condition(last_modified_func=lambda request: boot_time)
-    def get(self, request: Request):
+    def get(self, request: Request) -> Response:
         return Response(
             {
                 "compilers": CompilersDetail.compilers_json(),

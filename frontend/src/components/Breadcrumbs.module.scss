@@ -1,0 +1,55 @@
+.breadcrumbs {
+    padding: 1em;
+    background: var(--g300);
+
+    > ol {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+
+        // Page links
+        > li {
+            flex-shrink: 0;
+
+            display: inline-flex;
+            align-items: center;
+
+            > a {
+                color: var(--g1500);
+                text-decoration: none;
+
+                &:any-link:hover {
+                    color: var(--link);
+                    text-decoration: underline;
+                }
+
+                &[aria-current="page"] {
+                    color: var(--g1900);
+                    font-weight: 500;
+                    text-decoration: none; // override :hover
+                }
+            }
+        }
+
+        // '>' shape between pages
+        > li + li::before {
+            content: "";
+
+            display: inline-block;
+            margin: 0 0.7em 0 0.45em;
+
+            width: 0.5em;
+            height: 0.5em;
+
+            border-top: 0.1em solid;
+            border-right: 0.1em solid;
+            border-color: var(--g1000);
+
+            transform: rotate(45deg);
+        }
+    }
+}

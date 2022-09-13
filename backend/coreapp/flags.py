@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 
 @dataclass(frozen=True)
@@ -18,9 +18,9 @@ class Checkbox:
 @dataclass(frozen=True)
 class FlagSet:
     id: str
-    flags: list[str]
+    flags: List[str]
 
-    def to_json(self) -> Dict[str, Union[str, list[str]]]:
+    def to_json(self) -> Dict[str, Union[str, List[str]]]:
         return {
             "type": "flagset",
             "id": self.id,
@@ -28,7 +28,16 @@ class FlagSet:
         }
 
 
-Flags = list[Union[Checkbox, FlagSet]]
+Flags = List[Union[Checkbox, FlagSet]]
+
+COMMON_ARMCC_FLAGS: Flags = [
+    FlagSet(
+        id="armcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ospace", "-Otime"]
+    ),
+    FlagSet(id="armcc_language", flags=["--c90", "--c99", "--cpp"]),
+    FlagSet(id="armcc_instset", flags=["--arm", "--thumb"]),
+    Checkbox(id="armcc_debug", flag="--debug"),
+]
 
 COMMON_CLANG_FLAGS: Flags = [
     FlagSet(
@@ -70,6 +79,10 @@ COMMON_IDO_FLAGS: Flags = [
     FlagSet(id="ido_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
     FlagSet(id="mips_version", flags=["-mips1", "-mips2", "-mips3"]),
     Checkbox("kpic", "-KPIC"),
+]
+
+COMMON_MIPS_DIFF_FLAGS: Flags = [
+    Checkbox("mreg_names=32", "-Mreg-names=32"),
 ]
 
 COMMON_MWCC_FLAGS: Flags = [
@@ -122,7 +135,7 @@ COMMON_MWCC_FLAGS: Flags = [
     Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
     Checkbox(id="mwcc_nodefaults", flag="-nodefaults"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
-    Checkbox(id="mwcc_debug_on", flag="-g"),
+    Checkbox(id="mwcc_line_numbers_on", flag="-sym on"),
 ]
 
 COMMON_GCC_PS1_FLAGS: Flags = [

@@ -82,6 +82,7 @@ yarn dev
 - [Set up GitHub authentication](GITHUB.md)
 - [Install nsjail to run the compiler sandbox](SANDBOX.md)
 - [Configure an nginx reverse proxy](NGINX.md)
+- Download [wibo](https://github.com/decompals/WiBo/releases/latest) and add it to your system path (for running Windows compilers from Linux)
 
 
 ## Notes

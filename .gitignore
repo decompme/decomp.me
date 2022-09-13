@@ -12,6 +12,7 @@ sandbox/
 .DS_Store
 .env.*
 *.log
+/frontend/*.tsbuildinfo
 /frontend/.next
 /frontend/.cache
 /frontend/cache

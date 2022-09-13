@@ -33,6 +33,7 @@ services:
       DEBUG: "on"
       ALLOWED_HOSTS: "backend,localhost,127.0.0.1"
       USE_SANDBOX_JAIL: "on"
+      SANDBOX_DISABLE_PROC: "true"
       COMPILER_BASE_PATH: /compilers
       LOCAL_FILE_DIR: /local_files
     ports:
@@ -50,9 +51,16 @@ services:
   frontend:
     build: frontend
     environment:
+      API_BASE: http://localhost/api
       INTERNAL_API_BASE: http://backend:8000/api
     ports:
     - "8080:8080"
     volumes:
     - ./frontend:/frontend
     - .env:/.env
+  nginx:
+    image: nginx:1.22-alpine
+    ports:
+    - "80:80"
+    volumes:
+    - ./nginx:/etc/nginx/conf.d

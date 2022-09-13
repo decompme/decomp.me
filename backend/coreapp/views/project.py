@@ -3,10 +3,11 @@ import random
 import re
 import string
 from threading import Thread
-from typing import Optional
+from typing import Any, Optional
 
 import django_filters
-
+from django.db.models.query import QuerySet
+from django.views import View
 from django.contrib.auth.models import User
 
 from github import Github, UnknownObjectException
@@ -17,8 +18,10 @@ from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_extensions.routers import ExtendedSimpleRouter
+
+from coreapp.middleware import Request
 
 from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction
@@ -68,10 +71,10 @@ class ProjectFunctionPagination(CursorPagination):
 
 
 class IsProjectMemberOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Any, view: View) -> bool:
         return True
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Any, view: View, obj: Any) -> bool:
         assert isinstance(obj, Project)
         return request.method in permissions.SAFE_METHODS or obj.is_member(
             request.profile
@@ -90,7 +93,7 @@ class ProjectViewSet(
     permission_classes = [IsProjectMemberOrReadOnly]
 
     @action(detail=True, methods=["POST"])
-    def pull(self, request, pk):
+    def pull(self, request: Request, pk: str) -> Response:
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
 
@@ -239,11 +242,11 @@ class ProjectFunctionViewSet(
     ]
     search_fields = ["display_name"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[ProjectFunction]:
         return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
 
     @action(detail=True, methods=["GET", "POST"])
-    def attempts(self, request, **kwargs):
+    def attempts(self, request: Request, **kwargs: Any) -> Response:
         fn: ProjectFunction = self.get_object()
         project: Project = fn.project
         repo: GitHubRepo = project.repo

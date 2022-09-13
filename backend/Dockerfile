@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 as base
+FROM ubuntu:20.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
     python-is-python3 \
-    python3.9-venv
+    python3.9-venv \
+    python3.9-dev
 
 
 FROM base AS nsjail
@@ -34,6 +35,7 @@ FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
+    binutils-powerpc-linux-gnu \
     binutils-aarch64-linux-gnu \
     curl \
     gcc-mips-linux-gnu \
@@ -47,9 +49,11 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
-  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python -
+  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python3.9 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
+
+COPY --from=ghcr.io/decompals/wibo:0.2.4 /usr/local/sbin/wibo /usr/bin/
 
 # windows compilers need i386 wine
 ARG ENABLE_NDS_SUPPORT
@@ -88,7 +92,11 @@ ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 
-RUN pip install requests tqdm && python3 /compilers/download.py && rm -rf /compilers/download_cache/
+RUN python3.9 -m pip install requests tqdm \
+    && python3.9 /compilers/download.py \
+    && rm -rf /compilers/download_cache/
+
+RUN mkdir -p /etc/fonts
 
 WORKDIR /backend
 

@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/matt-kempster/mips_to_c
+	branch = master
+	commit = a2802673e58482940990f668fdd01cab20360974
+	parent = 79adcdac2f60b87a955788b461d7b32819668392
+	method = merge
+	cmdver = 0.4.3

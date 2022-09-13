@@ -6,6 +6,7 @@ import { useDebouncedCallback } from "use-debounce"
 
 export interface Props {
     value: string
+    valueVersion?: number
     onChange?: (value: string) => void
     onHoveredLineChange?: (value: number | null) => void
     onSelectedLineChange?: (value: number) => void
@@ -17,6 +18,7 @@ export interface Props {
 
 export default function CodeMirror({
     value,
+    valueVersion,
     onChange,
     onHoveredLineChange,
     onSelectedLineChange,
@@ -88,7 +90,7 @@ export default function CodeMirror({
         }
     }, [viewRefProp])
 
-    // Replace doc when `value` prop changes
+    // Replace doc when `valueVersion` prop changes
     useEffect(() => {
         const view = viewRef.current
         if (view) {
@@ -104,9 +106,11 @@ export default function CodeMirror({
                         },
                     })
                 )
+            } else {
+                console.warn("valueVersion changed but the value is the same")
             }
         }
-    }, [value])
+    }, [valueVersion]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const debouncedOnMouseMove = useDebouncedCallback(
         event => {
