@@ -42,6 +42,7 @@ function ProjectList() {
 
 export default function IndexPage() {
     const user = api.useThisUser()
+    const stats = api.useStats()
     const plausible = usePlausible()
 
     const yourScratchesUrl = (!user || api.isAnonUser(user))
@@ -59,19 +60,29 @@ export default function IndexPage() {
                     <h1>
                         Welcome to <span className={styles.siteName}>decomp.me</span>
                     </h1>
-                    <p>
-                        {DECOMP_ME_DESCRIPTION}
-                    </p>
-                    <div className={styles.cta}>
-                        {user?.is_anonymous && <GitHubLoginButton popup />}
-                        <Link href="/new">
-                            <a>
-                                <Button primary onClick={() => plausible("indexCtaPress")}>
+                    <div className={styles.aboutColumnsContainer}>
+                        <div>
+                            <p>
+                                {DECOMP_ME_DESCRIPTION}
+                            </p>
+                            <div className={styles.cta}>
+                                {user?.is_anonymous && <GitHubLoginButton popup />}
+                                <Link href="/new">
+                                    <a>
+                                        <Button primary onClick={() => plausible("indexCtaPress")}>
                                     Start decomping
-                                    <ArrowRightIcon />
-                                </Button>
-                            </a>
-                        </Link>
+                                            <ArrowRightIcon />
+                                        </Button>
+                                    </a>
+                                </Link>
+                            </div>
+                        </div>
+                        {stats && <p>
+                            {stats.scratch_count.toLocaleString()} scratches created<br />
+                            {stats.profile_count.toLocaleString()} unique visitors<br />
+                            {stats.github_user_count.toLocaleString()} users signed up<br />
+                            {stats.asm_count.toLocaleString()} asm globs submitted
+                        </p>}
                     </div>
                 </ErrorBoundary>
             </header>
