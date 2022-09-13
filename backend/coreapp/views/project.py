@@ -12,13 +12,13 @@ from django.contrib.auth.models import User
 
 from github import Github, UnknownObjectException
 from github.Repository import Repository
+from github.GithubException import GithubException
 from rest_framework import filters, mixins, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from coreapp.middleware import Request
@@ -81,6 +81,13 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
         )
 
 
+def generate_branch_name():
+    suffix = "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(5)
+    )
+    return f"decompme_GEN_{suffix}"
+
+
 class ProjectViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -117,25 +124,32 @@ class ProjectViewSet(
         if not isinstance(scratch_slugs, list) or len(scratch_slugs) == 0:
             raise PrMustHaveScratchesException()
 
-        # TODO: make unique by GETting the branch
-        suffix = "".join(
-            random.choice(string.ascii_lowercase + string.digits) for _ in range(5)
-        )
-        fork_branch = f"decompme_GEN_{suffix}"
-
         project: Project = self.get_object()
         user: Optional[User] = request.profile.user
         if not user:
             raise GithubLoginException()
         token = user.github.access_token
         github_repo: Repository = project.repo.details(token)
+        head_sha = project.repo.get_sha()
+
         # Get or create fork
-        # TODO: likely need to pull this to make it up to date
-        # but, it's not local, so we can't pull it... hmm...
         try:
             fork = Github(token).get_repo(f"{request.profile}/{github_repo.name}")
         except UnknownObjectException:
             fork = Github(token).get_user().create_fork(github_repo)
+
+        # Create branch on fork
+        fork_branch = generate_branch_name()
+        while True:
+            try:
+                fork.create_git_ref(ref=f"refs/heads/{fork_branch}", sha=head_sha)
+                break
+            except GithubException as e:
+                if e.status == 422:
+                    # Branch already exists, pick a new one
+                    fork_branch = generate_branch_name()
+                else:
+                    raise e
 
         files_to_funcs: dict[str, list[str]] = {}
         for scratch_slug in scratch_slugs:
@@ -151,48 +165,59 @@ class ProjectViewSet(
             contents = (
                 contents_data[0] if isinstance(contents_data, list) else contents_data
             )
+            old_content = contents.decoded_content.decode() or ""
             new_content = re.sub(
                 # TODO: escape function name?
                 rf"INCLUDE_ASM\([^,]+, [^,]+, {scratch.diff_label}[^\)]*\);",
                 scratch.source_code,
-                contents.content or "",
+                old_content,
                 flags=re.MULTILINE,
             )
+            assert (
+                new_content != old_content
+            ), f"Unable to find INCLUDE_ASM for {scratch.diff_label}"
 
-            # Make commit
-            message = f"[decomp.me] Decompile {fn.display_name} ({fn.src_file})"
-            if (
-                scratch.owner != request.profile
-                and scratch.owner
-                and scratch.owner.user
-            ):
-                profile = scratch.owner.user
-                message += f"\n\nCo-authored by {profile.username} <{profile.email}>"
+            # Prepare commit message
+            commit_message = f"Match {fn.display_name} ({fn.src_file})\n"
+            seen_usernames = set()
+            seen_usernames.add(request.profile.user.username)
+            for parent_scratch in scratch.all_parents():
+                profile = parent_scratch.owner
 
+                # Skip anons
+                if not profile.user:
+                    continue
+
+                if profile.user.username not in seen_usernames:
+                    seen_usernames.add(profile.user.username)
+                    commit_message += f"\nCo-authored by: {profile.user.details().name} <{profile.user.email}>"
+
+            # Update the file on the branch
             fork.update_file(
-                message=message,
+                message=commit_message,
                 path=fn.src_file,
                 content=new_content,
                 sha=contents.sha,
                 branch=fork_branch,
             )
+
             files_to_funcs.setdefault(fn.src_file, []).append(fn.display_name)
 
         # Create PR
-        body = "Decompiles:\n"
+        body = "Matches:\n"
         for file in files_to_funcs:
             body += f"- {file}\n"
             for func in files_to_funcs[file]:
                 body += f"  - {func}\n"
-        body += "\n---\n\nGenerated by decomp.me"
+        body += "\n\n###### Generated by [decomp.me](https://decomp.me)"
         response = github_repo.create_pull(
             title=make_pr_name(files_to_funcs),
             body=body,
-            head=f"{scratch.owner}:{fork_branch}",
+            head=f"{request.profile}:{fork_branch}",
             base=github_repo.default_branch,
             draft=True,
         )
-        return Response({"url": response.url})
+        return Response({"url": response.html_url})
 
 
 def truncate_comma_separate(string_list: list[str], max_length: int) -> str:
@@ -210,11 +235,11 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
     if num_funcs == 1:
         assert num_files == 1
         file, func = list(files_to_funcs.items())[0]
-        return f"Decompile {func} from {file}"
+        return f"Match {func[0]} from {file}"
     elif num_files == 1:
         file = list(files_to_funcs.keys())[0]
         func_list = truncate_comma_separate(files_to_funcs[file], 70)
-        return f"Decompile {num_funcs} funcs ({func_list}) from {file}"
+        return f"Match {num_funcs} funcs ({func_list}) from {file}"
     else:
         file_list = truncate_comma_separate(list(files_to_funcs.keys()), 40)
         all_funcs: list[str] = []
@@ -222,7 +247,7 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
             all_funcs.extend(funcs)
         func_list = truncate_comma_separate(all_funcs, 60)
         return (
-            f"Decompile {num_funcs} functions ({func_list}) "
+            f"Match {num_funcs} functions ({func_list}) "
             f"in {num_files} files ({file_list})"
         )
 
