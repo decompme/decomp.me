@@ -3,32 +3,10 @@ import { useEffect, useState } from "react"
 import isDarkColor from "is-dark-color"
 import { HexColorPicker, HexColorInput } from "react-colorful"
 
-import { DEFAULT_CODE_COLOR_SCHEME } from "../lib/settings"
+import { COLOR_NAMES, ColorScheme, getColors } from "../lib/codemirror/color-scheme"
 
-import styles from "./CodeColorSchemePicker.module.scss"
+import styles from "./ColorSchemeEditor.module.scss"
 import ErrorBoundary from "./ErrorBoundary"
-
-const COLOR_NAMES = {
-    background: "Background",
-    foreground: "Foreground",
-    cursor: "Cursor",
-
-    comment: "Comment",
-    variable: "Variable",
-    punctuation: "Punctuation",
-
-    keyword: "Keyword",
-    preprocessor: "Preprocessor",
-    function: "Function",
-
-    operator: "Operator",
-    number: "Number",
-    bool: "Boolean",
-
-    string: "String",
-    character: "Character",
-    type: "Type name",
-}
 
 function Color({ color, name, onChange }) {
     const [isEditing, setIsEditing] = useState(false)
@@ -69,25 +47,25 @@ function Color({ color, name, onChange }) {
     </li>
 }
 
-export type ColorScheme = Record<keyof typeof COLOR_NAMES, string>
-
 export interface Props {
     scheme: ColorScheme
     onChange: (scheme: ColorScheme) => void
 }
 
-export default function CodeColorSchemePicker({ scheme, onChange }: Props) {
+export default function ColorSchemeEditor({ scheme, onChange }: Props) {
+    const colors = getColors(scheme)
+
     const els = []
     for (const [key, name] of Object.entries(COLOR_NAMES)) {
         els.push(<Color
             key={key}
-            color={scheme[key]}
+            color={colors[key]}
             name={name}
-            onChange={color => onChange({ ...scheme, [key]: color })}
+            onChange={color => onChange({ ...colors, [key]: color })}
         />)
     }
 
-    return <ErrorBoundary onError={() => onChange(DEFAULT_CODE_COLOR_SCHEME)}>
+    return <ErrorBoundary onError={() => onChange("Frog Dark")}>
         <ul className={styles.container}>
             {els}
         </ul>

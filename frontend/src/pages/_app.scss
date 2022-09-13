@@ -6,29 +6,6 @@
     --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-// Code theme
-body {
-    --code-background: var(--g200);
-    --code-cursor: var(--g2000);
-    --code-foreground: #647a97;
-    --code-keyword: #7f83ff;
-    --code-variable: #8599b3;
-    --code-type: #45b8ff;
-    --code-function: #ff4a98;
-    --code-punctuation: #656f7e;
-    --code-operator: #7f83ff;
-    --code-comment: #465173;
-    --code-number: #0afafa;
-    --code-bool: #f248bc;
-    --code-string: #face0a;
-    --code-character: #cefa0a;
-    --code-preprocessor: #3bff6c;
-
-    // automatic
-    --code-selection: var(--a100);
-    --code-highlight: var(--a50);
-}
-
 .cm-content {
     color: var(--code-foreground);
     cursor: text;
@@ -97,55 +74,6 @@ body {
 .theme-light {
     @include theme.theme(#951fd9, #ffffff);
 }
-
-/*
-.cm-content {
-    color: #abb2bf;
-}
-
-.cmt-operator,
-.cmt-punctuation {
-    color: #abb2bf;
-}
-
-.cmt-comment {
-    color: #81858d;
-}
-
-.cmt-propertyName {
-    color: #f26161;
-}
-
-.cmt-variableName {
-    color: #f29161;
-}
-
-.cmt-typeName {
-    color: #f2c261;
-}
-
-.cmt-function {
-    color: #61b6f2;
-}
-
-.cmt-bool,
-.cmt-number {
-    color: #f2a761;
-}
-
-.cmt-string {
-    color: #5ce55c;
-}
-
-.cmt-keyword {
-    color: #d479f2;
-}
-
-.cmt-character,
-.cmt-meta {
-    color: #d479f2;
-}
-*/
 
 .cm-panel {
     font-size: 1rem;

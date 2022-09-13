@@ -6,7 +6,7 @@ import { cpp } from "@codemirror/lang-cpp"
 import { FileIcon, PaintbrushIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import CodeColorSchemePicker from "../../components/CodeColorSchemePicker"
+import ColorSchemePicker from "../../components/ColorSchemePicker"
 import CodeMirror from "../../components/Editor/CodeMirror"
 import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
@@ -187,7 +187,7 @@ function AppearanceSettings() {
                     </div>
 
                     <label>Color scheme</label>
-                    <CodeColorSchemePicker scheme={codeColorScheme} onChange={setCodeColorScheme} />
+                    <ColorSchemePicker scheme={codeColorScheme} onChange={setCodeColorScheme} />
                 </div>
                 <div className={styles.exampleCodeEditor}>
                     <CodeMirror
