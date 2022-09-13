@@ -128,9 +128,10 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                         </div> : <ul>
                             {attempts.map(scratch => {
                                 const isInPr = !!basket.scratches.find(s => s.url == scratch.url)
+                                const isMatch = scratch.score == 0
 
                                 return <ScratchItem key={scratch.url} scratch={scratch}>
-                                    {canCreatePr && <Button
+                                    {canCreatePr && isMatch && <Button
                                         disabled={isInPr || backetHasThisFunc}
                                         onClick={() => basket.addScratch(scratch)}
                                     >
