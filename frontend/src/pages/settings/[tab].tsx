@@ -217,7 +217,7 @@ export default function SettingsPage() {
                 <h1>Settings</h1>
                 <Tabs
                     activeTab={tab}
-                    onChange={tab => router.push(`/settings/${tab}`)}
+                    onChange={tab => router.push(`/settings/${tab}`, undefined, { shallow: true })}
                     className={styles.tabs}
                     vertical
                     border={false}
