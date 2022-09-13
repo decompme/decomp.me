@@ -132,6 +132,7 @@ function useIsMounted() {
 function AppearanceSettings() {
     const [theme, setTheme] = settings.useTheme()
     const [fontSize, setFontSize] = settings.useCodeFontSize()
+    const [monospaceFont, setMonospaceFont] = settings.useMonospaceFont()
 
     return <>
         <section>
@@ -142,15 +143,27 @@ function AppearanceSettings() {
             <h2>Code editor</h2>
             <div className={styles.col2}>
                 <div>
-                    <div className={styles.intPreference}>
+                    <label htmlFor="fontSize">Font size</label>
+                    <div className={styles.fontSizeInputs}>
                         <input
+                            id="fontSize"
                             type="range"
                             min="8" max="24" step="1" value={fontSize ?? "12"}
                             onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
                         />
-                        <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
-                        font size
+                        <div>
+                            <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                        </div>
                     </div>
+
+                    <label htmlFor="monospaceFont">Font family</label>
+                    <input
+                        id="monospaceFont"
+                        type="text"
+                        value={monospaceFont ?? ""}
+                        onChange={(evt: ChangeEvent<HTMLInputElement>) => setMonospaceFont(evt.target.value)}
+                        placeholder="Menlo, Monaco, monospace"
+                    />
                 </div>
                 <div className={styles.exampleCodeEditor}>
                     <CodeMirror

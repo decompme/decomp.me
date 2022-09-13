@@ -12,7 +12,7 @@ import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
 import "./_app.scss"
-import { useTheme } from "../lib/settings"
+import * as settings from "../lib/settings"
 
 const progress = new ProgressBar({
     size: 2,
@@ -26,10 +26,10 @@ Router.events.on("routeChangeComplete", progress.finish)
 Router.events.on("routeChangeError", progress.finish)
 
 export default function MyApp({ Component, pageProps }) {
-    const [theme] = useTheme()
+    const [theme] = settings.useTheme()
     const [themeColor, setThemeColor] = useState("#282e31")
-
     useEffect(() => {
+        // Apply theme
         document.body.classList.remove("theme-light")
         document.body.classList.remove("theme-dark")
 
@@ -38,11 +38,18 @@ export default function MyApp({ Component, pageProps }) {
             : theme
         document.body.classList.add(`theme-${realTheme}`)
 
+        // Set theme-color based on active theme
         const style = window.getComputedStyle(document.body)
-
-        // Same color as navbar
-        setThemeColor(style.getPropertyValue("--g300"))
+        setThemeColor(style.getPropertyValue("--g300")) // Same color as navbar
     }, [theme])
+
+    const [monospaceFont] = settings.useMonospaceFont()
+    useEffect(() => {
+        document.body.style.removeProperty("--monospace")
+        if (monospaceFont) {
+            document.body.style.setProperty("--monospace", monospaceFont + ", monospace")
+        }
+    }, [monospaceFont])
 
     return <Layout>
         <Head>

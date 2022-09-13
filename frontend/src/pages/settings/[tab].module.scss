@@ -58,6 +58,73 @@
             color: var(--g1500);
         }
     }
+
+    label {
+        display: inline-block;
+        font-weight: 500;
+        margin: 16px 10px 2px 10px;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    input[type=text] {
+        width: 100%;
+        padding: 8px 10px;
+
+        color: var(--g1200);
+        background: var(--g200);
+        font-size: 0.9rem;
+        border: 1px solid var(--g500);
+        border-radius: 4px;
+
+        outline: none !important;
+
+        &::-webkit-input-placeholder {
+            color: var(--g700);
+        }
+
+        &:focus {
+            color: var(--g1600);
+        }
+
+
+        &:global(#monospaceFont) {
+            display: block;
+            min-height: 36px; // Font can change size while typing, so force the height
+            font: 0.8rem var(--monospace);
+        }
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+
+        background: none;
+        height: 16px;
+
+        &::-webkit-slider-runnable-track {
+            height: 4px;
+            background: var(--g800);
+            border: none;
+            border-radius: 99px;
+        }
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            margin-top: -6px;
+            background: var(--g1600);
+            border: none;
+            border-radius: 99px;
+            cursor: ew-resize;
+
+            &:hover {
+                background: var(--g2000);
+            }
+        }
+    }
 }
 
 .booleanPreference,
@@ -96,5 +163,18 @@
 
     :global(.cm-editor) {
         height: 300px;
+    }
+}
+
+.fontSizeInputs {
+    display: grid;
+    grid-template-columns: 1fr minmax(44px, auto);
+    align-items: center;
+    gap: 8px;
+
+    padding: 0.2em;
+
+    > div:last-child {
+        justify-self: end;
     }
 }
