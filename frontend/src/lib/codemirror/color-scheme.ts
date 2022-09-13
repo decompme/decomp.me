@@ -77,7 +77,7 @@ export const COLOR_SCHEME_PRESETS = {
         preprocessor: "#ff79c6",
     },
     "Frog Light": {
-        background: "#ffffff",
+        background: "#eeeeee",
         cursor: "#000000",
         foreground: "#647a97",
         keyword: "#b12fe9",
