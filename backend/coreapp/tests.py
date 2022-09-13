@@ -1046,13 +1046,13 @@ class MockRepository:
         f"""header\nINCLUDE_ASM(void, "file", some_function, \ns32 arg0);\nfooter"""
     )
 
-    def get_contents(self, path: str):
+    def get_contents(self, path: str) -> Mock:
         return Mock(content=self.content, sha="12345")
 
-    def update_file(self, content: str, **kwargs):
+    def update_file(self, content: str, **kwargs: Any) -> None:
         self.content = content
 
-    def create_pull(self, **kwargs):
+    def create_pull(self, **kwargs: Any) -> Mock:
         return Mock(url="http://github.com/fake_url")
 
 
@@ -1069,7 +1069,7 @@ class MockRepository:
 @patch("coreapp.views.project.Github.get_repo")
 class ScratchPRTests(BaseTestCase):
     @responses.activate
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         project = ProjectTests.create_test_project()
         self.project = project
@@ -1145,7 +1145,7 @@ class ScratchPRTests(BaseTestCase):
             profile=profile,
         )
 
-    def test_pr_one_scratch(self, mock_get_repo):
+    def test_pr_one_scratch(self, mock_get_repo: Mock) -> None:
         """
         Create a PR from one scratch to an upstream (project) repo
         """
@@ -1164,7 +1164,7 @@ class ScratchPRTests(BaseTestCase):
             f"""header\n{self.scratch.source_code}\nfooter""",
         )
 
-    def test_pr_multiple_scratch(self, mock_get_repo):
+    def test_pr_multiple_scratch(self, mock_get_repo: Mock) -> None:
         """
         Create a PR from two scratches to an upstream (project) repo
         """

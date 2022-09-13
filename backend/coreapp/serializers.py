@@ -224,12 +224,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         exclude: List[str] = []
         depth = 1  # repo
 
-    def get_members(self, project: Project) -> List[str]:
-        def get_url(user: User) -> str:
-            return reverse(
-                "user-detail", args=[user.username], request=self.context["request"]
-            )
-
+    def get_members(self, project: Project) -> List[Dict[str, Any]]:
         return [
             serialize_profile(self.context["request"], member.profile, True)
             for member in project.members()

@@ -23,7 +23,7 @@ from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from coreapp.middleware import Request
 
-from ..models.github import GitHubRepo, GitHubRepoBusyException
+from ..models.github import GitHubRepo, GitHubRepoBusyException, GitHubUser
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Scratch
 from ..serializers import (
@@ -81,7 +81,7 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
         )
 
 
-def generate_branch_name():
+def generate_branch_name() -> str:
     suffix = "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(5)
     )
@@ -118,7 +118,7 @@ class ProjectViewSet(
         )
 
     @action(detail=True, methods=["POST"])
-    def pr(self, request, pk):
+    def pr(self, request: Request, pk: str) -> Response:
         scratch_slugs = request.data.get("scratch_slugs", [])
 
         if not isinstance(scratch_slugs, list) or len(scratch_slugs) == 0:
@@ -180,17 +180,18 @@ class ProjectViewSet(
             # Prepare commit message
             commit_message = f"Match {fn.display_name} ({fn.src_file})\n"
             seen_usernames = set()
-            seen_usernames.add(request.profile.user.username)
+            seen_usernames.add(user.username)
             for parent_scratch in scratch.all_parents():
                 profile = parent_scratch.owner
 
                 # Skip anons
-                if not profile.user:
+                if not profile or not profile.user:
                     continue
 
                 if profile.user.username not in seen_usernames:
                     seen_usernames.add(profile.user.username)
-                    commit_message += f"\nCo-authored by: {profile.user.details().name} <{profile.user.email}>"
+                    gh_user = GitHubUser.objects.get(user=profile.user)
+                    commit_message += f"\nCo-authored by: {gh_user.details().name} <{profile.user.email}>"
 
             # Update the file on the branch
             fork.update_file(
