@@ -118,7 +118,14 @@ export function applyColorScheme(scheme: ColorScheme) {
         document.body.style.setProperty(`--code-${key}`, value.toString())
     }
 
-    if (isDarkColor(colors.background)) {
+    let isDark = true
+    try {
+        isDark = isDarkColor(colors.background)
+    } catch (error) {
+        // Ignore; color is being edited
+    }
+
+    if (isDark) {
         document.body.style.setProperty("--code-selection", "#ffffff22")
         document.body.style.setProperty("--code-highlight", "#ffffff05")
     } else {

@@ -34,13 +34,15 @@ export default function MyApp({ Component, pageProps }) {
         document.body.classList.add(`theme-${realTheme}`)
 
         // If using the default code color scheme (Frog), pick the variant that matches the site theme
-        setCodeColorScheme(current => {
-            if (current === "Frog Dark" || current === "Frog Light") {
-                return realTheme == "dark" ? "Frog Dark" : "Frog Light"
-            } else {
-                return current
-            }
-        })
+        if (document.hasFocus) {
+            setCodeColorScheme(current => {
+                if (current === "Frog Dark" || current === "Frog Light") {
+                    return realTheme == "dark" ? "Frog Dark" : "Frog Light"
+                } else {
+                    return current
+                }
+            })
+        }
 
         // Set theme-color based on active theme
         const style = window.getComputedStyle(document.body)
