@@ -6,6 +6,7 @@ import type {} from "react/next"
 
 import Head from "next/head"
 
+import isDarkColor from "is-dark-color"
 import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
@@ -50,6 +51,14 @@ export default function MyApp({ Component, pageProps }) {
     useEffect(() => {
         for (const [key, value] of Object.entries(codeColorScheme)) {
             document.body.style.setProperty(`--code-${key}`, value.toString())
+        }
+
+        if (isDarkColor(codeColorScheme.background)) {
+            document.body.style.setProperty("--code-selection", "#ffffff22")
+            document.body.style.setProperty("--code-highlight", "#ffffff05")
+        } else {
+            document.body.style.setProperty("--code-selection", "#00000022")
+            document.body.style.setProperty("--code-highlight", "#00000005")
         }
     }, [codeColorScheme])
 

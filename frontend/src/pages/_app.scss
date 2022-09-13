@@ -10,9 +10,6 @@
 body {
     --code-background: var(--g200);
     --code-cursor: var(--g2000);
-    --code-selection: var(--a100);
-    --code-highlight: var(--a50);
-
     --code-foreground: #647a97;
     --code-keyword: #7f83ff;
     --code-variable: #8599b3;
@@ -26,6 +23,10 @@ body {
     --code-string: #face0a;
     --code-character: #cefa0a;
     --code-preprocessor: #3bff6c;
+
+    // automatic
+    --code-selection: var(--a100);
+    --code-highlight: var(--a50);
 }
 
 .cm-content {
