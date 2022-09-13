@@ -16,7 +16,7 @@
 .cm-content {
     font-size: var(--cm-font-size, 0.8rem);
     font-family: var(--monospace);
-    line-height: 1.5;
+    line-height: var(--code-line-height, 1.5);
 }
 
 .cmt-propertyName,

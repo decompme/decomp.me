@@ -51,6 +51,12 @@ export default function MyApp({ Component, pageProps }) {
         }
     }, [monospaceFont])
 
+    const [codeLineHeight] = settings.useCodeLineHeight()
+    useEffect(() => {
+        document.body.style.removeProperty("--code-line-height")
+        document.body.style.setProperty("--code-line-height", codeLineHeight)
+    }, [codeLineHeight])
+
     return <Layout>
         <Head>
             <meta name="theme-color" content={themeColor} />

@@ -133,6 +133,7 @@ function AppearanceSettings() {
     const [theme, setTheme] = settings.useTheme()
     const [fontSize, setFontSize] = settings.useCodeFontSize()
     const [monospaceFont, setMonospaceFont] = settings.useMonospaceFont()
+    const [codeLineHeight, setCodeLineHeight] = settings.useCodeLineHeight()
 
     return <>
         <section>
@@ -144,7 +145,7 @@ function AppearanceSettings() {
             <div className={styles.col2}>
                 <div>
                     <label htmlFor="fontSize">Font size</label>
-                    <div className={styles.fontSizeInputs}>
+                    <div className={styles.rangeInputPair}>
                         <input
                             id="fontSize"
                             type="range"
@@ -164,6 +165,23 @@ function AppearanceSettings() {
                         onChange={(evt: ChangeEvent<HTMLInputElement>) => setMonospaceFont(evt.target.value)}
                         placeholder="Menlo, Monaco, monospace"
                     />
+
+                    <label htmlFor="codeLineHeight">Line height</label>
+                    <div className={styles.rangeInputPair}>
+                        <input
+                            id="codeLineHeight"
+                            type="range"
+                            min="0.5" max="2" step="0.05" value={codeLineHeight}
+                            onChange={(evt: ChangeEvent<HTMLInputElement>) => setCodeLineHeight(+evt.target.value)}
+                        />
+                        <div>
+                            <NumberInput
+                                value={codeLineHeight}
+                                onChange={setCodeLineHeight}
+                                stringValue={codeLineHeight.toFixed(2)}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div className={styles.exampleCodeEditor}>
                     <CodeMirror
