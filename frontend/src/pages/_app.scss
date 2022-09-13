@@ -123,7 +123,7 @@
         }
     }
 
-    input[type=checkbox] {
+    input[type="checkbox"] {
         vertical-align: middle;
     }
 }
@@ -132,7 +132,7 @@ html {
     font-size: 16px;
     font-family: var(--font-ui);
     line-height: 1.5;
-    text-rendering: optimizeQuality;
+    text-rendering: optimizequality;
 }
 
 *,
@@ -206,7 +206,8 @@ main {
     width: 100%;
 }
 
-main, footer {
+main,
+footer {
     background: var(--g200);
 }
 

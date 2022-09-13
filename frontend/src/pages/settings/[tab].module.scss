@@ -69,7 +69,7 @@
         }
     }
 
-    input[type=text] {
+    input[type="text"] {
         width: 100%;
         padding: 8px 10px;
 
@@ -89,7 +89,6 @@
             color: var(--g1600);
         }
 
-
         &:global(#monospaceFont) {
             display: block;
             min-height: 36px; // Font can change size while typing, so force the height
@@ -97,7 +96,7 @@
         }
     }
 
-    input[type=range] {
+    input[type="range"] {
         -webkit-appearance: none;
 
         background: none;

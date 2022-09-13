@@ -15,7 +15,8 @@
 
     cursor: pointer;
 
-    &[data-active="true"], &:hover {
+    &[data-active="true"],
+    &:hover {
         color: var(--g2000);
         background: var(--g300);
     }
