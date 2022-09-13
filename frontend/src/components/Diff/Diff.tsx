@@ -8,7 +8,7 @@ import { FixedSizeList } from "react-window"
 
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
-import { useDiffFontSize } from "../../lib/settings"
+import { useCodeFontSize } from "../../lib/settings"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
@@ -192,7 +192,7 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
-    const [fontSize] = useDiffFontSize()
+    const [fontSize] = useCodeFontSize()
 
     const container = useSize<HTMLDivElement>()
 
