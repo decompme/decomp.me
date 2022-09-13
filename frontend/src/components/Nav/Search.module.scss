@@ -13,8 +13,8 @@
     border-radius: 6px;
     padding-right: 32px; // space for loading spinner
     padding-left: 28px; // space for search icon
-    padding-top: 5px;
-    padding-bottom: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
     background: var(--g300);
     border: 1px solid var(--g600);
     color: var(--g1900);
@@ -23,7 +23,7 @@
 
     width: 100%;
 
-    font-size: 0.9em;
+    font-size: 12px;
 
     transition: border-radius, background, border-color;
 

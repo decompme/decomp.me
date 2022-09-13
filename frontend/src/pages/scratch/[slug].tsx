@@ -2,8 +2,9 @@ import { Suspense, useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
+import Head from "next/head"
+
 import useSWR from "swr"
-//import { useDebouncedCallback } from "use-debounce"
 
 import LoadingSpinner from "../../components/loading.svg"
 import PageTitle from "../../components/PageTitle"
@@ -88,6 +89,11 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
     const [isMounted, setIsMounted] = useState(false)
     useEffect(() => {
         setIsMounted(true)
+
+        document.body.classList.add("no-scroll")
+        return () => {
+            document.body.classList.remove("no-scroll")
+        }
     }, [])
     if (!isMounted) {
         return <>
@@ -100,6 +106,9 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
 
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
+        <Head>
+            <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </Head>
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch

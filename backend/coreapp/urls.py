@@ -1,9 +1,10 @@
 from django.urls import path
 
-from coreapp.views import compilers, project, scratch, user
+from coreapp.views import compilers, stats, project, scratch, user
 
 urlpatterns = [
     path("compilers", compilers.CompilersDetail.as_view(), name="compilers"),
+    path("stats", stats.StatsDetail.as_view(), name="stats"),
     *scratch.router.urls,
     *project.router.urls,
     path("user", user.CurrentUser.as_view(), name="current-user"),

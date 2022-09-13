@@ -444,7 +444,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
-        scratch.diff_flags.join(",") === saved.diff_flags.join(",") &&
+        JSON.stringify(scratch.diff_flags) === JSON.stringify(saved.diff_flags) &&
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
@@ -622,4 +622,23 @@ export function usePaginated<T>(url: string): {
         loadNext,
         loadPrevious,
     }
+}
+
+export interface Stats {
+    asm_count: number
+    scratch_count: number
+    github_user_count: number
+    profile_count: number
+}
+
+export function useStats(): Stats | undefined {
+    const { data, error } = useSWR<Stats>("/stats", get, {
+        refreshInterval: 5000,
+    })
+
+    if (error) {
+        throw error
+    }
+
+    return data
 }

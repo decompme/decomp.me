@@ -248,22 +248,24 @@ export default function SettingsPage() {
     return <>
         <PageTitle title="Settings" />
         <Nav />
-        <main className={styles.container}>
-            <aside>
-                <h1>Settings</h1>
-                <Tabs
-                    activeTab={tab}
-                    onChange={tab => router.push(`/settings/${tab}`, undefined, { shallow: true })}
-                    className={styles.tabs}
-                    vertical
-                    border={false}
-                >
-                    <Tab key="appearance" tabKey="appearance" label={<><PaintbrushIcon /> Appearance</>} />
-                    <Tab key="editor" tabKey="editor" label={<><FileIcon /> Scratch editor</>} />
-                </Tabs>
-            </aside>
-            <div className={styles.content}>
-                {ContentEl && isMounted && <ContentEl />}
+        <main>
+            <div className={styles.container}>
+                <aside>
+                    <h1>Settings</h1>
+                    <Tabs
+                        activeTab={tab}
+                        onChange={tab => router.push(`/settings/${tab}`, undefined, { shallow: true })}
+                        className={styles.tabs}
+                        vertical
+                        border={false}
+                    >
+                        <Tab key="appearance" tabKey="appearance" label={<><PaintbrushIcon /> Appearance</>} />
+                        <Tab key="editor" tabKey="editor" label={<><FileIcon /> Scratch editor</>} />
+                    </Tabs>
+                </aside>
+                <div className={styles.content}>
+                    {ContentEl && isMounted && <ContentEl />}
+                </div>
             </div>
         </main>
     </>

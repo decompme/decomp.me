@@ -5,25 +5,14 @@ import { useEffect, useState } from "react"
 import type {} from "react/next"
 
 import Head from "next/head"
-import Router from "next/router"
 
-import ProgressBar from "@badrap/bar-of-progress"
 import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
-import "./_app.scss"
+import { isMacOS } from "../lib/device"
 import * as settings from "../lib/settings"
 
-const progress = new ProgressBar({
-    size: 2,
-    color: "var(--accent)",
-    className: "routerProgressBar",
-    delay: 0,
-})
-
-Router.events.on("routeChangeStart", progress.start)
-Router.events.on("routeChangeComplete", progress.finish)
-Router.events.on("routeChangeError", progress.finish)
+import "./_app.scss"
 
 export default function MyApp({ Component, pageProps }) {
     const [theme] = settings.useTheme()
@@ -63,6 +52,12 @@ export default function MyApp({ Component, pageProps }) {
             document.body.style.setProperty(`--code-${key}`, value.toString())
         }
     }, [codeColorScheme])
+
+    useEffect(() => {
+        if (isMacOS()) {
+            document.body.classList.add("device-macos")
+        }
+    }, [])
 
     return <Layout>
         <Head>

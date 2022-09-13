@@ -22,14 +22,14 @@
                 color: var(--g1500);
                 text-decoration: none;
 
-                &:hover {
+                &:any-link:hover {
                     color: var(--link);
                     text-decoration: underline;
                 }
 
                 &[aria-current="page"] {
                     color: var(--g1900);
-                    font-weight: 600;
+                    font-weight: 500;
                     text-decoration: none; // override :hover
                 }
             }
@@ -40,7 +40,7 @@
             content: "";
 
             display: inline-block;
-            margin: 0 1em;
+            margin: 0 0.7em 0 0.45em;
 
             width: 0.5em;
             height: 0.5em;
