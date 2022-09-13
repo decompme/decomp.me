@@ -13,8 +13,6 @@ import UserAvatar from "../user/UserAvatar"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import CompileScratchButton from "./buttons/CompileScratchButton"
-import ForkScratchButton from "./buttons/ForkScratchButton"
-import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import ScratchDecompileModal from "./ScratchDecompileModal"
 import styles from "./ScratchToolbar.module.scss"
@@ -129,6 +127,10 @@ export default function ScratchToolbar({
         fuzzySaveScratch()
     })
 
+    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
+        compile()
+    })
+
     return <>
         <Nav>
             <div className={styles.toolbar}>
@@ -151,10 +153,8 @@ export default function ScratchToolbar({
                 <div className={styles.grow} />
                 <div className={styles.right}>
                     {isMounted && <>
-                        {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                        {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
+                        {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} title={compileShortcut} />}
                         {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
-                        {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
                     </>}
                 </div>
                 <ScratchDecompileModal
