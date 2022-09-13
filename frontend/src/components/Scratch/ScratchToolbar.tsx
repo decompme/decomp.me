@@ -22,7 +22,6 @@ import ForkScratchButton from "./buttons/ForkScratchButton"
 import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import ScratchDecompileModal from "./ScratchDecompileModal"
-import ScratchPreferencesModal from "./ScratchPreferencesModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -133,7 +132,6 @@ export default function ScratchToolbar({
         triggerOffset: 4,
     })
 
-    const [isPreferencesOpen, setPreferencesOpen] = useState(false)
     const [isDecompileOpen, setDecompileOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
@@ -209,9 +207,9 @@ export default function ScratchToolbar({
                             Rerun decompilation...
                         </ButtonItem>
                         <hr />
-                        <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>
+                        <ButtonItem onTrigger={async () => window.open("/settings")}>
                             <GearIcon />
-                            Preferences...
+                            Settings...
                         </ButtonItem>
                         <hr />
                         <LinkItem href="https://github.com/decompme/decomp.me">
@@ -242,9 +240,6 @@ export default function ScratchToolbar({
             <div className={styles.grow} />
             <div className={styles.right}>
                 <div className={styles.grow} />
-                <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
-                    <GearIcon size={16} />
-                </div>
                 {isMounted && <>
                     {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
                     {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
@@ -253,7 +248,6 @@ export default function ScratchToolbar({
                     <LoginState className={styles.loginState} />
                 </>}
             </div>
-            <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
             <ScratchDecompileModal
                 open={isDecompileOpen}
                 onClose={() => setDecompileOpen(false)}

@@ -1,0 +1,28 @@
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1em;
+}
+
+.box {
+    padding: 0.75em;
+
+    border-radius: 6px;
+    border: 1px solid var(--g400);
+    background: var(--g200);
+
+    text-align: left;
+
+    cursor: pointer;
+
+    &[data-active="true"], &:hover {
+        color: var(--g2000);
+        background: var(--g300);
+    }
+}
+
+.boxHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}

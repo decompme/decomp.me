@@ -53,7 +53,6 @@ export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
     const sourceEditor = useRef<EditorView>()
     const contextEditor = useRef<EditorView>()
     const userIsYou = useUserIsYou()
-    const [codeFontSize] = useCodeFontSize()
 
     return renderTabs({
         [LeftScratchTab.SOURCE_CODE]: (
@@ -72,7 +71,6 @@ export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
                     extensions={CODEMIRROR_EXTENSIONS}
-                    fontSize={codeFontSize}
                 />
             </Tab>
         ),
@@ -100,7 +98,6 @@ export function useLeftTabs({ scratch, setScratch, setSelectedSourceLine }: {
                         setScratch({ context: value })
                     }}
                     extensions={CODEMIRROR_EXTENSIONS}
-                    fontSize={codeFontSize}
                 />
             </Tab>
         ),

@@ -1,38 +1,100 @@
 .container {
-    max-width: 50em;
+    max-width: 80em;
+    margin: 2em auto;
+    padding: 0 1em;
 
     cursor: default;
+
+    display: grid;
+    grid-template-columns: 16em 1fr;
+    gap: 2em;
+
+    @media (max-width: 60em) {
+        display: block;
+
+        .tabs {
+            padding: 0.5em;
+            border-bottom: 1px solid var(--g400);
+        }
+    }
+
+    aside h1 {
+        color: var(--g1900);
+        font-size: 1.25em;
+        font-weight: 500;
+        margin: 0;
+        padding: 0 16px 8px 16px;
+    }
 }
 
 .tabs {
     height: 100%;
 }
 
-.tabPanel {
-    padding: 1em;
+.content {
+    @media (max-width: 60em) {
+        padding: 1em 0;
+    }
 
-    label {
-        display: flex;
-        gap: 0.5em;
-        align-items: center;
+    > section {
+        margin-top: 32px;
 
-        font-size: 0.9em;
-        color: var(--g1500);
+        &:first-child {
+            margin-top: 0;
+        }
+
+        h2 {
+            color: var(--g1900);
+            font-size: 1.5em;
+            font-weight: 500;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid var(--g300);
+            margin-bottom: 0.5em;
+        }
+
+        p {
+            margin: 0.5em 0;
+            max-width: 50ch;
+            color: var(--g1500);
+        }
     }
 }
 
+.booleanPreference,
 .intPreference {
-    display: flex;
-    gap: 0.5em;
-    align-items: center;
+    display: block;
+    padding: 0.5em 0;
 
     font-size: 0.9em;
-    color: var(--g1500);
+    color: var(--g1800);
+
+    > input {
+        margin-right: 0.5em;
+    }
+
+    &.disabled {
+        filter: grayscale(100%) opacity(50%);
+    }
 }
 
-.numberInput {
-    background-color: var(--g400);
-    color: var(--g1500);
-    border: none;
-    padding: 0.08em;
+.col2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 1em;
+
+    @media (max-width: 40em) {
+        grid-template-columns: auto;
+        grid-template-rows: auto auto;
+    }
+}
+
+.exampleCodeEditor {
+    border: 1px solid var(--g300);
+
+    overflow: hidden;
+
+    :global(.cm-editor) {
+        height: 300px;
+    }
 }

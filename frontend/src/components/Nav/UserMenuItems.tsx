@@ -34,13 +34,13 @@ export default function UserMenuItems() {
                 Signed in as <b>{user.username}</b>
             </div>
         </MenuItem>
-        <hr />
         <LinkItem href={`/u/${user.username}`}>
             Your profile
         </LinkItem>
-        {/*<LinkItem href="/settings">
+        <hr />
+        <LinkItem href="/settings">
             Settings
-        /LinkItem>*/}
+        </LinkItem>
         <hr />
         <ButtonItem
             onTrigger={async () => {

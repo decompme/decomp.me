@@ -11,8 +11,8 @@ import ProgressBar from "@badrap/bar-of-progress"
 import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
-
 import "./_app.scss"
+import { useTheme } from "../lib/settings"
 
 const progress = new ProgressBar({
     size: 2,
@@ -26,14 +26,23 @@ Router.events.on("routeChangeComplete", progress.finish)
 Router.events.on("routeChangeError", progress.finish)
 
 export default function MyApp({ Component, pageProps }) {
+    const [theme] = useTheme()
     const [themeColor, setThemeColor] = useState("#282e31")
 
     useEffect(() => {
+        document.body.classList.remove("theme-light")
+        document.body.classList.remove("theme-dark")
+
+        const realTheme = theme == "auto"
+            ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+            : theme
+        document.body.classList.add(`theme-${realTheme}`)
+
         const style = window.getComputedStyle(document.body)
 
         // Same color as navbar
         setThemeColor(style.getPropertyValue("--g300"))
-    }, [])
+    }, [theme])
 
     return <Layout>
         <Head>
