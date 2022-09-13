@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, IterationsIcon, MarkGithubIcon, RepoForkedIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, GearIcon, IterationsIcon, RepoForkedIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
