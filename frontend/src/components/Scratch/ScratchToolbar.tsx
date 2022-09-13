@@ -220,7 +220,7 @@ export default function ScratchToolbar({
             <li>
                 <button onClick={() => window.open("/settings/editor")}>
                     <GearIcon />
-                    Preferences
+                    Settings
                 </button>
             </li>
         </ul>
