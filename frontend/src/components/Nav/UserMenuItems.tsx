@@ -21,10 +21,6 @@ export default function UserMenuItems() {
             <MenuItem>
                 <GitHubLoginButton popup />
             </MenuItem>
-            {/*<hr />
-            <LinkItem href="/settings">
-                Settings
-            </LinkItem>*/}
         </>
     }
 
@@ -38,7 +34,7 @@ export default function UserMenuItems() {
             Your profile
         </LinkItem>
         <hr />
-        <LinkItem href="/settings">
+        <LinkItem href="/settings/appearance">
             Settings
         </LinkItem>
         <hr />
