@@ -93,7 +93,14 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
             }
         }
 
-        return <resizer.Container vertical={layout.kind == "vertical"} style={{ width: "100%", height: "100%" }}>
+        return <resizer.Container
+            vertical={layout.kind == "vertical"}
+            style={{
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+            }}
+        >
             {els}
         </resizer.Container>
     }
