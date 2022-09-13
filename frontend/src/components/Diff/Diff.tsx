@@ -206,14 +206,14 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
     const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : container.width
 
     useEffect(() => {
-        // Initially distribute the bar positions across the container
-        if (isNaN(barPos) && container.width) {
+        // Distribute the bar positions across the container when its width changes
+        if (container.width) {
             const numSections = hasPreviousColumn ? 3 : 2
 
             setBarPos(container.width / numSections)
             setPrevBarPos(container.width / numSections * 2)
         }
-    }, [barPos, container.width, hasPreviousColumn])
+    }, [container.width, hasPreviousColumn])
 
     return <div
         ref={container.ref}
