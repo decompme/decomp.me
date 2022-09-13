@@ -6,6 +6,7 @@ import { cpp } from "@codemirror/lang-cpp"
 import { FileIcon, PaintbrushIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
+import CodeColorSchemePicker from "../../components/CodeColorSchemePicker"
 import CodeMirror from "../../components/Editor/CodeMirror"
 import Nav from "../../components/Nav"
 import NumberInput from "../../components/NumberInput"
@@ -134,6 +135,7 @@ function AppearanceSettings() {
     const [fontSize, setFontSize] = settings.useCodeFontSize()
     const [monospaceFont, setMonospaceFont] = settings.useMonospaceFont()
     const [codeLineHeight, setCodeLineHeight] = settings.useCodeLineHeight()
+    const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme()
 
     return <>
         <section>
@@ -182,6 +184,9 @@ function AppearanceSettings() {
                             />
                         </div>
                     </div>
+
+                    <label>Color scheme</label>
+                    <CodeColorSchemePicker scheme={codeColorScheme} onChange={setCodeColorScheme} />
                 </div>
                 <div className={styles.exampleCodeEditor}>
                     <CodeMirror

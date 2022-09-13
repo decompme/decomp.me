@@ -57,6 +57,13 @@ export default function MyApp({ Component, pageProps }) {
         document.body.style.setProperty("--code-line-height", codeLineHeight)
     }, [codeLineHeight])
 
+    const [codeColorScheme] = settings.useCodeColorScheme()
+    useEffect(() => {
+        for (const [key, value] of Object.entries(codeColorScheme)) {
+            document.body.style.setProperty(`--code-${key}`, value.toString())
+        }
+    }, [codeColorScheme])
+
     return <Layout>
         <Head>
             <meta name="theme-color" content={themeColor} />
