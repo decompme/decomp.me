@@ -8,7 +8,6 @@
         "postinstall": "next telemetry disable"
     },
     "dependencies": {
-        "@badrap/bar-of-progress": "^0.2.1",
         "@codemirror/basic-setup": "^0.20.0",
         "@codemirror/lang-cpp": "^0.20.0",
         "@codemirror/next": "^0.16.0",

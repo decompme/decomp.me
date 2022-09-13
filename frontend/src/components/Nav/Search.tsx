@@ -133,7 +133,7 @@ function MountedSearch({ className }: { className?: string }) {
                 [styles.isOpen]: isOpen,
             })}
             type="text"
-            placeholder="Search decomp.me..."
+            placeholder="Search decomp.me"
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onClick={() => setIsFocused(true)}
@@ -206,8 +206,8 @@ export default function Search({ className }: { className?: string }) {
             <SearchIcon className={styles.icon} />
             <input
                 className={styles.input}
-                type="text"
-                placeholder="Search decomp.me..."
+                type="search"
+                placeholder="Search decomp.me"
                 spellCheck={false}
             />
         </div>

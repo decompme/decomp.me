@@ -12,11 +12,11 @@
     }
 
     @media (max-width: 600px) {
-        grid-template-columns: 250px 1fr 250px;
+        grid-template-columns: 1fr;
         grid-template-areas:
-            "about about about"
-            "projects projects projects"
-            "activity activity activity";
+            "about"
+            "projects"
+            "activity";
 
         .projects {
             border-bottom: 1px solid var(--g300);
@@ -39,11 +39,6 @@
 
     > h2 {
         font-weight: 400;
-    }
-
-    @media (min-width: 900px) {
-
-        //justify-self: center;
     }
 }
 
@@ -112,13 +107,8 @@
     padding-top: 0;
 
     & > h2 {
-        position: sticky;
-        top: 0;
-
         background: var(--g200);
         padding: 0.75em 0;
-
-        z-index: 1;
 
         font-weight: 500;
     }

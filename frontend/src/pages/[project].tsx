@@ -81,25 +81,27 @@ export default function ProjectPage(props: { project: api.Project }) {
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>
             <LoadingSpinner width={32} height={32} />
             This project is being updated, please wait
-        </main> : <main className={styles.container}>
+        </main> : <main>
             <ErrorBoundary>
-                <h2>Functions</h2>
-                <ProjectFunctionList projectUrl={project.url}>
-                    <div className={styles.headerActions}>
-                        {userIsMember && <AsyncButton
-                            forceLoading={project.repo.is_pulling}
-                            onClick={async () => {
-                                mutate(await api.post(project.url + "/pull", {}))
-                            }}
-                        >
-                            <RepoPullIcon /> Pull
-                        </AsyncButton>}
+                <div className={styles.container}>
+                    <h2>Functions</h2>
+                    <ProjectFunctionList projectUrl={project.url}>
+                        <div className={styles.headerActions}>
+                            {userIsMember && <AsyncButton
+                                forceLoading={project.repo.is_pulling}
+                                onClick={async () => {
+                                    mutate(await api.post(project.url + "/pull", {}))
+                                }}
+                            >
+                                <RepoPullIcon /> Pull
+                            </AsyncButton>}
 
-                        <small>
-                            Last pulled <TimeAgo date={project.repo.last_pulled} />
-                        </small>
-                    </div>
-                </ProjectFunctionList>
+                            <small>
+                                Last pulled <TimeAgo date={project.repo.last_pulled} />
+                            </small>
+                        </div>
+                    </ProjectFunctionList>
+                </div>
             </ErrorBoundary>
         </main>}
         <Footer />

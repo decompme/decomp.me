@@ -1,82 +1,20 @@
-$column_width: 260px;
-
 .toolbar {
     display: flex;
     flex-direction: row;
     align-items: stretch;
     justify-content: space-between;
 
-    min-height: 40px; // SSR has no buttons
-
-    font-size: 90%;
-
-    padding: 0 4px;
-
-    background: var(--g400);
-    //border-bottom: 1px solid var(--a100);
-
-    @media screen and (min-height: 800px) {
-        gap: 8px;
-        padding: 8px;
-        height: 48px;
-    }
+    width: 100%;
 }
 
-.left,
-.center,
 .right {
     display: flex;
     flex-direction: row;
     align-items: center;
 
-    gap: 4px;
+    gap: 8px;
 
-    @media screen and (min-height: 800px) {
-        gap: 8px;
-    }
-
-    min-width: $column_width;
-}
-
-.center {
-    justify-content: center;
-    overflow: hidden;
-}
-
-.left,
-.right {
     flex-shrink: 0;
-}
-
-@media (max-width: ($column_width * 3.25)) {
-    .center {
-        min-width: $column_width * 0.5;
-    }
-}
-
-@media (max-width: ($column_width * 2.75)) {
-    .left,
-    .right,
-    .center {
-        min-width: 0;
-    }
-
-    .search {
-        display: none;
-    }
-}
-
-@media (max-width: ($column_width * 2)) {
-    .right > button,
-    .right > .iconButton {
-        // Button actions are available in frog menu as alternative
-        display: none;
-    }
-
-    .left,
-    .right {
-        min-width: 60px;
-    }
 }
 
 .grow {
@@ -90,8 +28,7 @@ $column_width: 260px;
     background: transparent;
     outline: none !important;
 
-    font-size: 0.9em;
-    color: var(--g1800);
+    color: var(--g2000);
 
     overflow: hidden;
     text-overflow: ellipsis;
@@ -109,45 +46,84 @@ $column_width: 260px;
 
     &.editable:hover,
     &[contenteditable] {
-        background: var(--g300);
+        background: var(--g200);
     }
 }
 
-.icons {
-    flex-shrink: 0;
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    height: 100%;
-    padding: 4px 0;
-
-    &:first-child {
-        padding-left: 8px;
-    }
-
-    svg {
-        height: 100%;
-    }
-}
-
-.iconButton {
-    color: var(--g1400);
-    height: 100%;
+.breadcrumbs {
+    padding: 0 8px;
 
     display: flex;
     align-items: center;
 
-    padding-left: 4px;
-
-    cursor: pointer;
-
-    &:hover {
-        opacity: 0.8;
+    // Hide owner on small widths
+    @media (max-width: 800px) {
+        li::before,
+        li:not(:last-child) {
+            display: none !important;
+        }
     }
 }
 
-.loginState {
-    flex-shrink: 0;
+.actions {
+    list-style: none;
+
+    padding: 0 8px;
+
+    font-size: 12px;
+
+    background: var(--g300);
+
+    display: flex;
+    align-items: center;
+
+    > li {
+        display: inline-block;
+
+        color: var(--g1600);
+        cursor: pointer;
+
+        &:hover {
+            color: var(--g2000);
+        }
+
+        &.separator {
+            width: 1px;
+            height: 16px;
+            margin: 0 4px;
+
+            background: var(--g500);
+        }
+
+        button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 8px;
+
+            cursor: pointer;
+
+            background: none;
+            border: 0;
+
+            &[disabled] {
+                opacity: 0.5;
+                cursor: default;
+            }
+
+            svg {
+                width: 1em;
+            }
+
+            // On small widths, only show the icon
+            @media (max-width: 600px) {
+                text-indent: -9999px; // Hide text
+                padding: 6px 2px;
+
+                svg {
+                    width: 1.5em;
+                }
+            }
+        }
+    }
 }
