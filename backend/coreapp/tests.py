@@ -1046,6 +1046,9 @@ class MockRepository:
         f"""header\nINCLUDE_ASM(void, "file", some_function, \ns32 arg0);\nfooter"""
     )
 
+    def create_git_ref(self, **kwargs: Any) -> None:
+        pass
+
     def get_contents(self, path: str) -> Mock:
         return Mock(content=self.content, sha="12345")
 
