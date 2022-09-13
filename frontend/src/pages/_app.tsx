@@ -5,25 +5,12 @@ import { useEffect, useState } from "react"
 import type {} from "react/next"
 
 import Head from "next/head"
-import Router from "next/router"
 
-import ProgressBar from "@badrap/bar-of-progress"
 import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
 
 import "./_app.scss"
-
-const progress = new ProgressBar({
-    size: 2,
-    color: "var(--accent)",
-    className: "routerProgressBar",
-    delay: 0,
-})
-
-Router.events.on("routeChangeStart", progress.start)
-Router.events.on("routeChangeComplete", progress.finish)
-Router.events.on("routeChangeError", progress.finish)
 
 export default function MyApp({ Component, pageProps }) {
     const [themeColor, setThemeColor] = useState("#282e31") // --g400 from themePlum
