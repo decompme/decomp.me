@@ -632,7 +632,9 @@ export interface Stats {
 }
 
 export function useStats(): Stats | undefined {
-    const { data, error } = useSWR<Stats>("/stats", get)
+    const { data, error } = useSWR<Stats>("/stats", get, {
+        refreshInterval: 5000,
+    })
 
     if (error) {
         throw error

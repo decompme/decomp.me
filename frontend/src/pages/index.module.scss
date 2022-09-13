@@ -158,3 +158,18 @@
         color: var(--link);
     }
 }
+
+.aboutColumnsContainer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1em;
+
+    @media (max-width: 600px) {
+        display: block;
+
+        > p {
+            display: none;
+        }
+    }
+
+}
