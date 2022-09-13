@@ -9,6 +9,7 @@ import Head from "next/head"
 import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
+import { isMacOS } from "../lib/device"
 
 import "./_app.scss"
 
@@ -20,6 +21,12 @@ export default function MyApp({ Component, pageProps }) {
 
         // Same color as navbar
         setThemeColor(style.getPropertyValue("--g400"))
+    }, [])
+
+    useEffect(() => {
+        if (isMacOS()) {
+            document.body.classList.add("device-macos")
+        }
     }, [])
 
     return <Layout>
