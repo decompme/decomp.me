@@ -82,7 +82,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
 
     const basket = useBasket(project)
     const canCreatePr = !!project.members.find(userIsYou)
-    const backetHasThisFunc = basket.scratches.some(s => s.project_function == func.url)
+    const basketHasThisFunc = basket.scratches.some(s => s.project_function == func.url)
 
     return <>
         <PageTitle title={func.display_name} />
@@ -132,7 +132,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
 
                                 return <ScratchItem key={scratch.url} scratch={scratch}>
                                     {canCreatePr && isMatch && <Button
-                                        disabled={isInPr || backetHasThisFunc}
+                                        disabled={isInPr || basketHasThisFunc}
                                         onClick={() => basket.addScratch(scratch)}
                                     >
                                         <GitPullRequestIcon />

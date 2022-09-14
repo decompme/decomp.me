@@ -15,7 +15,6 @@ from coreapp.flags import (
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
-    FlagSet,
     Flags,
 )
 

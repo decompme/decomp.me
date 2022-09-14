@@ -311,9 +311,4 @@ router = ExtendedSimpleRouter(trailing_slash=False)
         basename="projectfunction",
         parents_query_lookups=["slug"],
     )
-    # .register(
-    #     r"pr",
-    #     PullRequestViewSet,
-    #     basename="pr"
-    # )
 )
