@@ -23,7 +23,7 @@ const diffLineMap = Facet.define<DiffLineMap, DiffLineMap>({
     combine: values => (values.length ? values[0] : {}),
 })
 const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => {
-    const changes = diffLines(state.doc.toString(), state.facet(targetString), {
+    const changes = diffLines(state.facet(targetString), state.doc.toString(), {
         ignoreWhitespace: true,
     })
 
@@ -31,12 +31,15 @@ const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => 
     const map: DiffLineMap = {}
     let lineNumber = 1
 
-    for (const { value, added, removed } of changes) {
-        const numLines = value.match(/\n/g)?.length ?? 0
+    for (const { count: numLines, added, removed } of changes) {
+        // We don't care about removed lines, since we don't show them
+        if (removed) {
+            continue
+        }
 
-        if (added || removed) {
+        if (added) {
             for (let i = 0; i < numLines; i++) {
-                map[lineNumber + i] = added ? addedMarker : removedMarker
+                map[lineNumber + i] = marker
             }
         }
 
@@ -45,38 +48,30 @@ const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => 
         }
     }
 
+    console.log(map)
+
     return map
 })
 
-const addedMarker = new class extends GutterMarker {
+const marker = new class extends GutterMarker {
     toDOM() {
         const span = document.createElement("span")
-        span.textContent = "+"
-        span.className = styles.added
-        return span
-    }
-}
-
-const removedMarker = new class extends GutterMarker {
-    toDOM() {
-        const span = document.createElement("span")
-        span.textContent = "-"
-        span.className = styles.removed
+        span.className = styles.marker
         return span
     }
 }
 
 const diffGutter = gutter({
-    lineMarker(view, block) {
+    lineMarker(view, block) { // Might be better to use markers field instead, but this works
         try {
-            const targetText_ = view.state.facet(targetText)
-            const currentText = view.state.doc
             const map = view.state.facet(diffLineMap)
+            const line = view.state.doc.lineAt(block.from)
 
-            const currentLine = currentText.lineAt(block.from)
-            const targetLine = targetText_.line(currentLine.number)
+            if (view.state.doc.sliceString(line.from, line.to).trim() === "") {
+                // Don't show for empty/whitespace-only lines
+            }
 
-            return map[targetLine.number]
+            return map[line.number]
         } catch (error) {
             if (error instanceof RangeError) {
                 // Ignore
@@ -85,7 +80,10 @@ const diffGutter = gutter({
             }
         }
     },
-    initialSpacer: () => addedMarker,
+    lineMarkerChange(update) {
+        return update.docChanged || !update.state.facet(targetText).eq(update.startState.facet(targetText))
+    },
+    initialSpacer: () => marker,
 })
 
 const diffGutterExtension: Extension = [

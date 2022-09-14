@@ -1,21 +1,4 @@
-.added {
-    color: #00ff00cc;
-
-    &::after {
-        background: #00ff0011;
-    }
-}
-
-.removed {
-    color: #ff0000cc;
-
-    &::after {
-        background: #ff000011;
-    }
-}
-
-.added,
-.removed {
+.marker {
     &::after {
         content: "";
 
@@ -26,5 +9,7 @@
         height: calc(var(--code-line-height) * 1em);
 
         pointer-events: none;
+
+        background: #00ffff10;
     }
 }
