@@ -75,6 +75,7 @@ export default function CodeMirror({
 
                         return null
                     }),
+
                     extensionsRef.current,
                 ],
             }),
@@ -108,8 +109,6 @@ export default function CodeMirror({
                         },
                     })
                 )
-            } else {
-                console.warn("valueVersion changed but the value is the same")
             }
         }
     }, [valueVersion]) // eslint-disable-line react-hooks/exhaustive-deps

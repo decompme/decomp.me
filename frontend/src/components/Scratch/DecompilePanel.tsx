@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
+import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
-import { EditorState } from "@codemirror/state"
+import { EditorState, Compartment } from "@codemirror/state"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
+import diffGutter, { target } from "../../lib/codemirror/diff-gutter"
 import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"
 
@@ -13,8 +15,6 @@ import styles from "./DecompilePanel.module.scss"
 export type Props = {
     scratch: api.Scratch
 }
-
-// TODO: ideally the decompile output would be diffed against the original source code
 
 export default function DecompilePanel({ scratch }: Props) {
     const [decompiledCode, setDecompiledCode] = useState<string | null>(null)
@@ -30,6 +30,17 @@ export default function DecompilePanel({ scratch }: Props) {
         })
     }, [scratch.compiler, scratch.context, scratch.url])
 
+    // Update the diff target when scratch source code changes
+    const viewRef = useRef<EditorView | null>()
+    const [compartment] = useState(new Compartment())
+    useEffect(() => {
+        if (viewRef.current) {
+            viewRef.current.dispatch({
+                effects: compartment.reconfigure(target.of(scratch.source_code)),
+            })
+        }
+    }, [compartment, scratch.source_code])
+
     return <div className={styles.container}>
         <section className={styles.main}>
             <p>
@@ -42,7 +53,14 @@ export default function DecompilePanel({ scratch }: Props) {
                     className={styles.editor}
                     value={decompiledCode}
                     onChange={c => setDecompiledCode(c)}
-                    extensions={[basicSetup, cpp(), EditorState.readOnly.of(true)]}
+                    viewRef={viewRef}
+                    extensions={[
+                        basicSetup,
+                        cpp(),
+                        EditorState.readOnly.of(true),
+                        diffGutter,
+                        compartment.of(target.of(scratch.source_code)),
+                    ]}
                 />
             </> : <Loading className={styles.loading} />}
         </section>
