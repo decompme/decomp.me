@@ -8,7 +8,6 @@ import classNames from "classnames"
 import { useCombobox } from "downshift"
 import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
-import useSWR from "swr"
 
 import * as api from "../../lib/api"
 import LoadingSpinner from "../loading.svg"
@@ -18,25 +17,15 @@ import verticalMenuStyles from "../VerticalMenu.module.scss" // eslint-disable-l
 
 import styles from "./Search.module.scss"
 
-function useRecentScratches(): api.TerseScratch[] {
-    const { data, error } = useSWR("/scratch?page_size=5", api.get)
-
-    if (error)
-        console.error(error)
-
-    return data?.results || []
-}
-
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("")
     const [isFocused, setIsFocused] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
-    const recentScratches = useRecentScratches()
     const plausible = usePlausible()
 
-    const items = query.length > 0 ? searchItems : recentScratches
+    const items = query.length > 0 ? searchItems : []
 
     const close = () => {
         console.info("<Search> close")
@@ -54,7 +43,7 @@ function MountedSearch({ className }: { className?: string }) {
         setInputValue,
     } = useCombobox({
         items,
-        isOpen: (isFocused || !!query) && !(isLoading && items.length === 0),
+        isOpen: (isFocused || !!query) && query.length > 0 && !(isLoading && items.length === 0),
         itemToString(item) {
             return item.name
         },
