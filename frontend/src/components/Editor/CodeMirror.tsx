@@ -4,6 +4,7 @@ import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 import { useDebouncedCallback } from "use-debounce"
 
+import { useSize } from "../../lib/hooks"
 import { useCodeFontSize } from "../../lib/settings"
 
 export interface Props {
@@ -27,7 +28,7 @@ export default function CodeMirror({
     viewRef: viewRefProp,
     extensions,
 }: Props) {
-    const el = useRef<HTMLDivElement>()
+    const { ref: el, width } = useSize<HTMLDivElement>()
 
     const valueRef = useRef(value)
     valueRef.current = value
@@ -91,7 +92,7 @@ export default function CodeMirror({
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [viewRefProp])
+    }, [el, viewRefProp])
 
     // Replace doc when `valueVersion` prop changes
     useEffect(() => {
@@ -140,6 +141,9 @@ export default function CodeMirror({
         ref={el}
         onMouseMove={debouncedOnMouseMove}
         className={className}
-        style={{ "--cm-font-size": `${fontSize}px` } as CSSProperties}
+        style={{
+            "--cm-font-size": `${fontSize}px`,
+            "--cm-container-width": `${width}px`,
+        } as CSSProperties}
     />
 }

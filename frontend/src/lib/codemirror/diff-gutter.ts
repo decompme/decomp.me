@@ -2,6 +2,8 @@ import { Extension, Facet, Text } from "@codemirror/state"
 import { gutter, GutterMarker } from "@codemirror/view"
 import { diffLines } from "diff"
 
+import styles from "./diff-gutter.module.scss"
+
 // State for target text to diff doc against
 const targetString = Facet.define<string, string>({
     combine: values => (values.length ? values[0] : ""),
@@ -50,7 +52,7 @@ const addedMarker = new class extends GutterMarker {
     toDOM() {
         const span = document.createElement("span")
         span.textContent = "+"
-        span.style.color = "green"
+        span.className = styles.added
         return span
     }
 }
@@ -59,7 +61,7 @@ const removedMarker = new class extends GutterMarker {
     toDOM() {
         const span = document.createElement("span")
         span.textContent = "-"
-        span.style.color = "red"
+        span.className = styles.removed
         return span
     }
 }

@@ -1,0 +1,30 @@
+.added {
+    color: #00ff00cc;
+
+    &::after {
+        background: #00ff0011;
+    }
+}
+
+.removed {
+    color: #ff0000cc;
+
+    &::after {
+        background: #ff000011;
+    }
+}
+
+.added,
+.removed {
+    &::after {
+        content: "";
+
+        position: absolute;
+        left: 0;
+        right: 0;
+        width: var(--cm-container-width); // Set by <CodeMirror> component
+        height: calc(var(--code-line-height) * 1em);
+
+        pointer-events: none;
+    }
+}
