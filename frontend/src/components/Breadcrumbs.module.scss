@@ -23,14 +23,12 @@
                 text-decoration: none;
 
                 &:any-link:hover {
-                    color: var(--link);
-                    text-decoration: underline;
+                    color: var(--g2000);
                 }
 
                 &[aria-current="page"] {
-                    color: var(--g1900);
+                    color: var(--g2000);
                     font-weight: 500;
-                    text-decoration: none; // override :hover
                 }
             }
         }
