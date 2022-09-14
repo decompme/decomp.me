@@ -1068,6 +1068,11 @@ class MockRepository:
     new=Mock(return_value=MockRepository("orig_repo")),
 )
 @patch.object(
+    GitHubRepo,
+    "get_sha",
+    new=Mock(return_value="12345"),
+)
+@patch.object(
     Profile,
     "user",
     new=Mock(username="fakeuser", github=Mock(access_token="dummytoken")),
