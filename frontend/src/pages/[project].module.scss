@@ -8,6 +8,15 @@
     margin: 0 auto;
 
     cursor: default;
+
+    > h2 {
+        color: var(--g1400);
+        font-weight: 600;
+
+        svg {
+            margin-right: 0.4em;
+        }
+    }
 }
 
 .loadingContainer {
