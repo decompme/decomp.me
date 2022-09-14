@@ -42,7 +42,21 @@ export default function Nav({ children }: Props) {
         }
     }, [isOpen, router])
 
-    return <nav className={styles.container} aria-labelledby="navtoggle" data-open={isOpen} data-force-toggle={!!children}>
+    // If the user clicks outside the nav, close it
+    useEffect(() => {
+        if (isOpen) {
+            document.body.addEventListener("click", toggleOpen)
+            return () => document.body.removeEventListener("click", toggleOpen)
+        }
+    }, [isOpen])
+
+    return <nav
+        className={styles.container}
+        aria-labelledby="navtoggle"
+        data-open={isOpen}
+        data-force-toggle={!!children}
+        onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
+    >
         <ul className={styles.header}>
             <li className={styles.headerItemMenuToggle}>
                 <button id="navtoggle" onClick={toggleOpen} aria-label={toggleLabel} aria-expanded={isOpen}>
