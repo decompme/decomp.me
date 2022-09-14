@@ -78,6 +78,7 @@ yarn dev
 
 
 ### Optional steps
+- [Configure vscode for development](VSCODE.md)
 - [Configure wine for Windows compiler on Linux](WINE.md)
 - [Set up GitHub authentication](GITHUB.md)
 - [Install nsjail to run the compiler sandbox](SANDBOX.md)
