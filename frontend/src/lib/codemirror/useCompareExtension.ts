@@ -1,8 +1,10 @@
-import { Extension, Facet, Text } from "@codemirror/state"
-import { gutter, GutterMarker } from "@codemirror/view"
+import { RefObject, useEffect, useState } from "react"
+
+import { Compartment, Extension, Facet, Text } from "@codemirror/state"
+import { EditorView, gutter, GutterMarker } from "@codemirror/view"
 import { diffLines } from "diff"
 
-import styles from "./diff-gutter.module.scss"
+import styles from "./useCompareExtension.module.scss"
 
 // State for target text to diff doc against
 const targetString = Facet.define<string, string>({
@@ -86,12 +88,23 @@ const diffGutter = gutter({
     initialSpacer: () => marker,
 })
 
-const diffGutterExtension: Extension = [
-    targetTextComputer,
-    diffLineMapComputer,
-    diffGutter,
-]
+// Extension that highlights lines in the doc that differ from `compareTo`.
+export default function useCompareExtension(viewRef: RefObject<EditorView>, compareTo: string): Extension {
+    const [compartment] = useState(new Compartment())
 
-export const target = targetString
+    // Update targetString facet when compareTo changes
+    useEffect(() => {
+        if (viewRef.current) {
+            viewRef.current.dispatch({
+                effects: compartment.reconfigure(targetString.of(compareTo)),
+            })
+        }
+    }, [compartment, compareTo, viewRef])
 
-export default diffGutterExtension
+    return [
+        targetTextComputer,
+        diffLineMapComputer,
+        diffGutter,
+        compartment.of(targetString.of(compareTo)),
+    ]
+}

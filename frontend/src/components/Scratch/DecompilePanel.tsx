@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from "react"
 
 import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
-import { EditorState, Compartment } from "@codemirror/state"
 
 import * as api from "../../lib/api"
-import basicSetup from "../../lib/codemirror/basic-setup"
-import diffGutter, { target } from "../../lib/codemirror/diff-gutter"
+import { decompileSetup } from "../../lib/codemirror/basic-setup"
+import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"
 
@@ -18,6 +17,8 @@ export type Props = {
 
 export default function DecompilePanel({ scratch }: Props) {
     const [decompiledCode, setDecompiledCode] = useState<string | null>(null)
+    const viewRef = useRef<EditorView>()
+    const compareExtension = useCompareExtension(viewRef, scratch.source_code)
 
     // TODO: debounce
     useEffect(() => {
@@ -30,22 +31,11 @@ export default function DecompilePanel({ scratch }: Props) {
         })
     }, [scratch.compiler, scratch.context, scratch.url])
 
-    // Update the diff target when scratch source code changes
-    const viewRef = useRef<EditorView | null>()
-    const [compartment] = useState(new Compartment())
-    useEffect(() => {
-        if (viewRef.current) {
-            viewRef.current.dispatch({
-                effects: compartment.reconfigure(target.of(scratch.source_code)),
-            })
-        }
-    }, [compartment, scratch.source_code])
-
     return <div className={styles.container}>
         <section className={styles.main}>
             <p>
-                Modify the context and compiler options to see how the decompilation
-                of the original assembly changes.
+                Modify the context or compiler to see how the decompilation
+                of the assembly changes.
             </p>
 
             {(typeof decompiledCode == "string") ? <>
@@ -55,11 +45,9 @@ export default function DecompilePanel({ scratch }: Props) {
                     onChange={c => setDecompiledCode(c)}
                     viewRef={viewRef}
                     extensions={[
-                        basicSetup,
+                        decompileSetup,
                         cpp(),
-                        EditorState.readOnly.of(true),
-                        diffGutter,
-                        compartment.of(target.of(scratch.source_code)),
+                        compareExtension,
                     ]}
                 />
             </> : <Loading className={styles.loading} />}
