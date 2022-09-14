@@ -150,10 +150,10 @@ export default function Scratch({
         switch (id) {
         case TabId.ABOUT:
             return <Tab key={id} tabKey={id} label="About" className={styles.about}>
-                <AboutScratch
+                {() => <AboutScratch
                     scratch={scratch}
                     setScratch={userIsYou(scratch.owner) ? setScratch : null}
-                />
+                />}
             </Tab>
         case TabId.SOURCE_CODE:
             return <Tab
@@ -195,7 +195,7 @@ export default function Scratch({
             </Tab>
         case TabId.OPTIONS:
             return <Tab key={id} tabKey={id} label="Options" className={styles.compilerOptsTab}>
-                <div className={styles.compilerOptsContainer}>
+                {() => <div className={styles.compilerOptsContainer}>
                     <CompilerOpts
                         platform={scratch.platform}
                         value={scratch}
@@ -204,7 +204,7 @@ export default function Scratch({
                         diffLabel={scratch.diff_label}
                         onDiffLabelChange={d => setScratch({ diff_label: d })}
                     />
-                </div>
+                </div>}
             </Tab>
         case TabId.DIFF:
             return <Tab

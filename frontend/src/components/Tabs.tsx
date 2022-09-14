@@ -15,8 +15,11 @@ type Context = {
 
 const TABS_CTX = createContext<Context>(null)
 
+// Pass a ReactNode, or pass a function so the tab content can be rendered lazily.
+export type TabContent = ReactNode | (() => ReactNode)
+
 export type TabProps = {
-    children?: ReactNode
+    children?: TabContent
     className?: string
     tabKey: string
     label?: ReactNode
@@ -181,17 +184,21 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
             </div>
             {Object.entries(tabs).map(([key, { el }]) => {
                 const props = el.props as unknown as TabProps
+                const isActive = key === activeTab
+                const children = typeof props.children === "function"
+                    ? (isActive ? props.children() : null) // Render only when active
+                    : props.children
 
                 return <div
                     role="tabpanel"
                     className={classNames(styles.tabPanel, {
-                        [styles.active]: key === activeTab,
+                        [styles.active]: isActive,
                     })}
                     key={key}
                 >
                     <div className={classNames(styles.tabPanelContent, props.className)}>
                         <ErrorBoundary>
-                            {props.children}
+                            {children}
                         </ErrorBoundary>
                     </div>
                 </div>
