@@ -4,10 +4,6 @@
 
     display: flex;
     flex-direction: column;
-
-    padding: 1.5em;
-
-    overflow-y: auto;
 }
 
 .main {
@@ -15,35 +11,25 @@
 
     display: flex;
     flex-direction: column;
-    gap: 1rem;
 
-    @media screen and (min-height: 600px) {
-        overflow-y: hidden;
-    }
+    overflow: hidden;
 
-    > h2 {
-        font-size: 1.4em;
-        font-weight: 400;
-
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--a100);
-    }
+    // For .loading
+    position: relative;
 
     > p {
         color: var(--g1300);
+        padding: 1rem;
+        font-size: 0.8rem;
     }
-}
-
-.actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5em;
 }
 
 .editor {
     flex-grow: 1;
 
     overflow: hidden;
+
+    border-top: 1px solid var(--g300);
 
     @media screen and (max-height: 600px) {
         height: 200px;

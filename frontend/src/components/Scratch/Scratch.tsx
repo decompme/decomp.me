@@ -16,6 +16,7 @@ import ScoreBadge from "../ScoreBadge"
 import { Tab } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
+import DecompilationPanel from "./DecompilePanel"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -26,6 +27,7 @@ enum TabId {
     CONTEXT = "scratch_context",
     OPTIONS = "scratch_options",
     DIFF = "scratch_diff",
+    DECOMPILATION = "scratch_decompilation",
 }
 
 const DEFAULT_LAYOUTS = {
@@ -53,6 +55,7 @@ const DEFAULT_LAYOUTS = {
                 activeTab: TabId.DIFF,
                 tabs: [
                     TabId.DIFF,
+                    TabId.DECOMPILATION,
                 ],
             },
         ],
@@ -70,6 +73,7 @@ const DEFAULT_LAYOUTS = {
                 tabs: [
                     TabId.ABOUT,
                     TabId.DIFF,
+                    TabId.DECOMPILATION,
                 ],
             },
             {
@@ -96,6 +100,7 @@ const DEFAULT_LAYOUTS = {
             TabId.CONTEXT,
             TabId.DIFF,
             TabId.OPTIONS,
+            TabId.DECOMPILATION,
         ],
     },
 }
@@ -147,13 +152,13 @@ export default function Scratch({
     }, [scratch.slug])
 
     const renderTab = (id: string) => {
-        switch (id) {
+        switch (id as TabId) {
         case TabId.ABOUT:
             return <Tab key={id} tabKey={id} label="About" className={styles.about}>
-                {() => <AboutScratch
+                <AboutScratch
                     scratch={scratch}
                     setScratch={userIsYou(scratch.owner) ? setScratch : null}
-                />}
+                />
             </Tab>
         case TabId.SOURCE_CODE:
             return <Tab
@@ -225,6 +230,10 @@ export default function Scratch({
                     selectedSourceLine={selectedSourceLine}
                 />}
             </Tab>
+        case TabId.DECOMPILATION:
+            return <Tab key={id} tabKey={id} label="Decompilation">
+                {() => <DecompilationPanel scratch={scratch} />}
+            </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />
         }
@@ -248,7 +257,6 @@ export default function Scratch({
             isCompiling={isCompiling}
             scratch={scratch}
             setScratch={setScratch}
-            incrementValueVersion={incrementValueVersion}
         />
         <hr />
         {layout && <CustomLayout

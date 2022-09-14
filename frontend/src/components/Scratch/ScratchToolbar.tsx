@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
@@ -12,7 +12,6 @@ import UserAvatar from "../user/UserAvatar"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
-import ScratchDecompileModal from "./ScratchDecompileModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -103,18 +102,15 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
-    incrementValueVersion: () => void
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch, incrementValueVersion,
+    isCompiling, compile, scratch, setScratch,
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
-
-    const [isDecompileOpen, setDecompileOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -154,15 +150,6 @@ export default function ScratchToolbar({
                         {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
                     </>}
                 </div>
-                <ScratchDecompileModal
-                    open={isDecompileOpen}
-                    onClose={() => setDecompileOpen(false)}
-                    scratch={scratch}
-                    setSourceCode={source_code => {
-                        setScratch({ source_code })
-                        incrementValueVersion()
-                    }}
-                />
             </div>
         </Nav>
 
@@ -215,12 +202,6 @@ export default function ScratchToolbar({
                 <button onClick={() => exportScratchZip(scratch)}>
                     <DownloadIcon />
                     Export..
-                </button>
-            </li>
-            <li>
-                <button onClick={() => setDecompileOpen(true)}>
-                    <IterationsIcon />
-                    Re-decompile..
                 </button>
             </li>
         </ul>
