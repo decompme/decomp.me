@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, GearIcon, IterationsIcon, RepoForkedIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
 import * as api from "../../lib/api"
-import { useAutoRecompileSetting } from "../../lib/settings"
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
 import { SpecialKey, useShortcut } from "../Shortcut"
 import UserAvatar from "../user/UserAvatar"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
-import CompileScratchButton from "./buttons/CompileScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import ScratchDecompileModal from "./ScratchDecompileModal"
 import styles from "./ScratchToolbar.module.scss"
@@ -121,10 +119,10 @@ export default function ScratchToolbar({
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
 
-    const [autoRecompileSetting] = useAutoRecompileSetting()
-
-    const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], () => {
-        fuzzySaveScratch()
+    const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
+        setIsSaving(true)
+        await fuzzySaveScratch()
+        setIsSaving(false)
     })
 
     const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
@@ -153,7 +151,6 @@ export default function ScratchToolbar({
                 <div className={styles.grow} />
                 <div className={styles.right}>
                     {isMounted && <>
-                        {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} title={compileShortcut} />}
                         {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
                     </>}
                 </div>
@@ -203,6 +200,16 @@ export default function ScratchToolbar({
                     Delete
                 </button>
             </li>}
+            <li>
+                <button
+                    onClick={compile}
+                    title={compileShortcut}
+                    disabled={isCompiling}
+                >
+                    <SyncIcon />
+                    Compile
+                </button>
+            </li>
             <li className={styles.separator} />
             <li>
                 <button onClick={() => exportScratchZip(scratch)}>
@@ -214,13 +221,6 @@ export default function ScratchToolbar({
                 <button onClick={() => setDecompileOpen(true)}>
                     <IterationsIcon />
                     Re-decompile..
-                </button>
-            </li>
-            <li className={styles.separator} />
-            <li>
-                <button onClick={() => window.open("/settings/editor")}>
-                    <GearIcon />
-                    Settings
                 </button>
             </li>
         </ul>
