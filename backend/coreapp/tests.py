@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from time import sleep
 from typing import Any, Callable, Dict, Optional
 from unittest import skip, skipIf
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from parameterized import parameterized
 
 import responses
@@ -1050,13 +1050,16 @@ class MockRepository:
         pass
 
     def get_contents(self, path: str) -> Mock:
-        return Mock(content=self.content, sha="12345")
+        return Mock(
+            decoded_content=Mock(decode=Mock(return_value=self.content)),
+            sha="12345",
+        )
 
     def update_file(self, content: str, **kwargs: Any) -> None:
         self.content = content
 
     def create_pull(self, **kwargs: Any) -> Mock:
-        return Mock(url="http://github.com/fake_url")
+        return Mock(html_url="http://github.com/fake_url")
 
 
 @patch.object(
@@ -1159,6 +1162,7 @@ class ScratchPRTests(BaseTestCase):
             reverse("project-pr", args=[self.project.slug]),
             data={"scratch_slugs": [self.scratch.slug]},
         )
+        print(response.json())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["url"], "http://github.com/fake_url")

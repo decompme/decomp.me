@@ -121,6 +121,9 @@ class ProjectViewSet(
     def pr(self, request: Request, pk: str) -> Response:
         scratch_slugs = request.data.get("scratch_slugs", [])
 
+        if isinstance(scratch_slugs, str):
+            scratch_slugs = [scratch_slugs]
+
         if not isinstance(scratch_slugs, list) or len(scratch_slugs) == 0:
             raise PrMustHaveScratchesException()
 
@@ -152,6 +155,7 @@ class ProjectViewSet(
                     raise e
 
         files_to_funcs: dict[str, list[str]] = {}
+        filesystem: dict[str, str] = {}  # Local cache
         for scratch_slug in scratch_slugs:
             assert isinstance(scratch_slug, str)
             scratch: Scratch = Scratch.objects.get(slug=scratch_slug)
@@ -160,12 +164,18 @@ class ProjectViewSet(
             if fn is None or fn.project != project:
                 raise ScratchNotProjectFunctionException()
 
+            # Get file contents if needed
+            if fn.src_file not in filesystem:
+                contents_data = fork.get_contents(fn.src_file)
+                contents = (
+                    contents_data[0]
+                    if isinstance(contents_data, list)
+                    else contents_data
+                )
+                filesystem[fn.src_file] = contents.decoded_content.decode() or ""
+
             # Change file contents
-            contents_data = fork.get_contents(fn.src_file)
-            contents = (
-                contents_data[0] if isinstance(contents_data, list) else contents_data
-            )
-            old_content = contents.decoded_content.decode() or ""
+            old_content = filesystem[fn.src_file]
             new_content = re.sub(
                 # TODO: escape function name?
                 rf"INCLUDE_ASM\([^,]+, [^,]+, {scratch.diff_label}[^\)]*\);",
@@ -193,7 +203,7 @@ class ProjectViewSet(
                     gh_user = GitHubUser.objects.get(user=profile.user)
                     commit_message += f"\nCo-authored by: {gh_user.details().name} <{profile.user.email}>"
 
-            # Update the file on the branch
+            # Update the file on the branch & in our local cache
             fork.update_file(
                 message=commit_message,
                 path=fn.src_file,
@@ -201,6 +211,7 @@ class ProjectViewSet(
                 sha=contents.sha,
                 branch=fork_branch,
             )
+            filesystem[fn.src_file] = new_content
 
             files_to_funcs.setdefault(fn.src_file, []).append(fn.display_name)
 
