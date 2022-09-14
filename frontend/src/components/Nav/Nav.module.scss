@@ -21,6 +21,8 @@ $padding: 8px;
     grid-template-areas: "menutoggle sitelogo loginstate";
     justify-content: space-between;
 
+    border-bottom: 1px solid var(--g500);
+
     & > li {
         height: $innerSize;
     }
@@ -120,6 +122,12 @@ $padding: 8px;
         display: none;
         visibility: hidden;
     }
+
+    // sidebar (tablets, desktop + data-force-toggle="true")
+    @media (min-width: 500px) {
+        width: 300px;
+        border-right: 1px solid var(--g500);
+    }
 }
 
 .searchContainer {
@@ -199,7 +207,7 @@ $padding: 8px;
 }
 
 // has custom children
-.container[data-force-toggle="true"][data-open="false"] .header {
+.container[data-force-toggle="true"] .header {
     grid-template-columns: $innerSize 1fr auto;
     grid-template-areas: "menutoggle customchildren loginstate";
 

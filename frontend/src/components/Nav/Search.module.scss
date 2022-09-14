@@ -34,20 +34,13 @@
     &:focus,
     &.isOpen {
         outline: none;
-        border-color: rgba(255, 255, 255, 0.125);
-        background: rgba(0, 0, 0, 0.5);
-
-        @supports not (backdrop-filter: blur(10px)) {
-            background: var(--g100);
-        }
 
         &::placeholder {
-            color: var(--g900);
+            color: var(--g600);
         }
     }
 
     &.isOpen {
-        border-bottom: 0;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
@@ -82,6 +75,11 @@
 .results {
     list-style: none;
     transform-origin: center top;
+
+    backdrop-filter: none;
+    background: var(--g300);
+    border-top: 0;
+    border-color: var(--g600);
 
     border-top-left-radius: 0;
     border-top-right-radius: 0;

@@ -7,10 +7,11 @@ import styles from "./NumberInput.module.scss"
 export type Props = {
     value?: number
     onChange?: (duration: number) => void
+    stringValue?: string
     disabled?: boolean
 }
 
-export default function TimePeriodInput({ value, onChange, disabled }: Props) {
+export default function TimePeriodInput({ value, onChange, stringValue, disabled }: Props) {
     const [isEditing, setIsEditing] = useState(false)
     const editableRef = useRef<HTMLSpanElement>()
 
@@ -40,14 +41,16 @@ export default function TimePeriodInput({ value, onChange, disabled }: Props) {
             setIsEditing(false)
         }}
         onKeyPress={evt => {
-            if (isNaN(+evt.key) || disabled) // if active, only allow numbers
+            const isValidKey = evt.key == "." || !isNaN(+evt.key)
+            if (!isValidKey || disabled) {
                 evt.preventDefault()
+            }
 
             if (evt.key == "Enter") {
                 evt.currentTarget.blur() // submit
             }
         }}
     >
-        {value}
+        {isEditing ? editableRef.current.textContent : (stringValue ?? value)}
     </span>
 }

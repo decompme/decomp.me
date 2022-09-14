@@ -68,14 +68,14 @@
     > .cell {
         overflow: hidden;
 
-        color: #b3c1d3;
+        color: var(--g1600);
 
         padding: 0 1em;
 
         cursor: default;
 
         &.highlight {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--a50);
 
             .lineNumber {
                 color: #c6c6c6;

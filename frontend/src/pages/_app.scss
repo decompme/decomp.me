@@ -6,64 +6,81 @@
     --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-.themePlum {
+.cm-content {
+    color: var(--code-foreground);
+    cursor: text;
+}
+
+.cm-gutters,
+.cm-content {
+    font-size: var(--cm-font-size, 0.8rem);
+    font-family: var(--monospace);
+    line-height: var(--code-line-height, 1.5);
+}
+
+.cm-gutters {
+    color: var(--code-foreground) !important;
+}
+
+.cm-activeLineGutter {
+    color: var(--code-cursor) !important;
+}
+
+.cmt-propertyName,
+.cmt-variableName {
+    color: var(--code-variable);
+}
+
+.cmt-function {
+    color: var(--code-function);
+}
+
+.cmt-punctuation {
+    color: var(--code-punctuation);
+}
+
+.cmt-operator {
+    color: var(--code-operator);
+}
+
+.cmt-comment {
+    color: var(--code-comment);
+}
+
+.cmt-number {
+    color: var(--code-number);
+}
+
+.cmt-bool {
+    color: var(--code-bool);
+}
+
+.cmt-string {
+    color: var(--code-string);
+}
+
+.cmt-typeName {
+    color: var(--code-type);
+}
+
+.cmt-keyword {
+    color: var(--code-keyword);
+}
+
+.cmt-meta {
+    color: var(--code-preprocessor);
+}
+
+.cmt-character {
+    color: var(--code-character);
+}
+
+.theme-dark {
     @include theme.theme(#951fd9, #292f33);
+}
 
-    .cm-content {
-        color: #647a97;
-
-        cursor: text;
-    }
-
-    .cm-gutters,
-    .cm-content {
-        font-size: var(--cm-font-size, 0.8rem);
-        font-family: var(--monospace);
-        line-height: 1.5;
-    }
-
-    .cmt-propertyName,
-    .cmt-variableName {
-        color: #8599b3;
-    }
-
-    .cmt-function {
-        color: #ff4a98;
-    }
-
-    .cmt-punctuation {
-        color: #656f7e;
-    }
-
-    .cmt-operator {
-        color: #7f83ff;
-    }
-
-    .cmt-comment {
-        color: #465173;
-    }
-
-    .cmt-number,
-    .cmt-bool {
-        color: #0afafa;
-    }
-
-    .cmt-string {
-        color: #face0a;
-    }
-
-    .cmt-typeName {
-        color: #45b8ff;
-    }
-
-    .cmt-keyword {
-        color: #7f83ff;
-    }
-
-    .cmt-meta,
-    .cmt-character {
-        color: #3bff6c;
-    }
+.theme-light {
+    @include theme.theme(#951fd9, #ffffff);
 }
 
 .cm-panel {
@@ -114,7 +131,7 @@
         }
     }
 
-    input[type=checkbox] {
+    input[type="checkbox"] {
         vertical-align: middle;
     }
 }
@@ -123,7 +140,7 @@ html {
     font-size: 16px;
     font-family: var(--font-ui);
     line-height: 1.5;
-    text-rendering: optimizeQuality;
+    text-rendering: optimizequality;
 }
 
 *,
@@ -197,7 +214,8 @@ main {
     width: 100%;
 }
 
-main, footer {
+main,
+footer {
     background: var(--g200);
 }
 

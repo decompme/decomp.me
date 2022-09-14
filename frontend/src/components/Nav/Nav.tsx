@@ -42,7 +42,21 @@ export default function Nav({ children }: Props) {
         }
     }, [isOpen, router])
 
-    return <nav className={styles.container} aria-labelledby="navtoggle" data-open={isOpen} data-force-toggle={!!children}>
+    // If the user clicks outside the nav, close it
+    useEffect(() => {
+        if (isOpen) {
+            document.body.addEventListener("click", toggleOpen)
+            return () => document.body.removeEventListener("click", toggleOpen)
+        }
+    }, [isOpen])
+
+    return <nav
+        className={styles.container}
+        aria-labelledby="navtoggle"
+        data-open={isOpen}
+        data-force-toggle={!!children}
+        onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
+    >
         <ul className={styles.header}>
             <li className={styles.headerItemMenuToggle}>
                 <button id="navtoggle" onClick={toggleOpen} aria-label={toggleLabel} aria-expanded={isOpen}>
@@ -69,6 +83,9 @@ export default function Nav({ children }: Props) {
                         <li>
                             <Link href="/new">New scratch</Link>
                         </li>
+                        <li>
+                            <Link href="/settings/appearance">Settings</Link>
+                        </li>
                     </ul>
                 </li>
             }
@@ -85,10 +102,7 @@ export default function Nav({ children }: Props) {
                     <Link href="/new">New scratch</Link>
                 </li>
                 <li>
-                    <Link href="/credits">Credits</Link>
-                </li>
-                <li>
-                    <Link href="/privacy">Privacy policy</Link>
+                    <Link href="/settings/appearance">Settings</Link>
                 </li>
             </ul>
         </div>
