@@ -143,6 +143,8 @@ jobs:
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
+            -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
@@ -157,6 +159,16 @@ jobs:
       - run: reviewdog -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  frontend_lint:
+    name: eslint & stylelint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: cd frontend && yarn
+      - run: cd frontend && yarn lint
   mypy:
     name: mypy
     runs-on: ubuntu-latest
