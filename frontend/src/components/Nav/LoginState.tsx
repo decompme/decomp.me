@@ -2,7 +2,6 @@ import { useState } from "react"
 
 import Image from "next/image"
 
-import { TriangleDownIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { useLayer } from "react-laag"
 
@@ -48,7 +47,6 @@ export default function LoginState({ className }: { className?: string }) {
             height={24}
             priority
         />
-        <TriangleDownIcon />
         {renderLayer(<div {...layerProps}>
             {isUserMenuOpen && <VerticalMenu open={isUserMenuOpen} setOpen={setUserMenuOpen}>
                 <UserMenu />

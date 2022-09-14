@@ -34,10 +34,6 @@ export default function UserMenuItems() {
             Your profile
         </LinkItem>
         <hr />
-        <LinkItem href="/settings/appearance">
-            Settings
-        </LinkItem>
-        <hr />
         <ButtonItem
             onTrigger={async () => {
                 plausible("logout")

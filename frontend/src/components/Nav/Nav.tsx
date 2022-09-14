@@ -69,6 +69,9 @@ export default function Nav({ children }: Props) {
                         <li>
                             <Link href="/new">New scratch</Link>
                         </li>
+                        <li>
+                            <Link href="/settings/appearance">Settings</Link>
+                        </li>
                     </ul>
                 </li>
             }
@@ -85,10 +88,7 @@ export default function Nav({ children }: Props) {
                     <Link href="/new">New scratch</Link>
                 </li>
                 <li>
-                    <Link href="/credits">Credits</Link>
-                </li>
-                <li>
-                    <Link href="/privacy">Privacy policy</Link>
+                    <Link href="/settings/appearance">Settings</Link>
                 </li>
             </ul>
         </div>
