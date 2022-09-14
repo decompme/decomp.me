@@ -18,6 +18,14 @@
     line-height: var(--code-line-height, 1.5);
 }
 
+.cm-gutters {
+    color: var(--code-foreground) !important;
+}
+
+.cm-activeLineGutter {
+    color: var(--code-cursor) !important;
+}
+
 .cmt-propertyName,
 .cmt-variableName {
     color: var(--code-variable);

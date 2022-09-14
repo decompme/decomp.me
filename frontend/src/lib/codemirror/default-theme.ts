@@ -51,7 +51,6 @@ export const theme = EditorView.theme(
 
         ".cm-gutters": {
             background: background,
-            color: "#676e95",
             border: "none",
         },
 
