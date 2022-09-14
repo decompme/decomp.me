@@ -43,7 +43,7 @@ module.exports = withPlausibleProxy({
             },
             {
                 source: "/settings",
-                destination: "/settings/editor",
+                destination: "/settings/appearance",
                 permanent: false,
             },
         ]

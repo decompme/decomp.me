@@ -4,15 +4,13 @@ import { EditorView } from "@codemirror/view"
 import { tags } from "@lezer/highlight"
 
 const ivory = "#abb2bf",
-    darkBackground = "#21252b",
-    highlightBackground = "rgba(255, 255, 255, 0.05)",
-    background = "#121415",
+    highlightBackground = "var(--code-highlight)",
+    background = "var(--code-background)",
     tooltipBackground = "#353a42",
-    selection = "rgba(255, 255, 255, 0.1)",
-    cursor = "#ffffff"
+    selection = "var(--code-selection)",
+    cursor = "var(--code-cursor)"
 
-// TODO move to css
-export const materialPalenightTheme = EditorView.theme(
+export const theme = EditorView.theme(
     {
         "&": {
             color: "#ffffff",
@@ -30,7 +28,7 @@ export const materialPalenightTheme = EditorView.theme(
         "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
       { backgroundColor: selection },
 
-        ".cm-panels": { backgroundColor: darkBackground, color: "#ffffff" },
+        ".cm-panels": { backgroundColor: background, color: "#ffffff" },
         ".cm-panels.cm-panels-top": { borderBottom: "2px solid black" },
         ".cm-panels.cm-panels-bottom": { borderTop: "2px solid black" },
 
@@ -53,7 +51,6 @@ export const materialPalenightTheme = EditorView.theme(
 
         ".cm-gutters": {
             background: background,
-            color: "#676e95",
             border: "none",
         },
 
@@ -128,11 +125,9 @@ export const highlightStyle = HighlightStyle.define([
     { tag: tags.punctuation, class: "cmt-punctuation" },
 ])
 
-/// Extension to enable the Material Palenight theme (both the editor theme and
-/// the highlight style).
-export const materialPalenight: Extension = [
-    materialPalenightTheme,
+export const extension: Extension = [
+    theme,
     syntaxHighlighting(highlightStyle),
 ]
 
-export default materialPalenight
+export default extension

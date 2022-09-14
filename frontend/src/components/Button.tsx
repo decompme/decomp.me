@@ -10,6 +10,7 @@ const Button = forwardRef(function Button({
     className,
     disabled,
     primary,
+    title,
 }: Props, ref: ForwardedRef<HTMLButtonElement>) {
     return <button
         ref={ref}
@@ -22,6 +23,7 @@ const Button = forwardRef(function Button({
             }
         }}
         disabled={disabled}
+        title={title}
     >
         {children}
     </button>
@@ -33,6 +35,7 @@ export type Props = {
     className?: string
     disabled?: boolean
     primary?: boolean
+    title?: string
 }
 
 export default Button

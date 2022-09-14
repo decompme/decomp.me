@@ -6,7 +6,7 @@ import { cpp } from "@codemirror/lang-cpp"
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
 import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCodeFontSize } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -134,7 +134,6 @@ export default function Scratch({
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
-    const [codeFontSize] = useCodeFontSize()
     const { compilation, isCompiling, isCompilationOld, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
     const userIsYou = api.useUserIsYou()
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
@@ -173,7 +172,6 @@ export default function Scratch({
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
                     extensions={CODEMIRROR_EXTENSIONS}
-                    fontSize={codeFontSize}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -193,7 +191,6 @@ export default function Scratch({
                         setScratch({ context: value })
                     }}
                     extensions={CODEMIRROR_EXTENSIONS}
-                    fontSize={codeFontSize}
                 />
             </Tab>
         case TabId.OPTIONS:
