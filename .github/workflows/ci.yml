@@ -85,7 +85,6 @@ jobs:
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
-          USE_SANDBOX_JAIL: on
 
       - name: Migrate backend
         run: cd backend && poetry run python3 ./manage.py migrate
@@ -145,6 +144,7 @@ jobs:
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
