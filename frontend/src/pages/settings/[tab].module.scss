@@ -97,19 +97,21 @@
     }
 
     input[type="range"] {
-        -webkit-appearance: none;
+        appearance: none;
 
         background: none;
         height: 16px;
 
-        &::-webkit-slider-runnable-track {
+        &::-webkit-slider-runnable-track,
+        &::-moz-range-track {
             height: 4px;
             background: var(--g800);
             border: none;
             border-radius: 99px;
         }
 
-        &::-webkit-slider-thumb {
+        &::-webkit-slider-thumb,
+        &::-moz-range-thumb {
             -webkit-appearance: none;
             width: 16px;
             height: 16px;
