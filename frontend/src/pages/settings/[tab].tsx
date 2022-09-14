@@ -152,11 +152,11 @@ function AppearanceSettings() {
                         <input
                             id="fontSize"
                             type="range"
-                            min="8" max="24" step="1" value={fontSize ?? "12"}
+                            min="8" max="24" step="1" value={fontSize}
                             onChange={(evt: ChangeEvent<HTMLInputElement>) => setFontSize(+evt.target.value)}
                         />
                         <div>
-                            <NumberInput value={fontSize ?? 12} onChange={setFontSize}/>px
+                            <NumberInput value={fontSize} onChange={setFontSize}/>px
                         </div>
                     </div>
 
