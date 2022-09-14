@@ -1,8 +1,8 @@
-import { ReactNode } from "react"
+import { ReactElement } from "react"
 
 import * as resizer from "react-simple-resizer"
 
-import Tabs from "./Tabs"
+import Tabs, { Tab } from "./Tabs"
 
 export interface HorizontalSplit {
     key: number
@@ -31,7 +31,7 @@ export type Layout = HorizontalSplit | VerticalSplit | Pane
 export interface Props {
     layout: Layout
     onChange: (layout: Layout) => void
-    renderTab: (id: string) => ReactNode
+    renderTab: (id: string) => ReactElement<Tab>
 }
 
 export default function CustomLayout({ renderTab, layout, onChange }: Props) {
