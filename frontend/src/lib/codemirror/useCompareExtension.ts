@@ -7,16 +7,19 @@ import { diffLines } from "diff"
 import styles from "./useCompareExtension.module.scss"
 
 // State for target text to diff doc against
-const targetString = Facet.define<string, string>({
-    combine: values => (values.length ? values[0] : ""),
+const targetString = Facet.define<string, string | null>({
+    combine: values => (values.length ? values[0] : null),
 })
-const targetText = Facet.define<Text, Text>({
-    combine: values => (values.length ? values[0] : Text.empty),
-    compare: (a, b) => a.eq(b),
-    compareInput: (a, b) => a.eq(b),
+const targetText = Facet.define<Text, Text | null>({
+    combine: values => (values.length ? values[0] : null),
+    compare: (a, b) => a?.eq?.(b),
+    compareInput: (a, b) => a?.eq?.(b),
 })
 const targetTextComputer = targetText.compute([targetString], state => {
-    return Text.of(state.facet(targetString).split("\n"))
+    const s = state.facet(targetString)
+    if (typeof s === "string")
+        return Text.of(s.split("\n"))
+    return null
 })
 
 // Computed diff between doc and target
@@ -25,7 +28,12 @@ const diffLineMap = Facet.define<DiffLineMap, DiffLineMap>({
     combine: values => (values.length ? values[0] : {}),
 })
 const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => {
-    const changes = diffLines(state.facet(targetString), state.doc.toString(), {
+    const s = state.facet(targetString)
+
+    if (typeof s !== "string")
+        return {}
+
+    const changes = diffLines(s, state.doc.toString(), {
         ignoreWhitespace: true,
     })
 
@@ -49,8 +57,6 @@ const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => 
             lineNumber += numLines
         }
     }
-
-    console.log(map)
 
     return map
 })
@@ -83,7 +89,7 @@ const diffGutter = gutter({
         }
     },
     lineMarkerChange(update) {
-        return update.docChanged || !update.state.facet(targetText).eq(update.startState.facet(targetText))
+        return update.docChanged || !update.state.facet(targetText)?.eq?.(update.startState.facet(targetText))
     },
     initialSpacer: () => marker,
 })

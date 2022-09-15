@@ -5,6 +5,7 @@ import { cpp } from "@codemirror/lang-cpp"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
+import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
@@ -125,12 +126,14 @@ function getDefaultLayout(width: number, height: number): keyof typeof DEFAULT_L
 export type Props = {
     scratch: Readonly<api.Scratch>
     onChange: (scratch: Partial<api.Scratch>) => void
+    parentScratch?: api.Scratch
     initialCompilation?: Readonly<api.Compilation>
 }
 
 export default function Scratch({
     scratch,
     onChange: setScratch,
+    parentScratch,
     initialCompilation,
 }: Props) {
     const container = useSize<HTMLDivElement>()
@@ -145,6 +148,9 @@ export default function Scratch({
     const sourceEditor = useRef<EditorView>()
     const contextEditor = useRef<EditorView>()
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
+
+    const sourceCompareExtension = useCompareExtension(sourceEditor, parentScratch?.source_code)
+    const contextCompareExtension = useCompareExtension(contextEditor, parentScratch?.context)
 
     // If the slug changes, refresh code editors
     useEffect(() => {
@@ -176,7 +182,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={CODEMIRROR_EXTENSIONS}
+                    extensions={[...CODEMIRROR_EXTENSIONS, sourceCompareExtension]}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -195,7 +201,7 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={CODEMIRROR_EXTENSIONS}
+                    extensions={[...CODEMIRROR_EXTENSIONS, contextCompareExtension]}
                 />
             </Tab>
         case TabId.OPTIONS:

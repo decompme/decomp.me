@@ -50,6 +50,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
         return {
             props: {
                 initialScratch: scratch,
+                parentScratch: scratch.parent ? await api.get(scratch.parent) : null,
                 initialCompilation,
             },
         }
@@ -61,7 +62,13 @@ export const getServerSideProps: GetServerSideProps = async context => {
     }
 }
 
-export default function ScratchPage({ initialScratch, initialCompilation }: { initialScratch: api.Scratch, initialCompilation?: api.Compilation }) {
+export interface Props {
+    initialScratch: api.Scratch
+    parentScratch?: api.Scratch
+    initialCompilation?: api.Compilation
+}
+
+export default function ScratchPage({ initialScratch, parentScratch, initialCompilation }: Props) {
     const [scratch, setScratch] = useState(initialScratch)
     //const setScratch = useDebouncedCallback(setScratchImmediate, 100, { leading: true, trailing: true }) // reduce layout thrashing
 
@@ -113,6 +120,7 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch
                     scratch={scratch}
+                    parentScratch={parentScratch}
                     initialCompilation={initialCompilation}
                     onChange={partial => {
                         setScratch(scratch => {

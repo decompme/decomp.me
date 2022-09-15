@@ -171,7 +171,7 @@ export default function ScratchToolbar({
             <li>
                 <button
                     onClick={forkScratch}
-                    title={fuzzySaveAction === FuzzySaveAction.FORK && fuzzyShortcut}
+                    title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
                 >
                     <RepoForkedIcon />
                     Fork
