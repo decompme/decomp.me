@@ -7,7 +7,7 @@ import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
 import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCompareAgainstParentScratch } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -149,8 +149,9 @@ export default function Scratch({
     const contextEditor = useRef<EditorView>()
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
-    const sourceCompareExtension = useCompareExtension(sourceEditor, parentScratch?.source_code)
-    const contextCompareExtension = useCompareExtension(contextEditor, parentScratch?.context)
+    const [compareAgainstParentScratch] = useCompareAgainstParentScratch()
+    const sourceCompareExtension = useCompareExtension(sourceEditor, compareAgainstParentScratch ? parentScratch?.source_code : undefined)
+    const contextCompareExtension = useCompareExtension(contextEditor, compareAgainstParentScratch ? parentScratch?.context : undefined)
 
     // If the slug changes, refresh code editors
     useEffect(() => {

@@ -6,14 +6,22 @@ import { diffLines } from "diff"
 
 import styles from "./useCompareExtension.module.scss"
 
+function compareNullableText(a: Text | null, b: Text | null): boolean {
+    if (a === null || b === null) {
+        return a === b
+    } else {
+        return a.eq(b)
+    }
+}
+
 // State for target text to diff doc against
 const targetString = Facet.define<string, string | null>({
     combine: values => (values.length ? values[0] : null),
 })
 const targetText = Facet.define<Text, Text | null>({
     combine: values => (values.length ? values[0] : null),
-    compare: (a, b) => a?.eq?.(b),
-    compareInput: (a, b) => a?.eq?.(b),
+    compare: compareNullableText,
+    compareInput: compareNullableText,
 })
 const targetTextComputer = targetText.compute([targetString], state => {
     const s = state.facet(targetString)
@@ -89,7 +97,7 @@ const diffGutter = gutter({
         }
     },
     lineMarkerChange(update) {
-        return update.docChanged || !update.state.facet(targetText)?.eq?.(update.startState.facet(targetText))
+        return update.docChanged || !compareNullableText(update.state.facet(targetText), update.startState.facet(targetText))
     },
     initialSpacer: () => marker,
 })
