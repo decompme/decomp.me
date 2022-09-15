@@ -102,7 +102,13 @@
         background: none;
         height: 16px;
 
-        &::-webkit-slider-runnable-track,
+        &::-webkit-slider-runnable-track {
+            height: 4px;
+            background: var(--g800);
+            border: none;
+            border-radius: 99px;
+        }
+
         &::-moz-range-track {
             height: 4px;
             background: var(--g800);
@@ -110,9 +116,22 @@
             border-radius: 99px;
         }
 
-        &::-webkit-slider-thumb,
-        &::-moz-range-thumb {
+        &::-webkit-slider-thumb {
             -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            margin-top: -6px;
+            background: var(--g1600);
+            border: none;
+            border-radius: 99px;
+            cursor: ew-resize;
+
+            &:hover {
+                background: var(--g2000);
+            }
+        }
+
+        &::-moz-range-thumb {
             width: 16px;
             height: 16px;
             margin-top: -6px;
