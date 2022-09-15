@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
+import { useDebounce } from "use-debounce"
 
 import * as api from "../../lib/api"
 import { decompileSetup } from "../../lib/codemirror/basic-setup"
@@ -19,17 +20,20 @@ export default function DecompilePanel({ scratch }: Props) {
     const [decompiledCode, setDecompiledCode] = useState<string | null>(null)
     const viewRef = useRef<EditorView>()
     const compareExtension = useCompareExtension(viewRef, scratch.source_code)
+    const [debouncedContext] = useDebounce(scratch.context, 1000, { leading: false, trailing: true })
+    const [valueVersion, setValueVersion] = useState(0)
 
-    // TODO: debounce
     useEffect(() => {
-        setDecompiledCode(null)
         api.post(scratch.url + "/decompile", {
-            context: scratch.context,
+            context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {
             setDecompiledCode(decompilation)
+            setValueVersion(v => v + 1)
         })
-    }, [scratch.compiler, scratch.context, scratch.url])
+    }, [scratch.compiler, debouncedContext, scratch.url])
+
+    const isLoading = decompiledCode === null || scratch.context !== debouncedContext
 
     return <div className={styles.container}>
         <section className={styles.main}>
@@ -38,11 +42,11 @@ export default function DecompilePanel({ scratch }: Props) {
                 of the assembly changes.
             </p>
 
-            {(typeof decompiledCode == "string") ? <>
+            {typeof decompiledCode == "string" && <>
                 <CodeMirror
                     className={styles.editor}
                     value={decompiledCode}
-                    onChange={c => setDecompiledCode(c)}
+                    valueVersion={valueVersion}
                     viewRef={viewRef}
                     extensions={[
                         decompileSetup,
@@ -50,7 +54,8 @@ export default function DecompilePanel({ scratch }: Props) {
                         compareExtension,
                     ]}
                 />
-            </> : <Loading className={styles.loading} />}
+            </>}
+            {isLoading && <Loading className={styles.loading} />}
         </section>
     </div>
 }
