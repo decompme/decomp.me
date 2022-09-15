@@ -174,7 +174,8 @@
 
     cursor: pointer;
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
         background: var(--a100);
     }
 }
