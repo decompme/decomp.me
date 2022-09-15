@@ -117,8 +117,11 @@
 
             // On small widths, only show the icon
             @media (max-width: 600px) {
-                text-indent: -9999px; // Hide text
                 padding: 6px 2px;
+
+                // Hide text
+                text-indent: -9999px;
+                color: transparent;
 
                 svg {
                     width: 1.5em;
