@@ -52,6 +52,11 @@ export default function CodeMirror({
 
     const [fontSize] = useCodeFontSize()
 
+    // Defer calls to onChange to avoid excessive re-renders
+    const propagateValue = useDebouncedCallback(() => {
+        onChangeRef.current?.(valueRef.current)
+    }, 100, { leading: true, trailing: true })
+
     // Initial view creation
     useEffect(() => {
         viewRef.current = new EditorView({
@@ -61,10 +66,8 @@ export default function CodeMirror({
                     EditorState.transactionExtender.of(({ docChanged, newDoc, newSelection }) => {
                         // value / onChange
                         if (docChanged) {
-                            const s = newDoc.toString()
-                            if (s !== valueRef.current) {
-                                onChangeRef.current?.(s)
-                            }
+                            valueRef.current = newDoc.toString()
+                            propagateValue()
                         }
 
                         // selectedSourceLine
@@ -94,7 +97,7 @@ export default function CodeMirror({
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [el, viewRefProp])
+    }, [el, propagateValue, viewRefProp])
 
     // Replace doc when `valueVersion` prop changes
     useEffect(() => {
