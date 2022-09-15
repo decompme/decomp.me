@@ -100,9 +100,6 @@ class GitHubUser(models.Model):
         except KeyError:
             raise MalformedGitHubApiResponseException()
 
-        if scope_str != "public_repo":
-            raise MissingOAuthScopeException("public_repo")
-
         details = Github(access_token).get_user()
 
         try:
