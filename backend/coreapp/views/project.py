@@ -23,7 +23,12 @@ from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from coreapp.middleware import Request
 
-from ..models.github import GitHubRepo, GitHubRepoBusyException, GitHubUser
+from ..models.github import (
+    GitHubRepo,
+    GitHubRepoBusyException,
+    GitHubUser,
+    MissingOAuthScopeException,
+)
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Scratch
 from ..serializers import (
@@ -151,6 +156,9 @@ class ProjectViewSet(
                 if e.status == 422:
                     # Branch already exists, pick a new one
                     fork_branch = generate_branch_name()
+                elif e.status == 404:
+                    # Missing permissions (unsure why 404, but that's what Github returns)
+                    raise MissingOAuthScopeException("public_repo")
                 else:
                     raise e
 

@@ -4,7 +4,7 @@ import { isGitHubLoginSupported, showGitHubLoginWindow } from "../lib/oauth"
 
 import Button from "./Button"
 
-const DEFAULT_SCOPE_STR = "public_repo"
+const DEFAULT_SCOPE_STR = ""
 
 export default function GitHubLoginButton({ label, popup, className }: { label?: string, popup: boolean, className?: string }) {
     if (isGitHubLoginSupported()) {
