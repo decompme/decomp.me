@@ -5,7 +5,7 @@ import { cpp } from "@codemirror/lang-cpp"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
-import useCompareExtension from "../../lib/codemirror/useCompareExtension"
+import { useDelayedCompareExtension } from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCompareAgainstParentScratch } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
@@ -150,8 +150,8 @@ export default function Scratch({
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
     const [compareAgainstParentScratch] = useCompareAgainstParentScratch()
-    const sourceCompareExtension = useCompareExtension(sourceEditor, compareAgainstParentScratch ? parentScratch?.source_code : undefined)
-    const contextCompareExtension = useCompareExtension(contextEditor, compareAgainstParentScratch ? parentScratch?.context : undefined)
+    const sourceCompareExtension = useDelayedCompareExtension(sourceEditor, compareAgainstParentScratch ? parentScratch?.source_code : undefined)
+    const contextCompareExtension = useDelayedCompareExtension(contextEditor, compareAgainstParentScratch ? parentScratch?.context : undefined)
 
     // If the slug changes, refresh code editors
     useEffect(() => {

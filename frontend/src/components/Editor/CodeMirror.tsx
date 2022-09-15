@@ -58,11 +58,13 @@ export default function CodeMirror({
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
-                    EditorState.transactionExtender.of(({ newDoc, newSelection }) => {
+                    EditorState.transactionExtender.of(({ docChanged, newDoc, newSelection }) => {
                         // value / onChange
-                        const newValue = newDoc.toString()
-                        if (newValue !== valueRef.current) {
-                            onChangeRef.current?.(newValue)
+                        if (docChanged) {
+                            const s = newDoc.toString()
+                            if (s !== valueRef.current) {
+                                onChangeRef.current?.(s)
+                            }
                         }
 
                         // selectedSourceLine

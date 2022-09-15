@@ -1,6 +1,6 @@
-import { RefObject, useEffect, useState } from "react"
+import { RefObject, useEffect, useRef, useState } from "react"
 
-import { Compartment, Extension, Facet, Text } from "@codemirror/state"
+import { EditorState, Compartment, Extension, Facet, Text } from "@codemirror/state"
 import { EditorView, gutter, GutterMarker } from "@codemirror/view"
 import { diffLines } from "diff"
 
@@ -101,6 +101,30 @@ const diffGutter = gutter({
     },
     initialSpacer: () => marker,
 })
+
+export function useDelayedCompareExtension(viewRef: RefObject<EditorView>, compareTo: string, delayMs = 1000): Extension {
+    const editTime = useRef(0)
+    const timeSinceEdit = Date.now() - editTime.current
+    const timeout = useRef<any>()
+    const [, forceUpdate] = useState({})
+
+    return [
+        useCompareExtension(viewRef, timeSinceEdit > delayMs ? compareTo : undefined),
+        EditorState.transactionExtender.of(tr => {
+            if (tr.docChanged) {
+                editTime.current = Date.now()
+
+                if (timeout.current)
+                    clearTimeout(timeout.current)
+                timeout.current = setTimeout(() => {
+                    forceUpdate({})
+                }, delayMs)
+            }
+
+            return null
+        }),
+    ]
+}
 
 // Extension that highlights lines in the doc that differ from `compareTo`.
 export default function useCompareExtension(viewRef: RefObject<EditorView>, compareTo: string): Extension {
