@@ -19,6 +19,7 @@ export default function LoginPage() {
     const { mutate } = useSWRConfig()
     const code = (router.query.code ?? "").toString()
     const next = (router.query.next ?? "").toString()
+    const githubError = router.query.error
     const plausible = usePlausible()
 
     useEffect(() => {
@@ -48,7 +49,11 @@ export default function LoginPage() {
                 setError(error)
             })
         }
-    }, [code, router, mutate, next, plausible, error])
+
+        if (githubError == "access_denied") {
+            setError(new Error("Please grant access to your GitHub account to sign in!"))
+        }
+    }, [code, router, mutate, next, plausible, error, githubError])
 
     return <>
         <main className={styles.container}>

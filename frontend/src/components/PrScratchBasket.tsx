@@ -6,6 +6,7 @@ import { ArrowRightIcon, GitPullRequestIcon, XIcon } from "@primer/octicons-reac
 import createPersistedState from "use-persisted-state"
 
 import * as api from "../lib/api"
+import { requestMissingScopes } from "../lib/oauth"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
@@ -87,9 +88,9 @@ export default function PrScratchBasket({ project }: Props) {
     }
 
     const createPr = async () => {
-        const { url } = await api.post(`${project.url}/pr`, {
+        const { url } = await requestMissingScopes(() => api.post(`${project.url}/pr`, {
             scratch_slugs: basket.scratches.map(s => s.slug),
-        })
+        }))
 
         basket.clear()
 
