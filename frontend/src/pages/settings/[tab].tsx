@@ -203,7 +203,6 @@ function AppearanceSettings() {
 function ScratchEditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
-    const [compareAgainstParentScratch, setCompareAgainstParentScratch] = settings.useCompareAgainstParentScratch()
 
     const minDelay = 50
     const onChange = (duration: number) => setAutoRecompileDelay(Math.max(minDelay, duration))
@@ -233,20 +232,6 @@ function ScratchEditorSettings() {
                 <NumberInput value={autoRecompileDelay} onChange={onChange} disabled={!autoRecompile}/>ms
                 delay before recompile is triggered
             </div>
-        </section>
-        <section>
-            <h2>Compare forks against their parent</h2>
-            <p>
-                When enabled, code changes that have been made to a fork will be highlighted.
-            </p>
-            <label className={styles.booleanPreference}>
-                <input
-                    type="checkbox"
-                    checked={compareAgainstParentScratch}
-                    onChange={evt => setCompareAgainstParentScratch(evt.target.checked)}
-                />
-                Highlight lines that have changed
-            </label>
         </section>
     </>
 }

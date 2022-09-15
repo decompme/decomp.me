@@ -5,9 +5,9 @@ import { cpp } from "@codemirror/lang-cpp"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
-import { useDelayedCompareExtension } from "../../lib/codemirror/useCompareExtension"
+import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useCompareAgainstParentScratch } from "../../lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -132,7 +132,7 @@ export type Props = {
 
 export default function Scratch({
     scratch,
-    onChange: setScratch,
+    onChange,
     parentScratch,
     initialCompilation,
 }: Props) {
@@ -149,9 +149,15 @@ export default function Scratch({
     const contextEditor = useRef<EditorView>()
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
-    const [compareAgainstParentScratch] = useCompareAgainstParentScratch()
-    const sourceCompareExtension = useDelayedCompareExtension(sourceEditor, compareAgainstParentScratch ? parentScratch?.source_code : undefined)
-    const contextCompareExtension = useDelayedCompareExtension(contextEditor, compareAgainstParentScratch ? parentScratch?.context : undefined)
+    const [isModified, setIsModified] = useState(false)
+    const setScratch = (scratch: Partial<api.Scratch>) => {
+        onChange(scratch)
+        setIsModified(true)
+    }
+
+    const shouldCompare = !isModified
+    const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
+    const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
     // If the slug changes, refresh code editors
     useEffect(() => {
