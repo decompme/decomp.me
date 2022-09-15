@@ -1,8 +1,8 @@
-import { ReactNode } from "react"
+import { ReactElement } from "react"
 
 import * as resizer from "react-simple-resizer"
 
-import Tabs from "./Tabs"
+import Tabs, { Tab } from "./Tabs"
 
 export interface HorizontalSplit {
     key: number
@@ -28,10 +28,30 @@ export interface Pane {
 
 export type Layout = HorizontalSplit | VerticalSplit | Pane
 
+export function visitLayout(layout: Layout, visitor: (layout: Layout) => void) {
+    visitor(layout)
+
+    if (layout.kind === "horizontal" || layout.kind === "vertical") {
+        for (const child of layout.children) {
+            visitLayout(child, visitor)
+        }
+    }
+}
+
+export function activateTabInLayout(layout: Layout, tab: string) {
+    visitLayout(layout, node => {
+        if (node.kind === "pane") {
+            if (node.tabs.includes(tab)) {
+                node.activeTab = tab
+            }
+        }
+    })
+}
+
 export interface Props {
     layout: Layout
     onChange: (layout: Layout) => void
-    renderTab: (id: string) => ReactNode
+    renderTab: (id: string) => ReactElement<Tab>
 }
 
 export default function CustomLayout({ renderTab, layout, onChange }: Props) {

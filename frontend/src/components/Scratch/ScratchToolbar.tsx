@@ -12,7 +12,6 @@ import UserAvatar from "../user/UserAvatar"
 
 import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
-import ScratchDecompileModal from "./ScratchDecompileModal"
 import styles from "./ScratchToolbar.module.scss"
 
 // Prevents XSS
@@ -103,18 +102,16 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
-    incrementValueVersion: () => void
+    setDecompilationTabEnabled: (enabled: boolean) => void
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch, incrementValueVersion,
+    isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled,
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
-
-    const [isDecompileOpen, setDecompileOpen] = useState(false)
 
     const [isMounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
@@ -154,15 +151,6 @@ export default function ScratchToolbar({
                         {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
                     </>}
                 </div>
-                <ScratchDecompileModal
-                    open={isDecompileOpen}
-                    onClose={() => setDecompileOpen(false)}
-                    scratch={scratch}
-                    setSourceCode={source_code => {
-                        setScratch({ source_code })
-                        incrementValueVersion()
-                    }}
-                />
             </div>
         </Nav>
 
@@ -184,7 +172,7 @@ export default function ScratchToolbar({
             <li>
                 <button
                     onClick={forkScratch}
-                    title={fuzzySaveAction === FuzzySaveAction.FORK && fuzzyShortcut}
+                    title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
                 >
                     <RepoForkedIcon />
                     Fork
@@ -201,6 +189,13 @@ export default function ScratchToolbar({
                 </button>
             </li>}
             <li>
+                <button onClick={() => exportScratchZip(scratch)}>
+                    <DownloadIcon />
+                    Export..
+                </button>
+            </li>
+            <li className={styles.separator} />
+            <li>
                 <button
                     onClick={compile}
                     title={compileShortcut}
@@ -210,17 +205,10 @@ export default function ScratchToolbar({
                     Compile
                 </button>
             </li>
-            <li className={styles.separator} />
             <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export..
-                </button>
-            </li>
-            <li>
-                <button onClick={() => setDecompileOpen(true)}>
+                <button onClick={() => setDecompilationTabEnabled(true)}>
                     <IterationsIcon />
-                    Re-decompile..
+                    Decompile..
                 </button>
             </li>
         </ul>

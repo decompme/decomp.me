@@ -5,17 +5,19 @@ import { cpp } from "@codemirror/lang-cpp"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
+import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
-import CustomLayout from "../CustomLayout"
+import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
 import ScoreBadge from "../ScoreBadge"
-import { Tab } from "../Tabs"
+import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
+import DecompilationPanel from "./DecompilePanel"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -26,9 +28,10 @@ enum TabId {
     CONTEXT = "scratch_context",
     OPTIONS = "scratch_options",
     DIFF = "scratch_diff",
+    DECOMPILATION = "scratch_decompilation",
 }
 
-const DEFAULT_LAYOUTS = {
+const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row" | "compact", Layout> = {
     desktop_2col: {
         key: 0,
         kind: "horizontal",
@@ -53,6 +56,7 @@ const DEFAULT_LAYOUTS = {
                 activeTab: TabId.DIFF,
                 tabs: [
                     TabId.DIFF,
+                    TabId.DECOMPILATION,
                 ],
             },
         ],
@@ -70,6 +74,7 @@ const DEFAULT_LAYOUTS = {
                 tabs: [
                     TabId.ABOUT,
                     TabId.DIFF,
+                    TabId.DECOMPILATION,
                 ],
             },
             {
@@ -96,6 +101,7 @@ const DEFAULT_LAYOUTS = {
             TabId.CONTEXT,
             TabId.DIFF,
             TabId.OPTIONS,
+            TabId.DECOMPILATION,
         ],
     },
 }
@@ -120,16 +126,18 @@ function getDefaultLayout(width: number, height: number): keyof typeof DEFAULT_L
 export type Props = {
     scratch: Readonly<api.Scratch>
     onChange: (scratch: Partial<api.Scratch>) => void
+    parentScratch?: api.Scratch
     initialCompilation?: Readonly<api.Compilation>
 }
 
 export default function Scratch({
     scratch,
-    onChange: setScratch,
+    onChange,
+    parentScratch,
     initialCompilation,
 }: Props) {
     const container = useSize<HTMLDivElement>()
-    const [layout, setLayout] = useState(undefined)
+    const [layout, setLayout] = useState<Layout>(undefined)
     const [layoutName, setLayoutName] = useState<keyof typeof DEFAULT_LAYOUTS>(undefined)
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
@@ -141,13 +149,35 @@ export default function Scratch({
     const contextEditor = useRef<EditorView>()
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
+    const [isModified, setIsModified] = useState(false)
+    const setScratch = (scratch: Partial<api.Scratch>) => {
+        onChange(scratch)
+        setIsModified(true)
+    }
+
+    const shouldCompare = !isModified
+    const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
+    const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
+
+    // TODO: CustomLayout should handle adding/removing tabs
+    const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
+    useEffect(() => {
+        if (decompilationTabEnabled) {
+            setLayout(layout => {
+                const clone = { ...layout }
+                activateTabInLayout(clone, TabId.DECOMPILATION)
+                return clone
+            })
+        }
+    }, [decompilationTabEnabled])
+
     // If the slug changes, refresh code editors
     useEffect(() => {
         incrementValueVersion()
     }, [scratch.slug])
 
     const renderTab = (id: string) => {
-        switch (id) {
+        switch (id as TabId) {
         case TabId.ABOUT:
             return <Tab key={id} tabKey={id} label="About" className={styles.about}>
                 <AboutScratch
@@ -171,7 +201,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={CODEMIRROR_EXTENSIONS}
+                    extensions={[...CODEMIRROR_EXTENSIONS, sourceCompareExtension]}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -190,12 +220,12 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={CODEMIRROR_EXTENSIONS}
+                    extensions={[...CODEMIRROR_EXTENSIONS, contextCompareExtension]}
                 />
             </Tab>
         case TabId.OPTIONS:
             return <Tab key={id} tabKey={id} label="Options" className={styles.compilerOptsTab}>
-                <div className={styles.compilerOptsContainer}>
+                {() => <div className={styles.compilerOptsContainer}>
                     <CompilerOpts
                         platform={scratch.platform}
                         value={scratch}
@@ -204,7 +234,7 @@ export default function Scratch({
                         diffLabel={scratch.diff_label}
                         onDiffLabelChange={d => setScratch({ diff_label: d })}
                     />
-                </div>
+                </div>}
             </Tab>
         case TabId.DIFF:
             return <Tab
@@ -224,6 +254,17 @@ export default function Scratch({
                     isCompilationOld={isCompilationOld}
                     selectedSourceLine={selectedSourceLine}
                 />}
+            </Tab>
+        case TabId.DECOMPILATION:
+            return decompilationTabEnabled && <Tab
+                key={id}
+                tabKey={id}
+                label={<>
+                    Decompilation
+                    <TabCloseButton onClick={() => setDecompilationTabEnabled(false)} />
+                </>}
+            >
+                {() => <DecompilationPanel scratch={scratch} />}
             </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />
@@ -248,7 +289,7 @@ export default function Scratch({
             isCompiling={isCompiling}
             scratch={scratch}
             setScratch={setScratch}
-            incrementValueVersion={incrementValueVersion}
+            setDecompilationTabEnabled={setDecompilationTabEnabled}
         />
         <hr />
         {layout && <CustomLayout

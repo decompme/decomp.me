@@ -39,7 +39,7 @@
     align-items: center;
     justify-content: center;
 
-    padding: 0 12px;
+    padding: 0 8px;
     min-width: 60px;
     min-height: 32px;
 
@@ -135,7 +135,7 @@
         width: 100%;
         height: 100%;
 
-        background: var(--a200);
+        background: var(--a50);
         border-radius: 6px;
 
         opacity: inherit;
@@ -163,4 +163,19 @@
 .tabPanelContent {
     flex: 1;
     overflow: hidden;
+}
+
+.closeButton {
+    background: transparent;
+    border: 0;
+
+    padding: 2px;
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    &:hover,
+    &:active {
+        background: var(--a100);
+    }
 }

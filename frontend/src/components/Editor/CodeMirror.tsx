@@ -1,10 +1,32 @@
-import { CSSProperties, MutableRefObject, useEffect, useRef } from "react"
+import { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from "react"
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 import { useDebouncedCallback } from "use-debounce"
 
+import { useSize } from "../../lib/hooks"
 import { useCodeFontSize } from "../../lib/settings"
+
+// useDebouncedCallback is a bit dodgy when both leading and trailing are true, so here's a reimplementation
+function useLeadingTrailingDebounceCallback(callback: () => void, delay: number) {
+    const timeout = useRef<any>()
+
+    return useCallback(() => {
+        if (timeout.current) {
+            clearTimeout(timeout.current)
+        } else {
+            // Leading
+            callback()
+        }
+
+        timeout.current = setTimeout(() => {
+            timeout.current = undefined
+
+            // Trailing
+            callback()
+        }, delay)
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+}
 
 export interface Props {
     value: string
@@ -27,7 +49,7 @@ export default function CodeMirror({
     viewRef: viewRefProp,
     extensions,
 }: Props) {
-    const el = useRef<HTMLDivElement>()
+    const { ref: el, width } = useSize<HTMLDivElement>()
 
     const valueRef = useRef(value)
     valueRef.current = value
@@ -51,17 +73,22 @@ export default function CodeMirror({
 
     const [fontSize] = useCodeFontSize()
 
+    // Defer calls to onChange to avoid excessive re-renders
+    const propagateValue = useLeadingTrailingDebounceCallback(() => {
+        onChangeRef.current?.(viewRef.current.state.doc.toString())
+    }, 100)
+
     // Initial view creation
     useEffect(() => {
         viewRef.current = new EditorView({
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
-                    EditorState.transactionExtender.of(({ newDoc, newSelection }) => {
+                    EditorState.transactionExtender.of(({ docChanged, newDoc, newSelection }) => {
                         // value / onChange
-                        const newValue = newDoc.toString()
-                        if (newValue !== valueRef.current) {
-                            onChangeRef.current?.(newValue)
+                        if (docChanged) {
+                            valueRef.current = newDoc.toString()
+                            propagateValue()
                         }
 
                         // selectedSourceLine
@@ -75,6 +102,7 @@ export default function CodeMirror({
 
                         return null
                     }),
+
                     extensionsRef.current,
                 ],
             }),
@@ -90,7 +118,7 @@ export default function CodeMirror({
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [viewRefProp])
+    }, [el, propagateValue, viewRefProp])
 
     // Replace doc when `valueVersion` prop changes
     useEffect(() => {
@@ -108,8 +136,6 @@ export default function CodeMirror({
                         },
                     })
                 )
-            } else {
-                console.warn("valueVersion changed but the value is the same")
             }
         }
     }, [valueVersion]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -141,6 +167,9 @@ export default function CodeMirror({
         ref={el}
         onMouseMove={debouncedOnMouseMove}
         className={className}
-        style={{ "--cm-font-size": `${fontSize}px` } as CSSProperties}
+        style={{
+            "--cm-font-size": `${fontSize}px`,
+            "--cm-container-width": `${width}px`,
+        } as CSSProperties}
     />
 }
