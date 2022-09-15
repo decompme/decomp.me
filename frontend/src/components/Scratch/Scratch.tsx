@@ -9,12 +9,12 @@ import useCompareExtension from "../../lib/codemirror/useCompareExtension"
 import { useSize } from "../../lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
 import CompilerOpts from "../compiler/CompilerOpts"
-import CustomLayout from "../CustomLayout"
+import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
 import ScoreBadge from "../ScoreBadge"
-import { Tab } from "../Tabs"
+import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
 import DecompilationPanel from "./DecompilePanel"
@@ -31,7 +31,7 @@ enum TabId {
     DECOMPILATION = "scratch_decompilation",
 }
 
-const DEFAULT_LAYOUTS = {
+const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row" | "compact", Layout> = {
     desktop_2col: {
         key: 0,
         kind: "horizontal",
@@ -137,7 +137,7 @@ export default function Scratch({
     initialCompilation,
 }: Props) {
     const container = useSize<HTMLDivElement>()
-    const [layout, setLayout] = useState(undefined)
+    const [layout, setLayout] = useState<Layout>(undefined)
     const [layoutName, setLayoutName] = useState<keyof typeof DEFAULT_LAYOUTS>(undefined)
 
     const [autoRecompileSetting] = useAutoRecompileSetting()
@@ -158,6 +158,18 @@ export default function Scratch({
     const shouldCompare = !isModified
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
+
+    // TODO: CustomLayout should handle adding/removing tabs
+    const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
+    useEffect(() => {
+        if (decompilationTabEnabled) {
+            setLayout(layout => {
+                const clone = { ...layout }
+                activateTabInLayout(clone, TabId.DECOMPILATION)
+                return clone
+            })
+        }
+    }, [decompilationTabEnabled])
 
     // If the slug changes, refresh code editors
     useEffect(() => {
@@ -244,7 +256,14 @@ export default function Scratch({
                 />}
             </Tab>
         case TabId.DECOMPILATION:
-            return <Tab key={id} tabKey={id} label="Decompilation">
+            return decompilationTabEnabled && <Tab
+                key={id}
+                tabKey={id}
+                label={<>
+                    Decompilation
+                    <TabCloseButton onClick={() => setDecompilationTabEnabled(false)} />
+                </>}
+            >
                 {() => <DecompilationPanel scratch={scratch} />}
             </Tab>
         default:
@@ -270,6 +289,7 @@ export default function Scratch({
             isCompiling={isCompiling}
             scratch={scratch}
             setScratch={setScratch}
+            setDecompilationTabEnabled={setDecompilationTabEnabled}
         />
         <hr />
         {layout && <CustomLayout

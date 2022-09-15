@@ -1,5 +1,6 @@
 import { ReactElement, ReactNode, createContext, Component, useState, createRef, RefObject, useLayoutEffect, useRef } from "react"
 
+import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
 import ErrorBoundary from "./ErrorBoundary"
@@ -14,6 +15,19 @@ type Context = {
 }
 
 const TABS_CTX = createContext<Context>(null)
+
+export function TabCloseButton({ onClick }: { onClick: () => void }) {
+    return <button
+        aria-label="Close"
+        className={styles.closeButton}
+        onClick={evt => {
+            evt.stopPropagation() // Don't activate the tab
+            onClick()
+        }}
+    >
+        <XIcon />
+    </button>
+}
 
 // Pass a ReactNode, or pass a function so the tab content can be rendered lazily.
 export type TabContent = ReactNode | (() => ReactNode)
@@ -102,9 +116,13 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
 
     if (Array.isArray(children)) {
         for (const child of children) {
-            if (Array.isArray(child)) {
+            if (!child) {
+                continue
+            } else if (Array.isArray(child)) {
                 for (const grandchild of child) {
-                    tabs[(grandchild.props as unknown as TabProps).tabKey] = { el: grandchild }
+                    if (grandchild) {
+                        tabs[(grandchild.props as unknown as TabProps).tabKey] = { el: grandchild }
+                    }
                 }
             } else {
                 tabs[(child.props as unknown as TabProps).tabKey] = { el: child }
@@ -141,6 +159,13 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
             transitionDuration: isMovingBetweenButtons.current ? ".15s" : "0s",
         })
     })
+
+    // Switch to first tab if active tab is not found
+    const activeChild = tabs[activeTab]
+    const firstTab = Object.keys(tabs)[0]
+    if (!activeChild && firstTab) {
+        onChange(firstTab)
+    }
 
     return <TABS_CTX.Provider
         value={{

@@ -28,6 +28,26 @@ export interface Pane {
 
 export type Layout = HorizontalSplit | VerticalSplit | Pane
 
+export function visitLayout(layout: Layout, visitor: (layout: Layout) => void) {
+    visitor(layout)
+
+    if (layout.kind === "horizontal" || layout.kind === "vertical") {
+        for (const child of layout.children) {
+            visitLayout(child, visitor)
+        }
+    }
+}
+
+export function activateTabInLayout(layout: Layout, tab: string) {
+    visitLayout(layout, node => {
+        if (node.kind === "pane") {
+            if (node.tabs.includes(tab)) {
+                node.activeTab = tab
+            }
+        }
+    })
+}
+
 export interface Props {
     layout: Layout
     onChange: (layout: Layout) => void

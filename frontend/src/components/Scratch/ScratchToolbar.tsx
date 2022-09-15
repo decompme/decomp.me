@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { DownloadIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
+import { DownloadIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
@@ -102,10 +102,11 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
+    setDecompilationTabEnabled: (enabled: boolean) => void
 }
 
 export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch,
+    isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled,
 }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
@@ -188,6 +189,13 @@ export default function ScratchToolbar({
                 </button>
             </li>}
             <li>
+                <button onClick={() => exportScratchZip(scratch)}>
+                    <DownloadIcon />
+                    Export..
+                </button>
+            </li>
+            <li className={styles.separator} />
+            <li>
                 <button
                     onClick={compile}
                     title={compileShortcut}
@@ -197,11 +205,10 @@ export default function ScratchToolbar({
                     Compile
                 </button>
             </li>
-            <li className={styles.separator} />
             <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export..
+                <button onClick={() => setDecompilationTabEnabled(true)}>
+                    <IterationsIcon />
+                    Decompile..
                 </button>
             </li>
         </ul>
