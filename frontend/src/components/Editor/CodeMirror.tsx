@@ -57,6 +57,21 @@ export default function CodeMirror({
         onChangeRef.current?.(valueRef.current)
     }, 100, { leading: true, trailing: true })
 
+    // Sanity check for propagateValue
+    useEffect(() => {
+        if (viewRef.current?.hasFocus) {
+            const t = setInterval(() => {
+                const s = viewRef.current.state.doc.toString?.()
+                if (s !== valueRef.current) {
+                    console.error("BUG: CodeMirror doc out of sync with value prop, propagating doc")
+                    onChangeRef.current?.(s)
+                }
+            }, 1000)
+
+            return () => clearInterval(t)
+        }
+    }, [value])
+
     // Initial view creation
     useEffect(() => {
         viewRef.current = new EditorView({
