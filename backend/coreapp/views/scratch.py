@@ -27,7 +27,7 @@ from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError
 from ..middleware import Request
 from ..models.github import GitHubRepo, GitHubRepoBusyException
-from ..models.project import Project, ProjectFunction
+from ..models.project import Project, ProjectFunction, ProjectImportConfig
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
 from ..serializers import (
@@ -57,9 +57,17 @@ def get_db_asm(request_asm: str) -> Asm:
 
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
+    compiler_flags = scratch.compiler_flags
+
+    # Add include directories
+    if scratch.project_function:
+        compiler_flags += " -DDECOMPME " + " ".join(
+            f"-I{d}" for d in scratch.project_function.import_config.include_paths()
+        )
+
     return CompilerWrapper.compile_code(
         compilers.from_id(scratch.compiler),
-        scratch.compiler_flags,
+        compiler_flags,
         scratch.source_code,
         scratch.context,
         scratch.diff_label,
