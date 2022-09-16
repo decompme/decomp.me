@@ -3,6 +3,11 @@
         user-select: initial;
     }
 
+    :global(.cm-scroller) {
+        overflow: overlay;
+        scrollbar-gutter: stable;
+    }
+
     :global(.cm-content) {
         color: var(--code-foreground);
         cursor: text;
