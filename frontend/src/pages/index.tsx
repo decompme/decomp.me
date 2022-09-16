@@ -16,7 +16,7 @@ import * as api from "../lib/api"
 import styles from "./index.module.scss"
 
 const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
-const SHOW_PROJECT_LIST = false
+const SHOW_PROJECT_LIST = true
 
 function ProjectList() {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Project>("/projects")
