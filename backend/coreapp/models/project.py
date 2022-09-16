@@ -53,30 +53,43 @@ class ProjectImportConfig(models.Model):
     display_name = models.CharField(max_length=512, default="", blank=True)
     compiler_config = models.ForeignKey(CompilerConfig, on_delete=models.PROTECT)
     src_dir = models.CharField(max_length=100, default="src")
+    include_dirs = models.TextField(default="include", blank=True)
     nonmatchings_dir = models.CharField(max_length=100, default="asm/nonmatchings")
     nonmatchings_glob = models.CharField(max_length=100, default="**/*.s")
-    symbol_addrs_path = models.CharField(max_length=100, default="symbol_addrs.txt")
+    symbol_addrs_filename = models.CharField(max_length=100, default="symbol_addrs.txt")
 
     def __str__(self) -> str:
         return f"{self.display_name or self.id} ({self.project})"
 
-    def get_paths(self) -> Tuple[Path, Path, Path]:
+    def src_path(self) -> Path:
         repo_dir: Path = self.project.repo.get_dir()
-
         src_dir = repo_dir.joinpath(self.src_dir)
-        nonmatchings_dir = repo_dir.joinpath(self.nonmatchings_dir)
-        symbol_addrs_path = repo_dir.joinpath(self.symbol_addrs_path)
-
         assert src_dir.is_dir()
-        assert nonmatchings_dir.is_dir()
-        assert symbol_addrs_path.is_file()
+        return src_dir
 
-        return src_dir, nonmatchings_dir, symbol_addrs_path
+    def include_paths(self) -> List[Path]:
+        repo_dir: Path = self.project.repo.get_dir()
+        include_dirs = [repo_dir.joinpath(d) for d in shlex.split(self.include_dirs)]
+        return [d for d in include_dirs if d.is_dir()]
+
+    def nonmatchings_path(self) -> Path:
+        repo_dir: Path = self.project.repo.get_dir()
+        nonmatchings_dir = repo_dir.joinpath(self.nonmatchings_dir)
+        assert nonmatchings_dir.is_dir()
+        return nonmatchings_dir
+
+    def symbol_addrs_path(self) -> Path:
+        repo_dir: Path = self.project.repo.get_dir()
+        symbol_addrs_path = repo_dir.joinpath(self.symbol_addrs_filename)
+        assert symbol_addrs_path.is_file()
+        return symbol_addrs_path
 
     @transaction.atomic
     def execute_import(self) -> None:
         project_dir: Path = self.project.repo.get_dir()
-        src_dir, nonmatchings_dir, symbol_addrs_path = self.get_paths()
+        src_path = self.src_path()
+        nonmatchings_dir = self.nonmatchings_path()
+        symbol_addrs_path = self.symbol_addrs_path()
 
         symbol_addrs = parse_symbol_addrs(symbol_addrs_path)
         asm_files = [
@@ -107,7 +120,7 @@ class ProjectImportConfig(models.Model):
                 continue
 
             # Search C file for this function (TODO: use configurable regex replace?)
-            src_file = src_dir / asm_file.relative_to(
+            src_file = src_path / asm_file.relative_to(
                 nonmatchings_dir
             ).parent.with_suffix(".c")
             if not src_file.is_file():
@@ -142,7 +155,7 @@ class ProjectImportConfig(models.Model):
 class ProjectFunction(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE
-    )  # note: redundant w.r.t. import_config.project
+    )  # note: redundant w.r.t. import_config.project, needed for UniqueConstraint
     rom_address = models.IntegerField()
 
     creation_time = models.DateTimeField(auto_now_add=True)

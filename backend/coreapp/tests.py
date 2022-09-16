@@ -1098,7 +1098,7 @@ class ScratchPRTests(BaseTestCase):
             src_dir="src",
             nonmatchings_dir="asm/nonmatchings",
             nonmatchings_glob="**/*.s",
-            symbol_addrs_path="symbol_addrs.txt",
+            symbol_addrs_filename="symbol_addrs.txt",
         )
         import_config.save()
         self.import_config = import_config
@@ -1324,7 +1324,7 @@ class ProjectTests(TestCase):
                     src_dir="src",
                     nonmatchings_dir="asm/nonmatchings",
                     nonmatchings_glob="**/*.s",
-                    symbol_addrs_path="symbol_addrs.txt",
+                    symbol_addrs_filename="symbol_addrs.txt",
                 )
                 import_config.save()
 
