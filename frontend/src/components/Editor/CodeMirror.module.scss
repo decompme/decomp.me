@@ -1,0 +1,127 @@
+.container {
+    :global(.cm-editor) {
+        user-select: initial;
+    }
+
+    :global(.cm-content) {
+        color: var(--code-foreground);
+        cursor: text;
+    }
+
+    :global(.cm-gutters),
+    :global(.cm-content) {
+        font-size: var(--cm-font-size, 0.8rem);
+        font-family: var(--monospace);
+        line-height: var(--code-line-height, 1.5);
+    }
+
+    :global(.cm-gutters) {
+        color: var(--code-foreground) !important;
+    }
+
+    :global(.cm-activeLineGutter) {
+        color: var(--code-cursor) !important;
+    }
+
+    :global(.cmt-propertyName),
+    :global(.cmt-variableName) {
+        color: var(--code-variable);
+    }
+
+    :global(.cmt-function) {
+        color: var(--code-function);
+    }
+
+    :global(.cmt-punctuation) {
+        color: var(--code-punctuation);
+    }
+
+    :global(.cmt-operator) {
+        color: var(--code-operator);
+    }
+
+    :global(.cmt-comment) {
+        color: var(--code-comment);
+    }
+
+    :global(.cmt-number) {
+        color: var(--code-number);
+    }
+
+    :global(.cmt-bool) {
+        color: var(--code-bool);
+    }
+
+    :global(.cmt-string) {
+        color: var(--code-string);
+    }
+
+    :global(cmt-typeName) {
+        color: var(--code-type);
+    }
+
+    :global(cmt-keyword) {
+        color: var(--code-keyword);
+    }
+
+    :global(cmt-meta) {
+        color: var(--code-preprocessor);
+    }
+
+    :global(cmt-character) {
+        color: var(--code-character);
+    }
+
+    :global(cm-panel) {
+        font-size: 1rem;
+
+        // from Button.module.scss
+        :global(cm-button) {
+            border-radius: 4px;
+            padding: 0.4em 0.8em;
+
+            font-size: 0.8rem;
+            font-weight: 500;
+
+            user-select: none;
+            appearance: none;
+
+            display: inline-flex;
+            gap: 0.5em;
+            align-items: center;
+
+            background: transparent;
+            color: var(--a800);
+            border: 1px solid var(--g500);
+
+            &:not(:disabled) {
+                cursor: pointer;
+
+                &:hover {
+                    color: var(--a900);
+                    border-color: var(--g800);
+                }
+            }
+        }
+
+        :global(.cm-textfield) {
+            padding: 0.4em 0.6em;
+
+            color: var(--g1200);
+            background: var(--g200);
+            font: 0.8rem var(--monospace);
+            border: 1px solid var(--g500);
+            border-radius: 4px;
+
+            outline: none !important;
+
+            &::-webkit-input-placeholder {
+                color: var(--g700);
+            }
+        }
+
+        input[type="checkbox"] {
+            vertical-align: middle;
+        }
+    }
+}
