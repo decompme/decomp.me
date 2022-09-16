@@ -69,7 +69,7 @@ class ProjectImportConfig(models.Model):
 
     def include_paths(self) -> List[Path]:
         repo_dir: Path = self.project.repo.get_dir()
-        include_dirs = [repo_dir.joinpath(d) for d in shlex.split(self.include_dirs)]
+        include_dirs = [repo_dir.joinpath(d) for d in self.include_dirs.split("\n")]
         return [d for d in include_dirs if d.is_dir()]
 
     def nonmatchings_path(self) -> Path:
