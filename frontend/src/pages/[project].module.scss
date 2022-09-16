@@ -57,6 +57,9 @@
         color: var(--g1000);
         font-size: 0.9em;
         max-width: 50ch;
+
+        user-select: text;
+        white-space: pre;
     }
 }
 
