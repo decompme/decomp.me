@@ -33,7 +33,7 @@ function useLeadingTrailingDebounceCallback(callback: () => void, delay: number)
 
 export interface Props {
     value: string
-    valueVersion?: number
+    valueVersion: number
     onChange?: (value: string) => void
     onHoveredLineChange?: (value: number | null) => void
     onSelectedLineChange?: (value: number) => void

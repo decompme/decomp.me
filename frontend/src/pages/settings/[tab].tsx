@@ -192,6 +192,7 @@ function AppearanceSettings() {
                 <div className={styles.exampleCodeEditor}>
                     <CodeMirror
                         value={EXAMPLE_C_CODE}
+                        valueVersion={0}
                         extensions={[basicSetup, cpp()]}
                     />
                 </div>
