@@ -61,27 +61,27 @@
         color: var(--code-string);
     }
 
-    :global(cmt-typeName) {
+    :global(.cmt-typename) {
         color: var(--code-type);
     }
 
-    :global(cmt-keyword) {
+    :global(.cmt-keyword) {
         color: var(--code-keyword);
     }
 
-    :global(cmt-meta) {
+    :global(.cmt-meta) {
         color: var(--code-preprocessor);
     }
 
-    :global(cmt-character) {
+    :global(.cmt-character) {
         color: var(--code-character);
     }
 
-    :global(cm-panel) {
+    :global(.cm-panel) {
         font-size: 1rem;
 
         // from Button.module.scss
-        :global(cm-button) {
+        :global(.cm-button) {
             border-radius: 4px;
             padding: 0.4em 0.8em;
 

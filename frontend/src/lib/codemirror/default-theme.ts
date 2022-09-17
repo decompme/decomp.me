@@ -113,7 +113,7 @@ export const highlightStyle = HighlightStyle.define([
     { tag: tags.definition(tags.propertyName), class: "cmt-propertyName cmt-definition" },
     { tag: tags.function(tags.variableName), class: "cmt-variableName cmt-function" },
     { tag: tags.name, class: "cmt-name" },
-    { tag: tags.typeName, class: "cmt-typeName" },
+    { tag: tags.typeName, class: "cmt-typename" },
     { tag: tags.namespace, class: "cmt-namespace" },
     { tag: tags.className, class: "cmt-className" },
     { tag: tags.macroName, class: "cmt-macroName" },
