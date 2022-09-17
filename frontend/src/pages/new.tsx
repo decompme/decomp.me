@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useReducer } from "react"
 
 import { GetStaticProps } from "next"
 
@@ -79,6 +79,8 @@ export default function NewScratch({ serverCompilers }: {
     const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [presetName, setPresetName] = useState<string>("")
 
+    const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
+
     const router = useRouter()
     const plausible = usePlausible()
 
@@ -106,6 +108,7 @@ export default function NewScratch({ serverCompilers }: {
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
             setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
             setPresetName(localStorage["new_scratch_presetName"] ?? "")
+            incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
         }
@@ -265,6 +268,7 @@ export default function NewScratch({ serverCompilers }: {
                     <CodeMirror
                         className={styles.editor}
                         value={asm}
+                        valueVersion={valueVersion}
                         onChange={setAsm}
                         extensions={basicSetup}
                     />
@@ -276,6 +280,7 @@ export default function NewScratch({ serverCompilers }: {
                     <CodeMirror
                         className={styles.editor}
                         value={context}
+                        valueVersion={valueVersion}
                         onChange={setContext}
                         extensions={[basicSetup, cpp()]}
                     />
