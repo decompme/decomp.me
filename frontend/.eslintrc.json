@@ -51,6 +51,16 @@
             },
             "multilineDetection": "brackets"
         }],
+        "no-restricted-imports": [
+            "error", {
+                "paths": [
+                    {
+                        "name": "next/image",
+                        "message": "Use next/future/image instead."
+                    }
+                ]
+            }
+        ],
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
         "import/first": "error",
@@ -72,7 +82,7 @@
                         "position": "after"
                     },
                     {
-                        "pattern": "next/*",
+                        "pattern": "next/**",
                         "group": "builtin",
                         "position": "after"
                     }
@@ -95,6 +105,13 @@
             "files": ["*.stories.tsx"],
             "rules": {
                 "import/exports-last": "off"
+            }
+        },
+        {
+            "files": ["next.config.js"],
+            "rules": {
+                "@typescript-eslint/no-var-requires": "off",
+                "import/order": "off"
             }
         }
     ]
