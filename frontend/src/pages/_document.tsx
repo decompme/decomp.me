@@ -10,7 +10,7 @@ export default class MyDocument extends Document {
                     <link rel="manifest" href="/manifest.json" />
 
                     <link rel="shortcut icon" href="/purplefrog.svg" />
-                    <link rel="apple-touch-icon" href="/purplefrog-bg.svg" />
+                    <link rel="apple-touch-icon" href="/purplefrog-bg-180.png" />
                 </Head>
                 <body className="theme-dark">
                     <Main />
