@@ -51,6 +51,16 @@
             },
             "multilineDetection": "brackets"
         }],
+        "no-restricted-imports": [
+            "error", {
+                "paths": [
+                    {
+                        "name": "next/image",
+                        "message": "Use next/future/image instead."
+                    }
+                ]
+            }
+        ],
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
         "import/first": "error",
@@ -72,7 +82,7 @@
                         "position": "after"
                     },
                     {
-                        "pattern": "next/*",
+                        "pattern": "next/**",
                         "group": "builtin",
                         "position": "after"
                     }
