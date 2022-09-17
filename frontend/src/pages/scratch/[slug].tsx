@@ -100,9 +100,6 @@ export default function ScratchPage({ initialScratch, parentScratch, initialComp
 
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
-        <Head>
-            <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        </Head>
         <main className={styles.container}>
             <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
                 <Scratch
