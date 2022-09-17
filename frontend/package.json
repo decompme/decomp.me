@@ -5,7 +5,8 @@
         "build": "next build",
         "start": "next start --port 8080",
         "lint": "next lint && yarn stylelint 'src/**/*.css' 'src/**/*.scss'",
-        "postinstall": "next telemetry disable"
+        "postinstall": "next telemetry disable",
+        "analyze": "ANALYZE=true next build"
     },
     "dependencies": {
         "@codemirror/basic-setup": "^0.20.0",
@@ -44,6 +45,7 @@
     },
     "devDependencies": {
         "@babel/core": "^7.17.8",
+        "@next/bundle-analyzer": "^12.3.0",
         "@next/eslint-plugin-next": "^12.1.6",
         "@svgr/webpack": "^6.2.1",
         "@types/diff": "^5.0.2",
