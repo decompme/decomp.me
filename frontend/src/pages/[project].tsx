@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import { GetStaticPaths, GetStaticProps } from "next"
 
-import Image from "next/future/image"
+import Image from "next/image"
 import Link from "next/link"
 
 import { MarkGithubIcon, RepoPullIcon } from "@primer/octicons-react"
