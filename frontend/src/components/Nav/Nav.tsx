@@ -59,7 +59,13 @@ export default function Nav({ children }: Props) {
     >
         <ul className={styles.header}>
             <li className={styles.headerItemMenuToggle}>
-                <button id="navtoggle" onClick={toggleOpen} aria-label={toggleLabel} aria-expanded={isOpen}>
+                <button
+                    id="navtoggle"
+                    onClick={toggleOpen}
+                    onAuxClick={() => window.open("/", "_blank")}
+                    aria-label={toggleLabel}
+                    aria-expanded={isOpen}
+                >
                     {isOpen ? <XIcon size={24} /> : <ThreeBarsIcon size={18} />}
                 </button>
             </li>
