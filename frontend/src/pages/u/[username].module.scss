@@ -37,6 +37,7 @@ $pageWidth: 50em;
 .avatar {
     width: 64px;
     height: 64px;
+    background: #fff4;
     border-radius: 999px;
 }
 
@@ -52,12 +53,12 @@ $pageWidth: 50em;
     align-items: center;
     gap: 0.5em;
 
-    color: var(--g1200);
+    color: #888;
     font-weight: 400;
 }
 
 .username a:hover {
-    color: var(--g2000);
+    color: white;
 }
 
 .tabs {

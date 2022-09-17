@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import Image from "next/future/image"
+import Image from "next/image"
 
 import classNames from "classnames"
 import { useLayer } from "react-laag"
@@ -42,10 +42,9 @@ export default function LoginState({ className }: { className?: string }) {
         <Image
             className={styles.avatar}
             src={user.avatar_url}
-            alt="Account menu"
+            alt="Avatar"
             width={24}
             height={24}
-            sizes="24px"
             priority
         />
         {renderLayer(<div {...layerProps}>

@@ -1,4 +1,4 @@
-import Image from "next/future/image"
+import Image from "next/image"
 import Link from "next/link"
 
 import classNames from "classnames"
@@ -28,7 +28,7 @@ export default function ProjectIcon({ projectUrl, size, className }: Props) {
 
     return <Link href={data.html_url}>
         <a className={classNames(styles.icon, className)} style={style}>
-            <Image src={data.icon_url} alt={data.slug} fill />
+            <Image src={data.icon_url} alt={data.slug} layout="fill" />
         </a>
     </Link>
 }
