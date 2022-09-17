@@ -2,10 +2,13 @@ import { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from 
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
+import classNames from "classnames"
 import { useDebouncedCallback } from "use-debounce"
 
 import { useSize } from "../../lib/hooks"
 import { useCodeFontSize } from "../../lib/settings"
+
+import styles from "./CodeMirror.module.scss"
 
 // useDebouncedCallback is a bit dodgy when both leading and trailing are true, so here's a reimplementation
 function useLeadingTrailingDebounceCallback(callback: () => void, delay: number) {
@@ -166,7 +169,7 @@ export default function CodeMirror({
     return <div
         ref={el}
         onMouseMove={debouncedOnMouseMove}
-        className={className}
+        className={classNames(styles.container, className)}
         style={{
             "--cm-font-size": `${fontSize}px`,
             "--cm-container-width": `${width}px`,

@@ -49,7 +49,9 @@
 
 .body {
     flex: 1;
-    overflow: overlay !important; // note: webkit only, see #275
+
+    overflow: overlay !important; // overrides FixedSizeList inline style (overflow: auto)
+    scrollbar-gutter: stable;
 
     user-select: text;
     font-family: var(--monospace);
