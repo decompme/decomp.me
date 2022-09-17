@@ -2,8 +2,6 @@ import { Suspense, useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
-import Head from "next/head"
-
 import useSWR from "swr"
 
 import LoadingSpinner from "../../components/loading.svg"
