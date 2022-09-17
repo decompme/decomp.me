@@ -70,7 +70,6 @@ export interface Props {
 
 export default function ScratchPage({ initialScratch, parentScratch, initialCompilation }: Props) {
     const [scratch, setScratch] = useState(initialScratch)
-    //const setScratch = useDebouncedCallback(setScratchImmediate, 100, { leading: true, trailing: true }) // reduce layout thrashing
 
     useWarnBeforeScratchUnload(scratch)
 
@@ -91,25 +90,13 @@ export default function ScratchPage({ initialScratch, parentScratch, initialComp
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
     }
 
-    // Scratch uses suspense but SSR does not support it so we just render a loading state
-    // in server-side rendering mode.
-    const [isMounted, setIsMounted] = useState(false)
+    // Disable page scrolling
     useEffect(() => {
-        setIsMounted(true)
-
         document.body.classList.add("no-scroll")
         return () => {
             document.body.classList.remove("no-scroll")
         }
     }, [])
-    if (!isMounted) {
-        return <>
-            <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
-            <main className={styles.container}>
-                <LoadingSpinner className={styles.loading} />
-            </main>
-        </>
-    }
 
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
