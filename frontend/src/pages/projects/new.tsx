@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 
+import router from "next/router"
+
 import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import GitHubLoginButton from "../../components/GitHubLoginButton"
@@ -16,7 +18,7 @@ export default function NewProjectPage() {
     const [repoName, setRepoName] = useState("")
     const [defaultBranch, setDefaultBranch] = useState("main")
     const [branch, setBranch] = useState(defaultBranch)
-    const [name, setName] = useState("project")
+    const [slug, setSlug] = useState("project")
 
     // Default branch name
     useEffect(() => {
@@ -26,21 +28,36 @@ export default function NewProjectPage() {
 
     // Default project name
     useEffect(() => {
-        if (name.length == 0)
-            setName(repoName)
-    }, [name.length, repoName])
+        if (slug.length == 0)
+            setSlug(repoName)
+    }, [slug.length, repoName])
+
+    // Remove dots from slug
+    useEffect(() => {
+        setSlug(slug.replace(/\./g, "-"))
+    }, [slug])
 
     const handleRepoChange = useCallback(({ owner, repo, defaultBranch }) => {
         setRepoOwner(owner)
         setRepoName(repo)
-        setName(repo)
+        setSlug(repo)
         setBranch(defaultBranch)
         setDefaultBranch(defaultBranch)
     }, [])
 
-    const submit = useCallback(async () => {
-        throw new Error("TODO")
-    }, [])
+    const submit = async () => {
+        const project: api.Project = await api.post("/projects", {
+            slug,
+            icon_url: "https://cdn.discordapp.com/emojis/354063034689519617.webp", // TODO
+            repo: {
+                owner: repoOwner,
+                repo: repoName,
+                branch,
+            },
+        })
+
+        router.push(project.html_url)
+    }
 
     const user = api.useThisUser()
     const isSignedIn = user && !api.isAnonUser(user)
@@ -71,18 +88,15 @@ export default function NewProjectPage() {
                         isValidKey={isValidIdentifierKey}
                     />
 
-                    <h2 className={styles.label}>Project URL</h2>
+                    <h2 className={styles.label}>Project name</h2>
                     <div className={styles.urlInput}>
                         decomp.me/<StringInput
                             label="Project name"
-                            value={name}
-                            onChange={setName}
+                            value={slug}
+                            onChange={setSlug}
                             isValidKey={isValidIdentifierKey}
                         />
                     </div>
-
-                    <h2 className={styles.label}>Function import config</h2>
-                    todo
 
                     <hr className={styles.rule} />
 
@@ -92,7 +106,7 @@ export default function NewProjectPage() {
                         errorPlacement="right-center"
                         disabled={!isSignedIn}
                     >
-                        Import project
+                        Create project
                     </AsyncButton> : <GitHubLoginButton popup label="Sign in to create projects" />}
                 </div>
             </div>

@@ -213,10 +213,10 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
 
 
 class ProjectSerializer(serializers.ModelSerializer[Project]):
-    slug = serializers.SlugField(read_only=True)
+    slug = serializers.SlugField()
     url = HyperlinkedIdentityField(view_name="project-detail")
     html_url = HtmlUrlField()
-    repo = GitHubRepoSerializer(read_only=True)
+    repo = GitHubRepoSerializer()
     members = SerializerMethodField()
     most_common_platform = SerializerMethodField()
     unmatched_function_count = SerializerMethodField()
@@ -225,6 +225,12 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         model = Project
         exclude: List[str] = []
         depth = 1  # repo
+
+    def create(self, validated_data: Any) -> Project:
+        repo_data = validated_data.pop("repo")
+        repo = GitHubRepo.objects.create(**repo_data)
+        project = Project.objects.create(repo=repo, **validated_data)
+        return project
 
     def get_members(self, project: Project) -> List[Dict[str, Any]]:
         return [

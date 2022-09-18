@@ -1,6 +1,7 @@
 import logging
 import random
 import re
+from sqlite3 import IntegrityError
 import string
 from threading import Thread
 from typing import Any, Optional
@@ -29,7 +30,7 @@ from ..models.github import (
     GitHubUser,
     MissingOAuthScopeException,
 )
-from ..models.project import Project, ProjectFunction
+from ..models.project import Project, ProjectFunction, ProjectMember
 from ..models.scratch import Scratch
 from ..serializers import (
     ProjectFunctionSerializer,
@@ -59,6 +60,11 @@ class ScratchNotProjectFunctionException(APIException):
 class PrMustHaveScratchesException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "You must provide at least one scratch to create a PR."
+
+
+class ProjectExistsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Project with this name already exists."
 
 
 class ProjectPagination(CursorPagination):
@@ -97,12 +103,45 @@ class ProjectViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
     GenericViewSet,
 ):
     queryset = Project.objects.all()
     pagination_class = ProjectPagination
     serializer_class = ProjectSerializer
     permission_classes = [IsProjectMemberOrReadOnly]
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user: Optional[User] = request.profile.user
+        if not user:
+            raise GithubLoginException()
+        gh_user: Optional[GitHubUser] = user.github
+        if not gh_user:
+            raise GithubLoginException()
+
+        project = ProjectSerializer(data=request.data)
+        project.is_valid(raise_exception=True)
+
+        slug = project.validated_data["slug"]
+        if slug == "new" or Project.objects.filter(slug=slug).exists():
+            raise ProjectExistsException()
+
+        project = project.save()
+
+        repo: GitHubRepo = project.repo
+
+        if not project.description:
+            details = repo.details(access_token=gh_user.access_token)
+            project.description = details.description
+
+        repo.pull()
+
+        ProjectMember(project=project, profile=request.profile).save()
+
+        return Response(
+            ProjectSerializer(project, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=True, methods=["POST"])
     def pull(self, request: Request, pk: str) -> Response:
