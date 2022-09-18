@@ -6,6 +6,7 @@ build
 local_files/
 backend/local_files/
 backend/virtualenvs/
+backend/docker.dev.env
 postgres/
 sandbox/
 *.db
