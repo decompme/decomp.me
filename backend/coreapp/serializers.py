@@ -11,7 +11,7 @@ from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
-from .models.project import Project, ProjectFunction, ProjectImportConfig
+from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
 from .models.scratch import CompilerConfig, Scratch
 
 
@@ -26,6 +26,7 @@ def serialize_profile(
             "is_anonymous": True,
             "id": profile.id,
             "is_online": profile.is_online(),
+            "is_admin": False,
             "username": f"{profile.pseudonym} (anon)",
             "frog_color": profile.get_frog_color(),
         }
@@ -40,8 +41,9 @@ def serialize_profile(
             "html_url": profile.get_html_url(),
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
-            "id": user.id,
+            "id": profile.id,
             "is_online": profile.is_online(),
+            "is_admin": user.is_staff,
             "username": user.username,
             "avatar_url": github_details.avatar_url if github_details else None,
         }
@@ -273,3 +275,14 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
 
     def get_attempts_count(self, fn: ProjectFunction) -> int:
         return Scratch.objects.filter(project_function=fn).count()
+
+
+class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
+    user_id = SerializerMethodField()
+
+    class Meta:
+        model = ProjectMember
+        fields = ["user_id"]
+
+    def get_user_id(self, member: ProjectMember) -> int:
+        return member.profile.id

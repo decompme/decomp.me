@@ -54,7 +54,7 @@ export class Tab extends Component<TabProps> {
                     return <div>Misplaced Tab (not in Tabs?)</div>
                 }
 
-                if (!key) {
+                if (typeof key !== "string") {
                     console.error("Misplaced Tab (no tabKey)")
                     return <div>Misplaced Tab (no tabKey?)</div>
                 }

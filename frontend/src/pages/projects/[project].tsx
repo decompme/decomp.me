@@ -1,24 +1,19 @@
-import { useEffect, useState } from "react"
-
 import { GetStaticPaths, GetStaticProps } from "next"
 
-import Image from "next/image"
-import Link from "next/link"
-
-import { MarkGithubIcon, RepoPullIcon } from "@primer/octicons-react"
+import { RepoPullIcon } from "@primer/octicons-react"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import AsyncButton from "../components/AsyncButton"
-import ErrorBoundary from "../components/ErrorBoundary"
-import Footer from "../components/Footer"
-import LoadingSpinner from "../components/loading.svg"
-import Nav from "../components/Nav"
-import PageTitle from "../components/PageTitle"
-import ProjectFunctionList from "../components/ProjectFunctionList"
-import PrScratchBasket from "../components/PrScratchBasket"
-import UserAvatarList from "../components/UserAvatarList"
-import * as api from "../lib/api"
+import AsyncButton from "../../components/AsyncButton"
+import ErrorBoundary from "../../components/ErrorBoundary"
+import Footer from "../../components/Footer"
+import LoadingSpinner from "../../components/loading.svg"
+import Nav from "../../components/Nav"
+import PageTitle from "../../components/PageTitle"
+import ProjectFunctionList from "../../components/ProjectFunctionList"
+import ProjectHeader from "../../components/ProjectHeader"
+import PrScratchBasket from "../../components/PrScratchBasket"
+import * as api from "../../lib/api"
 
 import styles from "./[project].module.scss"
 
@@ -26,7 +21,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const page: api.Page<api.Project> = await api.get("/projects")
 
     return {
-        paths: page.results.map(project => "/" + project.slug),
+        paths: page.results.map(project => project.html_url),
         fallback: "blocking",
     }
 }
@@ -58,35 +53,12 @@ export default function ProjectPage(props: { project: api.Project }) {
         refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
     })
 
-    const [isMounted, setIsMounted] = useState(false)
-    useEffect(() => {
-        setIsMounted(true)
-    }, [])
-
-    const userIsYou = api.useUserIsYou()
-    const userIsMember = isMounted && !!project.members.find(userIsYou)
+    const userIsMember = api.useIsUserProjectMember(project)
 
     return <>
         <PageTitle title={project.slug} />
         <Nav />
-        <header className={styles.header}>
-            <div className={styles.headerInner}>
-                <h1>
-                    <Image src={project.icon_url} alt="" width={32} height={32} />
-                    {project.slug}
-                </h1>
-                <p>{project.description}</p>
-                <div className={styles.links}>
-                    <Link href={project.repo.html_url}>
-                        <a>
-                            <MarkGithubIcon size={18} />
-                            {project.repo.owner}/{project.repo.repo}
-                        </a>
-                    </Link>
-                    <UserAvatarList users={project.members} />
-                </div>
-            </div>
-        </header>
+        <ProjectHeader project={project} />
         <PrScratchBasket project={project} />
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>
             <LoadingSpinner width={32} height={32} />
@@ -94,7 +66,6 @@ export default function ProjectPage(props: { project: api.Project }) {
         </main> : <main>
             <ErrorBoundary>
                 <div className={styles.container}>
-                    <h2>Functions ({project.unmatched_function_count})</h2>
                     <ProjectFunctionList projectUrl={project.url}>
                         <div className={styles.headerActions}>
                             {userIsMember && <AsyncButton

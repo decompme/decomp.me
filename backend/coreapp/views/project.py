@@ -4,7 +4,7 @@ import re
 from sqlite3 import IntegrityError
 import string
 from threading import Thread
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import django_filters
 from django.db.models.query import QuerySet
@@ -21,9 +21,9 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
+from rest_framework.views import APIView
 
-from coreapp.middleware import Request
-
+from ..middleware import Request
 from ..models.github import (
     GitHubRepo,
     GitHubRepoBusyException,
@@ -32,8 +32,10 @@ from ..models.github import (
 )
 from ..models.project import Project, ProjectFunction, ProjectMember
 from ..models.scratch import Scratch
+from ..models.profile import Profile
 from ..serializers import (
     ProjectFunctionSerializer,
+    ProjectMemberSerializer,
     ProjectSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
@@ -53,18 +55,23 @@ class GithubLoginException(APIException):
 
 
 class ScratchNotProjectFunctionException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_403_FORBIDDEN
     default_detail = "Scratches given must be part of the project."
 
 
 class PrMustHaveScratchesException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must provide at least one scratch to create a PR."
 
 
 class ProjectExistsException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_403_FORBIDDEN
     default_detail = "Project with this name already exists."
+
+
+class ProjectMustHaveMembersException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must have at least one member in your project."
 
 
 class ProjectPagination(CursorPagination):
@@ -104,6 +111,7 @@ class ProjectViewSet(
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
     mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet,
 ):
     queryset = Project.objects.all()
@@ -142,6 +150,15 @@ class ProjectViewSet(
             ProjectSerializer(project, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        project: Project = self.get_object()
+        repo: GitHubRepo = project.repo
+
+        project.delete()
+        repo.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["POST"])
     def pull(self, request: Request, pk: str) -> Response:
@@ -278,6 +295,40 @@ class ProjectViewSet(
         )
         return Response({"url": response.html_url})
 
+    @action(detail=True, methods=["GET", "PUT"])
+    def members(self, request: Request, pk: str) -> Response:
+        project: Project = self.get_object()
+
+        if request.method == "PUT":
+            existing_ids = set([m.profile.id for m in project.members()])
+            wanted_ids = set([m["user_id"] for m in request.data.get("members", [])])
+
+            ids_to_delete = existing_ids - wanted_ids
+            ids_to_add = wanted_ids - existing_ids
+
+            if ids_to_add == existing_ids:
+                raise ProjectMustHaveMembersException()
+
+            for id in ids_to_delete:
+                member = ProjectMember.objects.get(project=project, profile__id=id)
+                member.delete()
+
+            for id in ids_to_add:
+                member = ProjectMember(
+                    project=project, profile=Profile.objects.get(id=id)
+                )
+                member.save()
+
+        return Response(
+            {
+                "members": ProjectMemberSerializer(
+                    project.members(),
+                    many=True,
+                    context={"request": request},
+                ).data,
+            }
+        )
+
 
 def truncate_comma_separate(string_list: list[str], max_length: int) -> str:
     value = ""
@@ -362,11 +413,10 @@ class ProjectFunctionViewSet(
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
-(
-    router.register(r"projects", ProjectViewSet).register(
-        r"functions",
-        ProjectFunctionViewSet,
-        basename="projectfunction",
-        parents_query_lookups=["slug"],
-    )
+projects_router = router.register(r"projects", ProjectViewSet)
+projects_router.register(
+    r"functions",
+    ProjectFunctionViewSet,
+    basename="projectfunction",
+    parents_query_lookups=["slug"],
 )

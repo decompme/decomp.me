@@ -90,7 +90,7 @@ export default function NewProjectPage() {
 
                     <h2 className={styles.label}>Project name</h2>
                     <div className={styles.urlInput}>
-                        decomp.me/<StringInput
+                        decomp.me/projects/<StringInput
                             label="Project name"
                             value={slug}
                             onChange={setSlug}

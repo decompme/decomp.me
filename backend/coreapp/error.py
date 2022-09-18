@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 from subprocess import CalledProcessError
 from typing import Any, ClassVar, Optional
 
@@ -20,10 +21,9 @@ def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]
             },
             status=HTTP_400_BAD_REQUEST,
         )
-    elif isinstance(exc, Exception):
+    elif isinstance(exc, AssertionError) or isinstance(exc, IntegrityError):
         response = Response(
             data={
-                "code": "internal",
                 "detail": str(exc),
             },
             status=HTTP_500_INTERNAL_SERVER_ERROR,

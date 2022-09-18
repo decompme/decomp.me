@@ -168,6 +168,33 @@ export async function delete_(url: string, json: Json) {
     }
 }
 
+export async function put(url: string, json: Json) {
+    url = getURL(url)
+
+    const body = JSON.stringify(json)
+
+    console.info("PUT", url, JSON.parse(body))
+
+    const response = await fetch(url, {
+        ...commonOpts,
+        method: "PUT",
+        body,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+
+    if (!response.ok) {
+        throw new ResponseError(response, await response.json())
+    }
+
+    const text = await response.text()
+    if (!text) {
+        return
+    }
+    return JSON.parse(text)
+}
+
 export interface Page<T> {
     next: string | null
     previous: string | null
@@ -180,6 +207,7 @@ export interface AnonymousUser {
     is_anonymous: true
     id: number
     is_online: boolean
+    is_admin: boolean
     username: string
 
     frog_color: [number, number, number]
@@ -191,6 +219,7 @@ export interface User {
     is_anonymous: false
     id: number
     is_online: boolean
+    is_admin: boolean
     username: string
 
     name: string
@@ -240,7 +269,7 @@ export interface Project {
     }
     creation_time: string
     icon_url: string
-    members: User[]
+    members: (User | AnonymousUser)[]
     description: string
     most_common_platform?: string
     unmatched_function_count: number
@@ -645,4 +674,15 @@ export function useStats(): Stats | undefined {
     }
 
     return data
+}
+
+export function useIsUserProjectMember(project: Project): boolean | undefined {
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    const userIsYou = useUserIsYou()
+
+    return isMounted ? !!project.members.find(userIsYou) : undefined
 }

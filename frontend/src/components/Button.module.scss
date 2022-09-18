@@ -42,3 +42,13 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 }
+
+.danger {
+    color: var(--danger);
+
+    &:not(:disabled):hover {
+        background: var(--danger);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+}

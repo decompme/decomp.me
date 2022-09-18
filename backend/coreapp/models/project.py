@@ -27,7 +27,7 @@ class Project(models.Model):
         return self.slug
 
     def get_html_url(self) -> str:
-        return f"/{self.slug}"
+        return f"/projects/{self.slug}"
 
     @transaction.atomic
     def import_functions(self) -> None:
@@ -164,7 +164,7 @@ class ProjectFunction(models.Model):
         ]
 
     def get_html_url(self) -> str:
-        return f"{self.project.get_html_url()}/{self.rom_address:X}"
+        return f"{self.project.get_html_url()}/functions/{self.rom_address:X}"
 
     def __str__(self) -> str:
         return f"{self.display_name} ({self.project})"

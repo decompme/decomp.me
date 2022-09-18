@@ -1,0 +1,46 @@
+.container {
+    font-size: 16px;
+
+    > h2 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 0.5em;
+
+        display: grid;
+        grid-template-columns: 1fr auto;
+    }
+}
+
+.list {
+    list-style: none;
+
+    > li {
+        padding: 6px;
+        margin: 6px 0;
+
+        display: grid;
+        grid-template-columns: 1fr auto;
+        justify-items: start;
+
+        color: var(--a800);
+
+        .removeBtn {
+            opacity: 0;
+        }
+
+        &:hover {
+            border-radius: 6px;
+            background: var(--g300);
+
+            .removeBtn {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.removeBtn {
+    padding: 4px;
+    border-radius: 4px;
+    border-color: transparent;
+}
