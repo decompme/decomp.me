@@ -1,4 +1,6 @@
-.numberInput {
+.input {
+    display: inline-block;
+
     border: 0;
     border-bottom: 1px dotted var(--g900);
     padding: 0.08em;
@@ -7,7 +9,8 @@
     user-select: none;
 
     &.disabled {
-        cursor: default;
+        pointer-events: none;
+        opacity: 0.7;
     }
 
     &:focus,

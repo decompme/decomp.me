@@ -94,7 +94,7 @@ export default function ProjectPage(props: { project: api.Project }) {
         </main> : <main>
             <ErrorBoundary>
                 <div className={styles.container}>
-                    <h2>Functions</h2>
+                    <h2>Functions ({project.unmatched_function_count})</h2>
                     <ProjectFunctionList projectUrl={project.url}>
                         <div className={styles.headerActions}>
                             {userIsMember && <AsyncButton

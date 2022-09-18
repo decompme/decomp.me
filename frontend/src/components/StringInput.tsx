@@ -2,16 +2,18 @@ import { useEffect, useRef, useState } from "react"
 
 import classNames from "classnames"
 
-import styles from "./NumberInput.module.scss"
+import styles from "./StringInput.module.scss"
 
 export type Props = {
-    value?: number
-    onChange?: (value: number) => void
-    stringValue?: string
+    value: string
+    onChange: (value: string) => void
+    label: string
+    isValidKey?: (key: string) => boolean
     disabled?: boolean
+    className?: string
 }
 
-export default function NumberInput({ value, onChange, stringValue, disabled }: Props) {
+export default function StringInput({ value, onChange, isValidKey, label, disabled, className }: Props) {
     const [isEditing, setIsEditing] = useState(false)
     const editableRef = useRef<HTMLSpanElement>()
 
@@ -29,21 +31,20 @@ export default function NumberInput({ value, onChange, stringValue, disabled }: 
 
     return <span
         ref={editableRef}
-        className={classNames(styles.numberInput, { [styles.disabled]: disabled })}
+        title={label}
         tabIndex={0}
+        className={classNames(styles.input, { [styles.disabled]: disabled }, className)}
         contentEditable={isEditing && !disabled}
         suppressContentEditableWarning={true}
+        spellCheck={false}
         onClick={() => setIsEditing(true)}
         onBlur={evt => {
-            if (isNaN(+evt.currentTarget.textContent)) {
-                evt.currentTarget.textContent = ""+value // this should never happen, as the user is not allowed to type non-digits
-            }
-            onChange(+evt.currentTarget.textContent)
+            onChange(evt.currentTarget.textContent)
             setIsEditing(false)
         }}
         onKeyPress={evt => {
-            const isValidKey = evt.key == "." || !isNaN(+evt.key)
-            if (!isValidKey || disabled) {
+            const v = isValidKey ? isValidKey(evt.key) : true
+            if (!v || disabled) {
                 evt.preventDefault()
             }
 
@@ -51,7 +52,8 @@ export default function NumberInput({ value, onChange, stringValue, disabled }: 
                 evt.currentTarget.blur() // submit
             }
         }}
+        onPaste={evt => evt.preventDefault()}
     >
-        {isEditing ? editableRef.current.textContent : (stringValue ?? value)}
+        {isEditing ? editableRef.current.textContent : value}
     </span>
 }

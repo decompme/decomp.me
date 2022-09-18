@@ -219,6 +219,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
     repo = GitHubRepoSerializer(read_only=True)
     members = SerializerMethodField()
     most_common_platform = SerializerMethodField()
+    unmatched_function_count = SerializerMethodField()
 
     class Meta:
         model = Project
@@ -239,6 +240,11 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
             platforms[platform] = platforms.get(platform, 0) + 1
 
         return max(platforms, key=platforms.get, default=None)
+
+    def get_unmatched_function_count(self, project: Project) -> int:
+        return ProjectFunction.objects.filter(
+            is_matched_in_repo=False, project=project
+        ).count()
 
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):

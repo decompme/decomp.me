@@ -243,6 +243,7 @@ export interface Project {
     members: User[]
     description: string
     most_common_platform?: string
+    unmatched_function_count: number
 }
 
 export interface ProjectFunction {

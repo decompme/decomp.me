@@ -1,0 +1,110 @@
+.container {
+    color: var(--g1800);
+    background: var(--g200);
+    border: 1px solid var(--g500);
+    border-radius: 8px;
+}
+
+.inputsContainer,
+.suggestions {
+    padding: 10px;
+}
+
+.inputsContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    > svg {
+        color: var(--g1000);
+        width: 1.25em;
+        height: 1.25em;
+    }
+}
+
+.input {
+    min-width: 4ch;
+    height: 1.5em;
+
+    &:last-of-type {
+        flex-grow: 1;
+    }
+}
+
+.end {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 1.25em;
+        height: 1.25em;
+    }
+}
+
+.red {
+    color: #ec3c3c !important;
+}
+
+.green {
+    color: #3cec3c !important;
+}
+
+.suggestions {
+    border-top: 1px solid var(--g400);
+
+    list-style: none;
+
+    font-size: 14px;
+    color: var(--g1600);
+
+    position: relative; // For .suggestionsLoading
+
+    min-height: 164px; // Avoid layout shift
+
+    li {
+        border-radius: 4px;
+
+        &:hover {
+            color: var(--g2000);
+            background: var(--g300);
+        }
+
+        button {
+            background: none;
+            color: inherit;
+            border: none;
+
+            width: 100%;
+            padding: 6px;
+
+            cursor: pointer;
+
+            text-align: left;
+
+            display: grid;
+            grid-template-columns: 1fr auto; // Put timeago on right
+            align-items: center;
+            gap: 8px;
+
+            time {
+                color: var(--g800);
+            }
+        }
+    }
+
+    .suggestionsLoading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        color: var(--g1400);
+
+        // Loading spinner
+        svg {
+            height: 1.5em;
+            width: 1.5em;
+        }
+    }
+}

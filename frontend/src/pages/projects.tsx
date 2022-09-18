@@ -38,7 +38,7 @@ function ProjectList({ initialPage }: { initialPage: api.Page<api.Project> }) {
                         Updated <TimeAgo date={project.repo.last_pulled} />
                     </div>
                     <div>
-                        80% complete
+                        {project.unmatched_function_count} funcs left
                     </div>
                     {project.most_common_platform && <div className={styles.platform}>
                         <PlatformIcon platform={project.most_common_platform} size={16} />

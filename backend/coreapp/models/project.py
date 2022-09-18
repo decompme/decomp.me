@@ -184,22 +184,7 @@ class ProjectFunction(models.Model):
             ""  # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
         )
 
-        # TODO: make this more configurable or something
         cpp_flags = shlex.split(compiler_config.compiler_flags)
-        """[
-            "-Iinclude",
-            "-Isrc",
-            "-Iver/current/build/include",
-            "-D_LANGUAGE_C",
-            "-DF3DEX_GBI_2",
-            "-D_MIPS_SZLONG=32",
-            "-DSCRIPT(...)={}" # only relevant for papermario. bad
-            "-D__attribute__(...)=",
-            "-D__asm__(...)=",
-            "-ffreestanding",
-            "-DM2CTX",
-            "-DPERMUTER",
-        ]"""
 
         # Attempt to generate context (TODO: #361 so we don't have to do this)
         try:
