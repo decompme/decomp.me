@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from django.db import models, transaction
+from django.contrib.auth.models import User
 
 from ..context import c_file_to_context
 from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
@@ -41,7 +42,7 @@ class Project(models.Model):
             import_config.execute_import()
 
     def is_member(self, profile: Profile) -> bool:
-        return ProjectMember.objects.filter(project=self, profile=profile).exists()
+        return ProjectMember.objects.filter(project=self, user=profile.user).exists()
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
@@ -217,14 +218,14 @@ class ProjectFunction(models.Model):
 
 class ProjectMember(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "profile"], name="unique_project_member"
+                fields=["project", "user"], name="unique_project_member"
             ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.profile} is a member of {self.project}"
+        return f"({self.project}, {self.user})"

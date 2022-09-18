@@ -236,7 +236,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
 
     def get_members(self, project: Project) -> List[Dict[str, Any]]:
         return [
-            serialize_profile(self.context["request"], member.profile, True)
+            serialize_profile(self.context["request"], member.user.profile, True)
             for member in project.members()
         ]
 
@@ -278,11 +278,11 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
-    user_id = SerializerMethodField()
+    username = SerializerMethodField()
 
     class Meta:
         model = ProjectMember
-        fields = ["user_id"]
+        fields = ["username"]
 
-    def get_user_id(self, member: ProjectMember) -> int:
-        return member.profile.id
+    def get_username(self, member: ProjectMember) -> int:
+        return member.user.username

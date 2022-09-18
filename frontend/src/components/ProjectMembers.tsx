@@ -9,15 +9,18 @@ import AsyncButton from "./AsyncButton"
 import styles from "./ProjectMembers.module.scss"
 import UserLink from "./user/UserLink"
 
+interface Member {
+    username: string
+}
+
 export default function ProjectMembers(props: { project: api.Project }) {
-    const user = api.useThisUser()
     const userIsYou = api.useUserIsYou()
     const { data: project, mutate } = useSWR<api.Project>(props.project.url, api.get, { fallbackData: props.project })
     const canAct = api.useIsUserProjectMember(project)
 
-    const putMembers = async (members: (api.User | api.AnonymousUser)[]) => {
+    const putMembers = async (members: Member[]) => {
         await api.put(project.url + "/members", {
-            members: members.map(member => ({ user_id: member.id })),
+            members: members.map(member => ({ username: member.username })),
         })
         mutate()
     }
@@ -29,13 +32,16 @@ export default function ProjectMembers(props: { project: api.Project }) {
             {canAct && <AsyncButton
                 primary
                 onClick={async () => {
-                    await putMembers([
-                        ...project.members,
-                        user,
-                    ])
+                    const username = prompt("Enter username of new project admin:")
+                    if (username && username.length > 0) {
+                        await putMembers([
+                            ...project.members,
+                            { username },
+                        ])
+                    }
                 }}
             >
-                Invite..
+                Add admin..
             </AsyncButton>}
         </h2>
 
@@ -52,7 +58,7 @@ export default function ProjectMembers(props: { project: api.Project }) {
                             }
                         }
 
-                        await putMembers(project.members.filter(u => u.url !== user.url))
+                        await putMembers(project.members.filter(u => u.username !== user.username))
 
                         if (userIsYou(user)) {
                             router.push(project.html_url)

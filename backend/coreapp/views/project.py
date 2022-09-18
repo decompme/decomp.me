@@ -74,6 +74,11 @@ class ProjectMustHaveMembersException(APIException):
     default_detail = "You must have at least one member in your project."
 
 
+class UserDoesNotExistException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "User does not exist."
+
+
 class ProjectPagination(CursorPagination):
     ordering = "-creation_time"
     page_size = 20
@@ -144,7 +149,7 @@ class ProjectViewSet(
 
         repo.pull()
 
-        ProjectMember(project=project, profile=request.profile).save()
+        ProjectMember(project=project, user=request.profile.user).save()
 
         return Response(
             ProjectSerializer(project, context={"request": request}).data,
@@ -164,9 +169,6 @@ class ProjectViewSet(
     def pull(self, request: Request, pk: str) -> Response:
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
-
-        if not project.is_member(request.profile):
-            raise NotProjectMaintainer()
 
         if not repo.is_pulling:
             t = Thread(target=GitHubRepo.pull, args=(project.repo,))
@@ -300,24 +302,33 @@ class ProjectViewSet(
         project: Project = self.get_object()
 
         if request.method == "PUT":
-            existing_ids = set([m.profile.id for m in project.members()])
-            wanted_ids = set([m["user_id"] for m in request.data.get("members", [])])
+            existing_usernames = set([m.user.username for m in project.members()])
+            wanted_usernames = set(
+                [m["username"] for m in request.data.get("members", [])]
+            )
 
-            ids_to_delete = existing_ids - wanted_ids
-            ids_to_add = wanted_ids - existing_ids
+            to_delete = existing_usernames - wanted_usernames
+            to_add = wanted_usernames - existing_usernames
 
-            if ids_to_add == existing_ids:
+            if to_add == existing_usernames:
                 raise ProjectMustHaveMembersException()
 
-            for id in ids_to_delete:
-                member = ProjectMember.objects.get(project=project, profile__id=id)
+            for username in to_delete:
+                member = ProjectMember.objects.get(
+                    project=project, user__username=username
+                )
                 member.delete()
 
-            for id in ids_to_add:
-                member = ProjectMember(
-                    project=project, profile=Profile.objects.get(id=id)
-                )
-                member.save()
+            for username in to_add:
+                try:
+                    member = ProjectMember(
+                        project=project, user=User.objects.get(username=username)
+                    )
+                    member.save()
+                except User.DoesNotExist:
+                    raise UserDoesNotExistException(
+                        f"No user with username '{username}' exists."
+                    )
 
         return Response(
             {
