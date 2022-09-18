@@ -233,13 +233,13 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         ]
 
     def get_most_common_platform(self, project: Project) -> Optional[str]:
-        platforms = {}
+        platforms: Dict[str, int] = {}
 
         for import_config in ProjectImportConfig.objects.filter(project=project):
             platform = import_config.compiler_config.platform
             platforms[platform] = platforms.get(platform, 0) + 1
 
-        return max(platforms, key=platforms.get, default=None)
+        return max(platforms, key=lambda p: platforms[p] if p else 0, default=None)
 
     def get_unmatched_function_count(self, project: Project) -> int:
         return ProjectFunction.objects.filter(
