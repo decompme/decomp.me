@@ -11,8 +11,8 @@ from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
-from .models.project import Project, ProjectFunction
-from .models.scratch import Scratch
+from .models.project import Project, ProjectFunction, ProjectImportConfig
+from .models.scratch import CompilerConfig, Scratch
 
 
 def serialize_profile(
@@ -218,6 +218,7 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
     html_url = HtmlUrlField()
     repo = GitHubRepoSerializer(read_only=True)
     members = SerializerMethodField()
+    most_common_platform = SerializerMethodField()
 
     class Meta:
         model = Project
@@ -229,6 +230,15 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
             serialize_profile(self.context["request"], member.profile, True)
             for member in project.members()
         ]
+
+    def get_most_common_platform(self, project: Project) -> Optional[str]:
+        platforms = {}
+
+        for import_config in ProjectImportConfig.objects.filter(project=project):
+            platform = import_config.compiler_config.platform
+            platforms[platform] = platforms.get(platform, 0) + 1
+
+        return max(platforms, key=platforms.get, default=None)
 
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):

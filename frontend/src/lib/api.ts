@@ -242,6 +242,7 @@ export interface Project {
     icon_url: string
     members: User[]
     description: string
+    most_common_platform?: string
 }
 
 export interface ProjectFunction {
@@ -563,7 +564,7 @@ export function useCompilers(): Record<string, Compiler> {
     return data.compilers
 }
 
-export function usePaginated<T>(url: string): {
+export function usePaginated<T>(url: string, firstPage?: Page<T>): {
     results: T[]
     hasNext: boolean
     hasPrevious: boolean
@@ -571,24 +572,26 @@ export function usePaginated<T>(url: string): {
     loadNext: () => Promise<void>
     loadPrevious: () => Promise<void>
 } {
-    const [results, setResults] = useState<T[]>([])
-    const [next, setNext] = useState<string | null>(url)
-    const [previous, setPrevious] = useState<string | null>(null)
+    const [results, setResults] = useState<T[]>(firstPage?.results ?? [])
+    const [next, setNext] = useState<string | null>(firstPage?.next)
+    const [previous, setPrevious] = useState<string | null>(firstPage?.previous)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        setResults([])
-        setNext(url)
-        setPrevious(null)
-        setIsLoading(true)
+        if (!firstPage) {
+            setResults([])
+            setNext(url)
+            setPrevious(null)
+            setIsLoading(true)
 
-        get(url).then((data: Page<T>) => {
-            setResults(data.results)
-            setNext(data.next)
-            setPrevious(data.previous)
-            setIsLoading(false)
-        })
-    }, [url])
+            get(url).then((page: Page<T>) => {
+                setResults(page.results)
+                setNext(page.next)
+                setPrevious(page.previous)
+                setIsLoading(false)
+            })
+        }
+    }, [url]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadNext = useCallback(async () => {
         if (!next)
