@@ -28,7 +28,7 @@ enum ValidationState {
 }
 
 export function isValidIdentifierKey(key: string): boolean {
-    return key.match(/^[a-zA-Z0-9-_]$/) !== null
+    return key.match(/^[a-zA-Z0-9-_.]$/) !== null
 }
 
 export interface Props {
