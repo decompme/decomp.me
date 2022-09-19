@@ -4,7 +4,7 @@
     margin: 0 auto;
 }
 
-.dangerZone {
+.section {
     margin: 2em 0;
 
     h2 {
@@ -12,4 +12,9 @@
         font-weight: 600;
         margin-bottom: 0.5em;
     }
+}
+
+.icon {
+    width: 64px;
+    height: 64px;
 }

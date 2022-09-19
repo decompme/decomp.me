@@ -1236,7 +1236,6 @@ class ProjectTests(TestCase):
         project = Project(
             slug=slug,
             repo=repo,
-            icon_url="http://example.com",
         )
         project.save()
 

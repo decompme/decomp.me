@@ -6,6 +6,7 @@ import AsyncButton from "../../components/AsyncButton"
 import Footer from "../../components/Footer"
 import GitHubLoginButton from "../../components/GitHubLoginButton"
 import GitHubRepoPicker, { isValidIdentifierKey } from "../../components/GitHubRepoPicker"
+import ImageInput from "../../components/ImageInput"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import StringInput from "../../components/StringInput"
@@ -19,6 +20,7 @@ export default function NewProjectPage() {
     const [defaultBranch, setDefaultBranch] = useState("main")
     const [branch, setBranch] = useState(defaultBranch)
     const [slug, setSlug] = useState("project")
+    const [icon, setIcon] = useState<File>()
 
     // Default branch name
     useEffect(() => {
@@ -46,16 +48,14 @@ export default function NewProjectPage() {
     }, [])
 
     const submit = async () => {
-        const project: api.Project = await api.post("/projects", {
-            slug,
-            icon_url: "https://cdn.discordapp.com/emojis/354063034689519617.webp", // TODO
-            repo: {
-                owner: repoOwner,
-                repo: repoName,
-                branch,
-            },
-        })
+        const data = new FormData()
+        data.append("slug", slug)
+        data.append("icon", icon)
+        data.append("repo[owner]", repoOwner)
+        data.append("repo[repo]", repoName)
+        data.append("repo[branch]", branch)
 
+        const project: api.Project = await api.post("/projects", data)
         router.push(project.html_url)
     }
 
@@ -97,6 +97,9 @@ export default function NewProjectPage() {
                             isValidKey={isValidIdentifierKey}
                         />
                     </div>
+
+                    <h2 className={styles.label}>Icon</h2>
+                    <ImageInput className={styles.icon} file={icon} onChange={setIcon} />
 
                     <hr className={styles.rule} />
 

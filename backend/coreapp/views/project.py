@@ -1,13 +1,13 @@
 import logging
 import random
 import re
-from sqlite3 import IntegrityError
 import string
 from threading import Thread
-from typing import Any, Optional, List
+from typing import Any, Optional
 
 import django_filters
 from django.db.models.query import QuerySet
+from django.db import transaction
 from django.views import View
 from django.contrib.auth.models import User
 
@@ -22,6 +22,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework.views import APIView
+from rest_framework.parsers import JSONParser, MultiPartParser
 
 from ..middleware import Request
 from ..models.github import (
@@ -123,6 +124,7 @@ class ProjectViewSet(
     pagination_class = ProjectPagination
     serializer_class = ProjectSerializer
     permission_classes = [IsProjectMemberOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser]
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: Optional[User] = request.profile.user
@@ -310,25 +312,26 @@ class ProjectViewSet(
             to_delete = existing_usernames - wanted_usernames
             to_add = wanted_usernames - existing_usernames
 
-            if to_add == existing_usernames:
-                raise ProjectMustHaveMembersException()
-
-            for username in to_delete:
-                member = ProjectMember.objects.get(
-                    project=project, user__username=username
-                )
-                member.delete()
-
-            for username in to_add:
-                try:
-                    member = ProjectMember(
-                        project=project, user=User.objects.get(username=username)
+            with transaction.atomic():
+                for username in to_delete:
+                    member = ProjectMember.objects.get(
+                        project=project, user__username=username
                     )
-                    member.save()
-                except User.DoesNotExist:
-                    raise UserDoesNotExistException(
-                        f"No user with username '{username}' exists."
-                    )
+                    member.delete()
+
+                for username in to_add:
+                    try:
+                        member = ProjectMember(
+                            project=project, user=User.objects.get(username=username)
+                        )
+                        member.save()
+                    except User.DoesNotExist:
+                        raise UserDoesNotExistException(
+                            f"No user with username '{username}' exists."
+                        )
+
+                if len(project.members()) == 0:
+                    raise ProjectMustHaveMembersException()
 
         return Response(
             {

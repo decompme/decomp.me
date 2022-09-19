@@ -91,18 +91,23 @@ export async function get(url: string, useCacheIfFresh = false) {
 
 export const getCached = (url: string) => get(url, true)
 
-export async function post(url: string, json: Json) {
+export async function post(url: string, data: Json | FormData, method = "POST") {
     url = getURL(url)
 
-    const body: string = JSON.stringify(json)
+    console.info(method, url, data)
 
-    console.info("POST", url, JSON.parse(body))
+    let body: string | FormData
+    if (data instanceof FormData) {
+        body = data
+    } else {
+        body = JSON.stringify(data)
+    }
 
     const response = await fetch(url, {
         ...commonOpts,
-        method: "POST",
+        method,
         body,
-        headers: {
+        headers: body instanceof FormData ? {} : {
             "Content-Type": "application/json",
         },
     })
@@ -111,88 +116,23 @@ export async function post(url: string, json: Json) {
         throw new ResponseError(response, await response.json())
     }
 
-    return await response.json()
-}
-
-export async function patch(url: string, json: Json) {
-    url = getURL(url)
-
-    const body = JSON.stringify(json)
-
-    console.info("PATCH", url, JSON.parse(body))
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        method: "PATCH",
-        body,
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    const text = await response.text()
-    if (!text) {
-        return
-    }
-    return JSON.parse(text)
-}
-
-export async function delete_(url: string, json: Json) {
-    url = getURL(url)
-
-    const body: string = JSON.stringify(json)
-
-    console.info("DELETE", url, JSON.parse(body))
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        method: "DELETE",
-        body,
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    if (response.status == 204) { // No Content
+    if (response.status == 204) {
         return null
     } else {
         return await response.json()
     }
 }
 
+export async function patch(url: string, data: Json | FormData) {
+    return await post(url, data, "PATCH")
+}
+
+export async function delete_(url: string, json: Json) {
+    return await post(url, json, "DELETE")
+}
+
 export async function put(url: string, json: Json) {
-    url = getURL(url)
-
-    const body = JSON.stringify(json)
-
-    console.info("PUT", url, JSON.parse(body))
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        method: "PUT",
-        body,
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    const text = await response.text()
-    if (!text) {
-        return
-    }
-    return JSON.parse(text)
+    return await post(url, json, "PUT")
 }
 
 export interface Page<T> {
@@ -268,7 +208,7 @@ export interface Project {
         last_pulled: string | null
     }
     creation_time: string
-    icon_url: string
+    icon?: string
     members: (User | AnonymousUser)[]
     description: string
     most_common_platform?: string

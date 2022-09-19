@@ -1,6 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
 
@@ -13,6 +12,7 @@ import ErrorBoundary from "../../../../components/ErrorBoundary"
 import Footer from "../../../../components/Footer"
 import Nav from "../../../../components/Nav"
 import PageTitle from "../../../../components/PageTitle"
+import ProjectIcon from "../../../../components/ProjectIcon"
 import PrScratchBasket, { useBasket } from "../../../../components/PrScratchBasket"
 import { ScratchItem } from "../../../../components/ScratchList"
 import * as api from "../../../../lib/api"
@@ -92,7 +92,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                 <Breadcrumbs pages={[
                     {
                         label: <div className={styles.projectLink}>
-                            <Image src={project.icon_url} alt="" width={24} height={24} />
+                            <ProjectIcon project={project} size={24} />
                             {project.slug}
                         </div>,
                         href: project.html_url,

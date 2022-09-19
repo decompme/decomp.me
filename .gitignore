@@ -5,6 +5,7 @@ build
 .snowpack
 local_files/
 backend/local_files/
+backend/media/
 backend/virtualenvs/
 postgres/
 sandbox/

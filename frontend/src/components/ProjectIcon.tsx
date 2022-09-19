@@ -1,34 +1,34 @@
 import Image from "next/image"
-import Link from "next/link"
 
-import classNames from "classnames"
+import { ProjectIcon as ProjectOcticon } from "@primer/octicons-react"
 import useSWR from "swr"
 
 import * as api from "../lib/api"
 
-import styles from "./ProjectIcon.module.scss"
-
 export type Props = {
-    projectUrl: string
-    size?: string | number
+    project: api.Project | string
+    size: number
     className?: string
+    priority?: boolean
 }
 
-export default function ProjectIcon({ projectUrl, size, className }: Props) {
-    const { data, error } = useSWR<api.Project>(projectUrl, api.get)
+export default function ProjectIcon({ project, size, className, priority }: Props) {
+    const { data, error } = useSWR<api.Project>(typeof project === "string" ? project : project.url, api.get, {
+        fallbackData: typeof project === "string" ? undefined : project,
+    })
 
     if (error)
-        throw error
+        console.error(error)
 
-    if (!data) {
-        return <a className={classNames(styles.icon, className)} />
-    }
-
-    const style = typeof size === "undefined" ? {} : { width: size, height: size }
-
-    return <Link href={data.html_url}>
-        <a className={classNames(styles.icon, className)} style={style}>
-            <Image src={data.icon_url} alt={data.slug} layout="fill" />
-        </a>
-    </Link>
+    return data?.icon
+        ? <Image
+            className={className}
+            src={data.icon}
+            alt={data.slug}
+            width={size}
+            height={size}
+            priority={priority}
+            style={{ borderRadius: (size / 12) + "px" }}
+        />
+        : <ProjectOcticon size={size} />
 }

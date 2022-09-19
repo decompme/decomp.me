@@ -22,6 +22,8 @@ env = environ.Env(
     SECURE_HSTS_PRELOAD=(bool, False),
     STATIC_URL=(str, "/static/"),
     STATIC_ROOT=(str, BASE_DIR / "static"),
+    MEDIA_URL=(str, "/media/"),
+    MEDIA_ROOT=(str, BASE_DIR / "media"),
     LOCAL_FILE_DIR=(str, BASE_DIR / "local_files"),
     USE_SANDBOX_JAIL=(bool, False),
     SESSION_COOKIE_SECURE=(bool, True),
@@ -58,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [
@@ -129,6 +132,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = env("STATIC_URL")
 STATIC_ROOT = env("STATIC_ROOT")
+
+# Media files (user uploads)
+MEDIA_ROOT = env("MEDIA_ROOT")
+MEDIA_URL = env("MEDIA_URL")
+DJANGORESIZED_DEFAULT_SCALE = 1.0
+DJANGORESIZED_DEFAULT_QUALITY = 100
+DJANGORESIZED_DEFAULT_KEEP_META = False
+DJANGORESIZED_DEFAULT_FORCE_FORMAT = "WEBP"
+DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {"WEBP": ".webp"}
+DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

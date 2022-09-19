@@ -26,6 +26,8 @@ const removeImports = require("next-remove-imports")({
 })
 const nextTranslate = require("next-translate")
 
+const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
+
 module.exports = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
 })(nextTranslate(removeImports(withPWA({
@@ -74,7 +76,7 @@ module.exports = withPlausibleProxy({
         return config
     },
     images: {
-        domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
+        domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
     },
     pwa: {
         dest: "public",

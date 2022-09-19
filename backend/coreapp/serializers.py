@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
+from html_json_forms.serializers import JSONFormSerializer
 
 from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
@@ -214,7 +215,7 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
         read_only_fields = ["last_pulled", "is_pulling"]
 
 
-class ProjectSerializer(serializers.ModelSerializer[Project]):
+class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
     url = HyperlinkedIdentityField(view_name="project-detail")
     html_url = HtmlUrlField()
@@ -233,6 +234,12 @@ class ProjectSerializer(serializers.ModelSerializer[Project]):
         repo = GitHubRepo.objects.create(**repo_data)
         project = Project.objects.create(repo=repo, **validated_data)
         return project
+
+    def update(self, instance: Project, validated_data: Any) -> Project:
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
     def get_members(self, project: Project) -> List[Dict[str, Any]]:
         return [

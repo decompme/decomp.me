@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 
 from django.db import models, transaction
 from django.contrib.auth.models import User
+from django_resized import ResizedImageField
 
 from ..context import c_file_to_context
 from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
@@ -21,7 +22,7 @@ class Project(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     repo = models.OneToOneField("GithubRepo", on_delete=models.PROTECT)
-    icon_url = models.URLField(blank=False)
+    icon = ResizedImageField(size=[256, 256], upload_to="project_icons", null=True)
     description = models.TextField(default="", blank=True, max_length=1000)
 
     def __str__(self) -> str:
