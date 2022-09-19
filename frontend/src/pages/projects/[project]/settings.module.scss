@@ -4,17 +4,79 @@
     margin: 0 auto;
 }
 
-.section {
+.fieldset {
     margin: 2em 0;
 
+    border-radius: 6px;
+    border: 1px solid var(--g400);
+    overflow: hidden;
+
+    user-select: text;
+
     h2 {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 0.5em;
+        font-size: 1.25em;
+        font-weight: 500;
+
+        color: var(--g2000);
+
+        margin-block-end: 1em;
+    }
+
+    p {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    > div {
+        padding: 1.5em;
+    }
+
+    > footer {
+        padding: 0.75em 1.5em;
+
+        background: var(--g250);
+        border-bottom-left-radius: inherit;
+        border-bottom-right-radius: inherit;
+
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    > * {
+        border-top: 1px solid var(--g300);
     }
 }
 
 .icon {
     width: 64px;
     height: 64px;
+}
+
+.descriptionTextarea {
+    padding: 10px;
+
+    width: 100%;
+    max-width: 50ch;
+
+    border: 1px solid var(--g700);
+    border-radius: 4px;
+    background: transparent;
+    outline: none !important;
+
+    resize: none;
+
+    cursor: auto;
+    user-select: text;
+
+    font-size: 0.9rem;
+    line-height: 1.6;
+
+    &:not(:disabled) {
+        cursor: auto;
+        transition: border-color 0.1s ease;
+
+        &:focus {
+            border-color: currentColor;
+        }
+    }
 }

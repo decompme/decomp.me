@@ -1,6 +1,6 @@
 .header {
     background: var(--g200);
-    user-select: auto;
+    user-select: text;
     align-self: stretch;
 
     .headerInner {
@@ -10,7 +10,6 @@
 
         display: grid;
         grid-template-columns: auto 1fr;
-        align-items: center;
         gap: 16px;
     }
 
@@ -30,6 +29,7 @@
         font-size: 0.9em;
         max-width: 50ch;
         white-space: pre-line;
+        line-height: 1.6;
     }
 }
 

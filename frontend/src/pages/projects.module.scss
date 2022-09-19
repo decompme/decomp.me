@@ -59,7 +59,7 @@
 
             &:first-child {
                 border-top: 0;
-                background-color: var(--g300);
+                background-color: var(--g250);
             }
         }
 
@@ -90,6 +90,7 @@
 
         .description {
             white-space: pre-line;
+            line-height: 1.6;
         }
     }
 

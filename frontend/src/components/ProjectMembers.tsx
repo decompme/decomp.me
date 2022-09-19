@@ -30,7 +30,6 @@ export default function ProjectMembers(props: { project: api.Project }) {
             Project admins
 
             {canAct && <AsyncButton
-                primary
                 onClick={async () => {
                     const username = prompt("Enter username of new project admin:")
                     if (username && username.length > 0) {

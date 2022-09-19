@@ -1,6 +1,6 @@
 .btn {
     border-radius: 4px;
-    padding: 0.6em 1em;
+    padding: 0.6em 1.5em;
 
     font-size: 0.8rem;
     font-weight: 500;
@@ -29,26 +29,21 @@
             color: var(--a900);
             border-color: var(--g800);
         }
-    }
-}
 
-.primary {
-    background: var(--accent);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.2);
+        &.primary,
+        &.danger {
+            background: var(--accent);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
 
-    &:not(:disabled):hover {
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.3);
-    }
-}
+            &:hover {
+                color: #fff;
+                border-color: rgba(255, 255, 255, 0.7);
+            }
+        }
 
-.danger {
-    color: var(--danger);
-
-    &:not(:disabled):hover {
-        background: var(--danger);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.3);
+        &.danger {
+            background: var(--danger);
+        }
     }
 }
