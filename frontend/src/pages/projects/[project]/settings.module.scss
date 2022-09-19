@@ -2,49 +2,10 @@
     max-width: 50em;
     padding: 1em;
     margin: 0 auto;
-}
 
-.fieldset {
-    margin: 2em 0;
-
-    border-radius: 6px;
-    border: 1px solid var(--g400);
-    overflow: hidden;
-
-    user-select: text;
-
-    h2 {
-        font-size: 1.25em;
-        font-weight: 500;
-
-        color: var(--g2000);
-
-        margin-block-end: 1em;
-    }
-
-    p {
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    > div {
-        padding: 1.5em;
-    }
-
-    > footer {
-        padding: 0.75em 1.5em;
-
-        background: var(--g250);
-        border-bottom-left-radius: inherit;
-        border-bottom-right-radius: inherit;
-
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    > * {
-        border-top: 1px solid var(--g300);
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
 }
 
 .icon {
@@ -53,7 +14,7 @@
 }
 
 .descriptionTextarea {
-    padding: 10px;
+    padding: 6px 10px;
 
     width: 100%;
     max-width: 50ch;
@@ -68,8 +29,8 @@
     cursor: auto;
     user-select: text;
 
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-size: inherit;
+    line-height: inherit;
 
     &:not(:disabled) {
         cursor: auto;
@@ -79,4 +40,9 @@
             border-color: currentColor;
         }
     }
+}
+
+.borderDanger {
+    border-color: var(--danger);
+    border-style: dashed;
 }

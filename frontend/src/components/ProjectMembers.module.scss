@@ -1,22 +1,12 @@
-.container {
-    font-size: 16px;
-
-    > h2 {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 0.5em;
-
-        display: grid;
-        grid-template-columns: 1fr auto;
-    }
-}
-
 .list {
     list-style: none;
 
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
     > li {
         padding: 6px;
-        margin: 6px 0;
 
         display: grid;
         grid-template-columns: 1fr auto;

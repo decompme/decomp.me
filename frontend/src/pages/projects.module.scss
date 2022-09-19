@@ -29,12 +29,18 @@
     list-style: none;
 
     > li {
-        margin: 1em 0;
+        margin: 1.5em 0;
+
+        border-radius: 6px;
         border: 1px solid var(--g400);
-        border-radius: 8px;
         overflow: hidden;
 
-        color: var(--g1800);
+        user-select: text;
+
+        font-size: 14px;
+        line-height: 1.6;
+
+        color: var(--g1700);
         background: var(--g200);
 
         a:hover {

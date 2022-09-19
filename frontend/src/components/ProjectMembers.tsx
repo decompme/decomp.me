@@ -6,6 +6,7 @@ import useSWR from "swr"
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
+import { FieldSet } from "./form/FieldSet"
 import styles from "./ProjectMembers.module.scss"
 import UserLink from "./user/UserLink"
 
@@ -25,25 +26,23 @@ export default function ProjectMembers(props: { project: api.Project }) {
         mutate()
     }
 
-    return <div className={styles.container}>
-        <h2>
-            Project admins
-
-            {canAct && <AsyncButton
-                onClick={async () => {
-                    const username = prompt("Enter username of new project admin:")
-                    if (username && username.length > 0) {
-                        await putMembers([
-                            ...project.members,
-                            { username },
-                        ])
-                    }
-                }}
-            >
-                Add admin..
-            </AsyncButton>}
-        </h2>
-
+    return <FieldSet
+        label="Members"
+        status="Members can modify any project setting, and are able to delete the project."
+        actions={canAct && <AsyncButton
+            onClick={async () => {
+                const username = prompt("Enter username of new member:")
+                if (username && username.length > 0) {
+                    await putMembers([
+                        ...project.members,
+                        { username },
+                    ])
+                }
+            }}
+        >
+            Add member..
+        </AsyncButton>}
+    >
         <ul className={styles.list}>
             {project.members.map(user => <li key={user.url}>
                 <UserLink user={user} />
@@ -68,5 +67,5 @@ export default function ProjectMembers(props: { project: api.Project }) {
                 </AsyncButton>}
             </li>)}
         </ul>
-    </div>
+    </FieldSet>
 }

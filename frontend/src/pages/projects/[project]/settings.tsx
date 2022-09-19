@@ -2,15 +2,20 @@ import { useEffect, useState } from "react"
 
 import { GetStaticPaths, GetStaticProps } from "next"
 
+import { useRouter } from "next/router"
+
+import { SWRConfig } from "swr"
+
 import AsyncButton from "../../../components/AsyncButton"
 import Footer from "../../../components/Footer"
+import { FieldSet } from "../../../components/form/FieldSet"
 import ImageInput from "../../../components/ImageInput"
 import Nav from "../../../components/Nav"
 import PageTitle from "../../../components/PageTitle"
 import ProjectHeader from "../../../components/ProjectHeader"
 import ProjectMembers from "../../../components/ProjectMembers"
 import * as api from "../../../lib/api"
-import { useWarnBeforeUnload } from "../../../lib/hooks"
+import useEntity from "../../../lib/useEntity"
 
 import styles from "./settings.module.scss"
 
@@ -34,33 +39,27 @@ function ProjectIconForm({ project }: { project: api.Project }) {
     />
 }
 
-function ProjectDescriptionForm({ project }: { project: api.Project }) {
-    const [description, setDescription] = useState(project.description)
-    const isSaved = description === project.description
+function ProjectDescriptionForm({ url }: { url: string }) {
+    const [project, actions] = useEntity<api.Project>(url)
 
-    useWarnBeforeUnload(!isSaved)
-
-    return <section className={styles.fieldset}>
-        <div>
-            <h2>Description</h2>
-            <textarea
-                className={styles.descriptionTextarea}
-                value={description}
-                onChange={evt => setDescription(evt.currentTarget.value)}
-                maxLength={1000}
-                rows={(description.match(/\n/g)?.length ?? 0) + 1}
-            />
-        </div>
-        <footer>
-            <AsyncButton
-                primary
-                disabled={isSaved}
-                onClick={() => api.patch(project.url, { description })}
-            >
-                Save
-            </AsyncButton>
-        </footer>
-    </section>
+    return <FieldSet
+        label="Description"
+        actions={<AsyncButton
+            primary
+            disabled={actions.isSaved}
+            onClick={actions.save}
+        >
+            Save
+        </AsyncButton>}
+    >
+        <textarea
+            className={styles.descriptionTextarea}
+            value={project.description}
+            onChange={evt => actions.assign({ description: evt.currentTarget.value })}
+            maxLength={1000}
+            rows={(project.description.match(/\n/g)?.length ?? 0) + 1}
+        />
+    </FieldSet>
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -78,7 +77,10 @@ export const getStaticProps: GetStaticProps = async context => {
 
         return {
             props: {
-                project,
+                project: project,
+                fallback: {
+                    [api.getURL(project.url)]: project,
+                },
             },
             revalidate: 60,
         }
@@ -91,44 +93,46 @@ export const getStaticProps: GetStaticProps = async context => {
     }
 }
 
-export default function ProjectSettingsPage({ project }: { project: api.Project }) {
-    return <>
+export default function ProjectSettingsPage({ project, fallback }) {
+    const router = useRouter()
+
+    return <SWRConfig value={{ fallback }}>
         <PageTitle title={project.slug} />
         <Nav />
         <ProjectHeader project={project} />
         <main>
             <div className={styles.container}>
-                <section className={styles.fieldset}>
-                    <ProjectMembers project={project} />
-                </section>
-                <section className={styles.fieldset}>
-                    <div>
-                        <h2>Icon</h2>
-                        <ProjectIconForm project={project} />
-                    </div>
-                </section>
-                <ProjectDescriptionForm project={project} />
-                <section className={styles.fieldset} style={{ borderColor: "var(--danger)" }}>
-                    <div>
-                        <h2>Delete Project</h2>
-                        <p>
-                            The project will be permanently deleted. This action is irreversible and can not be undone.
-                            Scratches associated with this project will not be deleted.
-                        </p>
-                    </div>
-                    <footer>
-                        <AsyncButton danger onClick={async () => {
-                            if (prompt(`Are you sure you want to PERMANENTLY delete ${project.slug}?\nType '${project.slug}' to continue.`) == project.slug) {
+                <ProjectMembers project={project} />
+                <FieldSet label="Icon">
+                    <ProjectIconForm project={project} />
+                </FieldSet>
+                <ProjectDescriptionForm url={project.url} />
+                <FieldSet
+                    label="Delete Project"
+                    className={styles.borderDanger}
+                    actions={<AsyncButton
+                        danger
+                        onClick={async () => {
+                            const msg = [
+                                `Are you sure you want to permanently delete ${project.slug}?`,
+                                `Type '${project.slug}' to continue.`,
+                            ].join("\n")
+                            if (prompt(msg) == project.slug) {
                                 await api.delete_(project.url, {})
-                                window.location.href = "/"
+                                router.push("/projects")
                             }
-                        }}>
-                            Delete
-                        </AsyncButton>
-                    </footer>
-                </section>
+                        }}
+                    >
+                        Delete
+                    </AsyncButton>}
+                >
+                    <p>
+                        The project will be permanently deleted. This action is irreversible and can not be undone.
+                        Scratches associated with this project will not be deleted.
+                    </p>
+                </FieldSet>
             </div>
         </main>
         <Footer />
-    </>
+    </SWRConfig>
 }
