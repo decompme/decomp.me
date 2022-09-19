@@ -52,11 +52,17 @@
             "multilineDetection": "brackets"
         }],
         "no-restricted-imports": [
-            "error", {
+            "warn", {
                 "paths": [
                     {
                         "name": "next/image",
                         "message": "Use next/future/image instead."
+                    }
+                ],
+                "patterns": [
+                    {
+                        "group": ["../"],
+                        "message": "Use absolute imports (@/...) instead."
                     }
                 ]
             }
