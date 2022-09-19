@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { ReactNode, useRef } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/router"
@@ -23,15 +23,35 @@ export interface Props {
 
 export default function UnderlineNav({ links, maxWidth }: Props) {
     const router = useRouter()
+    const ref = useRef<HTMLDivElement>()
 
-    return <nav className={styles.container}>
+    // When a shallow route change is made, we need to scroll up to whereever this component is.
+    const onClickShallow = () => {
+        if (ref.current) {
+            // Temporarily remove position:sticky so we can get its normal position.
+            ref.current.style.position = "initial"
+            requestAnimationFrame(() => {
+                const { offsetTop } = ref.current
+
+                // Only scroll up, not down.
+                console.log(offsetTop, window.scrollY)
+                if (offsetTop < window.scrollY) {
+                    window.scroll({ top: offsetTop })
+                }
+
+                ref.current.style.position = "sticky"
+            })
+        }
+    }
+
+    return <nav ref={ref} className={styles.container}>
         <ul style={{ maxWidth }}>
             {links.filter(Boolean).map(({ href, label, selected, shallow }) => {
                 const isSelected = selected || router.asPath === href
 
                 return <li key={href} data-selected={isSelected}>
                     <Link href={href} shallow={shallow}>
-                        <a>{label}</a>
+                        <a onClick={shallow && onClickShallow}>{label}</a>
                     </Link>
                 </li>
             })}
