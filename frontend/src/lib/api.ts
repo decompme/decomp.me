@@ -459,7 +459,11 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setCompileRequestPromise(null)
             setIsCompilationOld(false)
         }).catch(error => {
-            setCompilation({ "errors": error.json?.detail, "diff_output": null })
+            if (error instanceof ResponseError) {
+                setCompilation({ "errors": error.json?.detail, "diff_output": null })
+            } else {
+                return Promise.reject(error)
+            }
         })
 
         setCompileRequestPromise(promise)

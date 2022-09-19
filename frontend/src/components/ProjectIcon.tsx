@@ -1,4 +1,4 @@
-import Image from "next/image"
+import Image from "next/future/image"
 
 import { ProjectIcon as ProjectOcticon } from "@primer/octicons-react"
 import useSWR from "swr"
@@ -30,5 +30,5 @@ export default function ProjectIcon({ project, size, className, priority }: Prop
             priority={priority}
             style={{ borderRadius: (size / 12) + "px" }}
         />
-        : <ProjectOcticon size={size} />
+        : <ProjectOcticon className={className} size={size} />
 }

@@ -2,7 +2,7 @@ import { RefObject, useEffect, useRef, useState } from "react"
 
 import { EditorState, Compartment, Extension, Facet, Text } from "@codemirror/state"
 import { EditorView, gutter, GutterMarker } from "@codemirror/view"
-import { diffLines } from "diff"
+import { diff } from "fast-myers-diff"
 
 import styles from "./useCompareExtension.module.scss"
 
@@ -41,28 +41,19 @@ const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => 
     if (typeof s !== "string")
         return {}
 
-    const changes = diffLines(s, state.doc.toString(), {
-        ignoreWhitespace: true,
-    })
+    const tokenizeSource = source => {
+        return source.split("\n").map(i => i.trim())
+    }
+
+    const diffsIterator = diff(tokenizeSource(s), tokenizeSource(state.doc.toString()))
+    const diffs = Array.from(diffsIterator)
 
     // Convert diff changes to a map of line numbers -> change type
     const map: DiffLineMap = {}
-    let lineNumber = 1
 
-    for (const { count: numLines, added, removed } of changes) {
-        // We don't care about removed lines, since we don't show them
-        if (removed) {
-            continue
-        }
-
-        if (added) {
-            for (let i = 0; i < numLines; i++) {
-                map[lineNumber + i] = marker
-            }
-        }
-
-        if (!removed) {
-            lineNumber += numLines
+    for (const [, , childStartLine, childEndLine] of diffs) {
+        for (let i = childStartLine; i < childEndLine; i++) {
+            map[i + 1] = marker
         }
     }
 

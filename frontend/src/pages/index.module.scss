@@ -44,6 +44,7 @@
 
 .about {
     grid-area: about;
+    color: var(--g1200);
     background: var(--g300);
 
     h1 {
@@ -58,7 +59,6 @@
 
     p {
         padding-top: 4px;
-        color: var(--g1000);
         font-size: 0.9em;
         max-width: 40ch;
     }
