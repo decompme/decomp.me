@@ -291,5 +291,5 @@ class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
         model = ProjectMember
         fields = ["username"]
 
-    def get_username(self, member: ProjectMember) -> int:
+    def get_username(self, member: ProjectMember) -> str:
         return member.user.username

@@ -1151,6 +1151,7 @@ class ScratchPRTests(BaseTestCase):
         # Give user membership of project
         profile = Profile.objects.first()
         assert profile is not None
+        assert profile.user is not None
         ProjectMember.objects.create(
             project=project,
             user=profile.user,
@@ -1276,7 +1277,7 @@ class ProjectTests(TestCase):
         "details",
         new=Mock(return_value=None),
     )
-    def test_create_api_json(self, mock_pull) -> None:
+    def test_create_api_json(self, mock_pull: Mock) -> None:
         """
         Test that you can create a project via the JSON API, and that it only works when is_staff=True
         """
@@ -1438,6 +1439,7 @@ class ProjectTests(TestCase):
 
                 # add project member
                 profile = Profile.objects.first()
+                assert profile is not None
                 profile.user = User(username="test")
                 profile.user.save()
                 profile.save()

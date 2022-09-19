@@ -21,10 +21,9 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.parsers import JSONParser, MultiPartParser
 
-from ..middleware import Request
 from ..models.github import (
     GitHubRepo,
     GitHubRepoBusyException,
@@ -143,14 +142,14 @@ class ProjectViewSet(
         if not user.is_staff:
             raise TemporaryProjectCreationStaffOnlyException()
 
-        project = ProjectSerializer(data=request.data)
-        project.is_valid(raise_exception=True)
+        serializer = ProjectSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        slug = project.validated_data["slug"]
+        slug = serializer.validated_data["slug"]
         if slug == "new" or Project.objects.filter(slug=slug).exists():
             raise ProjectExistsException()
 
-        project = project.save()
+        project = serializer.save()
 
         repo: GitHubRepo = project.repo
         repo.pull()
