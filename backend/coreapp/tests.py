@@ -1265,6 +1265,66 @@ class ProjectTests(TestCase):
         )
         mock_mkdir.assert_called_once_with(parents=True)
 
+    @patch("coreapp.models.github.GitHubRepo.pull")
+    @patch.object(
+        GitHubRepo,
+        "details",
+        new=Mock(return_value=MockRepository("orig_repo")),
+    )
+    @patch.object(
+        GitHubUser,
+        "details",
+        new=Mock(return_value=None),
+    )
+    def test_create_api_json(self, mock_pull) -> None:
+        """
+        Test that you can create a project via the JSON API, and that it only works when is_staff=True
+        """
+
+        # Make a request so we can get a profile
+        response = self.client.get(reverse("project-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        profile = Profile.objects.first()
+        assert profile is not None
+
+        # Give the profile a User and GitHubUser
+        profile.user = User(username="test")
+        profile.user.save()
+        profile.save()
+        GitHubUser.objects.create(
+            user=profile.user, github_id=1234, access_token="__mock__"
+        )
+
+        data = {
+            "slug": "example-project",
+            "repo": {
+                "owner": "decompme",
+                "repo": "example-project",
+                "branch": "not_a_real_branch",
+            },
+        }
+
+        # Fail when not admin
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Succeed when admin
+        profile.user.is_staff = True
+        profile.user.save()
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        mock_pull.assert_called_once()
+        self.assertEqual(Project.objects.count(), 1)
+
     @patch("coreapp.models.github.GitHubRepo.get_dir")
     @patch("coreapp.models.github.shutil.rmtree")
     def test_delete_repo_dir(self, mock_rmtree: Mock, mock_get_dir: Mock) -> None:

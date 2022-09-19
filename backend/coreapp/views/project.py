@@ -80,6 +80,13 @@ class UserDoesNotExistException(APIException):
     default_detail = "User does not exist."
 
 
+class TemporaryProjectCreationStaffOnlyException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = (
+        "Project creation is currently experimental and limited to admins only."
+    )
+
+
 class ProjectPagination(CursorPagination):
     ordering = "-creation_time"
     page_size = 20
@@ -133,6 +140,8 @@ class ProjectViewSet(
         gh_user: Optional[GitHubUser] = user.github
         if not gh_user:
             raise GithubLoginException()
+        if not user.is_staff:
+            raise TemporaryProjectCreationStaffOnlyException()
 
         project = ProjectSerializer(data=request.data)
         project.is_valid(raise_exception=True)
@@ -144,11 +153,6 @@ class ProjectViewSet(
         project = project.save()
 
         repo: GitHubRepo = project.repo
-
-        if not project.description:
-            details = repo.details(access_token=gh_user.access_token)
-            project.description = details.description
-
         repo.pull()
 
         ProjectMember(project=project, user=request.profile.user).save()
