@@ -1153,7 +1153,7 @@ class ScratchPRTests(BaseTestCase):
         assert profile is not None
         ProjectMember.objects.create(
             project=project,
-            profile=profile,
+            user=profile.user,
         )
 
     def test_pr_one_scratch(self, mock_get_repo: Mock) -> None:
@@ -1378,7 +1378,10 @@ class ProjectTests(TestCase):
 
                 # add project member
                 profile = Profile.objects.first()
-                ProjectMember(project=project, profile=profile).save()
+                profile.user = User(username="test")
+                profile.user.save()
+                profile.save()
+                ProjectMember(project=project, user=profile.user).save()
 
                 # try again
                 response = self.client.patch(

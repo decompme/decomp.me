@@ -43,7 +43,10 @@ class Project(models.Model):
             import_config.execute_import()
 
     def is_member(self, profile: Profile) -> bool:
-        return ProjectMember.objects.filter(project=self, user=profile.user).exists()
+        for member in self.members():
+            if member.user.profile == profile:
+                return True
+        return False
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
