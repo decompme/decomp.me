@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+
 import Image from "next/future/image"
 
 import classNames from "classnames"
@@ -15,8 +17,12 @@ export type Props = {
 export default function UserAvatar({ user, className }: Props) {
     const userIsYou = api.useUserIsYou()
 
+    // Avoid hydration mismatch
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => setIsMounted(true), [])
+
     return <span className={classNames(styles.avatar, className)}>
         {api.isAnonUser(user) ? <AnonymousFrogAvatar user={user}/> : user.avatar_url && <Image src={user.avatar_url} alt="" fill sizes="64px" />}
-        {!userIsYou(user) && user.is_online && <div className={styles.online} title="Online" />}
+        {isMounted && !userIsYou(user) && user.is_online && <div className={styles.online} title="Online" />}
     </span>
 }

@@ -4,6 +4,7 @@ import { DiamondIcon, GearIcon, MarkGithubIcon } from "@primer/octicons-react"
 
 import UnderlineNav, { Counter } from "../components/UnderlineNav"
 import * as api from "../lib/api"
+import { Tab } from "../pages/projects/[...project]"
 
 import PlatformIcon from "./PlatformSelect/PlatformIcon"
 import PlatformName from "./PlatformSelect/PlatformName"
@@ -12,9 +13,10 @@ import ProjectIcon from "./ProjectIcon"
 
 export interface Props {
     project: api.Project
+    tab: Tab
 }
 
-export default function ProjectHeader({ project }: Props) {
+export default function ProjectHeader({ project, tab }: Props) {
     const isMember = api.useIsUserProjectMember(project)
 
     return <>
@@ -45,14 +47,18 @@ export default function ProjectHeader({ project }: Props) {
             maxWidth="50rem"
             links={[
                 {
-                    href: `/projects/${project.slug}`,
+                    href: project.html_url,
+                    selected: tab === Tab.FUNCTIONS,
                     label: <>
                         <DiamondIcon /> Functions <Counter>{project.unmatched_function_count}</Counter>
                     </>,
+                    shallow: true,
                 },
                 isMember && {
-                    href: `/projects/${project.slug}/settings`,
+                    href: project.html_url + "/settings",
+                    selected: tab === Tab.SETTINGS,
                     label: <><GearIcon /> Settings</>,
+                    shallow: true,
                 },
             ]}
         />

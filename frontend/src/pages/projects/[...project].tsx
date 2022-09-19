@@ -1,8 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
+import { useRouter } from "next/router"
+
 import { RepoPullIcon } from "@primer/octicons-react"
-import TimeAgo from "react-timeago"
-import useSWR from "swr"
+import { SWRConfig } from "swr"
 
 import AsyncButton from "../../components/AsyncButton"
 import ErrorBoundary from "../../components/ErrorBoundary"
@@ -12,10 +13,24 @@ import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import ProjectFunctionList from "../../components/ProjectFunctionList"
 import ProjectHeader from "../../components/ProjectHeader"
+import ProjectSettings from "../../components/ProjectSettings"
 import PrScratchBasket from "../../components/PrScratchBasket"
 import * as api from "../../lib/api"
+import useEntity from "../../lib/useEntity"
+import Error404Page from "../404"
 
-import styles from "./[project].module.scss"
+import styles from "./[...project].module.scss"
+
+export enum Tab {
+    FUNCTIONS = "functions",
+    SETTINGS = "settings",
+}
+
+export const DEFAULT_TAB = Tab.FUNCTIONS
+
+export function isValidTab(tab: string): tab is Tab {
+    return Object.values(Tab).includes(tab as Tab)
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
     const page: api.Page<api.Project> = await api.get("/projects")
@@ -27,14 +42,24 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps: GetStaticProps = async context => {
+    const parts = context.params.project
+    if (parts.length == 0 || parts.length > 3) {
+        return {
+            notFound: true,
+        }
+    }
+
     try {
-        const project: api.Project = await api.get(`/projects/${context.params.project}`)
+        const project: api.Project = await api.get(`/projects/${context.params.project[0]}`)
 
         return {
             props: {
-                project,
+                project: project,
+                fallback: {
+                    [api.getURL(project.url)]: project,
+                },
             },
-            revalidate: 60, // cache for a minute
+            revalidate: 60,
         }
     } catch (error) {
         console.log(error)
@@ -45,20 +70,14 @@ export const getStaticProps: GetStaticProps = async context => {
     }
 }
 
-export default function ProjectPage(props: { project: api.Project }) {
-    const { data: project, mutate } = useSWR<api.Project>(props.project.url, api.get, {
-        fallbackData: props.project,
-
-        // Refresh every 2s if the repo is busy being pulled
-        refreshInterval: p => (p.repo.is_pulling ? 2000 : 0),
-    })
-
+export function Inner({ url, tab }: { url: string, tab: Tab }) {
+    const [project, actions] = useEntity<api.Project>(url)
     const userIsMember = api.useIsUserProjectMember(project)
 
     return <>
-        <PageTitle title={project.slug} />
+        <PageTitle title={project.slug} description={project.description} />
         <Nav />
-        <ProjectHeader project={project} />
+        <ProjectHeader project={project} tab={tab} />
         <PrScratchBasket project={project} />
         {project.repo.is_pulling ? <main className={styles.loadingContainer}>
             <LoadingSpinner width={32} height={32} />
@@ -66,25 +85,36 @@ export default function ProjectPage(props: { project: api.Project }) {
         </main> : <main>
             <ErrorBoundary>
                 <div className={styles.container}>
-                    <ProjectFunctionList projectUrl={project.url}>
+                    {tab == Tab.FUNCTIONS && <ProjectFunctionList projectUrl={project.url}>
                         <div className={styles.headerActions}>
                             {userIsMember && <AsyncButton
                                 forceLoading={project.repo.is_pulling}
                                 onClick={async () => {
-                                    mutate(await api.post(project.url + "/pull", {}))
+                                    actions.swr.mutate(await api.post(project.url + "/pull", {}))
                                 }}
                             >
                                 <RepoPullIcon /> Pull
                             </AsyncButton>}
-
-                            <small>
-                                Last pulled <TimeAgo date={project.repo.last_pulled} />
-                            </small>
                         </div>
-                    </ProjectFunctionList>
+                    </ProjectFunctionList>}
+                    {tab == Tab.SETTINGS && <ProjectSettings project={project} />}
                 </div>
             </ErrorBoundary>
         </main>}
         <Footer />
     </>
+}
+
+export default function ProjectPage(props: { project: api.Project, fallback: any }) {
+    const router = useRouter()
+    const [project, maybeTab, ...rest] = router.query.project as string[]
+    const tab = maybeTab ?? DEFAULT_TAB
+
+    if (rest.length || !isValidTab(tab)) {
+        return <Error404Page />
+    }
+
+    return <SWRConfig value={{ fallback: props.fallback }}>
+        <Inner url={`/projects/${project}`} tab={tab} />
+    </SWRConfig>
 }

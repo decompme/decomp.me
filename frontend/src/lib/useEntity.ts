@@ -1,11 +1,14 @@
 import { useState } from "react"
 
-import useSWR from "swr"
+import useSWR, { SWRResponse } from "swr"
 
 import { get, patch } from "./api"
 import { useWarnBeforeUnload } from "./hooks"
 
 export interface Actions<T> {
+    /** Direct access to SWR response */
+    swr: SWRResponse<T>
+
     /** True if local data has been modified and not yet submitted. */
     isModified: boolean
 
@@ -36,6 +39,7 @@ export default function useEntity<T extends HasUrl>(entity: T | string): [T, Act
     useWarnBeforeUnload(isModified)
 
     return [data, {
+        swr,
         isModified,
         isSaved: !isModified,
         async save() {

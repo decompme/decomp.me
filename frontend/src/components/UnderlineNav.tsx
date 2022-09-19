@@ -11,8 +11,9 @@ export function Counter({ children }: { children: ReactNode }) {
 
 export interface LinkConfig {
     href: string
-    selected?: boolean
     label: ReactNode
+    selected?: boolean
+    shallow?: boolean
 }
 
 export interface Props {
@@ -25,11 +26,11 @@ export default function UnderlineNav({ links, maxWidth }: Props) {
 
     return <nav className={styles.container}>
         <ul style={{ maxWidth }}>
-            {links.filter(Boolean).map(({ href, label, selected }) => {
+            {links.filter(Boolean).map(({ href, label, selected, shallow }) => {
                 const isSelected = selected || router.asPath === href
 
                 return <li key={href} data-selected={isSelected}>
-                    <Link href={href}>
+                    <Link href={href} shallow={shallow}>
                         <a>{label}</a>
                     </Link>
                 </li>
