@@ -56,7 +56,7 @@ export class ResponseError extends Error {
     }
 }
 
-export function getURL(url: string) {
+export function normalizeUrl(url: string) {
     if (url.startsWith("/")) {
         url = API_BASE + url
     }
@@ -64,7 +64,7 @@ export function getURL(url: string) {
 }
 
 export async function get(url: string, useCacheIfFresh = false) {
-    url = getURL(url)
+    url = normalizeUrl(url)
 
     const response = await fetch(url, {
         ...commonOpts,
@@ -92,7 +92,7 @@ export async function get(url: string, useCacheIfFresh = false) {
 export const getCached = (url: string) => get(url, true)
 
 export async function post(url: string, data: Json | FormData, method = "POST") {
-    url = getURL(url)
+    url = normalizeUrl(url)
 
     console.info(method, url, data)
 

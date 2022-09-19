@@ -34,7 +34,6 @@ export default function UnderlineNav({ links, maxWidth }: Props) {
                 const { offsetTop } = ref.current
 
                 // Only scroll up, not down.
-                console.log(offsetTop, window.scrollY)
                 if (offsetTop < window.scrollY) {
                     window.scroll({ top: offsetTop })
                 }

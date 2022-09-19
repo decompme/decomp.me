@@ -56,7 +56,8 @@ export const getStaticProps: GetStaticProps = async context => {
             props: {
                 project: project,
                 fallback: {
-                    [api.getURL(project.url)]: project,
+                    [api.normalizeUrl(project.url)]: project,
+                    "/compilers": await api.get("/compilers"),
                 },
             },
             revalidate: 60,
@@ -107,7 +108,7 @@ export function Inner({ url, tab }: { url: string, tab: Tab }) {
 
 export default function ProjectPage(props: { project: api.Project, fallback: any }) {
     const router = useRouter()
-    const [project, maybeTab, ...rest] = router.query.project as string[]
+    const [, maybeTab, ...rest] = router.query.project as string[]
     const tab = maybeTab ?? DEFAULT_TAB
 
     if (rest.length || !isValidTab(tab)) {
@@ -115,6 +116,6 @@ export default function ProjectPage(props: { project: api.Project, fallback: any
     }
 
     return <SWRConfig value={{ fallback: props.fallback }}>
-        <Inner url={`/projects/${project}`} tab={tab} />
+        <Inner url={props.project.url} tab={tab} />
     </SWRConfig>
 }
