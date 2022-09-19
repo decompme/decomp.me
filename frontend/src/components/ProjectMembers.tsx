@@ -6,7 +6,7 @@ import useSWR from "swr"
 import * as api from "../lib/api"
 
 import AsyncButton from "./AsyncButton"
-import { FieldSet } from "./form/FieldSet"
+import FieldSet from "./FieldSet"
 import styles from "./ProjectMembers.module.scss"
 import UserLink from "./user/UserLink"
 

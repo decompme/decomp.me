@@ -12,7 +12,7 @@ export interface Props {
     className?: string
 }
 
-export function FieldSet({ label, children, actions, status, className }: Props) {
+export default function FieldSet({ label, children, actions, status, className }: Props) {
     const labelId = useId()
 
     return <div
