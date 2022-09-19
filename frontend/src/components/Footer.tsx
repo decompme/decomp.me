@@ -51,7 +51,7 @@ export default function Footer() {
 
                 <div className={styles.commitHash}>
                     <Link href={`https://github.com/decompme/decomp.me/commit/${commitHash}`}>
-                        <a>
+                        <a title="Commit hash">
                             {commitHash.slice(0, 7)}
                         </a>
                     </Link>

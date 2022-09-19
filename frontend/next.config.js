@@ -26,7 +26,7 @@ const removeImports = require("next-remove-imports")({
 })
 const nextTranslate = require("next-translate")
 
-module.exports = withPlausibleProxy({
+let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
 })(nextTranslate(removeImports(withPWA({
     async redirects() {
@@ -84,3 +84,9 @@ module.exports = withPlausibleProxy({
     swcMinify: false,
     experimental: {},
 }))))
+
+if (process.env.ANALYZE == "true") {
+    app = require("@next/bundle-analyzer")(app)
+}
+
+module.exports = app
