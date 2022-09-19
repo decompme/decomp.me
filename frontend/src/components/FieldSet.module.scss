@@ -8,7 +8,7 @@
     font-size: 14px;
     line-height: 1.6;
 
-    color: var(--g1700);
+    color: var(--g1600);
     background: var(--g200);
 
     > div {
@@ -16,11 +16,11 @@
         flex-direction: column;
         gap: 1em;
 
-        padding: 1.5em;
+        padding: 1.25em 1.5em 1.5em 1.5em;
     }
 
     > footer {
-        padding: 0.75em 1.5em;
+        padding: 1em 1.5em;
 
         color: var(--g1300);
         background: var(--g250);
@@ -35,6 +35,11 @@
 
         @media (max-width: 700px) {
             grid-template-columns: 1fr;
+
+            // Get rid of the gap if there's only one row
+            > div:empty {
+                display: none;
+            }
         }
 
         > div {
