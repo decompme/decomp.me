@@ -36,6 +36,7 @@ services:
       SANDBOX_DISABLE_PROC: "true"
       COMPILER_BASE_PATH: /compilers
       LOCAL_FILE_DIR: /local_files
+      MEDIA_DIR: /media
     ports:
     - "8000:8000"
     security_opt:
@@ -44,6 +45,7 @@ services:
     volumes:
     - ./backend:/backend
     - ./local_files:/local_files
+    - ./media:/media
     tmpfs:
     # Use a separate tmpfs to prevent a rogue jailed process
     # from filling /tmp on the parent container
@@ -64,3 +66,4 @@ services:
     - "80:80"
     volumes:
     - ./nginx:/etc/nginx/conf.d
+    - ./media:/media
