@@ -6,7 +6,7 @@ authors = ["Decomp.me team"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.11"
 Django = "^4.0.2"
 ansiwrap = "^0.8.4"
 colorama = "^0.4.4"
@@ -35,6 +35,12 @@ django-stubs = "1.9.0"
 djangorestframework-stubs = "^1.4.0"
 types-requests = "^2.27.15"
 parameterized = "^0.8.1"
+
+[tool.poetry.group.electron]
+optional = true
+
+[tool.poetry.group.electron.dependencies]
+pyinstaller = "^5.4.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

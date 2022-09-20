@@ -6,7 +6,22 @@ const findFreePort = require("find-free-port")
 const DEBUG = process.env.NODE_ENV == "development"
 const BACKEND_DIR = path.join(__dirname, "..", "backend")
 const FRONTEND_DIR = path.join(__dirname, "..", "frontend")
+const DIST_DIR = path.join(__dirname, "dist")
 const HOST = "127.0.0.1"
+
+const env = (backendPort, frontendPort) => {
+    return {
+        DEBUG: DEBUG.toString(),
+        SECRET_KEY: "django-insecure-nm#!8%z$hc0wwi#m_*l9l)=m*6gs4&o_^-e5b5vj*k05&yaqc1",
+        DATABASE_URL: "sqlite:///dev.db",
+        USE_SANDBOX_JAIL: "off",
+        NEXT_PUBLIC_IS_ELECTRON: "true",
+        FRONTEND_BASE: `http://${HOST}:${frontendPort}`,
+        API_BASE: `http://${HOST}:${backendPort}/api`,
+        INTERNAL_API_BASE: `http://${HOST}:${backendPort}/api`,
+        API_BASE: `http://${HOST}:${backendPort}/api`,
+    }
+}
 
 const promisifyChildProcess = childProcess => {
     return new Promise((resolve, reject) => {
@@ -43,22 +58,25 @@ const createWindow = port => {
 }
 
 const startBackend = async (backendPort, frontendPort) => {
-    const poetryRun = (...args) => {
-        return childProcess.spawn("poetry", ["run", "python3", "manage.py", ...args], {
-            cwd: BACKEND_DIR,
-            stdio: "pipe",
-            env: {
-                ...process.env,
-                NEXT_PUBLIC_IS_ELECTRON: "true",
-                FRONTEND_BASE: `http://${HOST}:${frontendPort}`,
-                DEBUG: DEBUG ? "true" : "false",
-            },
-        })
+    const manage = (...args) => {
+        if (DEBUG) {
+            return childProcess.spawn("poetry", ["run", "python3", "manage.py", ...args], {
+                cwd: BACKEND_DIR,
+                stdio: "pipe",
+                env: env(backendPort, frontendPort),
+            })
+        } else {
+            return childProcess.spawn(path.join(DIST_DIR, "backend", "manage"), args, {
+                cwd: BACKEND_DIR,
+                stdio: "inherit", // "pipe",
+                env: env(backendPort, frontendPort),
+            })
+        }
     }
 
-    await promisifyChildProcess(poetryRun("migrate"))
+    await promisifyChildProcess(manage("migrate"))
 
-    const server = poetryRun("runserver", `${HOST}:${backendPort}`)
+    const server = manage("runserver", `${HOST}:${backendPort}`)
     return new Promise((resolve, reject) => {
         server.on("error", reject)
         server.stdout.on("data", data => {
@@ -79,12 +97,7 @@ const startFrontend = async (backendPort, frontendPort) => {
         return childProcess.fork("node_modules/.bin/next", args, {
             cwd: FRONTEND_DIR,
             stdio: "inherit",
-            env: {
-                ...process.env,
-                NEXT_PUBLIC_IS_ELECTRON: "true",
-                INTERNAL_API_BASE: `http://${HOST}:${backendPort}/api`,
-                API_BASE: `http://${HOST}:${backendPort}/api`
-            },
+            env: env(backendPort, frontendPort),
         })
     }
 

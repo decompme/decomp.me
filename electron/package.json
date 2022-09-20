@@ -8,10 +8,10 @@
   "scripts": {
     "start": "electron ."
   },
-  "devDependencies": {
-    "electron": "^20.1.4"
-  },
   "dependencies": {
     "find-free-port": "^2.0.0"
+  },
+  "devDependencies": {
+    "electron": "^20.1.4"
   }
 }
