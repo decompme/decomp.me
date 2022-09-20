@@ -291,7 +291,6 @@ export default function Scratch({
             setScratch={setScratch}
             setDecompilationTabEnabled={setDecompilationTabEnabled}
         />
-        <hr />
         {layout && <CustomLayout
             layout={layout}
             onChange={setLayout}

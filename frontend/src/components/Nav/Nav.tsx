@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react"
+import classNames from "classnames"
 
 import Frog from "./frog.svg"
 import LoginState from "./LoginState"
@@ -11,10 +12,11 @@ import styles from "./Nav.module.scss"
 import Search from "./Search"
 
 export interface Props {
+    border?: boolean
     children?: React.ReactNode
 }
 
-export default function Nav({ children }: Props) {
+export default function Nav({ border, children }: Props) {
     const [isOpen, toggleOpen] = useReducer(isOpen => !isOpen, false)
     const toggleLabel = `${isOpen ? "Close" : "Open"} Global Navigation Menu`
     const router = useRouter()
@@ -51,7 +53,10 @@ export default function Nav({ children }: Props) {
     }, [isOpen])
 
     return <nav
-        className={styles.container}
+        className={classNames({
+            [styles.container]: true,
+            [styles.border]: border,
+        })}
         aria-labelledby="navtoggle"
         data-open={isOpen}
         data-force-toggle={!!children}

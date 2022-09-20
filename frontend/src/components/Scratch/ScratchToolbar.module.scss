@@ -1,44 +1,25 @@
 $size: 64px;
 $padding: 4px;
 
-.toolbar {
-    $innerSize: $size - $padding * 2;
-
-    display: grid;
-    grid-template-columns: $innerSize 1fr auto;
-    align-items: stretch;
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: $padding;
+    gap: 3px;
 
     width: 100%;
+    padding: 0 3px;
 
-    padding: $padding;
-
-    background: var(--g300);
-}
-
-.frog {
-    padding: 10px;
-
-    a {
-        display: block;
-        width: 100%;
-        height: 100%;
+    @media (max-width: 1200px) {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: initial;
     }
-}
 
-.right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    padding: 10px;
-}
-
-.columnSpaceAround {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    > * {
+        min-height: 32px;
+    }
 }
 
 .name {
@@ -53,6 +34,8 @@ $padding: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    max-width: 320px;
 
     text-align: center;
 
@@ -77,77 +60,59 @@ $padding: 4px;
     align-items: center;
 }
 
-.actions {
-    $gap: 4px;
+.actionsContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
+.actions {
     list-style: none;
 
     font-size: 12px;
 
-    display: flex;
-    gap: 8px;
+    align-self: center;
 
-    @media (max-width: 800px) {
-        flex-direction: column;
-        gap: $gap;
+    @media (max-width: 700px) {
+        display: block;
     }
 
-    > ul {
-        // On same line on large widths
-        @media (min-width: 800px) {
-            display: inline-flex;
+    > li {
+        display: inline-block;
+
+        color: var(--g1900);
+        cursor: pointer;
+
+        button,
+        a {
+            display: flex;
             align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
 
-            // Separator
-            &:not(:last-child) {
-                &::after {
-                    content: "";
-                    display: inline-block;
-                    width: 1px;
-                    height: 1em;
-                    margin-left: $gap;
-                    background: var(--g500);
-                }
-            }
-        }
-
-        > li {
-            display: inline-block;
-
-            color: var(--g1900);
             cursor: pointer;
 
-            button,
-            a {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                padding: 4px 8px;
+            background: none;
+            border: 0;
 
-                cursor: pointer;
+            svg {
+                width: 1em;
+                color: var(--g1200);
+            }
 
-                background: none;
-                border: 0;
+            &[disabled] {
+                color: var(--g700);
+                cursor: default;
 
                 svg {
-                    width: 1em;
-                    color: var(--g1200);
+                    color: inherit;
                 }
+            }
 
-                &[disabled] {
-                    color: var(--g700);
-                    cursor: default;
-
-                    svg {
-                        color: inherit;
-                    }
-                }
-
-                &:not([disabled]):hover {
-                    border-radius: 4px;
-                    color: var(--g2000);
-                    background: var(--g400);
-                }
+            &:not([disabled]):hover {
+                border-radius: 4px;
+                color: var(--g2000);
+                background: var(--g400);
             }
         }
     }
@@ -159,19 +124,13 @@ $padding: 4px;
     gap: 4px;
 }
 
-.actionsContainer {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 .lastEditTime {
     font-size: 12px;
     color: var(--g1200);
 
-    @media (max-width: 800px) {
-        display: none;
-    }
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .owner {
@@ -195,19 +154,17 @@ $padding: 4px;
 }
 
 // Hide owner name and breadcrumb separator, i.e. just show the owner avatar
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     .breadcrumbs li::before {
         visibility: hidden;
         margin: 0 !important;
     }
 
-    @media (max-width: 800px) {
-        .ownerName {
-            display: none;
-        }
+    .ownerName {
+        display: none;
+    }
 
-        .owner::before {
-            width: 20px;
-        }
+    .owner::before {
+        width: 20px;
     }
 }

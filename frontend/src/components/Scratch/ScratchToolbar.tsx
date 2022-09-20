@@ -9,13 +9,11 @@ import TimeAgo from "react-timeago"
 
 import * as api from "../../lib/api"
 import Breadcrumbs from "../Breadcrumbs"
-import Frog from "../Nav/frog.svg"
-import LoginState from "../Nav/LoginState"
+import Nav from "../Nav"
 import ScratchIcon from "../ScratchIcon"
 import { SpecialKey, useShortcut } from "../Shortcut"
 import UserAvatar from "../user/UserAvatar"
 
-import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import styles from "./ScratchToolbar.module.scss"
 
@@ -119,75 +117,71 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
         compile()
     })
 
-    return <div className={styles.actions}>
-        <ul aria-label="File">
-            <li>
-                <Link href="/new">
-                    <a>
-                        <FileIcon />
-                        New
-                    </a>
-                </Link>
-            </li>
-            <li>
-                <button
-                    onClick={async () => {
-                        setIsSaving(true)
-                        await fuzzySaveScratch()
-                        setIsSaving(false)
-                    }}
-                    disabled={!canSave || isSaving}
-                    title={fuzzyShortcut}
-                >
-                    <UploadIcon />
-                    Save
-                </button>
-            </li>
-            <li>
-                <button
-                    onClick={forkScratch}
-                    title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
-                >
-                    <RepoForkedIcon />
-                    Fork
-                </button>
-            </li>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
-                <button onClick={event => {
-                    if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
-                        deleteScratch(scratch)
-                    }
-                }}>
-                    <TrashIcon />
-                        Delete
-                </button>
-            </li>}
-            <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                        Export..
-                </button>
-            </li>
-        </ul>
-        <ul aria-label="Compilation">
-            <li>
-                <button
-                    onClick={compile}
-                    title={compileShortcut}
-                    disabled={isCompiling}
-                >
-                    <SyncIcon />
-                    Compile
-                </button>
-            </li>
-            <li>
-                <button onClick={() => setDecompilationTabEnabled(true)}>
-                    <IterationsIcon />
-                    Decompile..
-                </button>
-            </li>
-        </ul>
-    </div>
+    return <ul className={styles.actions} aria-label="Scratch actions">
+        <li>
+            <Link href="/new">
+                <a>
+                    <FileIcon />
+                    New
+                </a>
+            </Link>
+        </li>
+        <li>
+            <button
+                onClick={async () => {
+                    setIsSaving(true)
+                    await fuzzySaveScratch()
+                    setIsSaving(false)
+                }}
+                disabled={!canSave || isSaving}
+                title={fuzzyShortcut}
+            >
+                <UploadIcon />
+                Save
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={forkScratch}
+                title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
+            >
+                <RepoForkedIcon />
+                Fork
+            </button>
+        </li>
+        {scratch.owner && userIsYou(scratch.owner) && <li>
+            <button onClick={event => {
+                if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
+                    deleteScratch(scratch)
+                }
+            }}>
+                <TrashIcon />
+                    Delete
+            </button>
+        </li>}
+        <li>
+            <button onClick={() => exportScratchZip(scratch)}>
+                <DownloadIcon />
+                    Export..
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={compile}
+                title={compileShortcut}
+                disabled={isCompiling}
+            >
+                <SyncIcon />
+                Compile
+            </button>
+        </li>
+        <li>
+            <button onClick={() => setDecompilationTabEnabled(true)}>
+                <IterationsIcon />
+                Decompile..
+            </button>
+        </li>
+    </ul>
 }
 
 export type Props = {
@@ -203,15 +197,8 @@ export default function ScratchToolbar(props: Props) {
     const userIsYou = api.useUserIsYou()
     const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
-    return <header className={styles.toolbar}>
-        <div className={styles.frog}>
-            <Link href="/">
-                <a aria-label="Home">
-                    <Frog />
-                </a>
-            </Link>
-        </div>
-        <div className={styles.columnSpaceAround}>
+    return <Nav border>
+        <div className={styles.container}>
             <Breadcrumbs className={styles.breadcrumbs} pages={[
                 scratch.owner && {
                     label: <div className={styles.owner}>
@@ -243,9 +230,5 @@ export default function ScratchToolbar(props: Props) {
                 </div>
             </div>
         </div>
-        <div className={styles.right}>
-            {!scratch.owner && <ClaimScratchButton scratch={scratch} />}
-            <LoginState />
-        </div>
-    </header>
+    </Nav>
 }
