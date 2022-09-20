@@ -18,6 +18,8 @@ import UserAvatar from "../user/UserAvatar"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import styles from "./ScratchToolbar.module.scss"
 
+const ACTIVE_MS = 1000 * 60
+
 // Prevents XSS
 function htmlTextOnly(html: string): string {
     return html.replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -35,6 +37,27 @@ async function deleteScratch(scratch: api.Scratch) {
     await api.delete_(scratch.url, {})
 
     window.location.href = scratch.project ? `/${scratch.project}` : "/"
+}
+
+function EditTimeAgo({ date }: { date: string }) {
+    const isActive = (Date.now() - (new Date(date)).getTime()) < ACTIVE_MS
+
+    // Rerender after ACTIVE_MS has elapsed if isActive=true
+    const [, forceUpdate] = useState({})
+    useEffect(() => {
+        if (isActive) {
+            const interval = setTimeout(() => forceUpdate({}), ACTIVE_MS)
+            return () => clearInterval(interval)
+        }
+    }, [isActive])
+
+    return <span className={styles.lastEditTime} aria-label="Edit time">
+        {isActive ? <>
+            Active now
+        </> : <>
+            Edited <TimeAgo date={date} />
+        </>}
+    </span>
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -225,7 +248,6 @@ export type Props = {
 export default function ScratchToolbar(props: Props) {
     const { scratch, setScratch } = props
     const userIsYou = api.useUserIsYou()
-    const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
     const [actionsLocation, InNavActions] = useActionsLocation()
 
@@ -249,13 +271,7 @@ export default function ScratchToolbar(props: Props) {
                                 name={scratch.name}
                                 onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
                             />
-                            <li className={styles.lastEditTime} aria-label="Edit time">
-                                {isActive ? <>
-                                    Active now
-                                </> : <>
-                                    Edited <TimeAgo date={scratch.last_updated} />
-                                </>}
-                            </li>
+                            <EditTimeAgo date={scratch.last_updated} />
                         </div>,
                     },
                 ].filter(Boolean)} />
