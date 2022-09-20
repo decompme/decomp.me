@@ -76,7 +76,7 @@ const startBackend = async (backendPort, frontendPort) => {
 
 const startFrontend = async (backendPort, frontendPort) => {
     const next = (...args) => {
-        return childProcess.spawn("node", ["node_modules/.bin/next", ...args], {
+        return childProcess.fork("node_modules/.bin/next", args, {
             cwd: FRONTEND_DIR,
             stdio: "inherit",
             env: {
