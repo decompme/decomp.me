@@ -51,11 +51,11 @@ function EditTimeAgo({ date }: { date: string }) {
         }
     }, [isActive])
 
-    return <span className={styles.lastEditTime} aria-label="Edit time">
+    return <span className={styles.lastEditTime}>
         {isActive ? <>
             Active now
         </> : <>
-            Edited <TimeAgo date={date} />
+            <TimeAgo date={date} />
         </>}
     </span>
 }
