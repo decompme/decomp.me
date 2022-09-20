@@ -21,8 +21,6 @@ $padding: 8px;
     grid-template-areas: "menutoggle sitelogo loginstate";
     justify-content: space-between;
 
-    border-bottom: 1px solid var(--g500);
-
     & > li {
         height: $innerSize;
     }
