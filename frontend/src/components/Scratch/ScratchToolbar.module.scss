@@ -126,15 +126,18 @@ $padding: 4px;
 
 .iconNamePair {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 4px;
+
+    > svg {
+        align-self: center;
+    }
 }
 
 .lastEditTime {
     color: var(--g1200);
 
     padding: 0 8px;
-    height: 100%;
 
     white-space: nowrap;
     overflow: hidden;
