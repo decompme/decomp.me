@@ -1,0 +1,17 @@
+{
+  "name": "decompme-electron",
+  "version": "1.0.0",
+  "description": "Decompilation and reverse-engineering app",
+  "main": "main.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^20.1.4"
+  },
+  "dependencies": {
+    "find-free-port": "^2.0.0"
+  }
+}

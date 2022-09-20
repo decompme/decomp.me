@@ -10,7 +10,7 @@ import PlausibleProvider from "next-plausible"
 
 import Layout from "../components/Layout"
 import { applyColorScheme } from "../lib/codemirror/color-scheme"
-import { isMacOS } from "../lib/device"
+import { isMacOS, isElectron } from "../lib/device"
 import * as settings from "../lib/settings"
 
 import "./_app.scss"
@@ -66,6 +66,10 @@ export default function MyApp({ Component, pageProps }) {
     useEffect(() => {
         if (isMacOS()) {
             document.body.classList.add("device-macos")
+        }
+
+        if (isElectron()) {
+            document.body.classList.add("device-electron")
         }
     }, [])
 

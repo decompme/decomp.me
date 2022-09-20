@@ -1,5 +1,6 @@
 import { MarkGithubIcon } from "@primer/octicons-react"
 
+import { isElectron } from "../lib/device"
 import { isGitHubLoginSupported, showGitHubLoginWindow } from "../lib/oauth"
 
 import Button from "./Button"
@@ -7,7 +8,9 @@ import Button from "./Button"
 const DEFAULT_SCOPE_STR = ""
 
 export default function GitHubLoginButton({ label, popup, className }: { label?: string, popup: boolean, className?: string }) {
-    if (isGitHubLoginSupported()) {
+    if (isElectron()) {
+        return null
+    } else if (isGitHubLoginSupported()) {
         return <Button className={className} onClick={() => showGitHubLoginWindow(popup, DEFAULT_SCOPE_STR)}>
             <MarkGithubIcon size={16} /> {label ?? "Sign in with GitHub"}
         </Button>

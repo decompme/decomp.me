@@ -14,3 +14,7 @@ export function isMacOS(): boolean {
     // Fall back to user-agent sniffing
     return navigator.userAgent.includes("Mac OS X")
 }
+
+export function isElectron(): boolean {
+    return process.env.NEXT_PUBLIC_IS_ELECTRON === "true"
+}
