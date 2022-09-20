@@ -135,11 +135,13 @@ $padding: 4px;
 
     padding: 0 8px;
     height: 100%;
-    min-width: 150px;
 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    font-size: 12px;
+    font-weight: 300;
 }
 
 .owner {

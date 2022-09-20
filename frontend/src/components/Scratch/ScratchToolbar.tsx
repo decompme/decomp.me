@@ -107,7 +107,6 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
     const canSave = scratch.owner && userIsYou(scratch.owner)
-    const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
     const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
         setIsSaving(true)
@@ -183,13 +182,6 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                 Decompile..
             </button>
         </li>
-        <li className={styles.lastEditTime} aria-label="Edit time">
-            {isActive ? <>
-                Active now
-            </> : <>
-                Edited <TimeAgo date={scratch.last_updated} />
-            </>}
-        </li>
     </ul>
 }
 
@@ -233,6 +225,7 @@ export type Props = {
 export default function ScratchToolbar(props: Props) {
     const { scratch, setScratch } = props
     const userIsYou = api.useUserIsYou()
+    const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
     const [actionsLocation, InNavActions] = useActionsLocation()
 
@@ -256,6 +249,13 @@ export default function ScratchToolbar(props: Props) {
                                 name={scratch.name}
                                 onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
                             />
+                            <li className={styles.lastEditTime} aria-label="Edit time">
+                                {isActive ? <>
+                                    Active now
+                                </> : <>
+                                    Edited <TimeAgo date={scratch.last_updated} />
+                                </>}
+                            </li>
                         </div>,
                     },
                 ].filter(Boolean)} />
