@@ -3,23 +3,37 @@ $padding: 4px;
 
 .container {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    gap: 3px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
 
     width: 100%;
-    padding: 0 3px;
+}
 
-    @media (max-width: 1200px) {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        align-items: initial;
+.inNavActionsContainer {
+    display: inline-flex;
+    align-items: center;
+
+    overflow-x: auto;
+    overflow-x: overlay;
+
+    &[aria-hidden="true"] {
+        visibility: hidden;
     }
 
-    > * {
-        min-height: 32px;
+    .actions {
+        white-space: nowrap;
     }
+}
+
+.belowNavActionsContainer {
+    padding: 0 10px 4px 10px;
+    background: var(--g300);
+    border-bottom: 1px solid var(--g500);
 }
 
 .name {
@@ -56,14 +70,8 @@ $padding: 4px;
 .breadcrumbs {
     padding: 0 $padding;
 
-    display: flex;
+    display: inline-flex;
     align-items: center;
-}
-
-.actionsContainer {
-    display: flex;
-    align-items: center;
-    gap: 12px;
 }
 
 .actions {
@@ -80,9 +88,6 @@ $padding: 4px;
     > li {
         display: inline-block;
 
-        color: var(--g1900);
-        cursor: pointer;
-
         button,
         a {
             display: flex;
@@ -92,6 +97,7 @@ $padding: 4px;
 
             cursor: pointer;
 
+            color: var(--g1900);
             background: none;
             border: 0;
 
@@ -125,8 +131,10 @@ $padding: 4px;
 }
 
 .lastEditTime {
-    font-size: 12px;
     color: var(--g1200);
+
+    padding: 0 8px;
+    height: 100%;
 
     white-space: nowrap;
     overflow: hidden;

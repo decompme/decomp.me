@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, FC } from "react"
 
 import Link from "next/link"
 
@@ -8,6 +8,7 @@ import ContentEditable from "react-contenteditable"
 import TimeAgo from "react-timeago"
 
 import * as api from "../../lib/api"
+import { useSize } from "../../lib/hooks"
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
 import ScratchIcon from "../ScratchIcon"
@@ -106,6 +107,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
     const canSave = scratch.owner && userIsYou(scratch.owner)
+    const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
     const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
         setIsSaving(true)
@@ -181,7 +183,43 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                 Decompile..
             </button>
         </li>
+        <li className={styles.lastEditTime} aria-label="Edit time">
+            {isActive ? <>
+                Active now
+            </> : <>
+                Edited <TimeAgo date={scratch.last_updated} />
+            </>}
+        </li>
     </ul>
+}
+
+enum ActionsLocation {
+    IN_NAV,
+    BELOW_NAV,
+}
+
+function useActionsLocation(): [ActionsLocation, FC<Props>] {
+    const inNavActions = useSize<HTMLDivElement>()
+
+    let location = ActionsLocation.BELOW_NAV
+
+    const el = inNavActions.ref.current
+    if (el) {
+        if (el.clientWidth == el.scrollWidth) {
+            location = ActionsLocation.IN_NAV
+        }
+    }
+
+    return [
+        location,
+        (props: Props) => <div
+            ref={inNavActions.ref}
+            aria-hidden={location != ActionsLocation.IN_NAV}
+            className={styles.inNavActionsContainer}
+        >
+            <Actions {...props} />
+        </div>,
+    ]
 }
 
 export type Props = {
@@ -195,40 +233,37 @@ export type Props = {
 export default function ScratchToolbar(props: Props) {
     const { scratch, setScratch } = props
     const userIsYou = api.useUserIsYou()
-    const isActive = (Date.now() - (new Date(scratch.last_updated)).getTime()) < 1000 * 60
 
-    return <Nav border>
-        <div className={styles.container}>
-            <Breadcrumbs className={styles.breadcrumbs} pages={[
-                scratch.owner && {
-                    label: <div className={styles.owner}>
-                        <UserAvatar user={scratch.owner} className={styles.ownerAvatar} />
-                        <span className={styles.ownerName}>
-                            {scratch.owner.username}
-                        </span>
-                    </div>,
-                    href: !scratch.owner.is_anonymous && `/u/${scratch.owner.username}`,
-                },
-                {
-                    label: <div className={styles.iconNamePair}>
-                        <ScratchIcon scratch={scratch} size={20} />
-                        <ScratchName
-                            name={scratch.name}
-                            onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
-                        />
-                    </div>,
-                },
-            ].filter(Boolean)} />
-            <div className={styles.actionsContainer}>
-                <Actions {...props} />
-                <div className={styles.lastEditTime} aria-label="Edit time">
-                    {isActive ? <>
-                        Active now
-                    </> : <>
-                        Edited <TimeAgo date={scratch.last_updated} />
-                    </>}
-                </div>
+    const [actionsLocation, InNavActions] = useActionsLocation()
+
+    return <>
+        <Nav border={actionsLocation == ActionsLocation.IN_NAV}>
+            <div className={styles.container}>
+                <Breadcrumbs className={styles.breadcrumbs} pages={[
+                    scratch.owner && {
+                        label: <div className={styles.owner}>
+                            <UserAvatar user={scratch.owner} className={styles.ownerAvatar} />
+                            <span className={styles.ownerName}>
+                                {scratch.owner.username}
+                            </span>
+                        </div>,
+                        href: !scratch.owner.is_anonymous && `/u/${scratch.owner.username}`,
+                    },
+                    {
+                        label: <div className={styles.iconNamePair}>
+                            <ScratchIcon scratch={scratch} size={20} />
+                            <ScratchName
+                                name={scratch.name}
+                                onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
+                            />
+                        </div>,
+                    },
+                ].filter(Boolean)} />
+                <InNavActions {...props} />
             </div>
-        </div>
-    </Nav>
+        </Nav>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={styles.belowNavActionsContainer}>
+            <Actions {...props} />
+        </div>}
+    </>
 }
