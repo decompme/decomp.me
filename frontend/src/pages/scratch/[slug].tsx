@@ -1,10 +1,9 @@
-import { Suspense, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
 import useSWR from "swr"
 
-import LoadingSpinner from "../../components/loading.svg"
 import PageTitle from "../../components/PageTitle"
 import { getScoreText } from "../../components/ScoreBadge"
 import Scratch from "../../components/Scratch"
@@ -99,18 +98,16 @@ export default function ScratchPage({ initialScratch, parentScratch, initialComp
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
         <main className={styles.container}>
-            <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
-                <Scratch
-                    scratch={scratch}
-                    parentScratch={parentScratch}
-                    initialCompilation={initialCompilation}
-                    onChange={partial => {
-                        setScratch(scratch => {
-                            return { ...scratch, ...partial }
-                        })
-                    }}
-                />
-            </Suspense>
+            <Scratch
+                scratch={scratch}
+                parentScratch={parentScratch}
+                initialCompilation={initialCompilation}
+                onChange={partial => {
+                    setScratch(scratch => {
+                        return { ...scratch, ...partial }
+                    })
+                }}
+            />
         </main>
     </>
 }

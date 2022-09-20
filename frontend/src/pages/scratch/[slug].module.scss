@@ -1,19 +1,8 @@
 .container {
-    // centre loading spinner
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
     // fix overflow problems
     width: 100%;
     height: 0;
     overflow: hidden;
 
     background: var(--g200);
-}
-
-.loading {
-    width: 24px;
-    height: 24px;
 }
