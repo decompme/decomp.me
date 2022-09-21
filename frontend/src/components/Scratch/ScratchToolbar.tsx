@@ -1,18 +1,24 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, FC } from "react"
 
-import { DownloadIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
+import Link from "next/link"
+
+import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
+import TimeAgo from "react-timeago"
 
 import * as api from "../../lib/api"
+import { useSize } from "../../lib/hooks"
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
+import ScratchIcon from "../ScratchIcon"
 import { SpecialKey, useShortcut } from "../Shortcut"
 import UserAvatar from "../user/UserAvatar"
 
-import ClaimScratchButton from "./buttons/ClaimScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import styles from "./ScratchToolbar.module.scss"
+
+const ACTIVE_MS = 1000 * 60
 
 // Prevents XSS
 function htmlTextOnly(html: string): string {
@@ -31,6 +37,27 @@ async function deleteScratch(scratch: api.Scratch) {
     await api.delete_(scratch.url, {})
 
     window.location.href = scratch.project ? `/${scratch.project}` : "/"
+}
+
+function EditTimeAgo({ date }: { date: string }) {
+    const isActive = (Date.now() - (new Date(date)).getTime()) < ACTIVE_MS
+
+    // Rerender after ACTIVE_MS has elapsed if isActive=true
+    const [, forceUpdate] = useState({})
+    useEffect(() => {
+        if (isActive) {
+            const interval = setTimeout(() => forceUpdate({}), ACTIVE_MS)
+            return () => clearInterval(interval)
+        }
+    }, [isActive])
+
+    return <span className={styles.lastEditTime}>
+        {isActive ? <>
+            Active now
+        </> : <>
+            <TimeAgo date={date} />
+        </>}
+    </span>
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -97,24 +124,12 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
     }
 }
 
-export type Props = {
-    isCompiling: boolean
-    compile: () => Promise<void>
-    scratch: Readonly<api.Scratch>
-    setScratch: (scratch: Partial<api.Scratch>) => void
-    setDecompilationTabEnabled: (enabled: boolean) => void
-}
-
-export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled,
-}: Props) {
+function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
-
-    const [isMounted, setMounted] = useState(false)
-    useEffect(() => setMounted(true), [])
+    const canSave = scratch.owner && userIsYou(scratch.owner)
 
     const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
         setIsSaving(true)
@@ -126,91 +141,145 @@ export default function ScratchToolbar({
         compile()
     })
 
+    return <ul className={styles.actions} aria-label="Scratch actions">
+        <li>
+            <Link href="/new">
+                <a>
+                    <FileIcon />
+                    New
+                </a>
+            </Link>
+        </li>
+        <li>
+            <button
+                onClick={async () => {
+                    setIsSaving(true)
+                    await fuzzySaveScratch()
+                    setIsSaving(false)
+                }}
+                disabled={!canSave || isSaving}
+                title={fuzzyShortcut}
+            >
+                <UploadIcon />
+                Save
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={forkScratch}
+                title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
+            >
+                <RepoForkedIcon />
+                Fork
+            </button>
+        </li>
+        {scratch.owner && userIsYou(scratch.owner) && <li>
+            <button onClick={event => {
+                if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
+                    deleteScratch(scratch)
+                }
+            }}>
+                <TrashIcon />
+                    Delete
+            </button>
+        </li>}
+        <li>
+            <button onClick={() => exportScratchZip(scratch)}>
+                <DownloadIcon />
+                    Export..
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={compile}
+                title={compileShortcut}
+                disabled={isCompiling}
+            >
+                <SyncIcon />
+                Compile
+            </button>
+        </li>
+        <li>
+            <button onClick={() => setDecompilationTabEnabled(true)}>
+                <IterationsIcon />
+                Decompile..
+            </button>
+        </li>
+    </ul>
+}
+
+enum ActionsLocation {
+    IN_NAV,
+    BELOW_NAV,
+}
+
+function useActionsLocation(): [ActionsLocation, FC<Props>] {
+    const inNavActions = useSize<HTMLDivElement>()
+
+    let location = ActionsLocation.BELOW_NAV
+
+    const el = inNavActions.ref.current
+    if (el) {
+        if (el.clientWidth == el.scrollWidth) {
+            location = ActionsLocation.IN_NAV
+        }
+    }
+
+    return [
+        location,
+        (props: Props) => <div
+            ref={inNavActions.ref}
+            aria-hidden={location != ActionsLocation.IN_NAV}
+            className={styles.inNavActionsContainer}
+        >
+            <Actions {...props} />
+        </div>,
+    ]
+}
+
+export type Props = {
+    isCompiling: boolean
+    compile: () => Promise<void>
+    scratch: Readonly<api.Scratch>
+    setScratch: (scratch: Partial<api.Scratch>) => void
+    setDecompilationTabEnabled: (enabled: boolean) => void
+}
+
+export default function ScratchToolbar(props: Props) {
+    const { scratch, setScratch } = props
+    const userIsYou = api.useUserIsYou()
+
+    const [actionsLocation, InNavActions] = useActionsLocation()
+
     return <>
-        <Nav>
-            <div className={styles.toolbar}>
+        <Nav border={actionsLocation == ActionsLocation.IN_NAV}>
+            <div className={styles.container}>
                 <Breadcrumbs className={styles.breadcrumbs} pages={[
                     scratch.owner && {
-                        label: <>
-                            <UserAvatar user={scratch.owner} />
-                            <span style={{ marginLeft: "6px" }} />
-                            {scratch.owner.username}
-                        </>,
+                        label: <div className={styles.owner}>
+                            <UserAvatar user={scratch.owner} className={styles.ownerAvatar} />
+                            <span className={styles.ownerName}>
+                                {scratch.owner.username}
+                            </span>
+                        </div>,
                         href: !scratch.owner.is_anonymous && `/u/${scratch.owner.username}`,
                     },
                     {
-                        label: <ScratchName
-                            name={scratch.name}
-                            onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
-                        />,
+                        label: <div className={styles.iconNamePair}>
+                            <ScratchIcon scratch={scratch} size={20} />
+                            <ScratchName
+                                name={scratch.name}
+                                onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
+                            />
+                            <EditTimeAgo date={scratch.last_updated} />
+                        </div>,
                     },
                 ].filter(Boolean)} />
-                <div className={styles.grow} />
-                <div className={styles.right}>
-                    {isMounted && <>
-                        {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
-                    </>}
-                </div>
+                <InNavActions {...props} />
             </div>
         </Nav>
-
-        <ul className={styles.actions}>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
-                <button
-                    onClick={async () => {
-                        setIsSaving(true)
-                        await fuzzySaveScratch()
-                        setIsSaving(false)
-                    }}
-                    disabled={isSaving}
-                    title={fuzzyShortcut}
-                >
-                    <UploadIcon />
-                    Save
-                </button>
-            </li>}
-            <li>
-                <button
-                    onClick={forkScratch}
-                    title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
-                >
-                    <RepoForkedIcon />
-                    Fork
-                </button>
-            </li>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
-                <button onClick={event => {
-                    if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
-                        deleteScratch(scratch)
-                    }
-                }}>
-                    <TrashIcon />
-                    Delete
-                </button>
-            </li>}
-            <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export..
-                </button>
-            </li>
-            <li className={styles.separator} />
-            <li>
-                <button
-                    onClick={compile}
-                    title={compileShortcut}
-                    disabled={isCompiling}
-                >
-                    <SyncIcon />
-                    Compile
-                </button>
-            </li>
-            <li>
-                <button onClick={() => setDecompilationTabEnabled(true)}>
-                    <IterationsIcon />
-                    Decompile..
-                </button>
-            </li>
-        </ul>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={styles.belowNavActionsContainer}>
+            <Actions {...props} />
+        </div>}
     </>
 }

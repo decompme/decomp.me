@@ -1,24 +1,39 @@
-.toolbar {
+$size: 64px;
+$padding: 4px;
+
+.container {
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    align-items: center;
     justify-content: space-between;
+
+    white-space: nowrap;
+
+    overflow: hidden;
 
     width: 100%;
 }
 
-.right {
-    display: flex;
-    flex-direction: row;
+.inNavActionsContainer {
+    display: inline-flex;
     align-items: center;
 
-    gap: 8px;
+    overflow-x: auto;
+    overflow-x: overlay;
 
-    flex-shrink: 0;
+    &[aria-hidden="true"] {
+        visibility: hidden;
+    }
+
+    .actions {
+        white-space: nowrap;
+    }
 }
 
-.grow {
-    flex: 1;
+.belowNavActionsContainer {
+    padding: 0 10px 4px 10px;
+    background: var(--g300);
+    border-bottom: 1px solid var(--g500);
 }
 
 .name {
@@ -33,6 +48,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    max-width: 320px;
 
     text-align: center;
 
@@ -51,83 +68,117 @@
 }
 
 .breadcrumbs {
-    padding: 0 8px;
+    padding: 0 $padding;
 
-    display: flex;
+    display: inline-flex;
     align-items: center;
-
-    // Hide owner on small widths
-    @media (max-width: 800px) {
-        li::before,
-        li:not(:last-child) {
-            display: none !important;
-        }
-    }
 }
 
 .actions {
     list-style: none;
 
-    padding: 0 4px;
-
     font-size: 12px;
 
-    background: var(--g300);
+    align-self: center;
 
-    display: flex;
-    align-items: center;
+    @media (max-width: 700px) {
+        display: block;
+    }
 
     > li {
         display: inline-block;
 
-        color: var(--g1600);
-        cursor: pointer;
-
-        &:hover {
-            color: var(--g2000);
-        }
-
-        &.separator {
-            width: 1px;
-            height: 16px;
-            margin: 0 4px;
-
-            background: var(--g500);
-        }
-
-        button {
+        button,
+        a {
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 8px;
+            padding: 4px 8px;
 
             cursor: pointer;
 
+            color: var(--g1900);
             background: none;
             border: 0;
 
-            &[disabled] {
-                opacity: 0.5;
-                cursor: default;
-            }
-
             svg {
                 width: 1em;
+                color: var(--g1200);
             }
 
-            // On small widths, only show the icon
-            @media (max-width: 600px) {
-                padding: 6px 2px;
-
-                // Hide text
-                text-indent: -9999px;
-                color: transparent;
+            &[disabled] {
+                color: var(--g700);
+                cursor: default;
 
                 svg {
-                    width: 1.5em;
-                    color: var(--g1400);
+                    color: inherit;
                 }
             }
+
+            &:not([disabled]):hover {
+                border-radius: 4px;
+                color: var(--g2000);
+                background: var(--g400);
+            }
         }
+    }
+}
+
+.iconNamePair {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    > svg {
+        align-self: center;
+    }
+}
+
+.lastEditTime {
+    color: var(--g1200);
+
+    padding: 0 8px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+    font-weight: 300;
+}
+
+.owner {
+    line-height: 20px;
+    padding: 4px 0;
+
+    position: relative;
+
+    .ownerAvatar {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+    }
+
+    &::before {
+        content: "";
+        display: inline-block;
+        width: 26px;
+    }
+}
+
+// Hide owner name and breadcrumb separator, i.e. just show the owner avatar
+@media (max-width: 800px) {
+    .breadcrumbs li::before {
+        visibility: hidden;
+        margin: 0 !important;
+    }
+
+    .ownerName {
+        display: none;
+    }
+
+    .owner::before {
+        width: 20px;
     }
 }

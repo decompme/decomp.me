@@ -4,7 +4,6 @@ import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import * as api from "../../lib/api"
-import GitHubLoginButton from "../GitHubLoginButton"
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import PlatformName from "../PlatformSelect/PlatformName"
@@ -12,7 +11,6 @@ import { getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
-import ClaimScratchButton from "./buttons/ClaimScratchButton"
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<api.Scratch>(url, api.get)
@@ -60,7 +58,6 @@ export type Props = {
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
-    const userIsYou = api.useUserIsYou()
     const { data: project } = useSWR<api.Project>(scratch.project, api.get)
     const { data: projectFunction } = useSWR<api.ProjectFunction>(scratch.project_function, api.get)
 
@@ -72,13 +69,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
             </div>
             {<div className={styles.horizontalField}>
                 <p className={styles.label}>Owner</p>
-                {scratch.owner
-                    ? <UserLink user={scratch.owner} />
-                    : <ClaimScratchButton scratch={scratch} />
-                }
-                {scratch.owner?.is_anonymous && userIsYou(scratch.owner)
-                    && <GitHubLoginButton popup label="Sign in to keep" className={styles.signInPrompt} />
-                }
+                {scratch.owner && <UserLink user={scratch.owner} />}
             </div>}
             {scratch.parent &&<div className={styles.horizontalField}>
                 <p className={styles.label}>Fork of</p>

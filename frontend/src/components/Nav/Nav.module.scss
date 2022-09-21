@@ -6,13 +6,15 @@ $padding: 8px;
     user-select: none;
     background: var(--g300);
 
+    z-index: 2;
+
     ul {
         list-style: none;
     }
 }
 
 .header {
-    height: $innerSize;
+    min-height: $innerSize;
     padding: $padding;
     box-sizing: content-box;
 
@@ -21,10 +23,8 @@ $padding: 8px;
     grid-template-areas: "menutoggle sitelogo loginstate";
     justify-content: space-between;
 
-    border-bottom: 1px solid var(--g500);
-
     & > li {
-        height: $innerSize;
+        min-height: $innerSize;
     }
 }
 
@@ -34,9 +34,10 @@ $padding: 8px;
     & > button {
         width: $innerSize;
         height: $innerSize;
+
         border: none;
         background: transparent;
-        border-radius: 4px;
+
         cursor: pointer;
     }
 }
@@ -45,8 +46,10 @@ $padding: 8px;
     grid-area: loginstate;
 
     display: flex;
+    align-items: center;
     justify-content: flex-end;
 
+    height: $innerSize;
     padding-left: 12px;
 }
 
@@ -122,17 +125,34 @@ $padding: 8px;
         display: none;
         visibility: hidden;
     }
+}
 
-    // sidebar (tablets, desktop + data-force-toggle="true")
-    @media (min-width: 500px) {
+@mixin borderBottomNoLayoutShift {
+    padding-bottom: $padding - 1px;
+    border-bottom: 1px solid var(--g600);
+}
+
+.border .header {
+    @include borderBottomNoLayoutShift;
+}
+
+// Sidebar
+@media (min-width: 500px) {
+    .container[data-open="true"] .header {
+        @include borderBottomNoLayoutShift;
+    }
+
+    .menu {
         width: 300px;
-        border-right: 1px solid var(--g500);
+        border-right: 1px solid var(--g600);
+
+        // Cover up header's border-bottom
+        box-shadow: -2px 0 0 2px var(--g300);
     }
 }
 
 .searchContainer {
     padding: $padding;
-    border-bottom: 1px solid var(--g500);
 }
 
 .search {
@@ -146,7 +166,7 @@ $padding: 8px;
         padding: 1.5 * $padding;
 
         &:not(:last-child) {
-            border-bottom: 1px solid var(--g500);
+            border-bottom: 1px solid var(--g400);
         }
 
         a {
@@ -222,6 +242,8 @@ $padding: 8px;
         display: flex;
         align-items: center;
         width: 100%;
+
+        overflow: hidden;
     }
 }
 
