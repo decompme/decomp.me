@@ -18,11 +18,15 @@ from .scratch import CompilerConfig, Scratch
 logger = logging.getLogger(__name__)
 
 
+def icon_path(instance: "Project", filename: str):
+    return instance.slug + "_" + filename
+
+
 class Project(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     repo = models.OneToOneField("GithubRepo", on_delete=models.PROTECT)
-    icon = ResizedImageField(size=[256, 256], upload_to="project_icons", null=True)
+    icon = ResizedImageField(size=[256, 256], upload_to=icon_path, null=True)
     description = models.TextField(default="", blank=True, max_length=1000)
 
     def __str__(self) -> str:

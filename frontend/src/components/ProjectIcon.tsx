@@ -24,7 +24,7 @@ export default function ProjectIcon({ project, size, className, priority }: Prop
         ? <Image
             className={className}
             src={data.icon}
-            alt={data.slug}
+            alt=""
             width={size}
             height={size}
             priority={priority}

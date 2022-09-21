@@ -28,7 +28,7 @@ export default function ProjectMembers(props: { project: api.Project }) {
 
     return <FieldSet
         label="Members"
-        status="Members can modify any project setting, and are able to delete the project."
+        status="Members can modify any project setting as well as delete the project."
         actions={canAct && <AsyncButton
             onClick={async () => {
                 const username = prompt("Enter username of new member:")

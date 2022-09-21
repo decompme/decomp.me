@@ -221,7 +221,7 @@ function ScratchEditorSettings() {
                     checked={autoRecompile}
                     onChange={evt => setAutoRecompile(evt.target.checked)}
                 />
-                Automatically compile after typing
+                Automatically compile after changes to scratch
             </label>
             <div className={classNames(styles.intPreference, { [styles.disabled]: !autoRecompile })}>
                 <input
