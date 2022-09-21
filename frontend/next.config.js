@@ -18,8 +18,11 @@ try {
 process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
 const { withPlausibleProxy } = require("next-plausible")
-const withPWA = require("next-pwa")
-const runtimeCaching = require("next-pwa/cache")
+
+const withPWA = require("next-pwa")({
+    dest: "public",
+    disable: process.env.NODE_ENV === "development",
+})
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
@@ -75,11 +78,6 @@ let app = withPlausibleProxy({
     },
     images: {
         domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
-    },
-    pwa: {
-        dest: "public",
-        runtimeCaching,
-        disable: process.env.NODE_ENV === "development",
     },
     swcMinify: false,
     experimental: {},
