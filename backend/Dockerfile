@@ -39,6 +39,7 @@ RUN apt-get -y update && apt-get install -y \
     binutils-aarch64-linux-gnu \
     curl \
     gcc-mips-linux-gnu \
+    git \
     libnl-route-3-200 \
     libprotobuf-dev \
     netcat \
@@ -122,5 +123,3 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
 ENV PATH="$PATH:/etc/poetry/bin"
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
-
-# TODO: nginx server to proxy-pass frontend/backend in order to preserve cookies

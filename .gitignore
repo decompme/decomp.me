@@ -3,7 +3,6 @@ __pycache__
 node_modules
 build
 .snowpack
-local_files/
 backend/local_files/
 backend/media/
 backend/virtualenvs/

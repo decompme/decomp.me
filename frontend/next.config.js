@@ -77,6 +77,7 @@ let app = withPlausibleProxy({
     },
     images: {
         domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
+        unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
     },
     pwa: {
         dest: "public",
