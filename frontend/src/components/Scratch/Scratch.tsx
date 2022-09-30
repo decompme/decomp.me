@@ -31,7 +31,7 @@ enum TabId {
     DECOMPILATION = "scratch_decompilation",
 }
 
-const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row" | "compact", Layout> = {
+const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
     desktop_2col: {
         key: 0,
         kind: "horizontal",
@@ -90,20 +90,6 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row" | "compact", Layout
             },
         ],
     },
-    compact: {
-        key: 0,
-        kind: "pane",
-        size: 100,
-        activeTab: TabId.DIFF,
-        tabs: [
-            TabId.ABOUT,
-            TabId.SOURCE_CODE,
-            TabId.CONTEXT,
-            TabId.DIFF,
-            TabId.OPTIONS,
-            TabId.DECOMPILATION,
-        ],
-    },
 }
 
 const CODEMIRROR_EXTENSIONS = [
@@ -111,16 +97,12 @@ const CODEMIRROR_EXTENSIONS = [
     cpp(),
 ]
 
-function getDefaultLayout(width: number, height: number): keyof typeof DEFAULT_LAYOUTS {
+function getDefaultLayout(width: number, _height: number): keyof typeof DEFAULT_LAYOUTS {
     if (width > 700) {
         return "desktop_2col"
     }
 
-    if (height > 500) {
-        return "mobile_2row"
-    }
-
-    return "compact"
+    return "mobile_2row"
 }
 
 export type Props = {
