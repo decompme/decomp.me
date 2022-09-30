@@ -109,6 +109,7 @@ body.no-scroll {
     overflow: hidden;
 
     #__next {
+        height: fill-available;
         height: 100svh;
     }
 }
