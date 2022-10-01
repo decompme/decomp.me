@@ -57,6 +57,7 @@ export const getStaticProps: GetStaticProps = async context => {
                 project: project,
                 fallback: {
                     [api.normalizeUrl(project.url)]: project,
+                    [api.normalizeUrl(project.url) + "/members"]: await api.get(project.url + "/members"),
                     "/compilers": await api.get("/compilers"),
                 },
             },

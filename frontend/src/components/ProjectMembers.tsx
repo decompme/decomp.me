@@ -10,21 +10,29 @@ import FieldSet from "./FieldSet"
 import styles from "./ProjectMembers.module.scss"
 import UserLink from "./user/UserLink"
 
-interface Member {
-    username: string
+function Member({ member, onRemove }: { member: api.ProjectMember, onRemove?: () => Promise<void> }) {
+    const { data, error } = useSWR<api.User>(`/users/${member.username}`, api.get)
+
+    if (error) {
+        throw error
+    }
+
+    return <li>
+        {data && <UserLink user={data} />}
+        {onRemove && <AsyncButton
+            title="Remove"
+            className={styles.removeBtn}
+            onClick={onRemove}
+        >
+            <XIcon />
+        </AsyncButton>}
+    </li>
 }
 
-export default function ProjectMembers(props: { project: api.Project }) {
-    const userIsYou = api.useUserIsYou()
-    const { data: project, mutate } = useSWR<api.Project>(props.project.url, api.get, { fallbackData: props.project })
+export default function ProjectMembers({ project }: { project: api.Project }) {
+    const user = api.useThisUser()
+    const { members, addMember, removeMember } = api.useProjectMembers(project)
     const canAct = api.useIsUserProjectMember(project)
-
-    const putMembers = async (members: Member[]) => {
-        await api.put(project.url + "/members", {
-            members: members.map(member => ({ username: member.username })),
-        })
-        mutate()
-    }
 
     return <FieldSet
         label="Members"
@@ -33,10 +41,7 @@ export default function ProjectMembers(props: { project: api.Project }) {
             onClick={async () => {
                 const username = prompt("Enter username of new member:")
                 if (username && username.length > 0) {
-                    await putMembers([
-                        ...project.members,
-                        { username },
-                    ])
+                    await addMember(username)
                 }
             }}
         >
@@ -44,28 +49,23 @@ export default function ProjectMembers(props: { project: api.Project }) {
         </AsyncButton>}
     >
         <ul className={styles.list}>
-            {project.members.map(user => <li key={user.url}>
-                <UserLink user={user} />
-                {canAct && <AsyncButton
-                    title="Remove"
-                    className={styles.removeBtn}
-                    onClick={async () => {
-                        if (userIsYou(user)) {
-                            if (!confirm(`Are you sure you want to remove yourself from ${project.slug}?`)) {
-                                return
-                            }
+            {members.map(member => <Member
+                key={member.url}
+                member={member}
+                onRemove={canAct ? async () => {
+                    if (member.username === user?.username) {
+                        if (!confirm("Are you sure you want to remove yourself from this project?")) {
+                            return
                         }
+                    }
 
-                        await putMembers(project.members.filter(u => u.username !== user.username))
+                    await removeMember(member.username)
 
-                        if (userIsYou(user)) {
-                            router.push(project.html_url)
-                        }
-                    }}
-                >
-                    <XIcon />
-                </AsyncButton>}
-            </li>)}
+                    if (member.username === user?.username) {
+                        router.push(project.html_url)
+                    }
+                } : undefined}
+            />)}
         </ul>
     </FieldSet>
 }

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
+from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
 from html_json_forms.serializers import JSONFormSerializer
 
@@ -217,10 +217,9 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
 
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
-    url = HyperlinkedIdentityField(view_name="project-detail")
+    url = UrlField()
     html_url = HtmlUrlField()
     repo = GitHubRepoSerializer()
-    members = SerializerMethodField()
     most_common_platform = SerializerMethodField()
     unmatched_function_count = SerializerMethodField()
 
@@ -240,12 +239,6 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
             setattr(instance, attr, value)
         instance.save()
         return instance
-
-    def get_members(self, project: Project) -> List[Dict[str, Any]]:
-        return [
-            serialize_profile(self.context["request"], member.user.profile, True)
-            for member in project.members()
-        ]
 
     def get_most_common_platform(self, project: Project) -> Optional[str]:
         platforms: Dict[str, int] = {}
@@ -285,11 +278,13 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
-    username = SerializerMethodField()
+    url = UrlField()
+    username = SlugRelatedField(
+        source="user",
+        slug_field="username",
+        queryset=User.objects.all(),
+    )
 
     class Meta:
         model = ProjectMember
-        fields = ["username"]
-
-    def get_username(self, member: ProjectMember) -> str:
-        return member.user.username
+        fields = ["url", "username"]

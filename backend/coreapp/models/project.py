@@ -18,7 +18,7 @@ from .scratch import CompilerConfig, Scratch
 logger = logging.getLogger(__name__)
 
 
-def icon_path(instance: "Project", filename: str):
+def icon_path(instance: "Project", filename: str) -> str:
     return instance.slug + "_" + filename
 
 
@@ -31,6 +31,9 @@ class Project(models.Model):
 
     def __str__(self) -> str:
         return self.slug
+
+    def get_url(self) -> str:
+        return f"/projects/{self.slug}"
 
     def get_html_url(self) -> str:
         return f"/projects/{self.slug}"
@@ -237,3 +240,6 @@ class ProjectMember(models.Model):
 
     def __str__(self) -> str:
         return f"({self.project}, {self.user})"
+
+    def get_url(self) -> str:
+        return f"{self.project.get_url()}/members/{self.user.username}"

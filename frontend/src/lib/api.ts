@@ -209,7 +209,6 @@ export interface Project {
     }
     creation_time: string
     icon?: string
-    members: (User | AnonymousUser)[]
     description: string
     most_common_platform?: string
     unmatched_function_count: number
@@ -226,6 +225,11 @@ export interface ProjectFunction {
     src_file: string
     asm_file: string
     attempts_count: number
+}
+
+export interface ProjectMember {
+    url: string
+    username: string
 }
 
 export type Compilation = {
@@ -620,13 +624,33 @@ export function useStats(): Stats | undefined {
     return data
 }
 
-export function useIsUserProjectMember(project: Project): boolean | undefined {
-    const [isMounted, setIsMounted] = useState(false)
-    useEffect(() => {
-        setIsMounted(true)
-    }, [])
+export function useProjectMembers(project: Project): {
+    members: ProjectMember[]
+    addMember: (username: string) => Promise<void>
+    removeMember: (username: string) => Promise<void>
+} {
+    const url = `${project.url}/members`
+    const { data, error, mutate } = useSWR<ProjectMember[]>(url, get)
 
-    const userIsYou = useUserIsYou()
+    if (error) {
+        throw error
+    }
 
-    return isMounted ? !!project.members.find(userIsYou) : undefined
+    return {
+        members: data || [],
+        async addMember(username: string) {
+            await mutate(() => post(url, { username }))
+        },
+        async removeMember(username: string) {
+            await delete_(`${url}/${username}`, {})
+            await mutate()
+        },
+    }
+}
+
+export function useIsUserProjectMember(project: Project): boolean {
+    const user = useThisUser()
+    const { members } = useProjectMembers(project)
+
+    return !!members.find(member => member.username === user?.username)
 }

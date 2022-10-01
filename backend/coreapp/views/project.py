@@ -7,9 +7,9 @@ from typing import Any, Optional
 
 import django_filters
 from django.db.models.query import QuerySet
-from django.db import transaction
 from django.views import View
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 
 from github import Github, UnknownObjectException
 from github.Repository import Repository
@@ -23,6 +23,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework.request import Request
 from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.serializers import BaseSerializer
 
 from ..models.github import (
     GitHubRepo,
@@ -74,9 +75,9 @@ class ProjectMustHaveMembersException(APIException):
     default_detail = "You must have at least one member in your project."
 
 
-class UserDoesNotExistException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "User does not exist."
+class ProjectMemberExists(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "User is already a member of this project."
 
 
 class TemporaryProjectCreationStaffOnlyException(APIException):
@@ -105,8 +106,14 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request: Any, view: View, obj: Any) -> bool:
-        assert isinstance(obj, Project)
-        return request.method in permissions.SAFE_METHODS or obj.is_member(
+        if isinstance(obj, Project):
+            project = obj
+        elif isinstance(obj, ProjectMember):
+            project = obj.project
+        else:
+            raise ValueError("Object must be a Project or ProjectMember")
+
+        return request.method in permissions.SAFE_METHODS or project.is_member(
             request.profile
         )
 
@@ -302,50 +309,6 @@ class ProjectViewSet(
         )
         return Response({"url": response.html_url})
 
-    @action(detail=True, methods=["GET", "PUT"])
-    def members(self, request: Request, pk: str) -> Response:
-        project: Project = self.get_object()
-
-        if request.method == "PUT":
-            existing_usernames = set([m.user.username for m in project.members()])
-            wanted_usernames = set(
-                [m["username"] for m in request.data.get("members", [])]
-            )
-
-            to_delete = existing_usernames - wanted_usernames
-            to_add = wanted_usernames - existing_usernames
-
-            with transaction.atomic():
-                for username in to_delete:
-                    member = ProjectMember.objects.get(
-                        project=project, user__username=username
-                    )
-                    member.delete()
-
-                for username in to_add:
-                    try:
-                        member = ProjectMember(
-                            project=project, user=User.objects.get(username=username)
-                        )
-                        member.save()
-                    except User.DoesNotExist:
-                        raise UserDoesNotExistException(
-                            f"No user with username '{username}' exists."
-                        )
-
-                if len(project.members()) == 0:
-                    raise ProjectMustHaveMembersException()
-
-        return Response(
-            {
-                "members": ProjectMemberSerializer(
-                    project.members(),
-                    many=True,
-                    context={"request": request},
-                ).data,
-            }
-        )
-
 
 def truncate_comma_separate(string_list: list[str], max_length: int) -> str:
     value = ""
@@ -429,11 +392,50 @@ class ProjectFunctionViewSet(
             raise Exception("Unsupported method")
 
 
+class ProjectMemberViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    serializer_class = ProjectMemberSerializer
+    permission_classes = [IsProjectMemberOrReadOnly]
+
+    def get_queryset(self) -> QuerySet[ProjectMember]:
+        return ProjectMember.objects.filter(project=self.kwargs["parent_lookup_slug"])
+
+    def get_object(self) -> ProjectMember:
+        return ProjectMember.objects.get(
+            project=self.kwargs["parent_lookup_slug"],
+            user__username=self.kwargs["pk"],
+        )
+
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
+        project = Project.objects.get(slug=self.kwargs["parent_lookup_slug"])
+        try:
+            serializer.save(project=project)
+        except IntegrityError:
+            raise ProjectMemberExists()
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        member: ProjectMember = self.get_object()
+        if ProjectMember.objects.filter(project=member.project).count() == 1:
+            raise ProjectMustHaveMembersException()
+        return super().destroy(request, *args, **kwargs)
+
+
 router = ExtendedSimpleRouter(trailing_slash=False)
 projects_router = router.register(r"projects", ProjectViewSet)
 projects_router.register(
     r"functions",
     ProjectFunctionViewSet,
     basename="projectfunction",
+    parents_query_lookups=["slug"],
+)
+projects_router.register(
+    r"members",
+    ProjectMemberViewSet,
+    basename="projectmember",
     parents_query_lookups=["slug"],
 )
