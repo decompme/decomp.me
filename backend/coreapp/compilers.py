@@ -825,6 +825,12 @@ _all_presets = [
     Preset("Quest64", IDO53, "-O2 -g3 -mips2"),
     Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
     Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
+    Preset(
+        "Duke Nukem Zero Hour",
+        GCC272KMC,
+        "-O2 -g2 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
     # GC_WII
     Preset(
         "Super Monkey Ball",
