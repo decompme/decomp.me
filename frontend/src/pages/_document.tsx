@@ -11,6 +11,8 @@ export default class MyDocument extends Document {
 
                     <link rel="shortcut icon" href="/purplefrog.svg" />
                     <link rel="apple-touch-icon" href="/purplefrog-bg-180.png" />
+
+                    <meta name="darkreader-lock" />
                 </Head>
                 <body className="theme-dark">
                     <Main />
