@@ -81,7 +81,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
     const userAttempt = attempts.find(scratch => userIsYou(scratch.owner))
 
     const basket = useBasket(project)
-    const canCreatePr = !!project.members.find(userIsYou)
+    const canCreatePr = api.useIsUserProjectMember(project)
     const basketHasThisFunc = basket.scratches.some(s => s.project_function == func.url)
 
     return <>
