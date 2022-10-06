@@ -35,9 +35,9 @@ export default function ProjectHeader({ project, tab }: Props) {
                                 {project.repo.owner}/{project.repo.repo}
                             </a>
                         </Link>
-                        {project.most_common_platform && <div className={styles.platform}>
-                            <PlatformIcon platform={project.most_common_platform} size={16} />
-                            <PlatformName platform={project.most_common_platform} />
+                        {project.platform && <div className={styles.platform}>
+                            <PlatformIcon platform={project.platform} size={16} />
+                            <PlatformName platform={project.platform} />
                         </div>}
                     </div>
                 </div>

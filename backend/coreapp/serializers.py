@@ -1,3 +1,4 @@
+from platform import platform
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from django.contrib.auth.models import User
@@ -220,7 +221,7 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
     url = UrlField()
     html_url = HtmlUrlField()
     repo = GitHubRepoSerializer()
-    most_common_platform = SerializerMethodField()
+    platform = SerializerMethodField()
     unmatched_function_count = SerializerMethodField()
 
     class Meta:
@@ -240,14 +241,12 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
         instance.save()
         return instance
 
-    def get_most_common_platform(self, project: Project) -> Optional[str]:
-        platforms: Dict[str, int] = {}
-
-        for import_config in ProjectImportConfig.objects.filter(project=project):
-            platform = import_config.compiler_config.platform
-            platforms[platform] = platforms.get(platform, 0) + 1
-
-        return max(platforms, key=lambda p: platforms[p] if p else 0, default=None)
+    def get_platform(self, project: Project) -> Optional[str]:
+        import_config = ProjectImportConfig.objects.filter(project=project).first()
+        if import_config:
+            return import_config.compiler_config.platform
+        else:
+            return None
 
     def get_unmatched_function_count(self, project: Project) -> int:
         return ProjectFunction.objects.filter(

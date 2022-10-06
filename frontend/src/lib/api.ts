@@ -210,7 +210,7 @@ export interface Project {
     creation_time: string
     icon?: string
     description: string
-    most_common_platform?: string
+    platform?: string
     unmatched_function_count: number
 }
 

@@ -40,9 +40,9 @@ function ProjectList({ initialPage }: { initialPage: api.Page<api.Project> }) {
                     <div>
                         {project.unmatched_function_count} functions
                     </div>
-                    {project.most_common_platform && <div className={styles.platform}>
-                        <PlatformIcon platform={project.most_common_platform} size={16} />
-                        <PlatformName platform={project.most_common_platform} />
+                    {project.platform && <div className={styles.platform}>
+                        <PlatformIcon platform={project.platform} size={16} />
+                        <PlatformName platform={project.platform} />
                     </div>}
                     <div>
                         <Link href={project.repo.html_url}>
