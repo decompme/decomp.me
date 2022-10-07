@@ -1,0 +1,66 @@
+.container {
+    margin: 0 auto;
+    max-width: 49em;
+    padding: 0 1em;
+
+    > h1 {
+        color: var(--g1900);
+        font-size: 1.5em;
+        font-weight: 500;
+    }
+
+    > p {
+        padding-top: 4px;
+        color: var(--g1000);
+        font-size: 0.9em;
+        max-width: 50ch;
+    }
+}
+
+.header {
+    background: var(--g300);
+    padding: 1em;
+    align-self: stretch;
+}
+
+.label {
+    display: block;
+    margin-top: 1em;
+    padding: 10px 0;
+
+    color: var(--g1700);
+    font-weight: 600;
+}
+
+.branchInput {
+    min-width: 24ch;
+    max-width: 100%;
+    padding: 8px 10px;
+}
+
+.urlInput {
+    max-width: 100%;
+    padding: 8px 10px;
+
+    color: var(--g1200);
+
+    > span {
+        min-width: 4ch;
+        color: var(--g2000);
+
+        height: 100%;
+    }
+}
+
+.rule {
+    border: 0;
+    background: var(--g300);
+    height: 1px;
+
+    margin: 1em 0;
+}
+
+.icon {
+    width: 64px;
+    height: 64px;
+}

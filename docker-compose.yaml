@@ -36,7 +36,6 @@ services:
       - seccomp=unconfined
     volumes:
     - ./backend:/backend
-    - ./local_files:/local_files
     tmpfs:
     # Use a separate tmpfs to prevent a rogue jailed process
     # from filling /tmp on the parent container
@@ -46,6 +45,7 @@ services:
     environment:
       API_BASE: http://localhost/api
       INTERNAL_API_BASE: http://backend:8000/api
+      FRONTEND_USE_IMAGE_PROXY: "false"
     ports:
     - "8080:8080"
     volumes:
@@ -57,3 +57,4 @@ services:
     - "80:80"
     volumes:
     - ./nginx:/etc/nginx/conf.d
+    - ./backend/media:/media

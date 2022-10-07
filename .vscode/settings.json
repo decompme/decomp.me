@@ -34,4 +34,10 @@
         "editor.formatOnSave": true,
     },
     "python.formatting.provider": "black",
+    "mypy.configFile": "backend/mypy.ini",
+    "mypy.runUsingActiveInterpreter": true,
+    "mypy.targets": [
+        "backend/coreapp",
+        "backend/decompme"
+    ],
 }

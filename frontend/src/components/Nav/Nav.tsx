@@ -95,6 +95,9 @@ export default function Nav({ border, children }: Props) {
                             <Link href="/new">New scratch</Link>
                         </li>
                         <li>
+                            <Link href="/projects">Projects</Link>
+                        </li>
+                        <li>
                             <Link href="/settings/appearance">Settings</Link>
                         </li>
                     </ul>
@@ -111,6 +114,9 @@ export default function Nav({ border, children }: Props) {
                 </li>
                 <li>
                     <Link href="/new">New scratch</Link>
+                </li>
+                <li>
+                    <Link href="/projects">Projects</Link>
                 </li>
                 <li>
                     <Link href="/settings/appearance">Settings</Link>

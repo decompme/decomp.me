@@ -1151,9 +1151,10 @@ class ScratchPRTests(BaseTestCase):
         # Give user membership of project
         profile = Profile.objects.first()
         assert profile is not None
+        assert profile.user is not None
         ProjectMember.objects.create(
             project=project,
-            profile=profile,
+            user=profile.user,
         )
 
     def test_pr_one_scratch(self, mock_get_repo: Mock) -> None:
@@ -1236,7 +1237,6 @@ class ProjectTests(TestCase):
         project = Project(
             slug=slug,
             repo=repo,
-            icon_url="http://example.com",
         )
         project.save()
 
@@ -1265,6 +1265,66 @@ class ProjectTests(TestCase):
             ["git", "clone", "https://github.com/decompme/example-project"],
         )
         mock_mkdir.assert_called_once_with(parents=True)
+
+    @patch("coreapp.models.github.GitHubRepo.pull")
+    @patch.object(
+        GitHubRepo,
+        "details",
+        new=Mock(return_value=MockRepository("orig_repo")),
+    )
+    @patch.object(
+        GitHubUser,
+        "details",
+        new=Mock(return_value=None),
+    )
+    def test_create_api_json(self, mock_pull: Mock) -> None:
+        """
+        Test that you can create a project via the JSON API, and that it only works when is_staff=True
+        """
+
+        # Make a request so we can get a profile
+        response = self.client.get(reverse("project-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        profile = Profile.objects.first()
+        assert profile is not None
+
+        # Give the profile a User and GitHubUser
+        profile.user = User(username="test")
+        profile.user.save()
+        profile.save()
+        GitHubUser.objects.create(
+            user=profile.user, github_id=1234, access_token="__mock__"
+        )
+
+        data = {
+            "slug": "example-project",
+            "repo": {
+                "owner": "decompme",
+                "repo": "example-project",
+                "branch": "not_a_real_branch",
+            },
+        }
+
+        # Fail when not admin
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Succeed when admin
+        profile.user.is_staff = True
+        profile.user.save()
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        mock_pull.assert_called_once()
+        self.assertEqual(Project.objects.count(), 1)
 
     @patch("coreapp.models.github.GitHubRepo.get_dir")
     @patch("coreapp.models.github.shutil.rmtree")
@@ -1379,7 +1439,11 @@ class ProjectTests(TestCase):
 
                 # add project member
                 profile = Profile.objects.first()
-                ProjectMember(project=project, profile=profile).save()
+                assert profile is not None
+                profile.user = User(username="test")
+                profile.user.save()
+                profile.save()
+                ProjectMember(project=project, user=profile.user).save()
 
                 # try again
                 response = self.client.patch(

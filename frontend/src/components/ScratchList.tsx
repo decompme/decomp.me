@@ -74,7 +74,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                <ScratchIcon scratch={scratch} className={styles.icon} />
+                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -106,7 +106,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                <ScratchIcon scratch={scratch} className={styles.icon} />
+                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -125,7 +125,7 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
     return <li className={styles.singleLine}>
-        <ScratchIcon scratch={scratch} className={styles.icon} />
+        <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
         <Link href={scratch.html_url}>
             <a className={classNames(styles.link, styles.name)}>
                 {scratch.name}

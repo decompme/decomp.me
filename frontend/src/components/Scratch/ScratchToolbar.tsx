@@ -26,7 +26,7 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = api.getURL(`${scratch.url}/export`)
+    const url = api.normalizeUrl(`${scratch.url}/export`)
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"

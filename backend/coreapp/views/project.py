@@ -9,6 +9,7 @@ import django_filters
 from django.db.models.query import QuerySet
 from django.views import View
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 
 from github import Github, UnknownObjectException
 from github.Repository import Repository
@@ -20,8 +21,9 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-
-from coreapp.middleware import Request
+from rest_framework.request import Request
+from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.serializers import BaseSerializer
 
 from ..models.github import (
     GitHubRepo,
@@ -29,10 +31,12 @@ from ..models.github import (
     GitHubUser,
     MissingOAuthScopeException,
 )
-from ..models.project import Project, ProjectFunction
+from ..models.project import Project, ProjectFunction, ProjectMember
 from ..models.scratch import Scratch
+from ..models.profile import Profile
 from ..serializers import (
     ProjectFunctionSerializer,
+    ProjectMemberSerializer,
     ProjectSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
@@ -52,13 +56,35 @@ class GithubLoginException(APIException):
 
 
 class ScratchNotProjectFunctionException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_403_FORBIDDEN
     default_detail = "Scratches given must be part of the project."
 
 
 class PrMustHaveScratchesException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must provide at least one scratch to create a PR."
+
+
+class ProjectExistsException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "Project with this name already exists."
+
+
+class ProjectMustHaveMembersException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You must have at least one member in your project."
+
+
+class ProjectMemberExists(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "User is already a member of this project."
+
+
+class TemporaryProjectCreationStaffOnlyException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = (
+        "Project creation is currently experimental and limited to admins only."
+    )
 
 
 class ProjectPagination(CursorPagination):
@@ -80,8 +106,14 @@ class IsProjectMemberOrReadOnly(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request: Any, view: View, obj: Any) -> bool:
-        assert isinstance(obj, Project)
-        return request.method in permissions.SAFE_METHODS or obj.is_member(
+        if isinstance(obj, Project):
+            project = obj
+        elif isinstance(obj, ProjectMember):
+            project = obj.project
+        else:
+            raise ValueError("Object must be a Project or ProjectMember")
+
+        return request.method in permissions.SAFE_METHODS or project.is_member(
             request.profile
         )
 
@@ -97,20 +129,58 @@ class ProjectViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
     GenericViewSet,
 ):
     queryset = Project.objects.all()
     pagination_class = ProjectPagination
     serializer_class = ProjectSerializer
     permission_classes = [IsProjectMemberOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser]
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user: Optional[User] = request.profile.user
+        if not user:
+            raise GithubLoginException()
+        gh_user: Optional[GitHubUser] = user.github
+        if not gh_user:
+            raise GithubLoginException()
+        if not user.is_staff:
+            raise TemporaryProjectCreationStaffOnlyException()
+
+        serializer = ProjectSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        slug = serializer.validated_data["slug"]
+        if slug == "new" or Project.objects.filter(slug=slug).exists():
+            raise ProjectExistsException()
+
+        project = serializer.save()
+
+        repo: GitHubRepo = project.repo
+        repo.pull()
+
+        ProjectMember(project=project, user=request.profile.user).save()
+
+        return Response(
+            ProjectSerializer(project, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        project: Project = self.get_object()
+        repo: GitHubRepo = project.repo
+
+        project.delete()
+        repo.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["POST"])
     def pull(self, request: Request, pk: str) -> Response:
         project: Project = self.get_object()
         repo: GitHubRepo = project.repo
-
-        if not project.is_member(request.profile):
-            raise NotProjectMaintainer()
 
         if not repo.is_pulling:
             t = Thread(target=GitHubRepo.pull, args=(project.repo,))
@@ -322,12 +392,50 @@ class ProjectFunctionViewSet(
             raise Exception("Unsupported method")
 
 
+class ProjectMemberViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
+    serializer_class = ProjectMemberSerializer
+    permission_classes = [IsProjectMemberOrReadOnly]
+
+    def get_queryset(self) -> QuerySet[ProjectMember]:
+        return ProjectMember.objects.filter(project=self.kwargs["parent_lookup_slug"])
+
+    def get_object(self) -> ProjectMember:
+        return ProjectMember.objects.get(
+            project=self.kwargs["parent_lookup_slug"],
+            user__username=self.kwargs["pk"],
+        )
+
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
+        project = Project.objects.get(slug=self.kwargs["parent_lookup_slug"])
+        try:
+            serializer.save(project=project)
+        except IntegrityError:
+            raise ProjectMemberExists()
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        member: ProjectMember = self.get_object()
+        if ProjectMember.objects.filter(project=member.project).count() == 1:
+            raise ProjectMustHaveMembersException()
+        return super().destroy(request, *args, **kwargs)
+
+
 router = ExtendedSimpleRouter(trailing_slash=False)
-(
-    router.register(r"projects", ProjectViewSet).register(
-        r"functions",
-        ProjectFunctionViewSet,
-        basename="projectfunction",
-        parents_query_lookups=["slug"],
-    )
+projects_router = router.register(r"projects", ProjectViewSet)
+projects_router.register(
+    r"functions",
+    ProjectFunctionViewSet,
+    basename="projectfunction",
+    parents_query_lookups=["slug"],
+)
+projects_router.register(
+    r"members",
+    ProjectMemberViewSet,
+    basename="projectmember",
+    parents_query_lookups=["slug"],
 )

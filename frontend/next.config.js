@@ -29,6 +29,8 @@ const removeImports = require("next-remove-imports")({
 })
 const nextTranslate = require("next-translate")
 
+const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
+
 let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
 })(nextTranslate(removeImports(withPWA({
@@ -77,7 +79,8 @@ let app = withPlausibleProxy({
         return config
     },
     images: {
-        domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
+        domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
+        unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
     },
     swcMinify: false,
     experimental: {},

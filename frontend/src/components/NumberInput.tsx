@@ -6,12 +6,12 @@ import styles from "./NumberInput.module.scss"
 
 export type Props = {
     value?: number
-    onChange?: (duration: number) => void
+    onChange?: (value: number) => void
     stringValue?: string
     disabled?: boolean
 }
 
-export default function TimePeriodInput({ value, onChange, stringValue, disabled }: Props) {
+export default function NumberInput({ value, onChange, stringValue, disabled }: Props) {
     const [isEditing, setIsEditing] = useState(false)
     const editableRef = useRef<HTMLSpanElement>()
 
@@ -30,6 +30,7 @@ export default function TimePeriodInput({ value, onChange, stringValue, disabled
     return <span
         ref={editableRef}
         className={classNames(styles.numberInput, { [styles.disabled]: disabled })}
+        tabIndex={0}
         contentEditable={isEditing && !disabled}
         suppressContentEditableWarning={true}
         onClick={() => setIsEditing(true)}

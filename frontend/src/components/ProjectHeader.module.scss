@@ -1,0 +1,60 @@
+.header {
+    background: var(--g200);
+    user-select: text;
+    align-self: stretch;
+
+    .headerInner {
+        max-width: 50em;
+        padding: 1em;
+        margin: 0 auto;
+
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 16px;
+    }
+
+    h1 {
+        color: var(--g1900);
+        font-size: 1.7em;
+        font-weight: 500;
+
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+    }
+
+    p {
+        padding-top: 4px;
+        color: var(--g1600);
+        font-size: 0.9em;
+        max-width: 50ch;
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+}
+
+.metadata {
+    margin-top: 8px;
+
+    display: flex;
+    gap: 24px;
+
+    color: var(--g1400);
+    font-size: 12px;
+
+    a {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.platform {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}

@@ -34,6 +34,7 @@ export default function UserMenuItems() {
             Your profile
         </LinkItem>
         <hr />
+        {user.is_admin && <LinkItem href={"/admin"}>Admin</LinkItem>}
         <ButtonItem
             onTrigger={async () => {
                 plausible("logout")

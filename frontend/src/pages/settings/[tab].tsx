@@ -12,7 +12,7 @@ import Footer from "../../components/Footer"
 import Nav from "../../components/Nav"
 import NumberInput from "../../components/NumberInput"
 import PageTitle from "../../components/PageTitle"
-import Tabs, { Tab } from "../../components/Tabs"
+import Tabs, { Tab } from "../../components/Tabs" // TODO: use UnderlineNav instead
 import ThemePicker from "../../components/ThemePicker"
 import basicSetup from "../../lib/codemirror/basic-setup"
 import * as settings from "../../lib/settings"
@@ -221,7 +221,7 @@ function ScratchEditorSettings() {
                     checked={autoRecompile}
                     onChange={evt => setAutoRecompile(evt.target.checked)}
                 />
-                Automatically compile after typing
+                Automatically compile after changes to scratch
             </label>
             <div className={classNames(styles.intPreference, { [styles.disabled]: !autoRecompile })}>
                 <input

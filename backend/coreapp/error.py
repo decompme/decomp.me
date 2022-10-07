@@ -1,8 +1,9 @@
+from sqlite3 import IntegrityError
 from subprocess import CalledProcessError
 from typing import Any, ClassVar, Optional
 
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
 from rest_framework.views import exception_handler
 
@@ -19,6 +20,13 @@ def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]
                 "detail": exc.msg,
             },
             status=HTTP_400_BAD_REQUEST,
+        )
+    elif isinstance(exc, AssertionError) or isinstance(exc, IntegrityError):
+        response = Response(
+            data={
+                "detail": str(exc),
+            },
+            status=HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     if response is not None:
