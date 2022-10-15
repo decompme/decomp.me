@@ -718,7 +718,7 @@ _all_compilers: List[Compiler] = [
 ]
 
 # MKWII Common flags
-MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2"
+MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -func_align 4 -sym dwarf-2"
 
 # SPM Common flags
 SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
@@ -915,37 +915,37 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (DOL)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0",
+        f"{MKW_SHARED} -lang=c99 -ipa file -rostr -sdata 0 -sdata2 0",
     ),
     Preset(
         "Mario Kart Wii (RVL_SDK)",
         MWCC_41_60831,
-        f"{MKW_SHARED} -ipa file",
+        f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
     Preset(
         "Mario Kart Wii (MSL)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa file",
+        f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
     Preset(
         "Mario Kart Wii (NintendoWare)",
         MWCC_42_127,
-        f'{MKW_SHARED} -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -lang=c99 -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Mario Kart Wii (DWC/GameSpy)",
         MWCC_41_60831,
-        f"{MKW_SHARED} -ipa file -w nounusedexpr -w nounusedarg",
+        f"{MKW_SHARED} -lang=c99 -ipa file -w nounusedexpr -w nounusedarg",
     ),
     Preset(
         "Mario Kart Wii (EGG)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa function -rostr",
+        f"{MKW_SHARED} -lang=c99 -ipa function -rostr",
     ),
     Preset(
         "Mario Kart Wii (REL)",
         MWCC_42_127,
-        f'{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0 -use_lmw_stmw=on -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Metroid Prime (USA)",
