@@ -915,7 +915,7 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (DOL)",
         MWCC_42_127,
-        f"{MKW_SHARED} -lang=c99 -ipa file -rostr -sdata 0 -sdata2 0",
+        f"{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0",
     ),
     Preset(
         "Mario Kart Wii (RVL_SDK)",
@@ -930,7 +930,7 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (NintendoWare)",
         MWCC_42_127,
-        f'{MKW_SHARED} -lang=c99 -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -lang=c++ -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Mario Kart Wii (DWC/GameSpy)",
@@ -940,7 +940,7 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (EGG)",
         MWCC_42_127,
-        f"{MKW_SHARED} -lang=c99 -ipa function -rostr",
+        f"{MKW_SHARED} -lang=c++ -ipa function -rostr",
     ),
     Preset(
         "Mario Kart Wii (REL)",
