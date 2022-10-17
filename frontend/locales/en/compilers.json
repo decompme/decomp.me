@@ -137,6 +137,7 @@
     "gcc_debug_level.-g1": "Minimal trace info",
     "gcc_debug_level.-g2": "Local variable tracking",
     "gcc_debug_level.-g3": "Macro expansions",
+    "gcc_debug_level.-gdwarf-2": "DWARF 2 debug info (should not affect codegen)",
     "gcc_force_addr": "Force memory address constants to be copied into registers before doing arithmetic on them",
 
     "ido_opt_level": "Optimization level",

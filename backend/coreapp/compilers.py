@@ -821,7 +821,7 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset("Ocarina of Time", IDO71, "-O2 -mips2"),
-    Preset("Paper Mario", GCC281, "-O2 -fforce-addr"),
+    Preset("Paper Mario", GCC281, "-O2 -fforce-addr -gdwarf-2"),
     Preset("Quest64", IDO53, "-O2 -g3 -mips2"),
     Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
     Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
