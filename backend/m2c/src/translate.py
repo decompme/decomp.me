@@ -1467,6 +1467,9 @@ class StructAccess(Expression):
         if (
             isinstance(var, AddressOf)
             and not var.expr.type.is_array()
+            and not (
+                isinstance(var.expr, GlobalSymbol) and var.expr.is_string_constant(fmt)
+            )
             and field_name.startswith("->")
         ):
             var = var.expr
@@ -1509,14 +1512,27 @@ class GlobalSymbol(Expression):
     def dependencies(self) -> List[Expression]:
         return []
 
-    def is_string_constant(self) -> bool:
+    def is_likely_char(self, c: int) -> bool:
+        return 0x20 <= c < 0x7F or c in (0, 7, 8, 9, 10, 13, 27)
+
+    def is_string_constant(self, fmt: Formatter) -> bool:
         ent = self.asm_data_entry
-        if not ent or not ent.is_string:
+        if not ent or len(ent.data) != 1 or not isinstance(ent.data[0], bytes):
             return False
-        return len(ent.data) == 1 and isinstance(ent.data[0], bytes)
+        if ent.is_string:
+            return True
+        if (
+            fmt.heuristic_strings
+            and ent.is_readonly
+            and len(ent.data[0]) > 1
+            and ent.data[0][0] != 0
+            and all(self.is_likely_char(x) for x in ent.data[0])
+        ):
+            return True
+        return False
 
     def format_string_constant(self, fmt: Formatter) -> str:
-        assert self.is_string_constant(), "checked by caller"
+        assert self.is_string_constant(fmt), "checked by caller"
         assert self.asm_data_entry and isinstance(self.asm_data_entry.data[0], bytes)
 
         has_trailing_null = False
@@ -1633,7 +1649,7 @@ class AddressOf(Expression):
 
     def format(self, fmt: Formatter) -> str:
         if isinstance(self.expr, GlobalSymbol):
-            if self.expr.is_string_constant():
+            if self.expr.is_string_constant(fmt):
                 return self.expr.format_string_constant(fmt)
         if self.expr.type.is_array():
             return f"{self.expr.format(fmt)}"
@@ -2366,16 +2382,35 @@ class InstrArgs:
             raise DecompFailure(f"Invalid macro argument {arg.argument}")
         return ref
 
+    def maybe_got_imm(self, index: int) -> Optional[RawSymbolRef]:
+        arg = self.raw_arg(index)
+        if not isinstance(arg, AsmAddressMode) or arg.rhs != Register("gp"):
+            return None
+        val = arg.lhs
+        if not isinstance(val, Macro) or val.macro_name not in (
+            "got",
+            "gp_rel",
+            "call16",
+        ):
+            return None
+        ref = parse_symbol_ref(val.argument)
+        if ref is None:
+            raise DecompFailure(f"Invalid macro argument {val.argument}")
+        return ref
+
     def shifted_imm(self, index: int) -> Expression:
         # TODO: Should this be part of hi_imm? Do we need to handle @ha?
         raw_imm = self.unsigned_imm(index)
         assert isinstance(raw_imm, Literal)
         return Literal(raw_imm.value << 16)
 
-    def sym_imm(self, index: int) -> AddressOf:
+    def sym_imm(self, index: int) -> Expression:
         arg = self.raw_arg(index)
-        assert isinstance(arg, AsmGlobalSymbol)
-        return self.stack_info.global_info.address_of_gsym(arg.symbol_name)
+        if isinstance(arg, AsmGlobalSymbol):
+            return self.stack_info.global_info.address_of_gsym(arg.symbol_name)
+        if isinstance(arg, AsmLiteral):
+            return self.full_imm(index)
+        raise DecompFailure(f"Bad function call operand {arg}")
 
     def memory_ref(self, index: int) -> Union[AddressMode, RawSymbolRef]:
         ret = strip_macros(self.raw_arg(index))
@@ -4091,7 +4126,7 @@ class GlobalInfo:
                     comments.append("const")
 
                     # Float & string constants are almost always inlined and can be omitted
-                    if sym.is_string_constant():
+                    if sym.is_string_constant(fmt):
                         continue
                     if array_dim is None and sym.type.is_likely_float():
                         continue

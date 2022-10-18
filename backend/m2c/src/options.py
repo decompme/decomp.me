@@ -36,6 +36,10 @@ class Target:
         MIPS = "mips"
         PPC = "ppc"
 
+    class EndianEnum(ChoicesEnum):
+        LITTLE = "little"
+        BIG = "big"
+
     class CompilerEnum(ChoicesEnum):
         IDO = "ido"
         GCC = "gcc"
@@ -46,8 +50,12 @@ class Target:
         CXX = "c++"
 
     arch: ArchEnum
+    endian: EndianEnum
     compiler: CompilerEnum
     language: LanguageEnum
+
+    def is_big_endian(self) -> bool:
+        return self.endian == Target.EndianEnum.BIG
 
     @staticmethod
     def parse(name: str) -> "Target":
@@ -57,9 +65,14 @@ class Target:
         If `-compiler` is missing, use the default for the arch.
         (This makes `mips` an alias for `mips-ido-c`, etc.)
         """
+        endian = Target.EndianEnum.BIG
         terms = name.split("-")
         try:
-            arch = Target.ArchEnum(terms[0])
+            arch_name = terms[0]
+            if arch_name.endswith("el"):
+                arch_name = arch_name[:-2]
+                endian = Target.EndianEnum.LITTLE
+            arch = Target.ArchEnum(arch_name)
             if len(terms) >= 2:
                 compiler = Target.CompilerEnum(terms[1])
             elif arch == Target.ArchEnum.PPC:
@@ -78,6 +91,7 @@ class Target:
 
         return Target(
             arch=arch,
+            endian=endian,
             compiler=compiler,
             language=language,
         )
@@ -103,6 +117,7 @@ class Options:
     andor_detection: bool
     skip_casts: bool
     zfill_constants: bool
+    heuristic_strings: bool
     reg_vars: List[str]
     goto_patterns: List[str]
     stop_on_error: bool
@@ -123,12 +138,14 @@ class Options:
     passes: int
     incbin_dirs: List[Path]
     deterministic_vars: bool
+    disable_gc: bool
 
     def formatter(self) -> "Formatter":
         return Formatter(
             self.coding_style,
             skip_casts=self.skip_casts,
             zfill_constants=self.zfill_constants,
+            heuristic_strings=self.heuristic_strings,
             valid_syntax=self.valid_syntax,
         )
 
@@ -156,6 +173,7 @@ class Formatter:
     valid_syntax: bool = False
     line_length: int = 80
     zfill_constants: bool = False
+    heuristic_strings: bool = False
 
     def indent(self, line: str, indent: int = 0) -> str:
         return self.indent_step * max(indent + self.extra_indent, 0) + line

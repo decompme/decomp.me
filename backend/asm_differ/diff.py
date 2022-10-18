@@ -1591,6 +1591,10 @@ class AsmProcessorPPC(AsmProcessor):
 class AsmProcessorARM32(AsmProcessor):
     def process_reloc(self, row: str, prev: str) -> Tuple[str, Optional[str]]:
         arch = self.config.arch
+        if "R_ARM_V4BX" in row:
+            # R_ARM_V4BX converts "bx <reg>" to "mov pc,<reg>" for some targets.
+            # Ignore for now.
+            return prev, None
         if "R_ARM_ABS32" in row and not prev.startswith(".word"):
             # Don't crash on R_ARM_ABS32 relocations incorrectly applied to code.
             # (We may want to do something more fancy here that actually shows the
@@ -1739,7 +1743,6 @@ class ArchSettings:
     re_reloc: Pattern[str]
     branch_instructions: Set[str]
     instructions_with_address_immediates: Set[str]
-    jump_instructions: Set[str] = field(default_factory=set)
     forbidden: Set[str] = field(default_factory=lambda: set(string.ascii_letters + "_"))
     arch_flags: List[str] = field(default_factory=list)
     branch_likely_instructions: Set[str] = field(default_factory=set)
@@ -1774,18 +1777,6 @@ MIPS_BRANCH_INSTRUCTIONS = MIPS_BRANCH_LIKELY_INSTRUCTIONS.union(
         "bc1t",
         "bc1f",
     }
-)
-
-MIPS_JUMP_ADDR_INSTRUCTIONS = {
-    "jal",
-    "j",
-}
-MIPS_JUMP_REG_INSTRUCTIONS = {
-    "jalr",
-    "jr",
-}
-MIPS_JUMP_INSTRUCTIONS = set.union(
-    MIPS_JUMP_ADDR_INSTRUCTIONS, MIPS_JUMP_REG_INSTRUCTIONS
 )
 
 ARM32_PREFIXES = {"b", "bl"}
@@ -1946,16 +1937,15 @@ MIPS_SETTINGS = ArchSettings(
     re_reg=re.compile(r"\$?\b([astv][0-9]|at|f[astv]?[0-9]+f?|kt?[01]|fp|ra|zero)\b"),
     re_sprel=re.compile(r"(?<=,)([0-9]+|0x[0-9a-f]+)\(sp\)"),
     re_large_imm=re.compile(r"-?[1-9][0-9]{2,}|-?0x[0-9a-f]{3,}"),
-    re_imm=re.compile(r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(sp)|%(lo|hi)\([^)]*\)"),
+    re_imm=re.compile(
+        r"(\b|-)([0-9]+|0x[0-9a-fA-F]+)\b(?!\(sp)|%(lo|hi|got|gp_rel|call16)\([^)]*\)"
+    ),
     re_reloc=re.compile(r"R_MIPS_"),
     arch_flags=["-m", "mips:4300"],
     branch_likely_instructions=MIPS_BRANCH_LIKELY_INSTRUCTIONS,
     branch_instructions=MIPS_BRANCH_INSTRUCTIONS,
-    jump_instructions=MIPS_JUMP_INSTRUCTIONS,
-    instructions_with_address_immediates=set.union(
-        MIPS_BRANCH_INSTRUCTIONS, MIPS_JUMP_ADDR_INSTRUCTIONS
-    ),
-    delay_slot_instructions=set.union(MIPS_BRANCH_INSTRUCTIONS, MIPS_JUMP_INSTRUCTIONS),
+    instructions_with_address_immediates=MIPS_BRANCH_INSTRUCTIONS.union({"j", "jal"}),
+    delay_slot_instructions=MIPS_BRANCH_INSTRUCTIONS.union({"j", "jal", "jr", "jalr"}),
     proc=AsmProcessorMIPS,
 )
 
@@ -2307,7 +2297,9 @@ def process(dump: str, config: Config) -> List[Line]:
             row = normalize_imms(row, arch)
 
         branch_target = None
-        if mnemonic in arch.branch_instructions or is_text_relative_j:
+        if (
+            mnemonic in arch.branch_instructions or is_text_relative_j
+        ) and symbol is None:
             x86_longjmp = re.search(r"\*(.*)\(", args)
             if x86_longjmp:
                 capture = x86_longjmp.group(1)
@@ -2501,8 +2493,8 @@ def diff_sameline(
     else:
         # If the last field has a parenthesis suffix, e.g. "0x38(r7)"
         # we split that part out to make it a separate field
-        # however, we don't split if it has a proceeding %hi/%lo  e.g."%lo(.data)" or "%hi(.rodata + 0x10)"
-        re_paren = re.compile(r"(?<!%hi)(?<!%lo)\(")
+        # however, we don't split if it has a proceeding % macro, e.g. "%lo(.data)"
+        re_paren = re.compile(r"(?<!%hi)(?<!%lo)(?<!%got)(?<!%call16)(?<!%gp_rel)\(")
         oldfields = oldfields[:-1] + re_paren.split(oldfields[-1])
         newfields = newfields[:-1] + re_paren.split(newfields[-1])
 
