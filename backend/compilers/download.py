@@ -303,6 +303,12 @@ def download_switch():
 
         download_tar(url=url, mode="r:xz", log_name=log_name, create_subdir=False)
 
+        # Somehow the MacOS tar extracts to a directory with a different name, so we have to find it again
+        if host_os == MACOS:
+            package_name = next(
+                COMPILERS_DIR.glob(f"clang+llvm-{version}-x86_64-*" + os.path.sep)
+            ).name
+
         shutil.move(COMPILERS_DIR / package_name, dest_dir)
 
         # 3.9.1 requires ld.lld and doesn't have it, so we copy it from 4.0.1
@@ -363,7 +369,7 @@ def download_n64():
             print(f"ido{version} already exists, skipping")
         else:
             download_tar(
-                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.0/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
+                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.1/ido-{version}-recomp-{host_os.ido_os}-latest.tar.gz",
                 dest_name=f"ido{version}",
             )
     # SN
