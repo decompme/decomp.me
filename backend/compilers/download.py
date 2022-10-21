@@ -395,6 +395,23 @@ def download_n64():
         set_x(psyq_obj_parser)
 
     # SN
+    dest = COMPILERS_DIR / "gcc2.7.2snew"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_file(
+            url="https://github.com/RocketRet/modern-asn64/releases/download/main-release/modern-asn64.py",
+            log_name="modern-asn64.py",
+            dest_path=dest / "modern-asn64.py",
+        )
+        download_file(
+            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/cc1n64.exe",
+            log_name="cc1n64.exe",
+            dest_path=dest / "cc1n64.exe",
+        )
+
+    # SN
     dest = COMPILERS_DIR / "gcc2.8.1sn"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")

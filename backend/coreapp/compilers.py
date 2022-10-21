@@ -314,6 +314,12 @@ GCC272SN = GCCCompiler(
     cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
+GCC272SNEW = GCCCompiler(
+    id="gcc2.7.2snew",
+    platform=N64,
+    cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G 0 -EB -mips3 -O1 -mabi=32 -mgp32 -march=vr4300 -mfp32 -mno-shared -o "$OUTPUT"',
+)
+
 GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_id="gcc2.8.1sn",
@@ -661,6 +667,7 @@ _all_compilers: List[Compiler] = [
     IDO71,
     GCC272KMC,
     GCC272SN,
+    GCC272SNEW,
     GCC281SNCXX,
     GCC281,
     # GC_WII
@@ -820,11 +827,36 @@ _all_presets = [
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Ocarina of Time", IDO71, "-O2 -mips2"),
-    Preset("Paper Mario", GCC281, "-O2 -fforce-addr -gdwarf-2"),
-    Preset("Quest64", IDO53, "-O2 -g3 -mips2"),
-    Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
-    Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
+    Preset(
+        "Ocarina of Time",
+        IDO71,
+        "-O2 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Paper Mario",
+        GCC281,
+        "-O2 -fforce-addr -gdwarf-2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Quest64",
+        IDO53,
+        "-O2 -g3 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Rocket Robot on Wheels",
+        GCC272SNEW,
+        "-O2 -g",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Super Mario 64",
+        IDO53,
+        "-O1 -g -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "Duke Nukem Zero Hour",
         GCC272KMC,
