@@ -667,6 +667,7 @@ _all_compilers: List[Compiler] = [
     IDO71,
     GCC272KMC,
     GCC272SN,
+    GCC272SNEW,
     GCC281SNCXX,
     GCC281,
     # GC_WII
