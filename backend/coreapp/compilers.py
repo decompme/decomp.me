@@ -317,7 +317,7 @@ GCC272SN = GCCCompiler(
 GCC272SNEW = GCCCompiler(
     id="gcc2.7.2snew",
     platform=N64,
-    cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && path/to/gasn64.py mips-linux-gnu-gcc "$OUTPUT".s -march=vr4300 -mabi=32 -mgp32 -mfp32 -mips3 -mno-abicalls -G0 -fno-pic -O2 -x assembler-with-cpp "$OUTPUT"',
+    cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-gcc "$OUTPUT".s -march=vr4300 -mabi=32 -mgp32 -mfp32 -mips3 -mno-abicalls -G0 -fno-pic -O2 -x assembler-with-cpp "$OUTPUT"',
 )
 
 GCC281SNCXX = GCCCompiler(

@@ -401,9 +401,9 @@ def download_n64():
     else:
         dest.mkdir()
         download_file(
-            url="https://github.com/RocketRet/Rocket-Robot-On-Wheels/blob/master/tools/gasn64.py",  # TODO: release
-            log_name="gasn64.py",
-            dest_path=dest / "gasn64.py",
+            url="https://github.com/RocketRet/modern-asn64/releases/download/main-release/modern-asn64.py",
+            log_name="modern-asn64.py",
+            dest_path=dest / "modern-asn64.py",
         )
         download_file(
             url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/cc1n64.exe",
