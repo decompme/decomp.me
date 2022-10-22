@@ -15,4 +15,4 @@ To learn more, see [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 
 ## License
-decomp.me uses the MIT license. All dependencies may contain their own licenses, which decomp.me respects.
+decomp.me uses the [MIT license](https://github.com/decompme/decomp.me/blob/main/LICENSE). All dependencies may contain their own licenses, which decomp.me respects.
