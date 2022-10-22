@@ -48,6 +48,7 @@ class Compiler:
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
     needs_wine = False
+    language: str = "C"
 
     @property
     def path(self) -> Path:
@@ -294,6 +295,33 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+# Minimal IDOs
+IDO53MINC = IDOCompiler(
+    id="ido5.3minC",
+    platform=N64,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71MINC = IDOCompiler(
+    id="ido7.1minC",
+    platform=N64,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO53MINPASCAL = IDOCompiler(
+    id="ido5.3minC",
+    platform=N64,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    language="Pascal",
+)
+
+IDO71MINPASCAL = IDOCompiler(
+    id="ido7.1minC",
+    platform=N64,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    language="Pascal",
 )
 
 GCC272KMC = GCCCompiler(
@@ -670,6 +698,10 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281SNCXX,
     GCC281,
+    IDO53MINC,
+    IDO71MINC,
+    IDO53MINPASCAL,
+    IDO71MINPASCAL,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,

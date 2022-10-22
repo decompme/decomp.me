@@ -133,14 +133,18 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            code_path = sandbox.path / "code.c"
+            code_file = "code.c"
+            if compiler.language == "Pascal":
+                code_file = "code.p"
+
+            code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
                 f.write('#line 1 "ctx.c"\n')
                 f.write(context)
                 f.write("\n")
 
-                f.write('#line 1 "code.c"\n')
+                f.write(f'#line 1 "{code_file}"\n')
                 f.write(code)
                 f.write("\n")
 
