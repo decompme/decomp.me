@@ -406,15 +406,14 @@ def download_n64():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
+        download_tar(
+            url="https://github.com/decompals/SN64-gcc/releases/download/gcc-2.7.2-970404/SN64-gcc-2.7.2-970404-linux.tar.gz",
+            dest_name="gcc2.7.2snew",
+        )
         download_file(
             url="https://github.com/RocketRet/modern-asn64/releases/download/main-release/modern-asn64.py",
             log_name="modern-asn64.py",
             dest_path=dest / "modern-asn64.py",
-        )
-        download_file(
-            url="https://github.com/Mr-Wiseguy/pcsx-redux/releases/download/n64/cc1n64.exe",
-            log_name="cc1n64.exe",
-            dest_path=dest / "cc1n64.exe",
         )
 
     # SN
