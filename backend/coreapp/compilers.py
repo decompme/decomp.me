@@ -1,3 +1,4 @@
+import enum
 import logging
 from dataclasses import dataclass, field
 from functools import cache
@@ -37,6 +38,12 @@ CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 
+class Language(enum.Enum):
+    C = "C"
+    CXX = "C++"
+    PASCAL = "Pascal"
+
+
 @dataclass(frozen=True)
 class Compiler:
     id: str
@@ -48,7 +55,7 @@ class Compiler:
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
     needs_wine = False
-    language: str = "C"
+    language: Language = Language.C
 
     @property
     def path(self) -> Path:
@@ -300,7 +307,7 @@ IDO71PASCAL = IDOCompiler(
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido7.1",
-    language="Pascal",
+    language=Language.PASCAL,
 )
 
 GCC272KMC = GCCCompiler(

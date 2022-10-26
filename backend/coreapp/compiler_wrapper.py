@@ -134,13 +134,15 @@ class CompilerWrapper:
 
         with Sandbox() as sandbox:
             code_file = "code.c"
+            ctx_file = "ctx.c"
             if compiler.language == "Pascal":
                 code_file = "code.p"
+                ctx_file = "ctx.p"
 
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
-                f.write('#line 1 "ctx.c"\n')
+                f.write(f'#line 1 "{ctx_file}"\n')
                 f.write(context)
                 f.write("\n")
 
@@ -152,7 +154,7 @@ class CompilerWrapper:
 
             # Fix for MWCC line numbers in GC 3.0+
             if compiler.is_mwcc:
-                ctx_path = sandbox.path / "ctx.c"
+                ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
 
             # IDO hack to support -KPIC
