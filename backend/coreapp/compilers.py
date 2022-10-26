@@ -124,7 +124,7 @@ def from_id(compiler_id: str) -> Compiler:
 
 @cache
 def available_compilers() -> List[Compiler]:
-    return _compilers.values()
+    return list(_compilers.values())
 
 
 @cache
@@ -294,25 +294,11 @@ IDO71 = IDOCompiler(
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-# Minimal IDOs
-IDO53MINC = IDOCompiler(
-    id="ido5.3minC",
+# Pascal IDO
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
     platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3",
-)
-
-IDO71MINC = IDOCompiler(
-    id="ido7.1minC",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-)
-
-IDO71MINPASCAL = IDOCompiler(
-    id="ido7.1minP",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido7.1",
     language="Pascal",
 )
@@ -691,9 +677,7 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
-    IDO53MINC,
-    IDO71MINC,
-    IDO71MINPASCAL,
+    IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
@@ -889,19 +873,19 @@ _all_presets = [
     ),
     Preset(
         "IDO 7.1 cc",
-        IDO71MINC,
+        IDO71,
         "-O1 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 libraries",
-        IDO71MINC,
+        IDO71,
         "-O2 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 Pascal",
-        IDO71MINPASCAL,
+        IDO71PASCAL,
         "-O2 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
