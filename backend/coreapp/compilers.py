@@ -310,15 +310,8 @@ IDO71MINC = IDOCompiler(
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-IDO53MINPASCAL = IDOCompiler(
-    id="ido5.3minC",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    language="Pascal",
-)
-
 IDO71MINPASCAL = IDOCompiler(
-    id="ido7.1minC",
+    id="ido7.1minP",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     language="Pascal",
@@ -700,7 +693,6 @@ _all_compilers: List[Compiler] = [
     GCC281,
     IDO53MINC,
     IDO71MINC,
-    IDO53MINPASCAL,
     IDO71MINPASCAL,
     # GC_WII
     MWCC_233_144,
