@@ -124,10 +124,7 @@ def from_id(compiler_id: str) -> Compiler:
 
 @cache
 def available_compilers() -> List[Compiler]:
-    return sorted(
-        _compilers.values(),
-        key=lambda c: (c.platform.id, c.id),
-    )
+    return _compilers.values()
 
 
 @cache
@@ -302,18 +299,21 @@ IDO53MINC = IDOCompiler(
     id="ido5.3minC",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
 )
 
 IDO71MINC = IDOCompiler(
     id="ido7.1minC",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
 )
 
 IDO71MINPASCAL = IDOCompiler(
     id="ido7.1minP",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
     language="Pascal",
 )
 
@@ -689,8 +689,8 @@ _all_compilers: List[Compiler] = [
     GCC272KMC,
     GCC272SN,
     GCC272SNEW,
-    GCC281SNCXX,
     GCC281,
+    GCC281SNCXX,
     IDO53MINC,
     IDO71MINC,
     IDO71MINPASCAL,
@@ -885,6 +885,24 @@ _all_presets = [
         "Duke Nukem Zero Hour",
         GCC272KMC,
         "-O2 -g2 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 cc",
+        IDO71MINC,
+        "-O1 -KPIC -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 libraries",
+        IDO71MINC,
+        "-O2 -KPIC -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 Pascal",
+        IDO71MINPASCAL,
+        "-O2 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
