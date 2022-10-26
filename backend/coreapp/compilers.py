@@ -988,7 +988,7 @@ _all_presets = [
     Preset(
         "Pokémon Diamond / Pearl",
         MWCC_30_123,
-        "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+        "-O4,p -proc arm946e -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
     ),
     Preset(
         "Pokémon HeartGold / SoulSilver",
