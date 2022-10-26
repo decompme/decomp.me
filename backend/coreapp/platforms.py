@@ -444,7 +444,7 @@ GC_WII = Platform(
 NDS_ARM9 = Platform(
     id="nds_arm9",
     name="Nintendo DS",
-    description="ARMv4T",
+    description="ARMv5TE",
     arch="arm32",
     assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT"',
     objdump_cmd="arm-none-eabi-objdump",
