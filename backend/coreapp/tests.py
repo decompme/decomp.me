@@ -12,6 +12,7 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from backend.coreapp.compilers import Language
 
 from coreapp import compilers, platforms
 
@@ -528,10 +529,13 @@ nop
         """
         Ensure that we can run a simple compilation/diff for all available compilers
         """
+        code = "int func(void) { return 5; }"
+        if compiler.language == Language.PASCAL:
+            code = "function func(): integer; begin func := 5; end;"
         result = CompilerWrapper.compile_code(
             compiler,
             "",
-            "int func(void) { return 5; }",
+            code,
             "",
             "func",
         )
