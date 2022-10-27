@@ -12,7 +12,7 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from backend.coreapp.compilers import Language
+from coreapp.compilers import Language
 
 from coreapp import compilers, platforms
 
