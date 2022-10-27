@@ -20,6 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
+from ..compilers import Language
 
 from ..decorators.django import condition
 
@@ -463,9 +464,13 @@ class ScratchViewSet(
             zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
             zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
-            zip_f.writestr("code.c", scratch.source_code)
+
+            # TODO refactor #439
+            language = Language.PASCAL if scratch.compiler == "ido7.1pascal" else "C"
+            src_ext = Language(language).get_file_extension()
+            zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
-                zip_f.writestr("ctx.c", scratch.context)
+                zip_f.writestr(f"ctx.{src_ext}", scratch.context)
 
         # Prevent possible header injection attacks
         safe_name = re.sub(r"[^a-zA-Z0-9_:]", "_", scratch.name)[:64]

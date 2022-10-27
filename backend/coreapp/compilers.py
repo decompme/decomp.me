@@ -1,3 +1,4 @@
+import enum
 import logging
 from dataclasses import dataclass, field
 from functools import cache
@@ -37,6 +38,19 @@ CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 
+class Language(enum.Enum):
+    C = "C"
+    CXX = "C++"
+    PASCAL = "Pascal"
+
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.PASCAL: "p",
+        }[self]
+
+
 @dataclass(frozen=True)
 class Compiler:
     id: str
@@ -48,6 +62,7 @@ class Compiler:
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
     needs_wine = False
+    language: Language = Language.C
 
     @property
     def path(self) -> Path:
@@ -123,10 +138,7 @@ def from_id(compiler_id: str) -> Compiler:
 
 @cache
 def available_compilers() -> List[Compiler]:
-    return sorted(
-        _compilers.values(),
-        key=lambda c: (c.platform.id, c.id),
-    )
+    return list(_compilers.values())
 
 
 @cache
@@ -294,6 +306,15 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+# Pascal IDO
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=N64,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+    language=Language.PASCAL,
 )
 
 GCC272KMC = GCCCompiler(
@@ -668,8 +689,9 @@ _all_compilers: List[Compiler] = [
     GCC272KMC,
     GCC272SN,
     GCC272SNEW,
-    GCC281SNCXX,
     GCC281,
+    GCC281SNCXX,
+    IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
@@ -861,6 +883,24 @@ _all_presets = [
         "Duke Nukem Zero Hour",
         GCC272KMC,
         "-O2 -g2 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 cc",
+        IDO71,
+        "-O1 -KPIC -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 libraries",
+        IDO71,
+        "-O2 -KPIC -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 Pascal",
+        IDO71PASCAL,
+        "-O2 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
