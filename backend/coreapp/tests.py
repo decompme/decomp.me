@@ -13,7 +13,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from coreapp.compilers import Language
-
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
