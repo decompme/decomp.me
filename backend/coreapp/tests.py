@@ -12,7 +12,11 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+<<<<<<< HEAD
 from coreapp.compilers import Language
+=======
+from backend.coreapp.compilers import Language
+>>>>>>> 6571ed64 (Proper Pascal test)
 
 from coreapp import compilers, platforms
 
