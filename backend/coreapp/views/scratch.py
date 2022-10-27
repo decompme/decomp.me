@@ -465,6 +465,7 @@ class ScratchViewSet(
             zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
+            # TODO refactor #439
             language = Language.PASCAL if scratch.compiler == "ido7.1pascal" else "C"
             src_ext = Language(language).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)

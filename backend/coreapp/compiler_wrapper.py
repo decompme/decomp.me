@@ -136,7 +136,6 @@ class CompilerWrapper:
             ext = compiler.language.get_file_extension()
             code_file = f"code.{ext}"
             ctx_file = f"ctx.{ext}"
-            print(code_file)
 
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
