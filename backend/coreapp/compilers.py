@@ -43,6 +43,13 @@ class Language(enum.Enum):
     CXX = "C++"
     PASCAL = "Pascal"
 
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.PASCAL: "p",
+        }[self]
+
 
 @dataclass(frozen=True)
 class Compiler:

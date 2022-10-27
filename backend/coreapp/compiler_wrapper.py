@@ -133,11 +133,10 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            code_file = "code.c"
-            ctx_file = "ctx.c"
-            if compiler.language == "Pascal":
-                code_file = "code.p"
-                ctx_file = "ctx.p"
+            ext = compiler.language.get_file_extension()
+            code_file = f"code.{ext}"
+            ctx_file = f"ctx.{ext}"
+            print(code_file)
 
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
