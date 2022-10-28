@@ -17,7 +17,7 @@ from .sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
-MAX_FUNC_SIZE_LINES = 5000
+MAX_FUNC_SIZE_LINES = 25000
 
 
 class DiffWrapper:
