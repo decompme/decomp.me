@@ -54,6 +54,7 @@ class Function:
 
 @dataclass
 class AsmDataEntry:
+    sort_order: Tuple[str, int]
     data: List[Union[str, bytes]] = field(default_factory=list)
     is_string: bool = False
     is_readonly: bool = False
@@ -105,7 +106,7 @@ class AsmFile:
     functions: List[Function] = field(default_factory=list)
     asm_data: AsmData = field(default_factory=AsmData)
     current_function: Optional[Function] = field(default=None, repr=False)
-    current_data: AsmDataEntry = field(default_factory=AsmDataEntry)
+    current_data: Optional[AsmDataEntry] = field(default=None)
 
     def new_function(self, name: str) -> None:
         self.current_function = Function(name=name)
@@ -128,14 +129,20 @@ class AsmFile:
         self.current_function.new_label(label_name)
 
     def new_data_label(self, symbol_name: str, is_readonly: bool, is_bss: bool) -> None:
-        self.current_data = AsmDataEntry(is_readonly=is_readonly, is_bss=is_bss)
+        sort_order = (self.filename, len(self.asm_data.values))
+        self.current_data = AsmDataEntry(
+            sort_order, is_readonly=is_readonly, is_bss=is_bss
+        )
         self.asm_data.values[symbol_name] = self.current_data
 
     def new_data_sym(self, sym: str) -> None:
-        self.current_data.data.append(sym)
+        if self.current_data is not None:
+            self.current_data.data.append(sym)
         self.asm_data.mentioned_labels.add(sym.lstrip("."))
 
     def new_data_bytes(self, data: bytes, *, is_string: bool = False) -> None:
+        if self.current_data is None:
+            return
         if not self.current_data.data and is_string:
             self.current_data.is_string = True
         if self.current_data.data and isinstance(self.current_data.data[-1], bytes):
@@ -299,8 +306,8 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> AsmFile:
 
     re_comment_or_string = re.compile(r'[#;].*|/\*.*?\*/|"(?:\\.|[^\\"])*"')
     re_whitespace_or_string = re.compile(r'\s+|"(?:\\.|[^\\"])*"')
-    re_local_glabel = re.compile("L(_U_)?[0-9A-F]{8}")
-    re_local_label = re.compile("loc_|locret_|def_|lbl_")
+    re_local_glabel = re.compile("L(_.*_)?[0-9A-F]{8}")
+    re_local_label = re.compile("loc_|locret_|def_|lbl_|LAB_")
     re_label = re.compile(r'(?:([a-zA-Z0-9_.$]+)|"([a-zA-Z0-9_.$<>@,-]+)"):')
 
     T = TypeVar("T")
@@ -336,12 +343,14 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> AsmFile:
             elif curr_section == ".bss":
                 asm_file.new_data_label(label, is_readonly=False, is_bss=True)
             elif curr_section == ".text":
-                re_local = re_local_glabel if glabel else re_local_label
                 if label.startswith("."):
                     if asm_file.current_function is None:
                         raise DecompFailure(f"Label {label} is not within a function!")
                     asm_file.new_label(label.lstrip("."))
-                elif re_local.match(label) and asm_file.current_function is not None:
+                elif (
+                    re_local_glabel.match(label)
+                    or (not glabel and re_local_label.match(label))
+                ) and asm_file.current_function is not None:
                     # Don't treat labels as new functions if they follow a
                     # specific naming pattern. This is used for jump table
                     # targets in both IDA and old n64split output.
@@ -448,7 +457,7 @@ def parse_file(f: typing.TextIO, arch: ArchAsm, options: Options) -> AsmFile:
                 elif curr_section in (".rodata", ".data", ".bss"):
                     _, _, args_str = line.partition(" ")
                     args = split_arg_list(args_str)
-                    if directive in (".word", ".4byte"):
+                    if directive in (".word", ".gpword", ".4byte"):
                         for w in args:
                             if not w or w[0].isdigit() or w[0] == "-" or w in defines:
                                 ival = try_parse(lambda: parse_int(w)) & 0xFFFFFFFF
