@@ -4,6 +4,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 from platform import uname
+import time
 
 from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
 
@@ -161,6 +162,7 @@ class CompilerWrapper:
 
             # Run compiler
             try:
+                st = round(time.time() * 1000)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=[compiler.path],
@@ -178,6 +180,8 @@ class CompilerWrapper:
                         "TMPDIR": "/tmp",
                     },
                 )
+                et = round(time.time() * 1000)
+                logging.debug(f"Compilation finished in: {et - st} ms")
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 msg = e.stdout

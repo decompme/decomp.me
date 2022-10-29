@@ -378,7 +378,6 @@ class ProjectSettings:
     map_format: str
     build_dir: str
     ms_map_address_offset: int
-    ms_ignore_missing_objfile: int
     baseimg: Optional[str]
     myimg: Optional[str]
     mapfile: Optional[str]
@@ -450,7 +449,6 @@ def create_project_settings(settings: Dict[str, Any]) -> ProjectSettings:
         objdump_flags=settings.get("objdump_flags", []),
         map_format=settings.get("map_format", "gnu"),
         ms_map_address_offset=settings.get("ms_map_address_offset", 0),
-        ms_ignore_missing_objfile=settings.get("ms_ignore_missing_objfile", True),
         build_dir=settings.get("build_dir", settings.get("mw_build_dir", "build/")),
         show_line_numbers_default=settings.get("show_line_numbers_default", True),
         disassemble_all=settings.get("disassemble_all", False),
@@ -1097,7 +1095,7 @@ def search_build_objects(objname: str, project: ProjectSettings) -> Optional[str
 
 
 def search_map_file(
-    fn_name: str, project: ProjectSettings, config: Config
+    fn_name: str, project: ProjectSettings, config: Config, *, for_binary: bool
 ) -> Tuple[Optional[str], Optional[int]]:
     if not project.mapfile:
         fail(f"No map file configured; cannot find function {fn_name}.")
@@ -1126,8 +1124,10 @@ def search_map_file(
                     ram_to_rom = rom - ram
                 if line.endswith(" " + fn_name) or f" {fn_name} = 0x" in line:
                     ram = int(line.split()[0], 0)
-                    if cur_objfile is not None and ram_to_rom is not None:
-                        cands.append((cur_objfile, ram + ram_to_rom))
+                    if (for_binary and ram_to_rom is not None) or (
+                        not for_binary and cur_objfile is not None
+                    ):
+                        cands.append((cur_objfile, ram + (ram_to_rom or 0)))
                 last_line = line
         except Exception as e:
             traceback.print_exc()
@@ -1197,13 +1197,13 @@ def search_map_file(
                 - load_address
                 + project.ms_map_address_offset
             )
+            if for_binary:
+                return None, fileofs
+
             objname = names_find.group(2)
             objfile = search_build_objects(objname, project)
-
             if objfile is not None:
-                return (objfile, fileofs)
-            elif project.ms_ignore_missing_objfile:
-                return (objname, fileofs)
+                return objfile, fileofs
     else:
         fail(f"Linker map format {project.map_format} unrecognised.")
     return None, None
@@ -1383,7 +1383,7 @@ def dump_objfile(
 
     objfile = config.objfile
     if not objfile:
-        objfile, _ = search_map_file(start, project, config)
+        objfile, _ = search_map_file(start, project, config, for_binary=False)
 
     if not objfile:
         fail("Not able to find .o file for function.")
@@ -1420,7 +1420,7 @@ def dump_binary(
         run_make(project.myimg, project)
     start_addr = maybe_eval_int(start)
     if start_addr is None:
-        _, start_addr = search_map_file(start, project, config)
+        _, start_addr = search_map_file(start, project, config, for_binary=True)
         if start_addr is None:
             fail("Not able to find function in map file.")
     if end is not None:

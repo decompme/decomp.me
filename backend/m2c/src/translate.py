@@ -1145,7 +1145,7 @@ class UnaryOp(Condition):
     def format(self, fmt: Formatter) -> str:
         # These aren't real operators (or functions); format them as a fn call
         if self.op in PSEUDO_FUNCTION_OPS:
-            return f"{self.op}({self.expr.format(fmt)})"
+            return f"{self.op}({format_expr(self.expr, fmt)})"
 
         return f"{self.op}{self.expr.format(fmt)}"
 
@@ -2474,6 +2474,16 @@ def should_wrap_transparently(expr: Expression) -> bool:
         return all(should_wrap_transparently(e) for e in expr.dependencies())
     if isinstance(expr, Cast):
         return expr.should_wrap_transparently()
+    if (
+        isinstance(expr, StructAccess)
+        and isinstance(expr.struct_var, AddressOf)
+        and isinstance(expr.struct_var.expr, GlobalSymbol)
+    ):
+        # Don't emit temps for reads of globals: they are usually compiler
+        # generated, and prevent_later_var_uses/prevent_later_reads tend to be
+        # good enough at turning wrappers non-transparent when they aren't that
+        # we are fine being a bit liberal here.
+        return True
     return False
 
 
@@ -3122,7 +3132,7 @@ class NodeState:
     stack_info: StackInfo = field(repr=False)
     regs: RegInfo = field(repr=False)
 
-    local_var_writes: Dict[LocalVar, Tuple[Register, Expression]] = field(
+    local_var_writes: Dict[LocalVar, Tuple[Register, Expression, bool]] = field(
         default_factory=dict
     )
     subroutine_args: Dict[int, Expression] = field(default_factory=dict)
@@ -3216,6 +3226,11 @@ class NodeState:
 
                 self.regs.update_meta(r, replace(data.meta, force=True))
 
+        # Do the same for values saved across function calls.
+        for loc, (reg, write, force) in self.local_var_writes.items():
+            if not force and uses_expr(write, expr_filter):
+                self.local_var_writes[loc] = (reg, write, True)
+
     def prevent_later_value_uses(self, sub_expr: Expression) -> None:
         """Prevent later uses of registers that recursively contain a given
         subexpression."""
@@ -3271,9 +3286,15 @@ class NodeState:
             if expr in self.local_var_writes:
                 # Elide register restores (only for the same register for now,
                 # to be conversative).
-                orig_reg, orig_expr = self.local_var_writes[expr]
+                orig_reg, orig_expr, force = self.local_var_writes[expr]
                 if orig_reg == reg:
                     expr = orig_expr
+                    if force:
+                        base_expr = expr
+                        if isinstance(base_expr, Cast):
+                            base_expr = base_expr.expr
+                        if isinstance(base_expr, EvalOnceExpr):
+                            base_expr.force()
 
         return self.set_reg_real(reg, expr)
 
@@ -3343,9 +3364,9 @@ class NodeState:
     def write_statement(self, stmt: Statement) -> None:
         self.to_write.append(stmt)
 
-    def store_memory(
-        self, *, source: Expression, dest: Expression, reg: Register
-    ) -> None:
+    def store_memory(self, store: StoreStmt, reg: Register) -> None:
+        source = store.source
+        dest = store.dest
         if isinstance(dest, SubroutineArg):
             # About to call a subroutine with this argument. Skip arguments for the
             # first four stack slots; they are also passed in registers.
@@ -3353,15 +3374,24 @@ class NodeState:
                 self.subroutine_args[dest.value] = source
             return
 
+        raw_value = source
+        if isinstance(raw_value, Cast) and raw_value.reinterpret:
+            raw_value = raw_value.expr
+
         if isinstance(dest, LocalVar):
             self.stack_info.add_local_var(dest)
-            raw_value = source
-            if isinstance(raw_value, Cast) and raw_value.reinterpret:
-                # When preserving values on the stack across function calls,
-                # ignore the type of the stack variable. The same stack slot
-                # might be used to preserve values of different types.
-                raw_value = raw_value.expr
-            self.local_var_writes[dest] = (reg, raw_value)
+            # When preserving values on the stack across function calls,
+            # ignore the type of the stack variable. The same stack slot
+            # might be used to preserve values of different types.
+            self.local_var_writes[dest] = (reg, raw_value, False)
+
+        if (
+            isinstance(dest, (LocalVar, PassedInArg))
+            and early_unwrap(raw_value) == dest
+        ):
+            # Elide self assignments for stack locations. This commonly happens
+            # for variables preserved across multiple function calls.
+            return
 
         # Emit a write. This includes four steps:
         # - mark the expression as used (since writes are always emitted)
@@ -3382,7 +3412,7 @@ class NodeState:
         dest.use()
         self.prevent_later_value_uses(dest)
         self.prevent_later_function_calls()
-        self.write_statement(StoreStmt(source=source, dest=dest))
+        self.write_statement(store)
 
     def _reg_probably_meant_as_function_argument(
         self, reg: Register, call_instr: InstrRef
@@ -4053,12 +4083,12 @@ class GlobalInfo:
                     # Skip externally-declared symbols that are defined in other files
                     continue
 
-                # TODO: Use original AsmFile ordering for variables
                 sort_order = (
                     not sym.type.is_function(),
                     is_global,
                     is_in_file,
                     is_const,
+                    data_entry.sort_order if data_entry is not None else ("", 0),
                     name,
                 )
                 qualifier = ""
