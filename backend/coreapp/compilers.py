@@ -186,7 +186,7 @@ AGBCCPP = GCCCompiler(
     cc='cc -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 # N3DS
-ARMCC_CC = '${WINE} "${COMPILER_DIR}"/armcc.exe -c --cpu=MPCore --fpmode=fast --apcs=/interwork $COMPILER_FLAGS -o "${OUTPUT}" "${INPUT}"'
+ARMCC_CC = '${WINE} "${COMPILER_DIR}"/bin/armcc.exe -c --cpu=MPCore --fpmode=fast --apcs=/interwork -I "${COMPILER_DIR}"/include $COMPILER_FLAGS -o "${OUTPUT}" "${INPUT}"'
 
 ARMCC_40_771 = ArmccCompiler(
     id="armcc_40_771",
@@ -208,6 +208,12 @@ ARMCC_41_561 = ArmccCompiler(
 
 ARMCC_41_713 = ArmccCompiler(
     id="armcc_41_713",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_894 = ArmccCompiler(
+    id="armcc_41_894",
     platform=N3DS,
     cc=ARMCC_CC,
 )
@@ -667,6 +673,7 @@ _all_compilers: List[Compiler] = [
     ARMCC_40_821,
     ARMCC_41_561,
     ARMCC_41_713,
+    ARMCC_41_894,
     ARMCC_41_921,
     ARMCC_41_1049,
     ARMCC_41_1440,
@@ -779,6 +786,11 @@ _all_presets = [
         "Ocarina of Time 3D",
         ARMCC_40_821,
         "--cpp --arm --split_sections --debug --no_debug_macros --gnu --debug_info=line_inlining_extensions -O3 -Otime --data_reorder --signed_chars --multibyte_chars --remove_unneeded_entities --force_new_nothrow --remarks --no_rtti",
+    ),
+    Preset(
+        "Super Mario 3D Land",
+        ARMCC_41_894,
+        "--cpp --arm -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
     # Switch
     Preset(
