@@ -646,6 +646,7 @@ def download_3ds():
         "4.1": {
             "b561": "armcc_41_561",
             "b713": "armcc_41_713",
+            "b894": "armcc_41_894",
             "b921": "armcc_41_921",
             "b1049": "armcc_41_1049",
             "b1440": "armcc_41_1440",
@@ -656,7 +657,7 @@ def download_3ds():
         },
     }
     download_zip(
-        url="https://cdn.discordapp.com/attachments/981209507092914236/998569491258679367/armcc.zip",
+        url="http://al.littun.co/dl/armcc.zip",
     )
     for group_id, group in compiler_groups.items():
         for ver, compiler_id in group.items():
@@ -665,7 +666,7 @@ def download_3ds():
                 shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
 
             # Set +x to allow WSL without wine
-            exe_path = compiler_dir / "armcc.exe"
+            exe_path = compiler_dir / "bin/armcc.exe"
             exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
         shutil.rmtree(COMPILERS_DIR / group_id)
 
