@@ -145,10 +145,6 @@ def available_compilers() -> List[Compiler]:
 def available_platforms() -> List[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
 
-    # Disable MACOS9 for now, as it's not working properly
-    if MACOS9 in pset:
-        pset.remove(MACOS9)
-
     return sorted(pset, key=lambda p: p.name)
 
 
@@ -352,7 +348,7 @@ GCC281SNCXX = GCCCompiler(
 )
 
 # MACOS9
-MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
+MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${COMPILER_DIR}/_new.s" && powerpc-linux-gnu-as "${COMPILER_DIR}/_new.s" -o "${OUTPUT}"'
 
 MWCPPC_23 = MWCCCompiler(
     id="mwcppc_23",

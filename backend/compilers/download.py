@@ -232,6 +232,11 @@ def download_codewarrior():
         dest_name="codewarrior",
         create_subdir=True,
     )
+    download_file(
+        url="https://gist.githubusercontent.com/ChrisNonyminus/e530faed7fb6b1af213ef6be3994b3a9/raw/4474a194aa42fd62c719c6b234a5f2b9bfaec817/convert_gas_syntax.py",
+        log_name="convert_gas_syntax.py",
+        dest_path=DOWNLOAD_CACHE / "convert_gas_syntax_macos9.py",
+    )
     compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
     for ver in ["Pro5", "Pro6"]:
         lowercase_lmgr = compiler_dir / ver / "lmgr326b.dll"
@@ -244,6 +249,10 @@ def download_codewarrior():
 
         set_x(compiler_dir / ver / "MWCPPC.exe")
         set_x(compiler_dir / ver / "MWLinkPPC.exe")
+        shutil.copy(
+            DOWNLOAD_CACHE / "convert_gas_syntax_macos9.py",
+            compiler_dir / ver / "convert_gas_syntax.py",
+        )
 
     try:
         shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
