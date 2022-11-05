@@ -288,6 +288,12 @@ PSYQ43 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
+PSYQ45 = GCCPS1Compiler(
+    id="psyq4.5",
+    platform=PS1,
+    cc=PSYQ_CC,
+)
+
 PSYQ46 = GCCPS1Compiler(
     id="psyq4.6",
     platform=PS1,
@@ -687,6 +693,7 @@ _all_compilers: List[Compiler] = [
     PSYQ40,
     PSYQ41,
     PSYQ43,
+    PSYQ45,
     PSYQ46,
     # PS2
     EE_GCC296,
@@ -815,6 +822,11 @@ _all_presets = [
         "-O2",
     ),
     Preset(
+        "Legacy of Kain: Soul Reaver",
+        PSYQ45,
+        "-g -Wall -O2 -G256",
+    ),
+    Preset(
         "Metal Gear Solid",
         PSYQ43,
         "-O2 -G8",
@@ -883,6 +895,12 @@ _all_presets = [
         "Rocket Robot on Wheels",
         GCC272SNEW,
         "-mips2 -O2 -gdwarf -funsigned-char",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Space Station Silicon Valley",
+        IDO53,
+        "-O2 -mips2 -Xfullwarn -signed -nostdinc",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
