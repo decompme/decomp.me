@@ -29,7 +29,7 @@ const removeImports = require("next-remove-imports")({
 })
 const nextTranslate = require("next-translate")
 
-const mediaUrl = new URL(process.env.MEDIA_URL != null ? process.env.MEDIA_URL : "http://localhost")
+const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
 
 let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
