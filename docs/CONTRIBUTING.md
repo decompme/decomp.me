@@ -22,7 +22,7 @@ See [DOCKER.md](DOCKER.md) for instructions on how to run the project in a Docke
 
 Dependencies:
 - Python >=3.9
-- Node.js
+- Node.js >=14
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [Poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
 
