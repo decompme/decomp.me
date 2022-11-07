@@ -13,10 +13,14 @@ export function calculateScorePercent(score: number, maxScore: number): number {
 
 export function percentToString(percent: number): string {
     // If the percent is an integer, don't show the decimal
-    if (Math.floor(percent * 100) / 100 === Math.floor(percent))
+    if (Math.floor(percent * 100) / 100 === Math.floor(percent)) {
         return `${Math.floor(percent)}%`
-    else
-        return `${percent.toFixed(2)}%`
+    }
+    // If percent is between 99.99 and 100 exclusive, always round down
+    if (99.99 < percent && percent < 100) {
+        return "99.99%"
+    }
+    return `${percent.toFixed(2)}%`
 }
 
 export function getScoreText(score: number, maxScore: number): string {
