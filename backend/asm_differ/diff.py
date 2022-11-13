@@ -1219,6 +1219,8 @@ def parse_elf_rodata_references(
     SHT_SYMTAB = 2
     SHT_REL = 9
     SHT_RELA = 4
+    R_MIPS_32 = 2
+    R_MIPS_GPREL32 = 12
 
     is_32bit = e_ident[4] == 1
     is_little_endian = e_ident[5] == 1
@@ -1317,7 +1319,7 @@ def parse_elf_rodata_references(
                     )
                 if st_shndx == text_section:
                     if s.sh_type == SHT_REL:
-                        if e_machine == 8 and r_type == 2:  # R_MIPS_32
+                        if e_machine == 8 and r_type in (R_MIPS_32, R_MIPS_GPREL32):
                             (r_addend,) = read("I", sec_base + r_offset)
                         else:
                             continue
@@ -1951,7 +1953,11 @@ MIPS_SETTINGS = ArchSettings(
 
 MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
 
-MIPS_ARCH_NAMES = {"mips", "mipsel"}
+MIPSEE_SETTINGS = replace(
+    MIPSEL_SETTINGS, name="mipsee", arch_flags=["-m", "mips:5900"]
+)
+
+MIPS_ARCH_NAMES = {"mips", "mipsel", "mipsee"}
 
 ARM32_SETTINGS = ArchSettings(
     name="arm32",
@@ -2045,6 +2051,7 @@ I686_SETTINGS = ArchSettings(
 ARCH_SETTINGS = [
     MIPS_SETTINGS,
     MIPSEL_SETTINGS,
+    MIPSEE_SETTINGS,
     ARM32_SETTINGS,
     ARMEL_SETTINGS,
     AARCH64_SETTINGS,
@@ -2404,15 +2411,10 @@ def diff_sequences_difflib(
 def diff_sequences(
     seq1: List[str], seq2: List[str], algorithm: str
 ) -> List[Tuple[str, int, int, int, int]]:
-    if (
-        algorithm != "levenshtein"
-        or len(seq1) * len(seq2) > 4 * 10**8
-        or len(seq1) + len(seq2) >= 0x110000
-    ):
+    if algorithm != "levenshtein":
         return diff_sequences_difflib(seq1, seq2)
 
     # The Levenshtein library assumes that we compare strings, not lists. Convert.
-    # (Per the check above we know we have fewer than 0x110000 unique elements, so chr() works.)
     remapping: Dict[str, str] = {}
 
     def remap(seq: List[str]) -> str:
@@ -2425,8 +2427,16 @@ def diff_sequences(
             seq[i] = val
         return "".join(seq)
 
-    rem1 = remap(seq1)
-    rem2 = remap(seq2)
+    try:
+        rem1 = remap(seq1)
+        rem2 = remap(seq2)
+    except ValueError as e:
+        if len(seq1) + len(seq2) < 0x110000:
+            raise
+        # If there are too many unique elements, chr() doesn't work.
+        # Assume this is the case and fall back to difflib.
+        return diff_sequences_difflib(seq1, seq2)
+
     import Levenshtein
 
     ret: List[Tuple[str, int, int, int, int]] = Levenshtein.opcodes(rem1, rem2)
