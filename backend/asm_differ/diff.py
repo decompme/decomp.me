@@ -229,6 +229,13 @@ if __name__ == "__main__":
         help="Don't visualize branches/branch targets.",
     )
     parser.add_argument(
+        "-R",
+        "--no-show-rodata-refs",
+        dest="show_rodata_refs",
+        action="store_false",
+        help="Don't show .rodata -> .text references (typically from jump tables).",
+    )
+    parser.add_argument(
         "-S",
         "--base-shift",
         dest="base_shift",
@@ -414,6 +421,7 @@ class Config:
     base_shift: int
     skip_lines: int
     compress: Optional[Compress]
+    show_rodata_refs: bool
     show_branches: bool
     show_line_numbers: bool
     show_source: bool
@@ -504,6 +512,7 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
         ),
         skip_lines=args.skip_lines,
         compress=compress,
+        show_rodata_refs=args.show_rodata_refs,
         show_branches=args.show_branches,
         show_line_numbers=show_line_numbers,
         show_source=args.show_source or args.source_old_binutils,
@@ -1066,7 +1075,7 @@ def preprocess_objdump_out(
             out = out[out.find("\n") + 1 :]
         out = out.rstrip("\n")
 
-    if obj_data:
+    if obj_data and config.show_rodata_refs:
         out = (
             serialize_rodata_references(parse_elf_rodata_references(obj_data, config))
             + out
