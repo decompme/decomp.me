@@ -1294,7 +1294,7 @@ def parse_elf_rodata_references(
                 # Skip section_name -> section_name references
                 continue
             sec_name = sec_names[s.sh_info].decode("latin1")
-            if sec_name != ".rodata":
+            if sec_name not in (".rodata", ".late_rodata"):
                 continue
             sec_base = sections[s.sh_info].sh_offset
             for i in range(0, s.sh_size, s.sh_entsize):
