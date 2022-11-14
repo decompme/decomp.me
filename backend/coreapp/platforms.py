@@ -65,6 +65,9 @@ N64 = Platform(
     .section .rodata
 .endm
 
+.macro .late_rodata_alignment align
+.endm
+
 .macro glabel label
     .global \label
     .type \label, @function
