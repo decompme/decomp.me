@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List, Union
 
+ASMDIFF_FLAG_PREFIX = "-DIFF"
+
 
 @dataclass(frozen=True)
 class Checkbox:
@@ -85,6 +87,7 @@ COMMON_IDO_FLAGS: Flags = [
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [
     Checkbox("mreg_names=32", "-Mreg-names=32"),
+    Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
 ]
 
 COMMON_MWCC_FLAGS: Flags = [
