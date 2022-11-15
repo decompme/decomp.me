@@ -148,8 +148,8 @@ PS2 = Platform(
     id="ps2",
     name="PlayStation 2",
     description="MIPS (little-endian)",
-    arch="mipsel",
-    assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
+    arch="mipsee",
+    assemble_cmd='mips-linux-gnu-as -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
     asm_prelude="""

@@ -1951,7 +1951,11 @@ MIPS_SETTINGS = ArchSettings(
 
 MIPSEL_SETTINGS = replace(MIPS_SETTINGS, name="mipsel", big_endian=False)
 
-MIPS_ARCH_NAMES = {"mips", "mipsel"}
+MIPSEE_SETTINGS = replace(
+    MIPSEL_SETTINGS, name="mipsee", arch_flags=["-m", "mips:5900"]
+)
+
+MIPS_ARCH_NAMES = {"mips", "mipsel", "mipsee"}
 
 ARM32_SETTINGS = ArchSettings(
     name="arm32",
@@ -2045,6 +2049,7 @@ I686_SETTINGS = ArchSettings(
 ARCH_SETTINGS = [
     MIPS_SETTINGS,
     MIPSEL_SETTINGS,
+    MIPSEE_SETTINGS,
     ARM32_SETTINGS,
     ARMEL_SETTINGS,
     AARCH64_SETTINGS,
