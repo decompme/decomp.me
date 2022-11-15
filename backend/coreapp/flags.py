@@ -85,6 +85,13 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("kpic", "-KPIC"),
 ]
 
+COMMON_DIFF_FLAGS: Flags = [
+    FlagSet(
+        id="diff_algorithm",
+        flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
+    ),
+]
+
 COMMON_MIPS_DIFF_FLAGS: Flags = [
     Checkbox("mreg_names=32", "-Mreg-names=32"),
     Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),

@@ -56,6 +56,7 @@ class DiffWrapper:
         arch: asm_differ.ArchSettings, diff_flags: List[str]
     ) -> asm_differ.Config:
         show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
+        algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
 
         return asm_differ.Config(
             arch=arch,
@@ -80,7 +81,7 @@ class DiffWrapper:
             stop_at_ret=False,
             ignore_large_imms=False,
             ignore_addr_diffs=True,
-            algorithm="levenshtein",
+            algorithm=algorithm,
             reg_categories={},
             show_rodata_refs=show_rodata_refs,
         )
