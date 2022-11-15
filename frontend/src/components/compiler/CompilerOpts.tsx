@@ -39,7 +39,6 @@ function DiffCheckbox({ flag, description }) {
     return <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
         <input type="checkbox" checked={isChecked} onChange={() => setFlag(flag, !isChecked)} />
         <label>{description}</label>
-        <span className={styles.flagDescription}>{flag}</span>
     </div>
 }
 
