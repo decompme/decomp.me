@@ -233,8 +233,8 @@ class CompilerWrapper:
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
-            asm.data = asm.data.replace(".section .late_rodata", ".late_rodata")
-            asm_path.write_text(platform.asm_prelude + asm.data)
+            data = asm.data.replace(".section .late_rodata", ".late_rodata")
+            asm_path.write_text(platform.asm_prelude + data)
 
             object_path = sandbox.path / "object.o"
 
