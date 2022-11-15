@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
-from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
+from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    diff_flags: Flags = field(default_factory=list, hash=False)
+    diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
 
 
@@ -59,10 +59,13 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_MIPS_DIFF_FLAGS,
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
 .endm
 
 .macro glabel label

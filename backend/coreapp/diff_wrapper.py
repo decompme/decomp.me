@@ -8,6 +8,8 @@ import asm_differ.diff as asm_differ
 
 from coreapp import platforms
 from coreapp.platforms import DUMMY, Platform
+from coreapp import flags
+from coreapp.flags import ASMDIFF_FLAG_PREFIX
 
 from .compiler_wrapper import DiffResult, PATH
 
@@ -50,7 +52,12 @@ class DiffWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
+    def create_config(
+        arch: asm_differ.ArchSettings, diff_flags: List[str]
+    ) -> asm_differ.Config:
+        show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
+        algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
+
         return asm_differ.Config(
             arch=arch,
             # Build/objdump options
@@ -74,8 +81,9 @@ class DiffWrapper:
             stop_at_ret=False,
             ignore_large_imms=False,
             ignore_addr_diffs=True,
-            algorithm="levenshtein",
+            algorithm=algorithm,
             reg_categories={},
+            show_rodata_refs=show_rodata_refs,
         )
 
     @staticmethod
@@ -131,6 +139,7 @@ class DiffWrapper:
         label: str,
         flags: List[str],
     ) -> str:
+        flags = [flag for flag in flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
         flags += [
             "--disassemble",
             "--disassemble-zeroes",
@@ -220,7 +229,7 @@ class DiffWrapper:
 
         objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
-        config = DiffWrapper.create_config(arch)  # TODO pass and use diff_flags
+        config = DiffWrapper.create_config(arch, diff_flags)
 
         basedump = DiffWrapper.get_dump(
             bytes(target_assembly.elf_object),

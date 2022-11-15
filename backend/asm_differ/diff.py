@@ -229,6 +229,13 @@ if __name__ == "__main__":
         help="Don't visualize branches/branch targets.",
     )
     parser.add_argument(
+        "-R",
+        "--no-show-rodata-refs",
+        dest="show_rodata_refs",
+        action="store_false",
+        help="Don't show .rodata -> .text references (typically from jump tables).",
+    )
+    parser.add_argument(
         "-S",
         "--base-shift",
         dest="base_shift",
@@ -414,6 +421,7 @@ class Config:
     base_shift: int
     skip_lines: int
     compress: Optional[Compress]
+    show_rodata_refs: bool
     show_branches: bool
     show_line_numbers: bool
     show_source: bool
@@ -504,6 +512,7 @@ def create_config(args: argparse.Namespace, project: ProjectSettings) -> Config:
         ),
         skip_lines=args.skip_lines,
         compress=compress,
+        show_rodata_refs=args.show_rodata_refs,
         show_branches=args.show_branches,
         show_line_numbers=show_line_numbers,
         show_source=args.show_source or args.source_old_binutils,
@@ -1066,7 +1075,7 @@ def preprocess_objdump_out(
             out = out[out.find("\n") + 1 :]
         out = out.rstrip("\n")
 
-    if obj_data:
+    if obj_data and config.show_rodata_refs:
         out = (
             serialize_rodata_references(parse_elf_rodata_references(obj_data, config))
             + out
@@ -1219,6 +1228,8 @@ def parse_elf_rodata_references(
     SHT_SYMTAB = 2
     SHT_REL = 9
     SHT_RELA = 4
+    R_MIPS_32 = 2
+    R_MIPS_GPREL32 = 12
 
     is_32bit = e_ident[4] == 1
     is_little_endian = e_ident[5] == 1
@@ -1292,7 +1303,7 @@ def parse_elf_rodata_references(
                 # Skip section_name -> section_name references
                 continue
             sec_name = sec_names[s.sh_info].decode("latin1")
-            if sec_name != ".rodata":
+            if sec_name not in (".rodata", ".late_rodata"):
                 continue
             sec_base = sections[s.sh_info].sh_offset
             for i in range(0, s.sh_size, s.sh_entsize):
@@ -1317,7 +1328,7 @@ def parse_elf_rodata_references(
                     )
                 if st_shndx == text_section:
                     if s.sh_type == SHT_REL:
-                        if e_machine == 8 and r_type == 2:  # R_MIPS_32
+                        if e_machine == 8 and r_type in (R_MIPS_32, R_MIPS_GPREL32):
                             (r_addend,) = read("I", sec_base + r_offset)
                         else:
                             continue
@@ -2409,15 +2420,10 @@ def diff_sequences_difflib(
 def diff_sequences(
     seq1: List[str], seq2: List[str], algorithm: str
 ) -> List[Tuple[str, int, int, int, int]]:
-    if (
-        algorithm != "levenshtein"
-        or len(seq1) * len(seq2) > 4 * 10**8
-        or len(seq1) + len(seq2) >= 0x110000
-    ):
+    if algorithm != "levenshtein":
         return diff_sequences_difflib(seq1, seq2)
 
     # The Levenshtein library assumes that we compare strings, not lists. Convert.
-    # (Per the check above we know we have fewer than 0x110000 unique elements, so chr() works.)
     remapping: Dict[str, str] = {}
 
     def remap(seq: List[str]) -> str:
@@ -2430,8 +2436,16 @@ def diff_sequences(
             seq[i] = val
         return "".join(seq)
 
-    rem1 = remap(seq1)
-    rem2 = remap(seq2)
+    try:
+        rem1 = remap(seq1)
+        rem2 = remap(seq2)
+    except ValueError as e:
+        if len(seq1) + len(seq2) < 0x110000:
+            raise
+        # If there are too many unique elements, chr() doesn't work.
+        # Assume this is the case and fall back to difflib.
+        return diff_sequences_difflib(seq1, seq2)
+
     import Levenshtein
 
     ret: List[Tuple[str, int, int, int, int]] = Levenshtein.opcodes(rem1, rem2)

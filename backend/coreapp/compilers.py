@@ -916,6 +916,18 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
+        "IDO 5.3 cc",
+        IDO53,
+        "-O1 -KPIC -mips1",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 libraries",
+        IDO53,
+        "-O2 -KPIC -mips1",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
         "IDO 7.1 cc",
         IDO71,
         "-O1 -KPIC -mips2",
