@@ -855,7 +855,7 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     
-    Preset("AeroGauge", IDO53, "-O2 -g0 -mips2 -32 "),
+    Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
     Preset(
         "Mario Party 1",
