@@ -21,7 +21,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
-          #sudo apt-get install -yqq --allow-downgrades libgd3/focal libpcre2-8-0/focal libpcre2-16-0/focal libpcre2-32-0/focal libpcre2-posix2/focal
           sudo apt-get purge -yqq libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
 
           sudo apt-get install \
@@ -44,6 +43,7 @@ jobs:
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
+            libncurses5 \
             protobuf-compiler \
             wine
       - name: Install nsjail
