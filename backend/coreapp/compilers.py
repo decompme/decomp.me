@@ -21,6 +21,7 @@ from coreapp.flags import (
 from coreapp.platforms import (
     GBA,
     GC_WII,
+    IRIX,
     MACOS9,
     MACOSX,
     N3DS,
@@ -307,6 +308,29 @@ EE_GCC296 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+# IRIX
+IDO53_IRIX = IDOCompiler(
+    id="ido5.3_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+)
+
+IDO71_IRIX = IDOCompiler(
+    id="ido7.1_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+)
+
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+    language=Language.PASCAL,
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
@@ -318,15 +342,6 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-)
-
-# Pascal IDO
-IDO71PASCAL = IDOCompiler(
-    id="ido7.1Pascal",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-    language=Language.PASCAL,
 )
 
 GCC272KMC = GCCCompiler(
@@ -705,6 +720,9 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
+    # IRIX
+    IDO53_IRIX,
+    IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
@@ -917,27 +935,28 @@ _all_presets = [
         "-O2 -g2 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
+    # IRIX
     Preset(
         "IDO 5.3 cc",
-        IDO53,
+        IDO53_IRIX,
         "-O1 -KPIC -mips1",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 5.3 libraries",
-        IDO53,
+        IDO53_IRIX,
         "-O2 -KPIC -mips1",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 cc",
-        IDO71,
+        IDO71_IRIX,
         "-O1 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 libraries",
-        IDO71,
+        IDO71_IRIX,
         "-O2 -KPIC -mips2",
         diff_flags=["-Mreg-names=32"],
     ),

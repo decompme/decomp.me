@@ -13,6 +13,7 @@ import UnknownIcon from "./unknown.svg"
 const ICONS = {
     "gba": LogoGBA,
     "gc_wii": LogoGCWii,
+    "irix": LogoN64,
     "nds_arm9": LogoNDS,
     "n64": LogoN64,
     "ps1": LogoPS1,
