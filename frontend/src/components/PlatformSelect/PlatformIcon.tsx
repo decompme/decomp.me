@@ -1,5 +1,6 @@
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
+import LogoIRIX from "./irix.svg"
 import LogoMacOS from "./macos9.svg"
 import LogoMacOSX from "./macosx.svg"
 import LogoN3DS from "./n3ds.svg"
@@ -13,6 +14,7 @@ import UnknownIcon from "./unknown.svg"
 const ICONS = {
     "gba": LogoGBA,
     "gc_wii": LogoGCWii,
+    "irix": LogoIRIX,
     "nds_arm9": LogoNDS,
     "n64": LogoN64,
     "ps1": LogoPS1,
