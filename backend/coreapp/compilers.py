@@ -939,37 +939,37 @@ _all_presets = [
     Preset(
         "IDO 5.3 cc",
         IDO53_IRIX,
-        "-KPIC -mips1 -O1",
+        "-KPIC -mips1 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 5.3 libraries",
         IDO53_IRIX,
-        "-KPIC -mips1 -O2",
+        "-KPIC -mips1 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 cc",
         IDO71_IRIX,
-        "-KPIC -mips2 -O1",
+        "-KPIC -mips2 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 libraries",
         IDO71_IRIX,
-        "-KPIC -mips2 -O2",
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 Pascal",
         IDO71PASCAL,
-        "-KPIC -mips2 -O2",
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "7.1 N64 SDK",
         IDO71_IRIX,
-        "-KPIC -mips2 -g",
+        "-KPIC -mips2 -g -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
