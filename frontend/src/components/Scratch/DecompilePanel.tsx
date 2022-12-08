@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
-import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
+import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
 import * as api from "../../lib/api"

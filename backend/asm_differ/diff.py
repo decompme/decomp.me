@@ -1116,6 +1116,12 @@ def search_map_file(
         fail(f"Failed to open map file {project.mapfile} for reading.")
 
     if project.map_format == "gnu":
+        if for_binary and "load address" not in contents:
+            fail(
+                'Failed to find "load address" in map file. Maybe you need to add\n'
+                '"export LANG := C" to your Makefile to avoid localized output?'
+            )
+
         lines = contents.split("\n")
 
         try:

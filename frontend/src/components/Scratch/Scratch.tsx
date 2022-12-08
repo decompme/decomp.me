@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react"
 
-import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
+import { EditorView } from "@codemirror/view"
 
 import * as api from "../../lib/api"
 import basicSetup from "../../lib/codemirror/basic-setup"
