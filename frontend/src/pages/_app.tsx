@@ -69,6 +69,18 @@ export default function MyApp({ Component, pageProps }) {
         }
     }, [])
 
+    // Unregister all service workers (#593) - temporary until we make a new, better service worker
+    useEffect(() => {
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (const registration of registrations) {
+                    registration.unregister()
+                    console.warn("unregistered service worker:", registration)
+                }
+            })
+        }
+    }, [])
+
     return <Layout>
         <Head>
             <meta name="theme-color" content={themeColor} />
