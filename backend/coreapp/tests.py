@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from time import sleep
 from typing import Any, Callable, Dict, Optional
 from unittest import skip, skipIf
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 from parameterized import parameterized
 
 import responses
@@ -27,8 +27,8 @@ from coreapp.compilers import (
 )
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64, NDS_ARM9, PS1
-from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
+from coreapp.platforms import N64
+from coreapp.views.scratch import compile_scratch_update_score
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
