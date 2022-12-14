@@ -2,13 +2,11 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import asm_differ.diff as asm_differ
 
-from coreapp import platforms
 from coreapp.platforms import DUMMY, Platform
-from coreapp import flags
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
 
 from .compiler_wrapper import DiffResult, PATH
@@ -213,7 +211,6 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         compiled_elf: bytes,
-        allow_target_only: bool,
         diff_flags: List[str],
     ) -> DiffResult:
 
@@ -243,10 +240,7 @@ class DiffWrapper:
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
         except Exception as e:
-            if allow_target_only:
-                mydump = ""
-            else:
-                raise e
+            mydump = ""
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 
 import { useRouter } from "next/router"
 
-import { usePlausible } from "next-plausible"
 import { useSWRConfig } from "swr"
 
 import GitHubLoginButton from "../components/GitHubLoginButton"
@@ -20,7 +19,6 @@ export default function LoginPage() {
     const code = (router.query.code ?? "").toString()
     const next = (router.query.next ?? "").toString()
     const githubError = router.query.error
-    const plausible = usePlausible()
 
     useEffect(() => {
         if (code && !error) {
@@ -28,8 +26,6 @@ export default function LoginPage() {
                 if (user.is_anonymous) {
                     return Promise.reject(new Error("Still not logged-in."))
                 }
-
-                plausible("login")
 
                 mutate("/user", user)
 
@@ -53,7 +49,7 @@ export default function LoginPage() {
         if (githubError == "access_denied") {
             setError(new Error("Please grant access to your GitHub account to sign in!"))
         }
-    }, [code, router, mutate, next, plausible, error, githubError])
+    }, [code, router, mutate, next, error, githubError])
 
     return <>
         <main className={styles.container}>

@@ -38,10 +38,11 @@ export function getScoreText(score: number, maxScore: number): string {
 export type Props = {
     score: number
     maxScore: number
+    compiledSuccessfully: boolean
 }
 
-export default function ScoreBadge({ score, maxScore }: Props) {
-    if (score === -1) {
+export default function ScoreBadge({ score, maxScore, compiledSuccessfully }: Props) {
+    if (!compiledSuccessfully) {
         return <div className={classNames(styles.badge, { [styles.error]: true })}>
             <AlertIcon className={styles.icon} />
         </div>

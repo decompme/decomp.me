@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from time import sleep
 from typing import Any, Callable, Dict, Optional
 from unittest import skip, skipIf
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 from parameterized import parameterized
 
 import responses
@@ -27,8 +27,8 @@ from coreapp.compilers import (
 )
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64, NDS_ARM9, PS1
-from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
+from coreapp.platforms import N64
+from coreapp.views.scratch import compile_scratch_update_score
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
@@ -386,7 +386,7 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
 
     @requiresCompiler(IDO53)
     def test_ido_line_endings(self) -> None:
@@ -453,7 +453,7 @@ nop
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output contains the expected fpr reg names
         self.assertTrue("fv1f" in str(response.json()))
 
@@ -462,7 +462,7 @@ nop
             {"diff_flags": "[]"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
 
@@ -549,7 +549,6 @@ nop
             compiler.platform,
             "",
             result.elf_object,
-            allow_target_only=True,
             diff_flags=[],
         )
 

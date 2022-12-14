@@ -226,7 +226,8 @@ export default function Scratch({
                     Compilation
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
-                        maxScore={compilation?.diff_output?.max_score ?? -1} />}
+                        maxScore={compilation?.diff_output?.max_score ?? -1}
+                        compiledSuccessfully={compilation?.success ?? false} />}
                 </>}
                 className={styles.diffTab}
             >
