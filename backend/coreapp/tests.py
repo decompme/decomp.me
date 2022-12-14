@@ -549,7 +549,6 @@ nop
             compiler.platform,
             "",
             result.elf_object,
-            allow_target_only=True,
             diff_flags=[],
         )
 

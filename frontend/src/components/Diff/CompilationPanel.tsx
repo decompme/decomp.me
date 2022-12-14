@@ -9,14 +9,12 @@ import styles from "./CompilationPanel.module.scss"
 import Diff from "./Diff"
 
 function getProblemState(compilation: api.Compilation): ProblemState {
-    if (compilation.diff_output) {
-        if (compilation.errors) {
-            return ProblemState.WARNINGS
-        } else {
-            return ProblemState.NO_PROBLEMS
-        }
-    } else {
+    if (!compilation.succeeded) {
         return ProblemState.ERRORS
+    } else if (compilation.compiler_output) {
+        return ProblemState.WARNINGS
+    } else {
+        return ProblemState.NO_PROBLEMS
     }
 }
 
@@ -37,10 +35,12 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
     const [diff, setDiff] = useState<api.DiffOutput | null>(null)
     const problemState = getProblemState(compilation)
 
+    // Only update the diff if it's never been set or if the compilation succeeded
     useEffect(() => {
-        if (compilation.diff_output)
+        if (!diff || compilation.succeeded) {
             setDiff(compilation.diff_output)
-    }, [compilation.diff_output])
+        }
+    }, [compilation.diff_output, compilation.succeeded, diff])
 
     return <resizer.Container vertical className={styles.container}>
         <resizer.Section minSize={100}>
@@ -59,7 +59,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
         {(problemState != ProblemState.NO_PROBLEMS) && <resizer.Section className={styles.problems} minSize={100}>
             <h2>Compiler {problemState == ProblemState.ERRORS ? "errors" : "warnings"}</h2>
             <div className={styles.log}>
-                <Ansi>{compilation.errors}</Ansi>
+                <Ansi>{compilation.compiler_output}</Ansi>
             </div>
         </resizer.Section>}
     </resizer.Container>

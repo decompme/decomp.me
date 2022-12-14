@@ -58,24 +58,24 @@ def get_db_asm(request_asm: str) -> Asm:
 
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
-    return CompilerWrapper.compile_code(
-        compilers.from_id(scratch.compiler),
-        scratch.compiler_flags,
-        scratch.source_code,
-        scratch.context,
-        scratch.diff_label,
-    )
+    try:
+        return CompilerWrapper.compile_code(
+            compilers.from_id(scratch.compiler),
+            scratch.compiler_flags,
+            scratch.source_code,
+            scratch.context,
+            scratch.diff_label,
+        )
+    except CompilationError as e:
+        return CompilationResult(b"", str(e))
 
 
-def diff_compilation(
-    scratch: Scratch, compilation: CompilationResult, allow_target_only: bool = False
-) -> DiffResult:
+def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     return DiffWrapper.diff(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
         bytes(compilation.elf_object),
-        allow_target_only=allow_target_only,
         diff_flags=scratch.diff_flags,
     )
 
@@ -109,7 +109,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     except Exception:
         try:
             # Attempt to process just the target asm so we can populate max_score
-            diff = diff_compilation(scratch, compilation, True)
+            diff = diff_compilation(scratch, compilation)
             update_scratch_score(scratch, diff)
         except Exception:
             pass
@@ -381,7 +381,9 @@ class ScratchViewSet(
         return Response(
             {
                 "diff_output": diff,
-                "errors": compilation.errors,
+                "compiler_output": compilation.errors,
+                "succeeded": compilation.elf_object is not None
+                and len(compilation.elf_object) > 0,
             }
         )
 
