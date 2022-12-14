@@ -386,7 +386,7 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
 
     @requiresCompiler(IDO53)
     def test_ido_line_endings(self) -> None:
@@ -453,7 +453,7 @@ nop
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output contains the expected fpr reg names
         self.assertTrue("fv1f" in str(response.json()))
 
@@ -462,7 +462,7 @@ nop
             {"diff_flags": "[]"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
 
