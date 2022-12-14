@@ -235,7 +235,7 @@ export interface ProjectMember {
 export type Compilation = {
     compiler_output: string
     diff_output: DiffOutput | null
-    succeeded: boolean
+    success: boolean
 }
 
 export type DiffOutput = {
@@ -465,7 +465,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setIsCompilationOld(false)
         }).catch(error => {
             if (error instanceof ResponseError) {
-                setCompilation({ "compiler_output": error.json?.detail, "diff_output": null, "succeeded": false })
+                setCompilation({ "compiler_output": error.json?.detail, "diff_output": null, "success": false })
             } else {
                 return Promise.reject(error)
             }

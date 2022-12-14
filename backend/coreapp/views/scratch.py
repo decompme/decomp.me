@@ -382,7 +382,7 @@ class ScratchViewSet(
             {
                 "diff_output": diff,
                 "compiler_output": compilation.errors,
-                "succeeded": compilation.elf_object is not None
+                "success": compilation.elf_object is not None
                 and len(compilation.elf_object) > 0,
             }
         )

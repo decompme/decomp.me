@@ -9,7 +9,7 @@ import styles from "./CompilationPanel.module.scss"
 import Diff from "./Diff"
 
 function getProblemState(compilation: api.Compilation): ProblemState {
-    if (!compilation.succeeded) {
+    if (!compilation.success) {
         return ProblemState.ERRORS
     } else if (compilation.compiler_output) {
         return ProblemState.WARNINGS
@@ -37,10 +37,10 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
 
     // Only update the diff if it's never been set or if the compilation succeeded
     useEffect(() => {
-        if (!diff || compilation.succeeded) {
+        if (!diff || compilation.success) {
             setDiff(compilation.diff_output)
         }
-    }, [compilation.diff_output, compilation.succeeded, diff])
+    }, [compilation.diff_output, compilation.success, diff])
 
     return <resizer.Container vertical className={styles.container}>
         <resizer.Section minSize={100}>

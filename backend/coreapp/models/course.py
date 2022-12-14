@@ -33,7 +33,7 @@ class CourseScenario(models.Model):
     slug = models.SlugField(max_length=100)
     name = models.CharField(max_length=500)
     content = models.TextField()
-    scratch = models.ForeignKey(Scratch, on_delete=models.CASCADE)
+    scratch = models.ForeignKey(Scratch, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return f"{self.chapter.course.name} - {self.chapter.name} - {self.name}"
