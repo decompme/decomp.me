@@ -21,7 +21,7 @@ const { withPlausibleProxy } = require("next-plausible")
 
 const withPWA = require("next-pwa")({
     dest: "public",
-    disable: process.env.NODE_ENV === "development",
+    disable: process.env.FRONTEND_PWA !== "on",
 })
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
