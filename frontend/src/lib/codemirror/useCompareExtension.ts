@@ -1,63 +1,20 @@
-import { RefObject, useEffect, useRef, useState } from "react"
+import { RefObject, useEffect, useState } from "react"
 
-import { EditorState, Compartment, Extension, Facet, Text } from "@codemirror/state"
-import { EditorView, gutter, GutterMarker } from "@codemirror/view"
-import { diff } from "fast-myers-diff"
+import { Compartment, Extension, Facet } from "@codemirror/state"
+import { EditorView, gutter, GutterMarker, ViewPlugin, ViewUpdate } from "@codemirror/view"
+import { createWorkerFactory } from "@shopify/web-worker"
 
 import styles from "./useCompareExtension.module.scss"
-
-function compareNullableText(a: Text | null, b: Text | null): boolean {
-    if (a === null || b === null) {
-        return a === b
-    } else {
-        return a.eq(b)
-    }
-}
 
 // State for target text to diff doc against
 const targetString = Facet.define<string, string | null>({
     combine: values => (values.length ? values[0] : null),
-})
-const targetText = Facet.define<Text, Text | null>({
-    combine: values => (values.length ? values[0] : null),
-    compare: compareNullableText,
-    compareInput: compareNullableText,
-})
-const targetTextComputer = targetText.compute([targetString], state => {
-    const s = state.facet(targetString)
-    if (typeof s === "string")
-        return Text.of(s.split("\n"))
-    return null
 })
 
 // Computed diff between doc and target
 type DiffLineMap = Record<number, GutterMarker>
 const diffLineMap = Facet.define<DiffLineMap, DiffLineMap>({
     combine: values => (values.length ? values[0] : {}),
-})
-const diffLineMapComputer = diffLineMap.compute(["doc", targetString], state => {
-    const s = state.facet(targetString)
-
-    if (typeof s !== "string")
-        return {}
-
-    const tokenizeSource = source => {
-        return source.split("\n").map(i => i.trim())
-    }
-
-    const diffsIterator = diff(tokenizeSource(s), tokenizeSource(state.doc.toString()))
-    const diffs = Array.from(diffsIterator)
-
-    // Convert diff changes to a map of line numbers -> change type
-    const map: DiffLineMap = {}
-
-    for (const [, , childStartLine, childEndLine] of diffs) {
-        for (let i = childStartLine; i < childEndLine; i++) {
-            map[i + 1] = marker
-        }
-    }
-
-    return map
 })
 
 const marker = new class extends GutterMarker {
@@ -88,34 +45,51 @@ const diffGutter = gutter({
         }
     },
     lineMarkerChange(update) {
-        return update.docChanged || !compareNullableText(update.state.facet(targetText), update.startState.facet(targetText))
+        return update.docChanged || (update.state.facet(diffLineMap) != update.startState.facet(diffLineMap))
     },
     initialSpacer: () => marker,
 })
 
-export function useDelayedCompareExtension(viewRef: RefObject<EditorView>, compareTo: string, delayMs = 1000): Extension {
-    const editTime = useRef(0)
-    const timeSinceEdit = Date.now() - editTime.current
-    const timeout = useRef<any>()
-    const [, forceUpdate] = useState({})
+const createDiffWorker = createWorkerFactory(() => import("./useCompareExtension.worker"))
 
-    return [
-        useCompareExtension(viewRef, timeSinceEdit > delayMs ? compareTo : undefined),
-        EditorState.transactionExtender.of(tr => {
-            if (tr.docChanged) {
-                editTime.current = Date.now()
+const diffLineMapCompartment = new Compartment()
+const diffLineCalcPlugin = ViewPlugin.fromClass(class {
+    private worker = createDiffWorker()
 
-                if (timeout.current)
-                    clearTimeout(timeout.current)
-                timeout.current = setTimeout(() => {
-                    forceUpdate({})
-                }, delayMs)
+    constructor(private view: EditorView) {
+        this.updateDiff()
+    }
+
+    async update(update: ViewUpdate) {
+        if (update.docChanged) {
+            this.updateDiff()
+        }
+    }
+
+    async updateDiff() {
+        const diff = await this.worker.calculateDiff(this.view.state.facet(targetString), this.view.state.doc.toString())
+
+        // Convert diff changes to a map of line numbers -> change type
+        let map: DiffLineMap = {}
+
+        for (const [, , childStartLine, childEndLine] of diff) {
+            for (let i = childStartLine; i < childEndLine; i++) {
+                map[i + 1] = marker
             }
+        }
 
-            return null
-        }),
-    ]
-}
+        // Has our targetString been updated to a blank,
+        // and thus we should be showing no diff right now, while
+        // the view's been updating?
+        if (typeof this.view.state.facet(targetString) !== "string") {
+            map = {}
+        }
+
+        this.view.dispatch({
+            effects: diffLineMapCompartment.reconfigure(diffLineMap.of(map)),
+        })
+    }
+})
 
 // Extension that highlights lines in the doc that differ from `compareTo`.
 export default function useCompareExtension(viewRef: RefObject<EditorView>, compareTo: string): Extension {
@@ -131,9 +105,9 @@ export default function useCompareExtension(viewRef: RefObject<EditorView>, comp
     }, [compartment, compareTo, viewRef])
 
     return [
-        targetTextComputer,
-        diffLineMapComputer,
         diffGutter,
         compartment.of(targetString.of(compareTo)),
+        diffLineMapCompartment.of(diffLineMap.of({})),
+        diffLineCalcPlugin,
     ]
 }
