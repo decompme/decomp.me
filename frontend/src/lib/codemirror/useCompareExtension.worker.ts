@@ -1,8 +1,6 @@
 import { diff } from "fast-myers-diff"
 
-declare type Vec4 = [number, number, number, number];
-
-export function calculateDiff(target: string | undefined, current: string): Vec4[] {
+export function calculateDiff(target: string | undefined, current: string): [number, number, number, number][] {
     if (typeof target !== "string") {
         return []
     }

@@ -52,48 +52,48 @@ const diffGutter = gutter({
 
 const createDiffWorker = createWorkerFactory(() => import("./useCompareExtension.worker"))
 
+const diffLineMapCompartment = new Compartment()
+const diffLineCalcPlugin = ViewPlugin.fromClass(class {
+    private worker = createDiffWorker()
+
+    constructor(private view: EditorView) {
+        this.updateDiff()
+    }
+
+    async update(update: ViewUpdate) {
+        if (update.docChanged) {
+            this.updateDiff()
+        }
+    }
+
+    async updateDiff() {
+        const diff = await this.worker.calculateDiff(this.view.state.facet(targetString), this.view.state.doc.toString())
+
+        // Convert diff changes to a map of line numbers -> change type
+        let map: DiffLineMap = {}
+
+        for (const [, , childStartLine, childEndLine] of diff) {
+            for (let i = childStartLine; i < childEndLine; i++) {
+                map[i + 1] = marker
+            }
+        }
+
+        // Has our targetString been updated to a blank,
+        // and thus we should be showing no diff right now, while
+        // the view's been updating?
+        if (typeof this.view.state.facet(targetString) !== "string") {
+            map = {}
+        }
+
+        this.view.dispatch({
+            effects: diffLineMapCompartment.reconfigure(diffLineMap.of(map)),
+        })
+    }
+})
+
 // Extension that highlights lines in the doc that differ from `compareTo`.
 export default function useCompareExtension(viewRef: RefObject<EditorView>, compareTo: string): Extension {
     const [compartment] = useState(new Compartment())
-    const [diffLineMapCompartment] = useState(new Compartment())
-
-    const plugin = ViewPlugin.fromClass(class {
-        private worker = createDiffWorker()
-
-        constructor(private view: EditorView) {
-            this.updateDiff()
-        }
-
-        async update(update: ViewUpdate) {
-            if (update.docChanged) {
-                this.updateDiff()
-            }
-        }
-
-        async updateDiff() {
-            const diff = await this.worker.calculateDiff(this.view.state.facet(targetString), this.view.state.doc.toString())
-
-            // Convert diff changes to a map of line numbers -> change type
-            let map: DiffLineMap = {}
-
-            for (const [, , childStartLine, childEndLine] of diff) {
-                for (let i = childStartLine; i < childEndLine; i++) {
-                    map[i + 1] = marker
-                }
-            }
-
-            // Has our targetString been updated to a blank,
-            // and thus we should be showing no diff right now, while
-            // the view's been updating?
-            if (typeof this.view.state.facet(targetString) !== "string") {
-                map = {}
-            }
-
-            this.view.dispatch({
-                effects: diffLineMapCompartment.reconfigure(diffLineMap.of(map)),
-            })
-        }
-    })
 
     // Update targetString facet when compareTo changes
     useEffect(() => {
@@ -108,6 +108,6 @@ export default function useCompareExtension(viewRef: RefObject<EditorView>, comp
         diffGutter,
         compartment.of(targetString.of(compareTo)),
         diffLineMapCompartment.of(diffLineMap.of({})),
-        plugin,
+        diffLineCalcPlugin,
     ]
 }
