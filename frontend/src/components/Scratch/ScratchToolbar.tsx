@@ -1,29 +1,24 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, FC } from "react"
 
-import { DownloadIcon, GearIcon, HomeIcon, IterationsIcon, MarkGithubIcon, PeopleIcon, PlusIcon, RepoForkedIcon, SyncIcon, TriangleDownIcon, UploadIcon } from "@primer/octicons-react"
+import Link from "next/link"
+
+import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
-import { usePlausible } from "next-plausible"
 import ContentEditable from "react-contenteditable"
-import { useLayer } from "react-laag"
+import TimeAgo from "react-timeago"
 
 import * as api from "../../lib/api"
-import { useAutoRecompileSetting } from "../../lib/settings"
-import DiscordIcon from "../discord.svg"
-import Frog from "../Nav/frog.svg"
-import LoginState from "../Nav/LoginState"
-import Search from "../Nav/Search"
+import { useSize } from "../../lib/hooks"
+import Breadcrumbs from "../Breadcrumbs"
+import Nav from "../Nav"
 import ScratchIcon from "../ScratchIcon"
-import { SpecialKey } from "../Shortcut"
-import VerticalMenu, { ButtonItem, LinkItem } from "../VerticalMenu"
+import { SpecialKey, useShortcut } from "../Shortcut"
+import UserAvatar from "../user/UserAvatar"
 
-import ClaimScratchButton from "./buttons/ClaimScratchButton"
-import CompileScratchButton from "./buttons/CompileScratchButton"
-import ForkScratchButton from "./buttons/ForkScratchButton"
-import SaveScratchButton from "./buttons/SaveScratchButton"
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
-import ScratchDecompileModal from "./ScratchDecompileModal"
-import ScratchPreferencesModal from "./ScratchPreferencesModal"
 import styles from "./ScratchToolbar.module.scss"
+
+const ACTIVE_MS = 1000 * 60
 
 // Prevents XSS
 function htmlTextOnly(html: string): string {
@@ -31,11 +26,38 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = api.getURL(`${scratch.url}/export`)
+    const url = api.normalizeUrl(`${scratch.url}/export`)
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"
     a.click()
+}
+
+async function deleteScratch(scratch: api.Scratch) {
+    await api.delete_(scratch.url, {})
+
+    window.location.href = scratch.project ? `/${scratch.project}` : "/"
+}
+
+function EditTimeAgo({ date }: { date: string }) {
+    const isActive = (Date.now() - (new Date(date)).getTime()) < ACTIVE_MS
+
+    // Rerender after ACTIVE_MS has elapsed if isActive=true
+    const [, forceUpdate] = useState({})
+    useEffect(() => {
+        if (isActive) {
+            const interval = setTimeout(() => forceUpdate({}), ACTIVE_MS)
+            return () => clearInterval(interval)
+        }
+    }, [isActive])
+
+    return <span className={styles.lastEditTime}>
+        {isActive ? <>
+            Active now
+        </> : <>
+            <TimeAgo date={date} />
+        </>}
+    </span>
 }
 
 function ScratchName({ name, onChange }: { name: string, onChange?: (name: string) => void }) {
@@ -102,151 +124,162 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
     }
 }
 
+function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled }: Props) {
+    const userIsYou = api.useUserIsYou()
+    const forkScratch = api.useForkScratchAndGo(scratch)
+    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
+    const [isSaving, setIsSaving] = useState(false)
+    const canSave = scratch.owner && userIsYou(scratch.owner)
+
+    const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
+        setIsSaving(true)
+        await fuzzySaveScratch()
+        setIsSaving(false)
+    })
+
+    const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
+        compile()
+    })
+
+    return <ul className={styles.actions} aria-label="Scratch actions">
+        <li>
+            <Link href="/new">
+                <a>
+                    <FileIcon />
+                    New
+                </a>
+            </Link>
+        </li>
+        <li>
+            <button
+                onClick={async () => {
+                    setIsSaving(true)
+                    await fuzzySaveScratch()
+                    setIsSaving(false)
+                }}
+                disabled={!canSave || isSaving}
+                title={fuzzyShortcut}
+            >
+                <UploadIcon />
+                Save
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={forkScratch}
+                title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
+            >
+                <RepoForkedIcon />
+                Fork
+            </button>
+        </li>
+        {scratch.owner && userIsYou(scratch.owner) && <li>
+            <button onClick={event => {
+                if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
+                    deleteScratch(scratch)
+                }
+            }}>
+                <TrashIcon />
+                    Delete
+            </button>
+        </li>}
+        <li>
+            <button onClick={() => exportScratchZip(scratch)}>
+                <DownloadIcon />
+                    Export..
+            </button>
+        </li>
+        <li>
+            <button
+                onClick={compile}
+                title={compileShortcut}
+                disabled={isCompiling}
+            >
+                <SyncIcon />
+                Compile
+            </button>
+        </li>
+        <li>
+            <button onClick={() => setDecompilationTabEnabled(true)}>
+                <IterationsIcon />
+                Decompile..
+            </button>
+        </li>
+    </ul>
+}
+
+enum ActionsLocation {
+    IN_NAV,
+    BELOW_NAV,
+}
+
+function useActionsLocation(): [ActionsLocation, FC<Props>] {
+    const inNavActions = useSize<HTMLDivElement>()
+
+    let location = ActionsLocation.BELOW_NAV
+
+    const el = inNavActions.ref.current
+    if (el) {
+        if (el.clientWidth == el.scrollWidth) {
+            location = ActionsLocation.IN_NAV
+        }
+    }
+
+    return [
+        location,
+        (props: Props) => <div
+            ref={inNavActions.ref}
+            aria-hidden={location != ActionsLocation.IN_NAV}
+            className={styles.inNavActionsContainer}
+        >
+            <Actions {...props} />
+        </div>,
+    ]
+}
+
 export type Props = {
     isCompiling: boolean
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
+    setDecompilationTabEnabled: (enabled: boolean) => void
 }
 
-export default function ScratchToolbar({
-    isCompiling, compile, scratch, setScratch,
-}: Props) {
+export default function ScratchToolbar(props: Props) {
+    const { scratch, setScratch } = props
     const userIsYou = api.useUserIsYou()
-    const forkScratch = api.useForkScratchAndGo(scratch)
-    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
-    const [isSaving, setIsSaving] = useState(false)
-    const plausible = usePlausible()
 
-    const [isMenuOpen, setMenuOpen] = useState(false)
-    const { renderLayer, triggerProps, layerProps } = useLayer({
-        isOpen: isMenuOpen,
-        onOutsideClick: () => setMenuOpen(false),
-        overflowContainer: false,
-        auto: false,
-        placement: "bottom-start",
-        triggerOffset: 4,
-    })
+    const [actionsLocation, InNavActions] = useActionsLocation()
 
-    const [isPreferencesOpen, setPreferencesOpen] = useState(false)
-    const [isDecompileOpen, setDecompileOpen] = useState(false)
-
-    const [isMounted, setMounted] = useState(false)
-    useEffect(() => setMounted(true), [])
-
-    const [autoRecompileSetting] = useAutoRecompileSetting()
-
-    return (
-        <div className={styles.toolbar}>
-            <div className={styles.left}>
-                <div className={styles.iconButton} onClick={() => setMenuOpen(!isMenuOpen)} {...triggerProps}>
-                    <Frog width={32} height={32} />
-                    <TriangleDownIcon />
-                </div>
-                {isMounted && renderLayer(<div {...layerProps}>
-                    <VerticalMenu open={isMenuOpen} setOpen={setMenuOpen}>
-                        <LinkItem href="/">
-                            <HomeIcon />
-                            Dashboard
-                        </LinkItem>
-                        <LinkItem href="/new">
-                            <PlusIcon />
-                            New scratch...
-                        </LinkItem>
-                        <hr />
-                        <ButtonItem
-                            onTrigger={async () => {
-                                setIsSaving(true)
-                                await fuzzySaveScratch()
-                                setIsSaving(false)
-                            }}
-                            disabled={scratch.owner && !userIsYou(scratch.owner)}
-                            shortcutKeys={
-                                (fuzzySaveAction === FuzzySaveAction.SAVE || fuzzySaveAction === FuzzySaveAction.NONE)
-                                && [SpecialKey.CTRL_COMMAND, "S"]
-                            }
-                        >
-                            <UploadIcon />
-                            Save
-                        </ButtonItem>
-                        <ButtonItem
-                            onTrigger={forkScratch}
-                            shortcutKeys={fuzzySaveAction === FuzzySaveAction.FORK && [SpecialKey.CTRL_COMMAND, "S"]}
-                        >
-                            <RepoForkedIcon />
-                            Fork
-                        </ButtonItem>
-                        <ButtonItem
-                            onTrigger={compile}
-                            shortcutKeys={[SpecialKey.CTRL_COMMAND, "J"]}
-                        >
-                            <SyncIcon />
-                            Compile
-                        </ButtonItem>
-                        <hr />
-                        <ButtonItem onTrigger={() => {
-                            plausible("exportScratchZip", { props: { scratch: scratch.html_url } })
-                            exportScratchZip(scratch)
-                        }}>
-                            <DownloadIcon />
-                            Export as ZIP...
-                        </ButtonItem>
-                        <ButtonItem onTrigger={() => setDecompileOpen(true)}>
-                            <IterationsIcon />
-                            Rerun decompilation...
-                        </ButtonItem>
-                        <hr />
-                        <ButtonItem onTrigger={() => setPreferencesOpen(true)} shortcutKeys={[SpecialKey.CTRL_COMMAND, ","]}>
-                            <GearIcon />
-                            Preferences...
-                        </ButtonItem>
-                        <hr />
-                        <LinkItem href="https://github.com/decompme/decomp.me">
-                            <MarkGithubIcon />
-                            Contribute to decomp.me
-                        </LinkItem>
-                        <LinkItem href="https://discord.gg/sutqNShRRs">
-                            <DiscordIcon width={16} height={16} />
-                            Join the Discord server
-                        </LinkItem>
-                        <LinkItem href="/credits">
-                            <PeopleIcon /> Credits
-                        </LinkItem>
-                    </VerticalMenu>
-                </div>)}
-                <Search className={styles.search} />
+    return <>
+        <Nav border={actionsLocation == ActionsLocation.IN_NAV}>
+            <div className={styles.container}>
+                <Breadcrumbs className={styles.breadcrumbs} pages={[
+                    scratch.owner && {
+                        label: <div className={styles.owner}>
+                            <UserAvatar user={scratch.owner} className={styles.ownerAvatar} />
+                            <span className={styles.ownerName}>
+                                {scratch.owner.username}
+                            </span>
+                        </div>,
+                        href: !scratch.owner.is_anonymous && `/u/${scratch.owner.username}`,
+                    },
+                    {
+                        label: <div className={styles.iconNamePair}>
+                            <ScratchIcon scratch={scratch} size={20} />
+                            <ScratchName
+                                name={scratch.name}
+                                onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
+                            />
+                            <EditTimeAgo date={scratch.last_updated} />
+                        </div>,
+                    },
+                ].filter(Boolean)} />
+                <InNavActions {...props} />
             </div>
-            <div className={styles.grow} />
-            <div className={styles.center}>
-                <div className={styles.icons}>
-                    <ScratchIcon size={20} scratch={scratch} />
-                </div>
-                <ScratchName
-                    name={scratch.name}
-                    onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
-                />
-            </div>
-            <div className={styles.grow} />
-            <div className={styles.right}>
-                <div className={styles.grow} />
-                <div className={styles.iconButton} onClick={() => setPreferencesOpen(true)}>
-                    <GearIcon size={16} />
-                </div>
-                {isMounted && <>
-                    {!autoRecompileSetting && <CompileScratchButton compile={compile} isCompiling={isCompiling} />}
-                    {fuzzySaveAction === FuzzySaveAction.SAVE && <SaveScratchButton compile={compile} scratch={scratch} setScratch={setScratch} isSaving={isSaving} />}
-                    {fuzzySaveAction === FuzzySaveAction.CLAIM && <ClaimScratchButton scratch={scratch} />}
-                    {fuzzySaveAction === FuzzySaveAction.FORK && <ForkScratchButton scratch={scratch} />}
-                    <LoginState className={styles.loginState} />
-                </>}
-            </div>
-            <ScratchPreferencesModal open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
-            <ScratchDecompileModal
-                open={isDecompileOpen}
-                onClose={() => setDecompileOpen(false)}
-                scratch={scratch}
-                setSourceCode={source_code => setScratch({ source_code })}
-            />
-        </div>
-    )
+        </Nav>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={styles.belowNavActionsContainer}>
+            <Actions {...props} />
+        </div>}
+    </>
 }

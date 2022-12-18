@@ -21,10 +21,6 @@ export default function UserMenuItems() {
             <MenuItem>
                 <GitHubLoginButton popup />
             </MenuItem>
-            {/*<hr />
-            <LinkItem href="/settings">
-                Settings
-            </LinkItem>*/}
         </>
     }
 
@@ -34,14 +30,11 @@ export default function UserMenuItems() {
                 Signed in as <b>{user.username}</b>
             </div>
         </MenuItem>
-        <hr />
         <LinkItem href={`/u/${user.username}`}>
             Your profile
         </LinkItem>
-        {/*<LinkItem href="/settings">
-            Settings
-        /LinkItem>*/}
         <hr />
+        {user.is_admin && <LinkItem href={"/admin"}>Admin</LinkItem>}
         <ButtonItem
             onTrigger={async () => {
                 plausible("logout")

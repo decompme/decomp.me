@@ -1,6 +1,5 @@
 .breadcrumbs {
     padding: 1em;
-    background: var(--g300);
 
     > ol {
         margin: 0;
@@ -8,7 +7,7 @@
         list-style: none;
 
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         align-items: stretch;
 
         // Page links
@@ -22,15 +21,13 @@
                 color: var(--g1500);
                 text-decoration: none;
 
-                &:hover {
-                    color: var(--link);
-                    text-decoration: underline;
+                &:any-link:hover {
+                    color: var(--g2000);
                 }
 
                 &[aria-current="page"] {
-                    color: var(--g1900);
-                    font-weight: 600;
-                    text-decoration: none; // override :hover
+                    color: var(--g2000);
+                    font-weight: 500;
                 }
             }
         }
@@ -40,7 +37,7 @@
             content: "";
 
             display: inline-block;
-            margin: 0 1em;
+            margin: 0 0.7em 0 0.4em;
 
             width: 0.5em;
             height: 0.5em;

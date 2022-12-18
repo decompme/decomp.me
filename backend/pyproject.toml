@@ -16,7 +16,7 @@ django-environ = "^0.8.1"
 django-filter = "^21.1"
 djangorestframework = "^3.13.1"
 mypy = "^0.931"
-psycopg2-binary = "^2.9.3"
+psycopg2-binary = "^2.9.4"
 pycparser = "^2.21"
 python-Levenshtein = "^0.12.2"
 responses = "^0.18.0"
@@ -25,6 +25,11 @@ jwt = "^1.3.1"
 PyGithub = "^1.55"
 drf-extensions = "^0.7.1"
 tqdm = "^4.62.3"
+tzdata = "^2022.1"
+Pillow = "^9.2.0"
+html-json-forms = "^1.1.1"
+django-resized = "^1.0.2"
+django-cleanup = "^6.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
@@ -33,6 +38,7 @@ django-stubs-ext = "^0.4.0"
 django-stubs = "1.9.0"
 djangorestframework-stubs = "^1.4.0"
 types-requests = "^2.27.15"
+parameterized = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

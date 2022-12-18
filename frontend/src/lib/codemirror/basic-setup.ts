@@ -33,4 +33,18 @@ const basicSetup: Extension = [
     defaultTheme,
 ]
 
+export const decompileSetup: Extension = [
+    EditorState.readOnly.of(true),
+    highlightActiveLineGutter(),
+    highlightSpecialChars(),
+    history(),
+    foldGutter(),
+    drawSelection(),
+    highlightActiveLine(),
+    indentationMarkers(),
+    keymap.of(defaultKeymap),
+    indentUnit.of("    "),
+    defaultTheme,
+]
+
 export default basicSetup

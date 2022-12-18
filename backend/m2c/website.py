@@ -40,6 +40,8 @@ if "source" in form:
         cmd.append("--no-casts")
     if "allman" in form:
         cmd.append("--allman")
+    if "extraswitchindent" in form:
+        cmd.append("--indent-switch-contents")
     if "leftptr" in form:
         cmd.extend(["--pointer-style", "left"])
     if "zfillconstants" in form:
@@ -57,6 +59,7 @@ if "source" in form:
             "ppc-mwcc-c++",
             "mips-ido-c",
             "mips-gcc-c",
+            "mipsel-gcc-c",
         ):
             cmd.extend(["--target", value])
     if "nounkinference" in form:
@@ -234,6 +237,7 @@ label {
     <select name="target">
     <option value="mips-ido-c">MIPS, IDO, C</option>
     <option value="mips-gcc-c">MIPS, GCC, C</option>
+    <option value="mipsel-gcc-c">MIPSEL, GCC, C</option>
     <option value="ppc-mwcc-c++">PPC, MWCC, C++</option>
     <option value="ppc-mwcc-c">PPC, MWCC, C</option>
     </select>
@@ -261,6 +265,7 @@ label {
     <label><input type="checkbox" name="noandor">Disable &amp;&amp;/||</label>
     <label><input type="checkbox" name="nocasts">Hide type casts</label>
     <label><input type="checkbox" name="allman">Allman braces</label>
+    <label><input type="checkbox" name="extraswitchindent">Indent switch contents an extra level</label>
     <label><input type="checkbox" name="leftptr">* to the left</label>
     <label><input type="checkbox" name="zfillconstants">0-fill constants</label>
     <label><input type="checkbox" name="noifs">Use gotos for everything</label> (to use a goto for a single branch, add "# GOTO" to the asm)
@@ -348,7 +353,7 @@ contextEl.addEventListener("change", function() {
     localStorage.mips_to_c_saved_context = contextEl.value;
 });
 document.getElementById("options").addEventListener("change", function(event) {
-    var shouldSave = ["usesidebar", "allman", "leftptr", "zfillconstants", "globals", "nocasts", "noandor", "noifs", "noswitches", "dark", "regvarsselect", "regvars", "comment_style", "target", "nounkinference", "stackstructs"];
+    var shouldSave = ["usesidebar", "allman", "extraswitchindent", "leftptr", "zfillconstants", "globals", "nocasts", "noandor", "noifs", "noswitches", "dark", "regvarsselect", "regvars", "comment_style", "target", "nounkinference", "stackstructs"];
     var options = {};
     for (var key of shouldSave) {
         var el = document.getElementsByName(key)[0];

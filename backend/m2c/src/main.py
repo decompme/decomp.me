@@ -1,4 +1,5 @@
 import argparse
+import gc
 import re
 import sys
 import traceback
@@ -83,6 +84,8 @@ def run(options: Options) -> int:
             all_functions.update((fn.name, fn) for fn in asm_file.functions)
             asm_file.asm_data.merge_into(asm_data)
 
+        if options.heuristic_strings:
+            asm_data.detect_heuristic_strings()
         typemap = build_typemap(options.c_contexts, use_cache=options.use_cache)
     except Exception as e:
         print_exception_as_comment(
@@ -378,6 +381,12 @@ def parse_flags(flags: List[str]) -> Options:
         help="Put braces on separate lines",
     )
     group.add_argument(
+        "--indent-switch-contents",
+        dest="indent_switch_contents",
+        action="store_true",
+        help="Indent switch statements' contents an extra level",
+    )
+    group.add_argument(
         "--pointer-style",
         dest="pointer_style",
         help="Control whether to output pointer asterisks next to the type name (left) "
@@ -447,7 +456,7 @@ def parse_flags(flags: List[str]) -> Options:
         type=Target.parse,
         default="mips-ido-c",
         help="Target architecture, compiler, and language triple. "
-        "Supported triples: mips-ido-c, mips-gcc-c, ppc-mwcc-c++, ppc-mwcc-c. "
+        "Supported triples: mips-ido-c, mips-gcc-c, mipsel-gcc-c, ppc-mwcc-c++, ppc-mwcc-c. "
         "Default is mips-ido-c, `ppc` is an alias for ppc-mwcc-c++. ",
     )
     group.add_argument(
@@ -509,6 +518,12 @@ def parse_flags(flags: List[str]) -> Options:
         ),
     )
     group.add_argument(
+        "--heuristic-strings",
+        dest="heuristic_strings",
+        action="store_true",
+        help="Heuristically detect strings in rodata even when not defined using .asci/.asciz.",
+    )
+    group.add_argument(
         "--reg-vars",
         metavar="REGISTERS",
         dest="reg_vars",
@@ -531,6 +546,13 @@ def parse_flags(flags: List[str]) -> Options:
         action="store_true",
         help=argparse.SUPPRESS,
     )
+    group.add_argument(
+        "--disable-gc",
+        dest="disable_gc",
+        action="store_true",
+        help="Disable Python garbage collection. Can improve performance at "
+        "the risk of running out of memory.",
+    )
 
     args = parser.parse_args(flags)
     reg_vars = args.reg_vars.split(",") if args.reg_vars else []
@@ -543,6 +565,7 @@ def parse_flags(flags: List[str]) -> Options:
         newline_after_function=args.allman,
         newline_after_if=args.allman,
         newline_before_else=args.allman,
+        switch_indent_level=2 if args.indent_switch_contents else 1,
         pointer_style_left=args.pointer_style == "left",
         unknown_underscore=args.unknown_underscore,
         hex_case=args.hex_case,
@@ -571,6 +594,7 @@ def parse_flags(flags: List[str]) -> Options:
         andor_detection=args.andor_detection,
         skip_casts=args.skip_casts,
         zfill_constants=args.zfill_constants,
+        heuristic_strings=args.heuristic_strings,
         reg_vars=reg_vars,
         goto_patterns=args.goto_patterns,
         stop_on_error=args.stop_on_error,
@@ -591,6 +615,7 @@ def parse_flags(flags: List[str]) -> Options:
         passes=args.passes,
         incbin_dirs=args.incbin_dirs,
         deterministic_vars=args.deterministic_vars,
+        disable_gc=args.disable_gc,
     )
 
 
@@ -599,6 +624,9 @@ def main() -> None:
     # CPython default. Cap to INT_MAX to avoid an OverflowError, though.
     sys.setrecursionlimit(min(2**31 - 1, 10 * sys.getrecursionlimit()))
     options = parse_flags(sys.argv[1:])
+    if options.disable_gc:
+        gc.disable()
+        gc.set_threshold(0)
     sys.exit(run(options))
 
 

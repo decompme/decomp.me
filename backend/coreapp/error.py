@@ -1,13 +1,14 @@
+from sqlite3 import IntegrityError
 from subprocess import CalledProcessError
-from typing import ClassVar
+from typing import Any, ClassVar, Optional
 
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
 from rest_framework.views import exception_handler
 
 
-def custom_exception_handler(exc, context):
+def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]:
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
@@ -19,6 +20,13 @@ def custom_exception_handler(exc, context):
                 "detail": exc.msg,
             },
             status=HTTP_400_BAD_REQUEST,
+        )
+    elif isinstance(exc, AssertionError) or isinstance(exc, IntegrityError):
+        response = Response(
+            data={
+                "detail": str(exc),
+            },
+            status=HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     if response is not None:
@@ -45,7 +53,7 @@ class SubprocessError(Exception):
         error = SubprocessError(f"{ex.cmd[0]} returned {ex.returncode}")
         error.stdout = ex.stdout
         error.stderr = ex.stderr
-        error.msg = ex.stderr
+        error.msg = ex.stdout
         return error
 
 
@@ -77,7 +85,7 @@ class AssemblyError(SubprocessError):
         error = super(AssemblyError, AssemblyError).from_process_error(ex)
 
         error_lines = []
-        for line in ex.stderr.splitlines():
+        for line in ex.stdout.splitlines():
             if "asm.s:" in line:
                 error_lines.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:

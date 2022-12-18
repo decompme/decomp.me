@@ -1,8 +1,10 @@
 import tempfile
+from dataclasses import dataclass
 from time import sleep
-from typing import Optional
-from unittest import skip, skipIf, skipUnless
+from typing import Any, Callable, Dict, Optional
+from unittest import skip, skipIf
 from unittest.mock import Mock, patch
+from parameterized import parameterized
 
 import responses
 from django.contrib.auth.models import User
@@ -10,7 +12,7 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from coreapp.compilers import Language
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -23,6 +25,7 @@ from coreapp.compilers import (
     MWCPPC_24,
     PBX_GCC3,
 )
+from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
 from coreapp.views.scratch import compile_scratch_update_score
@@ -30,10 +33,10 @@ from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
-from .models.scratch import CompilerConfig, Scratch
+from .models.scratch import Assembly, CompilerConfig, Scratch
 
 
-def requiresCompiler(*compilers: Compiler):
+def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
     for c in compilers:
         if not c.available():
             return skip(f"Compiler {c.id} not available")
@@ -42,7 +45,7 @@ def requiresCompiler(*compilers: Compiler):
 
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
-    def create_scratch(self, partial: dict[str, str]) -> Scratch:
+    def create_scratch(self, partial: Dict[str, str]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         scratch = Scratch.objects.get(slug=response.json()["slug"])
@@ -61,7 +64,7 @@ class BaseTestCase(APITestCase):
 
 class ScratchCreationTests(BaseTestCase):
     @requiresCompiler(IDO71)
-    def test_accept_late_rodata(self):
+    def test_accept_late_rodata(self) -> None:
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
@@ -81,7 +84,7 @@ nop""",
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO53)
-    def test_n64_func(self):
+    def test_n64_func(self) -> None:
         """
         Ensure that functions with t6/t7 registers can be assembled.
         """
@@ -102,7 +105,7 @@ sb  $t6, %lo(D_801D702C)($at)
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO71)
-    def test_fpr_reg_names(self):
+    def test_fpr_reg_names(self) -> None:
         """
         Ensure that functions with O32 register names can be assembled.
         """
@@ -127,7 +130,7 @@ nop
         }
         self.create_scratch(scratch_dict)
 
-    def test_dummy_platform(self):
+    def test_dummy_platform(self) -> None:
         """
         Ensure that we can create scratches with the dummy platform and compiler
         """
@@ -140,7 +143,7 @@ nop
         self.create_scratch(scratch_dict)
 
     @requiresCompiler(IDO71)
-    def test_max_score(self):
+    def test_max_score(self) -> None:
         """
         Ensure that max_score is available upon scratch creation even if the initial compialtion fails
         """
@@ -156,7 +159,7 @@ nop
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler(GCC281, IDO53)
-    def test_update_scratch_score(self):
+    def test_update_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
@@ -190,7 +193,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 200)
 
     @requiresCompiler(GCC281)
-    def test_update_scratch_score_on_compile_get(self):
+    def test_update_scratch_score_on_compile_get(self) -> None:
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
@@ -219,7 +222,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 0)
 
     @requiresCompiler(IDO71)
-    def test_create_scratch_score(self):
+    def test_create_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets set upon creation.
         """
@@ -234,7 +237,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(scratch.score, 0)
 
     @requiresCompiler(IDO71)
-    def test_update_scratch_score_does_not_affect_last_updated(self):
+    def test_update_scratch_score_does_not_affect_last_updated(self) -> None:
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
         """
@@ -257,7 +260,7 @@ class ScratchModificationTests(BaseTestCase):
 
 
 class ScratchForkTests(BaseTestCase):
-    def test_fork_scratch(self):
+    def test_fork_scratch(self) -> None:
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
@@ -323,7 +326,7 @@ class ScratchForkTests(BaseTestCase):
 
 class CompilationTests(BaseTestCase):
     @requiresCompiler(GCC281)
-    def test_simple_compilation(self):
+    def test_simple_compilation(self) -> None:
         """
         Ensure that we can run a simple compilation via the api
         """
@@ -351,7 +354,7 @@ class CompilationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @requiresCompiler(GCC281)
-    def test_giant_compilation(self):
+    def test_giant_compilation(self) -> None:
         """
         Ensure that we can compile a giant file
         """
@@ -383,10 +386,10 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
 
     @requiresCompiler(IDO53)
-    def test_ido_line_endings(self):
+    def test_ido_line_endings(self) -> None:
         """
         Ensure that compilations with \\r\\n line endings succeed
         """
@@ -401,7 +404,7 @@ class CompilationTests(BaseTestCase):
         )
 
     @requiresCompiler(IDO53)
-    def test_ido_kpic(self):
+    def test_ido_kpic(self) -> None:
         """
         Ensure that ido compilations including -KPIC produce different code
         """
@@ -418,7 +421,7 @@ class CompilationTests(BaseTestCase):
         )
 
     @requiresCompiler(IDO71)
-    def test_fpr_reg_names_output(self):
+    def test_fpr_reg_names_output(self) -> None:
         """
         Ensure that we can view fpr reg names by passing the appropriate diff flag
         """
@@ -450,7 +453,7 @@ nop
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output contains the expected fpr reg names
         self.assertTrue("fv1f" in str(response.json()))
 
@@ -459,12 +462,12 @@ nop
             {"diff_flags": "[]"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertEqual(len(response.json()["compiler_output"]), 0)
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
 
     @requiresCompiler(MWCPPC_24)
-    def test_mac_mwcc(self):
+    def test_mac_mwcc(self) -> None:
         """
         Ensure that we can invoke the MACOS9 compiler
         """
@@ -479,7 +482,7 @@ nop
         )
 
     @requiresCompiler(PBX_GCC3)
-    def test_pbx_gcc3(self):
+    def test_pbx_gcc3(self) -> None:
         """
         Ensure that we can invoke the PowerPC GCC3 cross-compiler
         """
@@ -494,9 +497,9 @@ nop
         )
 
     @requiresCompiler(MWCC_247_92)
-    def test_mwcc_wine(self):
+    def test_mwcc(self) -> None:
         """
-        Ensure that we can invoke mwcc through wine
+        Ensure that we can invoke mwcc
         """
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
@@ -508,7 +511,7 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    def test_dummy_compiler(self):
+    def test_dummy_compiler(self) -> None:
         """
         Ensure basic functionality works for the dummy compiler
         """
@@ -520,10 +523,42 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers()])  # type: ignore
+    def test_all_compilers(self, compiler: Compiler) -> None:
+        """
+        Ensure that we can run a simple compilation/diff for all available compilers
+        """
+        code = "int func(void) { return 5; }"
+        if compiler.language == Language.PASCAL:
+            code = "function func(): integer; begin func := 5; end;"
+        result = CompilerWrapper.compile_code(
+            compiler,
+            "",
+            code,
+            "",
+            "func",
+        )
+        self.assertGreater(
+            len(result.elf_object),
+            0,
+            "The compilation result should be non-null",
+        )
+
+        diff = DiffWrapper.diff(
+            Assembly(elf_object=result.elf_object),
+            compiler.platform,
+            "",
+            result.elf_object,
+            diff_flags=[],
+        )
+
+        self.assertTrue("rows" in diff)
+        self.assertGreater(len(diff["rows"]), 0)
+
 
 class DecompilationTests(BaseTestCase):
     @requiresCompiler(GCC281)
-    def test_default_decompilation(self):
+    def test_default_decompilation(self) -> None:
         """
         Ensure that a scratch's initial decompilation makes sense
         """
@@ -537,7 +572,7 @@ class DecompilationTests(BaseTestCase):
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
     @requiresCompiler(GCC281)
-    def test_decompile_endpoint(self):
+    def test_decompile_endpoint(self) -> None:
         """
         Ensure that the decompile endpoint works
         """
@@ -571,7 +606,7 @@ class M2CTests(TestCase):
     Ensure that pointers are next to types (left style)
     """
 
-    def test_left_pointer_style(self):
+    def test_left_pointer_style(self) -> None:
         c_code = M2CWrapper.decompile(
             """
         glabel func
@@ -594,7 +629,7 @@ class M2CTests(TestCase):
     Ensure that we can decompile ppc code
     """
 
-    def test_ppc(self):
+    def test_ppc(self) -> None:
         c_code = M2CWrapper.decompile(
             """
         .global func_800B43A8
@@ -653,11 +688,11 @@ class UserTests(BaseTestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         super().setUpClass()
         cls.current_user_url = reverse("current-user")
 
-    def test_set_user_profile_middleware(self):
+    def test_set_user_profile_middleware(self) -> None:
         """
         Ensure that an anonymous profile is created for requests.
         """
@@ -708,7 +743,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(GitHubUser.objects.count(), 1)
 
     @responses.activate
-    def test_github_login_where_exists_already(self):
+    def test_github_login_where_exists_already(self) -> None:
         """
         Ensure that you can log in to an existing user with GitHub.
         """
@@ -753,7 +788,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(GitHubUser.objects.count(), 1)
 
     @responses.activate
-    def test_logout(self):
+    def test_logout(self) -> None:
         """
         Ensure that you can log out with POST /user with no data.
         """
@@ -785,9 +820,10 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
-    def test_own_scratch(self):
+    def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
+        Finally, delete the scratch.
         """
         response = self.client.post(
             "/api/scratch",
@@ -813,16 +849,71 @@ class UserTests(BaseTestCase):
         )
         self.assertEqual(response.json()["owner"]["is_you"], True)
 
+        # Delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    @responses.activate
+    def test_cant_delete_scratch(self) -> None:
+        """
+        Ensure we can't delete a scratch we don't own
+        """
+
+        # Create a scratch, log in, and claim it
+        response = self.client.post(
+            "/api/scratch",
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        slug = response.json()["slug"]
+
+        self.test_github_login()
+
+        response = self.client.post(f"/api/scratch/{slug}/claim")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
+        response = self.client.get(f"/api/scratch/{slug}")
+        self.assertEqual(
+            response.json()["owner"]["username"], self.GITHUB_USER["login"]
+        )
+        self.assertEqual(response.json()["owner"]["is_you"], True)
+
+        # Log out
+        response = self.client.post(self.current_user_url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["is_you"], True)
+        self.assertEqual(response.json()["is_anonymous"], True)
+
+        # Try to delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Log in again
+        self.test_github_login()
+
+        # Successfully delete the scratch
+        url = reverse("scratch-detail", kwargs={"pk": slug})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class ScratchDetailTests(BaseTestCase):
-    def test_404_head(self):
+    def test_404_head(self) -> None:
         """
         Ensure that HEAD requests 404 correctly.
         """
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_last_modified(self):
+    def test_last_modified(self) -> None:
         """
         Ensure that the Last-Modified header is set.
         """
@@ -833,7 +924,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_(response.headers.get("Last-Modified") is not None)
 
-    def test_if_modified_since(self):
+    def test_if_modified_since(self) -> None:
         """
         Ensure that the If-Modified-Since header is handled.
         """
@@ -866,7 +957,7 @@ class ScratchDetailTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_double_claim(self):
+    def test_double_claim(self) -> None:
         """
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
         """
@@ -886,7 +977,7 @@ class ScratchDetailTests(BaseTestCase):
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
 
-    def test_family(self):
+    def test_family(self) -> None:
         root = self.create_nop_scratch()
 
         # verify the family only holds root
@@ -915,7 +1006,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
-    def test_family_order(self):
+    def test_family_order(self) -> None:
         root = self.create_nop_scratch()
 
         # fork the root
@@ -930,7 +1021,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
         self.assertEqual(response.json()[1]["html_url"], fork["html_url"])
 
-    def test_family_etag(self):
+    def test_family_etag(self) -> None:
         root = self.create_nop_scratch()
 
         # get etag of only the root
@@ -949,8 +1040,172 @@ class ScratchDetailTests(BaseTestCase):
         self.assertNotEqual(etag, response.headers.get("Etag"))
 
 
+@dataclass
+class MockRepository:
+    name: str
+    default_branch: str = "master"
+    content: str = (
+        f"""header\nINCLUDE_ASM(void, "file", some_function, \ns32 arg0);\nfooter"""
+    )
+
+    def create_git_ref(self, **kwargs: Any) -> None:
+        pass
+
+    def get_contents(self, path: str) -> Mock:
+        return Mock(
+            decoded_content=Mock(decode=Mock(return_value=self.content)),
+            sha="12345",
+        )
+
+    def update_file(self, content: str, **kwargs: Any) -> None:
+        self.content = content
+
+    def create_pull(self, **kwargs: Any) -> Mock:
+        return Mock(html_url="http://github.com/fake_url")
+
+
+@patch.object(
+    GitHubRepo,
+    "details",
+    new=Mock(return_value=MockRepository("orig_repo")),
+)
+@patch.object(
+    GitHubRepo,
+    "get_sha",
+    new=Mock(return_value="12345"),
+)
+@patch.object(
+    Profile,
+    "user",
+    new=Mock(username="fakeuser", github=Mock(access_token="dummytoken")),
+)
+@patch("coreapp.views.project.Github.get_repo")
+class ScratchPRTests(BaseTestCase):
+    @responses.activate
+    def setUp(self) -> None:
+        super().setUp()
+        project = ProjectTests.create_test_project()
+        self.project = project
+        compiler_config = CompilerConfig(
+            platform="dummy",
+            compiler="dummy",
+            compiler_flags="",
+        )
+        compiler_config.save()
+        self.compiler_config = compiler_config
+        import_config = ProjectImportConfig(
+            project=project,
+            display_name="test",
+            compiler_config=compiler_config,
+            src_dir="src",
+            nonmatchings_dir="asm/nonmatchings",
+            nonmatchings_glob="**/*.s",
+            symbol_addrs_path="symbol_addrs.txt",
+        )
+        import_config.save()
+        self.import_config = import_config
+        project_fn = ProjectFunction(
+            project=project,
+            rom_address="10",
+            display_name="some_function",
+            src_file="src/some_file.c",
+            asm_file="asm/some_file.s",
+            import_config=import_config,
+        )
+        project_fn.save()
+        self.project_fn = project_fn
+        scratch = self.create_nop_scratch()
+        scratch.owner = Profile.objects.first()
+        scratch.project_function = project_fn
+        scratch.save()
+        self.scratch = scratch
+
+        # Login and create user
+        responses.add(
+            responses.POST,
+            "https://github.com/login/oauth/access_token",
+            json={
+                "access_token": "__mock__",
+                "scope": "public_repo",
+            },
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://api.github.com:443/user",
+            json=UserTests().GITHUB_USER,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            f"https://api.github.com:443/user/{UserTests().GITHUB_USER['id']}",
+            json=UserTests().GITHUB_USER,
+            status=200,
+        )
+        response = self.client.post(
+            reverse("current-user"),
+            {
+                "code": "__mock__",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Give user membership of project
+        profile = Profile.objects.first()
+        assert profile is not None
+        assert profile.user is not None
+        ProjectMember.objects.create(
+            project=project,
+            user=profile.user,
+        )
+
+    def test_pr_one_scratch(self, mock_get_repo: Mock) -> None:
+        """
+        Create a PR from one scratch to an upstream (project) repo
+        """
+        mock_fork = MockRepository("fork_repo")
+        mock_get_repo.return_value = mock_fork
+
+        response = self.client.post(
+            reverse("project-pr", args=[self.project.slug]),
+            data={"scratch_slugs": [self.scratch.slug]},
+        )
+        print(response.json())
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["url"], "http://github.com/fake_url")
+        self.assertEqual(
+            mock_fork.content,
+            f"""header\n{self.scratch.source_code}\nfooter""",
+        )
+
+    def test_pr_multiple_scratch(self, mock_get_repo: Mock) -> None:
+        """
+        Create a PR from two scratches to an upstream (project) repo
+        """
+        mock_fork = MockRepository("fork_repo")
+        mock_get_repo.return_value = mock_fork
+
+        scratch_2 = self.create_nop_scratch()
+        scratch_2.owner = Profile.objects.first()
+        scratch_2.project_function = self.project_fn
+        scratch_2.save()
+
+        response = self.client.post(
+            reverse("project-pr", args=[self.project.slug]),
+            data={"scratch_slugs": [self.scratch.slug, scratch_2.slug]},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["url"], "http://github.com/fake_url")
+        self.assertEqual(
+            mock_fork.content,
+            f"""header\n{self.scratch.source_code}\nfooter""",
+        )
+
+
 class RequestTests(APITestCase):
-    def test_create_profile(self):
+    def test_create_profile(self) -> None:
         """
         Ensure that we create a profile for a normal request
         """
@@ -960,7 +1215,7 @@ class RequestTests(APITestCase):
 
         self.assertEqual(Profile.objects.count(), 1)
 
-    def test_node_fetch_request(self):
+    def test_node_fetch_request(self) -> None:
         """
         Ensure that we don't create profiles for node-fetch requests (SSR)
         """
@@ -984,20 +1239,21 @@ class ProjectTests(TestCase):
         project = Project(
             slug=slug,
             repo=repo,
-            icon_url="http://example.com",
         )
         project.save()
 
         return project
 
-    def fake_clone_test_repo(self, repo: GitHubRepo):
+    def fake_clone_test_repo(self, repo: GitHubRepo) -> None:
         with patch("coreapp.models.github.subprocess.run"):
             repo.pull()
 
     @patch("coreapp.models.github.subprocess.run")
     @patch("pathlib.Path.mkdir")
     @patch("pathlib.Path.exists")
-    def test_create_repo_dir(self, mock_exists, mock_mkdir, mock_subprocess):
+    def test_create_repo_dir(
+        self, mock_exists: Mock, mock_mkdir: Mock, mock_subprocess: Mock
+    ) -> None:
         """
         Test that the repo is cloned into a directory
         """
@@ -1012,9 +1268,69 @@ class ProjectTests(TestCase):
         )
         mock_mkdir.assert_called_once_with(parents=True)
 
+    @patch("coreapp.models.github.GitHubRepo.pull")
+    @patch.object(
+        GitHubRepo,
+        "details",
+        new=Mock(return_value=MockRepository("orig_repo")),
+    )
+    @patch.object(
+        GitHubUser,
+        "details",
+        new=Mock(return_value=None),
+    )
+    def test_create_api_json(self, mock_pull: Mock) -> None:
+        """
+        Test that you can create a project via the JSON API, and that it only works when is_staff=True
+        """
+
+        # Make a request so we can get a profile
+        response = self.client.get(reverse("project-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        profile = Profile.objects.first()
+        assert profile is not None
+
+        # Give the profile a User and GitHubUser
+        profile.user = User(username="test")
+        profile.user.save()
+        profile.save()
+        GitHubUser.objects.create(
+            user=profile.user, github_id=1234, access_token="__mock__"
+        )
+
+        data = {
+            "slug": "example-project",
+            "repo": {
+                "owner": "decompme",
+                "repo": "example-project",
+                "branch": "not_a_real_branch",
+            },
+        }
+
+        # Fail when not admin
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Succeed when admin
+        profile.user.is_staff = True
+        profile.user.save()
+        response = self.client.post(
+            reverse("project-list"),
+            data,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        mock_pull.assert_called_once()
+        self.assertEqual(Project.objects.count(), 1)
+
     @patch("coreapp.models.github.GitHubRepo.get_dir")
     @patch("coreapp.models.github.shutil.rmtree")
-    def test_delete_repo_dir(self, mock_rmtree, mock_get_dir):
+    def test_delete_repo_dir(self, mock_rmtree: Mock, mock_get_dir: Mock) -> None:
         """
         Test that the repo's directory is deleted when the repo is
         """
@@ -1025,13 +1341,13 @@ class ProjectTests(TestCase):
         project.repo.delete()
         mock_rmtree.assert_called_once_with(mock_dir)
 
-    def test_import_function(self):
+    def test_import_function(self) -> None:
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
                 project = ProjectTests.create_test_project()
 
                 # add some asm
-                dir = project.repo.get_dir()
+                dir = project.repo.get_dir(check_exists=False)
                 (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
                 (dir / "src").mkdir(parents=True)
                 asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
@@ -1104,7 +1420,7 @@ class ProjectTests(TestCase):
 
                 self.assertTrue(pf.is_matched_in_repo)
 
-    def test_put_project_permissions(self):
+    def test_put_project_permissions(self) -> None:
         with tempfile.TemporaryDirectory() as local_files_dir:
             with self.settings(LOCAL_FILE_DIR=local_files_dir):
                 project = ProjectTests.create_test_project()
@@ -1125,7 +1441,11 @@ class ProjectTests(TestCase):
 
                 # add project member
                 profile = Profile.objects.first()
-                ProjectMember(project=project, profile=profile).save()
+                assert profile is not None
+                profile.user = User(username="test")
+                profile.user.save()
+                profile.save()
+                ProjectMember(project=project, user=profile.user).save()
 
                 # try again
                 response = self.client.patch(

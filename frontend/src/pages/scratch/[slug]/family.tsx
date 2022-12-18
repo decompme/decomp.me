@@ -74,38 +74,38 @@ export default function ScratchPage({ scratch, family }: { scratch: api.Scratch,
         <header className={styles.header}>
             <div className={styles.container}>
                 <Breadcrumbs pages={[
-                    (!scratch.owner || api.isAnonUser(scratch.owner))
-                        ? { label: "anon" }
-                        : {
-                            label: <>
-                                <UserAvatar user={scratch.owner} />
-                                <span style={{ marginLeft: "6px" }} />
-                                {scratch.owner.username}
-                            </>,
-                            href: `/u/${scratch.owner.username}`,
-                        },
+                    scratch.owner && {
+                        label: <>
+                            <UserAvatar user={scratch.owner} />
+                            <span style={{ marginLeft: "6px" }} />
+                            {scratch.owner.username}
+                        </>,
+                        href: `/u/${scratch.owner.username}`,
+                    },
                     { label: scratch.name, href: scratch.url },
                     { label: "Family" },
-                ]} />
+                ].filter(Boolean)} />
             </div>
         </header>
-        <main className={styles.container}>
-            <div className={styles.actions}>
-                <label>
-                    Sort by
-                    <Select
-                        value={sortMode}
-                        onChange={m => setSortMode(m as SortMode)}
-                        options={{
-                            [SortMode.NEWEST_FIRST]: "Newest first",
-                            [SortMode.OLDEST_FIRST]: "Oldest first",
-                            [SortMode.LAST_UPDATED]: "Last modified",
-                            [SortMode.SCORE]: "Match completion",
-                        }}
-                    />
-                </label>
+        <main>
+            <div className={styles.container}>
+                <div className={styles.actions}>
+                    <label>
+                        Sort by
+                        <Select
+                            value={sortMode}
+                            onChange={m => setSortMode(m as SortMode)}
+                            options={{
+                                [SortMode.NEWEST_FIRST]: "Newest first",
+                                [SortMode.OLDEST_FIRST]: "Oldest first",
+                                [SortMode.LAST_UPDATED]: "Last modified",
+                                [SortMode.SCORE]: "Match completion",
+                            }}
+                        />
+                    </label>
+                </div>
+                <LoadedScratchList scratches={family} />
             </div>
-            <LoadedScratchList scratches={family} />
         </main>
         <Footer />
     </>

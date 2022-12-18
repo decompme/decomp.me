@@ -1,11 +1,9 @@
-import { Suspense, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
 import useSWR from "swr"
-//import { useDebouncedCallback } from "use-debounce"
 
-import LoadingSpinner from "../../components/loading.svg"
 import PageTitle from "../../components/PageTitle"
 import { getScoreText } from "../../components/ScoreBadge"
 import Scratch from "../../components/Scratch"
@@ -22,7 +20,7 @@ function ScratchPageTitle({ scratch, compilation }: { scratch: api.Scratch, comp
         title += " (unsaved)"
 
     let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
-    if (scratch.owner && !api.isAnonUser(scratch.owner))
+    if (scratch.owner)
         description += `\nOwner: ${scratch.owner.username}`
     if (scratch.description)
         description += `\n\n${scratch.description}`
@@ -49,6 +47,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
         return {
             props: {
                 initialScratch: scratch,
+                parentScratch: scratch.parent ? await api.get(scratch.parent) : null,
                 initialCompilation,
             },
         }
@@ -60,9 +59,14 @@ export const getServerSideProps: GetServerSideProps = async context => {
     }
 }
 
-export default function ScratchPage({ initialScratch, initialCompilation }: { initialScratch: api.Scratch, initialCompilation?: api.Compilation }) {
+export interface Props {
+    initialScratch: api.Scratch
+    parentScratch?: api.Scratch
+    initialCompilation?: api.Compilation
+}
+
+export default function ScratchPage({ initialScratch, parentScratch, initialCompilation }: Props) {
     const [scratch, setScratch] = useState(initialScratch)
-    //const setScratch = useDebouncedCallback(setScratchImmediate, 100, { leading: true, trailing: true }) // reduce layout thrashing
 
     useWarnBeforeScratchUnload(scratch)
 
@@ -83,35 +87,27 @@ export default function ScratchPage({ initialScratch, initialCompilation }: { in
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
     }
 
-    // Scratch uses suspense but SSR does not support it so we just render a loading state
-    // in server-side rendering mode.
-    const [isMounted, setIsMounted] = useState(false)
+    // Disable page scrolling
     useEffect(() => {
-        setIsMounted(true)
+        document.body.classList.add("no-scroll")
+        return () => {
+            document.body.classList.remove("no-scroll")
+        }
     }, [])
-    if (!isMounted) {
-        return <>
-            <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
-            <main className={styles.container}>
-                <LoadingSpinner className={styles.loading} />
-            </main>
-        </>
-    }
 
     return <>
         <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
         <main className={styles.container}>
-            <Suspense fallback={<LoadingSpinner className={styles.loading} />}>
-                <Scratch
-                    scratch={scratch}
-                    initialCompilation={initialCompilation}
-                    onChange={partial => {
-                        setScratch(scratch => {
-                            return { ...scratch, ...partial }
-                        })
-                    }}
-                />
-            </Suspense>
+            <Scratch
+                scratch={scratch}
+                parentScratch={parentScratch}
+                initialCompilation={initialCompilation}
+                onChange={partial => {
+                    setScratch(scratch => {
+                        return { ...scratch, ...partial }
+                    })
+                }}
+            />
         </main>
     </>
 }

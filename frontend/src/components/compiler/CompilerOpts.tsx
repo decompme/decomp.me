@@ -31,7 +31,38 @@ function Checkbox({ flag, description }) {
     </div>
 }
 
+function DiffCheckbox({ flag, description }) {
+    const { checkFlag, setFlag } = useContext(OptsContext)
+
+    const isChecked = checkFlag(flag)
+
+    return <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
+        <input type="checkbox" checked={isChecked} onChange={() => setFlag(flag, !isChecked)} />
+        <label>{description}</label>
+    </div>
+}
+
 function FlagSet({ name, children, value }) {
+    const { setFlag } = useContext(OptsContext)
+
+    return <div className={styles.flagSet}>
+        <div className={styles.flagSetName}>{name}</div>
+        <Select
+            onChange={event => {
+                for (const child of children) {
+                    setFlag(child.props.flag, false)
+                }
+
+                setFlag((event.target as HTMLSelectElement).value, true)
+            }}
+            value={value}
+        >
+            {children}
+        </Select>
+    </div>
+}
+
+function DiffFlagSet({ name, children, value }) {
     const { setFlag } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
@@ -54,6 +85,12 @@ function FlagSet({ name, children, value }) {
 function FlagOption({ flag, description }: { flag: string, description?: string }) {
     return <option value={flag}>
         {flag} {description && description !== NO_TRANSLATION && `(${description})`}
+    </option>
+}
+
+function DiffFlagOption({ flag, description }: { flag: string, description?: string }) {
+    return <option value={flag}>
+        {description || flag}
     </option>
 }
 
@@ -81,6 +118,26 @@ function Flags({ schema }: FlagsProps) {
     </>
 }
 
+function DiffFlags({ schema }: FlagsProps) {
+    const compilersTranslation = useTranslation("compilers")
+    const { checkFlag } = useContext(OptsContext)
+
+    return <>
+        {schema.map(flag => {
+            if (flag.type === "checkbox") {
+                return <DiffCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
+            } else if (flag.type === "flagset") {
+                const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
+                return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
+                    {flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
+                        compilersTranslation.t(flag.id + "." + f, null, { default: NO_TRANSLATION })
+                    } />)}
+                </DiffFlagSet>
+            }
+        })}
+    </>
+}
+
 export type CompilerOptsT = {
     compiler: string
     compiler_flags: string
@@ -101,7 +158,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
     const compiler = value.compiler
     let opts = value.compiler_flags
     const diff_opts = value.diff_flags || []
-    const display_diff_opts = useCompilersForPlatform(platform)[compiler].diff_flags.length > 0
 
     const setCompiler = (compiler: string) => {
         onChange({
@@ -180,21 +236,10 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 }
             },
         }}>
-            {display_diff_opts &&
             <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
-                <div className={styles.diffLabel}>
-                    <label>Diff label</label>
-                    <input
-                        type="text"
-                        className={styles.textbox}
-                        value={diffLabel}
-                        placeholder="Top of file"
-                        onChange={e => onDiffLabelChange(e.target.value)}
-                    />
-                </div>
-                <DiffOptsEditor platform={platform} compiler={compiler} />
-            </section>}
+                <DiffOptsEditor platform={platform} compiler={compiler} diffLabel={diffLabel} onDiffLabelChange={onDiffLabelChange} />
+            </section>
         </OptsContext.Provider>
     </div>
 }
@@ -247,16 +292,28 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
     </div>
 }
 
-export function DiffOptsEditor({ platform, compiler: compilerId }: {
+export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDiffLabelChange }: {
     platform?: string
     compiler: string
+    diffLabel: string
+    onDiffLabelChange: (diffLabel: string) => void
 }) {
     const compilers = useCompilersForPlatform(platform)
     const compiler = compilers[compilerId]
 
     return <div>
+        <div className={styles.diffLabel}>
+            <label>Diff label</label>
+            <input
+                type="text"
+                className={styles.textbox}
+                value={diffLabel}
+                placeholder="Top of file"
+                onChange={e => onDiffLabelChange(e.target.value)}
+            />
+        </div>
         <div className={styles.diffFlags}>
-            {(compilerId && compiler) ? <Flags schema={compiler.diff_flags} /> : <div />}
+            {(compilerId && compiler) ? <DiffFlags schema={compiler.diff_flags} /> : <div />}
         </div>
     </div>
 }

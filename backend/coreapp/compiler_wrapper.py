@@ -3,9 +3,10 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from functools import lru_cache
 from platform import uname
-from typing import Any, Dict, Optional, Tuple
+import time
+
+from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
 
 from django.conf import settings
 
@@ -18,6 +19,17 @@ from . import util
 from .error import AssemblyError, CompilationError
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
+
+# Thanks to Guido van Rossum for the following fix
+# https://github.com/python/mypy/issues/5107#issuecomment-529372406
+if TYPE_CHECKING:
+    F = TypeVar("F")
+
+    def lru_cache(maxsize: int = 128, typed: bool = False) -> Callable[[F], F]:
+        pass
+
+else:
+    from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +47,13 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
     WINE = ""
 else:
     WINE = "wine"
+
+WIBO: str
+if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
+    logger.info("WSL detected & nsjail disabled: wibo not required.")
+    WIBO = ""
+else:
+    WIBO = "wibo"
 
 
 @dataclass
@@ -89,7 +108,9 @@ class CompilerWrapper:
         filter_strings = [
             r"wine: could not load .*\.dll.*\n?",
             r"wineserver: could not save registry .*\n?",
-            r"### .*\.exe Driver Error:\n#   Cannot find my executable .*\n?",
+            r"### .*\.exe Driver Error:.*\n?",
+            r"#   Cannot find my executable .*\n?",
+            r"### MWCPPC\.exe Driver Error:.*\n?",
         ]
 
         for str in filter_strings:
@@ -98,7 +119,7 @@ class CompilerWrapper:
         return input.strip()
 
     @staticmethod
-    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)  # type: ignore
+    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
     def compile_code(
         compiler: Compiler,
         compiler_flags: str,
@@ -113,18 +134,27 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            code_path = sandbox.path / "code.c"
+            ext = compiler.language.get_file_extension()
+            code_file = f"code.{ext}"
+            ctx_file = f"ctx.{ext}"
+
+            code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
-                f.write('#line 1 "ctx.c"\n')
+                f.write(f'#line 1 "{ctx_file}"\n')
                 f.write(context)
                 f.write("\n")
 
-                f.write('#line 1 "src.c"\n')
+                f.write(f'#line 1 "{code_file}"\n')
                 f.write(code)
                 f.write("\n")
 
             cc_cmd = compiler.cc
+
+            # Fix for MWCC line numbers in GC 3.0+
+            if compiler.is_mwcc:
+                ctx_path = sandbox.path / ctx_file
+                ctx_path.touch()
 
             # IDO hack to support -KPIC
             if compiler.is_ido and "-KPIC" in compiler_flags:
@@ -132,6 +162,7 @@ class CompilerWrapper:
 
             # Run compiler
             try:
+                st = round(time.time() * 1000)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=[compiler.path],
@@ -139,37 +170,42 @@ class CompilerWrapper:
                     env={
                         "PATH": PATH,
                         "WINE": WINE,
+                        "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
                         "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
+                        "TMPDIR": "/tmp",
                     },
                 )
+                et = round(time.time() * 1000)
+                logging.debug(f"Compilation finished in: {et - st} ms")
             except subprocess.CalledProcessError as e:
                 # Compilation failed
-                if e.stdout:
-                    msg = f"{e.stdout}\n{e.stderr}"
-                else:
-                    msg = e.stderr
+                msg = e.stdout
 
                 logging.debug("Compilation failed: %s", msg)
-                raise CompilationError(e.stderr)
+                raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
             except ValueError as e:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
 
             if not object_path.exists():
-                raise CompilationError("Compiler did not create an object file")
+                error_msg = (
+                    "Compiler did not create an object file: %s" % compile_proc.stdout
+                )
+                logging.debug(error_msg)
+                raise CompilationError(error_msg)
 
             object_bytes = object_path.read_bytes()
 
             if not object_bytes:
                 raise CompilationError("Compiler created an empty object file")
 
-            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stderr)
+            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stdout)
 
             return CompilationResult(object_path.read_bytes(), compile_errors)
 
@@ -197,7 +233,8 @@ class CompilerWrapper:
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
-            asm_path.write_text(platform.asm_prelude + asm.data)
+            data = asm.data.replace(".section .late_rodata", ".late_rodata")
+            asm_path.write_text(platform.asm_prelude + data)
 
             object_path = sandbox.path / "object.o"
 

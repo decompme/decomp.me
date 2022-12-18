@@ -108,8 +108,7 @@ class SwitchStatement:
         lines = []
         comments = []
         body_is_empty = self.body.is_empty()
-        if self.index > 0:
-            comments.extend(comments_for_switch(self.index))
+        comments.extend(comments_for_switch(self.index))
         if self.jump.is_irregular:
             comments.append("irregular")
         elif not self.jump.jump_table:
@@ -125,7 +124,7 @@ class SwitchStatement:
                 lines.append(fmt.indent("{"))
             else:
                 lines.append(fmt.with_comments(f"{head} {{", comments))
-            with fmt.indented():
+            with fmt.indented(fmt.coding_style.switch_indent_level):
                 lines.append(self.body.format(fmt))
             lines.append(fmt.indent("}"))
         return "\n".join(lines)

@@ -56,7 +56,7 @@ export class ResponseError extends Error {
     }
 }
 
-export function getURL(url: string) {
+export function normalizeUrl(url: string) {
     if (url.startsWith("/")) {
         url = API_BASE + url
     }
@@ -64,7 +64,7 @@ export function getURL(url: string) {
 }
 
 export async function get(url: string, useCacheIfFresh = false) {
-    url = getURL(url)
+    url = normalizeUrl(url)
 
     const response = await fetch(url, {
         ...commonOpts,
@@ -91,18 +91,23 @@ export async function get(url: string, useCacheIfFresh = false) {
 
 export const getCached = (url: string) => get(url, true)
 
-export async function post(url: string, json: Json) {
-    url = getURL(url)
+export async function post(url: string, data: Json | FormData, method = "POST") {
+    url = normalizeUrl(url)
 
-    const body: string = JSON.stringify(json)
+    console.info(method, url, data)
 
-    console.info("POST", url, JSON.parse(body))
+    let body: string | FormData
+    if (data instanceof FormData) {
+        body = data
+    } else {
+        body = JSON.stringify(data)
+    }
 
     const response = await fetch(url, {
         ...commonOpts,
-        method: "POST",
+        method,
         body,
-        headers: {
+        headers: body instanceof FormData ? {} : {
             "Content-Type": "application/json",
         },
     })
@@ -111,34 +116,23 @@ export async function post(url: string, json: Json) {
         throw new ResponseError(response, await response.json())
     }
 
-    return await response.json()
+    if (response.status == 204) {
+        return null
+    } else {
+        return await response.json()
+    }
 }
 
-export async function patch(url: string, json: Json) {
-    url = getURL(url)
+export async function patch(url: string, data: Json | FormData) {
+    return await post(url, data, "PATCH")
+}
 
-    const body = JSON.stringify(json)
+export async function delete_(url: string, json: Json) {
+    return await post(url, json, "DELETE")
+}
 
-    console.info("PATCH", url, JSON.parse(body))
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        method: "PATCH",
-        body,
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    const text = await response.text()
-    if (!text) {
-        return
-    }
-    return JSON.parse(text)
+export async function put(url: string, json: Json) {
+    return await post(url, json, "PUT")
 }
 
 export interface Page<T> {
@@ -153,6 +147,10 @@ export interface AnonymousUser {
     is_anonymous: true
     id: number
     is_online: boolean
+    is_admin: boolean
+    username: string
+
+    frog_color: [number, number, number]
 }
 
 export interface User {
@@ -161,8 +159,9 @@ export interface User {
     is_anonymous: false
     id: number
     is_online: boolean
-
+    is_admin: boolean
     username: string
+
     name: string
     avatar_url: string | null
     github_api_url: string | null
@@ -172,6 +171,7 @@ export interface User {
 export interface TerseScratch {
     url: string
     html_url: string
+    slug: string
     owner: AnonymousUser | User | null // null = unclaimed
     parent: string | null
     name: string
@@ -186,7 +186,6 @@ export interface TerseScratch {
 }
 
 export interface Scratch extends TerseScratch {
-    slug: string // avoid using, use `url` instead
     description: string
     compiler_flags: string
     diff_flags: string[]
@@ -209,9 +208,10 @@ export interface Project {
         last_pulled: string | null
     }
     creation_time: string
-    icon_url: string
-    members: string[]
+    icon?: string
     description: string
+    platform?: string
+    unmatched_function_count: number
 }
 
 export interface ProjectFunction {
@@ -227,9 +227,15 @@ export interface ProjectFunction {
     attempts_count: number
 }
 
+export interface ProjectMember {
+    url: string
+    username: string
+}
+
 export type Compilation = {
-    errors: string
+    compiler_output: string
     diff_output: DiffOutput | null
+    success: boolean
 }
 
 export type DiffOutput = {
@@ -414,7 +420,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.description === saved.description &&
         scratch.compiler === saved.compiler &&
         scratch.compiler_flags === saved.compiler_flags &&
-        scratch.diff_flags.join(",") === saved.diff_flags.join(",") &&
+        JSON.stringify(scratch.diff_flags) === JSON.stringify(saved.diff_flags) &&
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context
@@ -458,7 +464,11 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setCompileRequestPromise(null)
             setIsCompilationOld(false)
         }).catch(error => {
-            setCompilation({ "errors": error.json?.detail, "diff_output": null })
+            if (error instanceof ResponseError) {
+                setCompilation({ "compiler_output": error.json?.detail, "diff_output": null, "success": false })
+            } else {
+                return Promise.reject(error)
+            }
         })
 
         setCompileRequestPromise(promise)
@@ -533,7 +543,7 @@ export function useCompilers(): Record<string, Compiler> {
     return data.compilers
 }
 
-export function usePaginated<T>(url: string): {
+export function usePaginated<T>(url: string, firstPage?: Page<T>): {
     results: T[]
     hasNext: boolean
     hasPrevious: boolean
@@ -541,24 +551,26 @@ export function usePaginated<T>(url: string): {
     loadNext: () => Promise<void>
     loadPrevious: () => Promise<void>
 } {
-    const [results, setResults] = useState<T[]>([])
-    const [next, setNext] = useState<string | null>(url)
-    const [previous, setPrevious] = useState<string | null>(null)
+    const [results, setResults] = useState<T[]>(firstPage?.results ?? [])
+    const [next, setNext] = useState<string | null>(firstPage?.next)
+    const [previous, setPrevious] = useState<string | null>(firstPage?.previous)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        setResults([])
-        setNext(url)
-        setPrevious(null)
-        setIsLoading(true)
+        if (!firstPage) {
+            setResults([])
+            setNext(url)
+            setPrevious(null)
+            setIsLoading(true)
 
-        get(url).then((data: Page<T>) => {
-            setResults(data.results)
-            setNext(data.next)
-            setPrevious(data.previous)
-            setIsLoading(false)
-        })
-    }, [url])
+            get(url).then((page: Page<T>) => {
+                setResults(page.results)
+                setNext(page.next)
+                setPrevious(page.previous)
+                setIsLoading(false)
+            })
+        }
+    }, [url]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadNext = useCallback(async () => {
         if (!next)
@@ -592,4 +604,54 @@ export function usePaginated<T>(url: string): {
         loadNext,
         loadPrevious,
     }
+}
+
+export interface Stats {
+    asm_count: number
+    scratch_count: number
+    github_user_count: number
+    profile_count: number
+}
+
+export function useStats(): Stats | undefined {
+    const { data, error } = useSWR<Stats>("/stats", get, {
+        refreshInterval: 5000,
+    })
+
+    if (error) {
+        throw error
+    }
+
+    return data
+}
+
+export function useProjectMembers(project: Project): {
+    members: ProjectMember[]
+    addMember: (username: string) => Promise<void>
+    removeMember: (username: string) => Promise<void>
+} {
+    const url = `${project.url}/members`
+    const { data, error, mutate } = useSWR<ProjectMember[]>(url, get)
+
+    if (error) {
+        throw error
+    }
+
+    return {
+        members: data || [],
+        async addMember(username: string) {
+            await mutate(() => post(url, { username }))
+        },
+        async removeMember(username: string) {
+            await delete_(`${url}/${username}`, {})
+            await mutate()
+        },
+    }
+}
+
+export function useIsUserProjectMember(project: Project): boolean {
+    const user = useThisUser()
+    const { members } = useProjectMembers(project)
+
+    return !!members.find(member => member.username === user?.username)
 }

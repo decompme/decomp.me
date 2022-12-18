@@ -27,14 +27,8 @@ services:
       - setuid
       - setgid
       - setfcap
-    environment:
-      DATABASE_URL: psql://decompme:decompme@postgres:5432/decompme
-      SECRET_KEY: "django-insecure-nm#!8%z$$hc0wwi#m_*l9l)=m*6gs4&o_^-e5b5vj*k05&yaqc1"
-      DEBUG: "on"
-      ALLOWED_HOSTS: "backend,localhost,127.0.0.1"
-      USE_SANDBOX_JAIL: "on"
-      COMPILER_BASE_PATH: /compilers
-      LOCAL_FILE_DIR: /local_files
+    env_file:
+    - backend/docker.dev.env
     ports:
     - "8000:8000"
     security_opt:
@@ -42,7 +36,6 @@ services:
       - seccomp=unconfined
     volumes:
     - ./backend:/backend
-    - ./local_files:/local_files
     tmpfs:
     # Use a separate tmpfs to prevent a rogue jailed process
     # from filling /tmp on the parent container
@@ -50,9 +43,18 @@ services:
   frontend:
     build: frontend
     environment:
+      API_BASE: http://localhost/api
       INTERNAL_API_BASE: http://backend:8000/api
+      FRONTEND_USE_IMAGE_PROXY: "false"
     ports:
     - "8080:8080"
     volumes:
     - ./frontend:/frontend
     - .env:/.env
+  nginx:
+    image: nginx:1.22-alpine
+    ports:
+    - "80:80"
+    volumes:
+    - ./nginx:/etc/nginx/conf.d
+    - ./backend/media:/media

@@ -5,7 +5,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __enter__(self):
+    def __enter__(self) -> "Sandbox":
         self.use_jail = settings.USE_SANDBOX_JAIL
 
         tmpdir: Optional[str] = None
@@ -29,7 +29,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         self.path = Path(self.temp_dir.name)
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: Any) -> None:
         self.temp_dir.cleanup()
 
     @staticmethod
@@ -61,21 +61,25 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
             "--bindmount_ro", "/etc/fonts",
+            "--bindmount_ro", "/etc/passwd",
             "--bindmount_ro", "/lib",
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "PATH=/usr/bin:/bin",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
+             "--rlimit_nofile", "soft",
             "--rlimit_cpu", "30",  # seconds
             "--time_limit", "30",  # seconds
-            "--disable_proc",  # Needed for running inside Docker
+            # the following are settings that can be removed once we are done with wine
+            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
+            "--env", "WINEDEBUG=-all",
+            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
+        if settings.SANDBOX_DISABLE_PROC:
+            wrapper.append("--disable_proc")  # needed for running inside Docker
 
         if not settings.DEBUG:
             wrapper.append("--really_quiet")
@@ -118,10 +122,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         logger.debug(f"Sandbox Command: {debug_env_str} {shlex.join(command)}")
         return subprocess.run(
             command,
-            capture_output=True,
             text=True,
             env=env,
             cwd=self.path,
             check=True,
             shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )

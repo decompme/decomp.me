@@ -4,9 +4,11 @@ import { isGitHubLoginSupported, showGitHubLoginWindow } from "../lib/oauth"
 
 import Button from "./Button"
 
+const DEFAULT_SCOPE_STR = ""
+
 export default function GitHubLoginButton({ label, popup, className }: { label?: string, popup: boolean, className?: string }) {
     if (isGitHubLoginSupported()) {
-        return <Button className={className} onClick={() => showGitHubLoginWindow(popup, "")}>
+        return <Button className={className} onClick={() => showGitHubLoginWindow(popup, DEFAULT_SCOPE_STR)}>
             <MarkGithubIcon size={16} /> {label ?? "Sign in with GitHub"}
         </Button>
     } else {

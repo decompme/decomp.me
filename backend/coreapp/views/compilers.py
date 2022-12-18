@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from coreapp import compilers
 
 from ..decorators.django import condition
@@ -38,11 +39,11 @@ class CompilersDetail(APIView):
         return ret
 
     @condition(last_modified_func=lambda request: boot_time)
-    def head(self, request: Request):
+    def head(self, request: Request) -> Response:
         return Response()
 
     @condition(last_modified_func=lambda request: boot_time)
-    def get(self, request: Request):
+    def get(self, request: Request) -> Response:
         return Response(
             {
                 "compilers": CompilersDetail.compilers_json(),

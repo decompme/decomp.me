@@ -123,7 +123,7 @@ class Instruction:
     eval_fn: Optional[Callable[..., object]]
 
     jump_target: Optional[Union[JumpTarget, Register]] = None
-    function_target: Optional[Union[AsmGlobalSymbol, Register]] = None
+    function_target: Optional[Argument] = None
     is_conditional: bool = False
     is_return: bool = False
     is_store: bool = False
@@ -149,6 +149,9 @@ class Instruction:
     def arch_mnemonic(self, arch: "ArchAsm") -> str:
         """Combine architecture name with mnemonic for pattern matching"""
         return f"{arch.arch}:{self.mnemonic}"
+
+    def clone(self) -> "Instruction":
+        return replace(self, meta=self.meta.derived())
 
 
 class ArchAsm(ArchAsmParsing):
@@ -205,9 +208,9 @@ class InstrProcessingFailure(Exception):
 
 
 @contextmanager
-def current_instr(instr: Instruction) -> Iterator[None]:
+def set_current_instr(instr: Instruction) -> Iterator[None]:
     """Mark an instruction as being the one currently processed, for the
-    purposes of error messages. Use like |with current_instr(instr): ...|"""
+    purposes of error messages. Use like |with set_current_instr(instr): ...|"""
     try:
         yield
     except Exception as e:

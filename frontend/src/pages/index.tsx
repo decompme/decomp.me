@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
@@ -16,32 +15,10 @@ import * as api from "../lib/api"
 import styles from "./index.module.scss"
 
 const DECOMP_ME_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
-const SHOW_PROJECT_LIST = false
-
-function ProjectList() {
-    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Project>("/projects")
-
-    return <ul className={styles.projectList}>
-        {results.map(project => (
-            <li key={project.url}>
-                <Link href={project.html_url}>
-                    <a className={styles.projectLink}>
-                        <Image src={project.icon_url} alt="" width={16} height={16} />
-                        {project.slug}
-                    </a>
-                </Link>
-            </li>
-        ))}
-        {hasNext && <li className={styles.loadMoreLink}>
-            <a onClick={loadNext}>
-                {isLoading ? "Loading..." : "Show more"}
-            </a>
-        </li>}
-    </ul>
-}
 
 export default function IndexPage() {
     const user = api.useThisUser()
+    const stats = api.useStats()
     const plausible = usePlausible()
 
     const yourScratchesUrl = (!user || api.isAnonUser(user))
@@ -59,19 +36,29 @@ export default function IndexPage() {
                     <h1>
                         Welcome to <span className={styles.siteName}>decomp.me</span>
                     </h1>
-                    <p>
-                        {DECOMP_ME_DESCRIPTION}
-                    </p>
-                    <div className={styles.cta}>
-                        {user?.is_anonymous && <GitHubLoginButton popup />}
-                        <Link href="/new">
-                            <a>
-                                <Button primary onClick={() => plausible("indexCtaPress")}>
+                    <div className={styles.aboutColumnsContainer}>
+                        <div>
+                            <p>
+                                {DECOMP_ME_DESCRIPTION}
+                            </p>
+                            <div className={styles.cta}>
+                                {user?.is_anonymous && <GitHubLoginButton popup />}
+                                <Link href="/new">
+                                    <a>
+                                        <Button primary onClick={() => plausible("indexCtaPress")}>
                                     Start decomping
-                                    <ArrowRightIcon />
-                                </Button>
-                            </a>
-                        </Link>
+                                            <ArrowRightIcon />
+                                        </Button>
+                                    </a>
+                                </Link>
+                            </div>
+                        </div>
+                        {stats && <p>
+                            {stats.scratch_count.toLocaleString()} scratches created<br />
+                            {stats.profile_count.toLocaleString()} unique visitors<br />
+                            {stats.github_user_count.toLocaleString()} users signed up<br />
+                            {stats.asm_count.toLocaleString()} asm globs submitted
+                        </p>}
                     </div>
                 </ErrorBoundary>
             </header>
@@ -83,12 +70,6 @@ export default function IndexPage() {
             </section>
             <section className={styles.projects}>
                 <ErrorBoundary>
-                    {SHOW_PROJECT_LIST && <>
-                        <h2>Projects</h2>
-                        <ProjectList />
-                        <br/>
-                    </>}
-
                     <h2>Your scratches</h2>
                     <ScratchList
                         url={yourScratchesUrl}

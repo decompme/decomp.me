@@ -22,6 +22,7 @@ class CodingStyle:
     newline_after_function: bool
     newline_after_if: bool
     newline_before_else: bool
+    switch_indent_level: int
     pointer_style_left: bool
     unknown_underscore: bool
     hex_case: bool
@@ -35,6 +36,10 @@ class Target:
         MIPS = "mips"
         PPC = "ppc"
 
+    class EndianEnum(ChoicesEnum):
+        LITTLE = "little"
+        BIG = "big"
+
     class CompilerEnum(ChoicesEnum):
         IDO = "ido"
         GCC = "gcc"
@@ -45,8 +50,12 @@ class Target:
         CXX = "c++"
 
     arch: ArchEnum
+    endian: EndianEnum
     compiler: CompilerEnum
     language: LanguageEnum
+
+    def is_big_endian(self) -> bool:
+        return self.endian == Target.EndianEnum.BIG
 
     @staticmethod
     def parse(name: str) -> "Target":
@@ -56,9 +65,14 @@ class Target:
         If `-compiler` is missing, use the default for the arch.
         (This makes `mips` an alias for `mips-ido-c`, etc.)
         """
+        endian = Target.EndianEnum.BIG
         terms = name.split("-")
         try:
-            arch = Target.ArchEnum(terms[0])
+            arch_name = terms[0]
+            if arch_name.endswith("el"):
+                arch_name = arch_name[:-2]
+                endian = Target.EndianEnum.LITTLE
+            arch = Target.ArchEnum(arch_name)
             if len(terms) >= 2:
                 compiler = Target.CompilerEnum(terms[1])
             elif arch == Target.ArchEnum.PPC:
@@ -77,6 +91,7 @@ class Target:
 
         return Target(
             arch=arch,
+            endian=endian,
             compiler=compiler,
             language=language,
         )
@@ -102,6 +117,7 @@ class Options:
     andor_detection: bool
     skip_casts: bool
     zfill_constants: bool
+    heuristic_strings: bool
     reg_vars: List[str]
     goto_patterns: List[str]
     stop_on_error: bool
@@ -122,6 +138,7 @@ class Options:
     passes: int
     incbin_dirs: List[Path]
     deterministic_vars: bool
+    disable_gc: bool
 
     def formatter(self) -> "Formatter":
         return Formatter(
@@ -136,6 +153,7 @@ DEFAULT_CODING_STYLE: CodingStyle = CodingStyle(
     newline_after_function=False,
     newline_after_if=False,
     newline_before_else=False,
+    switch_indent_level=1,
     pointer_style_left=False,
     unknown_underscore=False,
     hex_case=False,
@@ -159,12 +177,12 @@ class Formatter:
         return self.indent_step * max(indent + self.extra_indent, 0) + line
 
     @contextlib.contextmanager
-    def indented(self) -> Iterator[None]:
+    def indented(self, amt: int = 1) -> Iterator[None]:
         try:
-            self.extra_indent += 1
+            self.extra_indent += amt
             yield
         finally:
-            self.extra_indent -= 1
+            self.extra_indent -= amt
 
     def format_array(self, elements: List[str]) -> str:
         # If there are no newlines & the output would be short, put it all on one line.

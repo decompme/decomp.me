@@ -8,7 +8,7 @@ import classNames from "classnames"
 
 import ErrorBoundary from "./ErrorBoundary"
 import LoadingSpinner from "./loading.svg"
-import Shortcut, { Key, useShortcut } from "./Shortcut"
+import Shortcut, { Key, ShortcutCallback, useShortcut } from "./Shortcut"
 import styles from "./VerticalMenu.module.scss"
 
 const MenuContext = createContext({
@@ -54,17 +54,17 @@ export function MenuItem({ className, children }: { className?: string, children
 export function ButtonItem({ children, disabled, onTrigger, shortcutKeys }: {
     children: ReactNode
     disabled?: boolean
-    onTrigger: () => void | Promise<unknown>
+    onTrigger: ShortcutCallback
     shortcutKeys?: Key[]
 }) {
     const { setOpen, setPointerEvents } = useContext(MenuContext)
     const [isLoading, setIsLoading] = useState(false)
 
-    const trigger = async () => {
+    const trigger = async (event: any) => {
         if (!disabled) {
             setIsLoading(true)
             setPointerEvents(false)
-            await onTrigger()
+            await onTrigger(event)
             setIsLoading(false)
             setPointerEvents(true)
             setOpen(false)

@@ -26,6 +26,9 @@ server {
     location /static {
         try_files $uri @proxy_api;
     }
+    location /media {
+        root /path/to/decomp.me/backend;
+    }
 
     location @proxy_api {
         proxy_set_header X-Forwarded-Proto https;

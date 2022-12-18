@@ -13,10 +13,14 @@ export function calculateScorePercent(score: number, maxScore: number): number {
 
 export function percentToString(percent: number): string {
     // If the percent is an integer, don't show the decimal
-    if (Math.floor(percent * 100) / 100 === Math.floor(percent))
+    if (Math.floor(percent * 100) / 100 === Math.floor(percent)) {
         return `${Math.floor(percent)}%`
-    else
-        return `${percent.toFixed(2)}%`
+    }
+    // If percent is between 99.99 and 100 exclusive, always round down
+    if (99.99 < percent && percent < 100) {
+        return "99.99%"
+    }
+    return `${percent.toFixed(2)}%`
 }
 
 export function getScoreText(score: number, maxScore: number): string {
@@ -34,10 +38,11 @@ export function getScoreText(score: number, maxScore: number): string {
 export type Props = {
     score: number
     maxScore: number
+    compiledSuccessfully: boolean
 }
 
-export default function ScoreBadge({ score, maxScore }: Props) {
-    if (score === -1) {
+export default function ScoreBadge({ score, maxScore, compiledSuccessfully }: Props) {
+    if (!compiledSuccessfully) {
         return <div className={classNames(styles.badge, { [styles.error]: true })}>
             <AlertIcon className={styles.icon} />
         </div>

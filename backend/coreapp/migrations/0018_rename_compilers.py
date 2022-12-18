@@ -1,8 +1,10 @@
 import django.db.migrations.operations.special
+from django.apps.registry import Apps
 from django.db import migrations
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
-def rename_compilers(apps, schema_editor):
+def rename_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     Migrate old compiler ids to new ones
     """

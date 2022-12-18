@@ -1,7 +1,5 @@
 import os
-import sys
 from pathlib import Path
-from platform import uname
 
 import django_stubs_ext
 import environ
@@ -17,12 +15,15 @@ env = environ.Env(
     DUMMY_COMPILER=(bool, False),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
+    SANDBOX_DISABLE_PROC=(bool, False),
     SECURE_SSL_REDIRECT=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
     SECURE_HSTS_PRELOAD=(bool, False),
     STATIC_URL=(str, "/static/"),
     STATIC_ROOT=(str, BASE_DIR / "static"),
+    MEDIA_URL=(str, "/media/"),
+    MEDIA_ROOT=(str, BASE_DIR / "media"),
     LOCAL_FILE_DIR=(str, BASE_DIR / "local_files"),
     USE_SANDBOX_JAIL=(bool, False),
     SESSION_COOKIE_SECURE=(bool, True),
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [
@@ -131,6 +133,16 @@ USE_TZ = True
 STATIC_URL = env("STATIC_URL")
 STATIC_ROOT = env("STATIC_ROOT")
 
+# Media files (user uploads)
+MEDIA_ROOT = env("MEDIA_ROOT")
+MEDIA_URL = env("MEDIA_URL")
+DJANGORESIZED_DEFAULT_SCALE = 1.0
+DJANGORESIZED_DEFAULT_QUALITY = 100
+DJANGORESIZED_DEFAULT_KEEP_META = False
+DJANGORESIZED_DEFAULT_FORCE_FORMAT = "WEBP"
+DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {"WEBP": ".webp"}
+DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -181,6 +193,7 @@ USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
 SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
+SANDBOX_DISABLE_PROC = env("SANDBOX_DISABLE_PROC")
 
 GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)

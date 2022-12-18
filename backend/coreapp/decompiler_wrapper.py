@@ -9,6 +9,8 @@ from coreapp.platforms import Platform
 
 logger = logging.getLogger(__name__)
 
+MAX_M2C_ASM_LINES = 15000
+
 
 class DecompilerWrapper:
     @staticmethod
@@ -24,6 +26,8 @@ class DecompilerWrapper:
 
         ret = default_source_code
         if platform.arch in ["mips", "mipsel", "ppc"]:
+            if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
+                return "/* Too many lines to decompile; please run m2c manually */"
             try:
                 ret = M2CWrapper.decompile(asm, context, compiler, platform.arch)
             except M2CError as e:

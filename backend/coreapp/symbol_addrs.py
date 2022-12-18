@@ -9,7 +9,7 @@ class Symbol:
         self.rom_address = rom_address
 
 
-def symbol_name_from_asm_file(asm_file: Path) -> Optional[str]:
+def symbol_name_from_asm_file(asm_file: Path) -> str:
     with asm_file.open("r") as f:
         lines = f.readlines()
 
@@ -17,7 +17,7 @@ def symbol_name_from_asm_file(asm_file: Path) -> Optional[str]:
         if line.startswith("glabel "):
             return line.split(" ")[1].strip()
 
-    return None
+    return ""
 
 
 def parse_symbol_addrs(file_path: Path) -> Dict[str, Symbol]:

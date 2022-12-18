@@ -166,7 +166,7 @@ class RegFormatter:
         return self.used_names.get(reg, reg.register_name)
 
 
-valid_word = string.ascii_letters + string.digits + "_$"
+valid_word = string.ascii_letters + string.digits + "_$."
 valid_number = "-xX" + string.hexdigits
 
 
@@ -281,16 +281,16 @@ def parse_arg_elems(
             assert value is None
             arg_elems.pop(0)
             word = parse_word(arg_elems)
-            if word in ["data", "rodata", "bss", "text"]:
+            if word in ["data", "sdata", "rodata", "rdata", "bss", "sbss", "text"]:
                 value = asm_section_global_symbol(word, 0)
             else:
                 value = JumpTarget(word)
         elif tok == "%":
-            # A macro (i.e. %hi(...) or %lo(...)).
+            # A MIPS reloc macro, e.g. %hi(...) or %lo(...).
             assert value is None
             arg_elems.pop(0)
             macro_name = parse_word(arg_elems)
-            assert macro_name in ("hi", "lo")
+            assert macro_name
             expect("(")
             # Get the argument of the macro (which must exist).
             m = parse_arg_elems(
@@ -358,7 +358,7 @@ def parse_arg_elems(
             else:
                 op = expect("&+-*")
 
-            if tok == "-" and arg_elems[0] == "_":
+            if op == "-" and arg_elems[0] == "_":
                 # Parse `sym-_SDA_BASE_` as a Macro, equivalently to `sym@sda21`
                 reloc_name = parse_word(arg_elems)
                 if reloc_name not in ("_SDA_BASE_", "_SDA2_BASE_"):
@@ -379,8 +379,10 @@ def parse_arg_elems(
                     raise DecompFailure(
                         "Math is too complicated for m2c. Try adding parentheses."
                     )
-                if isinstance(rhs, AsmLiteral) and isinstance(
-                    value, AsmSectionGlobalSymbol
+                if (
+                    op == "+"
+                    and isinstance(rhs, AsmLiteral)
+                    and isinstance(value, AsmSectionGlobalSymbol)
                 ):
                     value = asm_section_global_symbol(
                         value.section_name, value.addend + rhs.value

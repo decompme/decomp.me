@@ -1,51 +1,70 @@
-.nav {
-    flex: 0;
+$innerSize: 32px;
+$padding: 8px;
+
+.container {
     width: 100%;
-
     user-select: none;
+    background: var(--g300);
 
-    display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 0.5em;
+    z-index: 2;
 
-    padding: 4px;
-
-    background: var(--g400);
-    //border-bottom: 1px solid var(--g600);
-
-    font-size: 90%;
-    font-weight: 600;
-
-    @media screen and (min-height: 800px) {
-        padding: 8px;
+    ul {
+        list-style: none;
     }
 }
 
-.item {
+.header {
+    min-height: $innerSize;
+    padding: $padding;
+    box-sizing: content-box;
+
+    display: grid;
+    grid-template-columns: 1fr $innerSize 1fr;
+    grid-template-areas: "menutoggle sitelogo loginstate";
+    justify-content: space-between;
+
+    & > li {
+        min-height: $innerSize;
+    }
+}
+
+.headerItemMenuToggle {
+    grid-area: menutoggle;
+
+    & > button {
+        width: $innerSize;
+        height: $innerSize;
+
+        border: none;
+        background: transparent;
+
+        cursor: pointer;
+    }
+}
+
+.headerItemLoginState {
+    grid-area: loginstate;
+
     display: flex;
     align-items: center;
+    justify-content: flex-end;
 
-    padding: 0 8px;
-
-    opacity: 1;
-
-    &:hover {
-        opacity: 0.8;
-    }
+    height: $innerSize;
+    padding-left: 12px;
 }
 
-.logo {
-    @extend .item;
+.headerItemSiteLogo {
+    grid-area: sitelogo;
 
-    margin: 0;
-    padding: 0 4px;
+    a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-    svg {
-        pointer-events: none;
+        width: 100%;
+        height: 100%;
     }
 
-    /* Frog blinks when you load the page or stop hovering */
     &:not(:hover) {
         @keyframes blink {
             0% {
@@ -88,16 +107,161 @@
     }
 }
 
-.grow {
-    flex: 1;
+.menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    z-index: 100;
+
+    width: 100%;
+    height: calc(100vh - $innerSize - 16px);
+
+    overflow: auto;
+
+    background: var(--g300);
+
+    .container[data-open="false"] & {
+        display: none;
+        visibility: hidden;
+    }
+}
+
+@mixin borderBottomNoLayoutShift {
+    padding-bottom: $padding - 1px;
+    border-bottom: 1px solid var(--g600);
+}
+
+.border .header {
+    @include borderBottomNoLayoutShift;
+}
+
+// Sidebar
+@media (min-width: 500px) {
+    .container[data-open="true"] .header {
+        @include borderBottomNoLayoutShift;
+    }
+
+    .menu {
+        width: 300px;
+        border-right: 1px solid var(--g600);
+
+        // Cover up header's border-bottom
+        box-shadow: -2px 0 0 2px var(--g300);
+    }
+}
+
+.searchContainer {
+    padding: $padding;
 }
 
 .search {
-    flex-basis: 25%;
-    min-width: 200px;
-    max-width: 300px;
+    width: 100%;
 }
 
-.right {
-    justify-self: flex-end;
+.links {
+    padding: 0 $padding;
+
+    > li {
+        padding: 1.5 * $padding;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid var(--g400);
+        }
+
+        a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.links > li > a,
+.desktopLinks > ul > li > a {
+    color: var(--g2000);
+    font-weight: 500;
+
+    &:hover {
+        color: var(--g1700);
+    }
+}
+
+.desktopLinks {
+    grid-area: desktoplinks;
+
+    font-size: 0.85rem;
+    margin-left: $padding;
+
+    display: flex;
+    align-items: center;
+
+    > ul {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+
+        > li {
+            height: $innerSize;
+
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .container[data-force-toggle="false"] & {
+        display: none;
+    }
+}
+
+// on mobile
+@media (max-width: 700px) {
+    body:has(.container[data-open="true"]) {
+        // Disable scrolling
+        overflow: hidden;
+    }
+}
+
+.customchildren {
+    display: none;
+}
+
+// has custom children
+.container[data-force-toggle="true"] .header {
+    grid-template-columns: $innerSize 1fr auto;
+    grid-template-areas: "menutoggle customchildren loginstate";
+
+    .headerItemSiteLogo {
+        display: none;
+    }
+
+    .customchildren {
+        grid-area: customchildren;
+        justify-self: center;
+
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 700px) {
+    // no toggle menu
+    .container[data-force-toggle="false"] {
+        .header {
+            grid-template-columns: $innerSize auto 1fr;
+            grid-template-areas: "sitelogo desktoplinks loginstate";
+        }
+
+        .headerItemMenuToggle,
+        .menu {
+            display: none;
+        }
+
+        .desktopLinks {
+            display: flex;
+        }
+    }
 }

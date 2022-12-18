@@ -62,10 +62,9 @@ export function LoadedScratchList({ className, item, scratches }: Pick<Props, "c
     return <ul className={classNames(styles.list, className)}>
         {scratches.map(scratch => <Item key={scratch.url} scratch={scratch} />)}
     </ul>
-
 }
 
-export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
+export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
 
@@ -75,7 +74,7 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                <ScratchIcon scratch={scratch} className={styles.icon} />
+                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -86,7 +85,12 @@ export function ScratchItem({ scratch }: { scratch: api.TerseScratch }) {
                 </div>}
             </div>
             <div className={styles.metadata}>
-                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                <span>
+                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                </span>
+                <div className={styles.actions}>
+                    {children}
+                </div>
             </div>
         </div>
     </li>
@@ -102,7 +106,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     return <li className={styles.item}>
         <div className={styles.scratch}>
             <div className={styles.header}>
-                <ScratchIcon scratch={scratch} className={styles.icon} />
+                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
                 <Link href={scratch.html_url}>
                     <a className={classNames(styles.link, styles.name)}>
                         {scratch.name}
@@ -121,7 +125,7 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
     return <li className={styles.singleLine}>
-        <ScratchIcon scratch={scratch} className={styles.icon} />
+        <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
         <Link href={scratch.html_url}>
             <a className={classNames(styles.link, styles.name)}>
                 {scratch.name}

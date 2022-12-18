@@ -28,6 +28,8 @@ docker-compose up --build
 
 The processes will run in the foreground until you CTRL+C to trigger a shutdown.
 
+Navigate to [http://localhost:80](http://localhost:80) in your browser.
+
 
 **Run daemonised:**
 

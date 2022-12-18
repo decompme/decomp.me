@@ -3,6 +3,8 @@ import logging
 from django.db import models
 from django.utils.crypto import get_random_string
 
+from typing import List
+
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.data if len(self.data) < 20 else self.data[:17] + "..."
 
 
@@ -59,7 +61,9 @@ class Scratch(models.Model):
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    diff_label = models.CharField(max_length=512, blank=True, null=True)
+    diff_label = models.CharField(
+        max_length=512, blank=True
+    )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
@@ -72,11 +76,11 @@ class Scratch(models.Model):
         ordering = ["-creation_time"]
         verbose_name_plural = "Scratches"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.slug
 
     # hash for etagging
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
     def get_url(self) -> str:
@@ -87,3 +91,8 @@ class Scratch(models.Model):
 
     def is_claimable(self) -> bool:
         return self.owner is None
+
+    def all_parents(self) -> "List[Scratch]":
+        if self.parent is None:
+            return []
+        return [self.parent] + self.parent.all_parents()

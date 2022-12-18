@@ -1,38 +1,55 @@
-from functools import cache
+import enum
 import logging
 from dataclasses import dataclass, field
+from functools import cache
 from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
-from coreapp.flags import (
-    COMMON_CLANG_FLAGS,
-    COMMON_GCC_FLAGS,
-    COMMON_IDO_FLAGS,
-    COMMON_MWCC_FLAGS,
-    COMMON_GCC_PS1_FLAGS,
-    Flags,
-)
 
 from coreapp import platforms
+from coreapp.flags import (
+    COMMON_ARMCC_FLAGS,
+    COMMON_CLANG_FLAGS,
+    COMMON_GCC_FLAGS,
+    COMMON_GCC_PS1_FLAGS,
+    COMMON_IDO_FLAGS,
+    COMMON_MWCC_FLAGS,
+    Flags,
+)
 
 from coreapp.platforms import (
     GBA,
     GC_WII,
+    IRIX,
+    MACOS9,
+    MACOSX,
+    N3DS,
     N64,
     NDS_ARM9,
     Platform,
     PS1,
     PS2,
     SWITCH,
-    MACOS9,
-    MACOSX,
 )
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
+
+
+class Language(enum.Enum):
+    C = "C"
+    CXX = "C++"
+    PASCAL = "Pascal"
+
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.PASCAL: "p",
+        }[self]
 
 
 @dataclass(frozen=True)
@@ -46,6 +63,7 @@ class Compiler:
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
     needs_wine = False
+    language: Language = Language.C
 
     @property
     def path(self) -> Path:
@@ -61,7 +79,7 @@ class Preset:
     name: str
     compiler: Compiler
     flags: str
-    diff_flags: list[str] = field(default_factory=list)
+    diff_flags: List[str] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, object]:
         return {
@@ -83,6 +101,11 @@ class DummyCompiler(Compiler):
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
+
+
+@dataclass(frozen=True)
+class ArmccCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
 
 
 @dataclass(frozen=True)
@@ -116,18 +139,18 @@ def from_id(compiler_id: str) -> Compiler:
 
 @cache
 def available_compilers() -> List[Compiler]:
-    return sorted(
-        _compilers.values(),
-        key=lambda c: (c.platform.id, c.id),
-    )
+    return list(_compilers.values())
 
 
 @cache
 def available_platforms() -> List[Platform]:
-    return sorted(
-        set(compiler.platform for compiler in available_compilers()),
-        key=lambda p: p.name,
-    )
+    pset = set(compiler.platform for compiler in available_compilers())
+
+    # Disable MACOS9 for now, as it's not working properly
+    if MACOS9 in pset:
+        pset.remove(MACOS9)
+
+    return sorted(pset, key=lambda p: p.name)
 
 
 @cache
@@ -163,6 +186,68 @@ AGBCCPP = GCCCompiler(
     platform=GBA,
     cc='cc -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
+# N3DS
+ARMCC_CC = '${WINE} "${COMPILER_DIR}"/bin/armcc.exe -c --cpu=MPCore --fpmode=fast --apcs=/interwork -I "${COMPILER_DIR}"/include $COMPILER_FLAGS -o "${OUTPUT}" "${INPUT}"'
+
+ARMCC_40_771 = ArmccCompiler(
+    id="armcc_40_771",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_40_821 = ArmccCompiler(
+    id="armcc_40_821",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_561 = ArmccCompiler(
+    id="armcc_41_561",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_713 = ArmccCompiler(
+    id="armcc_41_713",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_894 = ArmccCompiler(
+    id="armcc_41_894",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_921 = ArmccCompiler(
+    id="armcc_41_921",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1049 = ArmccCompiler(
+    id="armcc_41_1049",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1440 = ArmccCompiler(
+    id="armcc_41_1440",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_1454 = ArmccCompiler(
+    id="armcc_41_1454",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_504_82 = ArmccCompiler(
+    id="armcc_504_82",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
 
 # Switch
 CLANG_391 = ClangCompiler(
@@ -184,7 +269,8 @@ GCC263_MIPSEL = GCCPS1Compiler(
     cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
     platform=PS1,
@@ -203,30 +289,16 @@ PSYQ43 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
-PSYQ46 = GCCPS1Compiler(
-    id="psyq4.6",
+PSYQ45 = GCCPS1Compiler(
+    id="psyq4.5",
     platform=PS1,
     cc=PSYQ_CC,
 )
 
-GCC_PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} | ${COMPILER_DIR}/mips-elf-as -EL -march=r3000 -mtune=r3000 -G0 -o "$OUTPUT"'
-
-GCC272PSYQ = GCCPS1Compiler(
-    id="gcc2.7.2-psyq",
+PSYQ46 = GCCPS1Compiler(
+    id="psyq4.6",
     platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC281PSYQ = GCCPS1Compiler(
-    id="gcc2.8.1-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
-)
-
-GCC2952PSYQ = GCCPS1Compiler(
-    id="gcc2.95.2-psyq",
-    platform=PS1,
-    cc=GCC_PSYQ_CC,
+    cc=PSYQ_CC,
 )
 
 # PS2
@@ -236,17 +308,40 @@ EE_GCC296 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+# IRIX
+IDO53_IRIX = IDOCompiler(
+    id="ido5.3_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+)
+
+IDO71_IRIX = IDOCompiler(
+    id="ido7.1_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+)
+
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+    language=Language.PASCAL,
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
     platform=N64,
-    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
-    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 GCC272KMC = GCCCompiler(
@@ -265,6 +360,22 @@ GCC272SN = GCCCompiler(
     id="gcc2.7.2sn",
     platform=N64,
     cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
+GCC272SNEW = GCCCompiler(
+    id="gcc2.7.2snew",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/cpp -lang-c -undef "$INPUT" | "${COMPILER_DIR}"/cc1 -mfp32 -mgp32 -G0 -quiet -mcpu=vr4300 -fno-exceptions ${COMPILER_FLAGS} -o "$OUTPUT".s && python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mips3 -O1 -mabi=32 -mgp32 -march=vr4300 -mfp32 -mno-shared -o "$OUTPUT"',
+)
+
+GCC281SNCXX = GCCCompiler(
+    id="gcc2.8.1sn-cxx",
+    base_id="gcc2.8.1sn",
+    platform=N64,
+    cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
 # MACOS9
@@ -431,7 +542,7 @@ MWCC_43_213 = MWCCCompiler(
 )
 
 # NDS_ARM9
-MWCCARM_CC = '${WINE} "${COMPILER_DIR}/mwccarm.exe" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+MWCCARM_CC = '${WINE} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_20_72 = MWCCCompiler(
     id="mwcc_20_72",
@@ -571,12 +682,24 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     # GBA
     AGBCC,
     OLD_AGBCC,
     AGBCCPP,
+    # N3DS
+    ARMCC_40_771,
+    ARMCC_40_821,
+    ARMCC_41_561,
+    ARMCC_41_713,
+    ARMCC_41_894,
+    ARMCC_41_921,
+    ARMCC_41_1049,
+    ARMCC_41_1440,
+    ARMCC_41_1454,
+    ARMCC_504_82,
     # Switch
     CLANG_391,
     CLANG_401,
@@ -585,10 +708,8 @@ _all_compilers: List[Compiler] = [
     PSYQ40,
     PSYQ41,
     PSYQ43,
+    PSYQ45,
     PSYQ46,
-    GCC272PSYQ,
-    GCC281PSYQ,
-    GCC2952PSYQ,
     # PS2
     EE_GCC296,
     # N64
@@ -596,7 +717,13 @@ _all_compilers: List[Compiler] = [
     IDO71,
     GCC272KMC,
     GCC272SN,
+    GCC272SNEW,
     GCC281,
+    GCC281SNCXX,
+    # IRIX
+    IDO53_IRIX,
+    IDO71_IRIX,
+    IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
@@ -652,7 +779,10 @@ _all_compilers: List[Compiler] = [
 ]
 
 # MKWII Common flags
-MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -lang=c99 -func_align 4 -sym dwarf-2"
+MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -func_align 4 -sym dwarf-2"
+
+# SPM Common flags
+SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
 
 _all_presets = [
     # GBA
@@ -676,6 +806,17 @@ _all_presets = [
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
     ),
+    # N3DS
+    Preset(
+        "Ocarina of Time 3D",
+        ARMCC_40_821,
+        "--cpp --arm --split_sections --debug --no_debug_macros --gnu --debug_info=line_inlining_extensions -O3 -Otime --data_reorder --signed_chars --multibyte_chars --remove_unneeded_entities --force_new_nothrow --remarks --no_rtti",
+    ),
+    Preset(
+        "Super Mario 3D Land",
+        ARMCC_41_894,
+        "--cpp --arm -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+    ),
     # Switch
     Preset(
         "Super Mario Odyssey",
@@ -698,23 +839,139 @@ _all_presets = [
         PSYQ46,
         "-O2",
     ),
+    Preset(
+        "Legacy of Kain: Soul Reaver",
+        PSYQ45,
+        "-g -Wall -O2 -G256",
+    ),
+    Preset(
+        "Metal Gear Solid",
+        PSYQ43,
+        "-O2 -G8",
+    ),
     # N64
-    Preset("Super Mario 64", IDO53, "-O1 -g -mips2"),
-    Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
-    Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    Preset(
+        "Chameleon Twist 1",
+        IDO53,
+        "-O2 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Chameleon Twist 2",
+        IDO53,
+        "-O2 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
-    Preset("Ocarina of Time", IDO71, "-O2 -mips2"),
+    Preset("Dr. Mario 64", GCC272KMC, "-O2 -mips3", diff_flags=["-Mreg-names=32"]),
+    Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
     Preset(
         "Majora's Mask",
         IDO71,
         "-O2 -g3 -mips2 -woff 624",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Mario Party 1-3", GCC272KMC, "-O1 -mips3"),
-    Preset("Paper Mario", GCC281, "-O2 -fforce-addr"),
-    Preset("Rocket Robot on Wheels", GCC272SN, "-O2"),
+    Preset("AeroGauge", IDO53, "-O2 -mips2"),
+    Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
+    Preset(
+        "Mario Party 1",
+        GCC272KMC,
+        "-O1 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Mario Party 2",
+        GCC272KMC,
+        "-O1 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Mario Party 3",
+        GCC272KMC,
+        "-O1 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Ocarina of Time",
+        IDO71,
+        "-O2 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Paper Mario",
+        GCC281,
+        "-O2 -fforce-addr -gdwarf-2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Quest64",
+        IDO53,
+        "-O2 -g3 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Rocket Robot on Wheels",
+        GCC272SNEW,
+        "-mips2 -O2 -gdwarf -funsigned-char",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Space Station Silicon Valley",
+        IDO53,
+        "-O2 -mips2 -Xfullwarn -signed -nostdinc",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Super Mario 64",
+        IDO53,
+        "-O1 -g -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Duke Nukem Zero Hour",
+        GCC272KMC,
+        "-O2 -g2 -mips3",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    # IRIX
+    Preset(
+        "IDO 5.3 cc",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O1 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 libraries",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 cc",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O1 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 libraries",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 7.1 Pascal",
+        IDO71PASCAL,
+        "-KPIC -mips2 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "7.1 N64 SDK",
+        IDO71_IRIX,
+        "-KPIC -mips2 -g -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
     # GC_WII
     Preset(
         "Super Monkey Ball",
@@ -729,11 +986,16 @@ _all_presets = [
     Preset(
         "Pikmin",
         MWCC_233_163E,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
     Preset(
         "Super Smash Bros. Melee",
         MWCC_233_163E,
+        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
+    ),
+    Preset(
+        "Kirby Air Ride",
+        MWCC_242_81,
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
     ),
     Preset(
@@ -749,7 +1011,7 @@ _all_presets = [
     Preset(
         "Pikmin 2",
         MWCC_247_107,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8",
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8 -common on",
     ),
     Preset(
         "The Thousand-Year Door",
@@ -764,12 +1026,12 @@ _all_presets = [
     Preset(
         "Super Paper Mario (DOL)",
         MWCC_41_60831,
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -inline all -sdata 4 -sdata2 4",
+        f"{SPM_SHARED} -inline all -sdata 4 -sdata2 4",
     ),
     Preset(
         "Super Paper Mario (REL)",
         MWCC_41_60831,
-        "-lang=c99 -enc SJIS -fp hard -O4 -use_lmw_stmw on -str pool -rostr -ipa file -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
+        f"{SPM_SHARED} -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     ),
     Preset(
         "Wii Sports",
@@ -794,48 +1056,48 @@ _all_presets = [
     Preset(
         "Mario Kart Wii (DOL)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0",
+        f"{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0",
     ),
     Preset(
         "Mario Kart Wii (RVL_SDK)",
         MWCC_41_60831,
-        f"{MKW_SHARED} -ipa file",
+        f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
     Preset(
         "Mario Kart Wii (MSL)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa file",
+        f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
     Preset(
         "Mario Kart Wii (NintendoWare)",
         MWCC_42_127,
-        f'{MKW_SHARED} -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -lang=c++ -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Mario Kart Wii (DWC/GameSpy)",
         MWCC_41_60831,
-        f"{MKW_SHARED} -ipa file -w nounusedexpr -w nounusedarg",
+        f"{MKW_SHARED} -lang=c99 -ipa file -w nounusedexpr -w nounusedarg",
     ),
     Preset(
         "Mario Kart Wii (EGG)",
         MWCC_42_127,
-        f"{MKW_SHARED} -ipa function -rostr",
+        f"{MKW_SHARED} -lang=c++ -ipa function -rostr",
     ),
     Preset(
         "Mario Kart Wii (REL)",
         MWCC_42_127,
-        f'{MKW_SHARED} -ipa file -rostr -sdata 0 -sdata2 0 -pragma "legacy_struct_alignment on"',
+        f'{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0 -use_lmw_stmw=on -pragma "legacy_struct_alignment on"',
     ),
     Preset(
         "Metroid Prime (USA)",
-        MWCC_247_108,
-        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline auto",
+        MWCC_242_81,
+        "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline deferred,noauto -common on",
     ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
         MWCC_30_123,
-        "-O4,p -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+        "-O4,p -proc arm946e -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
     ),
     Preset(
         "Pokémon HeartGold / SoulSilver",

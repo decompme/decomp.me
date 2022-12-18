@@ -17,12 +17,15 @@ from src.options import Options
 
 CRASH_STRING = "CRASHED\n"
 
+PATH_FLAGS = {"--context", "--incbin-dir"}
+
 
 @dataclass(frozen=True)
 class TestOptions:
     should_overwrite: bool
     diff_context: int
     filter_re: Pattern[str]
+    fraction: Optional[int] = None
     parallel: Optional[int] = None
     extra_flags: List[str] = field(default_factory=list)
     coverage: Any = None
@@ -52,16 +55,11 @@ def get_test_flags(flags_path: Path) -> List[str]:
     flags_str = flags_path.read_text()
     flags_list = shlex.split(flags_str)
     for i, flag in enumerate(flags_list):
-        if flag != "--context":
+        if flag not in PATH_FLAGS:
             continue
-        try:
-            relative_context_path: str = flags_list[i + 1]
-        except IndexError:
-            raise Exception(
-                f"{flags_path} contains --context without argument"
-            ) from None
-        absolute_context_path: Path = flags_path.parent / relative_context_path
-        flags_list[i + 1] = str(absolute_context_path)
+        if i + 1 >= len(flags_list):
+            raise Exception(f"{flags_path} contains {flag} without argument")
+        flags_list[i + 1] = str(flags_path.parent / flags_list[i + 1])
 
     return flags_list
 
@@ -318,6 +316,8 @@ def main(
     total = len(test_cases)
     if test_options.filter_re is not None:
         test_cases = [t for t in test_cases if test_options.filter_re.search(t.name)]
+    if test_options.fraction is not None:
+        test_cases = test_cases[:: test_options.fraction]
     skipped = total - len(test_cases)
 
     test_iterator: Iterator[Tuple[TestCase, Optional[bool], str]]
@@ -396,6 +396,14 @@ if __name__ == "__main__":
         help=("Only run tests matching this regular expression."),
     )
     parser.add_argument(
+        "-K",
+        "--fraction",
+        metavar="N",
+        dest="fraction",
+        type=int,
+        help=("Only run 1 in every N tests."),
+    )
+    parser.add_argument(
         "--project",
         metavar="DIR",
         dest="project_dirs",
@@ -469,6 +477,7 @@ if __name__ == "__main__":
         should_overwrite=args.should_overwrite,
         diff_context=args.diff_context,
         filter_re=args.filter_re,
+        fraction=args.fraction,
         parallel=args.parallel,
         extra_flags=args.extra_flags,
         coverage=cov,

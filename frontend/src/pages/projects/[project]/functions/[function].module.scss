@@ -1,0 +1,60 @@
+.header {
+    background: var(--g200);
+    border-bottom: 1px solid var(--g400);
+
+    user-select: auto;
+    align-self: stretch;
+
+    .headerInner {
+        max-width: 50em;
+        margin: 0 auto;
+    }
+
+    .projectLink {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    max-width: 50em;
+    padding: 1em;
+    margin: 0 auto;
+
+    cursor: default;
+}
+
+.attempts {
+    > h2 {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+
+        gap: 0.5em;
+        padding: 0 0 0.5em 1em;
+
+        color: var(--g1400);
+        font-weight: 600;
+
+        > :first-child {
+            flex-grow: 1;
+        }
+    }
+
+    > ul > li {
+        border-color: var(--g300);
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+
+    .noAttempts {
+        padding: 1em;
+        text-align: center;
+        color: var(--g800);
+    }
+}

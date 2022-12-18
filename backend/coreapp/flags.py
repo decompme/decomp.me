@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Dict, Union
+from typing import Dict, List, Union
+
+ASMDIFF_FLAG_PREFIX = "-DIFF"
 
 
 @dataclass(frozen=True)
@@ -18,9 +20,9 @@ class Checkbox:
 @dataclass(frozen=True)
 class FlagSet:
     id: str
-    flags: list[str]
+    flags: List[str]
 
-    def to_json(self) -> Dict[str, Union[str, list[str]]]:
+    def to_json(self) -> Dict[str, Union[str, List[str]]]:
         return {
             "type": "flagset",
             "id": self.id,
@@ -28,7 +30,16 @@ class FlagSet:
         }
 
 
-Flags = list[Union[Checkbox, FlagSet]]
+Flags = List[Union[Checkbox, FlagSet]]
+
+COMMON_ARMCC_FLAGS: Flags = [
+    FlagSet(
+        id="armcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ospace", "-Otime"]
+    ),
+    FlagSet(id="armcc_language", flags=["--c90", "--c99", "--cpp"]),
+    FlagSet(id="armcc_instset", flags=["--arm", "--thumb"]),
+    Checkbox(id="armcc_debug", flag="--debug"),
+]
 
 COMMON_CLANG_FLAGS: Flags = [
     FlagSet(
@@ -60,7 +71,9 @@ COMMON_CLANG_FLAGS: Flags = [
 
 COMMON_GCC_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
-    FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
+    FlagSet(
+        id="gcc_debug_level", flags=["-gdwarf-2", "-gdwarf", "-g0", "-g1", "-g2", "-g3"]
+    ),
     FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
     Checkbox("gcc_force_addr", "-fforce-addr"),
 ]
@@ -72,8 +85,16 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("kpic", "-KPIC"),
 ]
 
+COMMON_DIFF_FLAGS: Flags = [
+    FlagSet(
+        id="diff_algorithm",
+        flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
+    ),
+]
+
 COMMON_MIPS_DIFF_FLAGS: Flags = [
     Checkbox("mreg_names=32", "-Mreg-names=32"),
+    Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
 ]
 
 COMMON_MWCC_FLAGS: Flags = [
