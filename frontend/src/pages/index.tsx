@@ -10,6 +10,7 @@ import GitHubLoginButton from "../components/GitHubLoginButton"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
 import ScratchList, { SingleLineScratchItem } from "../components/ScratchList"
+import YourScratchList from "../components/YourScratchList"
 import * as api from "../lib/api"
 
 import styles from "./index.module.scss"
@@ -20,10 +21,6 @@ export default function IndexPage() {
     const user = api.useThisUser()
     const stats = api.useStats()
     const plausible = usePlausible()
-
-    const yourScratchesUrl = (!user || api.isAnonUser(user))
-        ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
-        : `/users/${user.username}/scratches?page_size=16`
 
     return <>
         <PageTitle description={DECOMP_ME_DESCRIPTION} />
@@ -71,11 +68,9 @@ export default function IndexPage() {
             <section className={styles.projects}>
                 <ErrorBoundary>
                     <h2>Your scratches</h2>
-                    <ScratchList
-                        url={yourScratchesUrl}
+                    <YourScratchList
                         className={styles.yourScratchList}
                         item={SingleLineScratchItem}
-                        emptyButtonLabel="Create your first scratch"
                     />
                 </ErrorBoundary>
             </section>
