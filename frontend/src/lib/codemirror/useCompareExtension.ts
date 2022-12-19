@@ -17,13 +17,13 @@ const diffLineMap = Facet.define<DiffLineMap, DiffLineMap>({
     combine: values => (values.length ? values[0] : {}),
 })
 
-const marker = new class extends GutterMarker {
+const marker = new (class extends GutterMarker {
     toDOM() {
         const span = document.createElement("span")
         span.className = styles.marker
         return span
     }
-}
+})
 
 const diffGutter = gutter({
     lineMarker(view, block) { // Might be better to use markers field instead, but this works

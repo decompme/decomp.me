@@ -35,25 +35,27 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
 
     const Item = item || ScratchItem
 
-    return <ul className={classNames(styles.list, className)}>
-        {results.map(scratch => (
-            <Item key={scratch.url} scratch={scratch} />
-        ))}
-        {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
-            <Link href="/new">
-                <a>
+    return (
+        <ul className={classNames(styles.list, className)}>
+            {results.map(scratch => (
+                <Item key={scratch.url} scratch={scratch} />
+            ))}
+            {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
+                <Link href="/new">
+
                     <Button>
                         {emptyButtonLabel}
                     </Button>
-                </a>
-            </Link>
-        </li>}
-        {hasNext && <li className={styles.button}>
-            <AsyncButton onClick={loadNext}>
-                Show more
-            </AsyncButton>
-        </li>}
-    </ul>
+
+                </Link>
+            </li>}
+            {hasNext && <li className={styles.button}>
+                <AsyncButton onClick={loadNext}>
+                    Show more
+                </AsyncButton>
+            </li>}
+        </ul>
+    )
 }
 
 export function LoadedScratchList({ className, item, scratches }: Pick<Props, "className" | "item"> & { scratches: api.TerseScratch[] }) {
@@ -71,29 +73,31 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
-    return <li className={styles.item}>
-        <div className={styles.scratch}>
-            <div className={styles.header}>
-                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                <Link href={scratch.html_url}>
-                    <a className={classNames(styles.link, styles.name)}>
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+
                         {scratch.name}
-                    </a>
-                </Link>
-                {scratch.owner && <div className={styles.owner}>
-                    <UserLink user={scratch.owner} />
-                </div>}
-            </div>
-            <div className={styles.metadata}>
-                <span>
-                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
-                </span>
-                <div className={styles.actions}>
-                    {children}
+
+                    </Link>
+                    {scratch.owner && <div className={styles.owner}>
+                        <UserLink user={scratch.owner} />
+                    </div>}
+                </div>
+                <div className={styles.metadata}>
+                    <span>
+                        {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </span>
+                    <div className={styles.actions}>
+                        {children}
+                    </div>
                 </div>
             </div>
-        </div>
-    </li>
+        </li>
+    )
 }
 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
@@ -103,36 +107,40 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
-    return <li className={styles.item}>
-        <div className={styles.scratch}>
-            <div className={styles.header}>
-                <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                <Link href={scratch.html_url}>
-                    <a className={classNames(styles.link, styles.name)}>
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+
                         {scratch.name}
-                    </a>
-                </Link>
+
+                    </Link>
+                </div>
+                <div className={styles.metadata}>
+                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                </div>
             </div>
-            <div className={styles.metadata}>
-                {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
-            </div>
-        </div>
-    </li>
+        </li>
+    )
 }
 
 export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }) {
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
 
-    return <li className={styles.singleLine}>
-        <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-        <Link href={scratch.html_url}>
-            <a className={classNames(styles.link, styles.name)}>
+    return (
+        <li className={styles.singleLine}>
+            <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+            <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+
                 {scratch.name}
-            </a>
-        </Link>
-        <div className={styles.metadata}>
-            {matchPercentString}
-        </div>
-    </li>
+
+            </Link>
+            <div className={styles.metadata}>
+                {matchPercentString}
+            </div>
+        </li>
+    )
 }

@@ -43,17 +43,21 @@ export default function UnderlineNav({ links, maxWidth }: Props) {
         }
     }
 
-    return <nav ref={ref} className={styles.container}>
-        <ul style={{ maxWidth }}>
-            {links.filter(Boolean).map(({ href, label, selected, shallow }) => {
-                const isSelected = selected || router.asPath === href
+    return (
+        <nav ref={ref} className={styles.container}>
+            <ul style={{ maxWidth }}>
+                {links.filter(Boolean).map(({ href, label, selected, shallow }) => {
+                    const isSelected = selected || router.asPath === href
 
-                return <li key={href} data-selected={isSelected}>
-                    <Link href={href} shallow={shallow}>
-                        <a onClick={shallow && onClickShallow}>{label}</a>
-                    </Link>
-                </li>
-            })}
-        </ul>
-    </nav>
+                    return (
+                        <li key={href} data-selected={isSelected}>
+                            <Link href={href} shallow={shallow} onClick={shallow && onClickShallow}>
+                                {label}
+                            </Link>
+                        </li>
+                    )
+                })}
+            </ul>
+        </nav>
+    )
 }

@@ -30,10 +30,10 @@ export default function ProjectHeader({ project, tab }: Props) {
                     <p>{project.description}</p>
                     <div className={styles.metadata}>
                         <Link href={project.repo.html_url}>
-                            <a>
-                                <MarkGithubIcon size={16} />
-                                {project.repo.owner}/{project.repo.repo}
-                            </a>
+
+                            <MarkGithubIcon size={16} />
+                            {project.repo.owner}/{project.repo.repo}
+
                         </Link>
                         {project.platform && <div className={styles.platform}>
                             <PlatformIcon platform={project.platform} size={16} />
