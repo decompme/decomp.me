@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { cpp } from "@codemirror/lang-cpp"
 import { FileIcon, PaintbrushIcon } from "@primer/octicons-react"
@@ -239,7 +239,8 @@ function ScratchEditorSettings() {
 
 export default function SettingsPage() {
     const router = useRouter()
-    const { tab } = router.query as { tab: string }
+    const searchParams = useSearchParams()
+    const tab = searchParams.get("tab")
     const isMounted = useIsMounted()
 
     const ContentEl = {
@@ -256,7 +257,7 @@ export default function SettingsPage() {
                     <h1>Settings</h1>
                     <Tabs
                         activeTab={tab}
-                        onChange={tab => router.push(`/settings/${tab}`, undefined, { shallow: true })}
+                        onChange={tab => router.push(`/settings/${tab}`)}
                         className={styles.tabs}
                         vertical
                         border={false}

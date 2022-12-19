@@ -1,6 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { RepoPullIcon } from "@primer/octicons-react"
 import { SWRConfig } from "swr"
@@ -109,7 +109,8 @@ export function Inner({ url, tab }: { url: string, tab: Tab }) {
 
 export default function ProjectPage(props: { project: api.Project, fallback: any }) {
     const router = useRouter()
-    const [, maybeTab, ...rest] = router.query.project as string[]
+    const searchParams = useSearchParams()
+    const [, maybeTab, ...rest] = searchParams.getAll("project") as string[]
     const tab = maybeTab ?? DEFAULT_TAB
 
     if (rest.length || !isValidTab(tab)) {
