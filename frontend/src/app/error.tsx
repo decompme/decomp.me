@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import Button from "../components/Button"
 
 import ErrorBoundary from "../components/ErrorBoundary"
 import Footer from "../components/Footer"
@@ -12,7 +13,7 @@ export default function Error({
 }: {
     error: Error
     reset: () => void
-  }) {
+}) {
     useEffect(() => {
         console.error(error)
     }, [error])
@@ -23,15 +24,24 @@ export default function Error({
                 <Nav />
             </ErrorBoundary>
 
-            <main>
-                <h1 className="text-3xl font-bold underline">Something went wrong</h1>
-                <p>
-                An unexpected error occurred.
-                For more information, check the JavaScript console.
+            <main className="md:container md:mx-auto p-4">
+                <h1 className="text-3xl font-semibold">Something went wrong</h1>
+                <p className="py-4">
+                    An unexpected error occurred.
                 </p>
-                <p style={{ color: "var(--g600)" }}>
-                If this keeps happening, <a href="https://discord.gg/sutqNShRRs">let us know</a>.
+                <div className="bg-gray-800 text-white p-4 rounded">
+                    <code className="text-sm font-mono">{error.toString()}</code>
+                </div>
+                <p className="py-4">
+                    If this keeps happening, <a href="https://discord.gg/sutqNShRRs" className="underline hover:text-blue-500">let us know</a>.
                 </p>
+                <ErrorBoundary>
+                    <Button
+                        onClick={reset}
+                    >
+                        Try again
+                    </Button>
+                </ErrorBoundary>
             </main>
 
             <ErrorBoundary>

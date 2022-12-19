@@ -1,3 +1,5 @@
+"use client" // TEMP
+
 import { useEffect, useReducer } from "react"
 
 import Link from "next/link"

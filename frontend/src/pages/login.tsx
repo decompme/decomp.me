@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { useSWRConfig } from "swr"
 
@@ -14,11 +14,12 @@ import styles from "./login.module.css"
 // Handles GitHub OAuth callback
 export default function LoginPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [error, setError] = useState(null)
     const { mutate } = useSWRConfig()
-    const code = (router.query.code ?? "").toString()
-    const next = (router.query.next ?? "").toString()
-    const githubError = router.query.error
+    const code = searchParams.get("code")
+    const next = searchParams.get("next")
+    const githubError = searchParams.get("error")
 
     useEffect(() => {
         if (code && !error) {

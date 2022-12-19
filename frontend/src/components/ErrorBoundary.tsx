@@ -1,17 +1,19 @@
-import React from "react"
+"use client"
+
+import { Component, ReactNode } from "react"
 
 interface State {
     error?: unknown
 }
 
 export interface Props {
-    children?: React.ReactNode
+    children?: ReactNode
     forceError?: boolean
-    fallback?: (state: State) => React.ReactNode
+    fallback?: (state: State) => ReactNode
     onError?: (error: unknown, errorInfo: any) => void
 }
 
-export default class ErrorBoundary extends React.Component<Props, State> {
+export default class ErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = { error: undefined }

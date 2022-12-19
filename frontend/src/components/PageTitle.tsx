@@ -1,6 +1,8 @@
+"use client"
+
 import { useEffect } from "react"
 
-import Head from "next/head"
+import Head from "next/head" // TODO: use head.tsx instead
 
 export type Props = {
     title?: string

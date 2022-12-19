@@ -28,48 +28,10 @@
     }
 }
 
-.about,
-.activity,
-.projects {
-    padding: 1em;
-
-    > h1 {
-        font-weight: 300;
-    }
-
-    > h2 {
-        font-weight: 400;
-    }
-}
-
 .about {
     grid-area: about;
     color: var(--g1200);
     background: var(--g300);
-
-    h1 {
-        color: var(--g1900);
-        font-size: 1.25em;
-        font-weight: 300;
-
-        .siteName {
-            font-weight: 500;
-        }
-    }
-
-    p {
-        padding-top: 4px;
-        font-size: 0.9em;
-        max-width: 40ch;
-    }
-
-    .cta {
-        padding-top: 1em;
-
-        display: flex;
-        align-items: stretch;
-        gap: 0.5em;
-    }
 }
 
 .activity {

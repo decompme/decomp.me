@@ -90,7 +90,7 @@ export default function RootLayout({
             selfHosted={true}
         >
             <html lang="en">
-                <body className="dark bg-slate-900">
+                <body>
                     {children}
                 </body>
             </html>
