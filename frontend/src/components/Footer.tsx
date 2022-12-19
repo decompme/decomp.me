@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Frog from "./Nav/frog.svg"
 
-const link = "active:translate-y-px"
+const link = "hover:underline active:translate-y-px"
 
 function Logotype() {
     return <div className="flex items-center space-x-2">
@@ -11,13 +11,13 @@ function Logotype() {
 }
 
 function Separator() {
-    return <div className="h-4 w-px bg-slate-500/20" />
+    return <div className="h-4 w-px bg-gray-5/20" />
 }
 
 export default function Footer() {
     return (
         <footer className="mx-auto mt-32 w-full max-w-container px-4 sm:px-6 lg:px-8">
-            <div className="border-t border-gray-900/10 dark:border-gray-50/[0.06] py-10 text-slate-700 dark:text-white">
+            <div className="border-t border-black/10 dark:border-white/[0.06] py-10">
                 <div className="flex items-center justify-center">
                     <Link href="/" className={link}>
                         <Logotype />
@@ -37,7 +37,7 @@ export default function Footer() {
                     </Link>
                     <Separator />
                     <Link href="https://discord.gg/sutqNShRRs" className={link}>
-                        Discord
+                        Chat
                     </Link>
                     <Separator />
                     <Link href="/credits" className={link}>

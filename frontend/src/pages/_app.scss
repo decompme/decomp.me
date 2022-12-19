@@ -108,3 +108,30 @@ body.no-scroll {
         height: 100svh;
     }
 }
+
+// Glow effect at top of page
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 25%;
+    transform: translateX(-50%);
+
+    width: 80vmin;
+    height: 80vmin;
+
+    --pure: 0; // black = light
+    background-image: radial-gradient(
+        circle at 50% 0,
+        rgba(var(--pure), var(--pure), var(--pure), 0.025) 0%,
+        rgba(var(--pure), var(--pure), var(--pure), 0) 40%
+    );
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    z-index: -999;
+
+    .dark & {
+        --pure: 255;
+    }
+}

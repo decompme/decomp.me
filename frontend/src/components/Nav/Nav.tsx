@@ -53,7 +53,7 @@ export default function Nav({ border, children }: Props) {
             className={classNames({
                 [styles.container]: true,
                 [styles.border]: border,
-                "border-gray-900/10 dark:border-gray-50/[0.06]": border,
+                "border-black/10 dark:border-white/[0.06]": border,
             })}
             aria-labelledby="navtoggle"
             data-open={isOpen}

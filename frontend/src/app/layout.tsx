@@ -87,7 +87,7 @@ export default function RootLayout({
             selfHosted={true}
         >
             <html lang="en" className="dark">
-                <body className="font-sans subpixel-antialiased bg-white text-black dark:bg-gray-800 dark:text-white">
+                <body className="font-sans subpixel-antialiased bg-white text-gray-7 dark:bg-gray-9 dark:text-gray-0">
                     {children}
                 </body>
             </html>
