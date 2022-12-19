@@ -2,7 +2,7 @@ import contextlib
 import io
 import logging
 
-from m2c.src.main import parse_flags, run
+from m2c.main import parse_flags, run
 
 from coreapp.compilers import Compiler
 

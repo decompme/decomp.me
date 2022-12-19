@@ -1,10 +1,2 @@
 # asm_differ
 backend/asm_differ/diff.py linguist-generated=true
-
-# m2c
-backend/m2c/src/** linguist-generated=true
-backend/m2c/stubs/** linguist-generated=true
-backend/m2c/tests/** linguist-generated=true
-backend/m2c/m2c.py linguist-generated=true
-backend/m2c/run_tests.py linguist-generated=true
-backend/m2c/website.py linguist-generated=true
