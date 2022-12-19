@@ -117,7 +117,7 @@ function MountedSearch({ className }: { className?: string }) {
                 [styles.isOpen]: isOpen,
             })}
             type="text"
-            placeholder="Search decomp.me"
+            placeholder="Search scratches"
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onClick={() => setIsFocused(true)}

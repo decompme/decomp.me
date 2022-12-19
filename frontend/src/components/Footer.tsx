@@ -1,14 +1,7 @@
 import Link from "next/link"
-import Frog from "./Nav/frog.svg"
+import Logotype from "./Logotype"
 
 const link = "hover:underline active:translate-y-px"
-
-function Logotype() {
-    return <div className="flex items-center space-x-2">
-        <Frog className="w-7 h-7" />
-        <span className="text-xl font-semibold leading-6 tracking-tight">decomp.me</span>
-    </div>
-}
 
 function Separator() {
     return <div className="h-4 w-px bg-gray-5/20" />

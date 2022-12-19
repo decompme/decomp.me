@@ -12,6 +12,7 @@ import Frog from "./frog.svg"
 import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
 import Search from "./Search"
+import Logotype from "../Logotype"
 
 export interface Props {
     border?: boolean
@@ -73,10 +74,8 @@ export default function Nav({ border, children }: Props) {
                     </button>
                 </li>
                 <li className={styles.headerItemSiteLogo}>
-                    <Link href="/" aria-label="decomp.me">
-
-                        <Frog width={24} height={24} />
-
+                    <Link href="/">
+                        <Logotype />
                     </Link>
                 </li>
                 <li className={styles.headerItemLoginState}>
@@ -85,7 +84,7 @@ export default function Nav({ border, children }: Props) {
                 {children
                     ? <li className={styles.customchildren}>{children}</li>
                     : <li className={styles.desktopLinks}>
-                        <ul>
+                        <ul className="ml-auto">
                             <li>
                                 <Search />
                             </li>
@@ -95,6 +94,7 @@ export default function Nav({ border, children }: Props) {
                             <li>
                                 <Link href="/projects">Projects</Link>
                             </li>
+                            <div className="w-px h-4 bg-black/10 dark:bg-white/[0.06]" />
                             <li>
                                 <Link href="/settings/appearance">Settings</Link>
                             </li>
@@ -107,6 +107,11 @@ export default function Nav({ border, children }: Props) {
                     <Search className={styles.search} />
                 </div>
                 <ul className={styles.links}>
+                    <li className="flex items-center justify-center">
+                        <Link href="/">
+                            <Logotype />
+                        </Link>
+                    </li>
                     <li>
                         <Link href="/">Dashboard</Link>
                     </li>

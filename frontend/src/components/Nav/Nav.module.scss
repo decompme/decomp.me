@@ -18,7 +18,7 @@ $padding: 8px;
     box-sizing: content-box;
 
     display: grid;
-    grid-template-columns: 1fr $innerSize 1fr;
+    grid-template-columns: 1fr auto 1fr;
     grid-template-areas: "menutoggle sitelogo loginstate";
     justify-content: space-between;
 
@@ -245,7 +245,7 @@ $padding: 8px;
     // no toggle menu
     .container[data-force-toggle="false"] {
         .header {
-            grid-template-columns: $innerSize auto 1fr;
+            grid-template-columns: auto 1fr auto;
             grid-template-areas: "sitelogo desktoplinks loginstate";
         }
 
