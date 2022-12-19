@@ -115,12 +115,17 @@ class HtmlUrlField(UrlField):
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
 
+class CompilerConfigSerializer(serializers.Serializer[None]):
+    compiler = serializers.CharField(allow_blank=False, required=True)
+    platform = serializers.CharField(allow_blank=False, required=True)
+    assembler_flags = serializers.CharField(allow_blank=True, required=False)
+    compiler_flags = serializers.CharField(allow_blank=True, required=False)
+    diff_flags = serializers.JSONField(default=list)
+
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
-    compiler = serializers.CharField(allow_blank=True, required=True)
-    platform = serializers.CharField(allow_blank=True, required=False)
-    compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    diff_flags = serializers.JSONField(required=False)
+    compiler_config = CompilerConfigSerializer(required=True)
     preset = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)

@@ -165,6 +165,7 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
 
 def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
+    print(data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
@@ -173,8 +174,9 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     if given_platform:
         platform = platforms.from_id(given_platform)
 
-    compiler = compilers.from_id(data["compiler"])
-    project = data.get("project")
+    compiler_config = data["compiler_config"]
+    compiler = compilers.from_id(compiler_config["compiler"])
+    project = compiler_config.get("project")
     rom_address = data.get("rom_address")
 
     if platform:
@@ -208,10 +210,10 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             default_source_code, platform, asm.data, context, compiler
         )
 
-    compiler_flags = data.get("compiler_flags", "")
+    compiler_flags = compiler_config.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
-    diff_flags = data.get("diff_flags", [])
+    diff_flags = compiler_config.get("diff_flags", [])
 
     preset = data.get("preset", "")
     if preset and not compilers.preset_from_name(preset):

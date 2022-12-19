@@ -868,12 +868,17 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler_config": {
+                    "compiler": compilers.DUMMY.id,
+                    "platform": platforms.DUMMY.id,
+                    "diff_flags": [],
+                },
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
+            format="json",
         )
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         slug = response.json()["slug"]
 
