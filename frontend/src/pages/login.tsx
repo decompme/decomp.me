@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { useSWRConfig } from "swr"
 

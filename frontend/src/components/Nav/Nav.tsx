@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "react"
 
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
@@ -31,15 +31,9 @@ export default function Nav({ border, children }: Props) {
                 }
             }
 
-            const onroutechange = () => {
-                toggleOpen()
-            }
-
             document.body.addEventListener("keydown", onkeydown)
-            router.events.on("routeChangeComplete", onroutechange)
             return () => {
                 document.body.removeEventListener("keydown", onkeydown)
-                router.events.off("routeChangeComplete", onroutechange)
             }
         }
     }, [isOpen, router])

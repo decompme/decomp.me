@@ -1,4 +1,4 @@
-import router from "next/router"
+import { useRouter } from "next/navigation"
 
 import { XIcon } from "@primer/octicons-react"
 import useSWR from "swr"
@@ -33,6 +33,7 @@ export default function ProjectMembers({ project }: { project: api.Project }) {
     const user = api.useThisUser()
     const { members, addMember, removeMember } = api.useProjectMembers(project)
     const canAct = api.useIsUserProjectMember(project)
+    const router = useRouter()
 
     return <FieldSet
         label="Members"

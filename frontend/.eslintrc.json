@@ -2,12 +2,14 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "css-modules"
+        "css-modules",
+        "tailwindcss"
     ],
     "extends": [
         "eslint:recommended",
         "next/core-web-vitals",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:tailwindcss/recommended"
     ],
     "rules": {
         "semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
@@ -57,7 +59,15 @@
                     {
                         "name": "next/legacy/image",
                         "message": "Use next/image instead."
-                    }
+                    },
+                    {
+                        "name": "next/head",
+                        "message": "Use head.js instead."
+                    },
+                    {
+                        "name": "next/router",
+                        "message": "Use next/navigation instead."
+                    },
                 ]
             }
         ],

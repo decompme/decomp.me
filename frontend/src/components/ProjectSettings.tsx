@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import * as api from "../lib/api"
 import useEntity from "../lib/useEntity"

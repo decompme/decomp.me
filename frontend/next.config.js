@@ -87,7 +87,9 @@ let app = withPlausibleProxy({
         unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
     },
     swcMinify: false,
-    experimental: {},
+    experimental: {
+        appDir: true,
+    },
 }))))
 
 if (process.env.ANALYZE == "true") {

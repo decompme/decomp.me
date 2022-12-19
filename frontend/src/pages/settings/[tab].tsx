@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { cpp } from "@codemirror/lang-cpp"
 import { FileIcon, PaintbrushIcon } from "@primer/octicons-react"

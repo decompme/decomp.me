@@ -18,7 +18,19 @@ module.exports = {
         "shorthand-property-no-redundant-values": null,
         "property-no-vendor-prefix": null,
         "declaration-block-no-redundant-longhand-properties": null,
-
+        "declaration-block-trailing-semicolon": null,
+        "at-rule-no-unknown": [
+            true,
+            {
+                ignoreAtRules: [
+                    "tailwind",
+                    "apply",
+                    "variants",
+                    "responsive",
+                    "screen",
+                ],
+            }
+        ],
     },
     "overrides": [
         {
