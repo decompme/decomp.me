@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { useCombobox } from "downshift"
-import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
 
 import * as api from "../../lib/api"
@@ -23,7 +22,6 @@ function MountedSearch({ className }: { className?: string }) {
     const [isLoading, setIsLoading] = useState(false)
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
-    const plausible = usePlausible()
 
     const items = query.length > 0 ? searchItems : []
 
@@ -63,12 +61,10 @@ function MountedSearch({ className }: { className?: string }) {
                 const resp = await api.get(`/scratch?search=${inputValue}&page_size=5`)
                 setSearchItems(resp.results)
                 setIsLoading(false)
-                plausible("search", { props: { query: inputValue, numResults: resp.results.length } })
             }, 200))
         },
         onSelectedItemChange({ selectedItem }) {
             if (selectedItem) {
-                plausible("searchClickResult", { props: { query: query, result: selectedItem.html_url } })
                 console.info("<Search> onSelectedItemChange")
                 close()
                 router.push(selectedItem.html_url)
@@ -107,7 +103,6 @@ function MountedSearch({ className }: { className?: string }) {
                 evt.preventDefault()
 
                 if (searchItems.length > 0) {
-                    plausible("searchPressEnter")
                     console.info("<Search> Enter pressed")
                     close()
                     router.push(searchItems[0].html_url)

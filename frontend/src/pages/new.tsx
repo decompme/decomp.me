@@ -6,7 +6,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { cpp } from "@codemirror/lang-cpp"
-import { usePlausible } from "next-plausible"
 import useTranslation from "next-translate/useTranslation"
 
 import AsyncButton from "../components/AsyncButton"
@@ -82,7 +81,6 @@ export default function NewScratch({ serverCompilers }: {
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
     const router = useRouter()
-    const plausible = usePlausible()
 
     const defaultLabel = useMemo(() => {
         const labels = getLabels(asm)
@@ -171,8 +169,6 @@ export default function NewScratch({ serverCompilers }: {
             localStorage["new_scratch_asm"] = ""
 
             await api.claimScratch(scratch)
-
-            plausible("createScratch", { props: { platform, compiler: compilerId, url: scratch.html_url } })
 
             await router.push(scratch.html_url)
         } catch (error) {
