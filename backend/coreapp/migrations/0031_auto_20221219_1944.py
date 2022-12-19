@@ -9,7 +9,6 @@ from django.db import migrations
 
 from coreapp.models.scratch import CompilerConfig
 
-
 def populate_compiler_config(
     apps: Apps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
@@ -17,11 +16,10 @@ def populate_compiler_config(
     Populate the compiler_config for all existing scratches
     """
     Scratch = apps.get_model("coreapp", "Scratch")
-    for row in Scratch.objects.all():
+    for row in Scratch.objects.all().iterator(chunk_size=1000):
         cc = CompilerConfig(
             compiler=row.compiler,
             platform=row.platform,
-            assembler_flags=row.assembler_flags,
             compiler_flags=row.compiler_flags,
             diff_flags=row.diff_flags,
         )
