@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import List
 
-import asm_differ.diff as asm_differ
+import asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
