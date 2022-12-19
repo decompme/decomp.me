@@ -1,17 +1,18 @@
-@use "./Nav.module.scss"; // .item
-
 .user {
-    @extend .item;
-
     cursor: pointer;
 
-    gap: 2px;
-    padding: 0 2px;
+    display: flex;
+    align-items: center;
 
-    font-size: 0.8em;
-    font-weight: 400;
+    padding: 0 3px;
+
+    // Override <button>
+    background: none;
+    border: none;
 }
 
 .avatar {
     border-radius: 24px;
+    width: 24px;
+    height: 24px;
 }

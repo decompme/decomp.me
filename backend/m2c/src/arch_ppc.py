@@ -21,6 +21,7 @@ from .asm_instruction import (
     AsmGlobalSymbol,
     AsmInstruction,
     AsmLiteral,
+    BinOp,
     JumpTarget,
     Macro,
     Register,
@@ -126,6 +127,29 @@ class FcmpoCrorPattern(SimpleAsmPattern):
         return None
 
 
+class MfcrPattern(SimpleAsmPattern):
+    """Comparison results extracted as ints."""
+
+    pattern = make_pattern(
+        "mfcr $x",
+        "rlwinm $x, $x, N, 31, 31",
+    )
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        x = m.regs["x"]
+        if m.literals["N"] == 1:
+            reg = Register("cr0_lt")
+        elif m.literals["N"] == 2:
+            reg = Register("cr0_gt")
+        elif m.literals["N"] == 3:
+            reg = Register("cr0_eq")
+        elif m.literals["N"] == 4:
+            reg = Register("cr0_so")
+        else:
+            return None
+        return Replacement([AsmInstruction("move.fictive", [x, reg])], len(m.body))
+
+
 class TailCallPattern(AsmPattern):
     """
     If a function ends in `return fn(...);` then the compiler may perform tail-call
@@ -149,6 +173,44 @@ class TailCallPattern(AsmPattern):
                 1,
             )
         return None
+
+
+class SaveRestoreRegsFnPattern(SimpleAsmPattern):
+    """Expand calls to MWCC's built-in `_{save,rest}{gpr,fpr}_` functions into
+    register saves/restores."""
+
+    pattern = make_pattern(
+        "addi $r11, $r1, N",
+        "bl",
+    )
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        addend = m.literals["N"]
+        bl = m.body[1]
+        assert isinstance(bl, Instruction)
+        assert isinstance(bl.args[0], AsmGlobalSymbol)
+        parts = bl.args[0].symbol_name.split("_")
+        if len(parts) != 3 or parts[0]:
+            return None
+        if parts[1] in ("savegpr", "restgpr"):
+            mnemonic = "stw" if parts[1] == "savegpr" else "lwz"
+            size = 4
+            reg_prefix = "r"
+        elif parts[1] in ("savefpr", "restfpr"):
+            mnemonic = "stfd" if parts[1] == "savefpr" else "lfd"
+            size = 8
+            reg_prefix = "f"
+        else:
+            return None
+        regnum = int(parts[2])
+        new_instrs = []
+        for i in range(regnum, 32):
+            reg = Register(reg_prefix + str(i))
+            stack_pos = AsmAddressMode(
+                AsmLiteral(size * (i - 32) + addend), Register("r1")
+            )
+            new_instrs.append(AsmInstruction(mnemonic, [reg, stack_pos]))
+        return Replacement(new_instrs, len(m.body))
 
 
 class BoolCastPattern(SimpleAsmPattern):
@@ -462,6 +524,26 @@ class PpcArch(Arch):
             )
 
         args = instr.args
+        base_mnemonic = instr.mnemonic.rstrip(".")
+        dot = instr.mnemonic[len(base_mnemonic) :]
+
+        def sub(a: Argument, b: Argument) -> Argument:
+            if isinstance(a, AsmLiteral) and isinstance(b, AsmLiteral):
+                return AsmLiteral(a.value - b.value)
+            else:
+                return BinOp("-", a, b)
+
+        def add(a: Argument, b: Argument) -> Argument:
+            if isinstance(a, AsmLiteral) and isinstance(b, AsmLiteral):
+                return AsmLiteral(a.value + b.value)
+            else:
+                return BinOp("+", a, b)
+
+        def make_dotted(mn: str, args: List[Argument]) -> AsmInstruction:
+            return AsmInstruction(mn + dot, args)
+
+        lit = AsmLiteral
+
         r0_index = cls.INSTRS_R0_AS_ZERO.get(instr.mnemonic)
         if r0_index is not None and len(args) > r0_index:
             # If the argument at the given index is $r0, replace it with $zero
@@ -477,6 +559,26 @@ class PpcArch(Arch):
                 return PpcArch.normalize_instruction(
                     AsmInstruction(instr.mnemonic, new_args)
                 )
+        if len(args) == 4:
+            if base_mnemonic == "extlwi":
+                return make_dotted(
+                    "rlwinm", args[:2] + [args[3], lit(0), sub(args[2], lit(1))]
+                )
+            if base_mnemonic == "extrwi":
+                return make_dotted(
+                    "rlwinm",
+                    args[:2] + [add(args[2], args[3]), sub(lit(32), args[2]), lit(31)],
+                )
+            if base_mnemonic == "rotlwi":
+                return make_dotted("rlwinm", args[:2] + [args[2], lit(0), lit(31)])
+            if base_mnemonic == "rotrwi":
+                return make_dotted(
+                    "rlwinm", args[:2] + [sub(lit(32), args[2]), lit(0), lit(31)]
+                )
+            if base_mnemonic == "clrlslwi":
+                b = args[2]
+                n = args[3]
+                return make_dotted("rlwinm", args[:2] + [n, sub(b, n), sub(lit(31), n)])
         if len(args) == 3:
             if (
                 instr.mnemonic == "addi"
@@ -485,10 +587,24 @@ class PpcArch(Arch):
                 and args[2].macro_name in ("sda2", "sda21")
             ):
                 return AsmInstruction("li", [args[0], args[2].argument])
+            if base_mnemonic == "slwi":
+                return make_dotted(
+                    "rlwinm", args[:2] + [args[2], lit(0), sub(lit(31), args[2])]
+                )
+            if base_mnemonic == "srwi":
+                return make_dotted(
+                    "rlwinm", args[:2] + [sub(lit(32), args[2]), args[2], lit(31)]
+                )
+            if base_mnemonic == "clrlwi":
+                return make_dotted("rlwinm", args[:2] + [lit(0), args[2], lit(31)])
+            if base_mnemonic == "clrrwi":
+                return make_dotted(
+                    "rlwinm", args[:2] + [lit(0), lit(0), sub(lit(31), args[2])]
+                )
         if len(args) == 2:
             if instr.mnemonic == "lis" and isinstance(args[1], AsmLiteral):
-                lit = AsmLiteral((args[1].value & 0xFFFF) << 16)
-                return AsmInstruction("li", [args[0], lit])
+                val = lit((args[1].value & 0xFFFF) << 16)
+                return AsmInstruction("li", [args[0], val])
             if (
                 instr.mnemonic == "lis"
                 and isinstance(args[1], Macro)
@@ -499,8 +615,8 @@ class PpcArch(Arch):
                 value = args[1].argument.value
                 if value & 0x8000:
                     value += 0x10000
-                lit = AsmLiteral(value & 0xFFFF0000)
-                return AsmInstruction("li", [args[0], lit])
+                val = lit(value & 0xFFFF0000)
+                return AsmInstruction("li", [args[0], val])
             if instr.mnemonic.startswith("cmp"):
                 # For the two-argument form of cmpw, the insert an implicit CR0 as the first arg
                 cr0: Argument = Register("cr0")
@@ -515,7 +631,7 @@ class PpcArch(Arch):
         clobbers: List[Location] = []
         outputs: List[Location] = []
         jump_target: Optional[Union[JumpTarget, Register]] = None
-        function_target: Optional[Union[AsmGlobalSymbol, Register]] = None
+        function_target: Optional[Argument] = None
         is_conditional = False
         is_return = False
         is_store = False
@@ -595,7 +711,7 @@ class PpcArch(Arch):
             eval_fn = lambda s, a: s.set_switch_expr(a.regs[Register("ctr")])
         elif mnemonic == "bl":
             # Function call to label
-            assert len(args) == 1 and isinstance(args[0], AsmGlobalSymbol)
+            assert len(args) == 1
             inputs = list(cls.argument_regs)
             outputs = list(cls.all_return_regs)
             clobbers = list(cls.temp_regs)
@@ -652,9 +768,7 @@ class PpcArch(Arch):
             def eval_fn(s: NodeState, a: InstrArgs) -> None:
                 store = cls.instrs_store[mnemonic](a)
                 if store is not None:
-                    s.store_memory(
-                        source=store.source, dest=store.dest, reg=a.reg_ref(0)
-                    )
+                    s.store_memory(store, a.reg_ref(0))
 
         elif mnemonic in cls.instrs_store_update:
             assert isinstance(args[0], Register) and size is not None
@@ -687,9 +801,7 @@ class PpcArch(Arch):
                 )
 
                 if store is not None:
-                    s.store_memory(
-                        source=store.source, dest=store.dest, reg=a.reg_ref(0)
-                    )
+                    s.store_memory(store, a.reg_ref(0))
 
         elif mnemonic in cls.instrs_load:
             assert isinstance(args[0], Register) and size is not None
@@ -925,7 +1037,9 @@ class PpcArch(Arch):
 
     asm_patterns = [
         FcmpoCrorPattern(),
+        MfcrPattern(),
         TailCallPattern(),
+        SaveRestoreRegsFnPattern(),
         BoolCastPattern(),
         BranchCtrPattern(),
         FloatishToUintPattern(),
@@ -1088,28 +1202,6 @@ class PpcArch(Arch):
         ),
         "rlwinm": lambda a: handle_rlwinm(
             a.reg(1), a.imm_value(2), a.imm_value(3), a.imm_value(4)
-        ),
-        "extlwi": lambda a: handle_rlwinm(
-            a.reg(1), a.imm_value(3), 0, a.imm_value(2) - 1
-        ),
-        "extrwi": lambda a: handle_rlwinm(
-            a.reg(1), a.imm_value(3) + a.imm_value(2), 32 - a.imm_value(2), 31
-        ),
-        "rotlwi": lambda a: handle_rlwinm(a.reg(1), a.imm_value(2), 0, 31),
-        "rotrwi": lambda a: handle_rlwinm(a.reg(1), 32 - a.imm_value(2), 0, 31),
-        "slwi": lambda a: handle_rlwinm(
-            a.reg(1), a.imm_value(2), 0, 31 - a.imm_value(2)
-        ),
-        "srwi": lambda a: handle_rlwinm(
-            a.reg(1), 32 - a.imm_value(2), a.imm_value(2), 31
-        ),
-        "clrlwi": lambda a: handle_rlwinm(a.reg(1), 0, a.imm_value(2), 31),
-        "clrrwi": lambda a: handle_rlwinm(a.reg(1), 0, 0, 31 - a.imm_value(2)),
-        "clrlslwi": lambda a: handle_rlwinm(
-            a.reg(1),
-            a.imm_value(3),
-            a.imm_value(2) - a.imm_value(3),
-            31 - a.imm_value(3),
         ),
         "slw": lambda a: fold_mul_chains(
             BinaryOp.int(left=a.reg(1), op="<<", right=as_intish(a.reg(2)))

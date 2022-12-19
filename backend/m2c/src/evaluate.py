@@ -172,7 +172,7 @@ def load_upper(args: InstrArgs) -> Expression:
     stack_info = args.stack_info
     source = stack_info.global_info.address_of_gsym(ref.sym.symbol_name)
     imm = Literal(ref.offset)
-    return handle_addi_real(args.reg_ref(0), None, source, imm, stack_info, args)
+    return handle_addi_real(args.reg_ref(0), None, source, imm, args)
 
 
 def handle_convert(expr: Expression, dest_type: Type, source_type: Type) -> Cast:
@@ -194,8 +194,17 @@ def handle_la(args: InstrArgs) -> Expression:
             )
         )
 
-    var = stack_info.global_info.address_of_gsym(target.sym.symbol_name)
-    return add_imm(output_reg, var, Literal(target.offset), args)
+    sym = stack_info.global_info.address_of_gsym(target.sym.symbol_name)
+    return add_imm(output_reg, sym, Literal(target.offset), args)
+
+
+def handle_lw(args: InstrArgs) -> Expression:
+    ref = args.maybe_got_imm(1)
+    if ref is not None:
+        # Handle `lw $a, %got(x + offset)($gp)` as an address load rather than a load.
+        sym = args.stack_info.global_info.address_of_gsym(ref.sym.symbol_name)
+        return add_imm(args.reg_ref(0), sym, Literal(ref.offset), args)
+    return handle_load(args, type=Type.reg32(likely_float=False))
 
 
 def handle_or(left: Expression, right: Expression) -> Expression:
@@ -263,7 +272,7 @@ def handle_addi(args: InstrArgs) -> Expression:
         return add_imm(
             output_reg, uw_source.left, Literal(imm.value + uw_source.right.value), args
         )
-    return handle_addi_real(output_reg, source_reg, source, imm, stack_info, args)
+    return handle_addi_real(output_reg, source_reg, source, imm, args)
 
 
 def handle_addis(args: InstrArgs) -> Expression:
@@ -271,7 +280,7 @@ def handle_addis(args: InstrArgs) -> Expression:
     source_reg = args.reg_ref(1)
     source = args.reg(1)
     imm = args.shifted_imm(2)
-    return handle_addi_real(args.reg_ref(0), source_reg, source, imm, stack_info, args)
+    return handle_addi_real(args.reg_ref(0), source_reg, source, imm, args)
 
 
 def handle_addi_real(
@@ -279,9 +288,9 @@ def handle_addi_real(
     source_reg: Optional[Register],
     source: Expression,
     imm: Expression,
-    stack_info: StackInfo,
     args: InstrArgs,
 ) -> Expression:
+    stack_info = args.stack_info
     if source_reg is not None and stack_info.is_stack_reg(source_reg):
         # Adding to sp, i.e. passing an address.
         assert isinstance(imm, Literal)
@@ -311,7 +320,7 @@ def add_imm(
         # architecture). Don't do this in the case "var_x = var_x + imm": that
         # happens with loops over subarrays and it's better to expose the raw
         # immediate.
-        dest_var = stack_info.get_planned_var(output_reg, args.instruction)
+        dest_var = stack_info.get_planned_var(output_reg, args.instruction_ref)
         inplace = dest_var is not None and var_for_expr(source) == dest_var
         if isinstance(imm, Literal) and not imm.likely_partial_offset() and not inplace:
             array_access = array_access_from_add(
@@ -418,17 +427,22 @@ def handle_lwl(args: InstrArgs) -> Expression:
 
 def handle_lwr(args: InstrArgs) -> Expression:
     # Unaligned load for the right part of a register. This lwr may merge with an
-    # existing lwl, if it loads from the same target but with an offset that's +3.
+    # existing lwl, if it loads from the same target but with an offset that's ±3.
     uw_old_value = early_unwrap(args.reg(0))
     ref = args.memory_ref(1)
     lwl_key: Tuple[int, object]
+    delta = -3 if args.stack_info.global_info.target.is_big_endian() else 3
     if isinstance(ref, AddressMode):
-        lwl_key = (ref.offset - 3, args.regs[ref.rhs])
+        lwl_key = (ref.offset + delta, args.regs[ref.rhs])
     else:
-        lwl_key = (ref.offset - 3, ref.sym)
+        lwl_key = (ref.offset + delta, ref.sym)
     if isinstance(uw_old_value, Lwl) and uw_old_value.key[0] == lwl_key[0]:
         return UnalignedLoad(uw_old_value.load_expr)
-    if ref.offset % 4 == 2:
+    # IDO may copy 3 bytes between 4-byte-aligned addresses using lwr+swr, e.g. for
+    # the purpose of array initializers. Little endian can use lwl+swl instead,
+    # but other compilers don't seem to emit this pattern so we don't handle that
+    # at the moment.
+    if ref.offset % 4 == 2 and args.stack_info.global_info.target.is_big_endian():
         left_mem_ref = replace(ref, offset=ref.offset - 2)
         load_expr = deref_unaligned(left_mem_ref, args.regs, args.stack_info)
         return Load3Bytes(load_expr)
@@ -956,9 +970,29 @@ def array_access_from_add(
 
 
 def handle_add(args: InstrArgs) -> Expression:
+    stack_info = args.stack_info
+    output_reg = args.reg_ref(0)
     lhs = args.reg(1)
     rhs = args.reg(2)
+
+    # addiu instructions can sometimes be emitted as addu instead, when the
+    # offset is too large.
+    if isinstance(rhs, Literal):
+        return handle_addi_real(output_reg, args.reg_ref(1), lhs, rhs, args)
+    if isinstance(lhs, Literal):
+        return handle_addi_real(output_reg, args.reg_ref(2), rhs, lhs, args)
+
+    return handle_add_real(output_reg, lhs, rhs, args)
+
+
+def handle_add_real(
+    output_reg: Register,
+    lhs: Expression,
+    rhs: Expression,
+    args: InstrArgs,
+) -> Expression:
     stack_info = args.stack_info
+
     type = Type.intptr()
     # Because lhs & rhs are in registers, it shouldn't be possible for them to be arrays.
     # If they are, treat them the same as pointers anyways.
@@ -966,17 +1000,6 @@ def handle_add(args: InstrArgs) -> Expression:
         type = Type.ptr()
     elif rhs.type.is_pointer_or_array():
         type = Type.ptr()
-
-    # addiu instructions can sometimes be emitted as addu instead, when the
-    # offset is too large.
-    if isinstance(rhs, Literal):
-        return handle_addi_real(
-            args.reg_ref(0), args.reg_ref(1), lhs, rhs, stack_info, args
-        )
-    if isinstance(lhs, Literal):
-        return handle_addi_real(
-            args.reg_ref(0), args.reg_ref(2), rhs, lhs, stack_info, args
-        )
 
     expr = BinaryOp(left=as_intptr(lhs), op="+", right=as_intptr(rhs), type=type)
     folded_expr = fold_mul_chains(expr)
@@ -1004,18 +1027,24 @@ def handle_add_double(args: InstrArgs) -> Expression:
     return BinaryOp.f64(args.dreg(1), "+", args.dreg(2))
 
 
+def fold_shift_bgez(expr: Expression) -> Optional[Condition]:
+    uw_expr = early_unwrap(expr)
+    if not isinstance(uw_expr, BinaryOp) or not isinstance(uw_expr.right, Literal):
+        return None
+    value = uw_expr.right.value
+    if uw_expr.op == "<<":
+        shift = value
+    elif uw_expr.op == "*" and value > 0 and (value & (value - 1)) == 0:
+        shift = value.bit_length() - 1
+    else:
+        return None
+    bitand = BinaryOp.int(uw_expr.left, "&", Literal(1 << (31 - shift)))
+    return UnaryOp("!", bitand, type=Type.bool())
+
+
 def handle_bgez(args: InstrArgs) -> Condition:
     expr = args.reg(0)
-    uw_expr = early_unwrap(expr)
-    if (
-        isinstance(uw_expr, BinaryOp)
-        and uw_expr.op == "<<"
-        and isinstance(uw_expr.right, Literal)
-    ):
-        shift = uw_expr.right.value
-        bitand = BinaryOp.int(uw_expr.left, "&", Literal(1 << (31 - shift)))
-        return UnaryOp("!", bitand, type=Type.bool())
-    return BinaryOp.scmp(expr, ">=", Literal(0))
+    return fold_shift_bgez(expr) or BinaryOp.scmp(expr, ">=", Literal(0))
 
 
 def rlwi_mask(mask_begin: int, mask_end: int) -> int:

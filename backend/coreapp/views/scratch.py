@@ -20,6 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
+from ..compilers import Language
 
 from ..decorators.django import condition
 
@@ -57,24 +58,24 @@ def get_db_asm(request_asm: str) -> Asm:
 
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
-    return CompilerWrapper.compile_code(
-        compilers.from_id(scratch.compiler),
-        scratch.compiler_flags,
-        scratch.source_code,
-        scratch.context,
-        scratch.diff_label,
-    )
+    try:
+        return CompilerWrapper.compile_code(
+            compilers.from_id(scratch.compiler),
+            scratch.compiler_flags,
+            scratch.source_code,
+            scratch.context,
+            scratch.diff_label,
+        )
+    except CompilationError as e:
+        return CompilationResult(b"", str(e))
 
 
-def diff_compilation(
-    scratch: Scratch, compilation: CompilationResult, allow_target_only: bool = False
-) -> DiffResult:
+def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     return DiffWrapper.diff(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
         bytes(compilation.elf_object),
-        allow_target_only=allow_target_only,
         diff_flags=scratch.diff_flags,
     )
 
@@ -108,7 +109,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     except Exception:
         try:
             # Attempt to process just the target asm so we can populate max_score
-            diff = diff_compilation(scratch, compilation, True)
+            diff = diff_compilation(scratch, compilation)
             update_scratch_score(scratch, diff)
         except Exception:
             pass
@@ -380,7 +381,9 @@ class ScratchViewSet(
         return Response(
             {
                 "diff_output": diff,
-                "errors": compilation.errors,
+                "compiler_output": compilation.errors,
+                "success": compilation.elf_object is not None
+                and len(compilation.elf_object) > 0,
             }
         )
 
@@ -463,9 +466,12 @@ class ScratchViewSet(
             zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
             zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
-            zip_f.writestr("code.c", scratch.source_code)
+
+            language = compilers.from_id(scratch.compiler).language
+            src_ext = Language(language).get_file_extension()
+            zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
-                zip_f.writestr("ctx.c", scratch.context)
+                zip_f.writestr(f"ctx.{src_ext}", scratch.context)
 
         # Prevent possible header injection attacks
         safe_name = re.sub(r"[^a-zA-Z0-9_:]", "_", scratch.name)[:64]

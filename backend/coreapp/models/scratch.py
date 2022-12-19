@@ -3,6 +3,8 @@ import logging
 from django.db import models
 from django.utils.crypto import get_random_string
 
+from typing import List
+
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -89,3 +91,8 @@ class Scratch(models.Model):
 
     def is_claimable(self) -> bool:
         return self.owner is None
+
+    def all_parents(self) -> "List[Scratch]":
+        if self.parent is None:
+            return []
+        return [self.parent] + self.parent.all_parents()

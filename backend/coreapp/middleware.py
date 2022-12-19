@@ -68,10 +68,8 @@ def set_user_profile(
                 profile = Profile.objects.filter(id=id).first()
                 profile_user = User.objects.filter(profile=profile).first()
 
-                # If the request is logged out but the profile stored in their session
-                # references a user, don't use that profile
                 if profile_user and request.user.is_anonymous:
-                    profile = None
+                    request.user = profile_user
 
         # If we still don't have a profile, create a new one
         if not profile:

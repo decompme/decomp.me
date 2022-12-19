@@ -1,130 +1,25 @@
 @use "./theme.scss" as theme;
 
 :root {
-    --link: #3db8e9;
+    --link: #58a6ff;
+    --danger: #f00;
     --monospace: "Menlo", "Monaco", monospace;
     --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-.themePlum {
+.theme-dark {
     @include theme.theme(#951fd9, #292f33);
-
-    .cm-content {
-        color: #647a97;
-
-        cursor: text;
-    }
-
-    .cm-gutters,
-    .cm-content {
-        font-size: var(--cm-font-size, 0.8rem);
-        font-family: var(--monospace);
-        line-height: 1.5;
-    }
-
-    .cmt-propertyName,
-    .cmt-variableName {
-        color: #8599b3;
-    }
-
-    .cmt-function {
-        color: #ff4a98;
-    }
-
-    .cmt-punctuation {
-        color: #656f7e;
-    }
-
-    .cmt-operator {
-        color: #7f83ff;
-    }
-
-    .cmt-comment {
-        color: #465173;
-    }
-
-    .cmt-number,
-    .cmt-bool {
-        color: #0afafa;
-    }
-
-    .cmt-string {
-        color: #face0a;
-    }
-
-    .cmt-typeName {
-        color: #45b8ff;
-    }
-
-    .cmt-keyword {
-        color: #7f83ff;
-    }
-
-    .cmt-meta,
-    .cmt-character {
-        color: #3bff6c;
-    }
 }
 
-.cm-panel {
-    font-size: 1rem;
-
-    // from Button.module.scss
-    .cm-button {
-        border-radius: 4px;
-        padding: 0.4em 0.8em;
-
-        font-size: 0.8rem;
-        font-weight: 500;
-
-        user-select: none;
-        appearance: none;
-
-        display: inline-flex;
-        gap: 0.5em;
-        align-items: center;
-
-        background: transparent;
-        color: var(--a800);
-        border: 1px solid var(--g500);
-
-        &:not(:disabled) {
-            cursor: pointer;
-
-            &:hover {
-                color: var(--a900);
-                border-color: var(--g800);
-            }
-        }
-    }
-
-    .cm-textfield {
-        padding: 0.4em 0.6em;
-
-        color: var(--g1200);
-        background: var(--g200);
-        font: 0.8rem var(--monospace);
-        border: 1px solid var(--g500);
-        border-radius: 4px;
-
-        outline: none !important;
-
-        &::-webkit-input-placeholder {
-            color: var(--g700);
-        }
-    }
-
-    input[type=checkbox] {
-        vertical-align: middle;
-    }
+.theme-light {
+    @include theme.theme(#951fd9, #ffffff);
 }
 
 html {
     font-size: 16px;
     font-family: var(--font-ui);
     line-height: 1.5;
-    text-rendering: optimizeQuality;
-    overflow: hidden;
+    text-rendering: optimizequality;
 }
 
 *,
@@ -143,16 +38,12 @@ html {
 }
 
 body {
-    background: var(--g200);
+    background: var(--g300);
     color: var(--a800);
 
     line-height: 1.25;
-    overflow-x: hidden;
     user-select: none;
     position: relative;
-
-    scrollbar-color: #fff3 #fff1;
-    scrollbar-width: thin;
 }
 
 html,
@@ -160,23 +51,28 @@ body {
     height: 100%;
 }
 
-::-webkit-scrollbar {
-    background-color: transparent;
-    width: 0.6rem;
-    height: 0.6rem;
-}
+body:not(.device-macos) {
+    scrollbar-color: #fff3 #fff1;
+    scrollbar-width: thin;
 
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-    background-color: #fff1;
-}
+    ::-webkit-scrollbar {
+        background-color: transparent;
+        width: 0.6rem;
+        height: 0.6rem;
+    }
 
-::-webkit-scrollbar-thumb {
-    background-color: #fff3;
-}
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background-color: #fff1;
+    }
 
-::-webkit-scrollbar-button {
-    display: none;
+    ::-webkit-scrollbar-thumb {
+        background-color: #fff3;
+    }
+
+    ::-webkit-scrollbar-button {
+        display: none;
+    }
 }
 
 #__next {
@@ -184,7 +80,7 @@ body {
     flex-direction: column;
     align-items: center;
     height: 100vh;
-    overflow-x: hidden;
+    //overflow-x: hidden;
     position: relative; // squashes react-laag warning
 }
 
@@ -197,6 +93,11 @@ main {
     width: 100%;
 }
 
+main,
+footer {
+    background: var(--g200);
+}
+
 ::selection {
     background: var(--a100);
 }
@@ -205,6 +106,11 @@ main {
     z-index: 999;
 }
 
-.cm-editor {
-    user-select: initial;
+body.no-scroll {
+    overflow: hidden;
+
+    #__next {
+        height: stretch;
+        height: 100svh;
+    }
 }

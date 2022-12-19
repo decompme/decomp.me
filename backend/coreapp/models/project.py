@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from django.db import models, transaction
+from django.contrib.auth.models import User
+from django_resized import ResizedImageField
 
 from ..context import c_file_to_context
 from ..symbol_addrs import parse_symbol_addrs, symbol_name_from_asm_file
@@ -16,18 +18,25 @@ from .scratch import CompilerConfig, Scratch
 logger = logging.getLogger(__name__)
 
 
+def icon_path(instance: "Project", filename: str) -> str:
+    return instance.slug + "_" + filename
+
+
 class Project(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     repo = models.OneToOneField("GithubRepo", on_delete=models.PROTECT)
-    icon_url = models.URLField(blank=False)
+    icon = ResizedImageField(size=[256, 256], upload_to=icon_path, null=True)
     description = models.TextField(default="", blank=True, max_length=1000)
 
     def __str__(self) -> str:
         return self.slug
 
+    def get_url(self) -> str:
+        return f"/projects/{self.slug}"
+
     def get_html_url(self) -> str:
-        return f"/{self.slug}"
+        return f"/projects/{self.slug}"
 
     @transaction.atomic
     def import_functions(self) -> None:
@@ -41,7 +50,10 @@ class Project(models.Model):
             import_config.execute_import()
 
     def is_member(self, profile: Profile) -> bool:
-        return ProjectMember.objects.filter(project=self, profile=profile).exists()
+        for member in self.members():
+            if member.user.profile == profile:
+                return True
+        return False
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
@@ -164,7 +176,7 @@ class ProjectFunction(models.Model):
         ]
 
     def get_html_url(self) -> str:
-        return f"{self.project.get_html_url()}/{self.rom_address:X}"
+        return f"{self.project.get_html_url()}/functions/{self.rom_address:X}"
 
     def __str__(self) -> str:
         return f"{self.display_name} ({self.project})"
@@ -184,22 +196,7 @@ class ProjectFunction(models.Model):
             ""  # TODO: grab sourcecode from src_file's NON_MATCHING block, if any
         )
 
-        # TODO: make this more configurable or something
         cpp_flags = shlex.split(compiler_config.compiler_flags)
-        """[
-            "-Iinclude",
-            "-Isrc",
-            "-Iver/current/build/include",
-            "-D_LANGUAGE_C",
-            "-DF3DEX_GBI_2",
-            "-D_MIPS_SZLONG=32",
-            "-DSCRIPT(...)={}" # only relevant for papermario. bad
-            "-D__attribute__(...)=",
-            "-D__asm__(...)=",
-            "-ffreestanding",
-            "-DM2CTX",
-            "-DPERMUTER",
-        ]"""
 
         # Attempt to generate context (TODO: #361 so we don't have to do this)
         try:
@@ -232,14 +229,17 @@ class ProjectFunction(models.Model):
 
 class ProjectMember(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "profile"], name="unique_project_member"
+                fields=["project", "user"], name="unique_project_member"
             ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.profile} is a member of {self.project}"
+        return f"({self.project}, {self.user})"
+
+    def get_url(self) -> str:
+        return f"{self.project.get_url()}/members/{self.user.username}"

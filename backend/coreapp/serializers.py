@@ -1,18 +1,20 @@
+from platform import platform
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
+from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
+from html_json_forms.serializers import JSONFormSerializer
 
 from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
-from .models.project import Project, ProjectFunction
-from .models.scratch import Scratch
+from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
+from .models.scratch import CompilerConfig, Scratch
 
 
 def serialize_profile(
@@ -26,7 +28,9 @@ def serialize_profile(
             "is_anonymous": True,
             "id": profile.id,
             "is_online": profile.is_online(),
+            "is_admin": False,
             "username": f"{profile.pseudonym} (anon)",
+            "frog_color": profile.get_frog_color(),
         }
     else:
         user = profile.user
@@ -39,8 +43,9 @@ def serialize_profile(
             "html_url": profile.get_html_url(),
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
-            "id": user.id,
+            "id": profile.id,
             "is_online": profile.is_online(),
+            "is_admin": user.is_staff,
             "username": user.username,
             "avatar_url": github_details.avatar_url if github_details else None,
         }
@@ -187,6 +192,7 @@ class TerseScratchSerializer(ScratchSerializer):
         fields = [
             "url",
             "html_url",
+            "slug",
             "owner",
             "last_updated",
             "creation_time",
@@ -210,29 +216,42 @@ class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
         read_only_fields = ["last_pulled", "is_pulling"]
 
 
-class ProjectSerializer(serializers.ModelSerializer[Project]):
-    slug = serializers.SlugField(read_only=True)
-    url = HyperlinkedIdentityField(view_name="project-detail")
+class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
+    slug = serializers.SlugField()
+    url = UrlField()
     html_url = HtmlUrlField()
-    repo = GitHubRepoSerializer(read_only=True)
-    members = SerializerMethodField()
+    repo = GitHubRepoSerializer()
+    platform = SerializerMethodField()
+    unmatched_function_count = SerializerMethodField()
 
     class Meta:
         model = Project
         exclude: List[str] = []
         depth = 1  # repo
 
-    def get_members(self, project: Project) -> List[str]:
-        def get_url(user: User) -> str:
-            return reverse(
-                "user-detail", args=[user.username], request=self.context["request"]
-            )
+    def create(self, validated_data: Any) -> Project:
+        repo_data = validated_data.pop("repo")
+        repo = GitHubRepo.objects.create(**repo_data)
+        project = Project.objects.create(repo=repo, **validated_data)
+        return project
 
-        return [
-            get_url(member.profile.user)
-            for member in project.members()
-            if member.profile.user is not None
-        ]
+    def update(self, instance: Project, validated_data: Any) -> Project:
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def get_platform(self, project: Project) -> Optional[str]:
+        import_config = ProjectImportConfig.objects.filter(project=project).first()
+        if import_config:
+            return import_config.compiler_config.platform
+        else:
+            return None
+
+    def get_unmatched_function_count(self, project: Project) -> int:
+        return ProjectFunction.objects.filter(
+            is_matched_in_repo=False, project=project
+        ).count()
 
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
@@ -255,3 +274,16 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
 
     def get_attempts_count(self, fn: ProjectFunction) -> int:
         return Scratch.objects.filter(project_function=fn).count()
+
+
+class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
+    url = UrlField()
+    username = SlugRelatedField(
+        source="user",
+        slug_field="username",
+        queryset=User.objects.all(),
+    )
+
+    class Meta:
+        model = ProjectMember
+        fields = ["url", "username"]

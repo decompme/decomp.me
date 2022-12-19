@@ -18,15 +18,21 @@ try {
 process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
 const { withPlausibleProxy } = require("next-plausible")
-const withPWA = require("next-pwa")
-const runtimeCaching = require("next-pwa/cache")
+
+const withPWA = require("next-pwa")({
+    dest: "public",
+    disable: process.env.FRONTEND_PWA !== "on",
+})
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
 const nextTranslate = require("next-translate")
+const { WebWorkerPlugin } = require("@shopify/web-worker/webpack")
 
-module.exports = withPlausibleProxy({
+const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
+
+let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
 })(nextTranslate(removeImports(withPWA({
     async redirects() {
@@ -43,7 +49,7 @@ module.exports = withPlausibleProxy({
             },
             {
                 source: "/settings",
-                destination: "/settings/editor",
+                destination: "/settings/appearance",
                 permanent: false,
             },
         ]
@@ -71,16 +77,21 @@ module.exports = withPlausibleProxy({
             use: ["@svgr/webpack"],
         })
 
+        config.plugins.push(new WebWorkerPlugin())
+        config.output.globalObject = "self"
+
         return config
     },
     images: {
-        domains: ["avatars.githubusercontent.com", "cdn.discordapp.com"],
-    },
-    pwa: {
-        dest: "public",
-        runtimeCaching,
-        disable: process.env.NODE_ENV === "development",
+        domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
+        unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
     },
     swcMinify: false,
     experimental: {},
 }))))
+
+if (process.env.ANALYZE == "true") {
+    app = require("@next/bundle-analyzer")(app)
+}
+
+module.exports = app

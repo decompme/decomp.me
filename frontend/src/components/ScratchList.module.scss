@@ -78,11 +78,22 @@
     }
 
     .owner {
-        color: var(--g900);
+        color: var(--g1200);
     }
 
     .metadata {
-        color: var(--g700);
+        display: flex;
+        align-items: flex-end;
+
+        color: var(--g900);
+
+        > span {
+            flex-grow: 1;
+        }
+
+        .actions {
+            padding-top: 0.25em;
+        }
     }
 }
 
@@ -110,6 +121,6 @@
     }
 
     .metadata {
-        color: var(--g700);
+        color: var(--g1200);
     }
 }

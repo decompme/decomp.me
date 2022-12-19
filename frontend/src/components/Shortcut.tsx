@@ -1,21 +1,6 @@
 import { useEffect, useState } from "react"
 
-function isMacOS(): boolean {
-    if (typeof window === "undefined") {
-        // SSR
-        return false
-    }
-
-    // Use User-Agent Client Hints API if supported
-    // @ts-ignore
-    if (navigator.userAgentData) {
-        // @ts-ignore
-        return navigator.userAgentData.platform == "macOS"
-    }
-
-    // Fall back to user-agent sniffing
-    return navigator.userAgent.includes("Mac OS X")
-}
+import { isMacOS } from "../lib/device"
 
 export type Key = string | SpecialKey
 
@@ -84,7 +69,7 @@ export function translateKeys(keys: Key[]): string {
         .join(getSeparator())
 }
 
-export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement) {
+export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement): string | undefined {
     useEffect(() => {
         const el = element || document.body
         const keysDown = new KeyMap()
@@ -153,6 +138,12 @@ export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: H
             el.removeEventListener("blur", handleBlur)
         }
     }, [callback, element, keys])
+
+    if (!keys || keys.length === 0) {
+        return undefined
+    } else {
+        return translateKeys(keys)
+    }
 }
 
 export default function Shortcut({ keys, className }: { keys: Key[], className?: string }) {

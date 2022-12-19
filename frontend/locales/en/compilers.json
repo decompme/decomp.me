@@ -5,6 +5,7 @@
     "armcc_40_821": "4.0 build 821",
     "armcc_41_561": "4.1 build 561",
     "armcc_41_713": "4.1 build 713",
+    "armcc_41_894": "4.1 build 894",
     "armcc_41_921": "4.1 build 921",
     "armcc_41_1049": "4.1 build 1049",
     "armcc_41_1440": "4.1 build 1440",
@@ -15,15 +16,16 @@
     "dummy": "Dummy",
     "ee-gcc2.96": "EE GCC 2.96",
     "gcc2.6.3-mipsel": "GCC 2.6.3 (mipsel)",
-    "gcc2.7.2-psyq": "gcc 2.7.2 (psyq)",
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
     "gcc2.7.2sn": "GCC 2.7.2 (SN)",
+    "gcc2.7.2snew": "GCC 2.7.2 (SN, experimental)",
     "gcc2.8.1sn-cxx": "GCC 2.8.1 (SN) (C++)",
     "gcc2.8.1": "GCC 2.8.1",
-    "gcc2.8.1-psyq": "gcc 2.8.1 (psyq)",
-    "gcc2.95.2-psyq": "gcc 2.95.2 (psyq)",
     "ido5.3": "IDO 5.3",
     "ido7.1": "IDO 7.1",
+    "ido5.3_irix": "IDO 5.3",
+    "ido7.1_irix": "IDO 7.1",
+    "ido7.1Pascal": "IDO 7.1 Pascal",
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
     "mwcc_20_82": "2.0 build 82 (MW 1.2sp2p3)",
@@ -76,6 +78,7 @@
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2)",
     "psyq4.1": "PSYQ4.1 (gcc 2.7.2)",
     "psyq4.3": "PSYQ4.3 (gcc 2.8.1)",
+    "psyq4.5": "PSYQ4.5 (gcc 2.91.66)",
     "psyq4.6": "PSYQ4.6 (gcc 2.95.2)",
 
     "armcc_opt_level": "Optimization level",
@@ -137,6 +140,8 @@
     "gcc_debug_level.-g1": "Minimal trace info",
     "gcc_debug_level.-g2": "Local variable tracking",
     "gcc_debug_level.-g3": "Macro expansions",
+    "gcc_debug_level.-gdwarf": "DWARF debug info (for SN64, should not affect codegen)",
+    "gcc_debug_level.-gdwarf-2": "DWARF 2 debug info (should not affect codegen)",
     "gcc_force_addr": "Force memory address constants to be copied into registers before doing arithmetic on them",
 
     "ido_opt_level": "Optimization level",
@@ -226,5 +231,10 @@
     "sdata_limit.-G0": "0 bytes",
     "sdata_limit.-G4": "4 bytes",
     "sdata_limit.-G8": "8 bytes",
-    "mreg_names=32": "ABI FPR names"
+    "mreg_names=32": "ABI FPR names",
+    "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
+
+    "diff_algorithm": "Diff algorithm",
+    "diff_algorithm.-DIFFlevenshtein": "Levenshtein",
+    "diff_algorithm.-DIFFdifflib": "difflib"
 }

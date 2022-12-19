@@ -10,11 +10,14 @@ const Button = forwardRef(function Button({
     className,
     disabled,
     primary,
+    danger,
+    title,
 }: Props, ref: ForwardedRef<HTMLButtonElement>) {
     return <button
         ref={ref}
         className={classNames(className, styles.btn, {
             [styles.primary]: primary,
+            [styles.danger]: danger,
         })}
         onClick={event => {
             if (!disabled && onClick) {
@@ -22,6 +25,7 @@ const Button = forwardRef(function Button({
             }
         }}
         disabled={disabled}
+        title={title}
     >
         {children}
     </button>
@@ -33,6 +37,8 @@ export type Props = {
     className?: string
     disabled?: boolean
     primary?: boolean
+    danger?: boolean
+    title?: string
 }
 
 export default Button

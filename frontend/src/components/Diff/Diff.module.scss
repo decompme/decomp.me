@@ -49,7 +49,9 @@
 
 .body {
     flex: 1;
-    overflow: overlay !important; // note: webkit only, see #275
+
+    overflow: overlay !important; // overrides FixedSizeList inline style (overflow: auto)
+    scrollbar-gutter: stable;
 
     user-select: text;
     font-family: var(--monospace);
@@ -68,14 +70,14 @@
     > .cell {
         overflow: hidden;
 
-        color: #b3c1d3;
+        color: var(--g1600);
 
         padding: 0 1em;
 
         cursor: default;
 
         &.highlight {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--a50);
 
             .lineNumber {
                 color: #c6c6c6;

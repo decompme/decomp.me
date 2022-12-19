@@ -8,23 +8,14 @@ import classNames from "classnames"
 import { useCombobox } from "downshift"
 import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
-import useSWR from "swr"
 
 import * as api from "../../lib/api"
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
+import AnonymousFrogAvatar from "../user/AnonymousFrog"
 import verticalMenuStyles from "../VerticalMenu.module.scss" // eslint-disable-line css-modules/no-unused-class
 
 import styles from "./Search.module.scss"
-
-function useRecentScratches(): api.TerseScratch[] {
-    const { data, error } = useSWR("/scratch?page_size=5", api.get)
-
-    if (error)
-        console.error(error)
-
-    return data?.results || []
-}
 
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("")
@@ -32,10 +23,9 @@ function MountedSearch({ className }: { className?: string }) {
     const [isLoading, setIsLoading] = useState(false)
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
-    const recentScratches = useRecentScratches()
     const plausible = usePlausible()
 
-    const items = query.length > 0 ? searchItems : recentScratches
+    const items = query.length > 0 ? searchItems : []
 
     const close = () => {
         console.info("<Search> close")
@@ -53,7 +43,7 @@ function MountedSearch({ className }: { className?: string }) {
         setInputValue,
     } = useCombobox({
         items,
-        isOpen: (isFocused || !!query) && !(isLoading && items.length === 0),
+        isOpen: (isFocused || !!query) && query.length > 0 && !(isLoading && items.length === 0),
         itemToString(item) {
             return item.name
         },
@@ -132,7 +122,7 @@ function MountedSearch({ className }: { className?: string }) {
                 [styles.isOpen]: isOpen,
             })}
             type="text"
-            placeholder="Search decomp.me..."
+            placeholder="Search decomp.me"
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onClick={() => setIsFocused(true)}
@@ -169,13 +159,20 @@ function MountedSearch({ className }: { className?: string }) {
                             <span className={styles.itemName}>
                                 {scratch.name}
                             </span>
-                            {scratch.owner && !api.isAnonUser(scratch.owner) && scratch.owner.avatar_url && <Image
-                                src={scratch.owner.avatar_url}
-                                alt={scratch.owner.username}
-                                width={16}
-                                height={16}
-                                className={styles.scratchOwnerAvatar}
-                            />}
+                            {scratch.owner && (!api.isAnonUser(scratch.owner) ?
+                                scratch.owner.avatar_url && <Image
+                                    src={scratch.owner.avatar_url}
+                                    alt={scratch.owner.username}
+                                    width={16}
+                                    height={16}
+                                    className={styles.scratchOwnerAvatar}
+                                /> :
+                                <AnonymousFrogAvatar
+                                    user={scratch.owner}
+                                    width={16}
+                                    height={16}
+                                    className={styles.scratchOwnerAvatar}
+                                />)}
                         </a>
                     </li>
                 })}
@@ -198,8 +195,8 @@ export default function Search({ className }: { className?: string }) {
             <SearchIcon className={styles.icon} />
             <input
                 className={styles.input}
-                type="text"
-                placeholder="Search decomp.me..."
+                type="search"
+                placeholder="Search decomp.me"
                 spellCheck={false}
             />
         </div>

@@ -13,14 +13,12 @@ import Diff from "./Diff"
 const CLOSED_BOTTOM_PANEL_SIZE = 35
 
 function getProblemState(compilation: api.Compilation): ProblemState {
-    if (compilation.diff_output) {
-        if (compilation.errors) {
-            return ProblemState.WARNINGS
-        } else {
-            return ProblemState.NO_PROBLEMS
-        }
-    } else {
+    if (!compilation.success) {
         return ProblemState.ERRORS
+    } else if (compilation.compiler_output) {
+        return ProblemState.WARNINGS
+    } else {
+        return ProblemState.NO_PROBLEMS
     }
 }
 
@@ -42,10 +40,12 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
     const problemState = getProblemState(compilation)
     const resizerContainer = useRef<resizer.Container>(null)
 
+    // Only update the diff if it's never been set or if the compilation succeeded
     useEffect(() => {
-        if (compilation.diff_output)
+        if (!diff || compilation.success) {
             setDiff(compilation.diff_output)
-    }, [compilation.diff_output])
+        }
+    }, [compilation.diff_output, compilation.success, diff])
 
     const toggleBottomPanel = () => {
         const resizer = resizerContainer.current.getResizer()
@@ -83,7 +83,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                 <ChevronDownIcon />
             </h2>}
             {problemState != ProblemState.NO_PROBLEMS && <div className={styles.log}>
-                <Ansi>{compilation.errors}</Ansi>
+                <Ansi>{compilation.compiler_output}</Ansi>
             </div>}
         </resizer.Section>
     </resizer.Container>

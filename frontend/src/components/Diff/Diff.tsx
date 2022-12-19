@@ -8,7 +8,7 @@ import { FixedSizeList } from "react-window"
 
 import * as api from "../../lib/api"
 import { useSize } from "../../lib/hooks"
-import { useDiffFontSize } from "../../lib/settings"
+import { useCodeFontSize } from "../../lib/settings"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
@@ -192,7 +192,7 @@ export type Props = {
 }
 
 export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
-    const [fontSize] = useDiffFontSize()
+    const [fontSize] = useCodeFontSize()
 
     const container = useSize<HTMLDivElement>()
 
@@ -206,14 +206,14 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
     const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : container.width
 
     useEffect(() => {
-        // Initially distribute the bar positions across the container
-        if (isNaN(barPos) && container.width) {
+        // Distribute the bar positions across the container when its width changes
+        if (container.width) {
             const numSections = hasPreviousColumn ? 3 : 2
 
             setBarPos(container.width / numSections)
             setPrevBarPos(container.width / numSections * 2)
         }
-    }, [barPos, container.width, hasPreviousColumn])
+    }, [container.width, hasPreviousColumn])
 
     return <div
         ref={container.ref}

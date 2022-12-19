@@ -2,12 +2,12 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import asm_differ.diff as asm_differ
 
-from coreapp import platforms
 from coreapp.platforms import DUMMY, Platform
+from coreapp.flags import ASMDIFF_FLAG_PREFIX
 
 from .compiler_wrapper import DiffResult, PATH
 
@@ -17,7 +17,7 @@ from .sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
-MAX_FUNC_SIZE_LINES = 5000
+MAX_FUNC_SIZE_LINES = 25000
 
 
 class DiffWrapper:
@@ -50,7 +50,12 @@ class DiffWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
+    def create_config(
+        arch: asm_differ.ArchSettings, diff_flags: List[str]
+    ) -> asm_differ.Config:
+        show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
+        algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
+
         return asm_differ.Config(
             arch=arch,
             # Build/objdump options
@@ -64,17 +69,19 @@ class DiffWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=asm_differ.JsonFormatter(arch_str=arch.name),
-            threeway=None,
+            diff_mode=asm_differ.DiffMode.NORMAL,
             base_shift=0,
             skip_lines=0,
             compress=None,
             show_branches=True,
             show_line_numbers=False,
             show_source=False,
-            stop_jrra=False,
+            stop_at_ret=False,
             ignore_large_imms=False,
             ignore_addr_diffs=True,
-            algorithm="levenshtein",
+            algorithm=algorithm,
+            reg_categories={},
+            show_rodata_refs=show_rodata_refs,
         )
 
     @staticmethod
@@ -130,6 +137,7 @@ class DiffWrapper:
         label: str,
         flags: List[str],
     ) -> str:
+        flags = [flag for flag in flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
         flags += [
             "--disassemble",
             "--disassemble-zeroes",
@@ -203,7 +211,6 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         compiled_elf: bytes,
-        allow_target_only: bool,
         diff_flags: List[str],
     ) -> DiffResult:
 
@@ -219,7 +226,7 @@ class DiffWrapper:
 
         objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
-        config = DiffWrapper.create_config(arch)  # TODO pass and use diff_flags
+        config = DiffWrapper.create_config(arch, diff_flags)
 
         basedump = DiffWrapper.get_dump(
             bytes(target_assembly.elf_object),
@@ -233,10 +240,7 @@ class DiffWrapper:
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
         except Exception as e:
-            if allow_target_only:
-                mydump = ""
-            else:
-                raise e
+            mydump = ""
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

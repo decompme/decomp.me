@@ -10,6 +10,7 @@ interface State {
 
 export interface Props {
     className?: string
+    onError: (error: Error, errorInfo: any) => void
 }
 
 export default class ErrorBoundary extends React.Component<any, State> {
@@ -25,6 +26,7 @@ export default class ErrorBoundary extends React.Component<any, State> {
 
     componentDidCatch(error, errorInfo) {
         console.error("Error boundary caught an error:", error, errorInfo)
+        this.props.onError?.(error, errorInfo)
     }
 
     render() {

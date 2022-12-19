@@ -12,11 +12,11 @@
     }
 
     @media (max-width: 600px) {
-        grid-template-columns: 250px 1fr 250px;
+        grid-template-columns: 1fr;
         grid-template-areas:
-            "about about about"
-            "projects projects projects"
-            "activity activity activity";
+            "about"
+            "projects"
+            "activity";
 
         .projects {
             border-bottom: 1px solid var(--g300);
@@ -40,15 +40,11 @@
     > h2 {
         font-weight: 400;
     }
-
-    @media (min-width: 900px) {
-
-        //justify-self: center;
-    }
 }
 
 .about {
     grid-area: about;
+    color: var(--g1200);
     background: var(--g300);
 
     h1 {
@@ -63,7 +59,6 @@
 
     p {
         padding-top: 4px;
-        color: var(--g1000);
         font-size: 0.9em;
         max-width: 40ch;
     }
@@ -112,49 +107,23 @@
     padding-top: 0;
 
     & > h2 {
-        position: sticky;
-        top: 0;
-
         background: var(--g200);
         padding: 0.75em 0;
-
-        z-index: 1;
 
         font-weight: 500;
     }
 }
 
-.projectList {
-    font-size: 0.9em;
-    max-width: 300px;
+.aboutColumnsContainer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1em;
 
-    list-style: none;
+    @media (max-width: 600px) {
+        display: block;
 
-    > li {
-        padding: 1em 0;
-
-        &:last-child {
-            padding-bottom: 0;
+        > p {
+            display: none;
         }
-    }
-}
-
-.projectLink {
-    display: flex;
-    gap: 0.3em;
-
-    font-weight: 500;
-
-    &:hover {
-        color: var(--link);
-    }
-}
-
-.loadMoreLink {
-    font-size: 0.8em;
-    color: var(--g1000);
-
-    &:hover {
-        color: var(--link);
     }
 }

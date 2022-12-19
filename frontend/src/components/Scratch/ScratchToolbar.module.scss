@@ -1,86 +1,39 @@
-$column_width: 260px;
+$size: 64px;
+$padding: 4px;
 
-.toolbar {
+.container {
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    align-items: center;
     justify-content: space-between;
 
-    min-height: 40px; // SSR has no buttons
+    white-space: nowrap;
 
-    font-size: 90%;
+    overflow: hidden;
 
-    padding: 0 4px;
-
-    background: var(--g400);
-    //border-bottom: 1px solid var(--a100);
-
-    @media screen and (min-height: 800px) {
-        gap: 8px;
-        padding: 8px;
-        height: 48px;
-    }
+    width: 100%;
 }
 
-.left,
-.center,
-.right {
-    display: flex;
-    flex-direction: row;
+.inNavActionsContainer {
+    display: inline-flex;
     align-items: center;
 
-    gap: 4px;
+    overflow-x: auto;
+    overflow-x: overlay;
 
-    @media screen and (min-height: 800px) {
-        gap: 8px;
+    &[aria-hidden="true"] {
+        visibility: hidden;
     }
 
-    min-width: $column_width;
-}
-
-.center {
-    justify-content: center;
-    overflow: hidden;
-}
-
-.left,
-.right {
-    flex-shrink: 0;
-}
-
-@media (max-width: ($column_width * 3.25)) {
-    .center {
-        min-width: $column_width * 0.5;
+    .actions {
+        white-space: nowrap;
     }
 }
 
-@media (max-width: ($column_width * 2.75)) {
-    .left,
-    .right,
-    .center {
-        min-width: 0;
-    }
-
-    .search {
-        display: none;
-    }
-}
-
-@media (max-width: ($column_width * 2)) {
-    .right > button,
-    .right > .iconButton {
-        // Button actions are available in frog menu as alternative
-        display: none;
-    }
-
-    .left,
-    .right {
-        min-width: 60px;
-    }
-}
-
-.grow {
-    flex: 1;
+.belowNavActionsContainer {
+    padding: 0 10px 4px 10px;
+    background: var(--g300);
+    border-bottom: 1px solid var(--g500);
 }
 
 .name {
@@ -90,12 +43,13 @@ $column_width: 260px;
     background: transparent;
     outline: none !important;
 
-    font-size: 0.9em;
-    color: var(--g1800);
+    color: var(--g2000);
 
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    max-width: 320px;
 
     text-align: center;
 
@@ -109,45 +63,122 @@ $column_width: 260px;
 
     &.editable:hover,
     &[contenteditable] {
-        background: var(--g300);
+        background: var(--g200);
     }
 }
 
-.icons {
-    flex-shrink: 0;
+.breadcrumbs {
+    padding: 0 $padding;
 
-    display: flex;
-    flex-direction: row;
+    display: inline-flex;
     align-items: center;
+}
 
-    height: 100%;
+.actions {
+    list-style: none;
+
+    font-size: 12px;
+
+    align-self: center;
+
+    @media (max-width: 700px) {
+        display: block;
+    }
+
+    > li {
+        display: inline-block;
+
+        button,
+        a {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+
+            cursor: pointer;
+
+            color: var(--g1900);
+            background: none;
+            border: 0;
+
+            svg {
+                width: 1em;
+                color: var(--g1200);
+            }
+
+            &[disabled] {
+                color: var(--g700);
+                cursor: default;
+
+                svg {
+                    color: inherit;
+                }
+            }
+
+            &:not([disabled]):hover {
+                border-radius: 4px;
+                color: var(--g2000);
+                background: var(--g400);
+            }
+        }
+    }
+}
+
+.iconNamePair {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    > svg {
+        align-self: center;
+    }
+}
+
+.lastEditTime {
+    color: var(--g1200);
+
+    padding: 0 8px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+    font-weight: 300;
+}
+
+.owner {
+    line-height: 20px;
     padding: 4px 0;
 
-    &:first-child {
-        padding-left: 8px;
+    position: relative;
+
+    .ownerAvatar {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
     }
 
-    svg {
-        height: 100%;
-    }
-}
-
-.iconButton {
-    color: var(--g1400);
-    height: 100%;
-
-    display: flex;
-    align-items: center;
-
-    padding-left: 4px;
-
-    cursor: pointer;
-
-    &:hover {
-        opacity: 0.8;
+    &::before {
+        content: "";
+        display: inline-block;
+        width: 26px;
     }
 }
 
-.loginState {
-    flex-shrink: 0;
+// Hide owner name and breadcrumb separator, i.e. just show the owner avatar
+@media (max-width: 800px) {
+    .breadcrumbs li::before {
+        visibility: hidden;
+        margin: 0 !important;
+    }
+
+    .ownerName {
+        display: none;
+    }
+
+    .owner::before {
+        width: 20px;
+    }
 }

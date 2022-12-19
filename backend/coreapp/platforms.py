@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
-from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
+from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    diff_flags: Flags = field(default_factory=list, hash=False)
+    diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
 
 
@@ -59,10 +59,84 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_MIPS_DIFF_FLAGS,
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
+    \label:
+.endm
+
+.set noat
+.set noreorder
+.set gp=64
+
+
+# Float register aliases (o32 ABI)
+
+.set $fv0,          $f0
+.set $fv0f,         $f1
+.set $fv1,          $f2
+.set $fv1f,         $f3
+.set $ft0,          $f4
+.set $ft0f,         $f5
+.set $ft1,          $f6
+.set $ft1f,         $f7
+.set $ft2,          $f8
+.set $ft2f,         $f9
+.set $ft3,          $f10
+.set $ft3f,         $f11
+.set $fa0,          $f12
+.set $fa0f,         $f13
+.set $fa1,          $f14
+.set $fa1f,         $f15
+.set $ft4,          $f16
+.set $ft4f,         $f17
+.set $ft5,          $f18
+.set $ft5f,         $f19
+.set $fs0,          $f20
+.set $fs0f,         $f21
+.set $fs1,          $f22
+.set $fs1f,         $f23
+.set $fs2,          $f24
+.set $fs2f,         $f25
+.set $fs3,          $f26
+.set $fs3f,         $f27
+.set $fs4,          $f28
+.set $fs4f,         $f29
+.set $fs5,          $f30
+.set $fs5f,         $f31
+
+""",
+)
+
+IRIX = Platform(
+    id="irix",
+    name="IRIX",
+    description="MIPS (big-endian, PIC)",
+    arch="mips",
+    assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="mips-linux-gnu-objdump",
+    nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
 .endm
 
 .macro glabel label
@@ -148,8 +222,8 @@ PS2 = Platform(
     id="ps2",
     name="PlayStation 2",
     description="MIPS (little-endian)",
-    arch="mipsel",
-    assemble_cmd='mips-linux-gnu-as -march=mips64 -mabi=64 -o "$OUTPUT" "$INPUT"',
+    arch="mipsee",
+    assemble_cmd='mips-linux-gnu-as -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
     asm_prelude="""
@@ -444,7 +518,7 @@ GC_WII = Platform(
 NDS_ARM9 = Platform(
     id="nds_arm9",
     name="Nintendo DS",
-    description="ARMv4T",
+    description="ARMv5TE",
     arch="arm32",
     assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT"',
     objdump_cmd="arm-none-eabi-objdump",
@@ -525,6 +599,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
         "switch": SWITCH,
+        "irix": IRIX,
         "n64": N64,
         "ps1": PS1,
         "ps2": PS2,

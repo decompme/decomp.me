@@ -11,7 +11,7 @@ export function isGitHubLoginSupported(): boolean {
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
 export function showGitHubLoginWindow(popup: boolean, scope: string) {
     const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${encodeURIComponent(scope)}`
-    const win = popup && window.open(url, "Sign in with GitHub", "popup,width=520,height=400,resizable,status")
+    const win = popup && window.open(url, "Sign in with GitHub", "popup,width=520,height=520,resizable,status")
 
     if (win) {
         win.addEventListener("message", event => {
@@ -35,7 +35,7 @@ export async function requestMissingScopes<T>(makeRequest: () => Promise<T>): Pr
             console.warn("Missing scopes", scope)
             showGitHubLoginWindow(true, scope)
 
-            return await requestMissingScopes(makeRequest)
+            throw new Error("Accept permissions and retry")
         } else {
             throw error
         }

@@ -3,22 +3,4 @@
 
     display: inline-flex;
     gap: 0.2em;
-
-    li {
-        flex-grow: 0;
-        flex-shrink: 0;
-
-        width: 1.5em;
-        height: 1.5em;
-
-        border-radius: 999px;
-        position: relative;
-
-        background: var(--a100); // skeleton
-
-        .avatar {
-            width: 1.5em;
-            height: 1.5em;
-        }
-    }
 }

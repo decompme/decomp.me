@@ -166,7 +166,7 @@ class RegFormatter:
         return self.used_names.get(reg, reg.register_name)
 
 
-valid_word = string.ascii_letters + string.digits + "_$"
+valid_word = string.ascii_letters + string.digits + "_$."
 valid_number = "-xX" + string.hexdigits
 
 
@@ -281,16 +281,16 @@ def parse_arg_elems(
             assert value is None
             arg_elems.pop(0)
             word = parse_word(arg_elems)
-            if word in ["data", "rodata", "bss", "text"]:
+            if word in ["data", "sdata", "rodata", "rdata", "bss", "sbss", "text"]:
                 value = asm_section_global_symbol(word, 0)
             else:
                 value = JumpTarget(word)
         elif tok == "%":
-            # A macro (i.e. %hi(...) or %lo(...)).
+            # A MIPS reloc macro, e.g. %hi(...) or %lo(...).
             assert value is None
             arg_elems.pop(0)
             macro_name = parse_word(arg_elems)
-            assert macro_name in ("hi", "lo")
+            assert macro_name
             expect("(")
             # Get the argument of the macro (which must exist).
             m = parse_arg_elems(

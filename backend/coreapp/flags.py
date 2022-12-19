@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List, Union
 
+ASMDIFF_FLAG_PREFIX = "-DIFF"
+
 
 @dataclass(frozen=True)
 class Checkbox:
@@ -69,7 +71,9 @@ COMMON_CLANG_FLAGS: Flags = [
 
 COMMON_GCC_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
-    FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
+    FlagSet(
+        id="gcc_debug_level", flags=["-gdwarf-2", "-gdwarf", "-g0", "-g1", "-g2", "-g3"]
+    ),
     FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
     Checkbox("gcc_force_addr", "-fforce-addr"),
 ]
@@ -81,8 +85,16 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("kpic", "-KPIC"),
 ]
 
+COMMON_DIFF_FLAGS: Flags = [
+    FlagSet(
+        id="diff_algorithm",
+        flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
+    ),
+]
+
 COMMON_MIPS_DIFF_FLAGS: Flags = [
     Checkbox("mreg_names=32", "-Mreg-names=32"),
+    Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
 ]
 
 COMMON_MWCC_FLAGS: Flags = [

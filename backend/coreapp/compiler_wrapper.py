@@ -4,6 +4,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 from platform import uname
+import time
 
 from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
 
@@ -133,14 +134,18 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            code_path = sandbox.path / "code.c"
+            ext = compiler.language.get_file_extension()
+            code_file = f"code.{ext}"
+            ctx_file = f"ctx.{ext}"
+
+            code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
             with code_path.open("w") as f:
-                f.write('#line 1 "ctx.c"\n')
+                f.write(f'#line 1 "{ctx_file}"\n')
                 f.write(context)
                 f.write("\n")
 
-                f.write('#line 1 "code.c"\n')
+                f.write(f'#line 1 "{code_file}"\n')
                 f.write(code)
                 f.write("\n")
 
@@ -148,7 +153,7 @@ class CompilerWrapper:
 
             # Fix for MWCC line numbers in GC 3.0+
             if compiler.is_mwcc:
-                ctx_path = sandbox.path / "ctx.c"
+                ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
 
             # IDO hack to support -KPIC
@@ -157,6 +162,7 @@ class CompilerWrapper:
 
             # Run compiler
             try:
+                st = round(time.time() * 1000)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=[compiler.path],
@@ -174,6 +180,8 @@ class CompilerWrapper:
                         "TMPDIR": "/tmp",
                     },
                 )
+                et = round(time.time() * 1000)
+                logging.debug(f"Compilation finished in: {et - st} ms")
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 msg = e.stdout
@@ -225,7 +233,8 @@ class CompilerWrapper:
 
         with Sandbox() as sandbox:
             asm_path = sandbox.path / "asm.s"
-            asm_path.write_text(platform.asm_prelude + asm.data)
+            data = asm.data.replace(".section .late_rodata", ".late_rodata")
+            asm_path.write_text(platform.asm_prelude + data)
 
             object_path = sandbox.path / "object.o"
 

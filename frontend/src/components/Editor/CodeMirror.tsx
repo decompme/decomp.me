@@ -1,31 +1,58 @@
-import { CSSProperties, MutableRefObject, useEffect, useRef } from "react"
+import { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from "react"
 
 import { Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
+import classNames from "classnames"
 import { useDebouncedCallback } from "use-debounce"
+
+import { useSize } from "../../lib/hooks"
+import { useCodeFontSize } from "../../lib/settings"
+
+import styles from "./CodeMirror.module.scss"
+
+// useDebouncedCallback is a bit dodgy when both leading and trailing are true, so here's a reimplementation
+function useLeadingTrailingDebounceCallback(callback: () => void, delay: number) {
+    const timeout = useRef<any>()
+
+    return useCallback(() => {
+        if (timeout.current) {
+            clearTimeout(timeout.current)
+        } else {
+            // Leading
+            callback()
+        }
+
+        timeout.current = setTimeout(() => {
+            timeout.current = undefined
+
+            // Trailing
+            callback()
+        }, delay)
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+}
 
 export interface Props {
     value: string
+    valueVersion: number
     onChange?: (value: string) => void
     onHoveredLineChange?: (value: number | null) => void
     onSelectedLineChange?: (value: number) => void
     className?: string
     viewRef?: MutableRefObject<EditorView | null>
     extensions: Extension // const
-    fontSize?: number
 }
 
 export default function CodeMirror({
     value,
+    valueVersion,
     onChange,
     onHoveredLineChange,
     onSelectedLineChange,
     className,
     viewRef: viewRefProp,
     extensions,
-    fontSize,
 }: Props) {
-    const el = useRef<HTMLDivElement>()
+    const { ref: el, width } = useSize<HTMLDivElement>()
 
     const valueRef = useRef(value)
     valueRef.current = value
@@ -47,17 +74,24 @@ export default function CodeMirror({
     const onSelectedLineChangeRef = useRef(onSelectedLineChange)
     onSelectedLineChangeRef.current = onSelectedLineChange
 
+    const [fontSize] = useCodeFontSize()
+
+    // Defer calls to onChange to avoid excessive re-renders
+    const propagateValue = useLeadingTrailingDebounceCallback(() => {
+        onChangeRef.current?.(viewRef.current.state.doc.toString())
+    }, 100)
+
     // Initial view creation
     useEffect(() => {
         viewRef.current = new EditorView({
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
-                    EditorState.transactionExtender.of(({ newDoc, newSelection }) => {
+                    EditorState.transactionExtender.of(({ docChanged, newDoc, newSelection }) => {
                         // value / onChange
-                        const newValue = newDoc.toString()
-                        if (newValue !== valueRef.current) {
-                            onChangeRef.current?.(newValue)
+                        if (docChanged) {
+                            valueRef.current = newDoc.toString()
+                            propagateValue()
                         }
 
                         // selectedSourceLine
@@ -71,6 +105,7 @@ export default function CodeMirror({
 
                         return null
                     }),
+
                     extensionsRef.current,
                 ],
             }),
@@ -86,9 +121,9 @@ export default function CodeMirror({
             if (viewRefProp)
                 viewRefProp.current = null
         }
-    }, [viewRefProp])
+    }, [el, propagateValue, viewRefProp])
 
-    // Replace doc when `value` prop changes
+    // Replace doc when `valueVersion` prop changes
     useEffect(() => {
         const view = viewRef.current
         if (view) {
@@ -106,7 +141,7 @@ export default function CodeMirror({
                 )
             }
         }
-    }, [value])
+    }, [valueVersion]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const debouncedOnMouseMove = useDebouncedCallback(
         event => {
@@ -134,7 +169,10 @@ export default function CodeMirror({
     return <div
         ref={el}
         onMouseMove={debouncedOnMouseMove}
-        className={className}
-        style={typeof fontSize == "number" ? { "--cm-font-size": `${fontSize}px` } as CSSProperties : {}}
+        className={classNames(styles.container, className)}
+        style={{
+            "--cm-font-size": `${fontSize}px`,
+            "--cm-container-width": `${width}px`,
+        } as CSSProperties}
     />
 }

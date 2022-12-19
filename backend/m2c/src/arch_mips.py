@@ -12,6 +12,7 @@ from typing import (
 
 from .error import DecompFailure
 from .options import Target
+from .asm_file import Label
 from .asm_instruction import (
     Argument,
     AsmAddressMode,
@@ -32,6 +33,7 @@ from .asm_pattern import (
     AsmMatch,
     AsmMatcher,
     AsmPattern,
+    Pattern,
     Replacement,
     SimpleAsmPattern,
     make_pattern,
@@ -78,11 +80,13 @@ from .evaluate import (
     handle_add,
     handle_add_double,
     handle_add_float,
+    handle_add_real,
     handle_addi,
     handle_bgez,
     handle_conditional_move,
     handle_convert,
     handle_la,
+    handle_lw,
     handle_load,
     handle_lwl,
     handle_lwr,
@@ -156,17 +160,10 @@ LENGTH_THREE: Set[str] = {
     "dsra",
     "dsra32",
     "dsrav",
-}
-
-DIV_MULT_INSTRUCTIONS: Set[str] = {
     "div",
     "divu",
     "ddiv",
     "ddivu",
-    "mult",
-    "multu",
-    "dmult",
-    "dmultu",
 }
 
 
@@ -469,6 +466,225 @@ class TrapuvPattern(SimpleAsmPattern):
         return Replacement([m.body[2], new_instr], len(m.body))
 
 
+class SetGpPattern(AsmPattern):
+    """Strip PIC .cpload pattern at the top of functions."""
+
+    pattern = make_pattern(
+        "*",
+        "addiu $gp, $gp, _",
+        "addu $gp, $gp, $t9",
+    )
+
+    def match(self, matcher: AsmMatcher) -> Optional[Replacement]:
+        if matcher.index != 0:
+            return None
+        m = matcher.try_match(self.pattern)
+        if m is None:
+            return None
+        nop = AsmInstruction("nop", [])
+        return Replacement([nop], len(m.body))
+
+
+class MemcpyPatternBase(AsmPattern):
+    """IDO unrolled memcpy, used e.g. for struct copies. Slightly different patterns
+    are used for -mips1 vs -mips2, and for >=4 vs <4 byte alignment."""
+
+    pattern_mips1: Pattern
+    pattern_mips2: Pattern
+    epilogue1: Pattern
+    epilogue2: Pattern
+    instruction_name: str
+
+    def match(self, matcher: AsmMatcher) -> Optional[Replacement]:
+        for pattern in (self.pattern_mips1, self.pattern_mips2):
+            m = matcher.try_match(pattern)
+            if m:
+                break
+        else:
+            return None
+
+        # Find length by searching backwards for an "addiu $e, $x, ..." where
+        # $x = $i or there's a "move $i, $x".
+        length: Optional[int] = None
+        e_src: Optional[Instruction] = None
+        i_src: Optional[Instruction] = None
+        for i in range(matcher.index - 1, -1, -1):
+            item = matcher.input[i]
+            if isinstance(item, Label):
+                break
+            if not i_src and m.regs["i"] in item.outputs:
+                i_src = item
+            if not e_src and m.regs["e"] in item.outputs:
+                e_src = item
+        if e_src is None or e_src.mnemonic != "addiu":
+            return None
+        if e_src.args[1] != m.regs["i"] and (
+            i_src is None or i_src.mnemonic != "move" or i_src.args[1] != e_src.args[1]
+        ):
+            return None
+        assert isinstance(e_src.args[2], AsmLiteral)
+        length = e_src.args[2].value
+
+        # Extend the pattern to include additional bytes copied when the total size
+        # isn't a multiple of three. (This doesn't really work well at the moment,
+        # see the comment in AlignedMemcpyPattern...)
+        added_length = length
+        m2 = matcher.try_match(pattern + self.epilogue1)
+        if m2:
+            m = m2
+            length += 4
+            m3 = matcher.try_match(pattern + self.epilogue1 + self.epilogue2)
+            if m3:
+                m = m3
+                length += 4
+
+        from_reg = Register("from")
+        to_reg = Register("to")
+        from_offset = AsmLiteral(m.literals["N"])
+        to_offset = AsmLiteral(m.literals["M"])
+        added_len_arg = AsmLiteral(added_length)
+        len_arg = AsmLiteral(length)
+        return Replacement(
+            [
+                m.body[0],
+                AsmInstruction("addiu", [from_reg, m.regs["i"], from_offset]),
+                AsmInstruction("addiu", [to_reg, m.regs["o"], to_offset]),
+                AsmInstruction(self.instruction_name, [to_reg, from_reg, len_arg]),
+                AsmInstruction("addiu", [m.regs["o"], m.regs["o"], added_len_arg]),
+                AsmInstruction("addiu", [m.regs["i"], m.regs["i"], added_len_arg]),
+            ]
+            + list(m.wildcard_items)
+            + [AsmInstruction("nop", [])],
+            len(m.body),
+        )
+
+
+class AlignedMemcpyPattern(MemcpyPatternBase):
+    pattern_mips1 = make_pattern(
+        ".loop:",
+        "lw $a, N($i)",
+        "addiu $i, $i, 12",
+        "sw $a, M($o)",
+        "lw $b, (N-8)($i)",
+        "addiu $o, $o, 12",
+        "sw $b, (M-8)($o)",
+        "lw $c, (N-4)($i)",
+        "bne $i, $e, .loop",
+        "sw $c, (M-4)($o)",
+    )
+    pattern_mips2 = make_pattern(
+        ".loop:",
+        "lw $a, N($i)",
+        "addiu $i, $i, 12",
+        "addiu $o, $o, 12",
+        "sw $a, MM($o)",
+        ".eq M, MM+12",
+        "lw $b, (N-8)($i)",
+        "sw $b, (M-8)($o)",
+        "lw $c, (N-4)($i)",
+        "bne $i, $e, .loop",
+        "sw $c, (M-4)($o)",
+    )
+    # TODO: the * should not be there on -mips2, and the very last instruction can be
+    # reordered to be further down. (Luckily the effects of failing to capture this is
+    # just an extra word copy after the memcpy.)
+    epilogue1 = make_pattern(
+        "lw $x, N($i)",
+        "*",
+        "sw $x, M($o)",
+    )
+    epilogue2 = make_pattern(
+        "lw $y, (N+4)($i)",
+        "*",
+        "sw $y, (M+4)($o)",
+    )
+    instruction_name = "memcpy.aligned.fictive"
+
+
+class UnalignedMemcpyPattern(MemcpyPatternBase):
+    pattern_mips1 = make_pattern(
+        ".loop:",
+        "lwl $a, N($i)",
+        "lwr $a, (N+3)($i)",
+        "addiu $i, $i, 12",
+        "swl $a, M($o)",
+        "swr $a, (M+3)($o)",
+        "lwl $b, (N-8)($i)",
+        "lwr $b, (N-5)($i)",
+        "addiu $o, $o, 12",
+        "swl $b, (M-8)($o)",
+        "swr $b, (M-5)($o)",
+        "lwl $c, (N-4)($i)",
+        "lwr $c, (N-1)($i)",
+        "nop",
+        "swl $c, (M-4)($o)",
+        "bne $i, $e, .loop",
+        "swr $c, (M-1)($o)",
+    )
+    pattern_mips2 = make_pattern(
+        ".loop:",
+        "lwl $a, N($i)",
+        "lwr $a, (N+3)($i)",
+        "addiu $i, $i, 12",
+        "addiu $o, $o, 12",
+        "swl $a, MM($o)",
+        ".eq M, MM+12",
+        "swr $a, (M-9)($o)",
+        "lwl $b, (N-8)($i)",
+        "lwr $b, (N-5)($i)",
+        "swl $b, (M-8)($o)",
+        "swr $b, (M-5)($o)",
+        "lwl $c, (N-4)($i)",
+        "lwr $c, (N-1)($i)",
+        "swl $c, (M-4)($o)",
+        "bne $i, $e, .loop",
+        "swr $c, (M-1)($o)",
+    )
+    epilogue1 = make_pattern(
+        "lwl $x, N($i)",
+        "lwr $x, (N+3)($i)",
+        "*",
+        "swl $x, M($o)",
+        "swr $x, (M+3)($o)",
+    )
+    epilogue2 = make_pattern(
+        "lwl $y, (N+4)($i)",
+        "lwr $y, (N+7)($i)",
+        "*",
+        "swl $y, (M+4)($o)",
+        "swr $y, (M+7)($o)",
+    )
+    instruction_name = "memcpy.unaligned.fictive"
+
+
+class GpJumpPattern(SimpleAsmPattern):
+    """Remove additions of $gp used for position-independent jump tables. It's
+    possible that this could be done for all additions of $gp, not just jumps,
+    but we are conservative for now."""
+
+    pattern = make_pattern(
+        "addu $x, $x, $gp",
+        "jr $x",
+    )
+
+    def replace(self, m: AsmMatch) -> Replacement:
+        return Replacement([m.body[1]], len(m.body))
+
+
+class OriSpPattern(SimpleAsmPattern):
+    """Some versions of PS2 compilers emit ori for small stack additions instead
+    of addiu. Normalize."""
+
+    pattern = make_pattern("ori $x, $sp, N")
+
+    def replace(self, m: AsmMatch) -> Optional[Replacement]:
+        n = m.literals["N"]
+        if 0 <= n < 16 and m.regs["x"] != Register("sp"):
+            ins = AsmInstruction("addiu", [m.regs["x"], Register("sp"), AsmLiteral(n)])
+            return Replacement([ins], len(m.body))
+        return None
+
+
 class MipsArch(Arch):
     arch = Target.ArchEnum.MIPS
 
@@ -556,7 +772,7 @@ class MipsArch(Arch):
             "gp",
         ]
     ]
-    all_regs = saved_regs + temp_regs + [stack_pointer_reg]
+    all_regs = saved_regs + temp_regs + [stack_pointer_reg, Register("zero")]
 
     aliased_gp_regs = {
         "s8": Register("fp"),
@@ -626,10 +842,6 @@ class MipsArch(Arch):
                 return AsmInstruction("not", [args[0], args[1]])
             if instr.mnemonic == "addiu" and args[2] == AsmLiteral(0):
                 return AsmInstruction("move", args[:2])
-            if instr.mnemonic in DIV_MULT_INSTRUCTIONS:
-                if args[0] != Register("zero"):
-                    raise DecompFailure("first argument to div/mult must be $zero")
-                return AsmInstruction(instr.mnemonic, args[1:])
             if (
                 instr.mnemonic == "ori"
                 and args[1] == Register("zero")
@@ -659,6 +871,8 @@ class MipsArch(Arch):
                 return AsmInstruction("li", [args[0], lit])
             if instr.mnemonic == "jalr" and args[0] != Register("ra"):
                 raise DecompFailure("Two-argument form of jalr is not supported.")
+            if instr.mnemonic in ("mult", "multu", "dmult", "dmultu", "madd", "maddu"):
+                return AsmInstruction(instr.mnemonic, [Register("zero"), *args])
             if instr.mnemonic in LENGTH_THREE:
                 return cls.normalize_instruction(
                     AsmInstruction(instr.mnemonic, [args[0]] + args)
@@ -680,7 +894,7 @@ class MipsArch(Arch):
         clobbers: List[Location] = []
         outputs: List[Location] = []
         jump_target: Optional[Union[JumpTarget, Register]] = None
-        function_target: Optional[Union[AsmGlobalSymbol, Register]] = None
+        function_target: Optional[Argument] = None
         has_delay_slot = False
         is_branch_likely = False
         is_conditional = False
@@ -732,7 +946,7 @@ class MipsArch(Arch):
             eval_fn = lambda s, a: s.set_switch_expr(a.reg(0))
         elif mnemonic == "jal" or mnemonic == "bal":
             # Function call to label
-            assert len(args) == 1 and isinstance(args[0], AsmGlobalSymbol)
+            assert len(args) == 1
             inputs = list(cls.argument_regs)
             outputs = list(cls.all_return_regs)
             clobbers = list(cls.temp_regs)
@@ -858,9 +1072,7 @@ class MipsArch(Arch):
             def eval_fn(s: NodeState, a: InstrArgs) -> None:
                 store = cls.instrs_store[mnemonic](a)
                 if store is not None:
-                    s.store_memory(
-                        source=store.source, dest=store.dest, reg=a.reg_ref(0)
-                    )
+                    s.store_memory(store, a.reg_ref(0))
 
         elif mnemonic == "mtc1":
             # Floating point moving instruction, source first
@@ -959,18 +1171,32 @@ class MipsArch(Arch):
             )
         elif mnemonic in cls.instrs_hi_lo:
             assert (
-                len(args) == 2
+                len(args) == 3
                 and isinstance(args[0], Register)
                 and isinstance(args[1], Register)
+                and isinstance(args[2], Register)
             )
-            inputs = [args[0], args[1]]
+            inputs = [args[1], args[2]]
+            if mnemonic in ("madd", "maddu"):
+                inputs.append(Register("lo"))
             outputs = [Register("hi"), Register("lo")]
+            if args[0] != Register("zero"):
+                outputs.append(args[0])
 
             def eval_fn(s: NodeState, a: InstrArgs) -> None:
                 hi, lo = cls.instrs_hi_lo[mnemonic](a)
                 s.set_reg(Register("hi"), hi)
                 s.set_reg(Register("lo"), lo)
+                copy_lo_to = a.reg_ref(0)
+                if copy_lo_to != Register("zero"):
+                    s.set_reg(copy_lo_to, lo)
 
+        elif mnemonic in ("mtlo", "mthi"):
+            assert len(args) == 1 and isinstance(args[0], Register)
+            inputs = [args[0]]
+            output_reg = Register("hi") if mnemonic == "mthi" else Register("lo")
+            outputs = [output_reg]
+            eval_fn = lambda s, a: s.set_reg(output_reg, a.reg(0))
         elif mnemonic in cls.instrs_ignore:
             pass
         else:
@@ -1021,6 +1247,11 @@ class MipsArch(Arch):
         Mips1DoubleLoadStorePattern(),
         GccSqrtPattern(),
         TrapuvPattern(),
+        SetGpPattern(),
+        AlignedMemcpyPattern(),
+        UnalignedMemcpyPattern(),
+        GpJumpPattern(),
+        OriSpPattern(),
     ]
 
     instrs_ignore: Set[str] = {
@@ -1052,7 +1283,7 @@ class MipsArch(Arch):
         "bnez": lambda a: BinaryOp.icmp(a.reg(0), "!=", Literal(0)),
         "blez": lambda a: BinaryOp.scmp(a.reg(0), "<=", Literal(0)),
         "bgtz": lambda a: BinaryOp.scmp(a.reg(0), ">", Literal(0)),
-        "bltz": lambda a: BinaryOp.scmp(a.reg(0), "<", Literal(0)),
+        "bltz": lambda a: handle_bgez(a).negated(),
         "bgez": lambda a: handle_bgez(a),
     }
     instrs_no_dest: StmtInstrMap = {
@@ -1099,6 +1330,12 @@ class MipsArch(Arch):
         ),
         "sync": lambda a: void_fn_op("M2C_SYNC", []),
         "trapuv.fictive": lambda a: CommentStmt("code compiled with -trapuv"),
+        "memcpy.aligned.fictive": lambda a: void_fn_op(
+            "M2C_MEMCPY_ALIGNED", [a.reg(0), a.reg(1), a.imm(2)]
+        ),
+        "memcpy.unaligned.fictive": lambda a: void_fn_op(
+            "M2C_MEMCPY_UNALIGNED", [a.reg(0), a.reg(1), a.imm(2)]
+        ),
     }
     instrs_float_comp: InstrMap = {
         # Float comparisons that don't raise exception on nan
@@ -1148,37 +1385,61 @@ class MipsArch(Arch):
     }
     instrs_hi_lo: Dict[str, Callable[[InstrArgs], Tuple[Expression, Expression]]] = {
         # Div and mul output two results, to LO/HI registers. (Format: (hi, lo))
+        # PS2's mult/multu/madd/maddu instructions additionally support an output
+        # register to copy LO to, $zero meaning no copying, and GNU as extends
+        # that as a pseudo-instruction to div instructions too.
         "div": lambda a: (
-            BinaryOp.sint(a.reg(0), "%", a.reg(1)),
-            BinaryOp.sint(a.reg(0), "/", a.reg(1)),
+            BinaryOp.sint(a.reg(1), "%", a.reg(2)),
+            BinaryOp.sint(a.reg(1), "/", a.reg(2)),
         ),
         "divu": lambda a: (
-            BinaryOp.uint(a.reg(0), "%", a.reg(1)),
-            BinaryOp.uint(a.reg(0), "/", a.reg(1)),
+            BinaryOp.uint(a.reg(1), "%", a.reg(2)),
+            BinaryOp.uint(a.reg(1), "/", a.reg(2)),
         ),
         "ddiv": lambda a: (
-            BinaryOp.s64(a.reg(0), "%", a.reg(1)),
-            BinaryOp.s64(a.reg(0), "/", a.reg(1)),
+            BinaryOp.s64(a.reg(1), "%", a.reg(2)),
+            BinaryOp.s64(a.reg(1), "/", a.reg(2)),
         ),
         "ddivu": lambda a: (
-            BinaryOp.u64(a.reg(0), "%", a.reg(1)),
-            BinaryOp.u64(a.reg(0), "/", a.reg(1)),
+            BinaryOp.u64(a.reg(1), "%", a.reg(2)),
+            BinaryOp.u64(a.reg(1), "/", a.reg(2)),
         ),
         "mult": lambda a: (
-            fold_divmod(BinaryOp.int(a.reg(0), "MULT_HI", a.reg(1))),
-            BinaryOp.int(a.reg(0), "*", a.reg(1)),
+            fold_divmod(BinaryOp.int(a.reg(1), "MULT_HI", a.reg(2))),
+            BinaryOp.int(a.reg(1), "*", a.reg(2)),
         ),
         "multu": lambda a: (
-            fold_divmod(BinaryOp.int(a.reg(0), "MULTU_HI", a.reg(1))),
-            BinaryOp.int(a.reg(0), "*", a.reg(1)),
+            fold_divmod(BinaryOp.int(a.reg(1), "MULTU_HI", a.reg(2))),
+            BinaryOp.int(a.reg(1), "*", a.reg(2)),
         ),
         "dmult": lambda a: (
-            BinaryOp.int64(a.reg(0), "DMULT_HI", a.reg(1)),
-            BinaryOp.int64(a.reg(0), "*", a.reg(1)),
+            BinaryOp.int64(a.reg(1), "DMULT_HI", a.reg(2)),
+            BinaryOp.int64(a.reg(1), "*", a.reg(2)),
         ),
         "dmultu": lambda a: (
-            BinaryOp.int64(a.reg(0), "DMULTU_HI", a.reg(1)),
-            BinaryOp.int64(a.reg(0), "*", a.reg(1)),
+            BinaryOp.int64(a.reg(1), "DMULTU_HI", a.reg(2)),
+            BinaryOp.int64(a.reg(1), "*", a.reg(2)),
+        ),
+        # madd/maddu are PS2 extensions, and act as u64(HI|LO) += x * y.
+        # In practice, compiler-generated code only uses the lo part of the
+        # output, which means we also only need the lo part of the input.
+        "madd": lambda a: (
+            ErrorExpr("madd top half"),
+            handle_add_real(
+                Register("lo"),
+                a.regs[Register("lo")],
+                BinaryOp.int(a.reg(1), "*", a.reg(2)),
+                a,
+            ),
+        ),
+        "maddu": lambda a: (
+            ErrorExpr("maddu top half"),
+            handle_add_real(
+                Register("lo"),
+                a.regs[Register("lo")],
+                BinaryOp.int(a.reg(1), "*", a.reg(2)),
+                a,
+            ),
         ),
     }
     instrs_destination_first: InstrMap = {
@@ -1340,7 +1601,7 @@ class MipsArch(Arch):
         "lbu": lambda a: handle_load(a, type=Type.u8()),
         "lh": lambda a: handle_load(a, type=Type.s16()),
         "lhu": lambda a: handle_load(a, type=Type.u16()),
-        "lw": lambda a: handle_load(a, type=Type.reg32(likely_float=False)),
+        "lw": lambda a: handle_lw(a),
         "ld": lambda a: handle_load(a, type=Type.reg64(likely_float=False)),
         "lwu": lambda a: handle_load(a, type=Type.u32()),
         "lwc1": lambda a: handle_load(a, type=Type.reg32(likely_float=True)),

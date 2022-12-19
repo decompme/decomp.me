@@ -1,0 +1,53 @@
+.container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    // For .loading
+    position: relative;
+
+    > p {
+        color: var(--g1300);
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+.editor {
+    flex-grow: 1;
+
+    overflow: hidden;
+
+    border-top: 1px solid var(--g300);
+
+    @media screen and (max-height: 600px) {
+        height: 200px;
+    }
+
+    :global(.cm-editor) {
+        height: 100%;
+    }
+}
+
+.loading {
+    width: 2em;
+    height: 2em;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    color: var(--code-foreground);
+}

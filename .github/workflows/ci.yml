@@ -21,7 +21,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
-          sudo apt-get install -yqq --allow-downgrades libgd3/focal libpcre2-8-0/focal libpcre2-16-0/focal libpcre2-32-0/focal libpcre2-posix2/focal
           sudo apt-get purge -yqq libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
 
           sudo apt-get install \
@@ -44,6 +43,7 @@ jobs:
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
+            libncurses5 \
             protobuf-compiler \
             wine
       - name: Install nsjail
@@ -93,7 +93,7 @@ jobs:
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
       - name: Install frontend dependencies
-        run: cd frontend && yarn
+        run: cd frontend && yarn --frozen-lockfile
 
       - name: Build frontend
         run: cd frontend && yarn build
@@ -143,6 +143,8 @@ jobs:
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
+            -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
@@ -153,10 +155,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: reviewdog/action-setup@v1
-      - run: cd frontend && yarn
+      - run: cd frontend && yarn --frozen-lockfile
       - run: reviewdog -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  frontend_lint:
+    name: eslint & stylelint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: cd frontend && yarn --frozen-lockfile
+      - run: cd frontend && yarn lint
   mypy:
     name: mypy
     runs-on: ubuntu-latest
