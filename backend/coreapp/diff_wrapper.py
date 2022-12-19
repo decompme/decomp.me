@@ -69,7 +69,7 @@ class DiffWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=asm_differ.JsonFormatter(arch_str=arch.name),
-            threeway=None,
+            diff_mode=asm_differ.DiffMode.NORMAL,
             base_shift=0,
             skip_lines=0,
             compress=None,
