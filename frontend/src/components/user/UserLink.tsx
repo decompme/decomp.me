@@ -6,11 +6,13 @@ import UserAvatar from "./UserAvatar"
 import styles from "./UserLink.module.scss"
 
 export function GitHubUserLink({ user }: { user: { login: string } }) {
-    return <Link href={`https://github.com/${user.login}`}>
-        <a className={styles.user}>
+    return (
+        <Link href={`https://github.com/${user.login}`} className={styles.user}>
+
             <span>{user.login}</span>
-        </a>
-    </Link>
+
+        </Link>
+    )
 }
 
 export type Props = {
@@ -24,5 +26,5 @@ export default function UserLink({ user, showUsername }: Props) {
         {showUsername != false && <span>{user.username}</span>}
     </a>
 
-    return api.isAnonUser(user) ? linkInner : <Link href={`/u/${user.username}`}>{linkInner}</Link>
+    return api.isAnonUser(user) ? linkInner : <Link href={`/u/${user.username}`} legacyBehavior>{linkInner}</Link>
 }

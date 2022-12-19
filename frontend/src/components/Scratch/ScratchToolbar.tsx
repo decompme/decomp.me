@@ -141,71 +141,71 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
         compile()
     })
 
-    return <ul className={styles.actions} aria-label="Scratch actions">
-        <li>
-            <Link href="/new">
-                <a>
-                    <FileIcon />
-                    New
-                </a>
-            </Link>
-        </li>
-        <li>
-            <button
-                onClick={async () => {
-                    setIsSaving(true)
-                    await fuzzySaveScratch()
-                    setIsSaving(false)
-                }}
-                disabled={!canSave || isSaving}
-                title={fuzzyShortcut}
-            >
-                <UploadIcon />
-                Save
-            </button>
-        </li>
-        <li>
-            <button
-                onClick={forkScratch}
-                title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
-            >
-                <RepoForkedIcon />
-                Fork
-            </button>
-        </li>
-        {scratch.owner && userIsYou(scratch.owner) && <li>
-            <button onClick={event => {
-                if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
-                    deleteScratch(scratch)
-                }
-            }}>
-                <TrashIcon />
-                    Delete
-            </button>
-        </li>}
-        <li>
-            <button onClick={() => exportScratchZip(scratch)}>
-                <DownloadIcon />
-                    Export..
-            </button>
-        </li>
-        <li>
-            <button
-                onClick={compile}
-                title={compileShortcut}
-                disabled={isCompiling}
-            >
-                <SyncIcon />
-                Compile
-            </button>
-        </li>
-        <li>
-            <button onClick={() => setDecompilationTabEnabled(true)}>
-                <IterationsIcon />
-                Decompile..
-            </button>
-        </li>
-    </ul>
+    return (
+        <ul className={styles.actions} aria-label="Scratch actions">
+            <li>
+                <Link href="/new">
+
+                    <FileIcon />New
+                </Link>
+            </li>
+            <li>
+                <button
+                    onClick={async () => {
+                        setIsSaving(true)
+                        await fuzzySaveScratch()
+                        setIsSaving(false)
+                    }}
+                    disabled={!canSave || isSaving}
+                    title={fuzzyShortcut}
+                >
+                    <UploadIcon />
+                    Save
+                </button>
+            </li>
+            <li>
+                <button
+                    onClick={forkScratch}
+                    title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
+                >
+                    <RepoForkedIcon />
+                    Fork
+                </button>
+            </li>
+            {scratch.owner && userIsYou(scratch.owner) && <li>
+                <button onClick={event => {
+                    if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
+                        deleteScratch(scratch)
+                    }
+                }}>
+                    <TrashIcon />
+                        Delete
+                </button>
+            </li>}
+            <li>
+                <button onClick={() => exportScratchZip(scratch)}>
+                    <DownloadIcon />
+                        Export..
+                </button>
+            </li>
+            <li>
+                <button
+                    onClick={compile}
+                    title={compileShortcut}
+                    disabled={isCompiling}
+                >
+                    <SyncIcon />
+                    Compile
+                </button>
+            </li>
+            <li>
+                <button onClick={() => setDecompilationTabEnabled(true)}>
+                    <IterationsIcon />
+                    Decompile..
+                </button>
+            </li>
+        </ul>
+    )
 }
 
 enum ActionsLocation {

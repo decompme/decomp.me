@@ -52,76 +52,78 @@ export default function Nav({ border, children }: Props) {
         }
     }, [isOpen])
 
-    return <nav
-        className={classNames({
-            [styles.container]: true,
-            [styles.border]: border,
-        })}
-        aria-labelledby="navtoggle"
-        data-open={isOpen}
-        data-force-toggle={!!children}
-        onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
-    >
-        <ul className={styles.header}>
-            <li className={styles.headerItemMenuToggle}>
-                <button
-                    id="navtoggle"
-                    onClick={toggleOpen}
-                    onAuxClick={() => window.open("/", "_blank")}
-                    aria-label={toggleLabel}
-                    aria-expanded={isOpen}
-                >
-                    {isOpen ? <XIcon size={24} /> : <ThreeBarsIcon size={18} />}
-                </button>
-            </li>
-            <li className={styles.headerItemSiteLogo}>
-                <Link href="/">
-                    <a aria-label="decomp.me">
+    return (
+        <nav
+            className={classNames({
+                [styles.container]: true,
+                [styles.border]: border,
+            })}
+            aria-labelledby="navtoggle"
+            data-open={isOpen}
+            data-force-toggle={!!children}
+            onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
+        >
+            <ul className={styles.header}>
+                <li className={styles.headerItemMenuToggle}>
+                    <button
+                        id="navtoggle"
+                        onClick={toggleOpen}
+                        onAuxClick={() => window.open("/", "_blank")}
+                        aria-label={toggleLabel}
+                        aria-expanded={isOpen}
+                    >
+                        {isOpen ? <XIcon size={24} /> : <ThreeBarsIcon size={18} />}
+                    </button>
+                </li>
+                <li className={styles.headerItemSiteLogo}>
+                    <Link href="/" aria-label="decomp.me">
+
                         <Frog width={24} height={24} />
-                    </a>
-                </Link>
-            </li>
-            <li className={styles.headerItemLoginState}>
-                <LoginState />
-            </li>
-            {children
-                ? <li className={styles.customchildren}>{children}</li>
-                : <li className={styles.desktopLinks}>
-                    <ul>
-                        <li>
-                            <Search />
-                        </li>
-                        <li>
-                            <Link href="/new">New scratch</Link>
-                        </li>
-                        <li>
-                            <Link href="/projects">Projects</Link>
-                        </li>
-                        <li>
-                            <Link href="/settings/appearance">Settings</Link>
-                        </li>
-                    </ul>
+
+                    </Link>
                 </li>
-            }
-        </ul>
-        <div className={styles.menu}>
-            <div className={styles.searchContainer}>
-                <Search className={styles.search} />
-            </div>
-            <ul className={styles.links}>
-                <li>
-                    <Link href="/">Dashboard</Link>
+                <li className={styles.headerItemLoginState}>
+                    <LoginState />
                 </li>
-                <li>
-                    <Link href="/new">New scratch</Link>
-                </li>
-                <li>
-                    <Link href="/projects">Projects</Link>
-                </li>
-                <li>
-                    <Link href="/settings/appearance">Settings</Link>
-                </li>
+                {children
+                    ? <li className={styles.customchildren}>{children}</li>
+                    : <li className={styles.desktopLinks}>
+                        <ul>
+                            <li>
+                                <Search />
+                            </li>
+                            <li>
+                                <Link href="/new">New scratch</Link>
+                            </li>
+                            <li>
+                                <Link href="/projects">Projects</Link>
+                            </li>
+                            <li>
+                                <Link href="/settings/appearance">Settings</Link>
+                            </li>
+                        </ul>
+                    </li>
+                }
             </ul>
-        </div>
-    </nav>
+            <div className={styles.menu}>
+                <div className={styles.searchContainer}>
+                    <Search className={styles.search} />
+                </div>
+                <ul className={styles.links}>
+                    <li>
+                        <Link href="/">Dashboard</Link>
+                    </li>
+                    <li>
+                        <Link href="/new">New scratch</Link>
+                    </li>
+                    <li>
+                        <Link href="/projects">Projects</Link>
+                    </li>
+                    <li>
+                        <Link href="/settings/appearance">Settings</Link>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    )
 }
