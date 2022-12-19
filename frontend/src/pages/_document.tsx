@@ -14,7 +14,7 @@ export default class MyDocument extends Document {
 
                     <meta name="darkreader-lock" />
                 </Head>
-                <body className="theme-dark">
+                <body className="dark">
                     <Main />
                     <NextScript />
                 </body>

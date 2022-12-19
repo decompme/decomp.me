@@ -21,23 +21,21 @@ export default function MyApp({ Component, pageProps }) {
         applyColorScheme(codeColorScheme)
     }, [codeColorScheme])
 
-    const [theme] = settings.useTheme()
+    const isSiteThemeDark = settings.useIsSiteThemeDark()
     const [themeColor, setThemeColor] = useState("#282e31")
     useEffect(() => {
         // Apply theme
-        document.body.classList.remove("theme-light")
-        document.body.classList.remove("theme-dark")
-
-        const realTheme = theme == "auto"
-            ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
-            : theme
-        document.body.classList.add(`theme-${realTheme}`)
+        if (isSiteThemeDark) {
+            document.body.classList.add("dark")
+        } else {
+            document.body.classList.remove("dark")
+        }
 
         // If using the default code color scheme (Frog), pick the variant that matches the site theme
         if (document.hasFocus) {
             setCodeColorScheme(current => {
                 if (current === "Frog Dark" || current === "Frog Light") {
-                    return realTheme == "dark" ? "Frog Dark" : "Frog Light"
+                    return isSiteThemeDark ? "Frog Dark" : "Frog Light"
                 } else {
                     return current
                 }
@@ -47,7 +45,7 @@ export default function MyApp({ Component, pageProps }) {
         // Set theme-color based on active theme
         const style = window.getComputedStyle(document.body)
         setThemeColor(style.getPropertyValue("--g300")) // Same color as navbar
-    }, [theme, setCodeColorScheme])
+    }, [isSiteThemeDark, setCodeColorScheme])
 
     const [monospaceFont] = settings.useMonospaceFont()
     useEffect(() => {

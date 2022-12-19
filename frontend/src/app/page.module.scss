@@ -30,8 +30,6 @@
 
 .about {
     grid-area: about;
-    color: var(--g1200);
-    background: var(--g300);
 }
 
 .activity {
@@ -44,12 +42,10 @@
 
 .padl {
     grid-area: padl;
-    background: var(--g300);
 }
 
 .padr {
     grid-area: padr;
-    background: var(--g300);
 }
 
 .scratchList {
@@ -69,7 +65,6 @@
     padding-top: 0;
 
     & > h2 {
-        background: var(--g200);
         padding: 0.75em 0;
 
         font-weight: 500;

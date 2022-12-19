@@ -10,7 +10,6 @@ import { applyColorScheme } from "../lib/codemirror/color-scheme"
 import { isMacOS } from "../lib/device"
 import * as settings from "../lib/settings"
 
-import "./globals.css"
 import "../pages/_app.scss"
 
 export default function RootLayout({
@@ -23,23 +22,21 @@ export default function RootLayout({
         applyColorScheme(codeColorScheme)
     }, [codeColorScheme])
 
-    const [theme] = settings.useTheme()
+    const isSiteThemeDark = settings.useIsSiteThemeDark()
     const [themeColor, setThemeColor] = useState("#282e31")
     useEffect(() => {
         // Apply theme
-        document.body.classList.remove("theme-light")
-        document.body.classList.remove("theme-dark")
-
-        const realTheme = theme == "auto"
-            ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
-            : theme
-        document.body.classList.add(`theme-${realTheme}`)
+        if (isSiteThemeDark) {
+            document.documentElement.classList.add("dark")
+        } else {
+            document.documentElement.classList.remove("dark")
+        }
 
         // If using the default code color scheme (Frog), pick the variant that matches the site theme
         if (document.hasFocus) {
             setCodeColorScheme(current => {
                 if (current === "Frog Dark" || current === "Frog Light") {
-                    return realTheme == "dark" ? "Frog Dark" : "Frog Light"
+                    return isSiteThemeDark ? "Frog Dark" : "Frog Light"
                 } else {
                     return current
                 }
@@ -49,7 +46,7 @@ export default function RootLayout({
         // Set theme-color based on active theme
         const style = window.getComputedStyle(document.body)
         setThemeColor(style.getPropertyValue("--g300")) // Same color as navbar
-    }, [theme, setCodeColorScheme])
+    }, [isSiteThemeDark, setCodeColorScheme])
 
     const [monospaceFont] = settings.useMonospaceFont()
     useEffect(() => {
@@ -89,8 +86,8 @@ export default function RootLayout({
             customDomain="https://stats.decomp.me"
             selfHosted={true}
         >
-            <html lang="en">
-                <body>
+            <html lang="en" className="dark">
+                <body className="font-sans subpixel-antialiased bg-white text-black dark:bg-gray-800 dark:text-white">
                     {children}
                 </body>
             </html>

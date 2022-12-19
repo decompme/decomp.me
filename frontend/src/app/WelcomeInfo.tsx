@@ -13,9 +13,9 @@ export default function WelcomeInfo() {
     const stats = useStats()
     const user = useThisUser()
 
-    return <div className="flex flex-col sm:flex-row gap-4 text-gray-400">
+    return <div className="flex flex-col sm:flex-row gap-4 text-slate-700/95 dark:text-slate-400/95">
         <div className="flex-grow">
-            <h1 className="text-xl text-white">
+            <h1 className="text-xl text-black dark:text-white">
                 Welcome to <span className="font-semibold">decomp.me</span>
             </h1>
             <p className="text-base max-w-md leading-tight py-3">

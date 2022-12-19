@@ -11,7 +11,7 @@ import classNames from "classnames"
 export default function Page() {
     return <>
         <PageTitle description={SITE_DESCRIPTION} />
-        <Nav />
+        <Nav border />
         <main className={styles.container}>
             <div className={styles.padl} />
             <div className={styles.padr} />

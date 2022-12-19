@@ -53,6 +53,7 @@ export default function Nav({ border, children }: Props) {
             className={classNames({
                 [styles.container]: true,
                 [styles.border]: border,
+                "border-gray-900/10 dark:border-gray-50/[0.06]": border,
             })}
             aria-labelledby="navtoggle"
             data-open={isOpen}
@@ -101,7 +102,7 @@ export default function Nav({ border, children }: Props) {
                     </li>
                 }
             </ul>
-            <div className={styles.menu}>
+            <div className={classNames(styles.menu, "bg-white dark:bg-gray-800")}>
                 <div className={styles.searchContainer}>
                     <Search className={styles.search} />
                 </div>

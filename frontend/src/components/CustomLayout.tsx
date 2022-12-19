@@ -63,8 +63,6 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
         }
 
         return <Tabs
-            border={false}
-            background="var(--g300)"
             activeTab={layout.activeTab}
             onChange={activeTab => onChange({ ...layout, activeTab })}
         >

@@ -278,7 +278,7 @@ export default function ScratchToolbar(props: Props) {
                 <InNavActions {...props} />
             </div>
         </Nav>
-        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={styles.belowNavActionsContainer}>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-b border-gray-900/10 dark:border-gray-50/[0.06]")}>
             <Actions {...props} />
         </div>}
     </>

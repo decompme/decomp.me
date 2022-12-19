@@ -4,7 +4,6 @@ $padding: 8px;
 .container {
     width: 100%;
     user-select: none;
-    background: var(--g300);
 
     z-index: 2;
 
@@ -119,8 +118,6 @@ $padding: 8px;
 
     overflow: auto;
 
-    background: var(--g300);
-
     .container[data-open="false"] & {
         display: none;
         visibility: hidden;
@@ -129,7 +126,7 @@ $padding: 8px;
 
 @mixin borderBottomNoLayoutShift {
     padding-bottom: $padding - 1px;
-    border-bottom: 1px solid var(--g600);
+    border-bottom: 1px solid inherit;
 }
 
 .border .header {
@@ -145,9 +142,6 @@ $padding: 8px;
     .menu {
         width: 300px;
         border-right: 1px solid var(--g600);
-
-        // Cover up header's border-bottom
-        box-shadow: -2px 0 0 2px var(--g300);
     }
 }
 
