@@ -6,7 +6,9 @@ module.exports = {
     ],
     theme: {
         extend: {},
-        colors: require("tailwindcss-open-color"),
+        colors: Object.assign(require("tailwindcss-open-color"), {
+            "gray-10": "#1c1c1c",
+        })
     },
     plugins: [],
 }

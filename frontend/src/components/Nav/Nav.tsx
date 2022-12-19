@@ -102,7 +102,7 @@ export default function Nav({ border, children }: Props) {
                     </li>
                 }
             </ul>
-            <div className={classNames(styles.menu, "bg-white dark:bg-gray-800")}>
+            <div className={classNames(styles.menu, "bg-white dark:bg-gray-10")}>
                 <div className={styles.searchContainer}>
                     <Search className={styles.search} />
                 </div>

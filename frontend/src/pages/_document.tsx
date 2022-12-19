@@ -3,7 +3,7 @@ import Document, { Html, Head, Main, NextScript } from "next/document"
 export default class MyDocument extends Document {
     render() {
         return (
-            <Html lang="en">
+            <Html lang="en" className="dark">
                 <Head>
                     <meta charSet="utf-8" />
 
@@ -14,7 +14,7 @@ export default class MyDocument extends Document {
 
                     <meta name="darkreader-lock" />
                 </Head>
-                <body className="dark">
+                <body className="font-sans subpixel-antialiased bg-white text-gray-7 dark:bg-gray-10 dark:text-gray-0">
                     <Main />
                     <NextScript />
                 </body>

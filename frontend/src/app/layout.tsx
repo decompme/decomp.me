@@ -23,7 +23,6 @@ export default function RootLayout({
     }, [codeColorScheme])
 
     const isSiteThemeDark = settings.useIsSiteThemeDark()
-    const [themeColor, setThemeColor] = useState("#282e31")
     useEffect(() => {
         // Apply theme
         if (isSiteThemeDark) {
@@ -42,10 +41,6 @@ export default function RootLayout({
                 }
             })
         }
-
-        // Set theme-color based on active theme
-        const style = window.getComputedStyle(document.body)
-        setThemeColor(style.getPropertyValue("--g300")) // Same color as navbar
     }, [isSiteThemeDark, setCodeColorScheme])
 
     const [monospaceFont] = settings.useMonospaceFont()
@@ -87,7 +82,7 @@ export default function RootLayout({
             selfHosted={true}
         >
             <html lang="en" className="dark">
-                <body className="font-sans subpixel-antialiased bg-white text-gray-7 dark:bg-gray-9 dark:text-gray-0">
+                <body className="font-sans subpixel-antialiased bg-white text-gray-7 dark:bg-gray-10 dark:text-gray-0">
                     {children}
                 </body>
             </html>

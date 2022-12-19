@@ -22,13 +22,12 @@ export default function MyApp({ Component, pageProps }) {
     }, [codeColorScheme])
 
     const isSiteThemeDark = settings.useIsSiteThemeDark()
-    const [themeColor, setThemeColor] = useState("#282e31")
     useEffect(() => {
         // Apply theme
         if (isSiteThemeDark) {
-            document.body.classList.add("dark")
+            document.documentElement.classList.add("dark")
         } else {
-            document.body.classList.remove("dark")
+            document.documentElement.classList.remove("dark")
         }
 
         // If using the default code color scheme (Frog), pick the variant that matches the site theme
@@ -41,10 +40,6 @@ export default function MyApp({ Component, pageProps }) {
                 }
             })
         }
-
-        // Set theme-color based on active theme
-        const style = window.getComputedStyle(document.body)
-        setThemeColor(style.getPropertyValue("--g300")) // Same color as navbar
     }, [isSiteThemeDark, setCodeColorScheme])
 
     const [monospaceFont] = settings.useMonospaceFont()
@@ -81,7 +76,7 @@ export default function MyApp({ Component, pageProps }) {
 
     return <Layout>
         <Head>
-            <meta name="theme-color" content={themeColor} />
+            <meta name="theme-color" content="#282e31" />
         </Head>
         <PlausibleProvider
             domain="decomp.me"
