@@ -50,6 +50,7 @@ LOCAL_FILE_DIR = env("LOCAL_FILE_DIR")
 # Application definition
 
 INSTALLED_APPS = [
+    "drf_typescript_generator",
     "rest_framework",
     "corsheaders",
     "coreapp.apps.CoreappConfig",
