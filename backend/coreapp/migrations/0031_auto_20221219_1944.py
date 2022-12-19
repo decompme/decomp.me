@@ -7,8 +7,6 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 from django.db import migrations
 
-from coreapp.models.scratch import CompilerConfig
-
 def populate_compiler_config(
     apps: Apps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
@@ -16,6 +14,7 @@ def populate_compiler_config(
     Populate the compiler_config for all existing scratches
     """
     Scratch = apps.get_model("coreapp", "Scratch")
+    CompilerConfig = apps.get_model("coreapp", "CompilerConfig")
     for row in Scratch.objects.all().iterator(chunk_size=1000):
         cc = CompilerConfig(
             compiler=row.compiler,
