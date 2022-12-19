@@ -60,8 +60,9 @@ def get_db_asm(request_asm: str) -> Asm:
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
         return CompilerWrapper.compile_code(
-            compilers.from_id(scratch.compiler),
-            scratch.compiler_flags,
+            compilers.from_id(scratch.compiler_config.compiler),
+            scratch.compiler_config.assembler_flags,
+            scratch.compiler_config.compiler_flags,
             scratch.source_code,
             scratch.context,
             scratch.diff_label,
@@ -73,10 +74,10 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
 def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     return DiffWrapper.diff(
         scratch.target_assembly,
-        platforms.from_id(scratch.platform),
+        platforms.from_id(scratch.compiler_config.platform),
         scratch.diff_label,
         bytes(compilation.elf_object),
-        diff_flags=scratch.diff_flags,
+        diff_flags=scratch.compiler_config.diff_flags,
     )
 
 
@@ -143,19 +144,6 @@ def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
 scratch_condition = condition(
     last_modified_func=scratch_last_modified, etag_func=scratch_etag
 )
-
-
-def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
-    if scratch:
-        family = Scratch.objects.filter(
-            target_assembly=scratch.target_assembly,
-            compiler=scratch.compiler,
-        )
-
-        return str(hash((family, request.headers.get("Accept"))))
-    else:
-        return None
 
 
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
@@ -360,11 +348,15 @@ class ScratchViewSet(
         if request.method == "POST":
             # TODO: use a serializer w/ validation
             if "compiler" in request.data:
-                scratch.compiler = request.data["compiler"]
+                scratch.compiler_config.compiler = request.data["compiler"]
+            if "assembler_flags" in request.data:
+                scratch.compiler_config.assembler_flags = request.data[
+                    "assembler_flags"
+                ]
             if "compiler_flags" in request.data:
-                scratch.compiler_flags = request.data["compiler_flags"]
+                scratch.compiler_config.compiler_flags = request.data["compiler_flags"]
             if "diff_flags" in request.data:
-                scratch.diff_flags = request.data["diff_flags"]
+                scratch.compiler_config.diff_flags = request.data["diff_flags"]
             if "diff_label" in request.data:
                 scratch.diff_label = request.data["diff_label"]
             if "source_code" in request.data:
@@ -391,9 +383,11 @@ class ScratchViewSet(
     def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
         context = request.data.get("context", "")
-        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        compiler = compilers.from_id(
+            request.data.get("compiler", scratch.compiler_config.compiler)
+        )
 
-        platform = platforms.from_id(scratch.platform)
+        platform = platforms.from_id(scratch.compiler_config.platform)
 
         decompilation = DecompilerWrapper.decompile(
             "",
@@ -439,7 +433,7 @@ class ScratchViewSet(
         new_scratch = ser.save(
             parent=parent,
             target_assembly=parent.target_assembly,
-            platform=parent.platform,
+            platform=parent.compiler_config.platform,
             project_function=parent.project_function,
         )
 
@@ -467,7 +461,7 @@ class ScratchViewSet(
             zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
+            language = compilers.from_id(scratch.compiler_config.compiler).language
             src_ext = Language(language).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
@@ -484,14 +478,27 @@ class ScratchViewSet(
             },
         )
 
+    @staticmethod
+    def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
+        scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
+        if scratch:
+            family = Scratch.objects.filter(
+                compiler_config__target_assembly=scratch.target_assembly,
+                compiler_config__compiler=scratch.compiler_config.compiler_flags,
+            )
+
+            return str(hash((family, request.headers.get("Accept"))))
+        else:
+            return None
+
     @action(detail=True)
     @condition(etag_func=family_etag)
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
         family = Scratch.objects.filter(
-            target_assembly=scratch.target_assembly,
-            compiler=scratch.compiler,
+            compiler_config__target_assembly=scratch.target_assembly,
+            compiler_config__compiler=scratch.compiler_config.compiler,
         ).order_by("creation_time")
 
         return Response(

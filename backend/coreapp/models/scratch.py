@@ -39,6 +39,7 @@ class CompilerConfig(models.Model):
     # TODO: validate compiler and platform
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
+    assembler_flags = models.TextField(max_length=1000, default="", blank=True)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
     diff_flags = models.JSONField(default=list)
 
@@ -49,14 +50,7 @@ class Scratch(models.Model):
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100)  # TODO: reference a CompilerConfig
-    platform = models.CharField(
-        max_length=100, blank=True
-    )  # TODO: reference a CompilerConfig
-    compiler_flags = models.TextField(
-        max_length=1000, default="", blank=True
-    )  # TODO: reference a CompilerConfig
-    diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
+    compiler_config = models.ForeignKey(CompilerConfig, on_delete=models.CASCADE)
     preset = models.CharField(max_length=100, blank=True, null=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)

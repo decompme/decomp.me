@@ -394,10 +394,11 @@ class CompilationTests(BaseTestCase):
         Ensure that compilations with \\r\\n line endings succeed
         """
         result = CompilerWrapper.compile_code(
-            IDO53,
-            "-mips2 -O2",
-            "int dog = 5;",
-            "extern char libvar1;\r\nextern char libvar2;\r\n",
+            compiler=IDO53,
+            compiler_flags="-mips2 -O2",
+            assembler_flags="",
+            code="int dog = 5;",
+            context="extern char libvar1;\r\nextern char libvar2;\r\n",
         )
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
@@ -409,10 +410,10 @@ class CompilationTests(BaseTestCase):
         Ensure that ido compilations including -KPIC produce different code
         """
         result_non_shared = CompilerWrapper.compile_code(
-            IDO53, "-mips2 -O2", "int dog = 5;", ""
+            IDO53, "-mips2 -O2", "", "int dog = 5;", ""
         )
         result_kpic = CompilerWrapper.compile_code(
-            IDO53, "-mips2 -O2 -KPIC", "int dog = 5;", ""
+            IDO53, "-mips2 -O2 -KPIC", "", "int dog = 5;", ""
         )
         self.assertNotEqual(
             result_non_shared.elf_object,
@@ -474,6 +475,7 @@ nop
         result = CompilerWrapper.compile_code(
             MWCPPC_24,
             "-str reuse -inline on -O0",
+            "",
             "int func(void) { return 5; }",
             "extern char libvar1;\r\nextern char libvar2;\r\n",
         )
@@ -489,6 +491,7 @@ nop
         result = CompilerWrapper.compile_code(
             PBX_GCC3,
             "-std=c99 -fPIC -O0 -g3",
+            "",
             "int func(void) { float f = 5.0; return f; }",  # test if floats are handled correctly
             "extern char libvar1;\r\nextern char libvar2;\r\n",
         )
@@ -504,6 +507,7 @@ nop
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
             "-str reuse -inline on -fp off -O0",
+            "",
             "int func(void) { return 5; }",
             "extern char libvar1;\r\nextern char libvar2;\r\n",
         )
@@ -517,7 +521,7 @@ nop
         """
 
         result = CompilerWrapper.compile_code(
-            compilers.DUMMY, "", "sample text 123", ""
+            compilers.DUMMY, "", "", "sample text 123", ""
         )
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
@@ -1405,9 +1409,16 @@ class ProjectTests(TestCase):
                 assert fn is not None
 
                 scratch = fn.create_scratch()
-                self.assertEqual(scratch.platform, compiler_config.platform)
-                self.assertEqual(scratch.compiler, compiler_config.compiler)
-                self.assertEqual(scratch.compiler_flags, compiler_config.compiler_flags)
+                self.assertEqual(
+                    scratch.compiler_config.platform, compiler_config.platform
+                )
+                self.assertEqual(
+                    scratch.compiler_config.compiler, compiler_config.compiler
+                )
+                self.assertEqual(
+                    scratch.compiler_config.compiler_flags,
+                    compiler_config.compiler_flags,
+                )
                 self.assertEqual(scratch.project_function, fn)
 
                 # match the function (by deleting the asm) and verify it is marked as matching

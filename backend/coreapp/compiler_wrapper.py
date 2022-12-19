@@ -123,6 +123,7 @@ class CompilerWrapper:
     def compile_code(
         compiler: Compiler,
         compiler_flags: str,
+        assembler_flags: str,
         code: str,
         context: str,
         function: str = "",
@@ -175,6 +176,7 @@ class CompilerWrapper:
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
                         "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "ASSEMBLER_FLAGS": sandbox.quote_options(assembler_flags),
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
