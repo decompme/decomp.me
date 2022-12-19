@@ -6,6 +6,8 @@ from django.utils.crypto import get_random_string
 from typing import List
 
 from .profile import Profile
+from .cow import CloneOnWriteField
+from .box import TextModel
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,10 @@ class CompilerConfig(models.Model):
     diff_flags = models.JSONField(default=list)
 
 
+class Context(TextModel):
+    pass
+
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=512, default="Untitled", blank=False)
@@ -60,7 +66,9 @@ class Scratch(models.Model):
     preset = models.CharField(max_length=100, blank=True, null=True)
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
-    context = models.TextField(blank=True)
+    context = CloneOnWriteField(
+        Context, on_delete=models.SET_DEFAULT, default=Context.default
+    )
     diff_label = models.CharField(
         max_length=512, blank=True
     )  # blank means diff from the start of the file
