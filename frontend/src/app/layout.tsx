@@ -78,23 +78,22 @@ export default function RootLayout({
         }
     }, [])
 
-    return (
-        <PlausibleProvider
-            domain="decomp.me"
-            customDomain="https://stats.decomp.me"
-            selfHosted={true}
-        >
-            <html lang="en" className="dark">
-                <body className="flex flex-col bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
-                    <ErrorBoundary>
-                        <Nav />
-                    </ErrorBoundary>
-                    {children}
-                    <ErrorBoundary>
-                        <Footer />
-                    </ErrorBoundary>
-                </body>
-            </html>
-        </PlausibleProvider>
-    )
+    return <html lang="en" className="dark">
+        <head>
+            <PlausibleProvider
+                domain="decomp.me"
+                customDomain="https://stats.decomp.me"
+                selfHosted={true}
+            />
+        </head>
+        <body className="flex flex-col bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
+            <ErrorBoundary>
+                <Nav />
+            </ErrorBoundary>
+            {children}
+            <ErrorBoundary>
+                <Footer />
+            </ErrorBoundary>
+        </body>
+    </html>
 }
