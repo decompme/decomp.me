@@ -8,13 +8,12 @@ import { useRouter } from "next/navigation"
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
+import GhostButton from "../GhostButton"
 import Logotype from "../Logotype"
 
 import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
 import Search from "./Search"
-
-const desktopLink = "rounded bg-black/0 px-2 py-1 transition-colors hover:bg-black/5 active:translate-y-px dark:bg-white/0 dark:hover:bg-white/5"
 
 export interface Props {
     border?: boolean
@@ -91,14 +90,14 @@ export default function Nav({ border, children }: Props) {
                                 <Search />
                             </li>
                             <li>
-                                <Link href="/new" className={desktopLink}>New scratch</Link>
+                                <GhostButton href="/new">New scratch</GhostButton>
                             </li>
                             <li>
-                                <Link href="/projects" className={desktopLink}>Projects</Link>
+                                <GhostButton href="/projects">Projects</GhostButton>
                             </li>
                             <div className="h-4 w-px bg-black/10 dark:bg-white/[0.06]" />
                             <li>
-                                <Link href="/settings/appearance" className={desktopLink}>Settings</Link>
+                                <GhostButton href="/settings/appearance">Settings</GhostButton>
                             </li>
                         </ul>
                     </li>
