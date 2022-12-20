@@ -12,10 +12,6 @@
 .list {
     list-style: none;
 
-    // These inherited by .item
-    border-color: var(--g300);
-    border-radius: 4px;
-
     display: grid;
     grid-template-columns: repeat(var(--num-columns, 1), 1fr);
     gap: 0.5em;
