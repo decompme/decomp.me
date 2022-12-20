@@ -1,4 +1,4 @@
-"use client" // TEMP
+"use client" // FIXME: Nav should be server-side rendered
 
 import { useEffect, useReducer } from "react"
 
@@ -85,10 +85,11 @@ export default function Nav({ border, children }: Props) {
                 {children
                     ? <li className={styles.customchildren}>{children}</li>
                     : <li className={styles.desktopLinks}>
-                        <ul className="ml-auto gap-2 text-sm text-black dark:text-gray-1">
-                            <li>
+                        <ul className="flex w-full gap-2 text-sm text-black dark:text-gray-1">
+                            <li className="ml-4">
                                 <Search />
                             </li>
+                            <div className="grow" />
                             <li>
                                 <GhostButton href="/new">New scratch</GhostButton>
                             </li>

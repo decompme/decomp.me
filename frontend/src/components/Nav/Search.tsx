@@ -95,7 +95,7 @@ function MountedSearch({ className }: { className?: string }) {
     }
 
     return <div
-        className={classNames(styles.container, className)}
+        className={classNames(styles.container, className, "w-48")}
         {...getComboboxProps()}
         onKeyDown={evt => {
             if (evt.key === "Enter") {
@@ -115,6 +115,7 @@ function MountedSearch({ className }: { className?: string }) {
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
+                "rounded-md bg-black/0 text-sm dark:bg-white/0 placeholder-black dark:placeholder-gray-1 hover:bg-black/5 dark:hover:bg-white/5 focus:bg-black/5 dark:focus:bg-white/5 focus:placeholder-gray-7 transition-colors": true,
             })}
             type="text"
             placeholder="Search scratches"
@@ -186,15 +187,7 @@ export default function Search({ className }: { className?: string }) {
     useEffect(() => setIsMounted(true), [])
 
     if (!isMounted) {
-        return <div className={classNames(styles.container, className)}>
-            <SearchIcon className={styles.icon} />
-            <input
-                className={styles.input}
-                type="search"
-                placeholder="Search decomp.me"
-                spellCheck={false}
-            />
-        </div>
+        return null
     }
 
     return <MountedSearch className={className} />
