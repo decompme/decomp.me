@@ -6,6 +6,7 @@ import PlausibleProvider from "next-plausible"
 
 import type {} from "react/next"
 
+import ErrorBoundary from "../components/ErrorBoundary"
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import { applyColorScheme } from "../lib/codemirror/color-scheme"
@@ -85,9 +86,13 @@ export default function RootLayout({
         >
             <html lang="en" className="dark">
                 <body className="bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
-                    <Nav />
+                    <ErrorBoundary>
+                        <Nav />
+                    </ErrorBoundary>
                     {children}
-                    <Footer />
+                    <ErrorBoundary>
+                        <Footer />
+                    </ErrorBoundary>
                 </body>
             </html>
         </PlausibleProvider>
