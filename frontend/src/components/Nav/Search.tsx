@@ -95,7 +95,7 @@ function MountedSearch({ className }: { className?: string }) {
     }
 
     return <div
-        className={classNames(styles.container, className, "w-48")}
+        className={classNames(styles.container, className)}
         {...getComboboxProps()}
         onKeyDown={evt => {
             if (evt.key === "Enter") {

@@ -42,20 +42,12 @@ export default function Nav({ border, children }: Props) {
         }
     }, [isOpen, router])
 
-    // If the user clicks outside the nav, close it
-    useEffect(() => {
-        if (isOpen) {
-            document.body.addEventListener("click", toggleOpen)
-            return () => document.body.removeEventListener("click", toggleOpen)
-        }
-    }, [isOpen])
-
     return (
         <nav
             className={classNames({
                 [styles.container]: true,
                 [styles.border]: border,
-                "border-black/10 dark:border-white/[0.06]": border,
+                "border-black/10 dark:border-white/[0.06]": true,
             })}
             aria-labelledby="navtoggle"
             data-open={isOpen}
