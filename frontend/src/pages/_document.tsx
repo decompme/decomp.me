@@ -14,7 +14,7 @@ export default class MyDocument extends Document {
 
                     <meta name="darkreader-lock" />
                 </Head>
-                <body className="font-sans subpixel-antialiased bg-white text-gray-7 dark:bg-gray-10 dark:text-gray-0">
+                <body className="bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-0">
                     <Main />
                     <NextScript />
                 </body>

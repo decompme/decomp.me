@@ -1,6 +1,6 @@
 // https://nextjs.org/docs/basic-features/layouts#single-shared-layout-with-custom-app
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 import type {} from "react/next"
 
