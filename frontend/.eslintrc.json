@@ -67,7 +67,7 @@
                     {
                         "name": "next/router",
                         "message": "Use next/navigation instead."
-                    },
+                    }
                 ]
             }
         ],
