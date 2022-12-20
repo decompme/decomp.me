@@ -6,6 +6,8 @@ import PlausibleProvider from "next-plausible"
 
 import type {} from "react/next"
 
+import Footer from "../components/Footer"
+import Nav from "../components/Nav"
 import { applyColorScheme } from "../lib/codemirror/color-scheme"
 import { isMacOS } from "../lib/device"
 import * as settings from "../lib/settings"
@@ -83,7 +85,9 @@ export default function RootLayout({
         >
             <html lang="en" className="dark">
                 <body className="bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
+                    <Nav />
                     {children}
+                    <Footer />
                 </body>
             </html>
         </PlausibleProvider>
