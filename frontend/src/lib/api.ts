@@ -26,10 +26,6 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
 export * from "./api/request"
 export * from "./api/types"
 
-export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
-    return user.is_anonymous
-}
-
 export function useThisUser(): User | AnonymousUser | undefined {
     const { data: user, error } = useSWR<AnonymousUser | User>("/user", get)
 

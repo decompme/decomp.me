@@ -169,3 +169,7 @@ export type Platform = {
     arch: string
     presets: CompilerPreset[]
 }
+
+export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
+    return user.is_anonymous
+}

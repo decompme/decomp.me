@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import * as api from "../../lib/api"
+import { isAnonUser, User, AnonymousUser } from "../../lib/api/types"
 
 import UserAvatar from "./UserAvatar"
 import styles from "./UserLink.module.scss"
@@ -16,7 +16,7 @@ export function GitHubUserLink({ user }: { user: { login: string } }) {
 }
 
 export type Props = {
-    user: api.User | api.AnonymousUser
+    user: User | AnonymousUser
     showUsername?: boolean // default = true
 }
 
@@ -26,5 +26,5 @@ export default function UserLink({ user, showUsername }: Props) {
         {showUsername != false && <span>{user.username}</span>}
     </a>
 
-    return api.isAnonUser(user) ? linkInner : <Link href={`/u/${user.username}`} legacyBehavior>{linkInner}</Link>
+    return isAnonUser(user) ? linkInner : <Link href={`/u/${user.username}`} legacyBehavior>{linkInner}</Link>
 }
