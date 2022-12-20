@@ -76,7 +76,7 @@ export default function Nav({ border, children }: Props) {
                     </button>
                 </li>
                 <li className={styles.headerItemSiteLogo}>
-                    <Link href="/">
+                    <Link href="/" className="transition-colors hover:text-black active:translate-y-px dark:hover:text-white">
                         <Logotype />
                     </Link>
                 </li>
