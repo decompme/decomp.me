@@ -22,9 +22,7 @@
         @if color.blackness($bg) > 50% {
             // Dark
             --g#{$i * 50}: #{hsl(color.hue($bg), 0, ($i - 1) * $multiplier)};
-        }
-
-        @else {
+        } @else {
             // Light
             --g#{$i * 50}: #{hsl(color.hue($bg), 0, 100% - ($i - 1) * $multiplier)};
         }

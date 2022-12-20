@@ -1,6 +1,6 @@
 module.exports = {
     "extends": [
-        "stylelint-config-standard",
+        "stylelint-config-standard-scss",
         "stylelint-config-css-modules"
     ],
     "rules": {
@@ -19,7 +19,7 @@ module.exports = {
         "property-no-vendor-prefix": null,
         "declaration-block-no-redundant-longhand-properties": null,
         "declaration-block-trailing-semicolon": null,
-        "at-rule-no-unknown": [
+        "scss/at-rule-no-unknown": [
             true,
             {
                 ignoreAtRules: [

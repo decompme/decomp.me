@@ -1,4 +1,4 @@
-$innerSize: 32px;
+$inner-size: 32px;
 $padding: 8px;
 
 .container {
@@ -13,7 +13,7 @@ $padding: 8px;
 }
 
 .header {
-    min-height: $innerSize;
+    min-height: $inner-size;
     padding-top: $padding;
     padding-bottom: $padding;
     box-sizing: content-box;
@@ -24,7 +24,7 @@ $padding: 8px;
     justify-content: space-between;
 
     & > li {
-        min-height: $innerSize;
+        min-height: $inner-size;
     }
 }
 
@@ -32,8 +32,8 @@ $padding: 8px;
     grid-area: menutoggle;
 
     & > button {
-        width: $innerSize;
-        height: $innerSize;
+        width: $inner-size;
+        height: $inner-size;
 
         border: none;
         background: transparent;
@@ -49,7 +49,7 @@ $padding: 8px;
     align-items: center;
     justify-content: flex-end;
 
-    height: $innerSize;
+    height: $inner-size;
     padding-left: 12px;
 }
 
@@ -115,7 +115,7 @@ $padding: 8px;
     z-index: 100;
 
     width: 100%;
-    height: calc(100vh - $innerSize - 16px);
+    height: calc(100vh - $inner-size - 16px);
 
     overflow: auto;
 
@@ -125,19 +125,19 @@ $padding: 8px;
     }
 }
 
-@mixin borderBottomNoLayoutShift {
+@mixin border-bottom-no-layout-shift {
     padding-bottom: $padding - 1px;
     border-bottom: 1px solid inherit;
 }
 
 .border .header {
-    @include borderBottomNoLayoutShift;
+    @include border-bottom-no-layout-shift;
 }
 
 // Sidebar
 @media (min-width: 500px) {
     .container[data-open="true"] .header {
-        @include borderBottomNoLayoutShift;
+        @include border-bottom-no-layout-shift;
     }
 
     .menu {
@@ -185,7 +185,7 @@ $padding: 8px;
         align-items: center;
 
         > li {
-            height: $innerSize;
+            height: $inner-size;
 
             display: flex;
             align-items: center;
@@ -211,7 +211,7 @@ $padding: 8px;
 
 // has custom children
 .container[data-force-toggle="true"] .header {
-    grid-template-columns: $innerSize 1fr auto;
+    grid-template-columns: $inner-size 1fr auto;
     grid-template-areas: "menutoggle customchildren loginstate";
 
     // override tailwind padding
