@@ -14,7 +14,8 @@ $padding: 8px;
 
 .header {
     min-height: $innerSize;
-    padding: $padding;
+    padding-top: $padding;
+    padding-bottom: $padding;
     box-sizing: content-box;
 
     display: grid;
@@ -224,6 +225,10 @@ $padding: 8px;
 .container[data-force-toggle="true"] .header {
     grid-template-columns: $innerSize 1fr auto;
     grid-template-areas: "menutoggle customchildren loginstate";
+
+    // override tailwind padding
+    padding-left: $padding;
+    padding-right: $padding;
 
     .headerItemSiteLogo {
         display: none;

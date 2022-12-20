@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation"
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
+import Logotype from "../Logotype"
+
 import Frog from "./frog.svg"
 import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
 import Search from "./Search"
-import Logotype from "../Logotype"
 
 export interface Props {
     border?: boolean
@@ -61,7 +62,7 @@ export default function Nav({ border, children }: Props) {
             data-force-toggle={!!children}
             onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
         >
-            <ul className={styles.header}>
+            <ul className={classNames(styles.header, "px-2 md:px-8 lg:px-16")}>
                 <li className={styles.headerItemMenuToggle}>
                     <button
                         id="navtoggle"
@@ -84,7 +85,7 @@ export default function Nav({ border, children }: Props) {
                 {children
                     ? <li className={styles.customchildren}>{children}</li>
                     : <li className={styles.desktopLinks}>
-                        <ul className="ml-auto">
+                        <ul className="m-auto">
                             <li>
                                 <Search />
                             </li>
@@ -94,7 +95,7 @@ export default function Nav({ border, children }: Props) {
                             <li>
                                 <Link href="/projects">Projects</Link>
                             </li>
-                            <div className="w-px h-4 bg-black/10 dark:bg-white/[0.06]" />
+                            <div className="h-4 w-px bg-black/10 dark:bg-white/[0.06]" />
                             <li>
                                 <Link href="/settings/appearance">Settings</Link>
                             </li>
