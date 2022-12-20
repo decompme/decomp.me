@@ -1,18 +1,14 @@
-import { useState } from "react"
-
 import { GetStaticProps } from "next"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
 
 import Footer from "../../components/Footer"
+import GhostButton from "../../components/GhostButton"
 import Nav from "../../components/Nav"
 import PageTitle from "../../components/PageTitle"
 import ScratchList, { ScratchItemNoOwner } from "../../components/ScratchList"
-import Tabs, { Tab } from "../../components/Tabs"
 import UserAvatar from "../../components/user/UserAvatar"
 import * as api from "../../lib/api"
-
-import styles from "./[username].module.scss"
 
 // dynamically render all pages
 export async function getStaticPaths() {
@@ -43,38 +39,42 @@ export const getStaticProps: GetStaticProps = async context => {
 }
 
 export default function UserPage({ user }: { user: api.User }) {
-    const [activeTab, setActiveTab] = useState("scratches")
+    // TODO: make username a GhostButton you can click to copy to clipboard
 
     return <>
         <PageTitle title={user.name || user.username} />
         <Nav />
-        <main className={styles.pageContainer}>
-            <header className={styles.header}>
-                <div className={styles.headerInner}>
-                    <UserAvatar className={styles.avatar} user={user} />
-                    <h1 className={styles.name}>
-                        <div>{user.name}</div>
-                        <div className={styles.username}>
-                            @{user.username}
-
-                            {user.github_html_url && <a href={user.github_html_url}>
-                                <MarkGithubIcon size={24} />
-                            </a>}
-                        </div>
+        <main className="mx-auto max-w-3xl p-4">
+            <header className="mb-4 flex flex-col items-center gap-6 border-b border-black/10 py-4 dark:border-white/[0.06] md:flex-row">
+                <UserAvatar className="h-16 w-16" user={user} />
+                <div>
+                    <h1 className="text-center text-2xl font-medium tracking-tight text-gray-8 dark:text-gray-1 md:text-left">
+                        {user.name}
                     </h1>
+
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-6 dark:text-gray-5">
+                        <div title="decomp.me username" tabIndex={0}>
+                            @{user.username}
+                        </div>
+
+                        {user.github_html_url && <a href={user.github_html_url} className="hover:text-gray-7 dark:hover:text-gray-2">
+                            <GhostButton>
+                                <div className="flex items-center gap-1">
+                                    <MarkGithubIcon size={16} />
+                                    <span>GitHub</span>
+                                </div>
+                            </GhostButton>
+                        </a>}
+                    </div>
                 </div>
             </header>
 
             <section>
-                <Tabs activeTab={activeTab} onChange={setActiveTab} className={styles.tabs}>
-                    <Tab tabKey="scratches" label="Scratches" />
-                </Tabs>
-
-                {activeTab === "scratches" && <ScratchList
+                <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
+                <ScratchList
                     url={user.url + "/scratches?page_size=32"}
                     item={ScratchItemNoOwner}
-                    className={styles.scratchList}
-                />}
+                />
             </section>
         </main>
         <Footer />

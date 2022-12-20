@@ -1,7 +1,4 @@
 .avatar {
-    width: 1.25em;
-    height: 1.25em;
-
     position: relative;
 
     display: inline-block;
@@ -25,4 +22,10 @@
         background: var(--complement);
         border: 1px solid var(--g400);
     }
+}
+
+// low specificity
+:where(.avatar) {
+    width: 1.25em;
+    height: 1.25em;
 }
