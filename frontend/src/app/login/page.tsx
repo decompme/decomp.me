@@ -1,18 +1,18 @@
+"use client"
+
 import { useState, useEffect } from "react"
 
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { useSWRConfig } from "swr"
 
-import GitHubLoginButton from "../components/GitHubLoginButton"
-import LoadingSpinner from "../components/loading.svg"
-import * as api from "../lib/api"
-import { requestMissingScopes } from "../lib/oauth"
-
-import styles from "./login.module.css"
+import GitHubLoginButton from "../../components/GitHubLoginButton"
+import LoadingSpinner from "../../components/loading.svg"
+import * as api from "../../lib/api"
+import { requestMissingScopes } from "../../lib/oauth"
 
 // Handles GitHub OAuth callback
-export default function LoginPage() {
+export default function Page() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [error, setError] = useState(null)
@@ -52,26 +52,27 @@ export default function LoginPage() {
         }
     }, [code, router, mutate, next, error, githubError])
 
-    return <>
-        <main className={styles.container}>
-            {error ? <div className={styles.card}>
-                <p className={styles.error}>
-                    Sign-in error.<br />
-                    {error.message}
-                </p>
-                <p>
-                    Try again:
-                </p>
-                <GitHubLoginButton popup={false} />
-            </div> : code ? <div className={styles.loading}>
-                <LoadingSpinner width={32} />
-                Signing you in...
-            </div> : <div className={styles.card}>
-                <p>
-                    Sign in to decomp.me
-                </p>
-                <GitHubLoginButton popup={false} />
-            </div>}
-        </main>
-    </>
+    return <main className="mx-auto flex max-w-prose items-center justify-center px-4 py-6 text-base leading-normal">
+        {error ? <div>
+            <h1 className="text-3xl font-semibold">Error signing in</h1>
+            <p className="py-4">
+                The following error prevented you from signing in:
+            </p>
+            <div className="rounded bg-gray-9 p-4 text-gray-2">
+                <code className="font-mono text-sm">{error.toString()}</code>
+            </div>
+            <p className="py-4">
+                You can try again by clicking the button below.
+            </p>
+            <GitHubLoginButton popup={false} />
+        </div> : code ? <div className="flex items-center justify-center gap-4 py-8 text-2xl font-medium text-black dark:text-white">
+            <LoadingSpinner width={32} className="animate-spin" />
+            Signing in...
+        </div> : <div>
+            <p>
+                Sign in to decomp.me
+            </p>
+            <GitHubLoginButton popup={false} />
+        </div>}
+    </main>
 }

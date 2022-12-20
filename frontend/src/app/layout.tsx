@@ -85,7 +85,7 @@ export default function RootLayout({
             selfHosted={true}
         >
             <html lang="en" className="dark">
-                <body className="bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
+                <body className="flex flex-col bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
                     <ErrorBoundary>
                         <Nav />
                     </ErrorBoundary>
