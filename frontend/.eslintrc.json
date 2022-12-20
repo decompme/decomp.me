@@ -59,15 +59,16 @@
                     {
                         "name": "next/legacy/image",
                         "message": "Use next/image instead."
-                    },
-                    {
+                    }
+                    // TODO: enable these once we've migrated pages/ to app/
+                    /*{
                         "name": "next/head",
                         "message": "Use head.js instead."
                     },
                     {
                         "name": "next/router",
                         "message": "Use next/navigation instead."
-                    }
+                    }*/
                 ]
             }
         ],

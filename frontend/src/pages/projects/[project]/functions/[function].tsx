@@ -1,5 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
+import Head from "next/head"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -85,7 +86,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
     const basketHasThisFunc = basket.scratches.some(s => s.project_function == func.url)
 
     return <>
-        <PageTitle title={func.display_name} />
+        <Head><PageTitle title={func.display_name} /></Head>
         <Nav />
         <header className={styles.header}>
             <div className={styles.headerInner}>

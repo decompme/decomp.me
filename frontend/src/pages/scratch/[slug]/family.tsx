@@ -2,6 +2,8 @@ import { useState } from "react"
 
 import { GetServerSideProps } from "next"
 
+import Head from "next/head"
+
 import Breadcrumbs from "../../../components/Breadcrumbs"
 import Footer from "../../../components/Footer"
 import Nav from "../../../components/Nav"
@@ -66,10 +68,10 @@ export default function ScratchPage({ scratch, family }: { scratch: api.Scratch,
     family.sort(produceSortFunction(sortMode))
 
     return <>
-        <PageTitle
+        <Head><PageTitle
             title={`Family of '${scratch.name}'`}
             description={`${family.length} family member${family.length == 1 ? "" : "s"} (forks, parents, siblings)`}
-        />
+        /></Head>
         <Nav />
         <header className={styles.header}>
             <div className={styles.container}>

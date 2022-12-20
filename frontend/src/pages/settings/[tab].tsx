@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react"
 
+import Head from "next/head"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { cpp } from "@codemirror/lang-cpp"
@@ -249,7 +250,7 @@ export default function SettingsPage() {
     }[tab]
 
     return <>
-        <PageTitle title="Settings" />
+        <Head><PageTitle title="Settings" /></Head>
         <Nav />
         <main>
             <div className={styles.container}>

@@ -1,8 +1,4 @@
-"use client"
-
-import { useEffect } from "react"
-
-import Head from "next/head" // TODO: use head.tsx instead
+import { joinTitles } from "../lib/title"
 
 export type Props = {
     title?: string
@@ -10,18 +6,14 @@ export type Props = {
 }
 
 export default function PageTitle({ title, description }: Props) {
-    const titleWithSiteName = title ? `${title} - decomp.me` : "decomp.me"
+    const titleWithSiteName = joinTitles(title)
 
-    useEffect(() => {
-        document.title = titleWithSiteName
-    }, [titleWithSiteName])
-
-    return <Head>
+    return <>
         <title>{titleWithSiteName}</title>
         <meta name="description" content={description || ""} />
 
         <meta property="og:site_name" content="decomp.me" />
         <meta property="og:title" content={title || ""} />
         <meta property="og:description" content={description || ""} />
-    </Head>
+    </>
 }

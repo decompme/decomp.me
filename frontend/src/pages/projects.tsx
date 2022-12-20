@@ -1,5 +1,6 @@
 import { GetStaticProps } from "next"
 
+import Head from "next/head"
 import Link from "next/link"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
@@ -78,7 +79,7 @@ export const getStaticProps: GetStaticProps = async _context => {
 
 export default function ProjectsPage({ initialPage }: { initialPage: api.Page<api.Project> }) {
     return <>
-        <PageTitle title="Projects" />
+        <Head><PageTitle title="Projects" /></Head>
         <Nav />
         <main>
             <header className={styles.header}>

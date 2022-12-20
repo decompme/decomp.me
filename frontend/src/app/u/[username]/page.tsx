@@ -6,6 +6,7 @@ import GhostButton from "../../../components/GhostButton"
 import ScratchList, { ScratchItemNoOwner } from "../../../components/ScratchList"
 import UserAvatar from "../../../components/user/UserAvatar"
 import * as api from "../../../lib/api/server"
+import SetPageTitle from "../../SetPageTitle"
 
 export default async function Page({ params }: { params: { username: string } }) {
     let user: api.User
@@ -22,6 +23,8 @@ export default async function Page({ params }: { params: { username: string } })
     // TODO: make username a GhostButton you can click to copy to clipboard
 
     return <main className="mx-auto max-w-3xl p-4">
+        <SetPageTitle title={user.username} />
+
         <header className="mb-4 flex flex-col items-center gap-6 border-b border-black/10 py-4 dark:border-white/[0.06] md:flex-row">
             <UserAvatar className="h-16 w-16" user={user} />
             <div>

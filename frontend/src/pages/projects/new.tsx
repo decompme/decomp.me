@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 
+import Head from "next/head"
 import router from "next/router"
 
 import AsyncButton from "../../components/AsyncButton"
@@ -63,7 +64,7 @@ export default function NewProjectPage() {
     const isSignedIn = user && !api.isAnonUser(user)
 
     return <>
-        <PageTitle title="New project" />
+        <Head><PageTitle title="New project" /></Head>
         <Nav />
         <main>
             <header className={styles.header}>

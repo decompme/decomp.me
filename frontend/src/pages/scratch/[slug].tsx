@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 
 import { GetServerSideProps } from "next"
 
+import Head from "next/head"
+
 import useSWR from "swr"
 
 import PageTitle from "../../components/PageTitle"
@@ -25,7 +27,7 @@ function ScratchPageTitle({ scratch, compilation }: { scratch: api.Scratch, comp
     if (scratch.description)
         description += `\n\n${scratch.description}`
 
-    return <PageTitle title={title} description={description} />
+    return <Head><PageTitle title={title} description={description} /></Head>
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {

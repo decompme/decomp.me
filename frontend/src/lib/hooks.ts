@@ -1,8 +1,12 @@
+"use client"
+
 import { useState, useRef, useLayoutEffect, useEffect, RefObject } from "react"
 
 import Router from "next/router"
 
 import useResizeObserver from "@react-hook/resize-observer"
+
+import { joinTitles } from "../lib/title"
 
 const shouldIgnoreNextWarnBeforeUnload = { current: false } // ref
 
@@ -75,4 +79,12 @@ export function useThemeVariable(variable: string): string {
     }, [variable])
 
     return value
+}
+
+export function usePageTitle(...breadcrumbs: string[]) {
+    const title = joinTitles(...breadcrumbs)
+
+    useEffect(() => {
+        document.title = title
+    }, [title])
 }

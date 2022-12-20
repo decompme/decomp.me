@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useReducer } from "react"
 
 import { GetStaticProps } from "next"
 
+import Head from "next/head"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -180,7 +181,7 @@ export default function NewScratch({ serverCompilers }: {
     const { t } = useTranslation()
 
     return <>
-        <PageTitle title="New scratch" />
+        <Head><PageTitle title="New scratch" /></Head>
         <Nav />
         <header className={styles.heading}>
             <div className={styles.headingInner}>

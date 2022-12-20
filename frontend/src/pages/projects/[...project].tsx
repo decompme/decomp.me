@@ -1,5 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
+import Head from "next/head"
 import { useSearchParams } from "next/navigation"
 
 import { RepoPullIcon } from "@primer/octicons-react"
@@ -77,7 +78,7 @@ export function Inner({ url, tab }: { url: string, tab: Tab }) {
     const userIsMember = api.useIsUserProjectMember(project)
 
     return <>
-        <PageTitle title={project.slug} description={project.description} />
+        <Head><PageTitle title={project.slug} description={project.description} /></Head>
         <Nav />
         <ProjectHeader project={project} tab={tab} />
         <PrScratchBasket project={project} />
