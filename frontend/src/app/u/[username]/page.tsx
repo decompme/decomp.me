@@ -34,14 +34,12 @@ export default async function Page({ params }: { params: { username: string } })
                         @{user.username}
                     </div>
 
-                    {user.github_html_url && <a href={user.github_html_url} className="hover:text-gray-7 dark:hover:text-gray-2">
-                        <GhostButton>
-                            <div className="flex items-center gap-1">
-                                <MarkGithubIcon size={16} />
-                                <span>GitHub</span>
-                            </div>
-                        </GhostButton>
-                    </a>}
+                    {user.github_html_url && <GhostButton href={user.github_html_url}>
+                        <div className="flex items-center gap-1">
+                            <MarkGithubIcon size={16} />
+                            <span>GitHub</span>
+                        </div>
+                    </GhostButton>}
                 </div>
             </div>
         </header>
