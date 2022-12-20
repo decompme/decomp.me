@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import UserLink, { GitHubUserLink } from "../../components/user/UserLink"
+import UserMention from "../../components/user/UserMention"
 import * as api from "../../lib/api/server"
 
 import styles from "./page.module.scss"
@@ -59,10 +59,7 @@ async function getContributor(username: string): Promise<Contributor> {
 }
 
 function Contributor({ contributor }: { contributor: Contributor }) {
-    if (contributor.type === "decompme")
-        return <UserLink user={contributor.user} />
-    else
-        return <GitHubUserLink user={contributor.user} />
+    return <UserMention user={contributor.user} />
 }
 
 export default async function Page() {
