@@ -1,8 +1,7 @@
 import Link from "next/link"
 
+import GhostButton from "./GhostButton"
 import Logotype from "./Logotype"
-
-const link = "hover:text-black dark:hover:text-white transition-colors active:translate-y-px"
 
 function Separator() {
     return <div className="h-4 w-px bg-gray-5/20" />
@@ -13,30 +12,30 @@ export default function Footer() {
         <footer className="mx-auto mt-32 w-full px-4 sm:px-6 lg:px-8">
             <div className="border-t border-black/10 py-10 dark:border-white/[0.06]">
                 <div className="flex items-center justify-center">
-                    <Link href="/" className={link}>
+                    <Link href="/" >
                         <Logotype />
                     </Link>
                 </div>
-                <div className="mt-12 flex items-center justify-center space-x-4 text-sm leading-6">
-                    <Link href="/privacy" className={link}>
+                <div className="mt-12 flex items-center justify-center gap-2 text-sm leading-6">
+                    <GhostButton href="/privacy">
                         Privacy policy
-                    </Link>
+                    </GhostButton>
                     <Separator />
-                    <Link href="https://status.decomp.me" className={link}>
+                    <GhostButton href="https://status.decomp.me">
                         Status
-                    </Link>
+                    </GhostButton>
                     <Separator />
-                    <Link href="https://github.com/decompme/decomp.me" className={link}>
+                    <GhostButton href="https://github.com/decompme/decomp.me">
                         GitHub
-                    </Link>
+                    </GhostButton>
                     <Separator />
-                    <Link href="https://discord.gg/sutqNShRRs" className={link}>
+                    <GhostButton href="https://discord.gg/sutqNShRRs">
                         Chat
-                    </Link>
+                    </GhostButton>
                     <Separator />
-                    <Link href="/credits" className={link}>
+                    <GhostButton href="/credits">
                         Credits
-                    </Link>
+                    </GhostButton>
                 </div>
             </div>
         </footer>
