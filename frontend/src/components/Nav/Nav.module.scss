@@ -172,20 +172,9 @@ $padding: 8px;
     }
 }
 
-.links > li > a,
-.desktopLinks > ul > li > a {
-    color: var(--g2000);
-    font-weight: 500;
-
-    &:hover {
-        color: var(--g1700);
-    }
-}
-
 .desktopLinks {
     grid-area: desktoplinks;
 
-    font-size: 0.85rem;
     margin-left: $padding;
 
     display: flex;
@@ -194,7 +183,6 @@ $padding: 8px;
     > ul {
         display: flex;
         align-items: center;
-        gap: 1em;
 
         > li {
             height: $innerSize;

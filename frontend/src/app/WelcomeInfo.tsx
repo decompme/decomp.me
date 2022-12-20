@@ -31,7 +31,7 @@ export default function WelcomeInfo() {
                         <ArrowRightIcon />
                     </Button>
                 </Link>
-                <Link href="/projects" className="self-center px-2 text-gray-6 hover:text-gray-8 hover:underline active:translate-y-px dark:text-gray-3">
+                <Link href="/projects" className="self-center rounded bg-black/0 px-2 py-1 text-gray-6 transition-colors hover:bg-black/5 hover:text-gray-8 active:translate-y-px dark:bg-white/0 dark:text-gray-3 dark:hover:bg-white/5">
                     Browse projects
                 </Link>
             </div>

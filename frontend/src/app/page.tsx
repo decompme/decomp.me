@@ -1,3 +1,5 @@
+import classNames from "classnames"
+
 import Footer from "../components/Footer"
 import Nav from "../components/Nav"
 import PageTitle from "../components/PageTitle"
@@ -6,7 +8,6 @@ import YourScratchList from "../components/YourScratchList"
 
 import styles from "./page.module.scss"
 import WelcomeInfo, { SITE_DESCRIPTION } from "./WelcomeInfo"
-import classNames from "classnames"
 
 export default function Page() {
     return <>

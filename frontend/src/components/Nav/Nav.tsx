@@ -10,10 +10,11 @@ import classNames from "classnames"
 
 import Logotype from "../Logotype"
 
-import Frog from "./frog.svg"
 import LoginState from "./LoginState"
 import styles from "./Nav.module.scss"
 import Search from "./Search"
+
+const desktopLink = "rounded bg-black/0 px-2 py-1 transition-colors hover:bg-black/5 active:translate-y-px dark:bg-white/0 dark:hover:bg-white/5"
 
 export interface Props {
     border?: boolean
@@ -85,19 +86,19 @@ export default function Nav({ border, children }: Props) {
                 {children
                     ? <li className={styles.customchildren}>{children}</li>
                     : <li className={styles.desktopLinks}>
-                        <ul className="m-auto">
+                        <ul className="ml-auto gap-2 text-sm text-black dark:text-gray-1">
                             <li>
                                 <Search />
                             </li>
                             <li>
-                                <Link href="/new">New scratch</Link>
+                                <Link href="/new" className={desktopLink}>New scratch</Link>
                             </li>
                             <li>
-                                <Link href="/projects">Projects</Link>
+                                <Link href="/projects" className={desktopLink}>Projects</Link>
                             </li>
                             <div className="h-4 w-px bg-black/10 dark:bg-white/[0.06]" />
                             <li>
-                                <Link href="/settings/appearance">Settings</Link>
+                                <Link href="/settings/appearance" className={desktopLink}>Settings</Link>
                             </li>
                         </ul>
                     </li>

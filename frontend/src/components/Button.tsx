@@ -15,7 +15,7 @@ const Button = forwardRef(function Button({
 }: Props, ref: ForwardedRef<HTMLButtonElement>) {
     return <button
         ref={ref}
-        className={classNames(className, styles.btn, {
+        className={classNames(className, styles.btn, "px-2.5 py-1.5 rounded text-sm active:translate-y-px", {
             [styles.primary]: primary,
             [styles.danger]: danger,
         })}

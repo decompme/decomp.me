@@ -43,9 +43,9 @@ export default function LoginState({ className }: { className?: string }) {
             className={styles.avatar}
             src={user.avatar_url}
             alt="Account menu"
-            width={24}
-            height={24}
-            sizes="24px"
+            width={28}
+            height={28}
+            sizes="28px"
             priority
         />
         {renderLayer(<div {...layerProps}>
