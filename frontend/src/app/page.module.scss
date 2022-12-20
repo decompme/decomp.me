@@ -6,6 +6,7 @@
         "padl about    about    about    padr"
         ".    activity activity projects ."
         ".    activity activity projects .";
+    gap: 1em;
 
     @media (max-width: 1000px) {
         grid-template-columns: 0 250px 2fr 300px 0;
