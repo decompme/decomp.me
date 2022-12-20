@@ -4,8 +4,6 @@
     align-content: center;
     height: 100%;
     cursor: default;
-
-    background: var(--g200);
 }
 
 .container p {

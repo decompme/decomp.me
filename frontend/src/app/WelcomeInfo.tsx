@@ -1,7 +1,9 @@
 "use client"
 
-import { ArrowRightIcon } from "@primer/octicons-react"
 import Link from "next/link"
+
+import { ArrowRightIcon } from "@primer/octicons-react"
+
 import Button from "../components/Button"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import { useStats, useThisUser } from "../lib/api"
@@ -13,12 +15,12 @@ export default function WelcomeInfo() {
     const stats = useStats()
     const user = useThisUser()
 
-    return <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-grow">
-            <h1 className="text-2xl text-gray-8 dark:text-gray-1">
+    return <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="grow">
+            <h1 className="text-2xl text-gray-8 dark:text-gray-2">
                 Welcome to <span className="font-semibold">decomp.me</span>
             </h1>
-            <p className="text-base max-w-md leading-tight py-3 text-gray-7 dark:text-gray-3">
+            <p className="max-w-md py-3 text-base leading-tight text-gray-6 dark:text-gray-5">
                 {SITE_DESCRIPTION}
             </p>
             <div className="flex gap-2 text-sm">
@@ -29,12 +31,12 @@ export default function WelcomeInfo() {
                         <ArrowRightIcon />
                     </Button>
                 </Link>
-                <Link href="/projects" className="text-gray-6 dark:text-gray-4 hover:text-gray-8 hover:underline active:translate-y-px self-center px-2">
+                <Link href="/projects" className="self-center px-2 text-gray-6 hover:text-gray-8 hover:underline active:translate-y-px dark:text-gray-3">
                     Browse projects
                 </Link>
             </div>
         </div>
-        {stats && <p className="text-sm sm:self-center text-gray-6 dark:text-gray-5">
+        {stats && <p className="text-sm text-gray-6 sm:self-center">
             {stats.scratch_count.toLocaleString()} scratches created<br />
             {stats.profile_count.toLocaleString()} unique visitors<br />
             {stats.github_user_count.toLocaleString()} users signed up<br />
