@@ -1,33 +1,36 @@
-import Link from "next/link"
-
 import UserMention from "../../components/user/UserMention"
 import * as api from "../../lib/api/server"
 
-import styles from "./page.module.scss"
+import ContributorsList, { getContributorUsernames, usernameToContributor } from "./ContributorsList"
+import LinkList from "./LinkList"
 
 const MAINTAINER_USERNAMES = ["ethteck", "nanaian"]
-const CONTRIBUTOR_USERNAMES = [
-    "zbanks",
-    "simonlindholm",
-    "mkst",
-    "FluentCoding",
-    "TGEnigma",
-    "octorock",
-    "JoshDuMan",
-    "Henny022",
-    "AngheloAlf",
-    "EpochFlame",
-    "SeekyCt",
-    "Trevor89",
-    "MegaMech",
-]
+const OTHER_PROJECTS = {
+    "asm-differ": "https://github.com/simonlindholm/asm-differ",
+    "m2c": "https://github.com/matt-kempster/m2c",
+    "Django": "https://www.djangoproject.com/",
+    "Django REST Framework": "https://www.django-rest-framework.org/",
+    "Next.js": "https://nextjs.org/",
+    "React": "https://reactjs.org/",
+    "Tailwind CSS": "https://tailwindcss.com/",
+    "SWR": "https://swr.vercel.app/",
+}
+const ICON_SOURCES = {
+    "Octicons": "https://primer.style/octicons/",
+    "file-icons/icons": "https://github.com/file-icons/icons",
+    "coreui/coreui-icons": "https://github.com/coreui/coreui-icons",
+    "New Fontendo 23DSi Lite XL": "https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059",
+    "GBA SVG by Andrew Vester from NounProject.com": "https://thenounproject.com/icon/gameboy-advanced-752507/",
+    "Happy Mac by NiloGlock": "https://commons.wikimedia.org/wiki/File:Happy_Mac.svg",
+    "Tiger-like-x by Althepal": "https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg",
+}
 
 type Contributor = {
     type: "decompme"
     user: api.User
 } | {
     type: "github"
-    user: { login: string, avatar_url?: string }
+    user: { login: string }
 }
 
 async function getContributor(username: string): Promise<Contributor> {
@@ -40,20 +43,10 @@ async function getContributor(username: string): Promise<Contributor> {
         }
     } catch (error) {
         // Fall back to GitHub information
-        const req = await fetch(`https://api.github.com/users/${username}`)
-        const user = await req.json()
-
-        if (user.message) {
-            // Rate limit :(
-            return {
-                type: "github",
-                user: { login: username },
-            }
-        }
-
+        // No need to ask their API for data since we just need the username
         return {
             type: "github",
-            user,
+            user: { login: username },
         }
     }
 }
@@ -64,90 +57,31 @@ function Contributor({ contributor }: { contributor: Contributor }) {
 
 export default async function Page() {
     const maintainers = await Promise.all(MAINTAINER_USERNAMES.map(getContributor))
-    const contributors = await Promise.all(CONTRIBUTOR_USERNAMES.map(getContributor))
+    const contributors = await getContributorUsernames().then(usernames => Promise.all(usernames.map(usernameToContributor)))
 
     return <main>
-        <div className={styles.container}>
-            <h1 className={styles.heading}>
+        <div className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-8 dark:text-white md:text-3xl">
                 Credits
             </h1>
-
-            <p>
-                decomp.me is developed by <Contributor contributor={maintainers[0]} /> and <Contributor contributor={maintainers[1]} />.
+            <p className="py-4">
+                decomp.me is maintained by <Contributor contributor={maintainers[0]} /> and <Contributor contributor={maintainers[1]} />.
             </p>
-
-            <div>
-                <h3 className={styles.subheading}>
-                    Contributors
-                </h3>
-                <ul className={styles.contributors}>
-                    {contributors.map(contributor => {
-                        return <li key={contributor.type === "decompme" ? contributor.user.username : contributor.user.login}>
-                            <Contributor contributor={contributor} />
-                        </li>
-                    })}
-                </ul>
+            <div className="my-4 border-y border-gray-2 dark:border-gray-8">
+                <ContributorsList contributors={contributors} />
             </div>
-
-            <hr className={styles.rule} />
-
-            <div>
-                <h3 className={styles.subheading}>
-                    Projects
+            <div className="py-4">
+                <h3 className="text-lg font-medium tracking-tight text-gray-8 dark:text-gray-2 md:text-2xl">
+                    Acknowledgements
                 </h3>
-                <ul>
-                    <li>
-                        <Link href="https://github.com/simonlindholm/asm-differ">
-                            simonlindholm/asm-differ
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://github.com/matt-kempster/m2c">
-                            matt-kempster/m2c
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-
-            <hr className={styles.rule} />
-
-            <div>
-                <h3 className={styles.subheading}>
-                    Icons
-                </h3>
-                <ul>
-                    <li>Octicons by GitHub</li>
-                    <li>
-                        <Link href="https://github.com/file-icons/icons">
-                            file-icons/icons
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://github.com/coreui/coreui-icons">
-                            coreui/coreui-icons
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059">
-                            New Fontendo 23DSi Lite XL
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://thenounproject.com/icon/gameboy-advanced-752507/">
-                            GBA SVG by Andrew Vester from NounProject.com
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://commons.wikimedia.org/wiki/File:Happy_Mac.svg">
-                            Happy Mac by NiloGlock
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg">
-                            Tiger-like-x by Althepal
-                        </Link>
-                    </li>
-                </ul>
+                <p className="my-2">
+                    decomp.me is built on top of many other open source projects, including:
+                </p>
+                <LinkList links={OTHER_PROJECTS} />
+                <p className="my-2">
+                    We also use icons from the following sources:
+                </p>
+                <LinkList links={ICON_SOURCES} />
             </div>
         </div>
     </main>
