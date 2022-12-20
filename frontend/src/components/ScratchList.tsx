@@ -38,7 +38,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     const Item = item || ScratchItem
 
     return (
-        <ul className={classNames(styles.list, "rounded-md border-gray-8 text-sm", className)}>
+        <ul className={classNames(styles.list, "rounded-md border-gray-3 dark:border-gray-8 text-sm", className)}>
             {results.map(scratch => (
                 <Item key={scratch.url} scratch={scratch} />
             ))}
