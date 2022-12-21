@@ -14,7 +14,7 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: poetry
@@ -99,7 +99,7 @@ jobs:
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
       - name: Setup Node.js 18
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: yarn
@@ -120,7 +120,7 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: poetry
@@ -171,7 +171,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js 18
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: yarn
@@ -188,7 +188,7 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
           cache: poetry
