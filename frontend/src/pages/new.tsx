@@ -7,7 +7,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { cpp } from "@codemirror/lang-cpp"
-import useTranslation from "next-translate/useTranslation"
 
 import AsyncButton from "../components/AsyncButton"
 import { useCompilersForPlatform } from "../components/compiler/compilers"
@@ -20,6 +19,7 @@ import PlatformSelect from "../components/PlatformSelect"
 import Select from "../components/Select2"
 import * as api from "../lib/api"
 import basicSetup from "../lib/codemirror/basic-setup"
+import useTranslation from "../lib/i18n/translate"
 
 import styles from "./new.module.scss"
 
@@ -171,14 +171,14 @@ export default function NewScratch({ serverCompilers }: {
 
             await api.claimScratch(scratch)
 
-            await router.push(scratch.html_url)
+            router.push(scratch.html_url)
         } catch (error) {
             console.error(error)
             throw error
         }
     }
 
-    const { t } = useTranslation()
+    const compilersTranslation = useTranslation("compilers")
 
     return <>
         <Head><PageTitle title="New scratch" /></Head>
@@ -217,7 +217,7 @@ export default function NewScratch({ serverCompilers }: {
                                 options={Object.keys(platformCompilers).reduce((sum, id) => {
                                     return {
                                         ...sum,
-                                        [id]: t(`compilers:${id}`),
+                                        [id]: compilersTranslation.t(id),
                                     }
                                 }, {})}
                                 value={compilerId}

@@ -5,10 +5,10 @@ import { ReactNode } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
-import useTranslation from "next-translate/useTranslation"
 import TimeAgo from "react-timeago"
 
 import * as api from "../lib/api"
+import useTranslation from "../lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
@@ -70,7 +70,7 @@ export function LoadedScratchList({ className, item, scratches }: Pick<Props, "c
 
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
-    const compilerName = compilersTranslation.t(scratch.compiler)
+    const compilerName = compilersTranslation.t(scratch.compiler as any)
 
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
     const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)

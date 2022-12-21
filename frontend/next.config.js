@@ -27,14 +27,13 @@ const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
-const nextTranslate = require("next-translate")
 const { WebWorkerPlugin } = require("@shopify/web-worker/webpack")
 
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
 
 let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
-})(nextTranslate(removeImports(withPWA({
+})(removeImports(withPWA({
     async redirects() {
         return [
             {
@@ -90,7 +89,7 @@ let app = withPlausibleProxy({
     experimental: {
         appDir: true,
     },
-}))))
+})))
 
 if (process.env.ANALYZE == "true") {
     app = require("@next/bundle-analyzer")(app)
