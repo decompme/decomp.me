@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowRightIcon } from "@primer/octicons-react"
 
 import Button from "../components/Button"
+import GhostButton from "../components/GhostButton"
 import GitHubLoginButton from "../components/GitHubLoginButton"
 import { useStats, useThisUser } from "../lib/api"
 
@@ -23,7 +24,7 @@ export default function WelcomeInfo() {
             <p className="max-w-md py-3 text-base leading-tight text-gray-6 dark:text-gray-5">
                 {SITE_DESCRIPTION}
             </p>
-            <div className="flex gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm">
                 {user?.is_anonymous && <GitHubLoginButton popup />}
                 <Link href="/new">
                     <Button primary>
@@ -31,9 +32,9 @@ export default function WelcomeInfo() {
                         <ArrowRightIcon />
                     </Button>
                 </Link>
-                <Link href="/projects" className="self-center rounded bg-black/0 px-2 py-1 text-gray-6 transition-colors hover:bg-black/5 hover:text-gray-8 active:translate-y-px dark:bg-white/0 dark:text-gray-3 dark:hover:bg-white/5">
+                <GhostButton href="/projects">
                     Browse projects
-                </Link>
+                </GhostButton>
             </div>
         </div>
         {stats && <p className="text-sm text-gray-6 sm:self-center">
