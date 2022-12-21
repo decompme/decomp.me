@@ -56,6 +56,11 @@ jobs:
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
           make -C nsjail
           sudo cp nsjail/nsjail /usr/bin/
+      - name: Cache compilers
+        uses: actions/cache@v3
+        with:
+          path: backend/compilers/download_cache
+          key: ${{ runner.os }}-compilers
       - name: Download compilers
         run: |-
           cd backend
