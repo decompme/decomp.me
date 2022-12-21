@@ -25,8 +25,15 @@ export function useIsSiteThemeDark() {
     case "light":
         return false
     case "auto":
-        if (typeof window === "undefined")
-            return true // default to dark theme on server
-        return !window.matchMedia("(prefers-color-scheme: light)").matches
+        return isPrefersColorSchemeDark()
     }
+}
+
+export function isPrefersColorSchemeDark() {
+    // Default to dark theme on server
+    if (typeof window === "undefined") {
+        return true
+    }
+
+    return !window.matchMedia("(prefers-color-scheme: light)").matches
 }

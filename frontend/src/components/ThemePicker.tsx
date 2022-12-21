@@ -1,5 +1,7 @@
 import { LightBulbIcon, MoonIcon, SunIcon } from "@primer/octicons-react"
 
+import { isPrefersColorSchemeDark } from "../lib/settings"
+
 import styles from "./ThemePicker.module.scss"
 
 export type Theme = "auto" | "light" | "dark"
@@ -10,7 +12,7 @@ export interface Props {
 }
 
 export default function ThemePicker({ theme, onChange }: Props) {
-    const autoTheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
+    const autoTheme = isPrefersColorSchemeDark() ? "light" : "dark"
 
     return <div className={styles.container}>
         <button className={styles.box} onClick={() => onChange("auto")} data-active={theme == "auto"}>
