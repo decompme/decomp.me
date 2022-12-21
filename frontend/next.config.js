@@ -48,7 +48,7 @@ let app = withPlausibleProxy({
             },
             {
                 source: "/settings",
-                destination: "/settings/appearance",
+                destination: "/settings/account",
                 permanent: false,
             },
         ]

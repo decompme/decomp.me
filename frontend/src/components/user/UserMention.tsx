@@ -30,10 +30,31 @@ export function getUserHtmlUrl(user: User | AnonymousUser | GithubUser): string 
     return `/u/${user.username}`
 }
 
+export function isMentionable(user: User | AnonymousUser | GithubUser): boolean {
+    if ("login" in user) {
+        return false
+    }
+
+    return !isAnonUser(user)
+}
+
 /** A mention of a user, like @username, that can be clicked on. */
 export default function UserMention({ user }: Props) {
-    return <Link href={getUserHtmlUrl(user)} className="text-gray-6 hover:text-gray-8 dark:text-gray-5 hover:dark:text-gray-3">
-        <span className="text-gray-5 dark:text-gray-6">@</span>
+    const url = getUserHtmlUrl(user)
+
+    const children = <>
+        {isMentionable(user) && <span className="text-gray-5 dark:text-gray-6">@</span>}
         <span className="font-medium">{getUserName(user)}</span>
-    </Link>
+    </>
+
+    if (url) {
+        return <Link
+            href={getUserHtmlUrl(user)}
+            className="text-gray-6 hover:text-gray-8 dark:text-gray-5 hover:dark:text-gray-3"
+        >
+            {children}
+        </Link>
+    } else {
+        return <span className="text-gray-6 dark:text-gray-5">{children}</span>
+    }
 }

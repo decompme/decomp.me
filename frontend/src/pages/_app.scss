@@ -88,7 +88,7 @@ body:not(.device-macos) {
     z-index: 999;
 }
 
-main {
+#__next > main {
     flex: 1;
     width: 100%;
 }

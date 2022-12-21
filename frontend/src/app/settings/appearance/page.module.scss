@@ -1,0 +1,7 @@
+.exampleCodeEditor {
+    overflow: hidden;
+
+    :global(.cm-editor) {
+        height: 200px;
+    }
+}
