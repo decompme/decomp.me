@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: backend/poetry.lock
       - name: Install backend Python dependencies
         run: cd backend && poetry install
-      - name: Install apt dependencies
+      - name: Install apt dependencies (initial)
         run: |-
           sudo dpkg --add-architecture i386
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
@@ -39,18 +39,21 @@ jobs:
             "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
             $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt-get update -qq
-          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-          sudo apt-get install \
-            binutils-aarch64-linux-gnu \
-            binutils-mips-linux-gnu \
-            binutils-powerpc-linux-gnu \
-            dos2unix \
-            libprotobuf-dev \
-            libnl-route-3-dev \
-            libncurses5 \
-            protobuf-compiler \
+      - name: Install apt dependencies (cached)
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: |
+            docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            binutils-aarch64-linux-gnu
+            binutils-mips-linux-gnu
+            binutils-powerpc-linux-gnu
+            dos2unix
+            libprotobuf-dev
+            libnl-route-3-dev
+            libncurses5
+            protobuf-compiler
             wine
+          version: 1.0
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
