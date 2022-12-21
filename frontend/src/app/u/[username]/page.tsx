@@ -32,17 +32,13 @@ export default async function Page({ params }: { params: { username: string } })
                     {user.name}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-6 dark:text-gray-5">
-                    <div title="decomp.me username" tabIndex={0}>
-                        @{user.username}
-                    </div>
-
-                    {user.github_html_url && <GhostButton href={user.github_html_url}>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-sm text-gray-6 dark:text-gray-5">
+                    <GhostButton href={user.github_html_url}>
                         <div className="flex items-center gap-1">
-                            <MarkGithubIcon size={16} />
-                            <span>GitHub</span>
+                            {user.github_html_url && <MarkGithubIcon size={16} aria-label="GitHub username" />}
+                            <span>{user.username}</span>
                         </div>
-                    </GhostButton>}
+                    </GhostButton>
                 </div>
             </div>
         </header>
