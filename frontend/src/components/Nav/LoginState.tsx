@@ -5,7 +5,8 @@ import Image from "next/image"
 import classNames from "classnames"
 import { useLayer } from "react-laag"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import GitHubLoginButton from "../GitHubLoginButton"
 import VerticalMenu from "../VerticalMenu"
 

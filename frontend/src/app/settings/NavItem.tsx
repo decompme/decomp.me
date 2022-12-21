@@ -6,7 +6,7 @@ import { useSelectedLayoutSegment } from "next/navigation"
 
 import classNames from "classnames"
 
-import GhostButton from "../../components/GhostButton"
+import GhostButton from "@/components/GhostButton"
 
 export type Props = {
     segment: string

@@ -2,8 +2,9 @@ import Link from "next/link"
 
 import { DiamondIcon, GearIcon, MarkGithubIcon } from "@primer/octicons-react"
 
-import UnderlineNav, { Counter } from "../components/UnderlineNav"
-import * as api from "../lib/api"
+import UnderlineNav, { Counter } from "@/components/UnderlineNav"
+import * as api from "@/lib/api"
+
 import { Tab } from "../pages/projects/[...project]"
 
 import PlatformIcon from "./PlatformSelect/PlatformIcon"

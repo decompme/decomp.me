@@ -8,7 +8,8 @@ import classNames from "classnames"
 import { useCombobox } from "downshift"
 import { useLayer } from "react-laag"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
 import AnonymousFrogAvatar from "../user/AnonymousFrog"

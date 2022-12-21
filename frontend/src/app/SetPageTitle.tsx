@@ -5,7 +5,7 @@
 // So we'll update it on the client instead, with this component.
 // In future - once this is supported - we can use dynamic <AppHead> instead.
 
-import { usePageTitle } from "../lib/hooks"
+import { usePageTitle } from "@/lib/hooks"
 
 export default function SetPageTitle({ title }: { title: string }) {
     usePageTitle(title)

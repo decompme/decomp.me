@@ -1,6 +1,6 @@
 "use client"
 
-import { useThisUser, isAnonUser } from "../lib/api"
+import { useThisUser, isAnonUser } from "@/lib/api"
 
 import ScratchList, { Props as ScratchListProps } from "./ScratchList"
 

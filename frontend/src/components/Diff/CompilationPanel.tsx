@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import Ansi from "ansi-to-react"
 import * as resizer from "react-simple-resizer"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
 
 import styles from "./CompilationPanel.module.scss"
 import Diff from "./Diff"

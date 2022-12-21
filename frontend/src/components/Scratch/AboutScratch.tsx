@@ -3,7 +3,8 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import PlatformName from "../PlatformSelect/PlatformName"

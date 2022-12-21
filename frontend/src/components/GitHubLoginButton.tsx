@@ -1,6 +1,6 @@
 import { MarkGithubIcon } from "@primer/octicons-react"
 
-import { isGitHubLoginSupported, showGitHubLoginWindow } from "../lib/oauth"
+import { isGitHubLoginSupported, showGitHubLoginWindow } from "@/lib/oauth"
 
 import Button from "./Button"
 

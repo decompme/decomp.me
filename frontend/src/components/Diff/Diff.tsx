@@ -6,9 +6,10 @@ import classNames from "classnames"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
-import * as api from "../../lib/api"
-import { useSize } from "../../lib/hooks"
-import { useCodeFontSize } from "../../lib/settings"
+import * as api from "@/lib/api"
+import { useSize } from "@/lib/hooks"
+import { useCodeFontSize } from "@/lib/settings"
+
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"

@@ -4,14 +4,14 @@ import { GetServerSideProps } from "next"
 
 import Head from "next/head"
 
-import Breadcrumbs from "../../../components/Breadcrumbs"
-import Footer from "../../../components/Footer"
-import Nav from "../../../components/Nav"
-import PageTitle from "../../../components/PageTitle"
-import { LoadedScratchList } from "../../../components/ScratchList"
-import Select from "../../../components/Select2"
-import UserAvatar from "../../../components/user/UserAvatar"
-import * as api from "../../../lib/api"
+import Breadcrumbs from "@/components/Breadcrumbs"
+import Footer from "@/components/Footer"
+import Nav from "@/components/Nav"
+import PageTitle from "@/components/PageTitle"
+import { LoadedScratchList } from "@/components/ScratchList"
+import Select from "@/components/Select2"
+import UserAvatar from "@/components/user/UserAvatar"
+import * as api from "@/lib/api"
 
 import styles from "./family.module.scss"
 

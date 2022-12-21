@@ -1,7 +1,8 @@
 import { createContext, useContext } from "react"
 
-import * as api from "../../lib/api"
-import useTranslation from "../../lib/i18n/translate"
+import * as api from "@/lib/api"
+import useTranslation from "@/lib/i18n/translate"
+
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select" // TODO: use Select2
 

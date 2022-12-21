@@ -1,4 +1,4 @@
-import GhostButton from "../../components/GhostButton"
+import GhostButton from "@/components/GhostButton"
 
 export type Props = {
     links: { [key: string]: string }

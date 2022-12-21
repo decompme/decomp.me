@@ -1,4 +1,5 @@
-import { isAnonUser, User, AnonymousUser } from "../../lib/api/types"
+import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
+
 import GhostButton from "../GhostButton"
 
 import UserAvatar from "./UserAvatar"

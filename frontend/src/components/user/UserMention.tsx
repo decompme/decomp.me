@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { User, AnonymousUser, isAnonUser } from "../../lib/api/types"
+import { User, AnonymousUser, isAnonUser } from "@/lib/api/types"
 
 export type GithubUser = {
     login: string

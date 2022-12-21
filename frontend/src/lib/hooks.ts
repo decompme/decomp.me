@@ -6,7 +6,7 @@ import Router from "next/router"
 
 import useResizeObserver from "@react-hook/resize-observer"
 
-import { joinTitles } from "../lib/title"
+import { joinTitles } from "./title"
 
 const shouldIgnoreNextWarnBeforeUnload = { current: false } // ref
 

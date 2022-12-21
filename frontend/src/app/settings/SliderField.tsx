@@ -2,7 +2,7 @@ import { useId, ReactNode } from "react"
 
 import classNames from "classnames"
 
-import NumberInput from "../../components/NumberInput"
+import NumberInput from "@/components/NumberInput"
 
 function clamp(value: number, min: number, max: number) {
     return Math.min(Math.max(value, min), max)

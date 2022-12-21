@@ -4,10 +4,10 @@ import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
 
-import Button from "../components/Button"
-import GhostButton from "../components/GhostButton"
-import GitHubLoginButton from "../components/GitHubLoginButton"
-import { useStats, useThisUser } from "../lib/api"
+import Button from "@/components/Button"
+import GhostButton from "@/components/GhostButton"
+import GitHubLoginButton from "@/components/GitHubLoginButton"
+import { useStats, useThisUser } from "@/lib/api"
 
 export const SITE_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
 

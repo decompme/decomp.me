@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 
-import * as api from "../../../lib/api"
+import * as api from "@/lib/api"
 
 export enum FuzzySaveAction {
     CLAIM,

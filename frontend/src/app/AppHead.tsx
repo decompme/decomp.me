@@ -1,4 +1,4 @@
-import PageTitle, { Props } from "../components/PageTitle"
+import PageTitle, { Props } from "@/components/PageTitle"
 
 /** For head.js files */
 export default function AppHead(props: Props) {

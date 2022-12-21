@@ -6,12 +6,12 @@ import PlausibleProvider from "next-plausible"
 
 import type {} from "react/next"
 
-import ErrorBoundary from "../components/ErrorBoundary"
-import Footer from "../components/Footer"
-import Nav from "../components/Nav"
-import { applyColorScheme } from "../lib/codemirror/color-scheme"
-import { isMacOS } from "../lib/device"
-import * as settings from "../lib/settings"
+import ErrorBoundary from "@/components/ErrorBoundary"
+import Footer from "@/components/Footer"
+import Nav from "@/components/Nav"
+import { applyColorScheme } from "@/lib/codemirror/color-scheme"
+import { isMacOS } from "@/lib/device"
+import * as settings from "@/lib/settings"
 
 import "../pages/_app.scss"
 

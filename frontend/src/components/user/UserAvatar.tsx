@@ -6,7 +6,7 @@ import Image from "next/image"
 
 import classNames from "classnames"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
 
 import AnonymousFrogAvatar from "./AnonymousFrog"
 import styles from "./UserAvatar.module.scss"

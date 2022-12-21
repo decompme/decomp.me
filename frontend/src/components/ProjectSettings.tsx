@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import * as api from "../lib/api"
-import useEntity from "../lib/useEntity"
+import * as api from "@/lib/api"
+import useEntity from "@/lib/useEntity"
 
 import AsyncButton from "./AsyncButton"
 import FieldSet from "./FieldSet"

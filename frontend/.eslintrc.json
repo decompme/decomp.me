@@ -69,6 +69,12 @@
                         "name": "next/router",
                         "message": "Use next/navigation instead."
                     }*/
+                ],
+                "patterns": [
+                    {
+                        "group": ["(\\.\\./)+/(lib|components|pages|app)"],
+                        "message": "Use absolute imports (@/path) instead."
+                    }
                 ]
             }
         ],
@@ -96,13 +102,19 @@
                         "pattern": "next/**",
                         "group": "builtin",
                         "position": "after"
+                    },
+                    {
+                        "pattern": "@/**",
+                        "group": "parent",
+                        "position": "before"
                     }
                 ],
                 "pathGroupsExcludedImportTypes": ["react"],
                 "alphabetize": { "order": "asc", "caseInsensitive": true }
             }
         ],
-        "import/no-unresolved": "error",
+        "import/no-unresolved": ["error", { "ignore": ["^@/"] }],
+        "import/no-extraneous-dependencies": "error",
         "import/export": "warn",
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",

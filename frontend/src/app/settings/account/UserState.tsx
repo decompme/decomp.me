@@ -1,10 +1,10 @@
 "use client"
 
-import GitHubLoginButton from "../../../components/GitHubLoginButton"
-import LoadingSpinner from "../../../components/loading.svg"
-import UserAvatar from "../../../components/user/UserAvatar"
-import UserMention from "../../../components/user/UserMention"
-import { isAnonUser, useThisUser } from "../../../lib/api"
+import GitHubLoginButton from "@/components/GitHubLoginButton"
+import LoadingSpinner from "@/components/loading.svg"
+import UserAvatar from "@/components/user/UserAvatar"
+import UserMention from "@/components/user/UserMention"
+import { isAnonUser, useThisUser } from "@/lib/api"
 
 import SignOutButton from "./SignOutButton"
 

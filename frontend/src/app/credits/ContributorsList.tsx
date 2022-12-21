@@ -1,9 +1,9 @@
 import { LinkExternalIcon } from "@primer/octicons-react"
 
-import GhostButton from "../../components/GhostButton"
-import UserAvatar from "../../components/user/UserAvatar"
-import UserMention, { GithubUser, getUserName } from "../../components/user/UserMention"
-import * as api from "../../lib/api/server"
+import GhostButton from "@/components/GhostButton"
+import UserAvatar from "@/components/user/UserAvatar"
+import UserMention, { GithubUser, getUserName } from "@/components/user/UserMention"
+import * as api from "@/lib/api/server"
 
 export type Contributor = api.User | GithubUser
 

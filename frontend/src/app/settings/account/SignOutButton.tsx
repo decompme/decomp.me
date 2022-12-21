@@ -2,9 +2,9 @@
 
 import { mutate } from "swr"
 
-import AsyncButton from "../../../components/AsyncButton"
-import { useThisUser, isAnonUser } from "../../../lib/api"
-import { post } from "../../../lib/api/request"
+import AsyncButton from "@/components/AsyncButton"
+import { useThisUser, isAnonUser } from "@/lib/api"
+import { post } from "@/lib/api/request"
 
 export default function SignOutButton() {
     const user = useThisUser()

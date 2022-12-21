@@ -2,10 +2,11 @@ import { notFound } from "next/navigation"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
 
-import GhostButton from "../../../components/GhostButton"
-import ScratchList, { ScratchItemNoOwner } from "../../../components/ScratchList"
-import UserAvatar from "../../../components/user/UserAvatar"
-import * as api from "../../../lib/api/server"
+import GhostButton from "@/components/GhostButton"
+import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
+import UserAvatar from "@/components/user/UserAvatar"
+import * as api from "@/lib/api/server"
+
 import SetPageTitle from "../../SetPageTitle"
 
 export default async function Page({ params }: { params: { username: string } }) {

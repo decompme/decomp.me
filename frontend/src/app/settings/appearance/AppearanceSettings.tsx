@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic"
 
-import ColorSchemePicker from "../../../components/ColorSchemePicker"
-import LoadingSpinner from "../../../components/loading.svg"
-import ThemePicker from "../../../components/ThemePicker"
-import * as settings from "../../../lib/settings"
+import ColorSchemePicker from "@/components/ColorSchemePicker"
+import LoadingSpinner from "@/components/loading.svg"
+import ThemePicker from "@/components/ThemePicker"
+import * as settings from "@/lib/settings"
+
 import Section from "../Section"
 import SliderField from "../SliderField"
 import TextField from "../TextField"

@@ -2,8 +2,8 @@
 
 import { cpp } from "@codemirror/lang-cpp"
 
-import CodeMirror from "../../../components/Editor/CodeMirror"
-import basicSetup from "../../../lib/codemirror/basic-setup"
+import CodeMirror from "@/components/Editor/CodeMirror"
+import basicSetup from "@/lib/codemirror/basic-setup"
 
 import styles from "./ExampleCodeMirror.module.scss"
 

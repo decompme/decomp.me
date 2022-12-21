@@ -1,7 +1,7 @@
 import classNames from "classnames"
 
-import ScratchList, { SingleLineScratchItem } from "../components/ScratchList"
-import YourScratchList from "../components/YourScratchList"
+import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
+import YourScratchList from "@/components/YourScratchList"
 
 import styles from "./page.module.scss"
 import SetPageTitle from "./SetPageTitle"

@@ -1,6 +1,7 @@
 import { mutate } from "swr"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import GitHubLoginButton from "../GitHubLoginButton"
 import { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
 

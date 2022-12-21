@@ -2,7 +2,8 @@ import { SVGProps } from "react"
 
 import classNames from "classnames"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import Frog from "../Nav/frog.svg"
 
 import styles from "./AnonymousFrog.module.scss"

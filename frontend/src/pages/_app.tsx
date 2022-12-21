@@ -8,10 +8,10 @@ import Head from "next/head"
 
 import PlausibleProvider from "next-plausible"
 
-import Layout from "../components/Layout"
-import { applyColorScheme } from "../lib/codemirror/color-scheme"
-import { isMacOS } from "../lib/device"
-import * as settings from "../lib/settings"
+import Layout from "@/components/Layout"
+import { applyColorScheme } from "@/lib/codemirror/color-scheme"
+import { isMacOS } from "@/lib/device"
+import * as settings from "@/lib/settings"
 
 import "./_app.scss"
 

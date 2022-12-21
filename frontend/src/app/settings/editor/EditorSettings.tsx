@@ -1,6 +1,7 @@
 "use client"
 
-import * as settings from "../../../lib/settings"
+import * as settings from "@/lib/settings"
+
 import Checkbox from "../Checkbox"
 import Section from "../Section"
 import SliderField from "../SliderField"

@@ -6,10 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { useSWRConfig } from "swr"
 
-import GitHubLoginButton from "../../components/GitHubLoginButton"
-import LoadingSpinner from "../../components/loading.svg"
-import * as api from "../../lib/api"
-import { requestMissingScopes } from "../../lib/oauth"
+import GitHubLoginButton from "@/components/GitHubLoginButton"
+import LoadingSpinner from "@/components/loading.svg"
+import * as api from "@/lib/api"
+import { requestMissingScopes } from "@/lib/oauth"
 
 // Handles GitHub OAuth callback
 export default function Page() {

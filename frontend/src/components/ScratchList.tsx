@@ -7,8 +7,8 @@ import Link from "next/link"
 import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
-import * as api from "../lib/api"
-import useTranslation from "../lib/i18n/translate"
+import * as api from "@/lib/api"
+import useTranslation from "@/lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"

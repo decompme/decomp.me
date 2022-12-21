@@ -1,5 +1,5 @@
-import UserMention from "../../components/user/UserMention"
-import * as api from "../../lib/api/server"
+import UserMention from "@/components/user/UserMention"
+import * as api from "@/lib/api/server"
 
 import ContributorsList, { getContributorUsernames, usernameToContributor } from "./ContributorsList"
 import LinkList from "./LinkList"

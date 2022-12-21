@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation"
 import { XIcon } from "@primer/octicons-react"
 import useSWR from "swr"
 
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import AsyncButton from "./AsyncButton"
 import FieldSet from "./FieldSet"

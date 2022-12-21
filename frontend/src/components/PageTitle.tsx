@@ -1,4 +1,4 @@
-import { joinTitles } from "../lib/title"
+import { joinTitles } from "@/lib/title"
 
 export type Props = {
     title?: string

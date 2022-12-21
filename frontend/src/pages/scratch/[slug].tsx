@@ -6,11 +6,11 @@ import Head from "next/head"
 
 import useSWR from "swr"
 
-import PageTitle from "../../components/PageTitle"
-import { getScoreText } from "../../components/ScoreBadge"
-import Scratch from "../../components/Scratch"
-import useWarnBeforeScratchUnload from "../../components/Scratch/hooks/useWarnBeforeScratchUnload"
-import * as api from "../../lib/api"
+import PageTitle from "@/components/PageTitle"
+import { getScoreText } from "@/components/ScoreBadge"
+import Scratch from "@/components/Scratch"
+import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload"
+import * as api from "@/lib/api"
 
 import styles from "./[slug].module.scss"
 

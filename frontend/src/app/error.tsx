@@ -4,8 +4,8 @@ import { useEffect } from "react"
 
 import { SyncIcon } from "@primer/octicons-react"
 
-import Button from "../components/Button"
-import ErrorBoundary from "../components/ErrorBoundary"
+import Button from "@/components/Button"
+import ErrorBoundary from "@/components/ErrorBoundary"
 
 export default function Error({
     error,

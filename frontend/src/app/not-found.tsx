@@ -1,5 +1,5 @@
-import GhostButton from "../components/GhostButton"
-import Frog from "../components/Nav/frog.svg"
+import GhostButton from "@/components/GhostButton"
+import Frog from "@/components/Nav/frog.svg"
 
 export default function NotFound() {
     return <main className="mx-auto flex max-w-prose items-center justify-center gap-4 px-4 py-6 text-base leading-normal">

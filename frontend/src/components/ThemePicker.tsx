@@ -1,6 +1,6 @@
 import { LightBulbIcon, MoonIcon, SunIcon } from "@primer/octicons-react"
 
-import { isPrefersColorSchemeDark } from "../lib/settings"
+import { isPrefersColorSchemeDark } from "@/lib/settings"
 
 import styles from "./ThemePicker.module.scss"
 
