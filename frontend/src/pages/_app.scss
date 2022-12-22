@@ -51,30 +51,6 @@ body {
     height: 100%;
 }
 
-body:not(.device-macos) {
-    scrollbar-color: #fff3 #fff1;
-    scrollbar-width: thin;
-
-    ::-webkit-scrollbar {
-        background-color: transparent;
-        width: 0.6rem;
-        height: 0.6rem;
-    }
-
-    ::-webkit-scrollbar-track,
-    ::-webkit-scrollbar-corner {
-        background-color: #fff1;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background-color: #fff3;
-    }
-
-    ::-webkit-scrollbar-button {
-        display: none;
-    }
-}
-
 // not used in app/ dir
 #__next {
     display: flex;
