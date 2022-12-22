@@ -1,3 +1,5 @@
+import { ChevronRightIcon } from "@primer/octicons-react"
+
 import GhostButton from "@/components/GhostButton"
 import Frog from "@/components/Nav/frog.svg"
 
@@ -18,7 +20,7 @@ export default function NotFound() {
 
             <div className="flex items-center justify-center gap-2 py-4">
                 <GhostButton href="/">
-                    Back to dashboard
+                    Back to dashboard <ChevronRightIcon />
                 </GhostButton>
             </div>
         </div>
