@@ -11,19 +11,22 @@ import LogoPS2 from "./ps2.svg"
 import LogoSwitch from "./switch.svg"
 import UnknownIcon from "./unknown.svg"
 
+/** In release-date order */
 const ICONS = {
-    "gba": LogoGBA,
-    "gc_wii": LogoGCWii,
     "irix": LogoIRIX,
-    "nds_arm9": LogoNDS,
-    "n64": LogoN64,
-    "ps1": LogoPS1,
-    "ps2": LogoPS2,
-    "switch": LogoSwitch,
     "macos9": LogoMacOS,
     "macosx": LogoMacOSX,
+    "n64": LogoN64,
+    "gba": LogoGBA,
+    "gc_wii": LogoGCWii,
+    "nds_arm9": LogoNDS,
+    "ps1": LogoPS1,
+    "ps2": LogoPS2,
     "n3ds": LogoN3DS,
+    "switch": LogoSwitch,
 }
+
+export const PLATFORMS = Object.keys(ICONS)
 
 export type Props = {
     platform: string

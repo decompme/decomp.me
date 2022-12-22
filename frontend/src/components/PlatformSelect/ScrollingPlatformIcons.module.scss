@@ -1,0 +1,17 @@
+@keyframes scrolling {
+    0% {
+        transform: translateX(-125%);
+    }
+    100% {
+        transform: translateX(-25%);
+    }
+}
+
+.scrolling {
+    animation: scrolling 20s linear infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+        transform: translateX(-25%);
+    }
+}

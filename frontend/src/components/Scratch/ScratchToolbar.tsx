@@ -253,7 +253,7 @@ export default function ScratchToolbar(props: Props) {
     const [actionsLocation, InNavActions] = useActionsLocation()
 
     return <>
-        <Nav border={actionsLocation == ActionsLocation.IN_NAV}>
+        <Nav>
             <div className={styles.container}>
                 <Breadcrumbs className={styles.breadcrumbs} pages={[
                     scratch.owner && {
@@ -279,7 +279,7 @@ export default function ScratchToolbar(props: Props) {
                 <InNavActions {...props} />
             </div>
         </Nav>
-        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-b border-gray-900/10 dark:border-gray-50/[0.06]")}>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-b border-gray-6")}>
             <Actions {...props} />
         </div>}
     </>

@@ -51,7 +51,7 @@ export default function AppearanceSettings() {
 
             <div className="mb-6">
                 <div className="font-semibold">Color scheme</div>
-                <div className="my-2 overflow-hidden rounded border border-gray-2 dark:border-gray-8">
+                <div className="my-2 overflow-hidden rounded border border-gray-6">
                     <DynamicExampleCodeMirror />
                 </div>
                 <ColorSchemePicker scheme={codeColorScheme} onChange={setCodeColorScheme} />

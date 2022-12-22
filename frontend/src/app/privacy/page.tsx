@@ -1,15 +1,15 @@
 import Link from "next/link"
 
-const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-8 dark:text-gray-1"
+const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11"
 const link = "text-blue-5 hover:underline"
 
 export default function Page() {
     return <main className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-8 dark:text-white md:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">
             Privacy policy
         </h1>
 
-        <p className="my-4 text-sm text-gray-6">
+        <p className="mt-2 mb-6 text-sm text-gray-11">
             Last updated January 13th 2022
         </p>
 
@@ -44,7 +44,7 @@ export default function Page() {
             All site measurement is carried out absolutely anonymously and in aggregate only.
             Analytics data collected is limited to:
         </p>
-        <ul className="mt-2 mb-6 px-4 dark:text-gray-6">
+        <ul className="mt-2 mb-6 px-4 text-sm text-gray-11">
             <li className="my-1">Page URL</li>
             <li className="my-1">HTTP Referer</li>
             <li className="my-1">Browser and operating system (using User-Agent HTTP header, which is discarded)</li>

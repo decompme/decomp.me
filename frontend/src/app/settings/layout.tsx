@@ -8,7 +8,7 @@ export default function Layout({
   children: React.ReactNode
 }) {
     return <div className="mx-auto flex w-full max-w-screen-lg flex-col lg:flex-row">
-        <aside className="mx-auto w-full max-w-screen-md border-b border-gray-3 p-1 dark:border-gray-8 lg:w-1/4 lg:border-b-0 lg:p-6">
+        <aside className="mx-auto w-full max-w-screen-md border-b border-gray-6 p-1 lg:w-1/4 lg:border-b-0 lg:p-6">
             <nav aria-label="Settings">
                 <ul className="flex flex-wrap gap-1 lg:flex-col">
                     <NavItem segment="account" label="Account" icon={<GearIcon />} />

@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
@@ -7,41 +5,55 @@ import { ArrowRightIcon } from "@primer/octicons-react"
 import Button from "@/components/Button"
 import GhostButton from "@/components/GhostButton"
 import GitHubLoginButton from "@/components/GitHubLoginButton"
-import { useStats, useThisUser } from "@/lib/api"
+import ScrollingPlatformIcons from "@/components/PlatformSelect/ScrollingPlatformIcons"
 
-export const SITE_DESCRIPTION = "decomp.me is a collaborative online space where you can contribute to ongoing decompilation projects."
+import SiteStats from "./SiteStats"
 
-/** Two-column component of a welcoming message and site stats. */
+export const SITE_DESCRIPTION = "A collaborative reverse-engineering platform for working on decompilation projects with others to learn about how your favorite games work."
+
 export default function WelcomeInfo() {
-    const stats = useStats()
-    const user = useThisUser()
-
-    return <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="grow">
-            <h1 className="text-2xl text-gray-8 dark:text-gray-2">
-                Welcome to <span className="font-semibold">decomp.me</span>
+    return <div className="relative overflow-x-hidden p-2">
+        <div className="absolute top-14 -z-10 hidden w-full opacity-80 sm:block">
+            <div className="flex">
+                <ScrollingPlatformIcons />
+                <ScrollingPlatformIcons />
+            </div>
+            <div
+                className="absolute top-0 h-full w-full"
+                style={{
+                    // Gradient to only show icons in the middle
+                    background: "linear-gradient(to right, transparent, hsl(var(--color-mauve1)) 40%, hsl(var(--color-mauve1)) 60%, transparent)",
+                }}
+            />
+        </div>
+        <div className="text-center text-lg">
+            <h1
+                className="!md:leading-[0.8] mx-auto w-full max-w-lg text-4xl font-extrabold text-gray-12 md:max-w-3xl md:text-6xl"
+                style={{
+                    // Shadow to make text more readable on the background
+                    textShadow: "0 1px 0.3rem hsl(var(--color-mauve10) / 0.4)",
+                }}
+            >
+                Collaboratively decompile code in your browser.
             </h1>
-            <p className="max-w-md py-3 text-base leading-tight text-gray-6 dark:text-gray-5">
+            <p className="mx-auto my-6 w-full max-w-screen-sm leading-tight text-gray-11">
                 {SITE_DESCRIPTION}
             </p>
-            <div className="flex items-center gap-2 text-sm">
-                {user?.is_anonymous && <GitHubLoginButton popup />}
+            <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
                 <Link href="/new">
                     <Button primary>
                         Start decomping
                         <ArrowRightIcon />
                     </Button>
                 </Link>
+                <GitHubLoginButton popup />
                 <GhostButton href="/projects">
                     Browse projects
                 </GhostButton>
             </div>
+            <div className="my-6 hidden sm:block">
+                <SiteStats />
+            </div>
         </div>
-        {stats && <p className="text-sm text-gray-6 sm:self-center">
-            {stats.scratch_count.toLocaleString()} scratches created<br />
-            {stats.profile_count.toLocaleString()} unique visitors<br />
-            {stats.github_user_count.toLocaleString()} users signed up<br />
-            {stats.asm_count.toLocaleString()} asm globs submitted
-        </p>}
     </div>
 }

@@ -65,7 +65,7 @@ export default function Page() {
                 You can try again by clicking the button below.
             </p>
             <GitHubLoginButton popup={false} />
-        </div> : code ? <div className="flex items-center justify-center gap-4 py-8 text-2xl font-medium text-black dark:text-white">
+        </div> : code ? <div className="flex items-center justify-center gap-4 py-8 text-2xl font-medium text-gray-12">
             <LoadingSpinner width={32} className="animate-spin" />
             Signing in...
         </div> : <div>

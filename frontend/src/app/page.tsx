@@ -1,30 +1,26 @@
-import classNames from "classnames"
-
 import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
 import YourScratchList from "@/components/YourScratchList"
 
-import styles from "./page.module.scss"
 import SetPageTitle from "./SetPageTitle"
 import WelcomeInfo from "./WelcomeInfo"
 
 export default function Page() {
-    return <main className={styles.container}>
+    return <main>
         <SetPageTitle title="" />
-        <div className={styles.padl} />
-        <div className={styles.padr} />
-        <header className={classNames(styles.about, "p-4")}>
+        <header className="w-full py-16">
             <WelcomeInfo />
         </header>
-        <section className={styles.activity}>
-            <h2>Recently updated</h2>
-            <ScratchList url="/scratch?page_size=30" className={styles.scratchList} />
-        </section>
-        <section className={styles.projects}>
-            <h2>Your scratches</h2>
-            <YourScratchList
-                className={styles.yourScratchList}
-                item={SingleLineScratchItem}
-            />
-        </section>
+        <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 p-8 md:flex-row">
+            <section className="md:w-1/2 lg:w-1/4">
+                <h2 className="mb-2 text-lg">Your scratches</h2>
+                <YourScratchList
+                    item={SingleLineScratchItem}
+                />
+            </section>
+            <section className="md:w-1/2 lg:w-3/4">
+                <h2 className="mb-2 text-lg">Recently updated</h2>
+                <ScratchList url="/scratch?page_size=30" />
+            </section>
+        </div>
     </main>
 }

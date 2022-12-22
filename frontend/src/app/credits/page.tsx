@@ -61,17 +61,17 @@ export default async function Page() {
 
     return <main>
         <div className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-8 dark:text-white md:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">
                 Credits
             </h1>
             <p className="py-4">
                 decomp.me is maintained by <Contributor contributor={maintainers[0]} /> and <Contributor contributor={maintainers[1]} />.
             </p>
-            <div className="my-4 border-y border-gray-2 dark:border-gray-8">
+            <div className="my-4 border-y border-gray-6">
                 <ContributorsList contributors={contributors} />
             </div>
             <div className="py-4">
-                <h3 className="text-lg font-medium tracking-tight text-gray-8 dark:text-gray-2 md:text-2xl">
+                <h3 className="text-lg font-medium tracking-tight text-gray-12 md:text-2xl">
                     Acknowledgements
                 </h3>
                 <p className="my-2">

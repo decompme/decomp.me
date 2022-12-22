@@ -34,8 +34,8 @@ export default function SliderField({ value, onChange, disabled, label, descript
             {label}
         </label>
 
-        <div className="mt-1 select-none text-gray-7 dark:text-gray-5">
-            <div className="inline-block w-1/6 text-gray-8 dark:text-gray-3">
+        <div className="mt-1 select-none text-gray-11">
+            <div className="inline-block w-1/6 font-medium">
                 <NumberInput
                     value={value}
                     onChange={newValue => onChange(clamp(newValue, min, max))}
@@ -44,7 +44,7 @@ export default function SliderField({ value, onChange, disabled, label, descript
                 {unit}
             </div>
 
-            <div className="inline-flex w-5/6 items-center gap-2 text-xs">
+            <div className="inline-flex w-5/6 items-center gap-2 text-xs text-gray-10">
                 {min}{unit}
                 <input
                     id={id}
@@ -61,6 +61,6 @@ export default function SliderField({ value, onChange, disabled, label, descript
             </div>
         </div>
 
-        {description && <div className="mt-1 text-sm text-gray-7 dark:text-gray-6">{description}</div>}
+        {description && <div className="mt-1 text-sm text-gray-11">{description}</div>}
     </div>
 }

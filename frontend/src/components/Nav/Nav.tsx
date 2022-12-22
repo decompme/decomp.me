@@ -1,6 +1,6 @@
 "use client" // FIXME: Nav should be server-side rendered
 
-import { useEffect, useReducer } from "react"
+import { useEffect, useReducer, ReactNode } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -16,11 +16,10 @@ import styles from "./Nav.module.scss"
 import Search from "./Search"
 
 export interface Props {
-    border?: boolean
-    children?: React.ReactNode
+    children?: ReactNode
 }
 
-export default function Nav({ border, children }: Props) {
+export default function Nav({ children }: Props) {
     const [isOpen, toggleOpen] = useReducer(isOpen => !isOpen, false)
     const toggleLabel = `${isOpen ? "Close" : "Open"} Global Navigation Menu`
     const router = useRouter()
@@ -46,8 +45,6 @@ export default function Nav({ border, children }: Props) {
         <nav
             className={classNames({
                 [styles.container]: true,
-                [styles.border]: border,
-                "border-black/10 dark:border-white/[0.06]": true,
             })}
             aria-labelledby="navtoggle"
             data-open={isOpen}
@@ -67,7 +64,7 @@ export default function Nav({ border, children }: Props) {
                     </button>
                 </li>
                 <li className={styles.headerItemSiteLogo}>
-                    <Link href="/" className="transition-colors hover:text-black active:translate-y-px dark:hover:text-white">
+                    <Link href="/" className="transition-colors hover:text-gray-12 active:translate-y-px">
                         <Logotype />
                     </Link>
                 </li>
@@ -77,7 +74,7 @@ export default function Nav({ border, children }: Props) {
                 {children
                     ? <li className={styles.customchildren}>{children}</li>
                     : <li className={styles.desktopLinks}>
-                        <ul className="flex w-full gap-2 text-sm text-black dark:text-gray-1">
+                        <ul className="flex w-full gap-2 text-sm">
                             <li className="ml-4">
                                 <Search />
                             </li>
@@ -88,7 +85,7 @@ export default function Nav({ border, children }: Props) {
                             <li>
                                 <GhostButton href="/projects">Projects</GhostButton>
                             </li>
-                            <div className="h-4 w-px bg-black/10 dark:bg-white/[0.06]" />
+                            <div className="h-4 w-px bg-gray-6" />
                             <li>
                                 <GhostButton href="/settings">Settings</GhostButton>
                             </li>
@@ -96,7 +93,7 @@ export default function Nav({ border, children }: Props) {
                     </li>
                 }
             </ul>
-            <div className={classNames(styles.menu, "bg-white dark:bg-gray-10")}>
+            <div className={classNames(styles.menu, "bg-gray-1")}>
                 <div className={styles.searchContainer}>
                     <Search className={styles.search} />
                 </div>

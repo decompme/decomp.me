@@ -23,7 +23,7 @@ export default function RootLayout({
             />
             <ThemeProvider />
         </head>
-        <body className="flex flex-col bg-white font-sans text-gray-7 subpixel-antialiased dark:bg-gray-10 dark:text-gray-4">
+        <body className="flex flex-col bg-gray-1 font-sans text-gray-12 subpixel-antialiased">
             <ErrorBoundary>
                 <Nav />
             </ErrorBoundary>

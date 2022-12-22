@@ -48,7 +48,7 @@ export default function ContributorsList({ contributors }: { contributors: Contr
 
     return <div className="py-4">
         <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-lg font-medium tracking-tight text-gray-8 dark:text-gray-2 md:text-2xl">
+            <h3 className="text-lg font-medium tracking-tight text-gray-12 md:text-2xl">
                 Contributors
             </h3>
             <GhostButton href="https://github.com/decompme/decomp.me/graphs/contributors">

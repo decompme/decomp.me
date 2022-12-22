@@ -17,7 +17,7 @@ export default function UserState() {
         </div>
         {user ? <div>
             <p>
-                {isAnonUser(user) ? "Appears as" : "Signed in as"} <UserMention user={user} />
+                {isAnonUser(user) ? "You appear as" : "Signed in as"} <UserMention user={user} />
             </p>
             <div className="flex items-center gap-2 pt-2">
                 {isAnonUser(user) && <GitHubLoginButton popup />}

@@ -22,7 +22,7 @@ export default function NavItem({ segment, label, icon }: Props) {
             href={`/settings/${segment}`}
             className={classNames({
                 "!px-3 py-2 block rounded-md": true,
-                "!text-black dark:!text-white bg-black/5 dark:bg-white/5 font-medium": isSelected,
+                "bg-gray-5 font-medium pointer-events-none": isSelected,
             })}
         >
             <span className="mr-2 opacity-50">{icon}</span>

@@ -116,7 +116,7 @@ function MountedSearch({ className }: { className?: string }) {
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
-                "rounded-md bg-black/0 text-sm dark:bg-white/0 placeholder-black dark:placeholder-gray-1 hover:bg-black/5 dark:hover:bg-white/5 focus:bg-black/5 dark:focus:bg-white/5 focus:placeholder-gray-6 dark:focus:placeholder-gray-5 transition-colors": true,
+                "rounded-md bg-transparent text-sm placeholder-current hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11 transition-colors": true,
             })}
             type="text"
             placeholder="Search scratches"

@@ -4,19 +4,20 @@ import GhostButton from "./GhostButton"
 import Logotype from "./Logotype"
 
 function Separator() {
-    return <div className="h-4 w-px bg-gray-5/20" />
+    return <div className="hidden h-4 w-px bg-gray-6 sm:inline-block" />
 }
 
 export default function Footer() {
-    return (
-        <footer className="mx-auto mt-32 w-full px-4 sm:px-6 lg:px-8">
-            <div className="border-t border-black/10 py-10 dark:border-white/[0.06]">
+    return <>
+        <div className="grow" />
+        <footer className="mx-auto mt-16 w-full px-4 sm:px-6 lg:px-8">
+            <div className="border-t border-gray-6 py-10">
                 <div className="flex items-center justify-center">
                     <Link href="/" >
                         <Logotype />
                     </Link>
                 </div>
-                <div className="mt-12 flex items-center justify-center gap-2 text-sm leading-6">
+                <div className="mt-4 flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">
                     <GhostButton href="/privacy">
                         Privacy policy
                     </GhostButton>
@@ -39,5 +40,5 @@ export default function Footer() {
                 </div>
             </div>
         </footer>
-    )
+    </>
 }

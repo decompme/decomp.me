@@ -130,10 +130,6 @@ $padding: 8px;
     border-bottom: 1px solid inherit;
 }
 
-.border .header {
-    @include border-bottom-no-layout-shift;
-}
-
 // Sidebar
 @media (min-width: 500px) {
     .container[data-open="true"] .header {

@@ -7,7 +7,7 @@ export type Props = {
 
 export default function Section({ title, children }: Props) {
     return <section className="mb-8">
-        <h2 className="border-b border-gray-2 py-1 text-2xl font-semibold dark:border-gray-8">{title}</h2>
+        <h2 className="border-b border-gray-6 py-1 text-2xl font-semibold">{title}</h2>
         <div className="pt-4">
             {children}
         </div>
