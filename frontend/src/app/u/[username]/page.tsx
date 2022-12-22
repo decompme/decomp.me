@@ -21,9 +21,7 @@ export default async function Page({ params }: { params: { username: string } })
         return notFound()
     }
 
-    // TODO: make username a GhostButton you can click to copy to clipboard
-
-    return <main className="mx-auto max-w-3xl p-4">
+    return <main className="mx-auto w-full max-w-3xl p-4">
         <SetPageTitle title={user.username} />
 
         <header className="mb-4 flex flex-col items-center gap-6 border-b border-black/10 py-4 dark:border-white/[0.06] md:flex-row">
