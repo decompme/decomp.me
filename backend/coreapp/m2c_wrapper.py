@@ -7,6 +7,7 @@ from m2c.src.main import parse_flags, run
 from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
+from coreapp.util import exception_on_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ class M2CWrapper:
         return f"{t_arch}-{t_compiler}"
 
     @staticmethod
+    @exception_on_timeout(timeout_seconds=5)
     def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
