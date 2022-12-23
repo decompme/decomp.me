@@ -4,7 +4,7 @@ import time
 
 import multiprocessing
 import functools
-import dill  # type: ignore
+import dill
 
 from typing import Tuple, TypeVar, Callable, Any, cast
 from queue import Queue

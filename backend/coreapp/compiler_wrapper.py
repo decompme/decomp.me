@@ -120,7 +120,7 @@ class CompilerWrapper:
 
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
-    @util.exception_on_timeout(timeout_seconds=5)
+    @util.exception_on_timeout(timeout_seconds=settings.COMPILATION_TIMEOUT_SECONDS)
     def compile_code(
         compiler: Compiler,
         compiler_flags: str,

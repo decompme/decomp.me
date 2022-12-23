@@ -4,6 +4,8 @@ import logging
 
 from m2c.src.main import parse_flags, run
 
+from django.conf import settings
+
 from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
@@ -38,7 +40,7 @@ class M2CWrapper:
         return f"{t_arch}-{t_compiler}"
 
     @staticmethod
-    @exception_on_timeout(timeout_seconds=5)
+    @exception_on_timeout(timeout_seconds=settings.DECOMPILATION_TIMEOUT_SECONDS)
     def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
