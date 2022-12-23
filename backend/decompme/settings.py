@@ -32,8 +32,8 @@ env = environ.Env(
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
     COMPILATION_CACHE_SIZE=(int, 100),
     WINEPREFIX=(str, "/tmp/wine"),
-    COMPILATION_TIMEOUT_SECONDS=(int, 20),
-    DECOMPILATION_TIMEOUT_SECONDS=(int, 10),
+    COMPILATION_TIMEOUT_SECONDS=(int, 10),
+    DECOMPILATION_TIMEOUT_SECONDS=(int, 5),
 )
 
 for stem in [".env.local", ".env"]:
