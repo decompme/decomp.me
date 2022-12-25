@@ -1,10 +1,13 @@
 import hashlib
 import logging
 import time
+import dill
+
+import django
 
 import multiprocessing
 import functools
-import dill
+import platform
 
 from typing import Tuple, TypeVar, Callable, Any, cast
 from queue import Queue
@@ -27,6 +30,13 @@ F = TypeVar("F", bound=Callable[..., Any])
 # Windows requires multiprocessing processes to be in top-level scope
 def worker(queue: Queue[Any], func: bytes, args: Any, kwargs: Any) -> Any:
     try:
+        if platform.system() == "Windows":
+            # Windows also uses spawn instead of fork.
+            # This means while on Linux we inherit a clone of a fully set up environment,
+            # on Windows, we have to explicity reinitalize the bare minimum
+            # (i.e. the django app registry)
+            django.setup()
+
         ret = dill.loads(func)(*args, **kwargs)
         queue.put(ret)
     except Exception as e:
