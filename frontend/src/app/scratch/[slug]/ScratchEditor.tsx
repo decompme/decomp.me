@@ -1,64 +1,23 @@
+"use client"
+
 import { useState, useEffect } from "react"
-
-import { GetServerSideProps } from "next"
-
-import Head from "next/head"
 
 import useSWR from "swr"
 
-import PageTitle from "@/components/PageTitle"
-import { getScoreText } from "@/components/ScoreBadge"
 import Scratch from "@/components/Scratch"
 import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload"
+import SetPageTitle from "@/components/SetPageTitle"
 import * as api from "@/lib/api"
 
-import styles from "./[slug].module.scss"
+import styles from "./ScratchEditor.module.scss"
 
-function ScratchPageTitle({ scratch, compilation }: { scratch: api.Scratch, compilation: api.Compilation }) {
+function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     const isSaved = api.useIsScratchSaved(scratch)
 
-    let title = scratch.name || "Untitled scratch"
-    if (!isSaved)
-        title += " (unsaved)"
+    let title = isSaved ? "" : "(unsaved) "
+    title += scratch.name || scratch.slug
 
-    let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
-    if (scratch.owner)
-        description += `\nOwner: ${scratch.owner.username}`
-    if (scratch.description)
-        description += `\n\n${scratch.description}`
-
-    return <Head><PageTitle title={title} description={description} /></Head>
-}
-
-export const getServerSideProps: GetServerSideProps = async context => {
-    const { slug } = context.params
-
-    try {
-        const scratch: api.Scratch = await api.get(`/scratch/${slug}`)
-
-        let initialCompilation: api.Compilation | null = null
-        try {
-            initialCompilation = await api.get(`${scratch.url}/compile`)
-        } catch (err) {
-            if (err.status !== 400)
-                throw err
-
-            initialCompilation = null
-        }
-
-        return {
-            props: {
-                initialScratch: scratch,
-                parentScratch: scratch.parent ? await api.get(scratch.parent) : null,
-                initialCompilation,
-            },
-        }
-    } catch (error) {
-        console.log(error)
-        return {
-            notFound: true,
-        }
-    }
+    return <SetPageTitle title={title} />
 }
 
 export interface Props {
@@ -67,7 +26,7 @@ export interface Props {
     initialCompilation?: api.Compilation
 }
 
-export default function ScratchPage({ initialScratch, parentScratch, initialCompilation }: Props) {
+export default function ScratchEditor({ initialScratch, parentScratch, initialCompilation }: Props) {
     const [scratch, setScratch] = useState(initialScratch)
 
     useWarnBeforeScratchUnload(scratch)
@@ -98,7 +57,7 @@ export default function ScratchPage({ initialScratch, parentScratch, initialComp
     }, [])
 
     return <>
-        <ScratchPageTitle scratch={scratch} compilation={initialCompilation} />
+        <ScratchPageTitle scratch={scratch} />
         <main className={styles.container}>
             <Scratch
                 scratch={scratch}

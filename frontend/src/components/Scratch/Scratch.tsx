@@ -268,17 +268,21 @@ export default function Scratch({
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
         </ErrorBoundary>
-        <ScratchToolbar
-            compile={compile}
-            isCompiling={isCompiling}
-            scratch={scratch}
-            setScratch={setScratch}
-            setDecompilationTabEnabled={setDecompilationTabEnabled}
-        />
-        {layout && <CustomLayout
-            layout={layout}
-            onChange={setLayout}
-            renderTab={renderTab}
-        />}
+        <ErrorBoundary>
+            <ScratchToolbar
+                compile={compile}
+                isCompiling={isCompiling}
+                scratch={scratch}
+                setScratch={setScratch}
+                setDecompilationTabEnabled={setDecompilationTabEnabled}
+            />
+        </ErrorBoundary>
+        <ErrorBoundary>
+            {layout && <CustomLayout
+                layout={layout}
+                onChange={setLayout}
+                renderTab={renderTab}
+            />}
+        </ErrorBoundary>
     </div>
 }

@@ -111,6 +111,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
             }
         }
 
+        // FIXME in app: TypeError: can't access property "getBoundingClientRect", element is undefined
         return <resizer.Container
             vertical={layout.kind == "vertical"}
             style={{

@@ -1,4 +1,4 @@
-"use client" // FIXME: Nav should be server-side rendered
+"use client"
 
 import { useEffect, useReducer, ReactNode } from "react"
 

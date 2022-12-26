@@ -1,12 +1,12 @@
 import { headers } from "next/headers"
 
-export function isSSR(): boolean {
+export function isServer(): boolean {
     return typeof window === "undefined"
 }
 
 export function getUserAgent(): string {
-    if (isSSR()) {
-        return headers().get("user-agent") ?? ""
+    if (isServer()) {
+        return headers()?.get("user-agent") ?? ""
     } else {
         return navigator.userAgent
     }
@@ -15,7 +15,7 @@ export function getUserAgent(): string {
 export function isMacOS(): boolean {
     // Use User-Agent Client Hints API if supported
     // @ts-ignore
-    if (!isSSR() && navigator.userAgentData) {
+    if (!isServer() && navigator.userAgentData) {
         // @ts-ignore
         return navigator.userAgentData.platform == "macOS"
     }

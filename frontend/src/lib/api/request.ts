@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation"
+
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
 
 type Json = any
@@ -104,4 +106,13 @@ export async function delete_(url: string, json: Json) {
 
 export async function put(url: string, json: Json) {
     return await post(url, json, "PUT")
+}
+
+/** Pass to Promise.catch to bubble 404 errors to the router */
+export async function bubbleNotFound(error: any) {
+    if (error instanceof ResponseError && error.status === 404) {
+        notFound()
+    }
+
+    return Promise.reject(error)
 }
