@@ -1,43 +1,7 @@
-.container {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-
-    max-width: 50em;
-    padding: 1em;
-    margin: 0 auto;
-
-    cursor: default;
-}
-
 .rule {
     border: 0;
     background: var(--g300);
     height: 1px;
-}
-
-.heading {
-    padding: 1em;
-    user-select: text;
-    align-self: stretch;
-
-    .headingInner {
-        max-width: 47em;
-        margin: 0 auto;
-    }
-
-    h1 {
-        color: var(--g1900);
-        font-size: 1.5em;
-        font-weight: 500;
-    }
-
-    p {
-        padding-top: 4px;
-        color: var(--g1000);
-        font-size: 0.9em;
-        max-width: 50ch;
-    }
 }
 
 .label {

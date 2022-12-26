@@ -1,8 +1,7 @@
+"use client"
+
 import { useEffect, useState, useMemo, useReducer } from "react"
 
-import { GetStaticProps } from "next"
-
-import Head from "next/head"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -12,9 +11,6 @@ import AsyncButton from "@/components/AsyncButton"
 import { useCompilersForPlatform } from "@/components/compiler/compilers"
 import PresetSelect from "@/components/compiler/PresetSelect"
 import CodeMirror from "@/components/Editor/CodeMirror"
-import Footer from "@/components/Footer"
-import Nav from "@/components/Nav"
-import PageTitle from "@/components/PageTitle"
 import PlatformSelect from "@/components/PlatformSelect"
 import Select from "@/components/Select2"
 import * as api from "@/lib/api"
@@ -51,17 +47,7 @@ function getLabels(asm: string): string[] {
     return labels
 }
 
-export const getStaticProps: GetStaticProps = async _context => {
-    const data = await api.get("/compilers")
-
-    return {
-        props: {
-            serverCompilers: data,
-        },
-    }
-}
-
-export default function NewScratch({ serverCompilers }: {
+export default function NewScratchForm({ serverCompilers }: {
     serverCompilers: {
         platforms: {
             [id: string]: api.Platform
@@ -180,127 +166,111 @@ export default function NewScratch({ serverCompilers }: {
 
     const compilersTranslation = useTranslation("compilers")
 
-    return <>
-        <Head><PageTitle title="New scratch" /></Head>
-        <Nav />
-        <header className={styles.heading}>
-            <div className={styles.headingInner}>
-                <h1>Start a new scratch</h1>
-                <p>
-                A scratch is a playground where you can work on matching
-                a given target function using any compiler options you like.
-                </p>
-            </div>
-        </header>
-        <main>
-            <div className={styles.container}>
+    return <form>
+        <div>
+            <p className={styles.label}>
+                Platform
+            </p>
+            <PlatformSelect
+                platforms={serverCompilers.platforms}
+                value={platform}
+                onChange={a => setPlatform(a)}
+            />
+        </div>
+
+        <div>
+            <p className={styles.label}>
+                Compiler
+            </p>
+            <div className={styles.compilerContainer}>
                 <div>
-                    <p className={styles.label}>
-                        Platform
-                    </p>
-                    <PlatformSelect
-                        platforms={serverCompilers.platforms}
-                        value={platform}
-                        onChange={a => setPlatform(a)}
+                    <span className={styles.compilerChoiceHeading}>Select a compiler</span>
+                    <Select
+                        className={styles.compilerChoiceSelect}
+                        options={Object.keys(platformCompilers).reduce((sum, id) => {
+                            return {
+                                ...sum,
+                                [id]: compilersTranslation.t(id),
+                            }
+                        }, {})}
+                        value={compilerId}
+                        onChange={c => {
+                            setCompiler(c)
+                            setCompilerFlags("")
+                            setDiffFlags([])
+                        }}
                     />
                 </div>
-
+                <div className={styles.compilerChoiceOr}>or</div>
                 <div>
-                    <p className={styles.label}>
-                        Compiler
-                    </p>
-                    <div className={styles.compilerContainer}>
-                        <div>
-                            <span className={styles.compilerChoiceHeading}>Select a compiler</span>
-                            <Select
-                                className={styles.compilerChoiceSelect}
-                                options={Object.keys(platformCompilers).reduce((sum, id) => {
-                                    return {
-                                        ...sum,
-                                        [id]: compilersTranslation.t(id),
-                                    }
-                                }, {})}
-                                value={compilerId}
-                                onChange={c => {
-                                    setCompiler(c)
-                                    setCompilerFlags("")
-                                    setDiffFlags([])
-                                }}
-                            />
-                        </div>
-                        <div className={styles.compilerChoiceOr}>or</div>
-                        <div>
-                            <span className={styles.compilerChoiceHeading}>Select a preset</span>
-                            <PresetSelect
-                                className={styles.compilerChoiceSelect}
-                                platform={platform}
-                                presetName={presetName}
-                                setPreset={setPreset}
-                                serverPresets={platform && serverCompilers.platforms[platform].presets}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <hr className={styles.rule} />
-
-                <div>
-                    <label className={styles.label} htmlFor="label">
-                        Diff label <small>(asm label from which the diff will begin)</small>
-                    </label>
-                    <input
-                        name="label"
-                        type="text"
-                        value={label}
-                        placeholder={defaultLabel}
-                        onChange={e => setLabel((e.target as HTMLInputElement).value)}
-                        className={styles.textInput}
-                        autoCorrect="off"
-                        autoCapitalize="off"
-                        spellCheck="false"
+                    <span className={styles.compilerChoiceHeading}>Select a preset</span>
+                    <PresetSelect
+                        className={styles.compilerChoiceSelect}
+                        platform={platform}
+                        presetName={presetName}
+                        setPreset={setPreset}
+                        serverPresets={platform && serverCompilers.platforms[platform].presets}
                     />
-                </div>
-                <div className={styles.editorContainer}>
-                    <p className={styles.label}>Target assembly <small>(required)</small></p>
-                    <CodeMirror
-                        className={styles.editor}
-                        value={asm}
-                        valueVersion={valueVersion}
-                        onChange={setAsm}
-                        extensions={basicSetup}
-                    />
-                </div>
-                <div className={styles.editorContainer}>
-                    <p className={styles.label}>
-                        Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
-                    </p>
-                    <CodeMirror
-                        className={styles.editor}
-                        value={context}
-                        valueVersion={valueVersion}
-                        onChange={setContext}
-                        extensions={[basicSetup, cpp()]}
-                    />
-                </div>
-
-                <hr className={styles.rule} />
-
-                <div>
-                    <AsyncButton
-                        primary
-                        disabled={asm.length == 0}
-                        onClick={submit}
-                        errorPlacement="right-center"
-                    >
-                        Create scratch
-                    </AsyncButton>
-                    <p className={styles.privacyNotice}>
-                        decomp.me will store any data you submit and link it to your session.<br />
-                        For more information, see our <Link href="/privacy">privacy policy</Link>.
-                    </p>
                 </div>
             </div>
-        </main>
-        <Footer />
-    </>
+        </div>
+
+        <hr className={styles.rule} />
+
+        <div>
+            <label className={styles.label} htmlFor="label">
+                Diff label <small>(asm label from which the diff will begin)</small>
+            </label>
+            <input
+                name="label"
+                type="text"
+                value={label}
+                placeholder={defaultLabel}
+                onChange={e => setLabel((e.target as HTMLInputElement).value)}
+                className={styles.textInput}
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+            />
+        </div>
+        <div className={styles.editorContainer}>
+            <p className={styles.label}>Target assembly <small>(required)</small></p>
+            <CodeMirror
+                className={styles.editor}
+                value={asm}
+                valueVersion={valueVersion}
+                onChange={setAsm}
+                extensions={basicSetup}
+            />
+        </div>
+        <div className={styles.editorContainer}>
+            <p className={styles.label}>
+                Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
+            </p>
+            <CodeMirror
+                className={styles.editor}
+                value={context}
+                valueVersion={valueVersion}
+                onChange={setContext}
+                extensions={[basicSetup, cpp()]}
+            />
+        </div>
+
+        <hr className={styles.rule} />
+
+        <div>
+            <AsyncButton
+                primary
+                disabled={asm.length == 0}
+                onClick={submit}
+                errorPlacement="right-center"
+            >
+                Create scratch
+            </AsyncButton>
+            <p className={styles.privacyNotice}>
+                decomp.me will store any data you submit and link it to your session.<br />
+                For more information, see our <Link href="/privacy">privacy policy</Link>.
+            </p>
+        </div>
+    </form>
 }
