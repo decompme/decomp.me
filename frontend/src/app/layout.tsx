@@ -1,12 +1,8 @@
 import PlausibleProvider from "next-plausible"
 
-import ErrorBoundary from "@/components/ErrorBoundary"
-import Footer from "@/components/Footer"
-import Nav from "@/components/Nav"
-
 import ThemeProvider from "./ThemeProvider"
 
-import "../pages/_app.scss"
+import "@/pages/_app.scss" // TODO: move to sibling global.scss
 
 export default function RootLayout({
     children,
@@ -15,6 +11,17 @@ export default function RootLayout({
 }) {
     return <html lang="en" className="dark">
         <head>
+            <meta charSet="utf-8" />
+
+            <meta name="theme-color" content="#282e31" />
+            <meta name="viewport" content="width=device-width" />
+            <meta name="darkreader-lock" />
+
+            <link rel="manifest" href="/manifest.json" />
+
+            <link rel="shortcut icon" href="/purplefrog.svg" />
+            <link rel="apple-touch-icon" href="/purplefrog-bg-180.png" />
+
             <PlausibleProvider
                 domain="decomp.me"
                 customDomain="https://stats.decomp.me"
@@ -24,13 +31,7 @@ export default function RootLayout({
             <ThemeProvider />
         </head>
         <body className="flex flex-col bg-gray-1 font-sans text-gray-12 subpixel-antialiased">
-            <ErrorBoundary>
-                <Nav />
-            </ErrorBoundary>
             {children}
-            <ErrorBoundary>
-                <Footer />
-            </ErrorBoundary>
         </body>
     </html>
 }

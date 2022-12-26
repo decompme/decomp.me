@@ -72,8 +72,13 @@
                 ],
                 "patterns": [
                     {
-                        "group": ["(\\.\\./)+/(lib|components|pages|app)"],
-                        "message": "Use absolute imports (@/path) instead."
+                        "group": [
+                            "\\.\\./components",
+                            "\\.\\./\\.\\./components",
+                            "\\.\\./\\.\\./\\.\\./components",
+                            "\\.\\./\\.\\./\\.\\./\\.\\./components"
+                        ],
+                        "message": "Use absolute imports (@/components/*) instead of parent imports."
                     }
                 ]
             }

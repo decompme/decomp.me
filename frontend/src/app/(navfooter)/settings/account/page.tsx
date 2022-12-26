@@ -1,4 +1,5 @@
-import SetPageTitle from "../../SetPageTitle"
+import SetPageTitle from "@/components/SetPageTitle"
+
 import Section from "../Section"
 
 import ProfileSection from "./ProfileSection"

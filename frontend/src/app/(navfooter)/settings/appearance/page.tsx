@@ -1,4 +1,4 @@
-import SetPageTitle from "../../SetPageTitle"
+import SetPageTitle from "@/components/SetPageTitle"
 
 import AppearanceSettings from "./AppearanceSettings"
 

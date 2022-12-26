@@ -1,7 +1,7 @@
 import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
+import SetPageTitle from "@/components/SetPageTitle"
 import YourScratchList from "@/components/YourScratchList"
 
-import SetPageTitle from "./SetPageTitle"
 import WelcomeInfo from "./WelcomeInfo"
 
 export default function Page() {
