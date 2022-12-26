@@ -1,5 +1,8 @@
 import Link from "next/link"
 
+import { MarkGithubIcon } from "@primer/octicons-react"
+
+import DiscordIcon from "./discord.svg"
 import GhostButton from "./GhostButton"
 import Logotype from "./Logotype"
 
@@ -22,20 +25,22 @@ export default function Footer() {
                         Privacy policy
                     </GhostButton>
                     <Separator />
-                    <GhostButton href="https://status.decomp.me">
-                        Status
-                    </GhostButton>
-                    <Separator />
-                    <GhostButton href="https://github.com/decompme/decomp.me">
-                        GitHub
-                    </GhostButton>
-                    <Separator />
-                    <GhostButton href="https://discord.gg/sutqNShRRs">
-                        Chat
-                    </GhostButton>
-                    <Separator />
                     <GhostButton href="/credits">
                         Credits
+                    </GhostButton>
+                    <Separator />
+                    <GhostButton href="https://github.com/decompme/decomp.me" className="flex items-center gap-1.5">
+                        <MarkGithubIcon className="h-4 w-4" />
+                        Source code
+                    </GhostButton>
+                    <Separator />
+                    <GhostButton href="https://discord.gg/sutqNShRRs" className="flex items-center gap-1.5">
+                        <DiscordIcon className="h-4 w-4" />
+                        Chatroom
+                    </GhostButton>
+                    <Separator />
+                    <GhostButton href="https://status.decomp.me">
+                        Status
                     </GhostButton>
                 </div>
             </div>
