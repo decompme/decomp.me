@@ -4,6 +4,8 @@ import logging
 
 from m2c.src.main import parse_flags, run
 
+from django.conf import settings
+
 from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
