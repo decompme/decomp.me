@@ -6,7 +6,12 @@ export function isServer(): boolean {
 
 export function getUserAgent(): string {
     if (isServer()) {
-        return headers()?.get("user-agent") ?? ""
+        try {
+            return headers().get("user-agent")
+        } catch (error) {
+            console.warn("Failed to get user-agent from headers:", error)
+            return ""
+        }
     } else {
         return navigator.userAgent
     }
