@@ -12,7 +12,7 @@ export interface Props {
 }
 
 export default function ThemePicker({ theme, onChange }: Props) {
-    const autoTheme = isPrefersColorSchemeDark() ? "light" : "dark"
+    const autoTheme = isPrefersColorSchemeDark() ? "dark" : "light"
 
     return <div className={styles.container}>
         <button className={styles.box} onClick={() => onChange("auto")} data-active={theme == "auto"}>
