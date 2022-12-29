@@ -1,6 +1,6 @@
 import { ReactElement } from "react"
 
-import * as resizer from "react-simple-resizer"
+import { Allotment } from "allotment"
 
 import Tabs, { Tab } from "./Tabs"
 
@@ -80,47 +80,23 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
                 onChange(clone)
             }
 
-            els.push(<resizer.Section
+            els.push(<Allotment.Pane
                 key={child.key}
-                defaultSize={child.size} // FIXME: this doesn't work?
-                onSizeChanged={size => setChild({ ...child, size })}
-                minSize={100}
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                }}
+                snap
             >
                 <CustomLayout
                     renderTab={renderTab}
                     layout={child}
                     onChange={setChild}
                 />
-            </resizer.Section>)
-
-            // Put a bar between each section
-            if (index != layout.children.length - 1) {
-                els.push(<resizer.Bar
-                    key={child.key + "__bar"}
-                    size={1}
-                    expandInteractiveArea={{ left: 2, right: 2 }}
-                    style={{
-                        background: "var(--g500)",
-                        zIndex: 1,
-                    }}
-                />)
-            }
+            </Allotment.Pane>)
         }
 
-        // FIXME in app: TypeError: can't access property "getBoundingClientRect", element is undefined
-        return <resizer.Container
+        return <Allotment
+            key={layout.kind} // Force remount when layout.kind changes
             vertical={layout.kind == "vertical"}
-            style={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-            }}
         >
             {els}
-        </resizer.Container>
+        </Allotment>
     }
 }

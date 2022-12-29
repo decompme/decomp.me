@@ -44,8 +44,8 @@ export default function AppearanceSettings() {
                     description="The font family to use for code. The first valid comma-separated value will be used."
                     value={monospaceFont ?? ""}
                     onChange={setMonospaceFont}
-                    placeholder="Menlo, Monaco, monospace"
-                    inputStyle={{ fontFamily: (monospaceFont ?? "Menlo, Monaco") + ", monospace" }}
+                    placeholder="ui-monospace"
+                    inputStyle={{ fontFamily: (monospaceFont ?? "ui-monospace") + ", monospace" }}
                 />
             </div>
 

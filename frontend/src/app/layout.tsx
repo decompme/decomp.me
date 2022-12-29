@@ -2,6 +2,7 @@ import PlausibleProvider from "next-plausible"
 
 import ThemeProvider from "./ThemeProvider"
 
+import "allotment/dist/style.css"
 import "@/pages/_app.scss" // TODO: move to sibling global.scss
 
 export default function RootLayout({

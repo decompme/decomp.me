@@ -3,7 +3,7 @@
     flex-direction: column;
 
     flex: 1;
-    height: 0;
+    height: 100%;
 
     &.vertical {
         height: auto;
@@ -151,9 +151,10 @@
 
 .tabPanel {
     flex: 1;
-    height: 0;
 
     display: none;
+
+    overflow: hidden;
 
     &.active {
         display: flex;

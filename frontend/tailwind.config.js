@@ -55,7 +55,11 @@ module.exports = {
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                mono: ["var(--monospace)", "ui-monospace", "monospace"],
+            },
+        },
         colors: {
             // Subset of Tailwind default colors
             transparent: "transparent",

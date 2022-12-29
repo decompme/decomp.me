@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 import useSWR from "swr"
 
@@ -8,8 +8,6 @@ import Scratch from "@/components/Scratch"
 import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload"
 import SetPageTitle from "@/components/SetPageTitle"
 import * as api from "@/lib/api"
-
-import styles from "./ScratchEditor.module.scss"
 
 function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     const isSaved = api.useIsScratchSaved(scratch)
@@ -48,17 +46,9 @@ export default function ScratchEditor({ initialScratch, parentScratch, initialCo
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
     }
 
-    // Disable page scrolling
-    useEffect(() => {
-        document.body.classList.add("no-scroll")
-        return () => {
-            document.body.classList.remove("no-scroll")
-        }
-    }, [])
-
     return <>
         <ScratchPageTitle scratch={scratch} />
-        <main className={styles.container}>
+        <main className="grow">
             <Scratch
                 scratch={scratch}
                 parentScratch={parentScratch}

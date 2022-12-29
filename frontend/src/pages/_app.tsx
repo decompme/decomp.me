@@ -46,7 +46,7 @@ export default function MyApp({ Component, pageProps }) {
     useEffect(() => {
         document.body.style.removeProperty("--monospace")
         if (monospaceFont) {
-            document.body.style.setProperty("--monospace", monospaceFont + ", monospace")
+            document.body.style.setProperty("--monospace", monospaceFont + ", ui-monospace, monospace")
         }
     }, [monospaceFont])
 
