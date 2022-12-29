@@ -1,8 +1,7 @@
 import { getCached } from "@/lib/api/request"
 
+import DESCRIPTION from "./description"
 import NewScratchForm from "./NewScratchForm"
-
-export const DESCRIPTION = "A scratch is a playground where you can work on matching a given target function using any compiler options you like."
 
 export default async function NewScratchPage() {
     const compilers = await getCached("/compilers")

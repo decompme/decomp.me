@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11"
-const link = "text-blue-5 hover:underline"
+const link = "text-blue-11 hover:underline active:translate-y-px"
 
 export default function Page() {
     return <main className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
