@@ -6,12 +6,13 @@ import GhostButton from "@/components/GhostButton"
 import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
 import SetPageTitle from "@/components/SetPageTitle"
 import UserAvatar from "@/components/user/UserAvatar"
-import * as api from "@/lib/api/server"
+import { get } from "@/lib/api/request"
+import { User } from "@/lib/api/types"
 
 export default async function Page({ params }: { params: { username: string } }) {
-    let user: api.User
+    let user: User
     try {
-        user = await api.get(`/users/${params.username}`)
+        user = await get(`/users/${params.username}`)
     } catch (error) {
         console.error(error)
     }

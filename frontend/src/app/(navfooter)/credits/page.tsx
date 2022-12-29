@@ -1,5 +1,6 @@
 import UserMention from "@/components/user/UserMention"
-import * as api from "@/lib/api/server"
+import { get } from "@/lib/api/request"
+import { User } from "@/lib/api/types"
 
 import ContributorsList, { getContributorUsernames, usernameToContributor } from "./ContributorsList"
 import LinkList from "./LinkList"
@@ -27,7 +28,7 @@ const ICON_SOURCES = {
 
 type Contributor = {
     type: "decompme"
-    user: api.User
+    user: User
 } | {
     type: "github"
     user: { login: string }
@@ -36,7 +37,7 @@ type Contributor = {
 async function getContributor(username: string): Promise<Contributor> {
     try {
         // Try and get decomp.me information if they have an account
-        const user: api.User = await api.get(`/users/${username}`)
+        const user: User = await get(`/users/${username}`)
         return {
             type: "decompme",
             user,

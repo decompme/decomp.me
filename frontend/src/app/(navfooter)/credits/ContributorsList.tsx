@@ -3,9 +3,10 @@ import { LinkExternalIcon } from "@primer/octicons-react"
 import GhostButton from "@/components/GhostButton"
 import UserAvatar from "@/components/user/UserAvatar"
 import UserMention, { GithubUser, getUserName } from "@/components/user/UserMention"
-import * as api from "@/lib/api/server"
+import { get } from "@/lib/api/request"
+import { User } from "@/lib/api/types"
 
-export type Contributor = api.User | GithubUser
+export type Contributor = User | GithubUser
 
 /** Gets the list of contributor usernames for the repo from GitHub. */
 export async function getContributorUsernames(): Promise<string[]> {
@@ -26,7 +27,7 @@ export async function getContributorUsernames(): Promise<string[]> {
 export async function usernameToContributor(username: string): Promise<Contributor> {
     try {
         // Try and get decomp.me information if they have an account
-        const user: api.User = await api.get(`/users/${username}`)
+        const user: User = await get(`/users/${username}`)
         return user
     } catch (error) {
         // Fall back to GitHub information
