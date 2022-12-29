@@ -26,7 +26,7 @@ export type Colors = Record<keyof typeof COLOR_NAMES, string>
 
 export const COLOR_SCHEME_PRESETS = {
     "Frog Dark": {
-        background: "#1c1c1c",
+        background: "#161618", // .dark .bg-gray-1
         cursor: "#ffffff",
         foreground: "#647a97",
         keyword: "#cf5dff",
@@ -77,7 +77,7 @@ export const COLOR_SCHEME_PRESETS = {
         preprocessor: "#ff79c6",
     },
     "Frog Light": {
-        background: "#f8f9fa",
+        background: "#fdfcfd", // .bg-gray-1
         cursor: "#000000",
         foreground: "#647a97",
         keyword: "#b12fe9",
