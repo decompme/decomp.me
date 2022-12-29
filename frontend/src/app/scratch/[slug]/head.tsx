@@ -1,7 +1,7 @@
 import PageTitle from "@/components/PageTitle"
 import { getScoreText } from "@/components/ScoreBadge"
 
-import { getScratchDetails } from "./page"
+import getScratchDetails from "./getScratchDetails"
 
 export default async function Head({ params }: { params: { slug: string }}) {
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
