@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 import django_filters
 from django.http import HttpResponse, QueryDict
+from django.conf import settings
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -18,6 +19,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
+from coreapp.util import exception_on_timeout
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
 from ..compilers import Language
@@ -59,13 +61,17 @@ def get_db_asm(request_asm: str) -> Asm:
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
-        return CompilerWrapper.compile_code(
+        return exception_on_timeout(settings.COMPILATION_TIMEOUT_SECONDS)(
+            CompilerWrapper.compile_code
+        )(
             compilers.from_id(scratch.compiler),
             scratch.compiler_flags,
             scratch.source_code,
             scratch.context,
             scratch.diff_label,
         )
+    except TimeoutError as e:
+        return CompilationResult(b"", str(e))
     except CompilationError as e:
         return CompilationResult(b"", str(e))
 
