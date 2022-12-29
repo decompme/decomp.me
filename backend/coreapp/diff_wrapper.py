@@ -122,10 +122,12 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
+        known_objdump_flags = ["-Mreg-names=32", "-Mno-aliases"]
         ret = []
 
-        if "-Mreg-names=32" in diff_flags:
-            ret.append("-Mreg-names=32")
+        for flag in known_objdump_flags:
+            if flag in diff_flags:
+                ret.append(flag)
 
         return ret
 
