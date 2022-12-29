@@ -165,11 +165,6 @@ export default function CreditsPage({ maintainers, contributors }: {
                                 Tiger-like-x by Althepal
                             </Link>
                         </li>
-                        <li>
-                            <Link href="https://thenounproject.com/browse/icons/term/christmas-hat/">
-                                christmas hat by AS Design from Noun Project
-                            </Link>
-                        </li>
                     </ul>
                 </div>
             </div>
