@@ -8,19 +8,13 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = "^4.0.2"
-ansiwrap = "^0.8.4"
-colorama = "^0.4.4"
-cxxfilt = "^0.3.0"
 django-cors-headers = "^3.11.0"
 django-environ = "^0.8.1"
 django-filter = "^21.1"
 djangorestframework = "^3.13.1"
 mypy = "^0.931"
 psycopg2-binary = "^2.9.4"
-pycparser = "^2.21"
-python-Levenshtein = "^0.12.2"
 responses = "^0.18.0"
-watchdog = "^2.1.6"
 jwt = "^1.3.1"
 PyGithub = "^1.55"
 drf-extensions = "^0.7.1"
@@ -31,6 +25,8 @@ html-json-forms = "^1.1.1"
 django-resized = "^1.0.2"
 django-cleanup = "^6.0.0"
 dill = "^0.3.6"
+m2c = {git="https://github.com/matt-kempster/m2c.git"}
+asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
@@ -41,9 +37,10 @@ djangorestframework-stubs = "^1.4.0"
 types-requests = "^2.27.15"
 parameterized = "^0.8.1"
 
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-extend-exclude = '^/(m2c|asm_differ|local_files)/'
+extend-exclude = '^/(local_files)/'
