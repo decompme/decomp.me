@@ -55,8 +55,8 @@
             "error", {
                 "paths": [
                     {
-                        "name": "next/image",
-                        "message": "Use next/future/image instead."
+                        "name": "next/legacy/image",
+                        "message": "Use next/image instead."
                     }
                 ]
             }

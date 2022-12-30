@@ -19,48 +19,50 @@ import styles from "./projects.module.scss"
 function ProjectList({ initialPage }: { initialPage: api.Page<api.Project> }) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Project>("/projects", initialPage)
 
-    return <ul className={styles.projectList} aria-label="Project list">
-        {results.map(project => (
-            <li key={project.url}>
-                <div>
-                    <Link href={project.html_url}>
-                        <a className={styles.projectLink}>
+    return (
+        <ul className={styles.projectList} aria-label="Project list">
+            {results.map(project => (
+                <li key={project.url}>
+                    <div>
+                        <Link href={project.html_url} className={styles.projectLink}>
+
                             <ProjectIcon project={project} size={48} />
                             {project.slug}
-                        </a>
-                    </Link>
-                </div>
-                {project.description && <div className={styles.description}>
-                    {project.description}
-                </div>}
-                <div className={styles.metadata}>
-                    <div>
-                        Updated <TimeAgo date={project.repo.last_pulled} />
-                    </div>
-                    <div>
-                        {project.unmatched_function_count} functions
-                    </div>
-                    {project.platform && <div className={styles.platform}>
-                        <PlatformIcon platform={project.platform} size={16} />
-                        <PlatformName platform={project.platform} />
-                    </div>}
-                    <div>
-                        <Link href={project.repo.html_url}>
-                            <a className={styles.repo}>
-                                <MarkGithubIcon size={16} />
-                                {project.repo.owner}/{project.repo.repo}
-                            </a>
+
                         </Link>
                     </div>
-                </div>
-            </li>
-        ))}
-        {hasNext && <li className={styles.loadMoreLink}>
-            <button onClick={loadNext} data-is-loading={isLoading}>
-                {isLoading ? <Loading /> : "Show more"}
-            </button>
-        </li>}
-    </ul>
+                    {project.description && <div className={styles.description}>
+                        {project.description}
+                    </div>}
+                    <div className={styles.metadata}>
+                        <div>
+                            Updated <TimeAgo date={project.repo.last_pulled} />
+                        </div>
+                        <div>
+                            {project.unmatched_function_count} functions
+                        </div>
+                        {project.platform && <div className={styles.platform}>
+                            <PlatformIcon platform={project.platform} size={16} />
+                            <PlatformName platform={project.platform} />
+                        </div>}
+                        <div>
+                            <Link href={project.repo.html_url} className={styles.repo}>
+
+                                <MarkGithubIcon size={16} />
+                                {project.repo.owner}/{project.repo.repo}
+
+                            </Link>
+                        </div>
+                    </div>
+                </li>
+            ))}
+            {hasNext && <li className={styles.loadMoreLink}>
+                <button onClick={loadNext} data-is-loading={isLoading}>
+                    {isLoading ? <Loading /> : "Show more"}
+                </button>
+            </li>}
+        </ul>
+    )
 }
 
 export const getStaticProps: GetStaticProps = async _context => {

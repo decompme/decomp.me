@@ -115,12 +115,12 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                                 <ArrowRightIcon />
                             </AsyncButton>
                             {userAttempt && <Link href={userAttempt.html_url}>
-                                <a>
-                                    <Button primary>
-                                        Continue your attempt
-                                        <ArrowRightIcon />
-                                    </Button>
-                                </a>
+
+                                <Button primary>
+                                    Continue your attempt
+                                    <ArrowRightIcon />
+                                </Button>
+
                             </Link>}
                         </h2>
                         {attempts.length === 0 ? <div className={styles.noAttempts}>

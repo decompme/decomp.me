@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import List
 
-import asm_differ.diff as asm_differ
+import diff as asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
@@ -69,7 +69,7 @@ class DiffWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=asm_differ.JsonFormatter(arch_str=arch.name),
-            threeway=None,
+            diff_mode=asm_differ.DiffMode.NORMAL,
             base_shift=0,
             skip_lines=0,
             compress=None,
@@ -122,10 +122,12 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
+        known_objdump_flags = ["-Mreg-names=32", "-Mno-aliases"]
         ret = []
 
-        if "-Mreg-names=32" in diff_flags:
-            ret.append("-Mreg-names=32")
+        for flag in known_objdump_flags:
+            if flag in diff_flags:
+                ret.append(flag)
 
         return ret
 

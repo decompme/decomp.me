@@ -116,12 +116,12 @@ export default function CreditsPage({ maintainers, contributors }: {
                     <ul>
                         <li>
                             <Link href="https://github.com/simonlindholm/asm-differ">
-                                <a>simonlindholm/asm-differ</a>
+                                simonlindholm/asm-differ
                             </Link>
                         </li>
                         <li>
                             <Link href="https://github.com/matt-kempster/m2c">
-                                <a>matt-kempster/m2c</a>
+                                matt-kempster/m2c
                             </Link>
                         </li>
                     </ul>
@@ -137,32 +137,37 @@ export default function CreditsPage({ maintainers, contributors }: {
                         <li>Octicons by GitHub</li>
                         <li>
                             <Link href="https://github.com/file-icons/icons">
-                                <a>file-icons/icons</a>
+                                file-icons/icons
                             </Link>
                         </li>
                         <li>
                             <Link href="https://github.com/coreui/coreui-icons">
-                                <a>coreui/coreui-icons</a>
+                                coreui/coreui-icons
                             </Link>
                         </li>
                         <li>
                             <Link href="https://www.deviantart.com/maxigamer/art/FONT-New-Fontendo-23DSi-Lite-XL-DOWNLOAD-ZIP-552834059">
-                                <a>New Fontendo 23DSi Lite XL</a>
+                                New Fontendo 23DSi Lite XL
                             </Link>
                         </li>
                         <li>
                             <Link href="https://thenounproject.com/icon/gameboy-advanced-752507/">
-                                <a>GBA SVG by Andrew Vester from NounProject.com</a>
+                                GBA SVG by Andrew Vester from NounProject.com
                             </Link>
                         </li>
                         <li>
                             <Link href="https://commons.wikimedia.org/wiki/File:Happy_Mac.svg">
-                                <a>Happy Mac by NiloGlock</a>
+                                Happy Mac by NiloGlock
                             </Link>
                         </li>
                         <li>
                             <Link href="https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg">
-                                <a>Tiger-like-x by Althepal</a>
+                                Tiger-like-x by Althepal
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="https://thenounproject.com/browse/icons/term/christmas-hat/">
+                                christmas hat by AS Design from Noun Project
                             </Link>
                         </li>
                     </ul>

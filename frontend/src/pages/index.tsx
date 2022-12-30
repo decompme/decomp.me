@@ -44,12 +44,12 @@ export default function IndexPage() {
                             <div className={styles.cta}>
                                 {user?.is_anonymous && <GitHubLoginButton popup />}
                                 <Link href="/new">
-                                    <a>
-                                        <Button primary onClick={() => plausible("indexCtaPress")}>
-                                    Start decomping
-                                            <ArrowRightIcon />
-                                        </Button>
-                                    </a>
+
+                                    <Button primary onClick={() => plausible("indexCtaPress")}>
+                                Start decomping
+                                        <ArrowRightIcon />
+                                    </Button>
+
                                 </Link>
                             </div>
                         </div>

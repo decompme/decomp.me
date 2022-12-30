@@ -1098,6 +1098,11 @@ _all_presets = [
         MWCC_242_81,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline deferred,noauto -common on",
     ),
+    Preset(
+        "Luigi's Mansion",
+        MWCC_233_159,
+        "-lang=c++ -O4,p -nodefaults -fp hard -inline auto",
+    ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
