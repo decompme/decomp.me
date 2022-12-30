@@ -1046,12 +1046,12 @@ _all_presets = [
     Preset(
         "Xenoblade Chronicles (JP)",
         MWCC_43_151,
-        "-lang=c++ -Cpp_exceptions off -enum int -inline on -RTTI on -fp hard -str pool,readonly,reuse -O4,p -nodefaults -use_lmw_stmw on -func_align 4",
+        "-lang=c++ -O4,p -nodefaults -proc gecko -str pool,readonly,reuse -enum int -fp hard -RTTI on -ipa file -enc SJIS",
     ),
     Preset(
         "Xenoblade Chronicles (JP) (Wii SDK)",
         MWCC_43_151,
-        "-lang=c99 -enum int -inline auto -ipa file -proc gekko -fp hard -str pool -O4,p -nodefaults -func_align 16",
+        "-lang=c99 -O4,p -nodefaults  -proc gekko -inline auto -str pool -enum int -fp hard  -ipa file -func_align 16",
     ),
     Preset(
         "Mario Party 4",
