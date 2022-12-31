@@ -6,6 +6,17 @@ for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
 }
 
+const getEnvBool = (key, fallback=false) => {
+    const value = process.env[key]
+    if (value === "false" || value === "0" || value === "off") {
+        return false
+    }
+    if (value === "true" || value === "1" || value === "on") {
+        return true
+    }
+    return fallback
+}
+
 process.env.NEXT_PUBLIC_API_BASE = process.env.API_BASE
 process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
 let git_hash
@@ -21,7 +32,7 @@ const { withPlausibleProxy } = require("next-plausible")
 
 const withPWA = require("next-pwa")({
     dest: "public",
-    disable: process.env.FRONTEND_PWA !== "on",
+    disable: !getEnvBool("FRONTEND_PWA"),
 })
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
@@ -83,7 +94,7 @@ let app = withPlausibleProxy({
     },
     images: {
         domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
-        unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
+        unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
     },
     swcMinify: false,
     experimental: {
