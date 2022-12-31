@@ -1019,9 +1019,19 @@ _all_presets = [
         "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     ),
     Preset(
-        "Twilight Princess",
+        "Twilight Princess (DOL)",
         MWCC_247_108,
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
+    ),
+    Preset(
+        "Twilight Princess (REL)",
+        MWCC_247_108,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sdata 0 -sdata2 0",
+    ),
+    Preset(
+        "Twilight Princess (Dolphin)",
+        MWCC_233_163E,
+        "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
     Preset(
         "Super Paper Mario (DOL)",
