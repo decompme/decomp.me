@@ -1,4 +1,5 @@
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import Select from "../Select2"
 
 function presetsToOptions(presets: api.CompilerPreset[], addCustom: boolean): { [key: string]: string } {

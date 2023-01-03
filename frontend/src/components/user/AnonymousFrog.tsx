@@ -2,7 +2,8 @@ import { SVGProps } from "react"
 
 import classNames from "classnames"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import Frog from "../Nav/frog.svg"
 
 import styles from "./AnonymousFrog.module.scss"
@@ -19,5 +20,7 @@ export default function AnonymousFrogAvatar({ user, className, ...props }: Props
         "--accent-lightness": user.frog_color[2],
     }
 
-    return <Frog style={accentStyle} className={classNames(styles.anonymousFrog, className)} {...props}/>
+    return <div className={classNames(className, "rounded-full bg-gray-3 flex items-center justify-center aspect-square")}>
+        <Frog style={accentStyle} className={classNames(styles.anonymousFrog, "w-4/6 h-4/6")} {...props}/>
+    </div>
 }

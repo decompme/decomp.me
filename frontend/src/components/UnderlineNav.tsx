@@ -1,7 +1,7 @@
 import { ReactNode, useRef } from "react"
 
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { useRouter } from "next/router" // XXX: won't work in app dir
 
 import styles from "./UnderlineNav.module.scss"
 

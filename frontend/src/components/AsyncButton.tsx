@@ -1,3 +1,5 @@
+"use client"
+
 import { ReactNode, useState, useCallback } from "react"
 
 import classNames from "classnames"

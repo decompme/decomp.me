@@ -2,12 +2,14 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "css-modules"
+        "css-modules",
+        "tailwindcss"
     ],
     "extends": [
         "eslint:recommended",
         "next/core-web-vitals",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:tailwindcss/recommended"
     ],
     "rules": {
         "semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
@@ -58,6 +60,26 @@
                         "name": "next/legacy/image",
                         "message": "Use next/image instead."
                     }
+                    // TODO: enable these once we've migrated pages/ to app/
+                    /*{
+                        "name": "next/head",
+                        "message": "Use head.js instead."
+                    },
+                    {
+                        "name": "next/router",
+                        "message": "Use next/navigation instead."
+                    }*/
+                ],
+                "patterns": [
+                    {
+                        "group": [
+                            "\\.\\./components",
+                            "\\.\\./\\.\\./components",
+                            "\\.\\./\\.\\./\\.\\./components",
+                            "\\.\\./\\.\\./\\.\\./\\.\\./components"
+                        ],
+                        "message": "Use absolute imports (@/components/*) instead of parent imports."
+                    }
                 ]
             }
         ],
@@ -85,13 +107,19 @@
                         "pattern": "next/**",
                         "group": "builtin",
                         "position": "after"
+                    },
+                    {
+                        "pattern": "@/**",
+                        "group": "parent",
+                        "position": "before"
                     }
                 ],
                 "pathGroupsExcludedImportTypes": ["react"],
                 "alphabetize": { "order": "asc", "caseInsensitive": true }
             }
         ],
-        "import/no-unresolved": "error",
+        "import/no-unresolved": ["error", { "ignore": ["^@/"] }],
+        "import/no-extraneous-dependencies": "error",
         "import/export": "warn",
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
@@ -108,7 +136,7 @@
             }
         },
         {
-            "files": ["next.config.js"],
+            "files": ["*.js"],
             "rules": {
                 "@typescript-eslint/no-var-requires": "off",
                 "import/order": "off"

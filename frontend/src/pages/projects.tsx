@@ -1,18 +1,19 @@
 import { GetStaticProps } from "next"
 
+import Head from "next/head"
 import Link from "next/link"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
 import TimeAgo from "react-timeago"
 
-import Footer from "../components/Footer"
-import Loading from "../components/loading.svg"
-import Nav from "../components/Nav"
-import PageTitle from "../components/PageTitle"
-import PlatformIcon from "../components/PlatformSelect/PlatformIcon"
-import PlatformName from "../components/PlatformSelect/PlatformName"
-import ProjectIcon from "../components/ProjectIcon"
-import * as api from "../lib/api"
+import Footer from "@/components/Footer"
+import Loading from "@/components/loading.svg"
+import Nav from "@/components/Nav"
+import PageTitle from "@/components/PageTitle"
+import PlatformIcon from "@/components/PlatformSelect/PlatformIcon"
+import PlatformName from "@/components/PlatformSelect/PlatformName"
+import ProjectIcon from "@/components/ProjectIcon"
+import * as api from "@/lib/api"
 
 import styles from "./projects.module.scss"
 
@@ -78,7 +79,7 @@ export const getStaticProps: GetStaticProps = async _context => {
 
 export default function ProjectsPage({ initialPage }: { initialPage: api.Page<api.Project> }) {
     return <>
-        <PageTitle title="Projects" />
+        <Head><PageTitle title="Projects" /></Head>
         <Nav />
         <main>
             <header className={styles.header}>

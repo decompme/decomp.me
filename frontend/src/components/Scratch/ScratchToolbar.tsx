@@ -7,8 +7,9 @@ import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 import TimeAgo from "react-timeago"
 
-import * as api from "../../lib/api"
-import { useSize } from "../../lib/hooks"
+import * as api from "@/lib/api"
+import { useSize } from "@/lib/hooks"
+
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
 import ScratchIcon from "../ScratchIcon"
@@ -252,7 +253,7 @@ export default function ScratchToolbar(props: Props) {
     const [actionsLocation, InNavActions] = useActionsLocation()
 
     return <>
-        <Nav border={actionsLocation == ActionsLocation.IN_NAV}>
+        <Nav>
             <div className={styles.container}>
                 <Breadcrumbs className={styles.breadcrumbs} pages={[
                     scratch.owner && {
@@ -278,7 +279,7 @@ export default function ScratchToolbar(props: Props) {
                 <InNavActions {...props} />
             </div>
         </Nav>
-        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={styles.belowNavActionsContainer}>
+        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-b border-gray-6")}>
             <Actions {...props} />
         </div>}
     </>

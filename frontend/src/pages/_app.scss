@@ -1,18 +1,22 @@
 @use "./theme.scss" as theme;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
     --link: #58a6ff;
     --danger: #f00;
     --monospace: "Menlo", "Monaco", monospace;
     --font-ui: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Helvetica", "Arial", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-}
 
-.theme-dark {
-    @include theme.theme(#951fd9, #292f33);
-}
-
-.theme-light {
     @include theme.theme(#951fd9, #ffffff);
+}
+
+.dark {
+    @include theme.theme(#951fd9, #292f33);
+
+    // Dark native controls such as scrollbars
+    color-scheme: dark;
 }
 
 html {
@@ -42,7 +46,6 @@ body {
     color: var(--a800);
 
     line-height: 1.25;
-    user-select: none;
     position: relative;
 }
 
@@ -51,36 +54,12 @@ body {
     height: 100%;
 }
 
-body:not(.device-macos) {
-    scrollbar-color: #fff3 #fff1;
-    scrollbar-width: thin;
-
-    ::-webkit-scrollbar {
-        background-color: transparent;
-        width: 0.6rem;
-        height: 0.6rem;
-    }
-
-    ::-webkit-scrollbar-track,
-    ::-webkit-scrollbar-corner {
-        background-color: #fff1;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background-color: #fff3;
-    }
-
-    ::-webkit-scrollbar-button {
-        display: none;
-    }
-}
-
+// not used in app/ dir
 #__next {
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100vh;
-    //overflow-x: hidden;
     position: relative; // squashes react-laag warning
 }
 
@@ -88,18 +67,9 @@ body:not(.device-macos) {
     z-index: 999;
 }
 
-main {
+#__next > main {
     flex: 1;
     width: 100%;
-}
-
-main,
-footer {
-    background: var(--g200);
-}
-
-::selection {
-    background: var(--a100);
 }
 
 .routerProgressBar {

@@ -5,8 +5,8 @@ import Link from "next/link"
 import { ArrowRightIcon, GitPullRequestIcon, XIcon } from "@primer/octicons-react"
 import createPersistedState from "use-persisted-state"
 
-import * as api from "../lib/api"
-import { requestMissingScopes } from "../lib/oauth"
+import * as api from "@/lib/api"
+import { requestMissingScopes } from "@/lib/oauth"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"

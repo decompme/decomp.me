@@ -1,22 +1,24 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
-import { useRouter } from "next/router"
+import Head from "next/head"
+import { useSearchParams } from "next/navigation"
 
 import { RepoPullIcon } from "@primer/octicons-react"
 import { SWRConfig } from "swr"
 
-import AsyncButton from "../../components/AsyncButton"
-import ErrorBoundary from "../../components/ErrorBoundary"
-import Footer from "../../components/Footer"
-import LoadingSpinner from "../../components/loading.svg"
-import Nav from "../../components/Nav"
-import PageTitle from "../../components/PageTitle"
-import ProjectFunctionList from "../../components/ProjectFunctionList"
-import ProjectHeader from "../../components/ProjectHeader"
-import ProjectSettings from "../../components/ProjectSettings"
-import PrScratchBasket from "../../components/PrScratchBasket"
-import * as api from "../../lib/api"
-import useEntity from "../../lib/useEntity"
+import AsyncButton from "@/components/AsyncButton"
+import ErrorBoundary from "@/components/ErrorBoundary"
+import Footer from "@/components/Footer"
+import LoadingSpinner from "@/components/loading.svg"
+import Nav from "@/components/Nav"
+import PageTitle from "@/components/PageTitle"
+import ProjectFunctionList from "@/components/ProjectFunctionList"
+import ProjectHeader from "@/components/ProjectHeader"
+import ProjectSettings from "@/components/ProjectSettings"
+import PrScratchBasket from "@/components/PrScratchBasket"
+import * as api from "@/lib/api"
+import useEntity from "@/lib/useEntity"
+
 import Error404Page from "../404"
 
 import styles from "./[...project].module.scss"
@@ -77,7 +79,7 @@ export function Inner({ url, tab }: { url: string, tab: Tab }) {
     const userIsMember = api.useIsUserProjectMember(project)
 
     return <>
-        <PageTitle title={project.slug} description={project.description} />
+        <Head><PageTitle title={project.slug} description={project.description} /></Head>
         <Nav />
         <ProjectHeader project={project} tab={tab} />
         <PrScratchBasket project={project} />
@@ -108,8 +110,8 @@ export function Inner({ url, tab }: { url: string, tab: Tab }) {
 }
 
 export default function ProjectPage(props: { project: api.Project, fallback: any }) {
-    const router = useRouter()
-    const [, maybeTab, ...rest] = router.query.project as string[]
+    const searchParams = useSearchParams()
+    const [, maybeTab, ...rest] = searchParams.getAll("project") as string[]
     const tab = maybeTab ?? DEFAULT_TAB
 
     if (rest.length || !isValidTab(tab)) {

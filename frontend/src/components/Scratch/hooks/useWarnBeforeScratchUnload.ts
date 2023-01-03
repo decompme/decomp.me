@@ -1,5 +1,5 @@
-import * as api from "../../../lib/api"
-import { useWarnBeforeUnload } from "../../../lib/hooks"
+import * as api from "@/lib/api"
+import { useWarnBeforeUnload } from "@/lib/hooks"
 
 export default function useWarnBeforeScratchUnload(scratch: api.Scratch) {
     const userIsYou = api.useUserIsYou()

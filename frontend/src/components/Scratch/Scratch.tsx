@@ -3,11 +3,12 @@ import { useEffect, useReducer, useRef, useState } from "react"
 import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
 
-import * as api from "../../lib/api"
-import basicSetup from "../../lib/codemirror/basic-setup"
-import useCompareExtension from "../../lib/codemirror/useCompareExtension"
-import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import * as api from "@/lib/api"
+import basicSetup from "@/lib/codemirror/basic-setup"
+import useCompareExtension from "@/lib/codemirror/useCompareExtension"
+import { useSize } from "@/lib/hooks"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "@/lib/settings"
+
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -267,17 +268,21 @@ export default function Scratch({
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
         </ErrorBoundary>
-        <ScratchToolbar
-            compile={compile}
-            isCompiling={isCompiling}
-            scratch={scratch}
-            setScratch={setScratch}
-            setDecompilationTabEnabled={setDecompilationTabEnabled}
-        />
-        {layout && <CustomLayout
-            layout={layout}
-            onChange={setLayout}
-            renderTab={renderTab}
-        />}
+        <ErrorBoundary>
+            <ScratchToolbar
+                compile={compile}
+                isCompiling={isCompiling}
+                scratch={scratch}
+                setScratch={setScratch}
+                setDecompilationTabEnabled={setDecompilationTabEnabled}
+            />
+        </ErrorBoundary>
+        <ErrorBoundary>
+            {layout && <CustomLayout
+                layout={layout}
+                onChange={setLayout}
+                renderTab={renderTab}
+            />}
+        </ErrorBoundary>
     </div>
 }

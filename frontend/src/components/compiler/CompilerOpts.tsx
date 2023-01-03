@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react"
 
-import useTranslation from "next-translate/useTranslation"
+import * as api from "@/lib/api"
+import useTranslation from "@/lib/i18n/translate"
 
-import * as api from "../../lib/api"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
 import Select from "../Select" // TODO: use Select2
 
@@ -110,7 +110,7 @@ function Flags({ schema }: FlagsProps) {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
                     {flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                        compilersTranslation.t(flag.id + "." + f, null, { default: NO_TRANSLATION })
+                        compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
                     } />)}
                 </FlagSet>
             }
@@ -130,7 +130,7 @@ function DiffFlags({ schema }: FlagsProps) {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
                 return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
                     {flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
-                        compilersTranslation.t(flag.id + "." + f, null, { default: NO_TRANSLATION })
+                        compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
                     } />)}
                 </DiffFlagSet>
             }

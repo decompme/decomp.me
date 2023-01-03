@@ -1,30 +1,21 @@
-import Link from "next/link"
+import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
 
-import * as api from "../../lib/api"
+import GhostButton from "../GhostButton"
 
 import UserAvatar from "./UserAvatar"
-import styles from "./UserLink.module.scss"
-
-export function GitHubUserLink({ user }: { user: { login: string } }) {
-    return (
-        <Link href={`https://github.com/${user.login}`} className={styles.user}>
-
-            <span>{user.login}</span>
-
-        </Link>
-    )
-}
 
 export type Props = {
-    user: api.User | api.AnonymousUser
+    user: User | AnonymousUser
     showUsername?: boolean // default = true
 }
 
 export default function UserLink({ user, showUsername }: Props) {
-    const linkInner = <a className={styles.user}>
-        <UserAvatar user={user} />
-        {showUsername != false && <span>{user.username}</span>}
-    </a>
+    const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`
 
-    return api.isAnonUser(user) ? linkInner : <Link href={`/u/${user.username}`} legacyBehavior>{linkInner}</Link>
+    return <GhostButton href={url} className="rounded-full">
+        <UserAvatar user={user} className="mr-1 h-4 w-4 align-middle" />
+        {showUsername != false && <span>
+            {user.username}
+        </span>}
+    </GhostButton>
 }

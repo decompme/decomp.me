@@ -5,7 +5,7 @@ import Link from "next/link"
 import { RepoForkedIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import AsyncButton from "./AsyncButton"
 import styles from "./ProjectFunctionList.module.scss"

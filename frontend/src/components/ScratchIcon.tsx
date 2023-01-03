@@ -1,4 +1,4 @@
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import PlatformIcon from "./PlatformSelect/PlatformIcon"
 import ProjectIcon from "./ProjectIcon"

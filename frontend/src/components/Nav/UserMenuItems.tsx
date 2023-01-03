@@ -1,7 +1,7 @@
-import { usePlausible } from "next-plausible"
 import { mutate } from "swr"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import GitHubLoginButton from "../GitHubLoginButton"
 import { MenuItem, ButtonItem, LinkItem } from "../VerticalMenu"
 
@@ -9,7 +9,6 @@ import styles from "./UserMenuItems.module.scss"
 
 export default function UserMenuItems() {
     const user = api.useThisUser()
-    const plausible = usePlausible()
 
     if (api.isAnonUser(user)) {
         return <>
@@ -37,7 +36,6 @@ export default function UserMenuItems() {
         {user.is_admin && <LinkItem href={"/admin"}>Admin</LinkItem>}
         <ButtonItem
             onTrigger={async () => {
-                plausible("logout")
                 const user = await api.post("/user", {})
                 await mutate("/user", user)
             }}

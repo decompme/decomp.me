@@ -4,9 +4,10 @@ import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
-import * as api from "../../lib/api"
-import { decompileSetup } from "../../lib/codemirror/basic-setup"
-import useCompareExtension from "../../lib/codemirror/useCompareExtension"
+import * as api from "@/lib/api"
+import { decompileSetup } from "@/lib/codemirror/basic-setup"
+import useCompareExtension from "@/lib/codemirror/useCompareExtension"
+
 import CodeMirror from "../Editor/CodeMirror"
 import Loading from "../loading.svg"
 
