@@ -14,6 +14,9 @@
 
 .dark {
     @include theme.theme(#951fd9, #292f33);
+
+    // Dark native controls such as scrollbars
+    color-scheme: dark;
 }
 
 html {
