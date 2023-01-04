@@ -43,10 +43,14 @@ def worker(queue: Queue[Any], func: bytes, args: Any, kwargs: Any) -> Any:
         queue.put(e)
 
 
-def exception_on_timeout(timeout_seconds: float = 5) -> Callable[[F], F]:
+def exception_on_timeout(timeout_seconds: float) -> Callable[[F], F]:
     def timeout_inner(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # If the timeout is 0 or less, call the function directly without a timeout
+            if timeout_seconds <= 0:
+                return func(*args, **kwargs)
+
             queue: Queue[Any] = multiprocessing.Queue()
 
             # On Windows, multiprocessing uses pickle under the hood to serialize arguments
