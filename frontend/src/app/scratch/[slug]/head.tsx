@@ -10,7 +10,7 @@ export default async function Head({ params }: { params: { slug: string }}) {
     if (scratch.owner)
         description += `\nOwner: ${scratch.owner.username}`
     if (parentScratch)
-        description += `\nForked from: @${parentScratch.owner.username}/${parentScratch.name}`
+        description += `\nForked from: @${parentScratch.owner?.username ?? "?"}/${parentScratch.name}`
     if (scratch.description)
         description += `\n\n${scratch.description}`
 
