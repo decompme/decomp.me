@@ -15,5 +15,7 @@ export default function PageTitle({ title, description }: Props) {
         <meta property="og:site_name" content="decomp.me" />
         <meta property="og:title" content={title || ""} />
         <meta property="og:description" content={description || ""} />
+
+        <meta name="darkreader-lock" />
     </>
 }
