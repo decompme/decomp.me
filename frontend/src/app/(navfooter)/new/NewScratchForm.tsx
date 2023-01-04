@@ -166,7 +166,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const compilersTranslation = useTranslation("compilers")
 
-    return <form>
+    return <div>
         <div>
             <p className={styles.label}>
                 Platform
@@ -272,5 +272,5 @@ export default function NewScratchForm({ serverCompilers }: {
                 For more information, see our <Link href="/privacy">privacy policy</Link>.
             </p>
         </div>
-    </form>
+    </div>
 }
