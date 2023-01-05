@@ -11,7 +11,7 @@ export type Props = {
 
 export default function UserLink({ user, showUsername }: Props) {
     if (!user) {
-        return null
+        return <span>?</span>
     }
 
     const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`
