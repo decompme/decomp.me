@@ -19,6 +19,7 @@ import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
 import DecompilationPanel from "./DecompilePanel"
+import FamilyPanel from "./FamilyPanel"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -30,6 +31,7 @@ enum TabId {
     OPTIONS = "scratch_options",
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
+    FAMILY = "scratch_family",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -45,6 +47,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 activeTab: TabId.SOURCE_CODE,
                 tabs: [
                     TabId.ABOUT,
+                    TabId.FAMILY,
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
@@ -74,6 +77,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 activeTab: TabId.DIFF,
                 tabs: [
                     TabId.ABOUT,
+                    TabId.FAMILY,
                     TabId.DIFF,
                     TabId.DECOMPILATION,
                 ],
@@ -249,6 +253,10 @@ export default function Scratch({
                 </>}
             >
                 {() => <DecompilationPanel scratch={scratch} />}
+            </Tab>
+        case TabId.FAMILY:
+            return <Tab key={id} tabKey={id} label="Family">
+                {() => <FamilyPanel scratch={scratch} />}
             </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />

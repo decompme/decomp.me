@@ -41,22 +41,6 @@ function ScratchLink({ url }: { url: string }) {
     )
 }
 
-function FamilyField({ scratch }: { scratch: api.Scratch }) {
-    const { data } = useSWR<api.TerseScratch[]>(`/scratch/${scratch.slug}/family`, api.get)
-
-    return (
-        <div className={styles.horizontalField}>
-            <p className={styles.label}>Family</p>
-            {(data?.length ?? 1) == 1
-                ? "No family"
-                : <Link href={`/scratch/${scratch.slug}/family`}>
-                    {`${data.length} scratches`}
-                </Link>
-            }
-        </div>
-    )
-}
-
 export type Props = {
     scratch: api.Scratch
     setScratch?: (scratch: Partial<api.Scratch>) => void
@@ -81,7 +65,6 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                     <p className={styles.label}>Fork of</p>
                     <ScratchLink url={scratch.parent} />
                 </div>}
-                <FamilyField scratch={scratch} />
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Platform</p>
                     <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
