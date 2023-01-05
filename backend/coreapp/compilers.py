@@ -784,6 +784,9 @@ MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -
 # SPM Common flags
 SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
 
+# Rat Proto Common flags
+RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions off -schedule on -lang=c++ -char signed -str reuse,pool,readonly -fp fmadd -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off'
+
 _all_presets = [
     # GBA
     Preset(
@@ -1112,6 +1115,26 @@ _all_presets = [
         "Luigi's Mansion",
         MWCC_233_159,
         "-lang=c++ -O4,p -nodefaults -fp hard -inline auto",
+    ),
+    Preset(
+        "Ratatouille Prototype (Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DDEBUG -DRWDEBUG -opt peep, speed -sdata 20 -sdata2 20",
+    ),
+    Preset(
+        "Ratatouille Prototype (Release)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DRELEASE -opt level=4, peep, speed-sdata 24 -sdata2 24",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master w/ Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTERDEBUG -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
     ),
     # NDS
     Preset(
