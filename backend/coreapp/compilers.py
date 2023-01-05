@@ -1136,6 +1136,11 @@ _all_presets = [
         MWCC_247_108,
         f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
     ),
+    Preset(
+        "Ty the Tasmanian Tiger",
+        MWCC_242_81,
+        "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
+    ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
