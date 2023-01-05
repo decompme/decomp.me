@@ -91,7 +91,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                     </GhostButton>
                 </h2>
 
-                <div className="grow whitespace-pre-line px-3 py-2 font-mono text-xs leading-snug">
+                <div className="grow whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
                     <Ansi>{compilation.compiler_output}</Ansi>
                 </div>
             </Allotment.Pane>
