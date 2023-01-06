@@ -28,8 +28,9 @@ function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScra
         return (a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()
     case SortMode.SCORE:
         return (a, b) => {
-            const aScore = a.score == 0 ? Infinity : a.score
-            const bScore = b.score == 0 ? Infinity : b.score
+            // If not compiling, give it a score of Infinity so it's sorted to the end
+            const aScore = a.score < 0 ? Infinity : a.score
+            const bScore = b.score < 0 ? Infinity : b.score
 
             return aScore - bScore
         }
