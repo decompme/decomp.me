@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 
 import Link from "next/link"
 
+import classNames from "classnames"
 import useSWR from "swr"
 
 import Select from "@/components/Select2"
@@ -27,14 +28,16 @@ function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScra
     case SortMode.LAST_UPDATED:
         return (a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()
     case SortMode.SCORE:
-        return (a, b) => {
-            // If not compiling, give it a score of Infinity so it's sorted to the end
-            const aScore = a.score < 0 ? Infinity : a.score
-            const bScore = b.score < 0 ? Infinity : b.score
-
-            return aScore - bScore
-        }
+        return compareScratchScores
     }
+}
+
+function compareScratchScores(a: TerseScratch, b: TerseScratch) {
+    // If not compiling, give it a score of Infinity so it's sorted to the end
+    const aScore = a.score < 0 ? Infinity : a.score
+    const bScore = b.score < 0 ? Infinity : b.score
+
+    return aScore - bScore
 }
 
 function useFamily(scratch: TerseScratch) {
@@ -48,7 +51,15 @@ function useFamily(scratch: TerseScratch) {
     return { sorted, sortMode, setSortMode }
 }
 
-function FamilyMember({ scratch, isCurrent }: { scratch: TerseScratch, isCurrent: boolean }) {
+function FamilyMember({
+    scratch,
+    isCurrent,
+    isBetter,
+}: {
+    scratch: TerseScratch
+    isCurrent: boolean
+    isBetter: boolean
+}) {
     return <div className="flex">
         <UserLink user={scratch.owner} />
         <span className="mx-2 text-gray-8">/</span>
@@ -58,7 +69,7 @@ function FamilyMember({ scratch, isCurrent }: { scratch: TerseScratch, isCurrent
             {scratch.name}
         </Link>}
         <div className="grow" />
-        <div>
+        <div className={classNames({ "text-gray-11": !isBetter })}>
             {getScoreText(scratch.score, scratch.max_score)}
         </div>
     </div>
@@ -105,7 +116,11 @@ export default function SortableFamilyList({ scratch }: { scratch: TerseScratch 
         </div>
         <ol>
             {family.sorted.map(member => <li key={member.url} className="mb-1">
-                <FamilyMember scratch={member} isCurrent={member.url === scratch.url} />
+                <FamilyMember
+                    scratch={member}
+                    isCurrent={member.url === scratch.url}
+                    isBetter={compareScratchScores(member, scratch) < 0}
+                />
             </li>)}
         </ol>
     </div>
