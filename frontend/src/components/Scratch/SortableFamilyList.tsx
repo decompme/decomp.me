@@ -9,7 +9,7 @@ import Select from "@/components/Select2"
 import { get } from "@/lib/api/request"
 import { TerseScratch } from "@/lib/api/types"
 
-import { getScoreText } from "../ScoreBadge"
+import { getScoreAsFraction, getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
 
 enum SortMode {
@@ -69,7 +69,10 @@ function FamilyMember({
             {scratch.name}
         </Link>}
         <div className="grow" />
-        <div className={classNames({ "text-gray-11": !isBetter })}>
+        <div
+            title={getScoreAsFraction(scratch.score, scratch.max_score)}
+            className={classNames({ "text-gray-11": !isBetter })}
+        >
             {getScoreText(scratch.score, scratch.max_score)}
         </div>
     </div>
@@ -115,7 +118,7 @@ export default function SortableFamilyList({ scratch }: { scratch: TerseScratch 
             </div>
         </div>
         <ol>
-            {family.sorted.map(member => <li key={member.url} className="mb-1">
+            {family.sorted.map(member => <li key={member.url} className="mb-2">
                 <FamilyMember
                     scratch={member}
                     isCurrent={member.url === scratch.url}
