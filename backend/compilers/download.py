@@ -457,11 +457,9 @@ def download_ps1():
 
     compilers_path = COMPILERS_DIR / "psyq-compilers"
 
-    download_zip(
-        url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
-        dl_name="gcc2.6.3-mispel.zip",
-        dest_name="gcc2.6.3-mispel",
-        create_subdir=True,
+    download_tar(
+        url="https://github.com/Xeeynamo/wine-psyq/releases/download/psyq-binaries/psyq-msdos.tar.gz",
+        dest_name="psyq-msdos-compilers",
     )
 
     download_tar(
@@ -477,6 +475,8 @@ def download_ps1():
     )
 
     psyq_to_gcc = {
+        "3.3": "2.6.0",
+        "3.6": "2.6.3",
         "4.0": "2.7.2",
         "4.1": "2.7.2",
         "4.3": "2.8.1",
