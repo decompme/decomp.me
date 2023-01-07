@@ -847,7 +847,7 @@ _all_presets = [
     # PS1
     Preset(
         "Castlevania: Symphony of the Night",
-        PSYQ33,
+        PSYQ35,
         "-O2 -G0 -fsigned-char",
     ),
     Preset(
