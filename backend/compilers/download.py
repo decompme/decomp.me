@@ -479,12 +479,16 @@ def download_ps1():
         COMPILERS_DIR / "psyq-msdos-compilers/psyq3.3", COMPILERS_DIR / "psyq-compilers"
     )
     shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.5", COMPILERS_DIR / "psyq-compilers"
+    )
+    shutil.move(
         COMPILERS_DIR / "psyq-msdos-compilers/psyq3.6", COMPILERS_DIR / "psyq-compilers"
     )
     shutil.rmtree(COMPILERS_DIR / "psyq-msdos-compilers/")
 
     psyq_to_gcc = {
         "3.3": "2.6.0",
+        "3.5": "2.6.0",
         "3.6": "2.6.3",
         "4.0": "2.7.2",
         "4.1": "2.7.2",
