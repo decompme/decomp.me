@@ -474,6 +474,14 @@ def download_ps1():
         dest_path=compilers_path / "psyq",
     )
 
+    # transfer MS-DOS compilers into the same directory of their Win32 counterpart
+    shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.3", COMPILERS_DIR / "psyq-compilers"
+    )
+    shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.6", COMPILERS_DIR / "psyq-compilers"
+    )
+
     psyq_to_gcc = {
         "3.3": "2.6.0",
         "3.6": "2.6.3",
