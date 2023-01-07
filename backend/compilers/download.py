@@ -692,24 +692,24 @@ def main(args):
             os.environ.get(f"ENABLE_{platform.upper()}_SUPPORT", "YES").upper() != "NO"
         )
 
-    # if should_download("gba"):
-    #     download_gba()
-    # if should_download("macosx"):
-    #     download_ppc_darwin()
-    # if should_download("macos9"):
-    #     download_codewarrior()
-    # if should_download("n64"):
-    #     download_n64()
-    # if should_download("nds"):
-    #     download_nds()
+    if should_download("gba"):
+        download_gba()
+    if should_download("macosx"):
+        download_ppc_darwin()
+    if should_download("macos9"):
+        download_codewarrior()
+    if should_download("n64"):
+        download_n64()
+    if should_download("nds"):
+        download_nds()
     if should_download("ps1"):
         download_ps1()
-    # if should_download("switch"):
-    #     download_switch()
-    # if should_download("wii_gc"):
-    #     download_wii_gc()
-    # if should_download("n3ds"):
-    #     download_3ds()
+    if should_download("switch"):
+        download_switch()
+    if should_download("wii_gc"):
+        download_wii_gc()
+    if should_download("n3ds"):
+        download_3ds()
 
     print("Compilers finished downloading!")
 
