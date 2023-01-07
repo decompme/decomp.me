@@ -75,6 +75,8 @@
     "gcc-5026": "GCC 4.0.0 (Xcode 2.1) (C)",
     "gcc-5026-cpp": "GCC 4.0.0 (Xcode 2.1) (C++)",
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
+    "psyq3.3": "PSYQ3.3 (gcc 2.6.0)",
+    "psyq3.6": "PSYQ3.6 (gcc 2.6.3)",
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2)",
     "psyq4.1": "PSYQ4.1 (gcc 2.7.2)",
     "psyq4.3": "PSYQ4.3 (gcc 2.8.1)",

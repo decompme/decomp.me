@@ -50,7 +50,7 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
-  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.9 -
+    POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.9 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -61,16 +61,21 @@ ARG ENABLE_NDS_SUPPORT
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_WII_GC_SUPPORT
 RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        wine; \
+    wine; \
     fi
 
 # ps1 specifics
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     apt-get install -y dos2unix; \
+    # all the following is required to run the MS-DOS toolchain
+    apt-get install -y software-properties-common; \
+    add-apt-repository -y ppa:dosemu2/ppa; \
+    apt-get update; \
+    apt-get install -y dosemu2; \
     fi
 
 # gc/wii specifics
@@ -115,8 +120,8 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
