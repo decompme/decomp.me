@@ -271,8 +271,8 @@ PSYQ_MSDOS_CC = (
 )
 PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
 
-PSYQ33 = GCCPS1Compiler(
-    id="psyq3.3",
+PSYQ35 = GCCPS1Compiler(
+    id="psyq3.5",
     platform=PS1,
     cc=PSYQ_MSDOS_CC,
 )
@@ -716,7 +716,7 @@ _all_compilers: List[Compiler] = [
     CLANG_391,
     CLANG_401,
     # PS1
-    PSYQ33,
+    PSYQ35,
     PSYQ36,
     PSYQ40,
     PSYQ41,
