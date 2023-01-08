@@ -54,8 +54,13 @@ jobs:
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine
+          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine software-properties-common
           version: 1.0
+      - name: Install DOSEMU
+        run: |-
+          add-apt-repository -y ppa:dosemu2/ppa
+          apt-get update
+          apt-get install -y dosemu2
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
