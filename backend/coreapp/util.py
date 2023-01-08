@@ -9,6 +9,10 @@ import multiprocessing
 import functools
 import platform
 
+# For reasons of thread safety, guincorn refuses to let us join processes forked from a worker thread
+# To get around this, we opt to spawn a fresh process instead.
+mp = multiprocessing.get_context("spawn")
+
 from typing import Tuple, TypeVar, Callable, Any, cast
 from queue import Queue
 
@@ -30,12 +34,9 @@ F = TypeVar("F", bound=Callable[..., Any])
 # Windows requires multiprocessing processes to be in top-level scope
 def worker(queue: Queue[Any], func: bytes, args: Any, kwargs: Any) -> Any:
     try:
-        if platform.system() == "Windows":
-            # Windows also uses spawn instead of fork.
-            # This means while on Linux we inherit a clone of a fully set up environment,
-            # on Windows, we have to explicity reinitalize the bare minimum
-            # (i.e. the django app registry)
-            django.setup()
+        # As we're in a new, spawn'ed environment, we have to do the bare minimum initalization ourselved
+        # (i.e. the django app registry)
+        django.setup()
 
         ret = dill.loads(func)(*args, **kwargs)
         queue.put(ret)
@@ -51,12 +52,12 @@ def exception_on_timeout(timeout_seconds: float) -> Callable[[F], F]:
             if timeout_seconds <= 0:
                 return func(*args, **kwargs)
 
-            queue: Queue[Any] = multiprocessing.Queue()
+            queue: Queue[Any] = mp.Queue()
 
             # On Windows, multiprocessing uses pickle under the hood to serialize arguments
             # It doesn't play nicely with arbitary functions, so we explicitly use its
             # more versatile cousin (dill) to handle the serialization ourselves
-            p = multiprocessing.Process(
+            p = mp.Process(
                 target=worker, args=(queue, dill.dumps(func), args, kwargs)
             )
             p.start()
