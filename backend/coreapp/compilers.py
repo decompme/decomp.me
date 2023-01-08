@@ -265,7 +265,7 @@ CLANG_401 = ClangCompiler(
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > ${OUTPUT}c && cp ${COMPILER_DIR}/* . && '
-    + '(dosemu -quiet -dumb -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc" &&'
+    + '(dosemu -quiet -dumb -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") &&'
     + '(dosemu -quiet -dumb -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
     + '${COMPILER_DIR}/psyq-obj-parser "$OUTPUT"o -o "$OUTPUT"'
 )
