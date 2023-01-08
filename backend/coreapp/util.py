@@ -57,9 +57,7 @@ def exception_on_timeout(timeout_seconds: float) -> Callable[[F], F]:
             # On Windows, multiprocessing uses pickle under the hood to serialize arguments
             # It doesn't play nicely with arbitary functions, so we explicitly use its
             # more versatile cousin (dill) to handle the serialization ourselves
-            p = mp.Process(
-                target=worker, args=(queue, dill.dumps(func), args, kwargs)
-            )
+            p = mp.Process(target=worker, args=(queue, dill.dumps(func), args, kwargs))
             p.start()
             p.join(timeout_seconds)
 
