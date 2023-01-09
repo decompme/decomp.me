@@ -65,7 +65,7 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-    wine; \
+        wine; \
     fi
 
 # ps1 specifics
@@ -120,8 +120,8 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-      [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
-      [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
+       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
