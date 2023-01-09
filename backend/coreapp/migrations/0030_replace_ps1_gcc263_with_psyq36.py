@@ -14,7 +14,9 @@ def rename_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
     }
 
     Scratch = apps.get_model("coreapp", "Scratch")
-    for row in Scratch.objects.only("compiler").filter(compiler__endswith="-psyq"):
+    for row in Scratch.objects.only("compiler").filter(
+        compiler__endswith="gcc2.6.3-mipsel"
+    ):
         if row.compiler in compiler_map:
             row.compiler = compiler_map[row.compiler]
             row.save(update_fields=["compiler"])
