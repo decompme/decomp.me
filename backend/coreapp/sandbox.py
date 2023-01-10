@@ -117,7 +117,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             command = wrapper + args
 
         debug_env_str = " ".join(
-            f"{key}={shlex.quote(value)}" for key, value in env.items()
+            f"{key}={shlex.quote(value)}" for key, value in env.items() if key != "PATH"
         )
         logger.debug(f"Sandbox Command: {debug_env_str} {shlex.join(command)}")
         return subprocess.run(
