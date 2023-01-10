@@ -27,9 +27,11 @@ export function getScoreText(score: number, maxScore: number): string {
     if (score === -1) {
         return "No score available"
     } else if (score === 0) {
-        return "MATCH"
+        return "0 (100%) 🎊"
     } else {
-        return percentToString(calculateScorePercent(score, maxScore))
+        const percent = calculateScorePercent(score, maxScore)
+
+        return `${score} (${percentToString(percent)})`
     }
 }
 
