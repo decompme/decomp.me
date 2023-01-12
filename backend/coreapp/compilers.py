@@ -316,6 +316,14 @@ IDO53_IRIX = IDOCompiler(
     base_id="ido5.3",
 )
 
+IDO53PASCAL = IDOCompiler(
+    id="ido5.3Pascal",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+    language=Language.PASCAL,
+)
+
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
     platform=IRIX,
@@ -722,6 +730,7 @@ _all_compilers: List[Compiler] = [
     GCC281SNCXX,
     # IRIX
     IDO53_IRIX,
+    IDO53PASCAL,
     IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
@@ -949,6 +958,12 @@ _all_presets = [
         "IDO 5.3 libraries",
         IDO53_IRIX,
         "-KPIC -mips1 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 Pascal",
+        IDO53PASCAL,
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
