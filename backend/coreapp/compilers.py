@@ -21,6 +21,7 @@ from coreapp.flags import (
 from coreapp.platforms import (
     GBA,
     GC_WII,
+    IRIX,
     MACOS9,
     MACOSX,
     N3DS,
@@ -307,6 +308,29 @@ EE_GCC296 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+# IRIX
+IDO53_IRIX = IDOCompiler(
+    id="ido5.3_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+)
+
+IDO71_IRIX = IDOCompiler(
+    id="ido7.1_irix",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+)
+
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+    language=Language.PASCAL,
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
@@ -318,15 +342,6 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-)
-
-# Pascal IDO
-IDO71PASCAL = IDOCompiler(
-    id="ido7.1Pascal",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-    language=Language.PASCAL,
 )
 
 GCC272KMC = GCCCompiler(
@@ -357,7 +372,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_id="gcc2.8.1sn",
     platform=N64,
-    cc='cpp -E -undef -D__GNUC__=2 -v -lang-c++ -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
     '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
@@ -705,6 +720,9 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
+    # IRIX
+    IDO53_IRIX,
+    IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
@@ -765,6 +783,9 @@ MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -
 
 # SPM Common flags
 SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
+
+# Rat Proto Common flags
+RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions off -schedule on -lang=c++ -char signed -str reuse,pool,readonly -fp fmadd -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off'
 
 _all_presets = [
     # GBA
@@ -847,6 +868,7 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    Preset("Dr. Mario 64", GCC272KMC, "-O2 -mips3", diff_flags=["-Mreg-names=32"]),
     Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
     Preset(
         "Majora's Mask",
@@ -916,34 +938,41 @@ _all_presets = [
         "-O2 -g2 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
+    # IRIX
     Preset(
         "IDO 5.3 cc",
-        IDO53,
-        "-O1 -KPIC -mips1",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 5.3 libraries",
-        IDO53,
-        "-O2 -KPIC -mips1",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 cc",
-        IDO71,
-        "-O1 -KPIC -mips2",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 libraries",
-        IDO71,
-        "-O2 -KPIC -mips2",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 Pascal",
         IDO71PASCAL,
-        "-O2 -KPIC -mips2",
+        "-KPIC -mips2 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "7.1 N64 SDK",
+        IDO71_IRIX,
+        "-KPIC -mips2 -g -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
@@ -975,7 +1004,7 @@ _all_presets = [
     Preset(
         "Battle for Bikini Bottom",
         MWCC_247_92,
-        "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+        '-DMASTER -fp_contract on -RTTI off -nodefaults -Cpp_exceptions off -schedule on -opt level=4,peephole,speed -lang=c++ -char unsigned -str reuse,pool,readonly -fp hard -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off',
     ),
     Preset(
         "Mario Kart: Double Dash",
@@ -993,9 +1022,19 @@ _all_presets = [
         "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     ),
     Preset(
-        "Twilight Princess",
+        "Twilight Princess (DOL)",
         MWCC_247_108,
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
+    ),
+    Preset(
+        "Twilight Princess (REL)",
+        MWCC_247_108,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sdata 0 -sdata2 0",
+    ),
+    Preset(
+        "Twilight Princess (Dolphin)",
+        MWCC_233_163E,
+        "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
     Preset(
         "Super Paper Mario (DOL)",
@@ -1020,7 +1059,12 @@ _all_presets = [
     Preset(
         "Xenoblade Chronicles (JP)",
         MWCC_43_151,
-        "-lang=c++ -Cpp_exceptions off -enum int -inline on -RTTI off -fp hard -rostr -O4,p -nodefaults -use_lmw_stmw on -func_align 4",
+        "-lang=c++ -O4,p -nodefaults -proc gecko -str pool,readonly,reuse -enum int -fp hard -RTTI on -ipa file -enc SJIS",
+    ),
+    Preset(
+        "Xenoblade Chronicles (JP) (Wii SDK)",
+        MWCC_43_151,
+        "-lang=c99 -O4,p -nodefaults  -proc gekko -inline auto -str pool -enum int -fp hard  -ipa file -func_align 16",
     ),
     Preset(
         "Mario Party 4",
@@ -1066,6 +1110,41 @@ _all_presets = [
         "Metroid Prime (USA)",
         MWCC_242_81,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline deferred,noauto -common on",
+    ),
+    Preset(
+        "Luigi's Mansion",
+        MWCC_233_159,
+        "-lang=c++ -O4,p -nodefaults -fp hard -inline auto",
+    ),
+    Preset(
+        "Ratatouille Prototype (Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DDEBUG -DRWDEBUG -opt peep, speed -sdata 20 -sdata2 20",
+    ),
+    Preset(
+        "Ratatouille Prototype (Release)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DRELEASE -opt level=4, peep, speed-sdata 24 -sdata2 24",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master w/ Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTERDEBUG -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ty the Tasmanian Tiger",
+        MWCC_242_81,
+        "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
+    ),
+    Preset(
+        "Animal Crossing",
+        MWCC_242_81,
+        "-O4 -fp hard -sdata 0 -Cpp_exceptions off",
     ),
     # NDS
     Preset(

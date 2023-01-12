@@ -1,5 +1,5 @@
-import { ColorScheme, DARK_THEMES, getColors, LIGHT_THEMES } from "../lib/codemirror/color-scheme"
-import { useIsSiteThemeDark } from "../lib/settings"
+import { ColorScheme, DARK_THEMES, getColors, LIGHT_THEMES } from "@/lib/codemirror/color-scheme"
+import { useIsSiteThemeDark } from "@/lib/settings"
 
 import ColorSchemeEditor from "./ColorSchemeEditor"
 import styles from "./ColorSchemePicker.module.scss"

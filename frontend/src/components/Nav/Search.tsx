@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 
-import Image from "next/future/image"
-import { useRouter } from "next/router"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import { useCombobox } from "downshift"
-import { usePlausible } from "next-plausible"
 import { useLayer } from "react-laag"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
 import AnonymousFrogAvatar from "../user/AnonymousFrog"
@@ -23,7 +23,6 @@ function MountedSearch({ className }: { className?: string }) {
     const [isLoading, setIsLoading] = useState(false)
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>()
     const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([])
-    const plausible = usePlausible()
 
     const items = query.length > 0 ? searchItems : []
 
@@ -63,12 +62,10 @@ function MountedSearch({ className }: { className?: string }) {
                 const resp = await api.get(`/scratch?search=${inputValue}&page_size=5`)
                 setSearchItems(resp.results)
                 setIsLoading(false)
-                plausible("search", { props: { query: inputValue, numResults: resp.results.length } })
             }, 200))
         },
         onSelectedItemChange({ selectedItem }) {
             if (selectedItem) {
-                plausible("searchClickResult", { props: { query: query, result: selectedItem.html_url } })
                 console.info("<Search> onSelectedItemChange")
                 close()
                 router.push(selectedItem.html_url)
@@ -107,7 +104,6 @@ function MountedSearch({ className }: { className?: string }) {
                 evt.preventDefault()
 
                 if (searchItems.length > 0) {
-                    plausible("searchPressEnter")
                     console.info("<Search> Enter pressed")
                     close()
                     router.push(searchItems[0].html_url)
@@ -120,9 +116,10 @@ function MountedSearch({ className }: { className?: string }) {
             {...getInputProps(triggerProps)}
             className={classNames(styles.input, {
                 [styles.isOpen]: isOpen,
+                "rounded-md bg-transparent text-sm placeholder-current hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11 transition-colors": true,
             })}
             type="text"
-            placeholder="Search decomp.me"
+            placeholder="Search scratches"
             spellCheck={false}
             onFocus={() => setIsFocused(true)}
             onClick={() => setIsFocused(true)}
@@ -191,15 +188,7 @@ export default function Search({ className }: { className?: string }) {
     useEffect(() => setIsMounted(true), [])
 
     if (!isMounted) {
-        return <div className={classNames(styles.container, className)}>
-            <SearchIcon className={styles.icon} />
-            <input
-                className={styles.input}
-                type="search"
-                placeholder="Search decomp.me"
-                spellCheck={false}
-            />
-        </div>
+        return null
     }
 
     return <MountedSearch className={className} />

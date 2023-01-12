@@ -1,13 +1,14 @@
 import { useEffect, useReducer, useRef, useState } from "react"
 
-import { EditorView } from "@codemirror/basic-setup"
 import { cpp } from "@codemirror/lang-cpp"
+import { EditorView } from "@codemirror/view"
 
-import * as api from "../../lib/api"
-import basicSetup from "../../lib/codemirror/basic-setup"
-import useCompareExtension from "../../lib/codemirror/useCompareExtension"
-import { useSize } from "../../lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "../../lib/settings"
+import * as api from "@/lib/api"
+import basicSetup from "@/lib/codemirror/basic-setup"
+import useCompareExtension from "@/lib/codemirror/useCompareExtension"
+import { useSize } from "@/lib/hooks"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "@/lib/settings"
+
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
@@ -18,6 +19,7 @@ import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
 import DecompilationPanel from "./DecompilePanel"
+import FamilyPanel from "./FamilyPanel"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -29,6 +31,7 @@ enum TabId {
     OPTIONS = "scratch_options",
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
+    FAMILY = "scratch_family",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -44,6 +47,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 activeTab: TabId.SOURCE_CODE,
                 tabs: [
                     TabId.ABOUT,
+                    TabId.FAMILY,
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
@@ -73,6 +77,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 activeTab: TabId.DIFF,
                 tabs: [
                     TabId.ABOUT,
+                    TabId.FAMILY,
                     TabId.DIFF,
                     TabId.DECOMPILATION,
                 ],
@@ -226,7 +231,8 @@ export default function Scratch({
                     Compilation
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
-                        maxScore={compilation?.diff_output?.max_score ?? -1} />}
+                        maxScore={compilation?.diff_output?.max_score ?? -1}
+                        compiledSuccessfully={compilation?.success ?? false} />}
                 </>}
                 className={styles.diffTab}
             >
@@ -248,6 +254,10 @@ export default function Scratch({
             >
                 {() => <DecompilationPanel scratch={scratch} />}
             </Tab>
+        case TabId.FAMILY:
+            return <Tab key={id} tabKey={id} label="Family">
+                {() => <FamilyPanel scratch={scratch} />}
+            </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />
         }
@@ -266,17 +276,21 @@ export default function Scratch({
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
         </ErrorBoundary>
-        <ScratchToolbar
-            compile={compile}
-            isCompiling={isCompiling}
-            scratch={scratch}
-            setScratch={setScratch}
-            setDecompilationTabEnabled={setDecompilationTabEnabled}
-        />
-        {layout && <CustomLayout
-            layout={layout}
-            onChange={setLayout}
-            renderTab={renderTab}
-        />}
+        <ErrorBoundary>
+            <ScratchToolbar
+                compile={compile}
+                isCompiling={isCompiling}
+                scratch={scratch}
+                setScratch={setScratch}
+                setDecompilationTabEnabled={setDecompilationTabEnabled}
+            />
+        </ErrorBoundary>
+        <ErrorBoundary>
+            {layout && <CustomLayout
+                layout={layout}
+                onChange={setLayout}
+                renderTab={renderTab}
+            />}
+        </ErrorBoundary>
     </div>
 }

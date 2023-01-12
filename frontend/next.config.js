@@ -6,6 +6,17 @@ for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
 }
 
+const getEnvBool = (key, fallback=false) => {
+    const value = process.env[key]
+    if (value === "false" || value === "0" || value === "off") {
+        return false
+    }
+    if (value === "true" || value === "1" || value === "on") {
+        return true
+    }
+    return fallback
+}
+
 process.env.NEXT_PUBLIC_API_BASE = process.env.API_BASE
 process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
 let git_hash
@@ -21,19 +32,19 @@ const { withPlausibleProxy } = require("next-plausible")
 
 const withPWA = require("next-pwa")({
     dest: "public",
-    disable: process.env.NODE_ENV === "development",
+    disable: !getEnvBool("FRONTEND_PWA"),
 })
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
-const nextTranslate = require("next-translate")
+const { WebWorkerPlugin } = require("@shopify/web-worker/webpack")
 
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
 
 let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
-})(nextTranslate(removeImports(withPWA({
+})(removeImports(withPWA({
     async redirects() {
         return [
             {
@@ -48,7 +59,7 @@ let app = withPlausibleProxy({
             },
             {
                 source: "/settings",
-                destination: "/settings/appearance",
+                destination: "/settings/account",
                 permanent: false,
             },
         ]
@@ -76,15 +87,20 @@ let app = withPlausibleProxy({
             use: ["@svgr/webpack"],
         })
 
+        config.plugins.push(new WebWorkerPlugin())
+        config.output.globalObject = "self"
+
         return config
     },
     images: {
         domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
-        unoptimized: process.env.FRONTEND_USE_IMAGE_PROXY === "false",
+        unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
     },
     swcMinify: false,
-    experimental: {},
-}))))
+    experimental: {
+        appDir: true,
+    },
+})))
 
 if (process.env.ANALYZE == "true") {
     app = require("@next/bundle-analyzer")(app)

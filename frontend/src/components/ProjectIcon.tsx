@@ -1,9 +1,9 @@
-import Image from "next/future/image"
+import Image from "next/image"
 
 import { ProjectIcon as ProjectOcticon } from "@primer/octicons-react"
 import useSWR from "swr"
 
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 export type Props = {
     project: api.Project | string

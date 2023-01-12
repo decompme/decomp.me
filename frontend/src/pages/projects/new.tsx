@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useState } from "react"
 
+import Head from "next/head"
 import router from "next/router"
 
-import AsyncButton from "../../components/AsyncButton"
-import Footer from "../../components/Footer"
-import GitHubLoginButton from "../../components/GitHubLoginButton"
-import GitHubRepoPicker, { isValidIdentifierKey } from "../../components/GitHubRepoPicker"
-import ImageInput from "../../components/ImageInput"
-import Nav from "../../components/Nav"
-import PageTitle from "../../components/PageTitle"
-import StringInput from "../../components/StringInput"
-import * as api from "../../lib/api"
+import AsyncButton from "@/components/AsyncButton"
+import Footer from "@/components/Footer"
+import GitHubLoginButton from "@/components/GitHubLoginButton"
+import GitHubRepoPicker, { isValidIdentifierKey } from "@/components/GitHubRepoPicker"
+import ImageInput from "@/components/ImageInput"
+import Nav from "@/components/Nav"
+import PageTitle from "@/components/PageTitle"
+import StringInput from "@/components/StringInput"
+import * as api from "@/lib/api"
 
 import styles from "./new.module.scss"
 
@@ -63,7 +64,7 @@ export default function NewProjectPage() {
     const isSignedIn = user && !api.isAnonUser(user)
 
     return <>
-        <PageTitle title="New project" />
+        <Head><PageTitle title="New project" /></Head>
         <Nav />
         <main>
             <header className={styles.header}>

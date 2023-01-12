@@ -122,6 +122,77 @@ N64 = Platform(
 """,
 )
 
+IRIX = Platform(
+    id="irix",
+    name="IRIX",
+    description="MIPS (big-endian, PIC)",
+    arch="mips",
+    assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="mips-linux-gnu-objdump",
+    nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
+    \label:
+.endm
+
+.set noat
+.set noreorder
+.set gp=64
+
+
+# Float register aliases (o32 ABI)
+
+.set $fv0,          $f0
+.set $fv0f,         $f1
+.set $fv1,          $f2
+.set $fv1f,         $f3
+.set $ft0,          $f4
+.set $ft0f,         $f5
+.set $ft1,          $f6
+.set $ft1f,         $f7
+.set $ft2,          $f8
+.set $ft2f,         $f9
+.set $ft3,          $f10
+.set $ft3f,         $f11
+.set $fa0,          $f12
+.set $fa0f,         $f13
+.set $fa1,          $f14
+.set $fa1f,         $f15
+.set $ft4,          $f16
+.set $ft4f,         $f17
+.set $ft5,          $f18
+.set $ft5f,         $f19
+.set $fs0,          $f20
+.set $fs0f,         $f21
+.set $fs1,          $f22
+.set $fs1f,         $f23
+.set $fs2,          $f24
+.set $fs2f,         $f25
+.set $fs3,          $f26
+.set $fs3f,         $f27
+.set $fs4,          $f28
+.set $fs4f,         $f29
+.set $fs5,          $f30
+.set $fs5f,         $f31
+
+""",
+)
+
 PS1 = Platform(
     id="ps1",
     name="PlayStation",
@@ -130,6 +201,7 @@ PS1 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -155,6 +227,7 @@ PS2 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -528,6 +601,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
         "switch": SWITCH,
+        "irix": IRIX,
         "n64": N64,
         "ps1": PS1,
         "ps2": PS2,

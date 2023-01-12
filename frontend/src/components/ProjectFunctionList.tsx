@@ -5,34 +5,36 @@ import Link from "next/link"
 import { RepoForkedIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import AsyncButton from "./AsyncButton"
 import styles from "./ProjectFunctionList.module.scss"
 import SearchBox from "./SearchBox"
 
 function ProjectFunction({ func }: { func: api.ProjectFunction }) {
-    return <div className={styles.result}>
-        <div className={styles.header}>
-            <Link href={func.html_url}>
-                <a className={classNames(styles.link, styles.name)}>
+    return (
+        <div className={styles.result}>
+            <div className={styles.header}>
+                <Link href={func.html_url} className={classNames(styles.link, styles.name)}>
+
                     {func.display_name}
-                </a>
-            </Link>
-        </div>
-        <div className={styles.actions}>
-            <div>
-                {func.src_file}
+
+                </Link>
             </div>
-            <div>
-                <RepoForkedIcon />
-                {func.attempts_count === 1 ? "1 attempt" : `${func.attempts_count} attempts`}
+            <div className={styles.actions}>
+                <div>
+                    {func.src_file}
+                </div>
+                <div>
+                    <RepoForkedIcon />
+                    {func.attempts_count === 1 ? "1 attempt" : `${func.attempts_count} attempts`}
+                </div>
+                {/*<div>
+                    Added <TimeAgo date={func.creation_time} />
+                </div>*/}
             </div>
-            {/*<div>
-                Added <TimeAgo date={func.creation_time} />
-            </div>*/}
         </div>
-    </div>
+    )
 }
 
 export interface Props {

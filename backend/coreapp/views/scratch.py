@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 import django_filters
 from django.http import HttpResponse, QueryDict
+from django.conf import settings
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -18,6 +19,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
+from coreapp.util import exception_on_timeout
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
 from ..compilers import Language
@@ -58,24 +60,28 @@ def get_db_asm(request_asm: str) -> Asm:
 
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
-    return CompilerWrapper.compile_code(
-        compilers.from_id(scratch.compiler),
-        scratch.compiler_flags,
-        scratch.source_code,
-        scratch.context,
-        scratch.diff_label,
-    )
+    try:
+        return exception_on_timeout(settings.COMPILATION_TIMEOUT_SECONDS)(
+            CompilerWrapper.compile_code
+        )(
+            compilers.from_id(scratch.compiler),
+            scratch.compiler_flags,
+            scratch.source_code,
+            scratch.context,
+            scratch.diff_label,
+        )
+    except TimeoutError as e:
+        return CompilationResult(b"", str(e))
+    except CompilationError as e:
+        return CompilationResult(b"", str(e))
 
 
-def diff_compilation(
-    scratch: Scratch, compilation: CompilationResult, allow_target_only: bool = False
-) -> DiffResult:
+def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     return DiffWrapper.diff(
         scratch.target_assembly,
         platforms.from_id(scratch.platform),
         scratch.diff_label,
         bytes(compilation.elf_object),
-        allow_target_only=allow_target_only,
         diff_flags=scratch.diff_flags,
     )
 
@@ -109,7 +115,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     except Exception:
         try:
             # Attempt to process just the target asm so we can populate max_score
-            diff = diff_compilation(scratch, compilation, True)
+            diff = diff_compilation(scratch, compilation)
             update_scratch_score(scratch, diff)
         except Exception:
             pass
@@ -381,7 +387,9 @@ class ScratchViewSet(
         return Response(
             {
                 "diff_output": diff,
-                "errors": compilation.errors,
+                "compiler_output": compilation.errors,
+                "success": compilation.elf_object is not None
+                and len(compilation.elf_object) > 0,
             }
         )
 

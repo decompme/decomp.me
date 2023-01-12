@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
-import * as api from "../lib/api"
-import useEntity from "../lib/useEntity"
+import * as api from "@/lib/api"
+import useEntity from "@/lib/useEntity"
 
 import AsyncButton from "./AsyncButton"
 import FieldSet from "./FieldSet"
@@ -34,24 +34,26 @@ function ProjectIconForm({ project }: { project: api.Project }) {
 function ProjectDescriptionForm({ url }: { url: string }) {
     const [project, actions] = useEntity<api.Project>(url)
 
-    return <FieldSet
-        label="Description"
-        actions={<AsyncButton
-            primary
-            disabled={actions.isSaved}
-            onClick={actions.save}
+    return (
+        <FieldSet
+            label="Description"
+            actions={<AsyncButton
+                primary
+                disabled={actions.isSaved}
+                onClick={actions.save}
+            >
+                Save
+            </AsyncButton>}
         >
-            Save
-        </AsyncButton>}
-    >
-        <textarea
-            className={styles.descriptionTextarea}
-            value={project.description}
-            onChange={evt => actions.assign({ description: evt.currentTarget.value })}
-            maxLength={1000}
-            rows={(project.description.match(/\n/g)?.length ?? 0) + 1}
-        />
-    </FieldSet>
+            <textarea
+                className={styles.descriptionTextarea}
+                value={project.description}
+                onChange={evt => actions.assign({ description: evt.currentTarget.value })}
+                maxLength={1000}
+                rows={(project.description.match(/\n/g)?.length ?? 0) + 1}
+            />
+        </FieldSet>
+    )
 }
 
 export default function ProjectSettings({ project }: { project: api.Project }) {

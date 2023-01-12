@@ -20,3 +20,4 @@ sandbox/
 /frontend/public/sw.*
 /frontend/public/workbox-*
 .vscode/launch.json
+.vercel

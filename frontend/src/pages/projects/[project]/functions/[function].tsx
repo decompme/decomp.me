@@ -1,21 +1,22 @@
 import { GetStaticPaths, GetStaticProps } from "next"
 
+import Head from "next/head"
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { ArrowRightIcon, GitPullRequestIcon } from "@primer/octicons-react"
 
-import AsyncButton from "../../../../components/AsyncButton"
-import Breadcrumbs from "../../../../components/Breadcrumbs"
-import Button from "../../../../components/Button"
-import ErrorBoundary from "../../../../components/ErrorBoundary"
-import Footer from "../../../../components/Footer"
-import Nav from "../../../../components/Nav"
-import PageTitle from "../../../../components/PageTitle"
-import ProjectIcon from "../../../../components/ProjectIcon"
-import PrScratchBasket, { useBasket } from "../../../../components/PrScratchBasket"
-import { ScratchItem } from "../../../../components/ScratchList"
-import * as api from "../../../../lib/api"
+import AsyncButton from "@/components/AsyncButton"
+import Breadcrumbs from "@/components/Breadcrumbs"
+import Button from "@/components/Button"
+import ErrorBoundary from "@/components/ErrorBoundary"
+import Footer from "@/components/Footer"
+import Nav from "@/components/Nav"
+import PageTitle from "@/components/PageTitle"
+import ProjectIcon from "@/components/ProjectIcon"
+import PrScratchBasket, { useBasket } from "@/components/PrScratchBasket"
+import { ScratchItem } from "@/components/ScratchList"
+import * as api from "@/lib/api"
 
 import styles from "./[function].module.scss"
 
@@ -85,7 +86,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
     const basketHasThisFunc = basket.scratches.some(s => s.project_function == func.url)
 
     return <>
-        <PageTitle title={func.display_name} />
+        <Head><PageTitle title={func.display_name} /></Head>
         <Nav />
         <header className={styles.header}>
             <div className={styles.headerInner}>
@@ -115,12 +116,12 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                                 <ArrowRightIcon />
                             </AsyncButton>
                             {userAttempt && <Link href={userAttempt.html_url}>
-                                <a>
-                                    <Button primary>
-                                        Continue your attempt
-                                        <ArrowRightIcon />
-                                    </Button>
-                                </a>
+
+                                <Button primary>
+                                    Continue your attempt
+                                    <ArrowRightIcon />
+                                </Button>
+
                             </Link>}
                         </h2>
                         {attempts.length === 0 ? <div className={styles.noAttempts}>

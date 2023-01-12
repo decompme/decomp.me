@@ -2,7 +2,8 @@ import Link from "next/link"
 
 import useSWR from "swr"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
+
 import DismissableBanner from "../DismissableBanner"
 
 export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScratch }) {
