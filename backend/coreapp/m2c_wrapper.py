@@ -4,13 +4,9 @@ import logging
 
 from m2c.main import parse_flags, run
 
-from django.conf import settings
-
 from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
-
-from coreapp.util import exception_on_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +60,7 @@ class M2CWrapper:
 
             out_string = io.StringIO()
             with contextlib.redirect_stdout(out_string):
-                try:
-                    returncode = exception_on_timeout(
-                        settings.DECOMPILATION_TIMEOUT_SECONDS
-                    )(run)(options)
-                except TimeoutError as e:
-                    raise M2CError(str(e))
+                returncode = run(options)
 
             out_text = out_string.getvalue()
 

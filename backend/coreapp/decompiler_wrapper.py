@@ -6,6 +6,8 @@ from coreapp.compilers import Compiler
 
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.platforms import Platform
+from coreapp.util import exception_on_timeout
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,11 @@ class DecompilerWrapper:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
                 return "/* Too many lines to decompile; please run m2c manually */"
             try:
-                ret = M2CWrapper.decompile(asm, context, compiler, platform.arch)
+                ret = exception_on_timeout(settings.DECOMPILATION_TIMEOUT_SECONDS)(
+                    M2CWrapper.decompile
+                )(asm, context, compiler, platform.arch)
+            except TimeoutError as e:
+                ret = f"/* Timeout error while running m2c */\n{default_source_code}"
             except M2CError as e:
                 ret = f"{e}\n{default_source_code}"
             except Exception:
