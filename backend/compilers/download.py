@@ -21,7 +21,7 @@ class OS:
     system: str
     clang_package_name: str
     n64_gcc_os: str
-    ido_os: str
+    ido_pkg: str
 
 
 MACOS = OS(
@@ -29,14 +29,14 @@ MACOS = OS(
     system="darwin",
     clang_package_name="apple-darwin",
     n64_gcc_os="mac",
-    ido_os="macos",
+    ido_pkg="macos-latest",
 )
 LINUX = OS(
     name="Linux",
     system="linux",
     clang_package_name="linux-gnu-debian8",
     n64_gcc_os="linux",
-    ido_os="ubuntu",
+    ido_pkg="ubuntu-20.04",
 )
 
 oses: dict[str, OS] = {
@@ -369,7 +369,7 @@ def download_n64():
             print(f"ido{version} already exists, skipping")
         else:
             download_tar(
-                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.4/ido-{version}-recomp-{host_os.ido_os}-20.04.tar.gz",
+                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.4/ido-{version}-recomp-{host_os.ido_pkg}.tar.gz",
                 dest_name=f"ido{version}",
             )
 
