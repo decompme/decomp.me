@@ -14,7 +14,8 @@ from coreapp import compilers, platforms
 from coreapp.compilers import Compiler
 
 from coreapp.platforms import Platform
-from . import util
+import coreapp.util as util
+from coreapp.util import exception_on_timeout
 
 from .error import AssemblyError, CompilationError
 from .models.scratch import Asm, Assembly
@@ -163,7 +164,9 @@ class CompilerWrapper:
             # Run compiler
             try:
                 st = round(time.time() * 1000)
-                compile_proc = sandbox.run_subprocess(
+                compile_proc = exception_on_timeout(
+                    settings.COMPILATION_TIMEOUT_SECONDS
+                )(sandbox.run_subprocess)(
                     cc_cmd,
                     mounts=[compiler.path],
                     shell=True,
@@ -191,6 +194,8 @@ class CompilerWrapper:
             except ValueError as e:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
+                raise CompilationError(str(e))
+            except TimeoutError as e:
                 raise CompilationError(str(e))
 
             if not object_path.exists():
@@ -240,7 +245,9 @@ class CompilerWrapper:
 
             # Run assembler
             try:
-                assemble_proc = sandbox.run_subprocess(
+                assemble_proc = exception_on_timeout(settings.ASSEMBLY_TIMEOUT_SECONDS)(
+                    sandbox.run_subprocess
+                )(
                     platform.assemble_cmd,
                     mounts=[],
                     shell=True,
@@ -252,6 +259,8 @@ class CompilerWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
+            except TimeoutError as e:
+                raise AssemblyError(str(e))
 
             # Assembly failed
             if assemble_proc.returncode != 0:
