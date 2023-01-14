@@ -10,6 +10,8 @@ from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
 
+from coreapp.util import exception_on_timeout
+
 logger = logging.getLogger(__name__)
 
 
@@ -62,7 +64,13 @@ class M2CWrapper:
 
             out_string = io.StringIO()
             with contextlib.redirect_stdout(out_string):
-                returncode = run(options)
+                try:
+                    returncode = exception_on_timeout(
+                        settings.DECOMPILATION_TIMEOUT_SECONDS
+                    )(run)(options)
+                except TimeoutError as e:
+                    raise M2CError(str(e))
+
             out_text = out_string.getvalue()
 
             if returncode == 0:

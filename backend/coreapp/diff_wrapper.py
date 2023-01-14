@@ -8,6 +8,8 @@ import diff as asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
+from coreapp.util import exception_on_timeout
+from django.conf import settings
 
 from .compiler_wrapper import DiffResult, PATH
 
@@ -98,13 +100,17 @@ class DiffWrapper:
             raise NmError(f"No nm command for {platform.id}")
 
         try:
-            nm_proc = sandbox.run_subprocess(
+            nm_proc = exception_on_timeout(settings.OBJDUMP_TIMEOUT_SECONDS)(
+                sandbox.run_subprocess
+            )(
                 [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
                 shell=True,
                 env={
                     "PATH": PATH,
                 },
             )
+        except TimeoutError as e:
+            raise NmError(str(e))
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
 
@@ -159,7 +165,9 @@ class DiffWrapper:
 
             if platform.objdump_cmd:
                 try:
-                    objdump_proc = sandbox.run_subprocess(
+                    objdump_proc = exception_on_timeout(
+                        settings.OBJDUMP_TIMEOUT_SECONDS
+                    )(sandbox.run_subprocess)(
                         platform.objdump_cmd.split()
                         + flags
                         + [sandbox.rewrite_path(target_path)],
@@ -168,6 +176,8 @@ class DiffWrapper:
                             "PATH": PATH,
                         },
                     )
+                except TimeoutError as e:
+                    raise ObjdumpError(str(e))
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
             else:
