@@ -71,7 +71,6 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
 # ps1 specifics
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     apt-get install -y dos2unix && \
-    # all the following is required to run the MS-DOS toolchain
     apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:dosemu2/ppa && \
     apt-get update && \
