@@ -449,6 +449,17 @@ def download_n64():
             psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         )
 
+    # iQue
+    dest = COMPILERS_DIR / "egcs_1.1.2-4"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/AngheloAlf/egcs_1.1.2-4/releases/download/latest/egcs_1.1.2-4.tar.gz",
+            dest_name="egcs_1.1.2-4",
+        )
+
 
 def download_ps1():
     if host_os != LINUX:

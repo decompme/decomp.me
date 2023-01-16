@@ -387,9 +387,9 @@ GCC281SNCXX = GCCCompiler(
 )
 
 EGCS1124 = GCCCompiler(
-    id="EGCS 1.1.2-4",
+    id="egcs_1.1.2-4",
     platform=N64,
-    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -fno-PIC -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
