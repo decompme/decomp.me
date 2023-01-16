@@ -734,6 +734,7 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
+    EGCS1124,
     # IRIX
     IDO53_IRIX,
     IDO53PASCAL,
