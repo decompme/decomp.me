@@ -15,6 +15,7 @@
     "clang-4.0.1": "Clang 4.0.1",
     "dummy": "Dummy",
     "ee-gcc2.96": "EE GCC 2.96",
+    "egcs_1.1.2-4": "EGCS 1.1.2-4 (gcc egcs-2.91.66)",
     "gcc2.6.3-mipsel": "GCC 2.6.3 (mipsel)",
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
     "gcc2.7.2sn": "GCC 2.7.2 (SN)",
