@@ -523,7 +523,7 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)])  # type: ignore
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], skip_on_empty=True)  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
         """
         Ensure that we can run a simple compilation/diff for all available compilers
