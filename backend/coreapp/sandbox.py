@@ -98,6 +98,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         mounts: Optional[List[Path]] = None,
         env: Optional[Dict[str, str]] = None,
         shell: bool = False,
+        timeout: Optional[float] = None,
     ) -> subprocess.CompletedProcess[str]:
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}
@@ -129,4 +130,5 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            timeout=timeout,
         )

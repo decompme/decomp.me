@@ -33,6 +33,8 @@ from coreapp.platforms import (
     SWITCH,
 )
 
+import platform as platform_stdlib
+
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
@@ -166,6 +168,16 @@ def preset_from_name(name: str) -> Optional[Preset]:
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
+
+DUMMY_LONGRUNNING = DummyCompiler(
+    id="dummy_longrunning",
+    platform=platforms.DUMMY,
+    cc=(
+        "timeout 3600 /nobreak"
+        if platform_stdlib.system() == "Windows"
+        else "sleep 3600"
+    ),
+)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -699,6 +711,7 @@ MWCC_40_1051 = MWCCCompiler(
 
 _all_compilers: List[Compiler] = [
     DUMMY,
+    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,

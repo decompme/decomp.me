@@ -12,7 +12,7 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from coreapp.compilers import Language
+from coreapp.compilers import DummyCompiler, Language
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -523,7 +523,7 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @parameterized.expand(input=[(c,) for c in compilers.available_compilers()])  # type: ignore
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)])  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
         """
         Ensure that we can run a simple compilation/diff for all available compilers
@@ -554,6 +554,33 @@ nop
 
         self.assertTrue("rows" in diff)
         self.assertGreater(len(diff["rows"]), 0)
+
+    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
+    def test_compiler_timeout(self) -> None:
+        scratch_dict = {
+            "compiler": compilers.DUMMY_LONGRUNNING.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": "asm(AAAAAAAA)",
+        }
+
+        # Test that we can create a scratch
+        scratch = self.create_scratch(scratch_dict)
+
+        compile_dict = {
+            "slug": scratch.slug,
+            "compiler": compilers.DUMMY_LONGRUNNING.id,
+            "compiler_flags": "",
+            "source_code": "source(AAAAAAAA)",
+        }
+
+        # Test that we can compile a scratch
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
+        )
+
+        self.assertFalse(response.json()["success"])
+        self.assertIn("timeout expired", response.json()["compiler_output"].lower())
 
 
 class DecompilationTests(BaseTestCase):
