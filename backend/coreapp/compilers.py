@@ -101,6 +101,14 @@ class DummyCompiler(Compiler):
 
 
 @dataclass(frozen=True)
+class DummyLongRunningCompiler(Compiler):
+    flags: ClassVar[Flags] = []
+
+    def available(self) -> bool:
+        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
+
+
+@dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
 
@@ -169,14 +177,8 @@ def preset_from_name(name: str) -> Optional[Preset]:
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
 
-DUMMY_LONGRUNNING = DummyCompiler(
-    id="dummy_longrunning",
-    platform=platforms.DUMMY,
-    cc=(
-        "timeout 3600 /nobreak"
-        if platform_stdlib.system() == "Windows"
-        else "sleep 3600"
-    ),
+DUMMY_LONGRUNNING = DummyLongRunningCompiler(
+    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
 )
 
 # GBA
