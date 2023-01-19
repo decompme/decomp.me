@@ -557,30 +557,31 @@ nop
 
     @requiresCompiler(compilers.DUMMY_LONGRUNNING)
     def test_compiler_timeout(self) -> None:
-        scratch_dict = {
-            "compiler": compilers.DUMMY_LONGRUNNING.id,
-            "platform": platforms.DUMMY.id,
-            "context": "",
-            "target_asm": "asm(AAAAAAAA)",
-        }
+        with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
+            scratch_dict = {
+                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "asm(AAAAAAAA)",
+            }
 
-        # Test that we can create a scratch
-        scratch = self.create_scratch(scratch_dict)
+            # Test that we can create a scratch
+            scratch = self.create_scratch(scratch_dict)
 
-        compile_dict = {
-            "slug": scratch.slug,
-            "compiler": compilers.DUMMY_LONGRUNNING.id,
-            "compiler_flags": "",
-            "source_code": "source(AAAAAAAA)",
-        }
+            compile_dict = {
+                "slug": scratch.slug,
+                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "compiler_flags": "",
+                "source_code": "source(AAAAAAAA)",
+            }
 
-        # Test that we can compile a scratch
-        response = self.client.post(
-            reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
-        )
+            # Test that we can compile a scratch
+            response = self.client.post(
+                reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
+            )
 
-        self.assertFalse(response.json()["success"])
-        self.assertIn("timeout expired", response.json()["compiler_output"].lower())
+            self.assertFalse(response.json()["success"])
+            self.assertIn("timeout expired", response.json()["compiler_output"].lower())
 
 
 class DecompilationTests(BaseTestCase):
