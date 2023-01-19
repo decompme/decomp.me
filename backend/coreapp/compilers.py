@@ -101,9 +101,7 @@ class DummyCompiler(Compiler):
 
 
 @dataclass(frozen=True)
-class DummyLongRunningCompiler(Compiler):
-    flags: ClassVar[Flags] = []
-
+class DummyLongRunningCompiler(DummyCompiler):
     def available(self) -> bool:
         return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
 
