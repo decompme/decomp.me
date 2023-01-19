@@ -101,7 +101,6 @@ jobs:
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
           WINEPREFIX: /tmp/wine
-          TIMEOUT_SCALE_FACTOR: 10
 
       - name: Migrate backend
         run: cd backend && poetry run python3 ./manage.py migrate
@@ -145,7 +144,6 @@ jobs:
           poetry run python manage.py test
         env:
           SYSTEM_ENV: GITHUB_WORKFLOW
-          TIMEOUT_SCALE_FACTOR: 10
 
   backend_test_docker:
     name: backend tests (docker)
@@ -173,7 +171,6 @@ jobs:
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
-            -e TIMEOUT_SCALE_FACTOR=10 \
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
