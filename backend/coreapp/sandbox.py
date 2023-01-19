@@ -69,9 +69,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
-             "--rlimit_nofile", "soft",
-            "--rlimit_cpu", "30",  # seconds
-            "--time_limit", "30",  # seconds
+            "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "WINEDEBUG=-all",

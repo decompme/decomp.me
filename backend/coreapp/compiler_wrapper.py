@@ -165,7 +165,9 @@ class CompilerWrapper:
                 st = round(time.time() * 1000)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
-                    mounts=[compiler.path],
+                    mounts=(
+                        [compiler.path] if compiler.platform != platforms.DUMMY else []
+                    ),
                     shell=True,
                     env={
                         "PATH": PATH,
