@@ -13,6 +13,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from coreapp.compilers import DummyCompiler, Language
+from coreapp.sandbox import Sandbox
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -555,8 +556,11 @@ nop
         self.assertTrue("rows" in diff)
         self.assertGreater(len(diff["rows"]), 0)
 
+
+class TimeoutTests(BaseTestCase):
     @requiresCompiler(compilers.DUMMY_LONGRUNNING)
     def test_compiler_timeout(self) -> None:
+        # Test that a hanging compilation will fail with a timeout error
         with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
             scratch_dict = {
                 "compiler": compilers.DUMMY_LONGRUNNING.id,
@@ -565,7 +569,6 @@ nop
                 "target_asm": "asm(AAAAAAAA)",
             }
 
-            # Test that we can create a scratch
             scratch = self.create_scratch(scratch_dict)
 
             compile_dict = {
@@ -575,13 +578,25 @@ nop
                 "source_code": "source(AAAAAAAA)",
             }
 
-            # Test that we can compile a scratch
             response = self.client.post(
                 reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
             )
 
             self.assertFalse(response.json()["success"])
             self.assertIn("timeout expired", response.json()["compiler_output"].lower())
+
+    def test_zero_timeout(self) -> None:
+        # Tests that passing a timeout of zero to sandbox.run_subprocess will equate
+        # to disabling the timeout entirely
+        expected_output = "AAAAAAAA"
+
+        with Sandbox() as sandbox:
+            sandboxed_proc = sandbox.run_subprocess(
+                f"sleep 3 && echo {expected_output}", timeout=0, shell=True
+            )
+
+            self.assertEqual(sandboxed_proc.returncode, 0)
+            self.assertIn(expected_output, sandboxed_proc.stdout)
 
 
 class DecompilationTests(BaseTestCase):

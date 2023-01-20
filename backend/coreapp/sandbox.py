@@ -100,6 +100,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     ) -> subprocess.CompletedProcess[str]:
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}
+        timeout = None if timeout == 0 else timeout
 
         try:
             wrapper = self.sandbox_command(mounts, env)
