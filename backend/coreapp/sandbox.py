@@ -69,9 +69,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
-             "--rlimit_nofile", "soft",
-            "--rlimit_cpu", "30",  # seconds
-            "--time_limit", "30",  # seconds
+            "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
             "--env", "WINEDEBUG=-all",
@@ -98,9 +96,11 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         mounts: Optional[List[Path]] = None,
         env: Optional[Dict[str, str]] = None,
         shell: bool = False,
+        timeout: Optional[float] = None,
     ) -> subprocess.CompletedProcess[str]:
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}
+        timeout = None if timeout == 0 else timeout
 
         try:
             wrapper = self.sandbox_command(mounts, env)
@@ -129,4 +129,5 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            timeout=timeout,
         )

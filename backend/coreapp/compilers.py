@@ -33,6 +33,8 @@ from coreapp.platforms import (
     SWITCH,
 )
 
+import platform as platform_stdlib
+
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
@@ -96,6 +98,12 @@ class DummyCompiler(Compiler):
 
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
+
+
+@dataclass(frozen=True)
+class DummyLongRunningCompiler(DummyCompiler):
+    def available(self) -> bool:
+        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
 
 
 @dataclass(frozen=True)
@@ -166,6 +174,10 @@ def preset_from_name(name: str) -> Optional[Preset]:
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
+
+DUMMY_LONGRUNNING = DummyLongRunningCompiler(
+    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
+)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -699,6 +711,7 @@ MWCC_40_1051 = MWCCCompiler(
 
 _all_compilers: List[Compiler] = [
     DUMMY,
+    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,

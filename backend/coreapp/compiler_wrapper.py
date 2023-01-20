@@ -15,7 +15,6 @@ from coreapp.compilers import Compiler
 
 from coreapp.platforms import Platform
 import coreapp.util as util
-from coreapp.util import exception_on_timeout
 
 from .error import AssemblyError, CompilationError
 from .models.scratch import Asm, Assembly
@@ -164,11 +163,11 @@ class CompilerWrapper:
             # Run compiler
             try:
                 st = round(time.time() * 1000)
-                compile_proc = exception_on_timeout(
-                    settings.COMPILATION_TIMEOUT_SECONDS
-                )(sandbox.run_subprocess)(
+                compile_proc = sandbox.run_subprocess(
                     cc_cmd,
-                    mounts=[compiler.path],
+                    mounts=(
+                        [compiler.path] if compiler.platform != platforms.DUMMY else []
+                    ),
                     shell=True,
                     env={
                         "PATH": PATH,
@@ -182,6 +181,7 @@ class CompilerWrapper:
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                     },
+                    timeout=settings.COMPILATION_TIMEOUT_SECONDS,
                 )
                 et = round(time.time() * 1000)
                 logging.debug(f"Compilation finished in: {et - st} ms")
@@ -195,8 +195,8 @@ class CompilerWrapper:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
-            except TimeoutError as e:
-                raise CompilationError(str(e))
+            except subprocess.TimeoutExpired as e:
+                raise CompilationError("Compilation failed: timeout expired")
 
             if not object_path.exists():
                 error_msg = (
@@ -245,9 +245,7 @@ class CompilerWrapper:
 
             # Run assembler
             try:
-                assemble_proc = exception_on_timeout(settings.ASSEMBLY_TIMEOUT_SECONDS)(
-                    sandbox.run_subprocess
-                )(
+                assemble_proc = sandbox.run_subprocess(
                     platform.assemble_cmd,
                     mounts=[],
                     shell=True,
@@ -256,11 +254,12 @@ class CompilerWrapper:
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                     },
+                    timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
-            except TimeoutError as e:
-                raise AssemblyError(str(e))
+            except subprocess.TimeoutExpired as e:
+                raise AssemblyError("Timeout expired")
 
             # Assembly failed
             if assemble_proc.returncode != 0:
