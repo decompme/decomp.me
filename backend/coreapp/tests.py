@@ -585,6 +585,7 @@ class TimeoutTests(BaseTestCase):
             self.assertFalse(response.json()["success"])
             self.assertIn("timeout expired", response.json()["compiler_output"].lower())
 
+    @requiresCompiler(compilers.DUMMY_LONGRUNNING) # if we don't have DUMMY_LONGRUNNING, it means we'll be unable to use sandbox.run_subprocess
     def test_zero_timeout(self) -> None:
         # Tests that passing a timeout of zero to sandbox.run_subprocess will equate
         # to disabling the timeout entirely
