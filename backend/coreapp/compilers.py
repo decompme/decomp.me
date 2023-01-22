@@ -314,8 +314,20 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 # PS2
+EE_GCC29_990721 = GCCCompiler(
+    id="ee-gcc2.9-990721",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC32_040921 = GCCCompiler(
+    id="ee-gcc3.2-040921",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
@@ -738,7 +750,9 @@ _all_compilers: List[Compiler] = [
     PSYQ45,
     PSYQ46,
     # PS2
+    EE_GCC29_990721,
     EE_GCC296,
+    EE_GCC32_040921,
     # N64
     IDO53,
     IDO71,
