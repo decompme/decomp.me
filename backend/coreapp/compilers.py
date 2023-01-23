@@ -898,11 +898,16 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
-    Preset("Dr. Mario 64 N64", GCC272KMC, "-O2 -mips3", diff_flags=["-Mreg-names=32"]),
+    Preset(
+        "Dr. Mario 64 N64",
+        GCC272KMC,
+        "-O2 -mips3 -DVERSION_US=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "Dr. Mario 64 iQue",
         EGCS1124,
-        "-O2 -g -mips2 -mcpu=4300 -funsigned-char",
+        "-O2 -g -mips2 -mcpu=4300 -funsigned-char -DVERSION_CN=1",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
