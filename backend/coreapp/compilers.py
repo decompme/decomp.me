@@ -838,6 +838,11 @@ _all_presets = [
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
     ),
+    Preset(
+        "Pokemon Mystery Dungeon: Red Rescue Team",
+        AGBCC,
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+    ),
     # N3DS
     Preset(
         "Ocarina of Time 3D",
