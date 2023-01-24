@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: backend/compilers/download_cache
-          key: ${{ runner.os }}-compilers4
+          key: ${{ runner.os }}-compilers5
       - name: Download compilers
         run: |-
           cd backend

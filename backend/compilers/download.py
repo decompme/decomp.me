@@ -518,6 +518,27 @@ def download_ps1():
     shutil.rmtree(compilers_path)
 
 
+def download_ps2():
+    if host_os != LINUX:
+        print("ps2 compilers unsupported on " + host_os.name)
+        return
+
+    ps2_compilers = {
+        "ee-gcc2.9-990721": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306679806464060/ee-gcc2.9-990721.tar.xz",
+        "ee-gcc2.96": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680179752990/ee-gcc2.96.tar.xz",
+        "ee-gcc3.2-040921": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680548855908/ee-gcc3.2-040921.tar.xz",
+    }
+
+    for name, url in ps2_compilers.items():
+        download_tar(
+            url=url,
+            mode="r:xz",
+            dl_name=name + ".tar.xz",
+            dest_name=name,
+            create_subdir=True,
+        )
+
+
 def download_nds():
     compiler_groups = {
         "1.2": {
@@ -702,6 +723,8 @@ def main(args):
         download_nds()
     if should_download("ps1"):
         download_ps1()
+    if should_download("ps2"):
+        download_ps2()
     if should_download("switch"):
         download_switch()
     if should_download("wii_gc"):
