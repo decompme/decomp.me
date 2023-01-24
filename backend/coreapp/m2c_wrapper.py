@@ -4,8 +4,6 @@ import logging
 
 from m2c.main import parse_flags, run
 
-from django.conf import settings
-
 from coreapp.compilers import Compiler
 
 from coreapp.sandbox import Sandbox
@@ -63,6 +61,7 @@ class M2CWrapper:
             out_string = io.StringIO()
             with contextlib.redirect_stdout(out_string):
                 returncode = run(options)
+
             out_text = out_string.getvalue()
 
             if returncode == 0:

@@ -33,6 +33,8 @@ from coreapp.platforms import (
     SWITCH,
 )
 
+import platform as platform_stdlib
+
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
@@ -96,6 +98,12 @@ class DummyCompiler(Compiler):
 
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
+
+
+@dataclass(frozen=True)
+class DummyLongRunningCompiler(DummyCompiler):
+    def available(self) -> bool:
+        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
 
 
 @dataclass(frozen=True)
@@ -166,6 +174,10 @@ def preset_from_name(name: str) -> Optional[Preset]:
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
+
+DUMMY_LONGRUNNING = DummyLongRunningCompiler(
+    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
+)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -328,6 +340,14 @@ IDO53_IRIX = IDOCompiler(
     base_id="ido5.3",
 )
 
+IDO53PASCAL = IDOCompiler(
+    id="ido5.3Pascal",
+    platform=IRIX,
+    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+    language=Language.PASCAL,
+)
+
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
     platform=IRIX,
@@ -388,6 +408,12 @@ GCC281SNCXX = GCCCompiler(
     '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
+EGCS1124 = GCCCompiler(
+    id="egcs_1.1.2-4",
+    platform=N64,
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
@@ -697,6 +723,7 @@ MWCC_40_1051 = MWCCCompiler(
 
 _all_compilers: List[Compiler] = [
     DUMMY,
+    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,
@@ -733,8 +760,10 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
+    EGCS1124,
     # IRIX
     IDO53_IRIX,
+    IDO53PASCAL,
     IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
@@ -822,6 +851,11 @@ _all_presets = [
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
     ),
+    Preset(
+        "Pokemon Mystery Dungeon: Red Rescue Team",
+        AGBCC,
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+    ),
     # N3DS
     Preset(
         "Ocarina of Time 3D",
@@ -866,6 +900,7 @@ _all_presets = [
         "-O2 -G8",
     ),
     # N64
+    Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset(
         "Chameleon Twist 1",
         IDO53,
@@ -881,15 +916,31 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
-    Preset("Dr. Mario 64", GCC272KMC, "-O2 -mips3", diff_flags=["-Mreg-names=32"]),
+    Preset(
+        "Dr. Mario 64 N64",
+        GCC272KMC,
+        "-O2 -mips3 -DVERSION_US=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Dr. Mario 64 iQue",
+        EGCS1124,
+        "-O2 -g -mips2 -mcpu=4300 -funsigned-char -DVERSION_CN=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    Preset(
+        "libultra iQue",
+        EGCS1124,
+        "-O2 -mips2 -mcpu=4300 -mno-abicalls",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "Majora's Mask",
         IDO71,
         "-O2 -g3 -mips2 -woff 624",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
     Preset(
         "Mario Party 1",
@@ -962,6 +1013,12 @@ _all_presets = [
         "IDO 5.3 libraries",
         IDO53_IRIX,
         "-KPIC -mips1 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 Pascal",
+        IDO53PASCAL,
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
@@ -1148,6 +1205,16 @@ _all_presets = [
         "Ratatouille Prototype (Master)",
         MWCC_247_108,
         f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ty the Tasmanian Tiger",
+        MWCC_242_81,
+        "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
+    ),
+    Preset(
+        "Animal Crossing",
+        MWCC_242_81,
+        "-O4 -fp hard -sdata 0 -Cpp_exceptions off",
     ),
     # NDS
     Preset(

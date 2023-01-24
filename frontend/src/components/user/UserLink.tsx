@@ -1,6 +1,6 @@
-import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
+import Link from "next/link"
 
-import GhostButton from "../GhostButton"
+import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
 
 import UserAvatar from "./UserAvatar"
 
@@ -10,12 +10,24 @@ export type Props = {
 }
 
 export default function UserLink({ user, showUsername }: Props) {
+    if (!user) {
+        return <span>?</span>
+    }
+
     const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`
 
-    return <GhostButton href={url} className="rounded-full">
+    const inner = <>
         <UserAvatar user={user} className="mr-1 h-4 w-4 align-middle" />
         {showUsername != false && <span>
             {user.username}
         </span>}
-    </GhostButton>
+    </>
+
+    if (!url) {
+        return <span>{inner}</span>
+    }
+
+    return <Link href={url} className="hover:underline active:translate-y-px">
+        {inner}
+    </Link>
 }

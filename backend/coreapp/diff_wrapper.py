@@ -8,6 +8,7 @@ import diff as asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
+from django.conf import settings
 
 from .compiler_wrapper import DiffResult, PATH
 
@@ -104,7 +105,10 @@ class DiffWrapper:
                 env={
                     "PATH": PATH,
                 },
+                timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
+        except subprocess.TimeoutExpired as e:
+            raise NmError("Timeout expired")
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
 
@@ -167,7 +171,10 @@ class DiffWrapper:
                         env={
                             "PATH": PATH,
                         },
+                        timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
                     )
+                except subprocess.TimeoutExpired as e:
+                    raise ObjdumpError("Timeout expired")
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
             else:
