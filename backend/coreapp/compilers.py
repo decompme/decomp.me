@@ -401,7 +401,7 @@ GCC281SNCXX = GCCCompiler(
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
-    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -fno-PIC -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
@@ -887,6 +887,7 @@ _all_presets = [
         "-O2 -G8",
     ),
     # N64
+    Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset(
         "Chameleon Twist 1",
         IDO53,
@@ -902,15 +903,31 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
-    Preset("Dr. Mario 64", GCC272KMC, "-O2 -mips3", diff_flags=["-Mreg-names=32"]),
+    Preset(
+        "Dr. Mario 64 N64",
+        GCC272KMC,
+        "-O2 -mips3 -DVERSION_US=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Dr. Mario 64 iQue",
+        EGCS1124,
+        "-O2 -g -mips2 -mcpu=4300 -funsigned-char -DVERSION_CN=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    Preset(
+        "libultra iQue",
+        EGCS1124,
+        "-O2 -mips2 -mcpu=4300 -mno-abicalls",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "Majora's Mask",
         IDO71,
         "-O2 -g3 -mips2 -woff 624",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
     Preset(
         "Mario Party 1",
