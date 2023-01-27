@@ -470,8 +470,8 @@ def download_ps1():
 
     download_zip(
         url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
-        dl_name="gcc2.6.3-mispel.zip",
-        dest_name="gcc2.6.3-mispel",
+        dl_name="gcc2.6.3-mipsel.zip",
+        dest_name="gcc2.6.3-mipsel",
         create_subdir=True,
     )
 
