@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
+from coreapp.error import CompilationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -141,7 +142,7 @@ class MWCCCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise ValueError(f"Unknown compiler: {compiler_id}")
+        raise CompilationError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 

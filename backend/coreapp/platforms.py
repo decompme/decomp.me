@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
+from rest_framework.exceptions import APIException
 from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
 
@@ -24,7 +25,7 @@ class Platform:
 
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
-        raise ValueError(f"Unknown platform: {platform_id}")
+        raise APIException(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
 
