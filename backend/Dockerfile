@@ -74,7 +74,7 @@ RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
     apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:dosemu2/ppa && \
     apt-get update && \
-    apt-get install -y dosemu2 \
+    apt-get install -y dosemu2; \
     fi
 
 # gc/wii specifics
