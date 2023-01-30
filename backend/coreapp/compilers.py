@@ -869,6 +869,11 @@ _all_presets = [
         ARMCC_41_894,
         "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
+    Preset(
+        "Ikachan 3DS",
+        ARMCC_41_894,
+        "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+    ),
     # Switch
     Preset(
         "Super Mario Odyssey",
