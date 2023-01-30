@@ -26,6 +26,7 @@ django-resized = "^1.0.2"
 django-cleanup = "^6.0.0"
 m2c = {git="https://github.com/matt-kempster/m2c.git"}
 asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
+sentry-sdk = "^1.14.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

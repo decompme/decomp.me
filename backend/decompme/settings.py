@@ -4,6 +4,9 @@ from pathlib import Path
 import django_stubs_ext
 import environ
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 django_stubs_ext.monkeypatch()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,6 +39,8 @@ env = environ.Env(
     ASSEMBLY_TIMEOUT_SECONDS=(int, 3),
     OBJDUMP_TIMEOUT_SECONDS=(int, 3),
     TIMEOUT_SCALE_FACTOR=(int, 1),
+    SENTRY_DSN=(str, ""),
+    SENTRY_SAMPLE_RATE=(float, 0.0),
 )
 
 for stem in [".env.local", ".env"]:
@@ -212,3 +217,14 @@ COMPILATION_TIMEOUT_SECONDS = (
 )
 ASSEMBLY_TIMEOUT_SECONDS = env("ASSEMBLY_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FACTOR
 OBJDUMP_TIMEOUT_SECONDS = env("OBJDUMP_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FACTOR
+
+SENTRY_DSN = env("SENTRY_DSN", str)
+SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=SENTRY_SAMPLE_RATE,
+        send_default_pii=False,
+    )
