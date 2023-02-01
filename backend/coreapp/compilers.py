@@ -898,8 +898,8 @@ _all_presets = [
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
-        PSYQ45,
-        "-g -Wall -O2 -G256",
+        PSYQ43,
+        "-O2 -G65536",
     ),
     Preset(
         "Metal Gear Solid",
