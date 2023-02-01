@@ -55,6 +55,7 @@ COMPILERS_DIR: Path = Path(os.path.dirname(os.path.realpath(__file__)))
 DOWNLOAD_CACHE = COMPILERS_DIR / "download_cache"
 DOWNLOAD_CACHE.mkdir(exist_ok=True)
 
+
 # Downloads a file to the file cache
 def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
     if dest_path.exists():

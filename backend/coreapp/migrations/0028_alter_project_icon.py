@@ -6,7 +6,6 @@ import django_resized.forms
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0027_uploadable_project_icon"),
     ]

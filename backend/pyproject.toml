@@ -28,15 +28,14 @@ m2c = {git="https://github.com/matt-kempster/m2c.git"}
 asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
 sentry-sdk = "^1.14.0"
 
-[tool.poetry.dev-dependencies]
-black = "^22.1.0"
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
 usort = "^1.0.1"
 django-stubs-ext = "^0.4.0"
 django-stubs = "1.9.0"
 djangorestframework-stubs = "^1.4.0"
 types-requests = "^2.27.15"
 parameterized = "^0.8.1"
-
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

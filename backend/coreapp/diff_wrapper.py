@@ -191,7 +191,6 @@ class DiffWrapper:
         config: asm_differ.Config,
         diff_flags: List[str],
     ) -> str:
-
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
@@ -222,7 +221,6 @@ class DiffWrapper:
         compiled_elf: bytes,
         diff_flags: List[str],
     ) -> DiffResult:
-
         if platform == DUMMY:
             # Todo produce diff for dummy
             return {"rows": ["a", "b"]}

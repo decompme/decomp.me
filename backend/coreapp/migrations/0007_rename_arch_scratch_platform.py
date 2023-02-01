@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0006_scratch_name_score_description"),
     ]

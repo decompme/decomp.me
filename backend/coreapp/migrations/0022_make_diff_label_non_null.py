@@ -14,7 +14,6 @@ def unnull_diff_label(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0021_diff_flags_default"),
     ]

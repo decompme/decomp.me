@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0008_scratch_max_score_squashed_0011_alter_scratch_compiler"),
     ]

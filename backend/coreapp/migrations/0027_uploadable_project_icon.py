@@ -5,7 +5,6 @@ import django_resized.forms
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0026_project_member_no_anons"),
     ]
