@@ -20,7 +20,6 @@ def assign_forks_to_projects(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0015_project_description"),
     ]

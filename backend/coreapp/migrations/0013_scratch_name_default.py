@@ -18,7 +18,6 @@ def populate_name(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0012_alter_scratch_name"),
     ]
