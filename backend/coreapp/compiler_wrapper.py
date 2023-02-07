@@ -180,6 +180,7 @@ class CompilerWrapper:
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
+                        "QEMU_LD_PREFIX": /tmp/ido_root
                     },
                     timeout=settings.COMPILATION_TIMEOUT_SECONDS,
                 )
