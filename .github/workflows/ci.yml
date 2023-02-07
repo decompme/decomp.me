@@ -99,9 +99,9 @@ jobs:
           wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
           sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
           wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/
-          IRIX_ROOT=/tmp/ido-root/ /tmp/ido-root/usr/bin/cc #temp, testing if the binfmt works
+          IRIX_ROOT=/tmp/ido_root/ /tmp/ido_root/usr/bin/cc #temp, testing if the binfmt works
         env:
-            IRIX_ROOT: /tmp/ido-root
+            IRIX_ROOT: /tmp/ido_root
 
       - name: Run backend tests
         run: |-
