@@ -349,7 +349,6 @@ IDO53PASCAL = IDOCompiler(
     language=Language.PASCAL,
 )
 
-#Qemu Irix
 IDO60_IRIX = IDOCompiler(
     id="ido6.0_irix",
     platform=IRIX,
