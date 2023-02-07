@@ -380,7 +380,7 @@ def download_n64():
     else:
         dest.mkdir()
         download_tar(
-            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido6.0.tar.xz",
+           url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido6.0.tar.xz",
            mode="r:xz",
            dl_name="ido6.0" + ".tar.xz",
            dest_name="ido6.0",
