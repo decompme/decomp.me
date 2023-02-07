@@ -50,6 +50,7 @@ jobs:
             libnl-route-3-dev \
             libncurses5 \
             protobuf-compiler \
+            qemu-user \
             wine
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
@@ -91,6 +92,14 @@ jobs:
       - name: Install wibo
         run: |-
           wget https://github.com/decompals/WiBo/releases/download/0.2.4/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+
+      - name: Install irix-binfmt-scripts
+        run: |-
+          git clone https://github.com/LLONSIT/qemu-irix-helpers && sudo qemu-irix-helpers/qemu/qemu-irix-binfmt && cp qemu-irix-helpers/qemu/*-wrapper /usr/local/bin
+          wget https://github.com/LLONSIT/qemu-irix-helpers/blob/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/irix-root
+          IRIX_ROOT=/tmp/irix-root/ /tmp/usr/bin/cc #temp, testing if the binfmt works
+        env:
+            IRIX_ROOT: /tmp/irix-root
 
       - name: Run backend tests
         run: |-
