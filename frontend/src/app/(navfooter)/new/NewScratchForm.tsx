@@ -264,6 +264,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 disabled={asm.length == 0}
                 onClick={submit}
                 errorPlacement="right-center"
+                className="mt-2"
             >
                 Create scratch
             </AsyncButton>
