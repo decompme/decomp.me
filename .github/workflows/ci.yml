@@ -95,11 +95,13 @@ jobs:
 
       - name: Install irix-binfmt-scripts
         run: |-
-          git clone https://github.com/LLONSIT/qemu-irix-helpers && sudo qemu-irix-helpers/qemu/qemu-irix-binfmt && cp qemu-irix-helpers/qemu/*-wrapper /usr/local/bin
+          git clone https://github.com/LLONSIT/qemu-irix-helpers && sudo cp qemu-irix-helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d/ && \
+          sudo systemctl restart systemd-binfmt
+          export QEMU_LD_PREFIX=$IRIX_ROOT
           wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
           sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
           wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/
-          IRIX_ROOT=/tmp/ido_root/ /tmp/ido_root/usr/bin/cc #temp, testing if the binfmt works
+          touch dummy.c && IRIX_ROOT=/tmp/ido_root /tmp/ido_root/usr/bin/cc -c dummy.c
         env:
             IRIX_ROOT: /tmp/ido_root
 
