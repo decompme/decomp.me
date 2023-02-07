@@ -96,6 +96,8 @@ jobs:
       - name: Install irix-binfmt-scripts
         run: |-
           git clone https://github.com/LLONSIT/qemu-irix-helpers && sudo qemu-irix-helpers/qemu/qemu-irix-binfmt && cp qemu-irix-helpers/qemu/*-wrapper /usr/local/bin
+          wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
+          sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
           wget https://github.com/LLONSIT/qemu-irix-helpers/blob/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/irix-root
           IRIX_ROOT=/tmp/irix-root/ /tmp/usr/bin/cc #temp, testing if the binfmt works
         env:
