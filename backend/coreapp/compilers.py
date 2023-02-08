@@ -1,4 +1,5 @@
 import enum
+import os
 import logging
 from dataclasses import dataclass, field
 from functools import cache
@@ -357,7 +358,7 @@ IDO60_IRIX = IDOCompiler(
     cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
 )
-else #Normal (binfmt)
+else: #Normal (binfmt)
 IDO60_IRIX = IDOCompiler(
     id="ido6.0_irix",
     platform=IRIX,
@@ -399,7 +400,7 @@ IDO60 = IDOCompiler(
     platform=N64,
     cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
-else
+else:
 IDO60 = IDOCompiler(
     id="ido6.0",
     platform=N64,
