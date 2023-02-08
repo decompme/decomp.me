@@ -103,7 +103,7 @@ jobs:
           touch dummy.c && QEMU_LD_PREFIX=/tmp/ido_root/ /tmp/ido_root/usr/bin/cc -c dummy.c
         
         env:
-            QEMU_LD_PREFIX: /tmp/ido_root,
+            QEMU_LD_PREFIX: /tmp/ido_root
         
       - name: Run backend tests
         run: |-
