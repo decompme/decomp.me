@@ -47,7 +47,8 @@ RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branc
      && cp /helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d && \
     wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
-    wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/
+    wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/ &&\
+    touch /idocker
     
     
 
