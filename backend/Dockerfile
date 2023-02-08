@@ -2,6 +2,19 @@ FROM ubuntu:20.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Mount /dev from the host into the container
+VOLUME /dev
+VOLUME /sys
+VOLUME /proc
+
+# Install Systemd
+RUN apt-get update && \
+    apt-get install -y systemd && \
+    systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# Run the command to start Systemd as the default command when the container starts
+CMD ["/sbin/init"]
+
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
