@@ -188,6 +188,7 @@ jobs:
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e QEMU_LD_PREFIX=/tmp/ido_root \
+            --privileged\ #systemd
             decompme_backend -c 'systemctl restart systemd-binfmt && cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
