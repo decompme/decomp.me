@@ -4,11 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV container docker
 ENV LC_ALL C
 
-# Mount /dev from the host into the container
-VOLUME /dev
-VOLUME /sys
-VOLUME /proc
-
 # Install Systemd
 RUN apt-get update && \
     apt-get install -y systemd && \
