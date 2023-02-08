@@ -352,19 +352,19 @@ IDO53PASCAL = IDOCompiler(
 
 #Docker
 if os.path.exists("/idocker"):
-IDO60_IRIX = IDOCompiler(
-    id="ido6.0_irix",
-    platform=IRIX,
-    cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido6.0",
-)
-else: #Normal (binfmt)
-IDO60_IRIX = IDOCompiler(
-    id="ido6.0_irix",
-    platform=IRIX,
-    cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido6.0",
-)
+    IDO60_IRIX = IDOCompiler(
+        id="ido6.0_irix",
+        platform=IRIX,
+        cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm',
+        base_id="ido6.0",
+    )
+else: # Normal (binfmt)
+    IDO60_IRIX = IDOCompiler(
+        id="ido6.0_irix",
+        platform=IRIX,
+        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        base_id="ido6.0",
+    )
 
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
@@ -395,17 +395,19 @@ IDO71 = IDOCompiler(
 )
 
 if os.path.exists("/idocker"):
-IDO60 = IDOCompiler(
-    id="ido6.0",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-)
-else:
-IDO60 = IDOCompiler(
-    id="ido6.0",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-)
+    IDO60 = IDOCompiler(
+        id="ido6.0_irix",
+        platform=N64,
+        cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm',
+        base_id="ido6.0",
+    )
+else: # Normal (binfmt)
+    IDO60 = IDOCompiler(
+        id="ido6.0_irix",
+        platform=N64,
+        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        base_id="ido6.0",
+    )
 
 GCC272KMC = GCCCompiler(
     id="gcc2.7.2kmc",
