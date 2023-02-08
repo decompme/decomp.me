@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 \
     python3.9-venv \
     python3.9-dev \
-    systemd
+    systemd \
+    wget
 
 
 FROM base AS nsjail
