@@ -55,6 +55,7 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
 else:
     WIBO = "wibo"
 
+QEMU_IRIX = "/usr/bin/qemu-irix"
 
 @dataclass
 class CompilationResult:
@@ -181,6 +182,7 @@ class CompilerWrapper:
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                         "QEMU_LD_PREFIX": "/tmp/ido_root",
+                        "QEMU_IRIX": QEMU_IRIX,
                     },
                     timeout=settings.COMPILATION_TIMEOUT_SECONDS,
                 )

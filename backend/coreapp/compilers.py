@@ -355,14 +355,14 @@ if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
-        cc='IDO_CC=/usr/bin/qemu-irix "${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='${QEMU_IRIX} -L ~/AeroGauge/tools/ido_root/ "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 else:
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 
@@ -398,14 +398,14 @@ if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60 = IDOCompiler(
         id="ido6.0_irix",
         platform=N64,
-        cc='IDO_CC=/usr/bin/qemu-irix "${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='${QEMU_IRIX} -L ~/AeroGauge/tools/ido_root/ "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 else:
     IDO60 = IDOCompiler(
         id="ido6.0_irix",
         platform=N64,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 
