@@ -350,7 +350,7 @@ IDO53PASCAL = IDOCompiler(
     language=Language.PASCAL,
 )
 
-#Docker
+
 if os.path.exists("/idocker"):
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
@@ -358,7 +358,7 @@ if os.path.exists("/idocker"):
         cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm',
         base_id="ido6.0",
     )
-else: # Normal (binfmt)
+else:
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
@@ -401,7 +401,7 @@ if os.path.exists("/idocker"):
         cc='IDO_CC="${COMPILER_DIR}/usr/bin/qemu-irix -L $QEMU_LD_PREFIX ${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/qemu-irix ${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm',
         base_id="ido6.0",
     )
-else: # Normal (binfmt)
+else:
     IDO60 = IDOCompiler(
         id="ido6.0_irix",
         platform=N64,
