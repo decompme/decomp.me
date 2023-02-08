@@ -351,7 +351,7 @@ IDO53PASCAL = IDOCompiler(
 )
 
 
-if os.path.exists("/idocker"):
+if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
@@ -394,7 +394,7 @@ IDO71 = IDOCompiler(
     cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-if os.path.exists("/idocker"):
+if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60 = IDOCompiler(
         id="ido6.0_irix",
         platform=N64,

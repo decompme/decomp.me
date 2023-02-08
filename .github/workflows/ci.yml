@@ -181,7 +181,6 @@ jobs:
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
-            --privileged\
             -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
@@ -189,7 +188,8 @@ jobs:
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e QEMU_LD_PREFIX=/tmp/ido_root \
-            decompme_backend -c 'echo $QEMU_LD_PREFIX && cd /decomp.me/backend && \
+            -e RUNNING_IN_DOCKER=1\
+            decompme_backend -c 'echo $QEMU_LD_PREFIX && echo $RUNNING_IN_DOCKER && cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
 
