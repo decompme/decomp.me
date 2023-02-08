@@ -32,7 +32,7 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
 
 ENV QEMU_LD_PREFIX=/tmp/ido_root
 RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branch master /helpers \
-    && cd /helpers && cp helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d && \
+     && cp /helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d && \
     sudo systemctl restart systemd-binfmt &&\
     wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
