@@ -175,7 +175,7 @@ jobs:
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
-          ls /tmp/ido_root
+          ls /ido_root
           docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
@@ -191,7 +191,7 @@ jobs:
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e QEMU_LD_PREFIX=/ido_root \
             -e RUNNING_IN_DOCKER=1\
-            decompme_backend -c 'echo $QEMU_LD_PREFIX && echo $RUNNING_IN_DOCKER && ls /ido_root && cd /decomp.me/backend && \
+            decompme_backend -c 'echo $QEMU_LD_PREFIX && echo $RUNNING_IN_DOCKER && wget -h && cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
 
