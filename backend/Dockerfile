@@ -50,7 +50,7 @@ RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branc
     wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     qemu-irix -h &&\
-    mkdir /ido_root && wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/ && export RUNNING_IN_DOCKER=1
+    mkdir /ido_root && export RUNNING_IN_DOCKER=1
     
     
     
