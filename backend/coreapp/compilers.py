@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
+from coreapp.error import CompilationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -141,7 +142,7 @@ class MWCCCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise ValueError(f"Unknown compiler: {compiler_id}")
+        raise CompilationError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 
@@ -326,8 +327,20 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 # PS2
+EE_GCC29_990721 = GCCCompiler(
+    id="ee-gcc2.9-990721",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC32_040921 = GCCCompiler(
+    id="ee-gcc3.2-040921",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
@@ -751,7 +764,9 @@ _all_compilers: List[Compiler] = [
     PSYQ45,
     PSYQ46,
     # PS2
+    EE_GCC29_990721,
     EE_GCC296,
+    EE_GCC32_040921,
     # N64
     IDO53,
     IDO71,
@@ -865,7 +880,12 @@ _all_presets = [
     Preset(
         "Super Mario 3D Land",
         ARMCC_41_894,
-        "--cpp --arm -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+        "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+    ),
+    Preset(
+        "Ikachan 3DS",
+        ARMCC_41_894,
+        "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
     # Switch
     Preset(
@@ -891,8 +911,8 @@ _all_presets = [
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
-        PSYQ45,
-        "-g -Wall -O2 -G256",
+        PSYQ43,
+        "-O2 -G65536",
     ),
     Preset(
         "Metal Gear Solid",
@@ -901,6 +921,7 @@ _all_presets = [
     ),
     # N64
     Preset("AeroGauge", IDO53, "-O2 -mips2"),
+    Preset("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
     Preset(
         "Chameleon Twist 1",
         IDO53,
@@ -1002,6 +1023,7 @@ _all_presets = [
         "-O2 -g2 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
+    Preset("Wave Race 64", IDO53, "-O2 -mips2"),
     # IRIX
     Preset(
         "IDO 5.3 cc",

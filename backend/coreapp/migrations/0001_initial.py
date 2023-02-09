@@ -9,7 +9,6 @@ from ..models.scratch import gen_scratch_id
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies: List[Tuple[str, str]] = []

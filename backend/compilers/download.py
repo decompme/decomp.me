@@ -55,6 +55,7 @@ COMPILERS_DIR: Path = Path(os.path.dirname(os.path.realpath(__file__)))
 DOWNLOAD_CACHE = COMPILERS_DIR / "download_cache"
 DOWNLOAD_CACHE.mkdir(exist_ok=True)
 
+
 # Downloads a file to the file cache
 def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
     if dest_path.exists():
@@ -471,7 +472,17 @@ def download_ps1():
     download_tar(
         url="https://github.com/Xeeynamo/wine-psyq/releases/download/psyq-binaries/psyq-msdos.tar.gz",
         dest_name="psyq-msdos-compilers",
+        
+    download_zip(
+        url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
+        dl_name="gcc2.6.3-mipsel.zip",
+        dest_name="gcc2.6.3-mipsel",
+        create_subdir=True,
     )
+    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cc1")
+    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cpp")
+    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "gcc")
+    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "g++")
 
     download_tar(
         url="https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz",
@@ -529,6 +540,27 @@ def download_ps1():
             set_x(file)
 
     shutil.rmtree(compilers_path)
+
+
+def download_ps2():
+    if host_os != LINUX:
+        print("ps2 compilers unsupported on " + host_os.name)
+        return
+
+    ps2_compilers = {
+        "ee-gcc2.9-990721": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306679806464060/ee-gcc2.9-990721.tar.xz",
+        "ee-gcc2.96": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680179752990/ee-gcc2.96.tar.xz",
+        "ee-gcc3.2-040921": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680548855908/ee-gcc3.2-040921.tar.xz",
+    }
+
+    for name, url in ps2_compilers.items():
+        download_tar(
+            url=url,
+            mode="r:xz",
+            dl_name=name + ".tar.xz",
+            dest_name=name,
+            create_subdir=True,
+        )
 
 
 def download_nds():
@@ -715,6 +747,8 @@ def main(args):
         download_nds()
     if should_download("ps1"):
         download_ps1()
+    if should_download("ps2"):
+        download_ps2()
     if should_download("switch"):
         download_switch()
     if should_download("wii_gc"):

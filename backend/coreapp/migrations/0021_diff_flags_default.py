@@ -19,7 +19,6 @@ def diff_flags_array(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0020_diff_flags"),
     ]

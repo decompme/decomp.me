@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
+from rest_framework.exceptions import APIException
 from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
 
@@ -24,7 +25,7 @@ class Platform:
 
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
-        raise ValueError(f"Unknown platform: {platform_id}")
+        raise APIException(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
 
@@ -350,6 +351,39 @@ MACOSX = Platform(
     .global \label
     .type \label, @function
     \label:
+.endm
+
+.macro .fn name, visibility=global
+    .\visibility "\name"
+    .type "\name", @function
+    "\name":
+.endm
+
+.macro .endfn name
+    .size "\name", . - "\name"
+.endm
+
+.macro .obj name, visibility=global
+    .\visibility "\name"
+    .type "\name", @object
+    "\name":
+.endm
+
+.macro .endobj name
+    .size "\name", . - "\name"
+.endm
+
+.macro .sym name, visibility=global
+    .\visibility "\name"
+    "\name":
+.endm
+
+.macro .endsym name
+    .size "\name", . - "\name"
+.endm
+
+.macro .rel name, label
+    .4byte "\name" + ("\label" - "\name")
 .endm
 
 .set r0, 0

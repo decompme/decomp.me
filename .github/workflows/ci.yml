@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: backend/compilers/download_cache
-          key: ${{ runner.os }}-compilers4
+          key: ${{ runner.os }}-compilers-${{ hashFiles('backend/compilers/download.py') }}
       - name: Download compilers
         run: |-
           cd backend

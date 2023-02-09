@@ -21,7 +21,6 @@ def populate_pseudonym(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> N
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0024_remove_psyq_as_compiler"),
     ]
