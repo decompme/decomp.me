@@ -4,6 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV container docker
 ENV LC_ALL C
 
+
+VOLUME /ido_root
 # Install Systemd
 RUN apt-get update && \
     apt-get install -y systemd && \
@@ -42,13 +44,13 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
     && cd /nsjail \
     && make
 
-ENV QEMU_LD_PREFIX=/tmp/ido_root
+ENV QEMU_LD_PREFIX=/ido_root
 RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branch master /helpers \
      && cp /helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d && \
     wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     qemu-irix -h &&\
-    wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/ && export RUNNING_IN_DOCKER=1
+    mkdir /ido_root && wget https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido_root.tar.xz && tar xpvf ido_root.tar.xz -C /tmp/ && export RUNNING_IN_DOCKER=1
     
     
     
