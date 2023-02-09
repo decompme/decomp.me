@@ -55,7 +55,7 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
 else:
     WIBO = "wibo"
 
-QEMU_IRIX = "/usr/bin/qemu-irix"
+QEMU_IRIX = "/tmp/ido_root/usr/bin/qemu-irix"
 
 
 @dataclass
