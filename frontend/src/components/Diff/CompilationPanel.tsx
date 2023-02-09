@@ -71,28 +71,30 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                 minSize={problemsCollapsedHeight}
                 preferredSize={isProblemsCollapsed ? problemsCollapsedHeight : problemsDefaultHeight}
             >
-                <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
-                    <span className="text-sm font-medium">
-                        {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
-                    </span>
-                    <div className="grow" />
-                    <GhostButton
-                        className="text-gray-11"
-                        onClick={() => {
-                            const containerHeight = container.current?.clientHeight ?? 0
-                            const newProblemsHeight = isProblemsCollapsed ? problemsDefaultHeight : problemsCollapsedHeight
-                            allotment.current?.resize([
-                                containerHeight - newProblemsHeight,
-                                newProblemsHeight,
-                            ])
-                        }}
-                    >
-                        {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </GhostButton>
-                </h2>
+                <div className="flex h-full w-full flex-col">
+                    <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
+                        <span className="text-sm font-medium">
+                            {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                        </span>
+                        <div className="grow" />
+                        <GhostButton
+                            className="text-gray-11"
+                            onClick={() => {
+                                const containerHeight = container.current?.clientHeight ?? 0
+                                const newProblemsHeight = isProblemsCollapsed ? problemsDefaultHeight : problemsCollapsedHeight
+                                allotment.current?.resize([
+                                    containerHeight - newProblemsHeight,
+                                    newProblemsHeight,
+                                ])
+                            }}
+                        >
+                            {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </GhostButton>
+                    </h2>
 
-                <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
-                    <Ansi>{compilation.compiler_output}</Ansi>
+                    <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
+                        <Ansi>{compilation.compiler_output}</Ansi>
+                    </div>
                 </div>
             </Allotment.Pane>
         </Allotment>
