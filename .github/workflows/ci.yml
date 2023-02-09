@@ -58,9 +58,9 @@ jobs:
           version: 1.0
       - name: Install DOSEMU
         run: |-
-          add-apt-repository -y ppa:dosemu2/ppa
-          apt-get update
-          apt-get install -y dosemu2
+          sudo add-apt-repository -y ppa:dosemu2/ppa
+          sudo apt-get update
+          sudo apt-get install -y dosemu2
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
