@@ -472,13 +472,15 @@ def download_ps1():
     download_tar(
         url="https://github.com/Xeeynamo/wine-psyq/releases/download/psyq-binaries/psyq-msdos.tar.gz",
         dest_name="psyq-msdos-compilers",
-        
+    )
+
     download_zip(
         url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
         dl_name="gcc2.6.3-mipsel.zip",
         dest_name="gcc2.6.3-mipsel",
         create_subdir=True,
     )
+
     set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cc1")
     set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cpp")
     set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "gcc")
