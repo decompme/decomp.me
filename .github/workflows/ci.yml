@@ -189,7 +189,7 @@ jobs:
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e QEMU_LD_PREFIX=/tmp/ido_root \
             -e RUNNING_IN_DOCKER=1\
-            decompme_backend -c 'echo $QEMU_LD_PREFIX && echo $RUNNING_IN_DOCKER && cd /decomp.me/backend && \
+            decompme_backend -c 'echo $QEMU_LD_PREFIX && echo $RUNNING_IN_DOCKER && ls /tmp/ido_root && cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
 
