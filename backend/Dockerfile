@@ -50,8 +50,7 @@ RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branc
     wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
     qemu-irix -h &&\
-    ls /ido_root && export RUNNING_IN_DOCKER=1 && \
-    touch dummy.c && /ido_root/usr/bin/qemu-irix /ido_root/usr/bin/cc -c dummy.c
+    ls /ido_root && export RUNNING_IN_DOCKER=1
     
     
     
