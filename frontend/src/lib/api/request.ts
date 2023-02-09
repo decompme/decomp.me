@@ -35,12 +35,12 @@ export function normalizeUrl(url: string) {
     return url
 }
 
-export async function get(url: string, useCacheIfFresh = false) {
+export async function get(url: string) {
     url = normalizeUrl(url)
 
     const response = await fetch(url, {
         ...commonOpts,
-        cache: useCacheIfFresh ? "default" : "no-cache",
+        cache: "no-cache",
         next: { revalidate: 10 },
     })
 
@@ -61,8 +61,6 @@ export async function get(url: string, useCacheIfFresh = false) {
         throw error
     }
 }
-
-export const getCached = (url: string) => get(url, true)
 
 export async function post(url: string, data: Json | FormData, method = "POST") {
     url = normalizeUrl(url)
