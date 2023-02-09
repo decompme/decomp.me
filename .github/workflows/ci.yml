@@ -175,7 +175,7 @@ jobs:
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
-          ls /ido_root
+          #ls /ido_root
           docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
