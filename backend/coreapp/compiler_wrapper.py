@@ -57,6 +57,7 @@ else:
 
 QEMU_IRIX = "/usr/bin/qemu-irix"
 
+
 @dataclass
 class CompilationResult:
     elf_object: bytes
