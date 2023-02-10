@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
-import { ResponseError, get, getCached, post, patch, delete_ } from "./api/request"
+import { ResponseError, get, post, patch, delete_ } from "./api/request"
 import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, Platform, Project, ProjectMember } from "./api/types"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
@@ -229,7 +229,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 }
 
 export function usePlatforms(): Record<string, Platform> {
-    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", getCached, {
+    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", get, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true, // TODO: remove
