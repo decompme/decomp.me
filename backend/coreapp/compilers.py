@@ -399,7 +399,7 @@ if os.environ.get("RUNNING_IN_DOCKER") == "1":
         id="ido6.0",
         platform=N64,
         cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-        base_id="ido6.0",
+        base_id="ido5.3",
     )
 else:
     IDO60 = IDOCompiler(
