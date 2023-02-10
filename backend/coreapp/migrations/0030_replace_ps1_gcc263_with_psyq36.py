@@ -23,7 +23,6 @@ def rename_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0029_courses"),
     ]
