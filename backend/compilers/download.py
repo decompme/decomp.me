@@ -474,18 +474,6 @@ def download_ps1():
         dest_name="psyq-msdos-compilers",
     )
 
-    download_zip(
-        url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
-        dl_name="gcc2.6.3-mipsel.zip",
-        dest_name="gcc2.6.3-mipsel",
-        create_subdir=True,
-    )
-
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cc1")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cpp")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "gcc")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "g++")
-
     download_tar(
         url="https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz",
         dest_name="psyq-compilers",
