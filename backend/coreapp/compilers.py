@@ -355,14 +355,14 @@ if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
-        cc='printf "Not implemented yet, for docker"',
-        base_id="ido6.0",
+        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        base_id="ido5.3",
     )
 else:
     IDO60_IRIX = IDOCompiler(
         id="ido6.0_irix",
         platform=IRIX,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='${QEMU_IRIX} -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 
@@ -398,14 +398,14 @@ if os.environ.get("RUNNING_IN_DOCKER") == "1":
     IDO60 = IDOCompiler(
         id="ido6.0",
         platform=N64,
-        cc='printf "Not implemented yet"',
+        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 else:
     IDO60 = IDOCompiler(
         id="ido6.0",
         platform=N64,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+        cc='${QEMU_IRIX} -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
         base_id="ido6.0",
     )
 
