@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import sys
 import subprocess
 from dataclasses import dataclass
 from platform import uname
@@ -188,6 +189,10 @@ class CompilerWrapper:
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 msg = e.stdout
+
+                sys.stdout.write("***** Compilation failed:\n")
+                sys.stdout.write(msg)
+                sys.stdout.write("\n*****\n")
 
                 logging.debug("Compilation failed: %s", msg)
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
