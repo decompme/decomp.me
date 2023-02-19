@@ -57,7 +57,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
-            "--bindmount", "/dev",
+            "--bindmount", "/dev/kvm",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
             "--bindmount_ro", "/etc/fonts",
