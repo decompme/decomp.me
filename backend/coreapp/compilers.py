@@ -1011,6 +1011,11 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset("Wave Race 64", IDO53, "-O2 -mips2"),
+    Preset(
+        "Animal Forest",
+        IDO71,
+        "-O2 -g3 -mips2",
+    ),
     # IRIX
     Preset(
         "IDO 5.3 cc",
