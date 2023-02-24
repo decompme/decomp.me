@@ -1226,9 +1226,14 @@ _all_presets = [
         "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
     ),
     Preset(
-        "Animal Crossing",
+        "Animal Crossing (REL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata 0 -Cpp_exceptions off",
+        "-O4 -fp hard -sdata2 0 -Cpp_exceptions off",
+    ),
+     Preset(
+        "Animal Crossing (DOL)",
+        MWCC_242_81,
+        "-O4 -fp hard -sdata2 4 -Cpp_exceptions off, -char unsigned",
     ),
     # NDS
     Preset(
