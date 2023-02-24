@@ -276,13 +276,25 @@ CLANG_401 = ClangCompiler(
 )
 
 # PS1
-GCC263_MIPSEL = GCCPS1Compiler(
-    id="gcc2.6.3-mipsel",
+PSYQ_MSDOS_CC = (
+    'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") &&'
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
+    + '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+)
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+
+PSYQ35 = GCCPS1Compiler(
+    id="psyq3.5",
     platform=PS1,
-    cc='cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
+    cc=PSYQ_MSDOS_CC,
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ36 = GCCPS1Compiler(
+    id="psyq3.6",
+    platform=PS1,
+    cc=PSYQ_MSDOS_CC,
+)
 
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
@@ -744,7 +756,8 @@ _all_compilers: List[Compiler] = [
     CLANG_391,
     CLANG_401,
     # PS1
-    GCC263_MIPSEL,
+    PSYQ35,
+    PSYQ36,
     PSYQ40,
     PSYQ41,
     PSYQ43,
@@ -888,8 +901,8 @@ _all_presets = [
     # PS1
     Preset(
         "Castlevania: Symphony of the Night",
-        GCC263_MIPSEL,
-        "-O2 -G0 -funsigned-char",
+        PSYQ35,
+        "-O2 -G0 -fsigned-char",
     ),
     Preset(
         "Evo's Space Adventures",
