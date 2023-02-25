@@ -492,6 +492,39 @@ GC_WII = Platform(
     \label:
 .endm
 
+.macro .fn name, visibility=global
+    .\visibility "\name"
+    .type "\name", @function
+    "\name":
+.endm
+
+.macro .endfn name
+    .size "\name", . - "\name"
+.endm
+
+.macro .obj name, visibility=global
+    .\visibility "\name"
+    .type "\name", @object
+    "\name":
+.endm
+
+.macro .endobj name
+    .size "\name", . - "\name"
+.endm
+
+.macro .sym name, visibility=global
+    .\visibility "\name"
+    "\name":
+.endm
+
+.macro .endsym name
+    .size "\name", . - "\name"
+.endm
+
+.macro .rel name, label
+    .4byte "\name" + ("\label" - "\name")
+.endm
+
 .set r0, 0
 .set r1, 1
 .set r2, 2
