@@ -27,6 +27,7 @@ django-cleanup = "^6.0.0"
 m2c = {git="https://github.com/matt-kempster/m2c.git"}
 asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
 sentry-sdk = "^1.14.0"
+django-session-timeout = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

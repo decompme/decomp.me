@@ -41,6 +41,9 @@ env = environ.Env(
     TIMEOUT_SCALE_FACTOR=(int, 1),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
+    SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
+    SESSION_EXPIRE_AFTER_LAST_ACTIVITY=(bool, True),
+    SESSION_TIMEOUT_REDIRECT=(str, "/"),
 )
 
 for stem in [".env.local", ".env"]:
@@ -83,6 +86,7 @@ MIDDLEWARE = [
     "coreapp.middleware.set_user_profile",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_session_timeout.middleware.SessionTimeoutMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -220,6 +224,10 @@ OBJDUMP_TIMEOUT_SECONDS = env("OBJDUMP_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FA
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
+
+SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", int)
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = env("SESSION_EXPIRE_AFTER_LAST_ACTIVITY", bool)
+SESSION_TIMEOUT_REDIRECT = env("SESSION_TIMEOUT_REDIRECT", str)
 
 if SENTRY_DSN:
     sentry_sdk.init(
