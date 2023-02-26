@@ -370,7 +370,7 @@ MACOSX = Platform(
 .endm
 
 .macro .fn name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     .type "\\name", @function
     "\\name":
 .endm
@@ -380,7 +380,7 @@ MACOSX = Platform(
 .endm
 
 .macro .obj name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     .type "\\name", @object
     "\\name":
 .endm
@@ -390,7 +390,7 @@ MACOSX = Platform(
 .endm
 
 .macro .sym name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     "\\name":
 .endm
 
@@ -493,7 +493,7 @@ GC_WII = Platform(
 .endm
 
 .macro .fn name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     .type "\\name", @function
     "\\name":
 .endm
@@ -503,7 +503,7 @@ GC_WII = Platform(
 .endm
 
 .macro .obj name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     .type "\\name", @object
     "\\name":
 .endm
@@ -513,7 +513,7 @@ GC_WII = Platform(
 .endm
 
 .macro .sym name, visibility=global
-    .\visibility "\\name"
+    .\\visibility "\\name"
     "\\name":
 .endm
 
