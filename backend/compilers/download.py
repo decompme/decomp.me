@@ -370,7 +370,7 @@ def download_n64():
             print(f"ido{version} already exists, skipping")
         else:
             download_tar(
-                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.4/ido-{version}-recomp-{host_os.ido_pkg}.tar.gz",
+                url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.5/ido-{version}-recomp-{host_os.ido_pkg}.tar.gz",
                 dest_name=f"ido{version}",
             )
 
@@ -481,16 +481,10 @@ def download_ps1():
 
     compilers_path = COMPILERS_DIR / "psyq-compilers"
 
-    download_zip(
-        url="https://github.com/decompals/old-gcc/releases/download/release/gcc-2.6.3.zip",
-        dl_name="gcc2.6.3-mipsel.zip",
-        dest_name="gcc2.6.3-mipsel",
-        create_subdir=True,
+    download_tar(
+        url="https://github.com/Xeeynamo/wine-psyq/releases/download/psyq-binaries/psyq-msdos.tar.gz",
+        dest_name="psyq-msdos-compilers",
     )
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cc1")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "cpp")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "gcc")
-    set_x(COMPILERS_DIR / "gcc2.6.3-mipsel" / "g++")
 
     download_tar(
         url="https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz",
@@ -504,7 +498,22 @@ def download_ps1():
         dest_path=compilers_path / "psyq",
     )
 
+    # transfer MS-DOS compilers into the same directory of their Win32 counterpart
+    shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.3", COMPILERS_DIR / "psyq-compilers"
+    )
+    shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.5", COMPILERS_DIR / "psyq-compilers"
+    )
+    shutil.move(
+        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.6", COMPILERS_DIR / "psyq-compilers"
+    )
+    shutil.rmtree(COMPILERS_DIR / "psyq-msdos-compilers/")
+
     psyq_to_gcc = {
+        "3.3": "2.6.0",
+        "3.5": "2.6.0",
+        "3.6": "2.6.3",
         "4.0": "2.7.2",
         "4.1": "2.7.2",
         "4.3": "2.8.1",

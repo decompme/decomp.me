@@ -14,7 +14,7 @@ export default function PlatformName({ platform }: Props) {
                 description: string
             }
         }
-    }>("/compilers", api.getCached)
+    }>("/compilers", api.get)
 
     return <>
         {data?.platforms[platform]?.name ?? platform}

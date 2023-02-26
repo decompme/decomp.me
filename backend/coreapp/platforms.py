@@ -80,6 +80,10 @@ N64 = Platform(
     \label:
 .endm
 
+.macro jlabel label
+    \label:
+.endm
+
 .set noat
 .set noreorder
 .set gp=64
@@ -151,6 +155,10 @@ IRIX = Platform(
     \label:
 .endm
 
+.macro jlabel label
+    \label:
+.endm
+
 .set noat
 .set noreorder
 .set gp=64
@@ -214,6 +222,10 @@ PS1 = Platform(
     \label:
 .endm
 
+.macro jlabel label
+    \label:
+.endm
+
 .set noat
 .set noreorder
 
@@ -237,6 +249,10 @@ PS2 = Platform(
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro jlabel label
     \label:
 .endm
 
