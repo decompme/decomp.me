@@ -1,8 +1,6 @@
 FROM ubuntu:20.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV container docker
-ENV LC_ALL C
 
 RUN apt-get update && apt-get install -y \
     python3-pip \
