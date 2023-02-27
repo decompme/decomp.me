@@ -182,7 +182,6 @@ class CompilerWrapper:
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
-                        "QEMU_LD_PREFIX": "/ido_root",
                         "QEMU_IRIX": sandbox.rewrite_path(compiler.path) + QEMU_IRIX,
                     },
                     timeout=settings.COMPILATION_TIMEOUT_SECONDS,

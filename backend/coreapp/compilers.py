@@ -363,20 +363,12 @@ IDO53PASCAL = IDOCompiler(
 )
 
 
-if os.environ.get("RUNNING_IN_DOCKER") == "1":
-    IDO60_IRIX = IDOCompiler(
-        id="ido6.0_irix",
-        platform=IRIX,
-        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-        base_id="ido5.3",
-    )
-else:
-    IDO60_IRIX = IDOCompiler(
-        id="ido6.0_irix",
-        platform=IRIX,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-        base_id="ido6.0",
-    )
+IDO60_IRIX = IDOCompiler(
+    id="ido6.0_irix",
+    platform=IRIX,
+    cc='${QEMU_IRIX} -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido6.0",
+)
 
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
@@ -406,20 +398,12 @@ IDO71 = IDOCompiler(
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-if os.environ.get("RUNNING_IN_DOCKER") == "1":
-    IDO60 = IDOCompiler(
-        id="ido6.0",
-        platform=N64,
-        cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-        base_id="ido5.3",
-    )
-else:
-    IDO60 = IDOCompiler(
-        id="ido6.0",
-        platform=N64,
-        cc='IDO_CC="${COMPILER_DIR}/usr/bin/cc" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-        base_id="ido6.0",
-    )
+IDO60 = IDOCompiler(
+    id="ido6.0",
+    platform=N64,
+    cc='${QEMU_IRIX} -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido6.0",
+)
 
 GCC272KMC = GCCCompiler(
     id="gcc2.7.2kmc",

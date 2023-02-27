@@ -4,24 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV container docker
 ENV LC_ALL C
 
-
-VOLUME /ido_root
-# Install Systemd
-RUN apt-get update && \
-    apt-get install -y systemd && \
-    systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-
-# Run the command to start Systemd as the default command when the container starts
-CMD ["/sbin/init"]
-
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
     python-is-python3 \
     python3.9-venv \
-    python3.9-dev \
-    wget \
-    qemu binfmt-support qemu-user-static
+    python3.9-dev 
 
 
 FROM base AS nsjail
@@ -43,17 +31,6 @@ RUN apt-get -y update && apt-get install -y \
 RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjail \
     && cd /nsjail \
     && make
-
-ENV QEMU_LD_PREFIX=/ido_root
-RUN git clone "https://github.com/LLONSIT/qemu-irix-helpers" --recursive --branch master /helpers \
-     && cp /helpers/qemu/qemu-mips.conf /usr/lib/binfmt.d && \
-    wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
-    dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb &&\
-    qemu-irix -h &&\
-    ls /ido_root && export RUNNING_IN_DOCKER=1
-    
-    
-    
 
 
 FROM base AS build
