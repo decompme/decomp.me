@@ -50,7 +50,6 @@ jobs:
             libnl-route-3-dev \
             libncurses5 \
             protobuf-compiler \
-            qemu-user \
             wine
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
@@ -180,8 +179,6 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            -e QEMU_LD_PREFIX=/ido_root \
-            -e RUNNING_IN_DOCKER=1\
             decompme_backend -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run python manage.py test'
