@@ -1264,6 +1264,12 @@ _all_presets = [
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
     Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
+    # PS2
+    Preset(
+        "Ty the Tasmanian Tiger (July 1st)",
+        EE_GCC29_990721,
+        "-x c++ -O2 -fno-exceptions -gstabs",
+    ),
 ]
 
 
