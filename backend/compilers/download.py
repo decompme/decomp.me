@@ -444,7 +444,7 @@ def download_n64():
             log_name="psyq-obj-parser",
             dest_path=dest / "psyq-obj-parser",
         )
-        # TODO: upload +x'd version of this
+        # NOTE: github strips the +x flag
         psyq_obj_parser = dest / "psyq-obj-parser"
         psyq_obj_parser.chmod(
             psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
@@ -479,9 +479,8 @@ def download_ps1():
         dest_name="psyq-compilers",
     )
 
-    # TODO: remove psyq-obj-parser from psyq-compilers.tar.gz
     download_file(
-        url="https://github.com/mkst/pcsx-redux/releases/download/matching-relocs/psyq-obj-parser",
+        url="https://github.com/mkst/pcsx-redux/releases/download/rodata-rodata/psyq-obj-parser",
         log_name="psyq-obj-parser",
         dest_path=compilers_path / "psyq",
     )
