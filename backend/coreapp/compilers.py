@@ -1246,7 +1246,7 @@ _all_presets = [
     Preset(
         "Animal Crossing (DOL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata2 4 -Cpp_exceptions off, -char unsigned",
+        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off, -char unsigned, -enum int",
     ),
     # NDS
     Preset(
