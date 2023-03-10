@@ -230,6 +230,7 @@
     "gcc_char_type.-funsigned-char": "char will be unsigned",
     "mips_version": "Mips version",
     "kpic": "-non_shared if unchecked",
+    "pass": "Print the compiler passes",
     "endianness": "Endianness",
     "endianness.-mel": "Little endian",
     "endianness.-meb": "Big endian",
