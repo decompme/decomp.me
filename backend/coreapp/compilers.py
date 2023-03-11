@@ -333,6 +333,42 @@ EE_GCC29_990721 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+EE_GCC29_991111 = GCCCompiler(
+    id="ee-gcc2.9-991111",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.9-ee-991111/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2952_273A = GCCCompiler(
+    id="ee-gcc2.95.2-273a",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2952_274 = GCCCompiler(
+    id="ee-gcc2.95.2-274",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_107 = GCCCompiler(
+    id="ee-gcc2.95.3-107",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_114 = GCCCompiler(
+    id="ee-gcc2.95.3-114",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_136 = GCCCompiler(
+    id="ee-gcc2.95.3-136",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
     platform=PS2,
@@ -343,6 +379,36 @@ EE_GCC32_040921 = GCCCompiler(
     id="ee-gcc3.2-040921",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_23_991202 = MWCCCompiler(
+    id="mwcps2-2.3-991202",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_011126 = MWCCCompiler(
+    id="mwcps2-3.0b22-011126",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020123 = MWCCCompiler(
+    id="mwcps2-3.0b22-020123",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020716 = MWCCCompiler(
+    id="mwcps2-3.0b22-020716",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020926 = MWCCCompiler(
+    id="mwcps2-3.0b22-020926",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 # IRIX
@@ -765,8 +831,19 @@ _all_compilers: List[Compiler] = [
     PSYQ46,
     # PS2
     EE_GCC29_990721,
+    EE_GCC29_991111,
+    EE_GCC2952_273A,
+    EE_GCC2952_274,
+    EE_GCC2953_107,
+    EE_GCC2953_114,
+    EE_GCC2953_136,
     EE_GCC296,
     EE_GCC32_040921,
+    MWCPS2_23_991202,
+    MWCPS2_30B22_011126,
+    MWCPS2_30B22_020123,
+    MWCPS2_30B22_020716,
+    MWCPS2_30B22_020926,
     # N64
     IDO53,
     IDO71,

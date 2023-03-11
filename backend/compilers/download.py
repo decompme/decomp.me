@@ -551,6 +551,14 @@ def download_ps2():
             create_subdir=True,
         )
 
+    # Extra compiler collection
+    download_tar(
+        url="https://cdn.discordapp.com/attachments/1067904954779586650/1083990728365068328/ps2_compilers.tar.xz",
+        mode="r:xz",
+        dl_name="ps2_compilers.tar.xz",
+        create_subdir=False,
+    )
+
 
 def download_nds():
     compiler_groups = {
