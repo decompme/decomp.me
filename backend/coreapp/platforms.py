@@ -370,36 +370,36 @@ MACOSX = Platform(
 .endm
 
 .macro .fn name, visibility=global
-    .\visibility "\name"
-    .type "\name", @function
-    "\name":
+    .\\visibility "\\name"
+    .type "\\name", @function
+    "\\name":
 .endm
 
 .macro .endfn name
-    .size "\name", . - "\name"
+    .size "\\name", . - "\\name"
 .endm
 
 .macro .obj name, visibility=global
-    .\visibility "\name"
-    .type "\name", @object
-    "\name":
+    .\\visibility "\\name"
+    .type "\\name", @object
+    "\\name":
 .endm
 
 .macro .endobj name
-    .size "\name", . - "\name"
+    .size "\\name", . - "\\name"
 .endm
 
 .macro .sym name, visibility=global
-    .\visibility "\name"
-    "\name":
+    .\\visibility "\\name"
+    "\\name":
 .endm
 
 .macro .endsym name
-    .size "\name", . - "\name"
+    .size "\\name", . - "\\name"
 .endm
 
 .macro .rel name, label
-    .4byte "\name" + ("\label" - "\name")
+    .4byte "\\name" + ("\label" - "\\name")
 .endm
 
 .set r0, 0
@@ -490,6 +490,39 @@ GC_WII = Platform(
     .global \label
     .type \label, @function
     \label:
+.endm
+
+.macro .fn name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @function
+    "\\name":
+.endm
+
+.macro .endfn name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .obj name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @object
+    "\\name":
+.endm
+
+.macro .endobj name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .sym name, visibility=global
+    .\\visibility "\\name"
+    "\\name":
+.endm
+
+.macro .endsym name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .rel name, label
+    .4byte "\\name" + ("\label" - "\\name")
 .endm
 
 .set r0, 0
@@ -584,17 +617,17 @@ NDS_ARM9 = Platform(
 
 .macro arm_func_start name
     .arm
-    \name:
+    \\name:
 .endm
 .macro arm_func_end name
 .endm
 .macro thumb_func_start name
     .thumb
-    \name:
+    \\name:
 .endm
 .macro non_word_aligned_thumb_func_start name
     .thumb
-    \name:
+    \\name:
 .endm
 .macro thumb_func_end name
 .endm

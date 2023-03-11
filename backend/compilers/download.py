@@ -374,6 +374,18 @@ def download_n64():
                 dest_name=f"ido{version}",
             )
 
+    dest = COMPILERS_DIR / "ido6.0"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido6.0.tar.xz",
+            mode="r:xz",
+            dl_name="ido6.0" + ".tar.xz",
+            dest_name="ido6.0",
+        )
+
     # SN
     dest = COMPILERS_DIR / "gcc2.7.2sn"
     if dest.is_dir():
@@ -444,7 +456,7 @@ def download_n64():
             log_name="psyq-obj-parser",
             dest_path=dest / "psyq-obj-parser",
         )
-        # TODO: upload +x'd version of this
+        # NOTE: github strips the +x flag
         psyq_obj_parser = dest / "psyq-obj-parser"
         psyq_obj_parser.chmod(
             psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
@@ -479,9 +491,8 @@ def download_ps1():
         dest_name="psyq-compilers",
     )
 
-    # TODO: remove psyq-obj-parser from psyq-compilers.tar.gz
     download_file(
-        url="https://github.com/mkst/pcsx-redux/releases/download/matching-relocs/psyq-obj-parser",
+        url="https://github.com/mkst/pcsx-redux/releases/download/rodata-rodata/psyq-obj-parser",
         log_name="psyq-obj-parser",
         dest_path=compilers_path / "psyq",
     )
@@ -551,6 +562,14 @@ def download_ps2():
             dest_name=name,
             create_subdir=True,
         )
+
+    # Extra compiler collection
+    download_tar(
+        url="https://cdn.discordapp.com/attachments/1067904954779586650/1083990728365068328/ps2_compilers.tar.xz",
+        mode="r:xz",
+        dl_name="ps2_compilers.tar.xz",
+        create_subdir=False,
+    )
 
 
 def download_nds():
