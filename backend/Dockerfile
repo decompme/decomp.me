@@ -39,7 +39,6 @@ RUN apt-get -y update && apt-get install -y \
     binutils-aarch64-linux-gnu \
     curl \
     gcc-mips-linux-gnu \
-    qemu-user\
     git \
     libnl-route-3-200 \
     libprotobuf-dev \
