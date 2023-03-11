@@ -15,7 +15,8 @@ export default function DragBar({ pos, onChange }: Props) {
         const onMouseMove = (evt: MouseEvent) => {
             if (isActive) {
                 const parent = ref.current.parentElement
-                onChange(evt.clientX - parent.getBoundingClientRect().x)
+                if (parent)
+                    onChange(evt.clientX - parent.getBoundingClientRect().x)
             }
         }
 

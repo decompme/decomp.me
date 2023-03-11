@@ -1,4 +1,4 @@
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import UserLink from "./user/UserLink"
 import styles from "./UserAvatarList.module.scss"

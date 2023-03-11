@@ -1,0 +1,121 @@
+.rule {
+    border: 0;
+    background: var(--g300);
+    height: 1px;
+}
+
+.label {
+    display: block;
+    margin: 0;
+    padding: 10px;
+
+    color: var(--g1700);
+    font-size: 0.9em;
+    font-weight: 600;
+
+    small {
+        color: var(--g800);
+        font-size: 0.8em;
+        font-weight: 400;
+        padding-left: 8px;
+    }
+}
+
+.textInput {
+    width: 100%;
+    padding: 8px 10px;
+
+    color: var(--g1200);
+    background: var(--g200);
+    font: 0.8rem var(--monospace);
+    border: 1px solid var(--g500);
+    border-radius: 4px;
+
+    outline: none !important;
+
+    &::-webkit-input-placeholder {
+        color: var(--g700);
+    }
+}
+
+.editorContainer {
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+}
+
+.editor {
+    width: 100%;
+    flex: 1;
+
+    background: var(--g200);
+
+    border: 1px solid var(--g500);
+    border-radius: 4px;
+
+    overflow: hidden;
+
+    :global(.cm-editor) {
+        height: 100%;
+    }
+}
+
+.compilerContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: default;
+    user-select: none;
+
+    @media screen and (max-width: 400px) {
+        flex-direction: column;
+    }
+
+    & > div {
+        display: flex;
+        flex-direction: column;
+
+        flex: 1;
+        width: 100%;
+
+        &.compilerChoiceOr {
+            display: block;
+            flex: 0;
+            padding: 8px;
+            text-align: center;
+
+            color: var(--g500);
+            font-size: 0.8rem;
+
+            @media screen and (min-width: 400px) {
+                padding: 16px;
+            }
+        }
+    }
+}
+
+.compilerChoiceSelect {
+    width: 100%;
+}
+
+.compilerChoiceHeading {
+    font-size: 0.8rem;
+    padding: 2px 10px;
+    color: var(--g800);
+}
+
+.privacyNotice {
+    font-size: 0.9rem;
+    padding-top: 1em;
+
+    color: var(--g1200);
+
+    a {
+        color: var(--link);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

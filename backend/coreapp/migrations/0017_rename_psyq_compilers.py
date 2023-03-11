@@ -24,7 +24,6 @@ def rename_psyq_compilers(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0016_give_scratches_project_functions"),
     ]

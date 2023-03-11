@@ -2,12 +2,13 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
-import asm_differ.diff as asm_differ
+import diff as asm_differ
 
-from coreapp import platforms
 from coreapp.platforms import DUMMY, Platform
+from coreapp.flags import ASMDIFF_FLAG_PREFIX
+from django.conf import settings
 
 from .compiler_wrapper import DiffResult, PATH
 
@@ -50,7 +51,12 @@ class DiffWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def create_config(arch: asm_differ.ArchSettings) -> asm_differ.Config:
+    def create_config(
+        arch: asm_differ.ArchSettings, diff_flags: List[str]
+    ) -> asm_differ.Config:
+        show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
+        algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
+
         return asm_differ.Config(
             arch=arch,
             # Build/objdump options
@@ -64,7 +70,7 @@ class DiffWrapper:
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
             formatter=asm_differ.JsonFormatter(arch_str=arch.name),
-            threeway=None,
+            diff_mode=asm_differ.DiffMode.NORMAL,
             base_shift=0,
             skip_lines=0,
             compress=None,
@@ -74,8 +80,9 @@ class DiffWrapper:
             stop_at_ret=False,
             ignore_large_imms=False,
             ignore_addr_diffs=True,
-            algorithm="levenshtein",
+            algorithm=algorithm,
             reg_categories={},
+            show_rodata_refs=show_rodata_refs,
         )
 
     @staticmethod
@@ -98,7 +105,10 @@ class DiffWrapper:
                 env={
                     "PATH": PATH,
                 },
+                timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
+        except subprocess.TimeoutExpired as e:
+            raise NmError("Timeout expired")
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
 
@@ -116,10 +126,12 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
+        known_objdump_flags = ["-Mreg-names=32", "-Mno-aliases"]
         ret = []
 
-        if "-Mreg-names=32" in diff_flags:
-            ret.append("-Mreg-names=32")
+        for flag in known_objdump_flags:
+            if flag in diff_flags:
+                ret.append(flag)
 
         return ret
 
@@ -131,6 +143,7 @@ class DiffWrapper:
         label: str,
         flags: List[str],
     ) -> str:
+        flags = [flag for flag in flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
         flags += [
             "--disassemble",
             "--disassemble-zeroes",
@@ -158,7 +171,10 @@ class DiffWrapper:
                         env={
                             "PATH": PATH,
                         },
+                        timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
                     )
+                except subprocess.TimeoutExpired as e:
+                    raise ObjdumpError("Timeout expired")
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
             else:
@@ -175,7 +191,6 @@ class DiffWrapper:
         config: asm_differ.Config,
         diff_flags: List[str],
     ) -> str:
-
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
@@ -204,10 +219,8 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         compiled_elf: bytes,
-        allow_target_only: bool,
         diff_flags: List[str],
     ) -> DiffResult:
-
         if platform == DUMMY:
             # Todo produce diff for dummy
             return {"rows": ["a", "b"]}
@@ -220,7 +233,7 @@ class DiffWrapper:
 
         objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
-        config = DiffWrapper.create_config(arch)  # TODO pass and use diff_flags
+        config = DiffWrapper.create_config(arch, diff_flags)
 
         basedump = DiffWrapper.get_dump(
             bytes(target_assembly.elf_object),
@@ -234,10 +247,7 @@ class DiffWrapper:
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
         except Exception as e:
-            if allow_target_only:
-                mydump = ""
-            else:
-                raise e
+            mydump = ""
 
         try:
             display = asm_differ.Display(basedump, mydump, config)

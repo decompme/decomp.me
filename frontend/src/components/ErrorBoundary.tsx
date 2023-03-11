@@ -1,37 +1,38 @@
-import React from "react"
+"use client"
 
-import classNames from "classnames"
-
-import styles from "./ErrorBoundary.module.scss"
+import { Component, ReactNode } from "react"
 
 interface State {
-    hasError: boolean
+    error?: unknown
 }
 
 export interface Props {
-    className?: string
-    onError: (error: Error, errorInfo: any) => void
+    children?: ReactNode
+    forceError?: boolean
+    fallback?: (state: State) => ReactNode
+    onError?: (error: unknown, errorInfo: any) => void
 }
 
-export default class ErrorBoundary extends React.Component<any, State> {
-    constructor(props) {
+export default class ErrorBoundary extends Component<Props, State> {
+    constructor(props: Props) {
         super(props)
-        this.state = { hasError: false }
+        this.state = { error: undefined }
     }
 
-    static getDerivedStateFromError(_error) {
+    static getDerivedStateFromError(error: unknown) {
         // Update state so the next render will show the fallback UI.
-        return { hasError: true }
+        return { error }
     }
 
-    componentDidCatch(error, errorInfo) {
+    componentDidCatch(error: unknown, errorInfo: unknown) {
         console.error("Error boundary caught an error:", error, errorInfo)
         this.props.onError?.(error, errorInfo)
     }
 
     render() {
-        if (this.state.hasError) {
-            return <div className={classNames(styles.error, this.props.className)} />
+        if (this.state.error || this.props.forceError) {
+            const fallback = this.props.fallback ? this.props.fallback(this.state) : null
+            return fallback
         }
 
         return this.props.children || null

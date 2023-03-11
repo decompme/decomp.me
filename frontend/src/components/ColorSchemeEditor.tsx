@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import isDarkColor from "is-dark-color"
 import { HexColorPicker, HexColorInput } from "react-colorful"
 
-import { COLOR_NAMES, ColorScheme, getColors } from "../lib/codemirror/color-scheme"
+import { COLOR_NAMES, ColorScheme, getColors } from "@/lib/codemirror/color-scheme"
 
 import styles from "./ColorSchemeEditor.module.scss"
 import ErrorBoundary from "./ErrorBoundary"

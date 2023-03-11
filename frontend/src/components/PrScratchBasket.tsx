@@ -5,8 +5,8 @@ import Link from "next/link"
 import { ArrowRightIcon, GitPullRequestIcon, XIcon } from "@primer/octicons-react"
 import createPersistedState from "use-persisted-state"
 
-import * as api from "../lib/api"
-import { requestMissingScopes } from "../lib/oauth"
+import * as api from "@/lib/api"
+import { requestMissingScopes } from "@/lib/oauth"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
@@ -97,36 +97,40 @@ export default function PrScratchBasket({ project }: Props) {
         window.location.href = url
     }
 
-    return <div className={styles.container}>
-        <h2>
-            <GitPullRequestIcon size={18} />
-            Pull request
-        </h2>
-        <ul className={styles.list}>
-            {basket.scratches.map(scratch => {
-                return <li key={scratch.url} className={styles.scratch}>
-                    <UserAvatar user={scratch.owner} className={styles.icon} />
-                    <Link href={scratch.html_url}>
-                        <a className={styles.scratchLink}>
-                            {scratch.name}
-                        </a>
-                    </Link>
-                    <Button
-                        className={styles.deleteBtn}
-                        onClick={() => basket.removeScratch(scratch)}
-                    >
-                        <XIcon />
-                    </Button>
-                </li>
-            })}
-        </ul>
-        <div>
-            <AsyncButton
-                primary
-                onClick={createPr}
-            >
-                Create pull request <ArrowRightIcon />
-            </AsyncButton>
+    return (
+        <div className={styles.container}>
+            <h2>
+                <GitPullRequestIcon size={18} />
+                Pull request
+            </h2>
+            <ul className={styles.list}>
+                {basket.scratches.map(scratch => {
+                    return (
+                        <li key={scratch.url} className={styles.scratch}>
+                            <UserAvatar user={scratch.owner} className={styles.icon} />
+                            <Link href={scratch.html_url} className={styles.scratchLink}>
+
+                                {scratch.name}
+
+                            </Link>
+                            <Button
+                                className={styles.deleteBtn}
+                                onClick={() => basket.removeScratch(scratch)}
+                            >
+                                <XIcon />
+                            </Button>
+                        </li>
+                    )
+                })}
+            </ul>
+            <div>
+                <AsyncButton
+                    primary
+                    onClick={createPr}
+                >
+                    Create pull request <ArrowRightIcon />
+                </AsyncButton>
+            </div>
         </div>
-    </div>
+    )
 }

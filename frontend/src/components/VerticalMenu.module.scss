@@ -2,11 +2,8 @@ $padding: 6px;
 
 .menu {
     color: var(--g1700);
-    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--a100);
     border-radius: 6px;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 
     list-style: none;
 
@@ -21,10 +18,16 @@ $padding: 6px;
         background: var(--g100);
     }
 
-    :global(.theme-light) & {
-        background: rgba(255, 255, 255, 0.5);
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--a200);
+    // light theme
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--a200);
+
+    // dark theme
+    :global(.dark) & {
+        background: rgba(0, 0, 0, 0.5);
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--a100);
     }
 }
 

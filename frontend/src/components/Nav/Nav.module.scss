@@ -1,10 +1,9 @@
-$innerSize: 32px;
+$inner-size: 32px;
 $padding: 8px;
 
 .container {
     width: 100%;
     user-select: none;
-    background: var(--g300);
 
     z-index: 2;
 
@@ -14,17 +13,18 @@ $padding: 8px;
 }
 
 .header {
-    min-height: $innerSize;
-    padding: $padding;
+    min-height: $inner-size;
+    padding-top: $padding;
+    padding-bottom: $padding;
     box-sizing: content-box;
 
     display: grid;
-    grid-template-columns: 1fr $innerSize 1fr;
+    grid-template-columns: 1fr auto 1fr;
     grid-template-areas: "menutoggle sitelogo loginstate";
     justify-content: space-between;
 
     & > li {
-        min-height: $innerSize;
+        min-height: $inner-size;
     }
 }
 
@@ -32,8 +32,8 @@ $padding: 8px;
     grid-area: menutoggle;
 
     & > button {
-        width: $innerSize;
-        height: $innerSize;
+        width: $inner-size;
+        height: $inner-size;
 
         border: none;
         background: transparent;
@@ -49,7 +49,7 @@ $padding: 8px;
     align-items: center;
     justify-content: flex-end;
 
-    height: $innerSize;
+    height: $inner-size;
     padding-left: 12px;
 }
 
@@ -115,11 +115,9 @@ $padding: 8px;
     z-index: 100;
 
     width: 100%;
-    height: calc(100vh - $innerSize - 16px);
+    height: calc(100vh - $inner-size - 16px);
 
     overflow: auto;
-
-    background: var(--g300);
 
     .container[data-open="false"] & {
         display: none;
@@ -127,27 +125,20 @@ $padding: 8px;
     }
 }
 
-@mixin borderBottomNoLayoutShift {
+@mixin border-bottom-no-layout-shift {
     padding-bottom: $padding - 1px;
-    border-bottom: 1px solid var(--g600);
-}
-
-.border .header {
-    @include borderBottomNoLayoutShift;
+    border-bottom: 1px solid inherit;
 }
 
 // Sidebar
 @media (min-width: 500px) {
     .container[data-open="true"] .header {
-        @include borderBottomNoLayoutShift;
+        @include border-bottom-no-layout-shift;
     }
 
     .menu {
         width: 300px;
         border-right: 1px solid var(--g600);
-
-        // Cover up header's border-bottom
-        box-shadow: -2px 0 0 2px var(--g300);
     }
 }
 
@@ -177,20 +168,9 @@ $padding: 8px;
     }
 }
 
-.links > li > a,
-.desktopLinks > ul > li > a {
-    color: var(--g2000);
-    font-weight: 500;
-
-    &:hover {
-        color: var(--g1700);
-    }
-}
-
 .desktopLinks {
     grid-area: desktoplinks;
 
-    font-size: 0.85rem;
     margin-left: $padding;
 
     display: flex;
@@ -199,10 +179,9 @@ $padding: 8px;
     > ul {
         display: flex;
         align-items: center;
-        gap: 1em;
 
         > li {
-            height: $innerSize;
+            height: $inner-size;
 
             display: flex;
             align-items: center;
@@ -228,8 +207,12 @@ $padding: 8px;
 
 // has custom children
 .container[data-force-toggle="true"] .header {
-    grid-template-columns: $innerSize 1fr auto;
+    grid-template-columns: $inner-size 1fr auto;
     grid-template-areas: "menutoggle customchildren loginstate";
+
+    // override tailwind padding
+    padding-left: $padding;
+    padding-right: $padding;
 
     .headerItemSiteLogo {
         display: none;
@@ -251,7 +234,7 @@ $padding: 8px;
     // no toggle menu
     .container[data-force-toggle="false"] {
         .header {
-            grid-template-columns: $innerSize auto 1fr;
+            grid-template-columns: auto 1fr auto;
             grid-template-areas: "sitelogo desktoplinks loginstate";
         }
 

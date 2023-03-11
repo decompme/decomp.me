@@ -5,8 +5,8 @@ import { EditorView } from "@codemirror/view"
 import classNames from "classnames"
 import { useDebouncedCallback } from "use-debounce"
 
-import { useSize } from "../../lib/hooks"
-import { useCodeFontSize } from "../../lib/settings"
+import { useSize } from "@/lib/hooks"
+import { useCodeFontSize } from "@/lib/settings"
 
 import styles from "./CodeMirror.module.scss"
 

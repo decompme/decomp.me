@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from time import sleep
 from typing import Any, Callable, Dict, Optional
 from unittest import skip, skipIf
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 from parameterized import parameterized
 
 import responses
@@ -12,7 +12,8 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from coreapp.compilers import Language
+from coreapp.compilers import DummyCompiler, Language
+from coreapp.sandbox import Sandbox
 from coreapp import compilers, platforms
 
 from coreapp.compiler_wrapper import CompilerWrapper
@@ -27,8 +28,8 @@ from coreapp.compilers import (
 )
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64, NDS_ARM9, PS1
-from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
+from coreapp.platforms import N64
+from coreapp.views.scratch import compile_scratch_update_score
 from .models.github import GitHubRepo, GitHubUser
 
 from .models.profile import Profile
@@ -386,7 +387,7 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertTrue(response.json()["success"])
 
     @requiresCompiler(IDO53)
     def test_ido_line_endings(self) -> None:
@@ -453,7 +454,7 @@ nop
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertTrue(response.json()["success"])
         # Confirm the output contains the expected fpr reg names
         self.assertTrue("fv1f" in str(response.json()))
 
@@ -462,7 +463,7 @@ nop
             {"diff_flags": "[]"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()["errors"]), 0)
+        self.assertTrue(response.json()["success"])
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
 
@@ -523,7 +524,7 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @parameterized.expand(input=[(c,) for c in compilers.available_compilers()])  # type: ignore
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], skip_on_empty=True)  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
         """
         Ensure that we can run a simple compilation/diff for all available compilers
@@ -549,12 +550,55 @@ nop
             compiler.platform,
             "",
             result.elf_object,
-            allow_target_only=True,
             diff_flags=[],
         )
 
         self.assertTrue("rows" in diff)
         self.assertGreater(len(diff["rows"]), 0)
+
+
+class TimeoutTests(BaseTestCase):
+    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
+    def test_compiler_timeout(self) -> None:
+        # Test that a hanging compilation will fail with a timeout error
+        with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
+            scratch_dict = {
+                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "asm(AAAAAAAA)",
+            }
+
+            scratch = self.create_scratch(scratch_dict)
+
+            compile_dict = {
+                "slug": scratch.slug,
+                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "compiler_flags": "",
+                "source_code": "source(AAAAAAAA)",
+            }
+
+            response = self.client.post(
+                reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
+            )
+
+            self.assertFalse(response.json()["success"])
+            self.assertIn("timeout expired", response.json()["compiler_output"].lower())
+
+    # if we don't have DUMMY_LONGRUNNING, it means we'll be unable to use sandbox.run_subprocess
+    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
+    def test_zero_timeout(self) -> None:
+        # Tests that passing a timeout of zero to sandbox.run_subprocess will equate
+        # to disabling the timeout entirely
+        expected_output = "AAAAAAAA"
+
+        with Sandbox() as sandbox:
+            sandboxed_proc = sandbox.run_subprocess(
+                f"sleep 3 && echo {expected_output}", timeout=0, shell=True
+            )
+
+            self.assertEqual(sandboxed_proc.returncode, 0)
+            self.assertIn(expected_output, sandboxed_proc.stdout)
 
 
 class DecompilationTests(BaseTestCase):

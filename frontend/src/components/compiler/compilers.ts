@@ -1,4 +1,4 @@
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
 
 export function useCompilersForPlatform(platform?: string, compilers?: Record<string, api.Compiler>): Record<string, api.Compiler> {
     if (!compilers)

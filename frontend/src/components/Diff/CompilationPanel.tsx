@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
+import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react"
+import { Allotment, AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
-import * as resizer from "react-simple-resizer"
 
-import * as api from "../../lib/api"
+import * as api from "@/lib/api"
 
-import styles from "./CompilationPanel.module.scss"
+import GhostButton from "../GhostButton"
+
 import Diff from "./Diff"
 
 function getProblemState(compilation: api.Compilation): ProblemState {
-    if (compilation.diff_output) {
-        if (compilation.errors) {
-            return ProblemState.WARNINGS
-        } else {
-            return ProblemState.NO_PROBLEMS
-        }
-    } else {
+    if (!compilation.success) {
         return ProblemState.ERRORS
+    } else if (compilation.compiler_output) {
+        return ProblemState.WARNINGS
+    } else {
+        return ProblemState.NO_PROBLEMS
     }
 }
 
@@ -37,30 +37,66 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
     const [diff, setDiff] = useState<api.DiffOutput | null>(null)
     const problemState = getProblemState(compilation)
 
+    // Only update the diff if it's never been set or if the compilation succeeded
     useEffect(() => {
-        if (compilation.diff_output)
+        if (!diff || compilation.success) {
             setDiff(compilation.diff_output)
-    }, [compilation.diff_output])
+        }
+    }, [compilation.diff_output, compilation.success, diff])
 
-    return <resizer.Container vertical className={styles.container}>
-        <resizer.Section minSize={100}>
-            <Diff
-                diff={diff}
-                isCompiling={isCompiling}
-                isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
-                selectedSourceLine={selectedSourceLine}
-            />
-        </resizer.Section>
-        <resizer.Bar
-            size={1}
-            className={styles.bar}
-            expandInteractiveArea={{ top: 2, bottom: 2 }}
-        />
-        {(problemState != ProblemState.NO_PROBLEMS) && <resizer.Section className={styles.problems} minSize={100}>
-            <h2>Compiler {problemState == ProblemState.ERRORS ? "errors" : "warnings"}</h2>
-            <div className={styles.log}>
-                <Ansi>{compilation.errors}</Ansi>
-            </div>
-        </resizer.Section>}
-    </resizer.Container>
+    const container = useRef<HTMLDivElement>(null)
+    const allotment = useRef<AllotmentHandle>(null)
+
+    const problemsCollapsedHeight = 37
+    const problemsDefaultHeight = 320
+    const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState == ProblemState.NO_PROBLEMS)
+
+    return <div ref={container} className="h-full w-full">
+        <Allotment
+            ref={allotment}
+            vertical
+            onChange={([_top, bottom]) => {
+                setIsProblemsCollapsed(bottom <= problemsCollapsedHeight)
+            }}
+        >
+            <Allotment.Pane>
+                <Diff
+                    diff={diff}
+                    isCompiling={isCompiling}
+                    isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    selectedSourceLine={selectedSourceLine}
+                />
+            </Allotment.Pane>
+            <Allotment.Pane
+                minSize={problemsCollapsedHeight}
+                preferredSize={isProblemsCollapsed ? problemsCollapsedHeight : problemsDefaultHeight}
+            >
+                <div className="flex h-full w-full flex-col">
+                    <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
+                        <span className="text-sm font-medium">
+                            {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                        </span>
+                        <div className="grow" />
+                        <GhostButton
+                            className="text-gray-11"
+                            onClick={() => {
+                                const containerHeight = container.current?.clientHeight ?? 0
+                                const newProblemsHeight = isProblemsCollapsed ? problemsDefaultHeight : problemsCollapsedHeight
+                                allotment.current?.resize([
+                                    containerHeight - newProblemsHeight,
+                                    newProblemsHeight,
+                                ])
+                            }}
+                        >
+                            {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </GhostButton>
+                    </h2>
+
+                    <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
+                        <Ansi>{compilation.compiler_output}</Ansi>
+                    </div>
+                </div>
+            </Allotment.Pane>
+        </Allotment>
+    </div>
 }

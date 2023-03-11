@@ -40,4 +40,6 @@
         "backend/coreapp",
         "backend/decompme"
     ],
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
 }

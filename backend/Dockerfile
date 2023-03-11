@@ -50,7 +50,7 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
-  POETRY_VERSION=1.1.13 POETRY_HOME=/etc/poetry python3.9 -
+  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.9 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -70,7 +70,12 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
 
 # ps1 specifics
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
-    apt-get install -y dos2unix; \
+    apt-get update && \
+    apt-get install -y -o APT::Immediate-Configure=false \
+        dos2unix software-properties-common && \
+    add-apt-repository -y ppa:dosemu2/ppa && \
+    apt-get update && \
+    apt-get install -y dosemu2; \
     fi
 
 # gc/wii specifics

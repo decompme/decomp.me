@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useState } from "react"
 
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
@@ -99,22 +99,24 @@ export function LinkItem({ children, href, disabled, shortcutKeys }: { children:
             router.push(href)
     }, [disabled, router, href]))
 
-    return <Link href={href}>
-        <a
+    return (
+        <Link
+            href={href}
             className={classNames(styles.item, {
                 [styles.disabled]: disabled,
             })}
             onClick={() => {
                 if (!disabled)
                     setOpen(false)
-            }}
-        >
+            }}>
+
             <div className={styles.itemChildren}>{children}</div>
             {shortcutKeys && <div>
                 <Shortcut keys={shortcutKeys} className={styles.shortcut}/>
             </div>}
-        </a>
-    </Link>
+
+        </Link>
+    )
 }
 
 export function SearchItem() {

@@ -1,4 +1,8 @@
-# [decomp.me](https://decomp.me)
+<h1>
+    <a href="https://decomp.me">
+        <img alt="decomp.me" height="36" src="https://raw.githubusercontent.com/decompme/decomp.me/main/.github/decompme-logotype.svg" />
+    </a>
+</h1>
 
 [![Discord Server][discord-badge]][discord]
 

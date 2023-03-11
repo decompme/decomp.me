@@ -1,18 +1,12 @@
-import Footer from "../components/Footer"
-import Nav from "../components/Nav"
-import Frog from "../components/Nav/frog.svg"
+import Footer from "@/components/Footer"
+import Nav from "@/components/Nav"
 
-import styles from "./404.module.scss"
+import NotFound from "../app/not-found"
 
 export default function Error404Page() {
     return <>
         <Nav />
-        <main className={styles.container}>
-            <Frog />
-            <h1>
-                <b>404</b>. Page not found.
-            </h1>
-        </main>
+        <NotFound />
         <Footer />
     </>
 }

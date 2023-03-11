@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { isMacOS } from "../lib/device"
+import { isMacOS } from "@/lib/device"
 
 export type Key = string | SpecialKey
 

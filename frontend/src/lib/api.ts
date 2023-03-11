@@ -1,30 +1,13 @@
 import { useState, useCallback, useEffect } from "react"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
-import { usePlausible } from "next-plausible"
 import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
+import { ResponseError, get, post, patch, delete_ } from "./api/request"
+import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, Platform, Project, ProjectMember } from "./api/types"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
-
-const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
-
-type Json = any
-
-const commonOpts: RequestInit = {
-    credentials: "include",
-    cache: "reload",
-    headers: {
-        "Accept": "application/json",
-    },
-}
-
-/*
-function isAbsoluteUrl(maybeUrl: string): boolean {
-    return maybeUrl.startsWith("https://") || maybeUrl.startsWith("http://")
-}
-*/
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
     if (error.status === 404) return
@@ -40,275 +23,8 @@ function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K):
     }
 }
 
-export class ResponseError extends Error {
-    status: number
-    json: Json
-    code: string
-
-    constructor(response: Response, json) {
-        super(`Server responded with HTTP status code ${response.status}`)
-
-        this.status = response.status
-        this.json = json
-        this.code = json.code
-        this.message = json?.detail
-        this.name = "ResponseError"
-    }
-}
-
-export function normalizeUrl(url: string) {
-    if (url.startsWith("/")) {
-        url = API_BASE + url
-    }
-    return url
-}
-
-export async function get(url: string, useCacheIfFresh = false) {
-    url = normalizeUrl(url)
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        cache: useCacheIfFresh ? "default" : "no-cache",
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    try {
-        return await response.json()
-    } catch (error) {
-        if (error instanceof SyntaxError) {
-            throw new ResponseError(response, {
-                code: "invalid_json",
-                detail: "The server returned invalid JSON",
-            })
-        }
-
-        throw error
-    }
-}
-
-export const getCached = (url: string) => get(url, true)
-
-export async function post(url: string, data: Json | FormData, method = "POST") {
-    url = normalizeUrl(url)
-
-    console.info(method, url, data)
-
-    let body: string | FormData
-    if (data instanceof FormData) {
-        body = data
-    } else {
-        body = JSON.stringify(data)
-    }
-
-    const response = await fetch(url, {
-        ...commonOpts,
-        method,
-        body,
-        headers: body instanceof FormData ? {} : {
-            "Content-Type": "application/json",
-        },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    if (response.status == 204) {
-        return null
-    } else {
-        return await response.json()
-    }
-}
-
-export async function patch(url: string, data: Json | FormData) {
-    return await post(url, data, "PATCH")
-}
-
-export async function delete_(url: string, json: Json) {
-    return await post(url, json, "DELETE")
-}
-
-export async function put(url: string, json: Json) {
-    return await post(url, json, "PUT")
-}
-
-export interface Page<T> {
-    next: string | null
-    previous: string | null
-    results: T[]
-}
-
-export interface AnonymousUser {
-    url: null
-    html_url: null
-    is_anonymous: true
-    id: number
-    is_online: boolean
-    is_admin: boolean
-    username: string
-
-    frog_color: [number, number, number]
-}
-
-export interface User {
-    url: string
-    html_url: string
-    is_anonymous: false
-    id: number
-    is_online: boolean
-    is_admin: boolean
-    username: string
-
-    name: string
-    avatar_url: string | null
-    github_api_url: string | null
-    github_html_url: string | null
-}
-
-export interface TerseScratch {
-    url: string
-    html_url: string
-    slug: string
-    owner: AnonymousUser | User | null // null = unclaimed
-    parent: string | null
-    name: string
-    creation_time: string
-    last_updated: string
-    compiler: string
-    platform: string
-    score: number // -1 = doesn't compile
-    max_score: number
-    project: string
-    project_function: string
-}
-
-export interface Scratch extends TerseScratch {
-    description: string
-    compiler_flags: string
-    diff_flags: string[]
-    preset: string
-    source_code: string
-    context: string
-    diff_label: string
-}
-
-export interface Project {
-    slug: string
-    url: string
-    html_url: string
-    repo: {
-        html_url: string
-        owner: string
-        repo: string
-        branch: string
-        is_pulling: boolean
-        last_pulled: string | null
-    }
-    creation_time: string
-    icon?: string
-    description: string
-    platform?: string
-    unmatched_function_count: number
-}
-
-export interface ProjectFunction {
-    url: string
-    html_url: string
-    project: string
-    rom_address: number
-    creation_time: string
-    display_name: string
-    is_matched_in_repo: boolean
-    src_file: string
-    asm_file: string
-    attempts_count: number
-}
-
-export interface ProjectMember {
-    url: string
-    username: string
-}
-
-export type Compilation = {
-    errors: string
-    diff_output: DiffOutput | null
-}
-
-export type DiffOutput = {
-    arch_str: string
-    current_score: number
-    max_score: number
-    header: DiffHeader
-    rows: DiffRow[]
-}
-
-export type DiffHeader = {
-    base: DiffText[]
-    current: DiffText[]
-    previous?: DiffText[]
-}
-
-export type DiffRow = {
-    key: string
-    base?: DiffCell
-    current?: DiffCell
-    previous?: DiffCell
-}
-
-export type DiffCell = {
-    text: DiffText[]
-    line?: number
-    branch?: number
-    src?: string
-    src_comment?: string
-    src_line?: number
-    src_path?: string
-}
-
-export type DiffText = {
-    text: string
-    format?: string
-    group?: string
-    index?: number
-    key?: string
-}
-
-export type Flag = {
-    type: "checkbox"
-    id: string
-    flag: string
-} | {
-    type: "flagset"
-    id: string
-    flags: string[]
-}
-
-export type CompilerPreset = {
-    name: string
-    flags: string
-    compiler: string
-    diff_flags: string[]
-}
-
-export type Compiler = {
-    platform: string
-    flags: Flag[]
-    diff_flags: Flag[]
-}
-
-export type Platform = {
-    name: string
-    description: string
-    arch: string
-    presets: CompilerPreset[]
-}
-
-export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
-    return user.is_anonymous
-}
+export * from "./api/request"
+export * from "./api/types"
 
 export function useThisUser(): User | AnonymousUser | undefined {
     const { data: user, error } = useSWR<AnonymousUser | User>("/user", get)
@@ -346,7 +62,6 @@ export function useSavedScratch(scratch: Scratch): Scratch {
 export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     const savedScratch = useSavedScratch(localScratch)
     const userIsYou = useUserIsYou()
-    const plausible = usePlausible()
 
     const saveScratch = useCallback(async () => {
         if (!localScratch) {
@@ -370,10 +85,8 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
 
         await mutate(localScratch.url, updatedScratch, false)
 
-        plausible("saveScratch", { props: { scratch: localScratch.html_url } })
-
         return updatedScratch
-    }, [localScratch, plausible, savedScratch, userIsYou])
+    }, [localScratch, savedScratch, userIsYou])
 
     return saveScratch
 }
@@ -399,16 +112,13 @@ export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
 
 export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
     const router = useRouter()
-    const plausible = usePlausible()
 
     return useCallback(async () => {
         const fork = await forkScratch(parent)
 
-        plausible("forkScratch", { props: { parent: parent.html_url, fork: fork.html_url } })
-
         ignoreNextWarnBeforeUnload()
         await router.push(fork.html_url)
-    }, [parent, router, plausible])
+    }, [parent, router])
 }
 
 export function useIsScratchSaved(scratch: Scratch): boolean {
@@ -436,7 +146,6 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     const savedScratch = useSavedScratch(scratch)
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(initial)
-    const plausible = usePlausible()
     const [isCompilationOld, setIsCompilationOld] = useState(false)
 
     const compile = useCallback(() => {
@@ -464,7 +173,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setIsCompilationOld(false)
         }).catch(error => {
             if (error instanceof ResponseError) {
-                setCompilation({ "errors": error.json?.detail, "diff_output": null })
+                setCompilation({ "compiler_output": error.json?.detail, "diff_output": null, "success": false })
             } else {
                 return Promise.reject(error)
             }
@@ -472,10 +181,8 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 
         setCompileRequestPromise(promise)
 
-        plausible("compileScratch", { props: { auto: autoRecompile, scratch: scratch.html_url } })
-
         return promise
-    }, [autoRecompile, compileRequestPromise, plausible, savedScratch, scratch])
+    }, [compileRequestPromise, savedScratch, scratch])
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(scratch.url)
@@ -522,7 +229,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 }
 
 export function usePlatforms(): Record<string, Platform> {
-    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", getCached, {
+    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", get, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true, // TODO: remove

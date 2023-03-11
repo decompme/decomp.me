@@ -35,23 +35,34 @@ export function getScoreText(score: number, maxScore: number): string {
     }
 }
 
+export function getScoreAsFraction(score: number, maxScore: number): string {
+    if (score === -1) {
+        return `???/${maxScore}`
+    } else {
+        return `${maxScore - score}/${maxScore}`
+    }
+}
+
 export type Props = {
     score: number
     maxScore: number
+    compiledSuccessfully: boolean
 }
 
-export default function ScoreBadge({ score, maxScore }: Props) {
-    if (score === -1) {
-        return <div className={classNames(styles.badge, { [styles.error]: true })}>
+export default function ScoreBadge({ score, maxScore, compiledSuccessfully }: Props) {
+    if (!compiledSuccessfully || score === -1) {
+        return <div className={classNames(styles.badge, { [styles.error]: true })} title="Does not compile">
             <AlertIcon className={styles.icon} />
         </div>
     } else if (score === 0) {
-        return <div className={classNames(styles.badge, { [styles.match]: true })}>
+        return <div className={classNames(styles.badge, { [styles.match]: true })} title="Match">
             <CheckIcon className={styles.icon} />
         </div>
     } else {
         const text = getScoreText(score, maxScore)
-        return <div className={styles.badge} aria-label="Score">
+        const title = getScoreAsFraction(score, maxScore)
+
+        return <div className={styles.badge} aria-label="Score" title={title}>
             {text}
         </div>
     }

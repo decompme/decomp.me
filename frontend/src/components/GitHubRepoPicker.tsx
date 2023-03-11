@@ -4,7 +4,7 @@ import { CheckCircleIcon, MarkGithubIcon, XCircleIcon } from "@primer/octicons-r
 import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
-import * as api from "../lib/api"
+import * as api from "@/lib/api"
 
 import styles from "./GitHubRepoPicker.module.scss"
 import Loading from "./loading.svg"

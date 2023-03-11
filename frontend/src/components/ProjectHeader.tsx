@@ -2,8 +2,9 @@ import Link from "next/link"
 
 import { DiamondIcon, GearIcon, MarkGithubIcon } from "@primer/octicons-react"
 
-import UnderlineNav, { Counter } from "../components/UnderlineNav"
-import * as api from "../lib/api"
+import UnderlineNav, { Counter } from "@/components/UnderlineNav"
+import * as api from "@/lib/api"
+
 import { Tab } from "../pages/projects/[...project]"
 
 import PlatformIcon from "./PlatformSelect/PlatformIcon"
@@ -30,10 +31,10 @@ export default function ProjectHeader({ project, tab }: Props) {
                     <p>{project.description}</p>
                     <div className={styles.metadata}>
                         <Link href={project.repo.html_url}>
-                            <a>
-                                <MarkGithubIcon size={16} />
-                                {project.repo.owner}/{project.repo.repo}
-                            </a>
+
+                            <MarkGithubIcon size={16} />
+                            {project.repo.owner}/{project.repo.repo}
+
                         </Link>
                         {project.platform && <div className={styles.platform}>
                             <PlatformIcon platform={project.platform} size={16} />

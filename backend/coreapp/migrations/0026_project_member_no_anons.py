@@ -32,7 +32,6 @@ def delete_all_project_members(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("coreapp", "0025_profile_pseudonym"),

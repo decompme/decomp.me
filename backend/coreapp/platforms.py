@@ -2,7 +2,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
-from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, Flags
+from rest_framework.exceptions import APIException
+from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
 
 logger = logging.getLogger(__name__)
@@ -18,13 +19,13 @@ class Platform:
     objdump_cmd: str
     nm_cmd: str
     asm_prelude: str
-    diff_flags: Flags = field(default_factory=list, hash=False)
+    diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
 
 
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
-        raise ValueError(f"Unknown platform: {platform_id}")
+        raise APIException(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
 
@@ -59,10 +60,13 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flags=COMMON_MIPS_DIFF_FLAGS,
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
 .endm
 
 .macro glabel label
@@ -73,6 +77,85 @@ N64 = Platform(
 
 .macro dlabel label
     .global \label
+    \label:
+.endm
+
+.macro jlabel label
+    \label:
+.endm
+
+.set noat
+.set noreorder
+.set gp=64
+
+
+# Float register aliases (o32 ABI)
+
+.set $fv0,          $f0
+.set $fv0f,         $f1
+.set $fv1,          $f2
+.set $fv1f,         $f3
+.set $ft0,          $f4
+.set $ft0f,         $f5
+.set $ft1,          $f6
+.set $ft1f,         $f7
+.set $ft2,          $f8
+.set $ft2f,         $f9
+.set $ft3,          $f10
+.set $ft3f,         $f11
+.set $fa0,          $f12
+.set $fa0f,         $f13
+.set $fa1,          $f14
+.set $fa1f,         $f15
+.set $ft4,          $f16
+.set $ft4f,         $f17
+.set $ft5,          $f18
+.set $ft5f,         $f19
+.set $fs0,          $f20
+.set $fs0f,         $f21
+.set $fs1,          $f22
+.set $fs1f,         $f23
+.set $fs2,          $f24
+.set $fs2f,         $f25
+.set $fs3,          $f26
+.set $fs3f,         $f27
+.set $fs4,          $f28
+.set $fs4f,         $f29
+.set $fs5,          $f30
+.set $fs5f,         $f31
+
+""",
+)
+
+IRIX = Platform(
+    id="irix",
+    name="IRIX",
+    description="MIPS (big-endian, PIC)",
+    arch="mips",
+    assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="mips-linux-gnu-objdump",
+    nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro .late_rodata_alignment align
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
+    \label:
+.endm
+
+.macro jlabel label
     \label:
 .endm
 
@@ -127,6 +210,7 @@ PS1 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -135,6 +219,10 @@ PS1 = Platform(
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro jlabel label
     \label:
 .endm
 
@@ -152,6 +240,7 @@ PS2 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     asm_prelude="""
 .macro .late_rodata
     .section .rodata
@@ -160,6 +249,10 @@ PS2 = Platform(
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro jlabel label
     \label:
 .endm
 
@@ -276,6 +369,39 @@ MACOSX = Platform(
     \label:
 .endm
 
+.macro .fn name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @function
+    "\\name":
+.endm
+
+.macro .endfn name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .obj name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @object
+    "\\name":
+.endm
+
+.macro .endobj name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .sym name, visibility=global
+    .\\visibility "\\name"
+    "\\name":
+.endm
+
+.macro .endsym name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .rel name, label
+    .4byte "\\name" + ("\label" - "\\name")
+.endm
+
 .set r0, 0
 .set r1, 1
 .set r2, 2
@@ -364,6 +490,39 @@ GC_WII = Platform(
     .global \label
     .type \label, @function
     \label:
+.endm
+
+.macro .fn name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @function
+    "\\name":
+.endm
+
+.macro .endfn name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .obj name, visibility=global
+    .\\visibility "\\name"
+    .type "\\name", @object
+    "\\name":
+.endm
+
+.macro .endobj name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .sym name, visibility=global
+    .\\visibility "\\name"
+    "\\name":
+.endm
+
+.macro .endsym name
+    .size "\\name", . - "\\name"
+.endm
+
+.macro .rel name, label
+    .4byte "\\name" + ("\label" - "\\name")
 .endm
 
 .set r0, 0
@@ -458,17 +617,17 @@ NDS_ARM9 = Platform(
 
 .macro arm_func_start name
     .arm
-    \name:
+    \\name:
 .endm
 .macro arm_func_end name
 .endm
 .macro thumb_func_start name
     .thumb
-    \name:
+    \\name:
 .endm
 .macro non_word_aligned_thumb_func_start name
     .thumb
-    \name:
+    \\name:
 .endm
 .macro thumb_func_end name
 .endm
@@ -525,6 +684,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
         "switch": SWITCH,
+        "irix": IRIX,
         "n64": N64,
         "ps1": PS1,
         "ps2": PS2,

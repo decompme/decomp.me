@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
 
 from django.conf import settings
+from coreapp.error import CompilationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -21,6 +22,7 @@ from coreapp.flags import (
 from coreapp.platforms import (
     GBA,
     GC_WII,
+    IRIX,
     MACOS9,
     MACOSX,
     N3DS,
@@ -31,6 +33,8 @@ from coreapp.platforms import (
     PS2,
     SWITCH,
 )
+
+import platform as platform_stdlib
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +102,12 @@ class DummyCompiler(Compiler):
 
 
 @dataclass(frozen=True)
+class DummyLongRunningCompiler(DummyCompiler):
+    def available(self) -> bool:
+        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
+
+
+@dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
 
@@ -132,7 +142,7 @@ class MWCCCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise ValueError(f"Unknown compiler: {compiler_id}")
+        raise CompilationError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 
@@ -144,6 +154,10 @@ def available_compilers() -> List[Compiler]:
 @cache
 def available_platforms() -> List[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
+
+    # Disable MACOS9 for now, as it's not working properly
+    if MACOS9 in pset:
+        pset.remove(MACOS9)
 
     return sorted(pset, key=lambda p: p.name)
 
@@ -161,6 +175,10 @@ def preset_from_name(name: str) -> Optional[Preset]:
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
+
+DUMMY_LONGRUNNING = DummyLongRunningCompiler(
+    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
+)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -258,13 +276,25 @@ CLANG_401 = ClangCompiler(
 )
 
 # PS1
-GCC263_MIPSEL = GCCPS1Compiler(
-    id="gcc2.6.3-mipsel",
+PSYQ_MSDOS_CC = (
+    'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") &&'
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
+    + '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+)
+PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+
+PSYQ35 = GCCPS1Compiler(
+    id="psyq3.5",
     platform=PS1,
-    cc='mips-linux-gnu-cpp -Wall -lang-c -gstabs "$INPUT" | "${COMPILER_DIR}"/cc1 -mips1 -mcpu=3000 $COMPILER_FLAGS | mips-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -o "$OUTPUT"',
+    cc=PSYQ_MSDOS_CC,
 )
 
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ36 = GCCPS1Compiler(
+    id="psyq3.6",
+    platform=PS1,
+    cc=PSYQ_MSDOS_CC,
+)
 
 PSYQ40 = GCCPS1Compiler(
     id="psyq4.0",
@@ -297,32 +327,66 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 # PS2
+EE_GCC29_990721 = GCCCompiler(
+    id="ee-gcc2.9-990721",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+EE_GCC32_040921 = GCCCompiler(
+    id="ee-gcc3.2-040921",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+# IRIX
+IDO53_IRIX = IDOCompiler(
+    id="ido5.3_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+)
+
+IDO53PASCAL = IDOCompiler(
+    id="ido5.3Pascal",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+    language=Language.PASCAL,
+)
+
+IDO71_IRIX = IDOCompiler(
+    id="ido7.1_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+)
+
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido7.1",
+    language=Language.PASCAL,
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
     platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-)
-
-# Pascal IDO
-IDO71PASCAL = IDOCompiler(
-    id="ido7.1Pascal",
-    platform=N64,
-    cc='IDO_CC="${COMPILER_DIR}/cc" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-    language=Language.PASCAL,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 GCC272KMC = GCCCompiler(
@@ -353,10 +417,16 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_id="gcc2.8.1sn",
     platform=N64,
-    cc='cpp -E -undef -D__GNUC__=2 -v -lang-c++ -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
     '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
+EGCS1124 = GCCCompiler(
+    id="egcs_1.1.2-4",
+    platform=N64,
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
@@ -666,6 +736,7 @@ MWCC_40_1051 = MWCCCompiler(
 
 _all_compilers: List[Compiler] = [
     DUMMY,
+    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,
@@ -685,14 +756,17 @@ _all_compilers: List[Compiler] = [
     CLANG_391,
     CLANG_401,
     # PS1
-    GCC263_MIPSEL,
+    PSYQ35,
+    PSYQ36,
     PSYQ40,
     PSYQ41,
     PSYQ43,
     PSYQ45,
     PSYQ46,
     # PS2
+    EE_GCC29_990721,
     EE_GCC296,
+    EE_GCC32_040921,
     # N64
     IDO53,
     IDO71,
@@ -701,6 +775,11 @@ _all_compilers: List[Compiler] = [
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
+    EGCS1124,
+    # IRIX
+    IDO53_IRIX,
+    IDO53PASCAL,
+    IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
     MWCC_233_144,
@@ -762,6 +841,9 @@ MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -
 # SPM Common flags
 SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
 
+# Rat Proto Common flags
+RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions off -schedule on -lang=c++ -char signed -str reuse,pool,readonly -fp fmadd -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off'
+
 _all_presets = [
     # GBA
     Preset(
@@ -784,6 +866,11 @@ _all_presets = [
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
     ),
+    Preset(
+        "Pokemon Mystery Dungeon: Red Rescue Team",
+        AGBCC,
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+    ),
     # N3DS
     Preset(
         "Ocarina of Time 3D",
@@ -793,7 +880,12 @@ _all_presets = [
     Preset(
         "Super Mario 3D Land",
         ARMCC_41_894,
-        "--cpp --arm -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+        "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
+    ),
+    Preset(
+        "Ikachan 3DS",
+        ARMCC_41_894,
+        "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
     # Switch
     Preset(
@@ -809,8 +901,8 @@ _all_presets = [
     # PS1
     Preset(
         "Castlevania: Symphony of the Night",
-        GCC263_MIPSEL,
-        "-O2 -G0 -funsigned-char",
+        PSYQ35,
+        "-O2 -G0 -fsigned-char",
     ),
     Preset(
         "Evo's Space Adventures",
@@ -819,8 +911,8 @@ _all_presets = [
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
-        PSYQ45,
-        "-g -Wall -O2 -G256",
+        PSYQ43,
+        "-O2 -G65536",
     ),
     Preset(
         "Metal Gear Solid",
@@ -828,6 +920,8 @@ _all_presets = [
         "-O2 -G8",
     ),
     # N64
+    Preset("AeroGauge", IDO53, "-O2 -mips2"),
+    Preset("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
     Preset(
         "Chameleon Twist 1",
         IDO53,
@@ -843,7 +937,25 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    Preset(
+        "Dr. Mario 64 N64",
+        GCC272KMC,
+        "-O2 -mips3 -DVERSION_US=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Dr. Mario 64 iQue",
+        EGCS1124,
+        "-O2 -g -mips2 -mcpu=4300 -funsigned-char -DVERSION_CN=1",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    Preset(
+        "libultra iQue",
+        EGCS1124,
+        "-O2 -mips2 -mcpu=4300 -mno-abicalls",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "Majora's Mask",
         IDO71,
@@ -911,22 +1023,53 @@ _all_presets = [
         "-O2 -g2 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
+    Preset("Wave Race 64", IDO53, "-O2 -mips2"),
+    Preset(
+        "Animal Forest",
+        IDO71,
+        "-O2 -g3 -mips2",
+    ),
+    # IRIX
+    Preset(
+        "IDO 5.3 cc",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O1 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 libraries",
+        IDO53_IRIX,
+        "-KPIC -mips1 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "IDO 5.3 Pascal",
+        IDO53PASCAL,
+        "-KPIC -mips2 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
     Preset(
         "IDO 7.1 cc",
-        IDO71,
-        "-O1 -KPIC -mips2",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 libraries",
-        IDO71,
-        "-O2 -KPIC -mips2",
+        IDO71_IRIX,
+        "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
         "IDO 7.1 Pascal",
         IDO71PASCAL,
-        "-O2 -KPIC -mips2",
+        "-KPIC -mips2 -O2 -fullwarn",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "7.1 N64 SDK",
+        IDO71_IRIX,
+        "-KPIC -mips2 -g -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
@@ -958,7 +1101,7 @@ _all_presets = [
     Preset(
         "Battle for Bikini Bottom",
         MWCC_247_92,
-        "-lang=c++ -g -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -O4,p -maxerrors 1 -str reuse,pool,readonly -char unsigned -enum int -use_lmw_stmw on -inline off",
+        '-DMASTER -fp_contract on -RTTI off -nodefaults -Cpp_exceptions off -schedule on -opt level=4,peephole,speed -lang=c++ -char unsigned -str reuse,pool,readonly -fp hard -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off',
     ),
     Preset(
         "Mario Kart: Double Dash",
@@ -976,9 +1119,19 @@ _all_presets = [
         "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     ),
     Preset(
-        "Twilight Princess",
+        "Twilight Princess (DOL)",
         MWCC_247_108,
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
+    ),
+    Preset(
+        "Twilight Princess (REL)",
+        MWCC_247_108,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sdata 0 -sdata2 0",
+    ),
+    Preset(
+        "Twilight Princess (Dolphin)",
+        MWCC_233_163E,
+        "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
     Preset(
         "Super Paper Mario (DOL)",
@@ -1003,7 +1156,12 @@ _all_presets = [
     Preset(
         "Xenoblade Chronicles (JP)",
         MWCC_43_151,
-        "-lang=c++ -Cpp_exceptions off -enum int -inline on -RTTI off -fp hard -rostr -O4,p -nodefaults -use_lmw_stmw on -func_align 4",
+        "-lang=c++ -O4,p -nodefaults -proc gecko -str pool,readonly,reuse -enum int -fp hard -RTTI on -ipa file -enc SJIS",
+    ),
+    Preset(
+        "Xenoblade Chronicles (JP) (Wii SDK)",
+        MWCC_43_151,
+        "-lang=c99 -O4,p -nodefaults  -proc gekko -inline auto -str pool -enum int -fp hard  -ipa file -func_align 16",
     ),
     Preset(
         "Mario Party 4",
@@ -1050,6 +1208,46 @@ _all_presets = [
         MWCC_242_81,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline deferred,noauto -common on",
     ),
+    Preset(
+        "Luigi's Mansion",
+        MWCC_233_159,
+        "-lang=c++ -O4,p -nodefaults -fp hard -inline auto",
+    ),
+    Preset(
+        "Ratatouille Prototype (Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DDEBUG -DRWDEBUG -opt peep, speed -sdata 20 -sdata2 20",
+    ),
+    Preset(
+        "Ratatouille Prototype (Release)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DRELEASE -opt level=4, peep, speed-sdata 24 -sdata2 24",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master w/ Debug)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTERDEBUG -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ratatouille Prototype (Master)",
+        MWCC_247_108,
+        f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
+    ),
+    Preset(
+        "Ty the Tasmanian Tiger",
+        MWCC_242_81,
+        "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
+    ),
+    Preset(
+        "Animal Crossing (REL)",
+        MWCC_242_81,
+        "-O4 -fp hard -sdata2 0 -Cpp_exceptions off",
+    ),
+    Preset(
+        "Animal Crossing (DOL)",
+        MWCC_242_81,
+        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off, -char unsigned, -enum int",
+    ),
     # NDS
     Preset(
         "Pokémon Diamond / Pearl",
@@ -1066,6 +1264,12 @@ _all_presets = [
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
     Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
+    # PS2
+    Preset(
+        "Ty the Tasmanian Tiger (July 1st)",
+        EE_GCC29_990721,
+        "-x c++ -O2 -fno-exceptions -gstabs",
+    ),
 ]
 
 
