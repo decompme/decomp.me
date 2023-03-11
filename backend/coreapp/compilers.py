@@ -427,6 +427,14 @@ IDO53PASCAL = IDOCompiler(
     language=Language.PASCAL,
 )
 
+
+IDO60_IRIX = IDOCompiler(
+    id="ido6.0_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido6.0",
+)
+
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
     platform=IRIX,
@@ -453,6 +461,13 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO60 = IDOCompiler(
+    id="ido6.0",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido6.0",
 )
 
 GCC272KMC = GCCCompiler(
@@ -846,6 +861,7 @@ _all_compilers: List[Compiler] = [
     MWCPS2_30B22_020926,
     # N64
     IDO53,
+    IDO60,
     IDO71,
     GCC272KMC,
     GCC272SN,
@@ -856,6 +872,7 @@ _all_compilers: List[Compiler] = [
     # IRIX
     IDO53_IRIX,
     IDO53PASCAL,
+    IDO60_IRIX,
     IDO71_IRIX,
     IDO71PASCAL,
     # GC_WII
@@ -1122,7 +1139,7 @@ _all_presets = [
     Preset(
         "IDO 5.3 Pascal",
         IDO53PASCAL,
-        "-KPIC -mips2 -O2 -fullwarn",
+        "-KPIC -mips1 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(

@@ -83,6 +83,7 @@ COMMON_IDO_FLAGS: Flags = [
     FlagSet(id="ido_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
     FlagSet(id="mips_version", flags=["-mips1", "-mips2", "-mips3"]),
     Checkbox("kpic", "-KPIC"),
+    Checkbox("pass", "-v"),
 ]
 
 COMMON_DIFF_FLAGS: Flags = [

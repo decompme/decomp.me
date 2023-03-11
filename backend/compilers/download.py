@@ -374,6 +374,18 @@ def download_n64():
                 dest_name=f"ido{version}",
             )
 
+    dest = COMPILERS_DIR / "ido6.0"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido6.0.tar.xz",
+            mode="r:xz",
+            dl_name="ido6.0" + ".tar.xz",
+            dest_name="ido6.0",
+        )
+
     # SN
     dest = COMPILERS_DIR / "gcc2.7.2sn"
     if dest.is_dir():
