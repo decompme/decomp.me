@@ -51,7 +51,7 @@ class Language(enum.Enum):
     def get_file_extension(self) -> str:
         return {
             Language.C: "c",
-            Language.OLD_CXX: "c++"
+            Language.OLD_CXX: "c++",
             Language.CXX: "cpp",
             Language.PASCAL: "p",
         }[self]
