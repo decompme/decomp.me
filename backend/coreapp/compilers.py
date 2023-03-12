@@ -45,14 +45,12 @@ COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 class Language(enum.Enum):
     C = "C"
     CXX = "C++"
-    OLD_CXX = "C++"
     PASCAL = "Pascal"
 
     def get_file_extension(self) -> str:
         return {
             Language.C: "c",
             Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
             Language.PASCAL: "p",
         }[self]
 
@@ -335,6 +333,42 @@ EE_GCC29_990721 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+EE_GCC29_991111 = GCCCompiler(
+    id="ee-gcc2.9-991111",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.9-ee-991111/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2952_273A = GCCCompiler(
+    id="ee-gcc2.95.2-273a",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2952_274 = GCCCompiler(
+    id="ee-gcc2.95.2-274",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_107 = GCCCompiler(
+    id="ee-gcc2.95.3-107",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_114 = GCCCompiler(
+    id="ee-gcc2.95.3-114",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC2953_136 = GCCCompiler(
+    id="ee-gcc2.95.3-136",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC296 = GCCCompiler(
     id="ee-gcc2.96",
     platform=PS2,
@@ -345,6 +379,36 @@ EE_GCC32_040921 = GCCCompiler(
     id="ee-gcc3.2-040921",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_23_991202 = MWCCCompiler(
+    id="mwcps2-2.3-991202",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_011126 = MWCCCompiler(
+    id="mwcps2-3.0b22-011126",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020123 = MWCCCompiler(
+    id="mwcps2-3.0b22-020123",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020716 = MWCCCompiler(
+    id="mwcps2-3.0b22-020716",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+)
+
+MWCPS2_30B22_020926 = MWCCCompiler(
+    id="mwcps2-3.0b22-020926",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 # IRIX
@@ -369,14 +433,6 @@ IDO60_IRIX = IDOCompiler(
     platform=IRIX,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
-)
-
-IDO53_CXX_IRIX = IDOCompiler(
-    id="ido5.3_c++_irix",
-    platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3_c++",
-    language=Language.OLD_CXX,
 )
 
 IDO71_IRIX = IDOCompiler(
@@ -412,14 +468,6 @@ IDO60 = IDOCompiler(
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
-)
-
-IDO53_CXX = IDOCompiler(
-    id="ido5.3_c++",
-    platform=N64,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3_c++",
-    language=Language.OLD_CXX,
 )
 
 GCC272KMC = GCCCompiler(
@@ -798,11 +846,21 @@ _all_compilers: List[Compiler] = [
     PSYQ46,
     # PS2
     EE_GCC29_990721,
+    EE_GCC29_991111,
+    EE_GCC2952_273A,
+    EE_GCC2952_274,
+    EE_GCC2953_107,
+    EE_GCC2953_114,
+    EE_GCC2953_136,
     EE_GCC296,
     EE_GCC32_040921,
+    MWCPS2_23_991202,
+    MWCPS2_30B22_011126,
+    MWCPS2_30B22_020123,
+    MWCPS2_30B22_020716,
+    MWCPS2_30B22_020926,
     # N64
     IDO53,
-    IDO53_CXX,
     IDO60,
     IDO71,
     GCC272KMC,
@@ -813,7 +871,6 @@ _all_compilers: List[Compiler] = [
     EGCS1124,
     # IRIX
     IDO53_IRIX,
-    IDO53_CXX_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
     IDO71_IRIX,
@@ -1283,7 +1340,7 @@ _all_presets = [
     Preset(
         "Animal Crossing (DOL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata2 4 -Cpp_exceptions off, -char unsigned",
+        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off, -char unsigned, -enum int",
     ),
     # NDS
     Preset(
@@ -1301,6 +1358,17 @@ _all_presets = [
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
     Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
+    # PS2
+    Preset(
+        "Ty the Tasmanian Tiger (July 1st)",
+        EE_GCC29_991111,
+        "-x c++ -O2 -fno-exceptions -gstabs",
+    ),
+    Preset(
+        "Sunny Garcia Surfing",
+        EE_GCC29_991111,
+        "-x c++ -O2 -fno-exceptions -gstabs",
+    ),
 ]
 
 
