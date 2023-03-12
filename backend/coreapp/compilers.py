@@ -45,12 +45,14 @@ COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 class Language(enum.Enum):
     C = "C"
     CXX = "C++"
+    OLD_CXX = "C++"
     PASCAL = "Pascal"
 
     def get_file_extension(self) -> str:
         return {
             Language.C: "c",
             Language.CXX: "cpp",
+            Language.OLD_CXX: "c++",
             Language.PASCAL: "p",
         }[self]
 
@@ -369,6 +371,14 @@ IDO60_IRIX = IDOCompiler(
     base_id="ido6.0",
 )
 
+IDO53_CXX_IRIX = IDOCompiler(
+    id="ido5.3_c++_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3_c++",
+    language=Language.OLD_CXX,
+)
+
 IDO71_IRIX = IDOCompiler(
     id="ido7.1_irix",
     platform=IRIX,
@@ -402,6 +412,14 @@ IDO60 = IDOCompiler(
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
+)
+
+IDO53_CXX = IDOCompiler(
+    id="ido5.3_c++",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3_c++",
+    language=Language.OLD_CXX,
 )
 
 GCC272KMC = GCCCompiler(
@@ -784,6 +802,7 @@ _all_compilers: List[Compiler] = [
     EE_GCC32_040921,
     # N64
     IDO53,
+    IDO53_CXX,
     IDO60,
     IDO71,
     GCC272KMC,
@@ -794,6 +813,7 @@ _all_compilers: List[Compiler] = [
     EGCS1124,
     # IRIX
     IDO53_IRIX,
+    IDO53_CXX_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
     IDO71_IRIX,
