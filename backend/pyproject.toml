@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Django = "^4.0.2"
 django-cors-headers = "^3.11.0"
 django-environ = "^0.8.1"
 django-filter = "^21.1"
@@ -28,6 +27,7 @@ m2c = {git="https://github.com/matt-kempster/m2c.git"}
 asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
 sentry-sdk = "^1.14.0"
 django-session-timeout = "^0.1.0"
+django = "^4.1.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

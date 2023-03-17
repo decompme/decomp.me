@@ -96,7 +96,7 @@ let app = withPlausibleProxy({
         domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
         unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
     },
-    swcMinify: false,
+    swcMinify: true,
     experimental: {
         appDir: true,
     },

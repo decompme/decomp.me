@@ -14,6 +14,7 @@
     "clang-3.9.1": "Clang 3.9.1",
     "clang-4.0.1": "Clang 4.0.1",
     "dummy": "Dummy",
+    "dummy_longrunning": "Dummy (long-running)",
     "ee-gcc2.9-990721": "EE GCC 2.9 build 990721",
     "ee-gcc2.9-991111": "EE GCC 2.9 build 991111",
     "ee-gcc2.95.2-273a": "EE GCC 2.95.2 (SN BUILD v2.73a)",
