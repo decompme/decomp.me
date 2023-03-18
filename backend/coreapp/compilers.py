@@ -275,6 +275,12 @@ CLANG_401 = ClangCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
+CLANG_800 = ClangCompiler(
+    id="clang-8.0.0",
+    platform=SWITCH,
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
@@ -836,6 +842,7 @@ _all_compilers: List[Compiler] = [
     # Switch
     CLANG_391,
     CLANG_401,
+    CLANG_800,
     # PS1
     PSYQ35,
     PSYQ36,
@@ -991,6 +998,11 @@ _all_presets = [
         "Breath of the Wild",
         CLANG_401,
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
+    ),
+    Preset(
+        "Super Mario 3D World + Bowser's Fury",
+        CLANG_800,
+        "-x c++ -O3 -g2 -std=c++17 -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
     # PS1
     Preset(
