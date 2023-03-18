@@ -2,6 +2,11 @@ import { notFound } from "next/navigation"
 
 const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
 
+if (!API_BASE) {
+    console.log("process.env", process.env)
+    throw new Error("No API_BASE set")
+}
+
 type Json = any
 
 const commonOpts: RequestInit = {
