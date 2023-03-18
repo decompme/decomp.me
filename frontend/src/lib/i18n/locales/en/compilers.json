@@ -13,6 +13,7 @@
     "armcc_504_82": "5.04 build 82",
     "clang-3.9.1": "Clang 3.9.1",
     "clang-4.0.1": "Clang 4.0.1",
+    "clang-8.0.0": "Clang 8.0.0",
     "dummy": "Dummy",
     "ee-gcc2.9-990721": "EE GCC 2.9 build 990721",
     "ee-gcc2.9-991111": "EE GCC 2.9 build 991111",
