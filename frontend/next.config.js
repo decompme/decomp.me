@@ -17,8 +17,6 @@ const getEnvBool = (key, fallback=false) => {
     return fallback
 }
 
-process.env.NEXT_PUBLIC_API_BASE = process.env.API_BASE
-process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
 let git_hash
 try {
     git_hash = execSync("git rev-parse HEAD").toString().trim()
@@ -26,7 +24,6 @@ try {
     console.log("Unable to get git hash, assume running inside Docker")
     git_hash = "abc123"
 }
-process.env.NEXT_PUBLIC_COMMIT_HASH = git_hash
 
 const { withPlausibleProxy } = require("next-plausible")
 
@@ -96,9 +93,16 @@ let app = withPlausibleProxy({
         domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
         unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
     },
-    swcMinify: false,
+    swcMinify: true,
     experimental: {
         appDir: true,
+    },
+    env: {
+        // XXX: don't need 'NEXT_PUBLIC_' prefix here; we could just use 'API_BASE' and 'GITHUB_CLIENT_ID'
+        // See note at top of https://nextjs.org/docs/api-reference/next.config.js/environment-variables for more information
+        NEXT_PUBLIC_API_BASE: process.env.API_BASE,
+        NEXT_PUBLIC_GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+        NEXT_PUBLIC_COMMIT_HASH: git_hash,
     },
 })))
 
