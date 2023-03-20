@@ -411,7 +411,7 @@ def download_n64():
             dl_name="ido6.0" + ".tar.xz",
             dest_name="ido6.0",
         )
-    
+
     dest = COMPILERS_DIR / "ido5.3_c++"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
