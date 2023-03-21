@@ -66,7 +66,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
-            "--bindmount", "/var/tmp"
+            "--bindmount", "/var/tmp",
+            "--bindmount", "/tmp",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
