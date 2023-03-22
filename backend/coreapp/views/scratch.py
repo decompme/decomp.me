@@ -150,7 +150,6 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     if scratch:
         family = Scratch.objects.filter(
             target_assembly=scratch.target_assembly,
-            compiler=scratch.compiler,
         )
 
         return str(hash((family, request.headers.get("Accept"))))
@@ -491,7 +490,6 @@ class ScratchViewSet(
 
         family = Scratch.objects.filter(
             target_assembly=scratch.target_assembly,
-            compiler=scratch.compiler,
         ).order_by("creation_time")
 
         return Response(
