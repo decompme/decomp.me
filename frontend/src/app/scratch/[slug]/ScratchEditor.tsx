@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 
-import { useRouter } from "next/navigation"
-
 import useSWR from "swr"
 
 import Scratch from "@/components/Scratch"
