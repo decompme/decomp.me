@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+import { useRouter } from "next/navigation"
 
 import useSWR from "swr"
 
@@ -45,6 +47,23 @@ export default function ScratchEditor({ initialScratch, parentScratch, initialCo
         console.info("Scratch owner updated", cached.owner)
         setScratch(scratch => ({ ...scratch, owner: cached.owner }))
     }
+
+    // On initial page load, request the latest scratch from the server, and
+    // update `scratch` if it's newer.
+    // This can happen when navigating back to a scratch page that was already loaded, but
+    // was updated, so the originally-loaded initialScratch prop becomes stale.
+    // https://github.com/decompme/decomp.me/issues/711
+    useEffect(() => {
+        api.get(scratch.url).then((updatedScratch: api.Scratch) => {
+            const updateTime = new Date(updatedScratch.last_updated)
+            const scratchTime = new Date(scratch.last_updated)
+
+            if (scratchTime < updateTime) {
+                console.info("Client got updated scratch", updatedScratch)
+                setScratch(updatedScratch)
+            }
+        })
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     return <>
         <ScratchPageTitle scratch={scratch} />
