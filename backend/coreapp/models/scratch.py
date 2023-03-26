@@ -45,7 +45,7 @@ class CompilerConfig(models.Model):
 
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
-    name = models.CharField(max_length=512, default="Untitled", blank=False)
+    name = models.CharField(max_length=1024, default="Untitled", blank=False)
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -62,7 +62,7 @@ class Scratch(models.Model):
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     diff_label = models.CharField(
-        max_length=512, blank=True
+        max_length=1024, blank=True
     )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
