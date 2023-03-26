@@ -62,7 +62,7 @@ class Scratch(models.Model):
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
     diff_label = models.CharField(
-        max_length=512, blank=True
+        max_length=1024, blank=True
     )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
