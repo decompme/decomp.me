@@ -1425,11 +1425,6 @@
     "@react-hook/latest" "^1.0.2"
     "@react-hook/passive-layout-effect" "^1.2.0"
 
-"@remote-ui/rpc@^1.2.5":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@remote-ui/rpc/-/rpc-1.4.2.tgz#dc629e3ba1a3870a6502a28958dddd292daf02db"
-  integrity sha512-TWg/NqGygK2D/XNk2jMmZOBYiLfusDjDErWbYsT/kriANM0N4Guxue81s8NErLqm6dZ8oteW2DzaHnULl2kYtA==
-
 "@replit/codemirror-indentation-markers@^6.1.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@replit/codemirror-indentation-markers/-/codemirror-indentation-markers-6.3.0.tgz#6d2af97386b8560a0231a61c239a39ed308c2086"
@@ -1476,13 +1471,6 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz#8be36a1f66f3265389e90b5f9c9962146758f728"
   integrity sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==
-
-"@shopify/web-worker@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@shopify/web-worker/-/web-worker-5.0.1.tgz#54b377fae5522b405e004c4971b3924a7b361295"
-  integrity sha512-fGNcUkzqA9h2dD/3/zBd2YEPCXePN9Mmy53alb6DgpUq8nEgEE1yxj9+PfDi7RsUM+T36d8/QXgReOZ4NvlxuA==
-  dependencies:
-    "@remote-ui/rpc" "^1.2.5"
 
 "@surma/rollup-plugin-off-main-thread@^2.2.3":
   version "2.2.3"
@@ -6510,11 +6498,6 @@ webpack-sources@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-3.2.3.tgz#2d4daab8451fd4b240cc27055ff6a0c2ccea0cde"
   integrity sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==
-
-webpack-virtual-modules@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.5.0.tgz#362f14738a56dae107937ab98ea7062e8bdd3b6c"
-  integrity sha512-kyDivFZ7ZM0BVOUteVbDFhlRt7Ah/CSPwJdi8hBpkK7QLumUqdLtVfm/PX/hkcnrvr0i77fO5+TjZ94Pe+C9iw==
 
 webpack@^5.76.2:
   version "5.76.2"

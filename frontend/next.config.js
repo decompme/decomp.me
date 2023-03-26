@@ -35,7 +35,6 @@ const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
 })
-const { WebWorkerPlugin } = require("@shopify/web-worker/webpack")
 
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
 
@@ -83,9 +82,6 @@ let app = withPlausibleProxy({
             test: /\.svg$/,
             use: ["@svgr/webpack"],
         })
-
-        config.plugins.push(new WebWorkerPlugin())
-        config.output.globalObject = "self"
 
         return config
     },
