@@ -4,6 +4,7 @@ import { Compartment, Extension, Facet } from "@codemirror/state"
 import { EditorView, gutter, GutterMarker, ViewPlugin, ViewUpdate } from "@codemirror/view"
 
 import styles from "./useCompareExtension.module.scss"
+import { type DiffRequest } from "./useCompareExtension.worker"
 
 // State for target text to diff doc against
 const targetString = Facet.define<string, string | null>({
@@ -68,7 +69,8 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(class {
 
     async calculateDiff(targetString, currentString): Promise<DiffResult> {
         return new Promise(resolve => {
-            this.worker.postMessage({ target: targetString, current: currentString })
+            const diffRequest: DiffRequest = { target: targetString, current: currentString }
+            this.worker.postMessage(diffRequest)
 
             const listener = ({ data }: {data: DiffResult}) => {
                 this.worker.removeEventListener("message", listener)
