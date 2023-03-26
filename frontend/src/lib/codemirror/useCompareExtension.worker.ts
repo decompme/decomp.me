@@ -2,7 +2,7 @@ import { diff } from "fast-myers-diff"
 
 const ctx: Worker = self as any
 
-ctx.onmessage = ({ data }: {data: DiffRequest}) => {
+ctx.onmessage = ({ data }: { data: DiffRequest }) => {
     if (typeof data.target !== "string") {
         return []
     }
@@ -15,4 +15,4 @@ ctx.onmessage = ({ data }: {data: DiffRequest}) => {
     ctx.postMessage(Array.from(diffsIterator))
 }
 
-export type DiffRequest = {target: string | undefined, current: string };
+export type DiffRequest = { target: string | undefined, current: string };
