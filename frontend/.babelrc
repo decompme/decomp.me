@@ -1,4 +1,4 @@
 {
     "presets": ["next/babel"],
-    "plugins": ["@shopify/web-worker/babel"]
+    "plugins": []
 }
