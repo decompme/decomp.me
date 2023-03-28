@@ -158,10 +158,10 @@ export default function Scratch({
         }
     }, [decompilationTabEnabled])
 
-    // If the slug changes, refresh code editors
+    // If the version of the scratch changes, refresh code editors
     useEffect(() => {
         incrementValueVersion()
-    }, [scratch.slug])
+    }, [scratch.slug, scratch.last_updated])
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
