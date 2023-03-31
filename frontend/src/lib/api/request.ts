@@ -43,6 +43,8 @@ export function normalizeUrl(url: string) {
 export async function get(url: string) {
     url = normalizeUrl(url)
 
+    console.info("GET", url)
+
     const response = await fetch(url, {
         ...commonOpts,
         cache: "no-cache",

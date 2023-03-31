@@ -2,9 +2,9 @@ import { RefObject, useEffect, useState } from "react"
 
 import { Compartment, Extension, Facet } from "@codemirror/state"
 import { EditorView, gutter, GutterMarker, ViewPlugin, ViewUpdate } from "@codemirror/view"
-import { createWorkerFactory } from "@shopify/web-worker"
 
 import styles from "./useCompareExtension.module.scss"
+import { type DiffRequest } from "./useCompareExtension.worker"
 
 // State for target text to diff doc against
 const targetString = Facet.define<string, string | null>({
@@ -50,11 +50,12 @@ const diffGutter = gutter({
     initialSpacer: () => marker,
 })
 
-const createDiffWorker = createWorkerFactory(() => import("./useCompareExtension.worker"))
-
 const diffLineMapCompartment = new Compartment()
+
+type DiffResult = [number, number, number, number][];
+
 const diffLineCalcPlugin = ViewPlugin.fromClass(class {
-    private worker = createDiffWorker()
+    private worker = new Worker(new URL("./useCompareExtension.worker.ts", import.meta.url))
 
     constructor(private view: EditorView) {
         this.updateDiff()
@@ -66,8 +67,22 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(class {
         }
     }
 
+    async calculateDiff(targetString, currentString): Promise<DiffResult> {
+        return new Promise(resolve => {
+            const diffRequest: DiffRequest = { target: targetString, current: currentString }
+            this.worker.postMessage(diffRequest)
+
+            const listener = ({ data }: {data: DiffResult}) => {
+                this.worker.removeEventListener("message", listener)
+                resolve(data)
+            }
+
+            this.worker.addEventListener("message", listener)
+        })
+    }
+
     async updateDiff() {
-        const diff = await this.worker.calculateDiff(this.view.state.facet(targetString), this.view.state.doc.toString())
+        const diff = await this.calculateDiff(this.view.state.facet(targetString), this.view.state.doc.toString())
 
         // Convert diff changes to a map of line numbers -> change type
         let map: DiffLineMap = {}
