@@ -424,6 +424,18 @@ def download_n64():
             dest_name="ido5.3_c++",
         )
 
+    dest = COMPILERS_DIR / "MipsPro7.4.4"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/mipspro7.4.4.tar.xz",
+            mode="r:xz",
+            dl_name="mipspro7.4.4" + ".tar.xz",
+            dest_name="MipsPro7.4.4",
+        )
+
     # SN
     dest = COMPILERS_DIR / "gcc2.7.2sn"
     if dest.is_dir():
