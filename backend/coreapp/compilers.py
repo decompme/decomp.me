@@ -534,6 +534,12 @@ EGCS1124 = GCCCompiler(
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
+GCC440MIPS64ELF = GCCCompiler(
+    id="gcc4.4.0-mips64-elf",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 # MACOS9
 MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
 
@@ -895,6 +901,7 @@ _all_compilers: List[Compiler] = [
     GCC281,
     GCC281SNCXX,
     EGCS1124,
+    GCC440MIPS64ELF,
     # IRIX
     IDO53_IRIX,
     IDO53_CXX_IRIX,

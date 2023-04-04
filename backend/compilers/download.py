@@ -511,6 +511,17 @@ def download_n64():
             dest_name="egcs_1.1.2-4",
         )
 
+    # libdragon
+    dest = COMPILERS_DIR / "gcc4.4.0-mips64-elf"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/devwizard64/gcc4.4.0-mips64-elf/releases/download/latest/gcc4.4.0-mips64-elf.tar.gz",
+            dest_name="gcc4.4.0-mips64-elf",
+        )
+
 
 def download_ps1():
     if host_os != LINUX:
