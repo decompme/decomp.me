@@ -466,6 +466,13 @@ IDO71PASCAL = IDOCompiler(
     language=Language.PASCAL,
 )
 
+MIPS_PRO_744_IRIX = IDOCompiler(
+    id="mips_pro_744_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="MipsPro7.4.4",
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
@@ -492,6 +499,13 @@ IDO60 = IDOCompiler(
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
+)
+
+MIPS_PRO_744 = IDOCompiler(
+    id="mips_pro_744",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="MipsPro7.4.4",
 )
 
 GCC272KMC = GCCCompiler(
@@ -895,6 +909,7 @@ _all_compilers: List[Compiler] = [
     IDO53_CXX,
     IDO60,
     IDO71,
+    MIPS_PRO_744,
     GCC272KMC,
     GCC272SN,
     GCC272SNEW,
@@ -909,6 +924,7 @@ _all_compilers: List[Compiler] = [
     IDO60_IRIX,
     IDO71_IRIX,
     IDO71PASCAL,
+    MIPS_PRO_744_IRIX,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
