@@ -537,7 +537,7 @@ EGCS1124 = GCCCompiler(
 GCC440MIPS64ELF = GCCCompiler(
     id="gcc4.4.0-mips64-elf",
     platform=N64,
-    cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
