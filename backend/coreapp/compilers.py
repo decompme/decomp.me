@@ -1167,6 +1167,12 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
+        "Super Smash Bros.",
+        IDO71,
+        "-O2 -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
         "Duke Nukem Zero Hour",
         GCC272KMC,
         "-O2 -g2 -mips3",
