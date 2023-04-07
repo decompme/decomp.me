@@ -603,6 +603,17 @@ def download_ps1():
 
     shutil.rmtree(compilers_path)
 
+def download_saturn():
+    if host_os != LINUX:
+        print("saturn compilers unsupported on " + host_os.name)
+        return
+
+    download_zip(
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+    )
+
+    shutil.move(f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3", COMPILERS_DIR)
+    shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 def download_ps2():
     if host_os != LINUX:
@@ -817,6 +828,8 @@ def main(args):
         download_nds()
     if should_download("ps1"):
         download_ps1()
+    if should_download("saturn"):
+        download_saturn()
     if should_download("ps2"):
         download_ps2()
     if should_download("switch"):
