@@ -13,10 +13,10 @@ jobs:
 
       - name: Install poetry
         run: pipx install poetry
-      - name: Setup Python 3.10.0
+      - name: Setup Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10.0
+          python-version: 3.9
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install backend Python dependencies
