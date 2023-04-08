@@ -603,6 +603,7 @@ def download_ps1():
 
     shutil.rmtree(compilers_path)
 
+
 def download_saturn():
     if host_os != LINUX:
         print("saturn compilers unsupported on " + host_os.name)
@@ -614,6 +615,7 @@ def download_saturn():
 
     shutil.move(f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3", COMPILERS_DIR)
     shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
+
 
 def download_ps2():
     if host_os != LINUX:

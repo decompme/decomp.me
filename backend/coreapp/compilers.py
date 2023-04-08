@@ -33,7 +33,7 @@ from coreapp.platforms import (
     PS1,
     PS2,
     SWITCH,
-    SATURN
+    SATURN,
 )
 
 import platform as platform_stdlib
@@ -131,9 +131,11 @@ class GCCCompiler(Compiler):
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
 
+
 @dataclass(frozen=True)
 class GCCSaturnCompiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_SATURN_FLAGS
+
 
 @dataclass(frozen=True)
 class IDOCompiler(Compiler):
