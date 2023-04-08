@@ -7,16 +7,16 @@ on:
 jobs:
   full_test_and_build:
     name: full test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
 
       - name: Install poetry
         run: pipx install poetry
-      - name: Setup Python 3.9
+      - name: Setup Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.10
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install backend Python dependencies
@@ -45,6 +45,7 @@ jobs:
             binutils-aarch64-linux-gnu \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
+            binutils-sh-elf \
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
@@ -54,7 +55,7 @@ jobs:
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine software-properties-common
+          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu binutils-sh-elf dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine software-properties-common
           version: 1.0
       - name: Install DOSEMU
         run: |-
@@ -162,7 +163,8 @@ jobs:
           docker build backend \
             -t decompme_backend \
             --build-arg ENABLE_WII_GC_SUPPORT=YES \
-            --build-arg ENABLE_PS1_SUPPORT=YES
+            --build-arg ENABLE_PS1_SUPPORT=YES \
+            --build-arg ENABLE_SATURN_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
