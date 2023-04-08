@@ -82,9 +82,6 @@ export default function Nav({ children }: Props) {
                             <li>
                                 <GhostButton href="/new">New scratch</GhostButton>
                             </li>
-                            <li>
-                                <GhostButton href="/projects">Projects</GhostButton>
-                            </li>
                             <div className="h-4 w-px bg-gray-6" />
                             <li>
                                 <GhostButton href="/settings">Settings</GhostButton>
@@ -108,9 +105,6 @@ export default function Nav({ children }: Props) {
                     </li>
                     <li>
                         <Link href="/new">New scratch</Link>
-                    </li>
-                    <li>
-                        <Link href="/projects">Projects</Link>
                     </li>
                     <li>
                         <Link href="/settings">Settings</Link>
