@@ -50,9 +50,6 @@ export default function WelcomeInfo() {
                     </Button>
                 </Link>
                 <GitHubLoginButton popup />
-                <GhostButton href="/projects">
-                    Browse projects
-                </GhostButton>
             </div>
             <div className="my-6 hidden sm:block">
                 <SiteStats />
