@@ -613,7 +613,10 @@ def download_saturn():
         url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
     )
 
-    shutil.move(f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3", COMPILERS_DIR)
+    shutil.move(
+        f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
+        f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
+    )
     shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 
