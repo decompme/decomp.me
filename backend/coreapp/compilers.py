@@ -16,6 +16,7 @@ from coreapp.flags import (
     COMMON_GCC_PS1_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
+    COMMON_GCC_SATURN_FLAGS,
     Flags,
 )
 
@@ -32,6 +33,7 @@ from coreapp.platforms import (
     PS1,
     PS2,
     SWITCH,
+    SATURN,
 )
 
 import platform as platform_stdlib
@@ -130,6 +132,11 @@ class GCCCompiler(Compiler):
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
+
+
+@dataclass(frozen=True)
+class GCCSaturnCompiler(GCCCompiler):
+    flags: ClassVar[Flags] = COMMON_GCC_SATURN_FLAGS
 
 
 @dataclass(frozen=True)
@@ -334,6 +341,23 @@ PSYQ46 = GCCPS1Compiler(
     id="psyq4.6",
     platform=PS1,
     cc=PSYQ_CC,
+)
+
+# Saturn
+SATURN_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    + "cp -r ${COMPILER_DIR}/* . && "
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
+    + "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o &&"
+    + 'cp as_out.o "$OUTPUT"'
+)
+
+CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
+    id="cygnus-2.7-96Q3",
+    platform=SATURN,
+    cc=SATURN_CC,
 )
 
 # PS2
@@ -556,6 +580,12 @@ EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
+GCC440MIPS64ELF = GCCCompiler(
+    id="gcc4.4.0-mips64-elf",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
@@ -893,6 +923,8 @@ _all_compilers: List[Compiler] = [
     PSYQ43,
     PSYQ45,
     PSYQ46,
+    # Saturn
+    CYGNUS_2_7_96Q3,
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,
@@ -920,6 +952,7 @@ _all_compilers: List[Compiler] = [
     GCC281,
     GCC281SNCXX,
     EGCS1124,
+    GCC440MIPS64ELF,
     # IRIX
     IDO53_IRIX,
     IDO53_ASM_IRIX,
@@ -1072,6 +1105,12 @@ _all_presets = [
         PSYQ43,
         "-O2 -G8",
     ),
+    # Saturn
+    Preset(
+        "Castlevania: Symphony of the Night",
+        CYGNUS_2_7_96Q3,
+        "-O2 -m2 -fsigned-char",
+    ),
     # N64
     Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
@@ -1168,6 +1207,12 @@ _all_presets = [
         "Super Mario 64",
         IDO53,
         "-O1 -g -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Super Smash Bros.",
+        IDO71,
+        "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(

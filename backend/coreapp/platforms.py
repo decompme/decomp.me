@@ -232,6 +232,34 @@ PS1 = Platform(
 """,
 )
 
+SATURN = Platform(
+    id="saturn",
+    name="Saturn",
+    description="SH2 (big-endian)",
+    arch="sh2",
+    assemble_cmd='sh-elf-as --isa=sh2 --big -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="sh-elf-objdump",
+    nm_cmd="sh-elf-nm",
+    diff_flags=COMMON_DIFF_FLAGS,
+    asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.macro jlabel label
+    \label:
+.endm
+
+
+""",
+)
+
 PS2 = Platform(
     id="ps2",
     name="PlayStation 2",
@@ -687,6 +715,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "irix": IRIX,
         "n64": N64,
         "ps1": PS1,
+        "saturn": SATURN,
         "ps2": PS2,
         "gc_wii": GC_WII,
         "nds_arm9": NDS_ARM9,

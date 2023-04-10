@@ -523,6 +523,17 @@ def download_n64():
             dest_name="egcs_1.1.2-4",
         )
 
+    # libdragon
+    dest = COMPILERS_DIR / "gcc4.4.0-mips64-elf"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/devwizard64/gcc4.4.0-mips64-elf/releases/download/latest/gcc4.4.0-mips64-elf.tar.gz",
+            dest_name="gcc4.4.0-mips64-elf",
+        )
+
 
 def download_ps1():
     if host_os != LINUX:
@@ -591,6 +602,22 @@ def download_ps1():
             set_x(file)
 
     shutil.rmtree(compilers_path)
+
+
+def download_saturn():
+    if host_os != LINUX:
+        print("saturn compilers unsupported on " + host_os.name)
+        return
+
+    download_zip(
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+    )
+
+    shutil.move(
+        f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
+        f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
+    )
+    shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 
 def download_ps2():
@@ -806,6 +833,8 @@ def main(args):
         download_nds()
     if should_download("ps1"):
         download_ps1()
+    if should_download("saturn"):
+        download_saturn()
     if should_download("ps2"):
         download_ps2()
     if should_download("switch"):

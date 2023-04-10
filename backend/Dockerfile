@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM ubuntu:22.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
     python-is-python3 \
-    python3.9-venv \
-    python3.9-dev
+    python3.10-venv \
+    python3.10-dev
 
 
 FROM base AS nsjail
@@ -37,6 +37,7 @@ RUN apt-get -y update && apt-get install -y \
     binutils-mips-linux-gnu \
     binutils-powerpc-linux-gnu \
     binutils-aarch64-linux-gnu \
+    binutils-sh-elf \
     curl \
     gcc-mips-linux-gnu \
     git \
@@ -50,7 +51,7 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
-  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.9 -
+  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -60,6 +61,7 @@ COPY --from=ghcr.io/decompals/wibo:0.2.4 /usr/local/sbin/wibo /usr/bin/
 ARG ENABLE_NDS_SUPPORT
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_WII_GC_SUPPORT
+ARG ENABLE_SATURN_SUPPORT
 RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
@@ -68,8 +70,9 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
         wine; \
     fi
 
-# ps1 specifics
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] ; then \
+# install dos2unix and dosemu2 for ps1 and saturn
+RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
     apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         dos2unix software-properties-common && \
@@ -97,9 +100,10 @@ ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
 ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
+ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 
-RUN python3.9 -m pip install requests tqdm \
-    && python3.9 /compilers/download.py \
+RUN python3.10 -m pip install requests tqdm \
+    && python3.10 /compilers/download.py \
     && rm -rf /compilers/download_cache/
 
 RUN mkdir -p /etc/fonts

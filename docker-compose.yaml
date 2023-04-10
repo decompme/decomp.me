@@ -21,6 +21,7 @@ services:
         ENABLE_WII_GC_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
+        ENABLE_SATURN_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:

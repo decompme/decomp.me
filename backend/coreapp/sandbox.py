@@ -125,6 +125,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         return subprocess.run(
             command,
             text=True,
+            errors="backslashreplace",
             env=env,
             cwd=self.path,
             check=True,
