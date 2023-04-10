@@ -47,6 +47,7 @@ class Language(enum.Enum):
     OLD_CXX = "C++"
     CXX = "C++"
     PASCAL = "Pascal"
+    ASSEMBLY = "Assembly"
 
     def get_file_extension(self) -> str:
         return {
@@ -54,6 +55,7 @@ class Language(enum.Enum):
             Language.CXX: "cpp",
             Language.OLD_CXX: "c++",
             Language.PASCAL: "p",
+            Language.ASSEMBLY: "s",
         }[self]
 
 
@@ -425,6 +427,14 @@ IDO53_IRIX = IDOCompiler(
     platform=IRIX,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido5.3",
+)
+
+IDO53_ASM_IRIX = IDOCompiler(
+    id="ido5.3_asm_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+    language=Language.ASSEMBLY,
 )
 
 IDO53_CXX_IRIX = IDOCompiler(
@@ -912,6 +922,7 @@ _all_compilers: List[Compiler] = [
     EGCS1124,
     # IRIX
     IDO53_IRIX,
+    IDO53_ASM_IRIX,
     IDO53_CXX_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
