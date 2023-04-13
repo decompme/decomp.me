@@ -1466,12 +1466,12 @@ _all_presets = [
     Preset(
         "Ty the Tasmanian Tiger (July 1st)",
         EE_GCC29_991111,
-        "-x c++ -O2 -fno-exceptions -gstabs",
+        "-x c++ -O2 -fno-exceptions -gstabs -ffast-math -finline-functions",
     ),
     Preset(
         "Sunny Garcia Surfing",
         EE_GCC29_991111,
-        "-x c++ -O2 -fno-exceptions -gstabs",
+        "-x c++ -O2 -fno-exceptions -gstabs -ffast-math",
     ),
 ]
 
