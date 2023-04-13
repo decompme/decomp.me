@@ -10,6 +10,8 @@ function Separator() {
     return <div className="hidden h-4 w-px bg-gray-6 sm:inline-block" />
 }
 
+const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH
+
 export default function Footer() {
     return <>
         <div className="grow" />
@@ -36,12 +38,25 @@ export default function Footer() {
                     <Separator />
                     <GhostButton href="https://discord.gg/sutqNShRRs" className="flex items-center gap-1.5">
                         <DiscordIcon className="h-4 w-4" />
-                        Chatroom
+                        Chat
                     </GhostButton>
                     <Separator />
                     <GhostButton href="https://status.decomp.me">
                         Status
                     </GhostButton>
+                    <Separator />
+                    <GhostButton href="https://stats.decomp.me">
+                        Stats
+                    </GhostButton>
+                </div>
+
+                <div className="mt-2 flex items-center justify-center text-xs text-[#808080]">
+                    <Link
+                        href={`https://github.com/decompme/decomp.me/commit/${commitHash}`}
+                        title="Commit hash">
+
+                        {(commitHash && commitHash.slice(0, 7)) || "unknown"}
+                    </Link>
                 </div>
             </div>
         </footer>

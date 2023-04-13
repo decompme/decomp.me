@@ -66,6 +66,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/lib64",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
+            "--bindmount", f"{self.path}:/var/tmp",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
@@ -124,6 +125,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         return subprocess.run(
             command,
             text=True,
+            errors="backslashreplace",
             env=env,
             cwd=self.path,
             check=True,

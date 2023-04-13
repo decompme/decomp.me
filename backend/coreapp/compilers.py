@@ -16,6 +16,7 @@ from coreapp.flags import (
     COMMON_GCC_PS1_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
+    COMMON_GCC_SATURN_FLAGS,
     Flags,
 )
 
@@ -32,6 +33,7 @@ from coreapp.platforms import (
     PS1,
     PS2,
     SWITCH,
+    SATURN,
 )
 
 import platform as platform_stdlib
@@ -44,14 +46,18 @@ COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 class Language(enum.Enum):
     C = "C"
+    OLD_CXX = "C++"
     CXX = "C++"
     PASCAL = "Pascal"
+    ASSEMBLY = "Assembly"
 
     def get_file_extension(self) -> str:
         return {
             Language.C: "c",
             Language.CXX: "cpp",
+            Language.OLD_CXX: "c++",
             Language.PASCAL: "p",
+            Language.ASSEMBLY: "s",
         }[self]
 
 
@@ -126,6 +132,11 @@ class GCCCompiler(Compiler):
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
+
+
+@dataclass(frozen=True)
+class GCCSaturnCompiler(GCCCompiler):
+    flags: ClassVar[Flags] = COMMON_GCC_SATURN_FLAGS
 
 
 @dataclass(frozen=True)
@@ -275,6 +286,12 @@ CLANG_401 = ClangCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
+CLANG_800 = ClangCompiler(
+    id="clang-8.0.0",
+    platform=SWITCH,
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
@@ -324,6 +341,23 @@ PSYQ46 = GCCPS1Compiler(
     id="psyq4.6",
     platform=PS1,
     cc=PSYQ_CC,
+)
+
+# Saturn
+SATURN_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    + "cp -r ${COMPILER_DIR}/* . && "
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
+    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
+    + "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o &&"
+    + 'cp as_out.o "$OUTPUT"'
+)
+
+CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
+    id="cygnus-2.7-96Q3",
+    platform=SATURN,
+    cc=SATURN_CC,
 )
 
 # PS2
@@ -419,6 +453,22 @@ IDO53_IRIX = IDOCompiler(
     base_id="ido5.3",
 )
 
+IDO53_ASM_IRIX = IDOCompiler(
+    id="ido5.3_asm_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3",
+    language=Language.ASSEMBLY,
+)
+
+IDO53_CXX_IRIX = IDOCompiler(
+    id="ido5.3_c++_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3_c++",
+    language=Language.OLD_CXX,
+)
+
 IDO53PASCAL = IDOCompiler(
     id="ido5.3Pascal",
     platform=IRIX,
@@ -431,7 +481,7 @@ IDO53PASCAL = IDOCompiler(
 IDO60_IRIX = IDOCompiler(
     id="ido6.0_irix",
     platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
 )
 
@@ -450,11 +500,26 @@ IDO71PASCAL = IDOCompiler(
     language=Language.PASCAL,
 )
 
+MIPS_PRO_744_IRIX = IDOCompiler(
+    id="mips_pro_744_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="MipsPro7.4.4",
+)
+
 # N64
 IDO53 = IDOCompiler(
     id="ido5.3",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO53_CXX = IDOCompiler(
+    id="ido5.3_c++",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="ido5.3_c++",
+    language=Language.OLD_CXX,
 )
 
 IDO71 = IDOCompiler(
@@ -466,8 +531,15 @@ IDO71 = IDOCompiler(
 IDO60 = IDOCompiler(
     id="ido6.0",
     platform=N64,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_id="ido6.0",
+)
+
+MIPS_PRO_744 = IDOCompiler(
+    id="mips_pro_744",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_id="MipsPro7.4.4",
 )
 
 GCC272KMC = GCCCompiler(
@@ -508,6 +580,12 @@ EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
+GCC440MIPS64ELF = GCCCompiler(
+    id="gcc4.4.0-mips64-elf",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
 # MACOS9
@@ -836,6 +914,7 @@ _all_compilers: List[Compiler] = [
     # Switch
     CLANG_391,
     CLANG_401,
+    CLANG_800,
     # PS1
     PSYQ35,
     PSYQ36,
@@ -844,6 +923,8 @@ _all_compilers: List[Compiler] = [
     PSYQ43,
     PSYQ45,
     PSYQ46,
+    # Saturn
+    CYGNUS_2_7_96Q3,
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,
@@ -861,20 +942,26 @@ _all_compilers: List[Compiler] = [
     MWCPS2_30B22_020926,
     # N64
     IDO53,
+    IDO53_CXX,
     IDO60,
     IDO71,
+    MIPS_PRO_744,
     GCC272KMC,
     GCC272SN,
     GCC272SNEW,
     GCC281,
     GCC281SNCXX,
     EGCS1124,
+    GCC440MIPS64ELF,
     # IRIX
     IDO53_IRIX,
+    IDO53_ASM_IRIX,
+    IDO53_CXX_IRIX,
     IDO53PASCAL,
     IDO60_IRIX,
     IDO71_IRIX,
     IDO71PASCAL,
+    MIPS_PRO_744_IRIX,
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
@@ -992,6 +1079,11 @@ _all_presets = [
         CLANG_401,
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
+    Preset(
+        "Super Mario 3D World + Bowser's Fury",
+        CLANG_800,
+        "-x c++ -O3 -g2 -std=c++17 -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
+    ),
     # PS1
     Preset(
         "Castlevania: Symphony of the Night",
@@ -1012,6 +1104,12 @@ _all_presets = [
         "Metal Gear Solid",
         PSYQ43,
         "-O2 -G8",
+    ),
+    # Saturn
+    Preset(
+        "Castlevania: Symphony of the Night",
+        CYGNUS_2_7_96Q3,
+        "-O2 -m2 -fsigned-char",
     ),
     # N64
     Preset("AeroGauge", IDO53, "-O2 -mips2"),
@@ -1109,6 +1207,12 @@ _all_presets = [
         "Super Mario 64",
         IDO53,
         "-O1 -g -mips2",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Super Smash Bros.",
+        IDO71,
+        "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
@@ -1335,7 +1439,7 @@ _all_presets = [
     Preset(
         "Animal Crossing (REL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata2 0 -Cpp_exceptions off",
+        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off",
     ),
     Preset(
         "Animal Crossing (DOL)",

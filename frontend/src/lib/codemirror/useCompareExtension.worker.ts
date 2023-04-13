@@ -1,7 +1,9 @@
 import { diff } from "fast-myers-diff"
 
-export function calculateDiff(target: string | undefined, current: string): [number, number, number, number][] {
-    if (typeof target !== "string") {
+const ctx: Worker = self as any
+
+ctx.onmessage = ({ data }: { data: DiffRequest }) => {
+    if (typeof data.target !== "string") {
         return []
     }
 
@@ -9,6 +11,8 @@ export function calculateDiff(target: string | undefined, current: string): [num
         return source.split("\n").map(i => i.trim())
     }
 
-    const diffsIterator = diff(tokenizeSource(target), tokenizeSource(current))
-    return Array.from(diffsIterator)
+    const diffsIterator = diff(tokenizeSource(data.target), tokenizeSource(data.current))
+    ctx.postMessage(Array.from(diffsIterator))
 }
+
+export type DiffRequest = { target: string | undefined, current: string };

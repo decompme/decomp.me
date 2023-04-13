@@ -159,3 +159,8 @@ COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="sdata_limit", flags=["-G0", "-G4", "-G8"]),
     FlagSet(id="endianness", flags=["-mel", "-meb"]),
 ]
+
+COMMON_GCC_SATURN_FLAGS: Flags = [
+    FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
+    FlagSet(id="gcc_arch", flags=["-m2"]),
+]

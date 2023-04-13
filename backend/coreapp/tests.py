@@ -532,6 +532,10 @@ nop
         code = "int func(void) { return 5; }"
         if compiler.language == Language.PASCAL:
             code = "function func(): integer; begin func := 5; end;"
+
+        if compiler.language == Language.ASSEMBLY:
+            code = "nada"
+
         result = CompilerWrapper.compile_code(
             compiler,
             "",

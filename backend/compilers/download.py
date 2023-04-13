@@ -19,7 +19,6 @@ from tqdm import tqdm
 class OS:
     name: str
     system: str
-    clang_package_name: str
     n64_gcc_os: str
     ido_pkg: str
 
@@ -27,14 +26,12 @@ class OS:
 MACOS = OS(
     name="MacOS",
     system="darwin",
-    clang_package_name="apple-darwin",
     n64_gcc_os="mac",
     ido_pkg="macos-latest",
 )
 LINUX = OS(
     name="Linux",
     system="linux",
-    clang_package_name="linux-gnu-debian8",
     n64_gcc_os="linux",
     ido_pkg="ubuntu-20.04",
 )
@@ -280,40 +277,69 @@ def download_switch():
     def dest_for_version(version: str) -> Path:
         return COMPILERS_DIR / f"clang-{version}"
 
-    versions = ["4.0.1", "3.9.1"]
+    @dataclass
+    class Version:
+        version_str: str
+        clang_package_name: str
+        clang_package_name_macos: str
+
+    versions = [
+        Version(
+            version_str="4.0.1",
+            clang_package_name="linux-gnu-debian8",
+            clang_package_name_macos="apple-darwin",
+        ),
+        Version(
+            version_str="3.9.1",
+            clang_package_name="linux-gnu-debian8",
+            clang_package_name_macos="none",
+        ),
+        Version(
+            version_str="8.0.0",
+            clang_package_name="linux-gnu-ubuntu-18.04",
+            clang_package_name_macos="apple-darwin",
+        ),
+    ]
 
     # 3.9.1 isn't available for mac
     mac_versions = versions.copy()
-    mac_versions.remove("3.9.1")
+    mac_versions.pop(1)
 
-    botw_lib_musl_versions = ["4.0.1", "3.9.1"]
+    botw_lib_musl_versions = ["4.0.1", "3.9.1", "8.0.0"]
 
     # Download and extract the compilers
     for version in versions:
-        if host_os == MACOS and version not in mac_versions:
+        version_str = version.version_str
+        if host_os == MACOS and version_str not in mac_versions:
             continue
 
-        log_name = f"clang {version}"
-        dest_dir = dest_for_version(version)
+        log_name = f"clang {version_str}"
+        dest_dir = dest_for_version(version_str)
         if dest_dir.exists():
             print(f"{log_name} already exists, skipping")
             continue
 
-        package_name = f"clang+llvm-{version}-x86_64-{host_os.clang_package_name}"
-        url = f"https://releases.llvm.org/{version}/{package_name}.tar.xz"
+        clang_package_name = (
+            version.clang_package_name_macos
+            if host_os == MACOS
+            else version.clang_package_name
+        )
+
+        package_name = f"clang+llvm-{version_str}-x86_64-{clang_package_name}"
+        url = f"https://releases.llvm.org/{version_str}/{package_name}.tar.xz"
 
         download_tar(url=url, mode="r:xz", log_name=log_name, create_subdir=False)
 
         # Somehow the MacOS tar extracts to a directory with a different name, so we have to find it again
         if host_os == MACOS:
             package_name = next(
-                COMPILERS_DIR.glob(f"clang+llvm-{version}-x86_64-*" + os.path.sep)
+                COMPILERS_DIR.glob(f"clang+llvm-{version_str}-x86_64-*" + os.path.sep)
             ).name
 
         shutil.move(COMPILERS_DIR / package_name, dest_dir)
 
         # 3.9.1 requires ld.lld and doesn't have it, so we copy it from 4.0.1
-        if version == "3.9.1":
+        if version_str == "3.9.1":
             shutil.copy(
                 dest_for_version("4.0.1") / "bin/ld.lld", dest_dir / "bin/ld.lld"
             )
@@ -325,8 +351,8 @@ def download_switch():
     )
     musl_name = "botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba"
     musl_dest = COMPILERS_DIR / musl_name
-    for version in botw_lib_musl_versions:
-        ver_dest = dest_for_version(version)
+    for version_str in botw_lib_musl_versions:
+        ver_dest = dest_for_version(version_str)
         if ver_dest.exists():
             shutil.copytree(musl_dest, ver_dest / musl_name, dirs_exist_ok=True)
     shutil.rmtree(musl_dest)
@@ -384,6 +410,30 @@ def download_n64():
             mode="r:xz",
             dl_name="ido6.0" + ".tar.xz",
             dest_name="ido6.0",
+        )
+
+    dest = COMPILERS_DIR / "ido5.3_c++"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido5.3_c++.tar.xz",
+            mode="r:xz",
+            dl_name="ido5.3_c++" + ".tar.xz",
+            dest_name="ido5.3_c++",
+        )
+
+    dest = COMPILERS_DIR / "MipsPro7.4.4"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/mipspro7.4.4.tar.xz",
+            mode="r:xz",
+            dl_name="mipspro7.4.4" + ".tar.xz",
+            dest_name="MipsPro7.4.4",
         )
 
     # SN
@@ -473,6 +523,17 @@ def download_n64():
             dest_name="egcs_1.1.2-4",
         )
 
+    # libdragon
+    dest = COMPILERS_DIR / "gcc4.4.0-mips64-elf"
+    if dest.is_dir():
+        print(f"{dest} already exists, skipping")
+    else:
+        dest.mkdir()
+        download_tar(
+            url="https://github.com/devwizard64/gcc4.4.0-mips64-elf/releases/download/latest/gcc4.4.0-mips64-elf.tar.gz",
+            dest_name="gcc4.4.0-mips64-elf",
+        )
+
 
 def download_ps1():
     if host_os != LINUX:
@@ -541,6 +602,22 @@ def download_ps1():
             set_x(file)
 
     shutil.rmtree(compilers_path)
+
+
+def download_saturn():
+    if host_os != LINUX:
+        print("saturn compilers unsupported on " + host_os.name)
+        return
+
+    download_zip(
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+    )
+
+    shutil.move(
+        f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
+        f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
+    )
+    shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 
 def download_ps2():
@@ -756,6 +833,8 @@ def main(args):
         download_nds()
     if should_download("ps1"):
         download_ps1()
+    if should_download("saturn"):
+        download_saturn()
     if should_download("ps2"):
         download_ps2()
     if should_download("switch"):
