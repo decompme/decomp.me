@@ -1186,6 +1186,12 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
+        "Pokémon Puzzle League",
+        GCC272KMC,
+        "-O2 -mips3 -g",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
         "Quest64",
         IDO53,
         "-O2 -g3 -mips2",
