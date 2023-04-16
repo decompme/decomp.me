@@ -26,17 +26,17 @@ function getLabels(asm: string): string[] {
     const jtbl_label_regex = /(^L[0-9a-fA-F]{8}$)|(^jtbl_)/
 
     for (const line of lines) {
-        let match = line.match(/^\s*glabel\s+([A-z0-9_]+)\s*$/)
+        let match = line.match(/^\s*glabel\s+([A-z0-9_]+)\s*/)
         if (match) {
             labels.push(match[1])
             continue
         }
-        match = line.match(/^\s*\.global\s+([A-z0-9_]+)\s*$/)
+        match = line.match(/^\s*\.global\s+([A-z0-9_]+)\s*/)
         if (match) {
             labels.push(match[1])
             continue
         }
-        match = line.match(/^[A-z_]+_func_start\s+([A-z0-9_]+)$/)
+        match = line.match(/^[A-z_]+_func_start\s+([A-z0-9_]+)/)
         if (match) {
             labels.push(match[1])
         }
