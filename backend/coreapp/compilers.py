@@ -1445,7 +1445,7 @@ _all_presets = [
     Preset(
         "Animal Crossing (REL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off",
+        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off, -enum int",
     ),
     Preset(
         "Animal Crossing (DOL)",
