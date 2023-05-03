@@ -289,7 +289,7 @@ class ScratchViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
-    GenericViewSet[Scratch],
+    GenericViewSet,  # type: ignore
 ):
     queryset = Scratch.objects.all()
     pagination_class = ScratchPagination
