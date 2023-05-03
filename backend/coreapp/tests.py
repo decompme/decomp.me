@@ -984,11 +984,11 @@ class ScratchDetailTests(BaseTestCase):
         last_modified = response.headers.get("Last-Modified")
 
         # should be unmodified
-        response = self.client.get(
+        response2 = self.client.get(
             reverse("scratch-detail", args=[scratch.slug]),
             HTTP_IF_MODIFIED_SINCE=last_modified,
         )
-        self.assertEqual(response.status_code, status.HTTP_304_NOT_MODIFIED)
+        self.assertEqual(response2.status_code, status.HTTP_304_NOT_MODIFIED)
 
         # Last-Modified is only granular to the second
         sleep(1)
@@ -1000,11 +1000,11 @@ class ScratchDetailTests(BaseTestCase):
         self.assertNotEqual(scratch.last_updated, old_last_updated)
 
         # should now be modified
-        response = self.client.get(
+        response3 = self.client.get(
             reverse("scratch-detail", args=[scratch.slug]),
             HTTP_IF_MODIFIED_SINCE=last_modified,
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response3.status_code, status.HTTP_200_OK)
 
     def test_double_claim(self) -> None:
         """

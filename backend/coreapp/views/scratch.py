@@ -289,7 +289,7 @@ class ScratchViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
-    GenericViewSet,
+    GenericViewSet[Scratch],
 ):
     queryset = Scratch.objects.all()
     pagination_class = ScratchPagination
@@ -425,8 +425,8 @@ class ScratchViewSet(
         parent: Scratch = self.get_object()
 
         # TODO Needed for test_fork_scratch test?
-        if isinstance(request.data, QueryDict):  # type: ignore
-            request_data = request.data.dict()  # type: ignore
+        if isinstance(request.data, QueryDict):
+            request_data = request.data.dict()
         else:
             request_data = request.data
 
