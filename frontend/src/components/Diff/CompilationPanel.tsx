@@ -56,7 +56,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
             ref={allotment}
             vertical
             onChange={([_top, bottom]) => {
-                if (top === undefined || bottom === undefined) {
+                if (_top === undefined || bottom === undefined) {
                     return
                 }
                 setIsProblemsCollapsed(bottom <= problemsCollapsedHeight)

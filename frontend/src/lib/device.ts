@@ -1,3 +1,5 @@
+import { headers } from "next/headers"
+
 export function isServer(): boolean {
     return typeof window === "undefined"
 }
@@ -5,7 +7,7 @@ export function isServer(): boolean {
 export function getUserAgent(): string {
     if (isServer()) {
         try {
-            return window.navigator.userAgent
+            return headers().get("user-agent")
         } catch (error) {
             console.warn("Failed to get user-agent from headers:", error)
             return ""
