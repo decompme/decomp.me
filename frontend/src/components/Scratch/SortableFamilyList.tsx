@@ -25,8 +25,8 @@ function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScra
         return (a, b) => new Date(b.creation_time).getTime() - new Date(a.creation_time).getTime()
     case SortMode.OLDEST_FIRST:
         return (a, b) => new Date(a.creation_time).getTime() - new Date(b.creation_time).getTime()
-    case SortMode.LAST_UPDATED:
-        return (a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()
+    case SortMode.LAST_UPDATED: // most recent first
+        return (a, b) => new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
     case SortMode.SCORE:
         return compareScratchScores
     }
@@ -37,6 +37,10 @@ function compareScratchScores(a: TerseScratch, b: TerseScratch) {
     const aScore = a.score < 0 ? Infinity : a.score
     const bScore = b.score < 0 ? Infinity : b.score
 
+    // Sort scratches with the same score with most recently updated first
+    if (aScore == bScore) {
+        return new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
+    }
     return aScore - bScore
 }
 
