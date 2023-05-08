@@ -139,7 +139,7 @@ export default function LoadingSkeleton() {
         </div>
 
         <noscript>
-            <div role="status" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-medium">
+            <div role="status" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-medium">
                 JavaScript is required to edit scratches
             </div>
         </noscript>

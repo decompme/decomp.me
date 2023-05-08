@@ -68,7 +68,7 @@
     cursor: default;
     user-select: none;
 
-    @media screen and (max-width: 400px) {
+    @media screen and (width <= 400px) {
         flex-direction: column;
     }
 
@@ -88,7 +88,7 @@
             color: var(--g500);
             font-size: 0.8rem;
 
-            @media screen and (min-width: 400px) {
+            @media screen and (width >= 400px) {
                 padding: 16px;
             }
         }

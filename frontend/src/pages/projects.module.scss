@@ -75,13 +75,13 @@
             display: flex;
             gap: 24px;
 
-            @media (max-width: 700px) {
+            @media (width <= 700px) {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
             }
 
-            @media (max-width: 400px) {
+            @media (width <= 400px) {
                 grid-template-columns: 1fr;
             }
 

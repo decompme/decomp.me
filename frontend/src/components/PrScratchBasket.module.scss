@@ -26,7 +26,7 @@
     }
 
     // Don't float on smaller screens
-    @media (max-width: 300px), (max-height: 500px) {
+    @media (width <= 300px), (height <= 500px) {
         position: initial;
         width: 100%;
         border-top: 0;

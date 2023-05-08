@@ -131,7 +131,7 @@ $padding: 8px;
 }
 
 // Sidebar
-@media (min-width: 500px) {
+@media (width >= 500px) {
     .container[data-open="true"] .header {
         @include border-bottom-no-layout-shift;
     }
@@ -194,7 +194,7 @@ $padding: 8px;
 }
 
 // on mobile
-@media (max-width: 700px) {
+@media (width <= 700px) {
     body:has(.container[data-open="true"]) {
         // Disable scrolling
         overflow: hidden;
@@ -230,7 +230,7 @@ $padding: 8px;
     }
 }
 
-@media (min-width: 700px) {
+@media (width >= 700px) {
     // no toggle menu
     .container[data-force-toggle="false"] {
         .header {

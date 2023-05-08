@@ -4,7 +4,6 @@ import Link from "next/link"
 import { ArrowRightIcon } from "@primer/octicons-react"
 
 import Button from "@/components/Button"
-import GhostButton from "@/components/GhostButton"
 import GitHubLoginButton from "@/components/GitHubLoginButton"
 import ScrollingPlatformIcons from "@/components/PlatformSelect/ScrollingPlatformIcons"
 

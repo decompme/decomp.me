@@ -33,7 +33,7 @@
         grid-template-columns: 1fr auto;
         gap: 1em;
 
-        @media (max-width: 700px) {
+        @media (width <= 700px) {
             grid-template-columns: 1fr;
 
             // Get rid of the gap if there's only one row

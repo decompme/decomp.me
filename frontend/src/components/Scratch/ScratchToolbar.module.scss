@@ -79,7 +79,7 @@ $padding: 4px;
 
     align-self: center;
 
-    @media (max-width: 700px) {
+    @media (width <= 700px) {
         display: block;
     }
 
@@ -166,7 +166,7 @@ $padding: 4px;
 }
 
 // Hide owner name and breadcrumb separator, i.e. just show the owner avatar
-@media (max-width: 800px) {
+@media (width <= 800px) {
     .breadcrumbs li::before {
         visibility: hidden;
         margin: 0 !important;

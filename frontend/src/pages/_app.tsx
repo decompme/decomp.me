@@ -10,7 +10,6 @@ import PlausibleProvider from "next-plausible"
 
 import Layout from "@/components/Layout"
 import { applyColorScheme } from "@/lib/codemirror/color-scheme"
-import { isMacOS } from "@/lib/device"
 import * as settings from "@/lib/settings"
 
 import "./_app.scss"
@@ -55,12 +54,6 @@ export default function MyApp({ Component, pageProps }) {
         document.body.style.removeProperty("--code-line-height")
         document.body.style.setProperty("--code-line-height", codeLineHeight)
     }, [codeLineHeight])
-
-    useEffect(() => {
-        if (isMacOS()) {
-            document.body.classList.add("device-macos")
-        }
-    }, [])
 
     // Unregister all service workers (#593) - temporary until we make a new, better service worker
     useEffect(() => {
