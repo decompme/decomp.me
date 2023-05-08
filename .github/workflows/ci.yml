@@ -9,7 +9,7 @@ jobs:
     name: full test and build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install poetry
         run: pipx install poetry
@@ -133,7 +133,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
@@ -157,7 +157,7 @@ jobs:
     name: backend tests (docker)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build decompme_backend image
         run: |-
           docker build backend \
@@ -189,7 +189,7 @@ jobs:
     name: eslint & stylelint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
         with:
@@ -204,7 +204,7 @@ jobs:
     name: mypy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
@@ -222,7 +222,7 @@ jobs:
     name: black
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
           src: "./backend"
