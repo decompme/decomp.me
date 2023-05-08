@@ -17,7 +17,7 @@
     left: 50%;
     transform: translateX(-50%);
 
-    @media (max-width: 900px) {
+    @media (width <= 900px) {
         border-left: 0;
         border-right: 0;
         border-radius: 0;
@@ -29,12 +29,12 @@
     height: 60vh;
     max-height: 700px;
 
-    @media (max-height: 800px) {
+    @media (height <= 800px) {
         top: 10vh;
         height: 80vh;
     }
 
-    @media (max-height: 600px) {
+    @media (height <= 600px) {
         top: 0;
         height: 100vh;
 
