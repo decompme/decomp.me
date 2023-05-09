@@ -1,7 +1,7 @@
 import EditorSettings from "./EditorSettings"
 
 export const metadata = {
-    title: "Editor settings - decomp.me",
+    title: "Editor settings",
 }
 
 export default function Page() {

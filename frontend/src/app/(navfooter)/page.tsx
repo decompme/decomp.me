@@ -3,10 +3,6 @@ import YourScratchList from "@/components/YourScratchList"
 
 import WelcomeInfo from "./WelcomeInfo"
 
-export const metadata = {
-    title: "decomp.me",
-}
-
 export default function Page() {
     return <main>
         <header className="w-full py-16">

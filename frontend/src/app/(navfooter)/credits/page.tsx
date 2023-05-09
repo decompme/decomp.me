@@ -57,6 +57,10 @@ function Contributor({ contributor }: { contributor: Contributor }) {
     return <UserMention user={contributor.user} />
 }
 
+export const metadata = {
+    title: "Credits",
+}
+
 export default async function Page() {
     const maintainers = await Promise.all(MAINTAINER_USERNAMES.map(getContributor))
     const contributors = await getContributorUsernames().then(usernames => Promise.all(usernames.map(usernameToContributor)))

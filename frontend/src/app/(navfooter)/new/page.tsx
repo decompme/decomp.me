@@ -4,7 +4,7 @@ import DESCRIPTION from "./description"
 import NewScratchForm from "./NewScratchForm"
 
 export const metadata = {
-    title: "New scratch - decomp.me",
+    title: "New scratch",
 }
 
 export default async function NewScratchPage() {

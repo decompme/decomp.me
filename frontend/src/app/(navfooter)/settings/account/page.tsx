@@ -4,7 +4,7 @@ import ProfileSection from "./ProfileSection"
 import UserState from "./UserState"
 
 export const metadata = {
-    title: "Account settings - decomp.me",
+    title: "Account settings",
 }
 
 export default function Page() {

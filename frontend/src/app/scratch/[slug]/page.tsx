@@ -1,10 +1,13 @@
+import { Metadata, ResolvingMetadata } from "next"
+
 import { getScoreText } from "@/components/ScoreBadge"
 
 import getScratchDetails from "./getScratchDetails"
 import ScratchEditor from "./ScratchEditor"
 
-export async function generateMetadata({ params }: { params: { slug: string }}) {
+export async function generateMetadata({ params }: { params: { slug: string }}, parent: ResolvingMetadata):Promise<Metadata> {
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
+    const parentData = await parent
 
     let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
     if (scratch.owner)
@@ -17,6 +20,11 @@ export async function generateMetadata({ params }: { params: { slug: string }}) 
     return {
         title: scratch.name,
         description: description,
+        openGraph: {
+            ...parentData.openGraph,
+            title: scratch.name,
+            description: description,
+        },
     }
 }
 

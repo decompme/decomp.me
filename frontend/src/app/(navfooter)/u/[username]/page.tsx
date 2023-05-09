@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { username: string 
     }
 
     return {
-        title: user.username + " - decomp.me",
+        title: user.username,
     }
 }
 

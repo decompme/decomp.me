@@ -4,7 +4,7 @@ const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11"
 const link = "text-blue-11 hover:underline active:translate-y-px"
 
 export const metadata = {
-    title: "Privacy policy - decomp.me",
+    title: "Privacy policy",
 }
 
 export default function Page() {

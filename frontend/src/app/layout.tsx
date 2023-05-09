@@ -5,6 +5,17 @@ import ThemeProvider from "./ThemeProvider"
 import "allotment/dist/style.css"
 import "@/pages/_app.scss" // TODO: move to sibling global.scss
 
+export const metadata = {
+    title: {
+        default: "decomp.me",
+        template: "%s | decomp.me",
+    },
+    openGraph: {
+        siteName: "decomp.me",
+        type: "website",
+    },
+}
+
 export default function RootLayout({
     children,
 }: {
