@@ -1,12 +1,14 @@
 import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
-import SetPageTitle from "@/components/SetPageTitle"
 import YourScratchList from "@/components/YourScratchList"
 
 import WelcomeInfo from "./WelcomeInfo"
 
+export const metadata = {
+    title: "decomp.me",
+}
+
 export default function Page() {
     return <main>
-        <SetPageTitle title="" />
         <header className="w-full py-16">
             <WelcomeInfo />
         </header>

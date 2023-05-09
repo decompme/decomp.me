@@ -3,6 +3,10 @@ import { get } from "@/lib/api/request"
 import DESCRIPTION from "./description"
 import NewScratchForm from "./NewScratchForm"
 
+export const metadata = {
+    title: "New scratch - decomp.me",
+}
+
 export default async function NewScratchPage() {
     const compilers = await get("/compilers")
 

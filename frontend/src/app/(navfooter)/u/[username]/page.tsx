@@ -4,10 +4,27 @@ import { MarkGithubIcon } from "@primer/octicons-react"
 
 import GhostButton from "@/components/GhostButton"
 import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
-import SetPageTitle from "@/components/SetPageTitle"
 import UserAvatar from "@/components/user/UserAvatar"
 import { get } from "@/lib/api/request"
 import { User } from "@/lib/api/types"
+
+export async function generateMetadata({ params }: { params: { username: string } }) {
+    let user: User
+
+    try {
+        user = await get(`/users/${params.username}`)
+    } catch (error) {
+        console.error(error)
+    }
+
+    if (!user) {
+        return notFound()
+    }
+
+    return {
+        title: user.username + " - decomp.me",
+    }
+}
 
 export default async function Page({ params }: { params: { username: string } }) {
     let user: User
@@ -22,8 +39,6 @@ export default async function Page({ params }: { params: { username: string } })
     }
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <SetPageTitle title={user.username} />
-
         <header className="mb-4 flex flex-col items-center gap-6 border-b border-gray-6 py-4 md:flex-row">
             <UserAvatar className="h-16 w-16" user={user} />
             <div>
