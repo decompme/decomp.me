@@ -1,10 +1,13 @@
-import { useEffect, useReducer, useRef, useState } from "react"
+import { useCallback, useEffect, useReducer, useRef, useState } from "react"
 
+import type { CompileCommands } from "@clangd-wasm/clangd-wasm"
 import { cpp } from "@codemirror/lang-cpp"
+import { StateEffect } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
+import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageserver"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "@/lib/settings"
@@ -145,6 +148,56 @@ export default function Scratch({
     const shouldCompare = !isModified
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
+
+    const [lsClient, setLsClient] = useState<LanguageServerClient>(undefined)
+
+    const initLanguageServer = useCallback(async () => {
+        // TODO: make loading this conditional on user opt-in
+        const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
+
+        const compileCommands: CompileCommands = [
+            {
+                directory: "/",
+                file: "source.cpp",
+                arguments: ["clang", "source.cpp", "-include", "context.cpp"],
+            },
+        ]
+
+        const _lsClient = new LanguageServerClient({
+            transport: new ClangdStdioTransport({ debug: true, compileCommands }),
+            rootUri: "file:///",
+            workspaceFolders: null,
+            documentUri: null,
+            languageId: "cpp",
+        })
+
+        const sourceLsExtension = languageServerWithTransport({
+            client: _lsClient,
+            transport: null,
+            rootUri: "file:///",
+            workspaceFolders: null,
+            documentUri: "file:///source.cpp",
+            languageId: "cpp",
+        })
+
+        const contextLsExtension = languageServerWithTransport({
+            client: _lsClient,
+            transport: null,
+            rootUri: "file:///",
+            workspaceFolders: null,
+            documentUri: "file:///context.cpp",
+            languageId: "cpp",
+        })
+
+        setLsClient(_lsClient)
+
+        sourceEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(sourceLsExtension) })
+        contextEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(contextLsExtension) })
+    }, [setLsClient])
+
+    useEffect(() => {
+        initLanguageServer()
+    }, [initLanguageServer])
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
