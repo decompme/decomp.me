@@ -64,7 +64,7 @@ export default function Page() {
             <p className="py-4">
                 You can try again by clicking the button below.
             </p>
-            <GitHubLoginButton popup={false} />
+            <GitHubLoginButton />
         </div> : code ? <div className="flex items-center justify-center gap-4 py-8 text-2xl font-medium text-gray-12">
             <LoadingSpinner width={32} className="animate-spin" />
             Signing in...
@@ -72,7 +72,7 @@ export default function Page() {
             <p>
                 Sign in to decomp.me
             </p>
-            <GitHubLoginButton popup={false} />
+            <GitHubLoginButton />
         </div>}
     </main>
 }

@@ -48,7 +48,7 @@ export default function WelcomeInfo() {
                         <ArrowRightIcon />
                     </Button>
                 </Link>
-                <GitHubLoginButton popup />
+                <GitHubLoginButton />
             </div>
             <div className="my-6 hidden sm:block">
                 <SiteStats />
