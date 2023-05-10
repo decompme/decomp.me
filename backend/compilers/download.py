@@ -609,14 +609,23 @@ def download_saturn():
         print("saturn compilers unsupported on " + host_os.name)
         return
 
+    src = COMPILERS_DIR / "saturn-compilers-main"
+    if src.is_dir():
+        shutil.rmtree(src)
+
+    dest = COMPILERS_DIR / "cygnus-2.7-96Q3"
+    if dest.is_dir():
+        shutil.rmtree(dest)
+
     download_zip(
-        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip"
     )
 
     shutil.move(
         f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
         f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
     )
+
     shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 
