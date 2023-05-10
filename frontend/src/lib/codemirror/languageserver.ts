@@ -245,7 +245,7 @@ class LanguageServerPlugin implements PluginValue {
 
     private changesTimeout: number
 
-    constructor(private view: EditorView, private allowHTMLContent: boolean) {
+    constructor(private view: EditorView) {
         this.client = this.view.state.facet(client)
         this.documentUri = this.view.state.facet(documentUri)
         this.languageId = this.view.state.facet(languageId)
@@ -328,8 +328,7 @@ class LanguageServerPlugin implements PluginValue {
         if (pos === null) return null
         const dom = document.createElement("div")
         dom.classList.add("documentation")
-        if (this.allowHTMLContent) dom.innerHTML = formatContents(contents)
-        else dom.textContent = formatContents(contents)
+        dom.innerHTML = formatContents(contents).join("<br/>")
         return { pos, end, create: _view => ({ dom }), above: true }
     }
 
@@ -385,7 +384,7 @@ class LanguageServerPlugin implements PluginValue {
                     filterText: filterText ?? label,
                 }
                 if (documentation) {
-                    completion.info = formatContents(documentation)
+                    completion.info = formatContents(documentation).join("\n")
                 }
                 return completion
             }
@@ -477,7 +476,6 @@ interface LanguageServerClientOptions extends LanguageServerBaseOptions {
 
 interface LanguageServerOptions extends LanguageServerClientOptions {
     client?: LanguageServerClient
-    allowHTMLContent?: boolean
 }
 
 function languageServerWithTransport(options: LanguageServerOptions) {
@@ -487,7 +485,7 @@ function languageServerWithTransport(options: LanguageServerOptions) {
         client.of(options.client || new LanguageServerClient({ ...options, autoClose: true })),
         documentUri.of(options.documentUri),
         languageId.of(options.languageId),
-        ViewPlugin.define(view => (plugin = new LanguageServerPlugin(view, options.allowHTMLContent))),
+        ViewPlugin.define(view => (plugin = new LanguageServerPlugin(view))),
         hoverTooltip(
             (view, pos) =>
                 plugin?.requestHoverTooltip(
@@ -551,13 +549,19 @@ function offsetToPos(doc: Text, offset: number) {
 
 function formatContents(
     contents: LSP.MarkupContent | LSP.MarkedString | LSP.MarkedString[]
-): string {
+): string[] {
     if (Array.isArray(contents)) {
-        return contents.map(c => formatContents(c) + "\n\n").join("")
-    } else if (typeof contents === "string") {
-        return contents
+        return contents.flatMap(formatContentEntry)
     } else {
-        return contents.value
+        return formatContentEntry(contents)
+    }
+}
+
+function formatContentEntry(entry: LSP.MarkupContent | LSP.MarkedString): string[] {
+    if (typeof entry === "string") {
+        return entry.split("\n")
+    } else {
+        return formatContentEntry(entry.value)
     }
 }
 
