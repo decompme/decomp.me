@@ -47,6 +47,7 @@ interface LSPRequestMap {
         LSP.CompletionParams,
         LSP.CompletionItem[] | LSP.CompletionList | null,
     ]
+    "shutdown": null
 }
 
 // Client to server
@@ -54,6 +55,7 @@ interface LSPNotifyMap {
     initialized: LSP.InitializedParams
     "textDocument/didChange": LSP.DidChangeTextDocumentParams
     "textDocument/didOpen": LSP.DidOpenTextDocumentParams
+    "exit": null
 }
 
 // Server to client
@@ -182,6 +184,11 @@ class LanguageServerClient {
         this.capabilities = capabilities
         this.notify("initialized", {})
         this.ready = true
+    }
+
+    async exit() {
+        await this.request("shutdown", null, timeout)
+        return this.notify("exit", null)
     }
 
     close() {

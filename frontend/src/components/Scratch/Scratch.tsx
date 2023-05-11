@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react"
 
-import type { CompileCommands } from "@clangd-wasm/clangd-wasm"
+import type { ClangdStdioTransport, CompileCommands } from "@clangd-wasm/clangd-wasm"
 import { cpp } from "@codemirror/lang-cpp"
 import { StateEffect } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
@@ -149,11 +149,21 @@ export default function Scratch({
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
+    const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
     const [lsClient, setLsClient] = useState<LanguageServerClient>(undefined)
 
-    const initLanguageServer = useCallback(async () => {
-        // TODO: make loading this conditional on user opt-in
-        const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
+    useEffect(() => {
+        const loadClangdModule = async () => {
+            // TODO: make loading this conditional on user opt-in
+            const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
+            setClangdStdioTransportModule(() => ClangdStdioTransport)
+        }
+
+        loadClangdModule()
+    }, [])
+
+    useEffect(() => {
+        if (!ClangdStdioTransportModule) return
 
         const compileCommands: CompileCommands = [
             {
@@ -164,7 +174,7 @@ export default function Scratch({
         ]
 
         const _lsClient = new LanguageServerClient({
-            transport: new ClangdStdioTransport({ debug: true, compileCommands }),
+            transport: new ClangdStdioTransportModule({ debug: true, compileCommands }),
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: null,
@@ -193,11 +203,14 @@ export default function Scratch({
 
         sourceEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(sourceLsExtension) })
         contextEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(contextLsExtension) })
-    }, [setLsClient])
 
-    useEffect(() => {
-        initLanguageServer()
-    }, [initLanguageServer])
+        return () => {
+            (async () => {
+                await _lsClient.exit()
+            })()
+        }
+
+    }, [ClangdStdioTransportModule])
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
