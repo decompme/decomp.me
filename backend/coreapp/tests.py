@@ -12,7 +12,8 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from coreapp.compilers import DummyCompiler, Language
+from coreapp.compilers import DummyCompiler
+from coreapp.flags import Language
 from coreapp.sandbox import Sandbox
 from coreapp import compilers, platforms
 
