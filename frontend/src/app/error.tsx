@@ -8,6 +8,10 @@ import Button from "@/components/Button"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import SetPageTitle from "@/components/SetPageTitle"
 
+export const metadata = {
+    title: "Error",
+}
+
 export default function Error({
     error,
     reset,

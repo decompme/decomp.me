@@ -1278,7 +1278,7 @@ _all_presets = [
     Preset(
         "Super Smash Bros. Melee",
         MWCC_233_163E,
-        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
+        "-O4,p -nodefaults -proc gekko -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto -DM2CTX -DMUST_MATCH -DWIP",
     ),
     Preset(
         "Kirby Air Ride",

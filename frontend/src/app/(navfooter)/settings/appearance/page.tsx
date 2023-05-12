@@ -1,10 +1,11 @@
-import SetPageTitle from "@/components/SetPageTitle"
-
 import AppearanceSettings from "./AppearanceSettings"
+
+export const metadata = {
+    title: "Appearance settings",
+}
 
 export default function Page() {
     return <>
-        <SetPageTitle title="Appearance settings" />
         <AppearanceSettings />
     </>
 }
