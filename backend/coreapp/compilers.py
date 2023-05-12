@@ -1050,7 +1050,7 @@ _all_presets = [
     Preset(
         "Pokemon Mystery Dungeon: Red Rescue Team",
         AGBCC,
-        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
     ),
     # N3DS
     Preset(
