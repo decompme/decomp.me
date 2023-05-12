@@ -16,6 +16,9 @@ from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
 from .models.scratch import CompilerConfig, Scratch
 
+from .flags import LanguageFlagSet
+from . import compilers
+
 
 def serialize_profile(
     request: Request, profile: Profile, small: bool = False
@@ -142,6 +145,7 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
     project = serializers.SerializerMethodField()
     project_function = serializers.SerializerMethodField()
+    language = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
@@ -183,6 +187,38 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
             )
         return None
 
+    def get_language(self, scratch: Scratch) -> Optional[str]:
+        """
+        Strategy for extracting a scratch's language:
+        - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
+        - Otherwise, fallback to the compiler's default language
+        """
+        compiler = compilers.from_id(scratch.compiler)
+        language_flag_set = next(
+            iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
+            None,
+        )
+
+        if language_flag_set:
+            language = next(
+                iter(
+                    [
+                        language
+                        for (flag, language) in language_flag_set.flags.items()
+                        if flag in scratch.compiler_flags
+                    ]
+                ),
+                None,
+            )
+
+            if language:
+                return language.value
+
+        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
+        # have a flag within it.
+        # Either way: fall back to the compiler default.
+        return compiler.language.value
+
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = TerseProfileField(read_only=True)
@@ -198,6 +234,7 @@ class TerseScratchSerializer(ScratchSerializer):
             "creation_time",
             "platform",
             "compiler",
+            "language",
             "name",
             "score",
             "max_score",

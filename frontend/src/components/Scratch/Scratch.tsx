@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react"
+import { useEffect, useReducer, useRef, useState } from "react"
 
-import type { ClangdStdioTransport, CompileCommands } from "@clangd-wasm/clangd-wasm"
 import { cpp } from "@codemirror/lang-cpp"
-import { StateEffect } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
-import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageserver"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting } from "@/lib/settings"
@@ -23,6 +20,7 @@ import { Tab, TabCloseButton } from "../Tabs"
 import AboutScratch from "./AboutScratch"
 import DecompilationPanel from "./DecompilePanel"
 import FamilyPanel from "./FamilyPanel"
+import useLanguageServer from "./hooks/useLanguageServer"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -149,68 +147,7 @@ export default function Scratch({
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
-    const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
-    const [lsClient, setLsClient] = useState<LanguageServerClient>(undefined)
-
-    useEffect(() => {
-        const loadClangdModule = async () => {
-            // TODO: make loading this conditional on user opt-in
-            const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
-            setClangdStdioTransportModule(() => ClangdStdioTransport)
-        }
-
-        loadClangdModule()
-    }, [])
-
-    useEffect(() => {
-        if (!ClangdStdioTransportModule) return
-
-        const compileCommands: CompileCommands = [
-            {
-                directory: "/",
-                file: "source.cpp",
-                arguments: ["clang", "source.cpp", "-include", "context.cpp"],
-            },
-        ]
-
-        const _lsClient = new LanguageServerClient({
-            transport: new ClangdStdioTransportModule({ debug: true, compileCommands }),
-            rootUri: "file:///",
-            workspaceFolders: null,
-            documentUri: null,
-            languageId: "cpp",
-        })
-
-        const sourceLsExtension = languageServerWithTransport({
-            client: _lsClient,
-            transport: null,
-            rootUri: "file:///",
-            workspaceFolders: null,
-            documentUri: "file:///source.cpp",
-            languageId: "cpp",
-        })
-
-        const contextLsExtension = languageServerWithTransport({
-            client: _lsClient,
-            transport: null,
-            rootUri: "file:///",
-            workspaceFolders: null,
-            documentUri: "file:///context.cpp",
-            languageId: "cpp",
-        })
-
-        setLsClient(_lsClient)
-
-        sourceEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(sourceLsExtension) })
-        contextEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(contextLsExtension) })
-
-        return () => {
-            (async () => {
-                await _lsClient.exit()
-            })()
-        }
-
-    }, [ClangdStdioTransportModule])
+    useLanguageServer(scratch, sourceEditor, contextEditor)
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
