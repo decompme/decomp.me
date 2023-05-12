@@ -5,7 +5,7 @@ import { StateEffect } from "@codemirror/state"
 import { EditorView } from "codemirror"
 
 import * as api from "@/lib/api"
-import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageserver"
+import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
 export default function useLanguageServer(scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)

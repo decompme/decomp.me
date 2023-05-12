@@ -14,7 +14,6 @@ import type { ViewUpdate, PluginValue } from "@codemirror/view"
 import {
     RequestManager,
     Client,
-    WebSocketTransport,
 } from "@open-rpc/client-js"
 import { Transport } from "@open-rpc/client-js/build/transports/Transport"
 import {
@@ -101,22 +100,6 @@ class LanguageServerClient {
         this.client.onNotification(data => {
             this.processNotification(data as any)
         })
-
-        const webSocketTransport = <WebSocketTransport> this.transport
-        if (webSocketTransport && webSocketTransport.connection) {
-            // XXX(hjr265): Need a better way to do this. Relevant issue:
-            // https://github.com/FurqanSoftware/codemirror-languageserver/issues/9
-            webSocketTransport.connection.addEventListener("message", message => {
-                const data = JSON.parse(message.data)
-                if (data.method && data.id) {
-                    webSocketTransport.connection.send(JSON.stringify({
-                        jsonrpc: "2.0",
-                        id: data.id,
-                        result: null,
-                    }))
-                }
-            })
-        }
 
         this.initializePromise = this.initialize()
     }
