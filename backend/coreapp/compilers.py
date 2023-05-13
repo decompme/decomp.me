@@ -1033,7 +1033,7 @@ _all_presets = [
     Preset(
         "Pokemon Mystery Dungeon: Red Rescue Team",
         AGBCC,
-        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
     ),
     # N3DS
     Preset(
@@ -1339,6 +1339,16 @@ _all_presets = [
         "Super Mario Galaxy",
         MWCC_41_60126,
         "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
+    ),
+    Preset(
+        "Super Mario Galaxy 2",
+        MWCC_43_172,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,s -sdata 4 -sdata2 4",
+    ),
+    Preset(
+        "Super Mario Galaxy 2 (RVL)",
+        MWCC_43_172,
+        "-lang=c99 -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,p -sdata 8 -sdata2 8",
     ),
     Preset(
         "Xenoblade Chronicles (JP)",
