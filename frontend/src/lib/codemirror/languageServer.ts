@@ -9,7 +9,7 @@ import type {
 import { setDiagnostics } from "@codemirror/lint"
 import { Facet } from "@codemirror/state"
 import type { Text } from "@codemirror/state"
-import { EditorView, ViewPlugin, Tooltip, hoverTooltip } from "@codemirror/view"
+import { EditorView, ViewPlugin, Tooltip, hoverTooltip, keymap } from "@codemirror/view"
 import type { ViewUpdate, PluginValue } from "@codemirror/view"
 import {
     RequestManager,
@@ -46,7 +46,8 @@ interface LSPRequestMap {
         LSP.CompletionParams,
         LSP.CompletionItem[] | LSP.CompletionList | null,
     ]
-    "shutdown": null
+    "textDocument/formatting": [LSP.DocumentFormattingParams, LSP.TextEdit[] | null]
+    "shutdown": [null, null]
 }
 
 // Client to server
@@ -152,6 +153,9 @@ class LanguageServerClient {
                         dynamicRegistration: true,
                         linkSupport: true,
                     },
+                    formatting: {
+                        dynamicRegistration: true,
+                    },
                 },
                 workspace: {
                     didChangeConfiguration: {
@@ -192,6 +196,10 @@ class LanguageServerClient {
 
     async textDocumentCompletion(params: LSP.CompletionParams) {
         return await this.request("textDocument/completion", params, timeout)
+    }
+
+    async textDocumentFormatting(params: LSP.DocumentFormattingParams) {
+        return await this.request("textDocument/formatting", params, timeout)
     }
 
     attachPlugin(plugin: LanguageServerPlugin) {
@@ -300,7 +308,7 @@ class LanguageServerPlugin implements PluginValue {
         view: EditorView,
         { line, character }: { line: number, character: number }
     ): Promise<Tooltip | null> {
-        if (!this.client.ready || !this.client.capabilities!.hoverProvider) return null
+        if (!this.client.ready || !this.client.capabilities.hoverProvider) return null
 
         this.sendChange({ documentText: view.state.doc.toString() })
         const result = await this.client.textDocumentHover({
@@ -333,7 +341,7 @@ class LanguageServerPlugin implements PluginValue {
             triggerCharacter: string | undefined
         }
     ): Promise<CompletionResult | null> {
-        if (!this.client.ready || !this.client.capabilities!.completionProvider) return null
+        if (!this.client.ready || !this.client.capabilities.completionProvider) return null
         this.sendChange({
             documentText: context.state.doc.toString(),
         })
@@ -409,6 +417,18 @@ class LanguageServerPlugin implements PluginValue {
             from: pos,
             options,
         }
+    }
+
+    async requestFormat() {
+        return await this.client.textDocumentFormatting({
+            textDocument: {
+                uri: this.documentUri,
+            },
+            options: {
+                tabSize: 4,
+                insertSpaces: true,
+            },
+        })
     }
 
     processNotification(notification: Notification) {
@@ -519,6 +539,26 @@ function languageServerWithTransport(options: LanguageServerOptions) {
                 },
             ],
         }),
+        keymap.of([
+            { key: "Alt-Shift-f", run: target => {
+                (async () => {
+                    const formattingEdits = await plugin.requestFormat()
+                    if (!formattingEdits) return
+
+                    const changes = formattingEdits.map(change => {
+                        return {
+                            from: posToOffset(target.state.doc, change.range.start),
+                            to: posToOffset(target.state.doc, change.range.end),
+                            insert: change.newText,
+                        }
+                    })
+
+                    target.dispatch({ changes })
+                })()
+
+                return true
+            } },
+        ]),
     ]
 }
 
