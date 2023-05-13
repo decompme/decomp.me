@@ -7,6 +7,8 @@ import { EditorView } from "codemirror"
 import * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
+import defaultClangFormat from "./default-clang-format.yaml"
+
 export default function useLanguageServer(scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
     const [languageId, setLanguageId] = useState<string>(undefined)
@@ -45,8 +47,12 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
             },
         ]
 
+        const initialFileState = {
+            ".clang-format": defaultClangFormat,
+        }
+
         const _lsClient = new LanguageServerClient({
-            transport: new ClangdStdioTransportModule({ debug: true, compileCommands }),
+            transport: new ClangdStdioTransportModule({ debug: true, compileCommands, initialFileState }),
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: null,

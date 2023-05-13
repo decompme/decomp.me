@@ -424,6 +424,8 @@ class LanguageServerPlugin implements PluginValue {
             textDocument: {
                 uri: this.documentUri,
             },
+            // We need this to be protocol-compilant, but clangd *entirely* ignores it.
+            // For control over formatting options, see .clang-format
             options: {
                 tabSize: 4,
                 insertSpaces: true,
