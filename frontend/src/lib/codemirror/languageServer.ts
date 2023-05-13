@@ -1,5 +1,6 @@
 /* Originally adapted from https://github.com/FurqanSoftware/codemirror-languageserver */
 
+import type { ClangdStdioTransport } from "@clangd-wasm/clangd-wasm"
 import { autocompletion } from "@codemirror/autocomplete"
 import type {
     Completion,
@@ -7,7 +8,7 @@ import type {
     CompletionResult,
 } from "@codemirror/autocomplete"
 import { setDiagnostics } from "@codemirror/lint"
-import { Facet } from "@codemirror/state"
+import { Extension, Facet } from "@codemirror/state"
 import type { Text } from "@codemirror/state"
 import { EditorView, ViewPlugin, Tooltip, hoverTooltip, keymap } from "@codemirror/view"
 import type { ViewUpdate, PluginValue } from "@codemirror/view"
@@ -55,6 +56,7 @@ interface LSPNotifyMap {
     initialized: LSP.InitializedParams
     "textDocument/didChange": LSP.DidChangeTextDocumentParams
     "textDocument/didOpen": LSP.DidOpenTextDocumentParams
+    "textDocument/didSave": LSP.DidSaveTextDocumentParams
     "exit": null
 }
 
@@ -117,7 +119,7 @@ class LanguageServerClient {
                     synchronization: {
                         dynamicRegistration: true,
                         willSave: false,
-                        didSave: false,
+                        didSave: true,
                         willSaveWaitUntil: false,
                     },
                     completion: {
@@ -202,6 +204,15 @@ class LanguageServerClient {
         return await this.request("textDocument/formatting", params, timeout)
     }
 
+    async textDocumentDidSave(params: LSP.DidSaveTextDocumentParams) {
+        return this.notify("textDocument/didSave", params)
+    }
+
+    transportWriteFile(filename: string, contents: string) {
+        const transport = <ClangdStdioTransport> this.transport
+        transport.module?.FS?.writeFile(filename, contents)
+    }
+
     attachPlugin(plugin: LanguageServerPlugin) {
         this.plugins.push(plugin)
     }
@@ -265,6 +276,17 @@ class LanguageServerPlugin implements PluginValue {
                 documentText: this.view.state.doc.toString(),
             })
         }, changesDelay)
+    }
+
+    async save(contents: string) {
+        this.client.transportWriteFile(this.documentUri.split("file://")[1], contents)
+
+        await this.client.textDocumentDidSave({
+            textDocument: {
+                uri: this.documentUri,
+            },
+            text: contents,
+        })
     }
 
     destroy() {
@@ -490,10 +512,10 @@ interface LanguageServerOptions extends LanguageServerClientOptions {
     client?: LanguageServerClient
 }
 
-function languageServerWithTransport(options: LanguageServerOptions) {
+function languageServerWithTransport(options: LanguageServerOptions): [Extension[], (string) => Promise<void>]{
     let plugin: LanguageServerPlugin | null = null
 
-    return [
+    const extension = [
         client.of(options.client || new LanguageServerClient({ ...options, autoClose: true })),
         documentUri.of(options.documentUri),
         languageId.of(options.languageId),
@@ -562,6 +584,13 @@ function languageServerWithTransport(options: LanguageServerOptions) {
             } },
         ]),
     ]
+
+    const saveDocument = async (contents: string) => {
+        if (!plugin) return
+        await plugin.save(contents)
+    }
+
+    return [extension, saveDocument]
 }
 
 function posToOffset(doc: Text, pos: { line: number, character: number }) {

@@ -147,7 +147,7 @@ export default function Scratch({
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
-    useLanguageServer(scratch, sourceEditor, contextEditor)
+    const [saveSource, saveContext] = useLanguageServer(scratch, sourceEditor, contextEditor)
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
@@ -180,7 +180,10 @@ export default function Scratch({
                 key={id}
                 tabKey={id}
                 label="Source code"
-                onSelect={() => sourceEditor.current?.focus?.()}
+                onSelect={() => {
+                    sourceEditor.current?.focus?.()
+                    saveContext()
+                }}
             >
                 <CodeMirror
                     viewRef={sourceEditor}
@@ -200,7 +203,10 @@ export default function Scratch({
                 tabKey={id}
                 label="Context"
                 className={styles.context}
-                onSelect={() => contextEditor.current?.focus?.()}
+                onSelect={() => {
+                    contextEditor.current?.focus?.()
+                    saveSource()
+                }}
             >
                 <CodeMirror
                     viewRef={contextEditor}
