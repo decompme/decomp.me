@@ -101,25 +101,19 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         setSaveContext(() => _saveContext)
 
         return () => {
-            (async () => {
-                await _lsClient.exit()
-            })()
+            _lsClient.exit()
         }
 
     }, [initialScratchState, ClangdStdioTransportModule, languageId, contextEditor, sourceEditor])
 
     const saveSourceRet = () => {
-        (async () => {
-            if (saveSource)
-                await saveSource(scratch.source_code)
-        })()
+        if (saveSource)
+            saveSource(scratch.source_code)
     }
 
     const saveContextRet = () => {
-        (async () => {
-            if (saveContext)
-                await saveContext(scratch.context)
-        })()
+        if (saveContext)
+            saveContext(scratch.context)
     }
 
     return [saveSourceRet, saveContextRet]
