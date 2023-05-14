@@ -111,13 +111,6 @@ let app = withPlausibleProxy({
             },
         })
 
-        // This lets us import yaml files, and have their contents
-        // be baked into the output bundle as a static string
-        config.module.rules.push({
-            "test": /\.yaml/,
-            "type": "asset/source",
-        })
-
         return config
     },
     images: {
