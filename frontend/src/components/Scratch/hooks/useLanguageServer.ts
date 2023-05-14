@@ -7,7 +7,7 @@ import { EditorView } from "codemirror"
 import * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
-export default function useLanguageServer(scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
+export default function useLanguageServer(enabled: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [initialScratchState, setInitialScratchState] = useState<api.Scratch>(undefined)
     const [defaultClangFormat, setDefaultClangFormat] = useState<string>(undefined)
 
@@ -18,6 +18,7 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
 
     useEffect(() => {
         const loadClangdModule = async () => {
+            if (!enabled) return
             if (!(scratch.language == "C" || scratch.language == "C++")) return
 
             // TODO: make this conditional on user opt-in
@@ -26,7 +27,7 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         }
 
         loadClangdModule()
-    }, [scratch.language])
+    }, [scratch.language, enabled])
 
     useEffect(() => {
         if (!initialScratchState) {
