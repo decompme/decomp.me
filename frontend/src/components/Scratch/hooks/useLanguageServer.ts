@@ -1,4 +1,4 @@
-import { MutableRefObject, use, useEffect, useState } from "react"
+import { MutableRefObject, useEffect, useState } from "react"
 
 import type { ClangdStdioTransport, CompileCommands } from "@clangd-wasm/clangd-wasm"
 import { StateEffect } from "@codemirror/state"
@@ -7,12 +7,10 @@ import { EditorView } from "codemirror"
 import * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
-import defaultClangFormat from "./default-clang-format.yaml"
-
 export default function useLanguageServer(scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [initialScratchState, setInitialScratchState] = useState<api.Scratch>(undefined)
+
     const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
-    const [languageId, setLanguageId] = useState<string>(undefined)
 
     const [saveSource, setSaveSource] = useState<(string) => Promise<void>>(undefined)
     const [saveContext, setSaveContext] = useState<(string) => Promise<void>>(undefined)
@@ -20,11 +18,6 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
     useEffect(() => {
         const loadClangdModule = async () => {
             if (!(scratch.language == "C" || scratch.language == "C++")) return
-
-            setLanguageId({
-                "C": "c",
-                "C++": "cpp",
-            }[scratch.language])
 
             // TODO: make this conditional on user opt-in
             const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
@@ -47,6 +40,11 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         if (!ClangdStdioTransportModule) return
         if (!initialScratchState) return
 
+        const languageId = {
+            "C": "c",
+            "C++": "cpp",
+        }[initialScratchState.language]
+
         const sourceFilename = `source.${languageId}`
         const contextFilename = `context.${languageId}`
 
@@ -59,7 +57,7 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         ]
 
         const initialFileState = {
-            ".clang-format": defaultClangFormat,
+            ".clang-format": new URL("./default-clang-format.yaml", import.meta.url).toString(),
         }
 
         initialFileState[sourceFilename] = initialScratchState.source_code
@@ -104,7 +102,7 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
             _lsClient.exit()
         }
 
-    }, [initialScratchState, ClangdStdioTransportModule, languageId, contextEditor, sourceEditor])
+    }, [ClangdStdioTransportModule, initialScratchState, sourceEditor, contextEditor])
 
     const saveSourceRet = () => {
         if (saveSource)
