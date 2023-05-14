@@ -9,6 +9,7 @@ import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemir
 
 export default function useLanguageServer(scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [initialScratchState, setInitialScratchState] = useState<api.Scratch>(undefined)
+    const [defaultClangFormat, setDefaultClangFormat] = useState<string>(undefined)
 
     const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
 
@@ -33,12 +34,19 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         }
     }, [scratch, initialScratchState])
 
+    useEffect(() => {
+        fetch(new URL("./default-clang-format.yaml", import.meta.url))
+            .then(res => res.text())
+            .then(setDefaultClangFormat)
+    }, [])
+
     // We break this out into a seperate effect from the module loading
     // because if we had _lsClient defined inside an async function, we wouldn't be
     // able to reference it inside of the destructor.
     useEffect(() => {
         if (!ClangdStdioTransportModule) return
         if (!initialScratchState) return
+        if (!defaultClangFormat) return
 
         const languageId = {
             "C": "c",
@@ -57,14 +65,19 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
         ]
 
         const initialFileState = {
-            ".clang-format": new URL("./default-clang-format.yaml", import.meta.url).toString(),
+            ".clang-format": defaultClangFormat,
         }
 
         initialFileState[sourceFilename] = initialScratchState.source_code
         initialFileState[contextFilename] = initialScratchState.context
 
         const _lsClient = new LanguageServerClient({
-            transport: new ClangdStdioTransportModule({ debug: true, compileCommands, initialFileState }),
+            transport: new ClangdStdioTransportModule({
+                debug: true,
+                compileCommands,
+                initialFileState,
+            }),
+
             rootUri: "file:///",
             workspaceFolders: null,
             documentUri: null,
@@ -102,7 +115,7 @@ export default function useLanguageServer(scratch: api.Scratch, sourceEditor: Mu
             _lsClient.exit()
         }
 
-    }, [ClangdStdioTransportModule, initialScratchState, sourceEditor, contextEditor])
+    }, [ClangdStdioTransportModule, initialScratchState, defaultClangFormat, sourceEditor, contextEditor])
 
     const saveSourceRet = () => {
         if (saveSource)
