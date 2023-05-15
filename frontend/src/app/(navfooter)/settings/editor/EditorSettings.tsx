@@ -55,8 +55,8 @@ export default function EditorSettings() {
             <Checkbox
                 checked={languageServerEnabled}
                 onChange={maybeDownloadLanguageServer}
-                label="Enable in-browser language server"
-                description="Enable editor features such as code completion, error checking, and formatting via clangd and web assembly magic. WARNING: enabling will prompt a one time ~15MB download, and bump up resource usage during editing.">
+                label="Enable language server"
+                description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~15MB download, and bump up resource usage during editing.">
 
                 {downloadingLanguageServer && <LoadingSpinner width="24px" />}
             </Checkbox>
