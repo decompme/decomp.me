@@ -7,7 +7,7 @@ import { EditorView } from "codemirror"
 import * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
-export default function useLanguageServer(enabled: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
+export default function useLanguageServer(enabled: boolean, useSmallBinary: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [initialScratchState, setInitialScratchState] = useState<api.Scratch>(undefined)
     const [defaultClangFormat, setDefaultClangFormat] = useState<string>(undefined)
 
@@ -21,7 +21,6 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
             if (!enabled) return
             if (!(scratch.language == "C" || scratch.language == "C++")) return
 
-            // TODO: make this conditional on user opt-in
             const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
             setClangdStdioTransportModule(() => ClangdStdioTransport)
         }
@@ -74,9 +73,9 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
 
         const _lsClient = new LanguageServerClient({
             transport: new ClangdStdioTransportModule({
-                debug: true,
                 compileCommands,
                 initialFileState,
+                useSmallBinary,
             }),
 
             rootUri: "file:///",
@@ -116,7 +115,7 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
             _lsClient.exit()
         }
 
-    }, [ClangdStdioTransportModule, initialScratchState, defaultClangFormat, sourceEditor, contextEditor])
+    }, [ClangdStdioTransportModule, initialScratchState, defaultClangFormat, useSmallBinary, sourceEditor, contextEditor])
 
     const saveSourceRet = () => {
         if (saveSource)

@@ -10,7 +10,7 @@
         "clean": "rm -rf .next node_modules"
     },
     "dependencies": {
-        "@clangd-wasm/clangd-wasm": "15.0.7-dev3",
+        "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
         "@codemirror/autocomplete": "^6.6.0",
         "@codemirror/commands": "^6.2.4",
         "@codemirror/lang-cpp": "^6.0.2",

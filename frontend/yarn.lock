@@ -1013,10 +1013,10 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@clangd-wasm/clangd-wasm@15.0.7-dev3":
-  version "15.0.7-dev3"
-  resolved "https://registry.yarnpkg.com/@clangd-wasm/clangd-wasm/-/clangd-wasm-15.0.7-dev3.tgz#48b2c769c7a52b8e0cd60cd4f232cfb875ea0d61"
-  integrity sha512-TMCM8Q/KU9dSJsYhj4JFektLRp9N17F/OlcvQTzM4k9+ZyLZmY++t9dt7SfymiN3Xu1L7HisppBHzlRxxV/Mmg==
+"@clangd-wasm/clangd-wasm@15.0.7-dev5":
+  version "15.0.7-dev5"
+  resolved "https://registry.yarnpkg.com/@clangd-wasm/clangd-wasm/-/clangd-wasm-15.0.7-dev5.tgz#6787f95ae28574c0f5addb6ca44177f0dd358a5c"
+  integrity sha512-HwzZ0EgSayCgjgk9WRVjiurrqo2Tc7iJR1s1PDx718/kOSPgnc1JyIMH/0EazLDfB2pOPDewnxNwdCSDnDhz+w==
   dependencies:
     "@open-rpc/client-js" "^1.8.1"
 

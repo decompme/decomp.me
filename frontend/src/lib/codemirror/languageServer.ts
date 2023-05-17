@@ -339,10 +339,10 @@ class LanguageServerPlugin implements PluginValue {
         })
         if (!result) return null
         const { contents, range } = result
-        let pos = posToOffset(view.state.doc, { line, character })!
+        let pos = posToOffset(view.state.doc, { line, character })
         let end: number
         if (range) {
-            pos = posToOffset(view.state.doc, range.start)!
+            pos = posToOffset(view.state.doc, range.start)
             end = posToOffset(view.state.doc, range.end)
         }
         if (pos === null) return null
@@ -410,7 +410,7 @@ class LanguageServerPlugin implements PluginValue {
             }
         )
 
-        const [span, match] = prefixMatch(options)
+        const [, match] = prefixMatch(options)
         const token = context.matchBefore(match)
         let { pos } = context
 
@@ -471,14 +471,14 @@ class LanguageServerPlugin implements PluginValue {
 
         const diagnostics = params.diagnostics
             .map(({ range, message, severity }) => ({
-                from: posToOffset(this.view.state.doc, range.start)!,
-                to: posToOffset(this.view.state.doc, range.end)!,
+                from: posToOffset(this.view.state.doc, range.start),
+                to: posToOffset(this.view.state.doc, range.end),
                 severity: ({
                     [DiagnosticSeverity.Error]: "error",
                     [DiagnosticSeverity.Warning]: "warning",
                     [DiagnosticSeverity.Information]: "info",
                     [DiagnosticSeverity.Hint]: "info",
-                } as const)[severity!],
+                } as const)[severity],
                 message,
             }))
             .filter(({ from, to }) => from !== null && to !== null && from !== undefined && to !== undefined)

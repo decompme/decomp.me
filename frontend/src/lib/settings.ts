@@ -8,6 +8,7 @@ const monospaceFont = createPersistedState("monospaceFont")
 const codeLineHeight = createPersistedState("codeLineHeight")
 const codeColorScheme = createPersistedState("codeColorScheme")
 const languageServerEnabled = createPersistedState("languageServerEnabled")
+const preferSmallLanguageServer = createPersistedState("preferSmallLanguageServer")
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)
@@ -17,6 +18,7 @@ export const useMonospaceFont = () => monospaceFont(undefined)
 export const useCodeLineHeight = () => codeLineHeight(1.5)
 export const useCodeColorScheme = () => codeColorScheme("Frog Dark")
 export const useLanguageServerEnabled = () => languageServerEnabled(false)
+export const usePreferSmallLanguageServer = () => preferSmallLanguageServer(true)
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme()
