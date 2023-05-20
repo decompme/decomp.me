@@ -8,8 +8,6 @@ import Checkbox from "../Checkbox"
 import Section from "../Section"
 import SliderField from "../SliderField"
 
-import styles from "./EditorSettings.module.scss"
-
 export default function EditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
@@ -75,7 +73,7 @@ export default function EditorSettings() {
                     label="Prefer small language server build"
                     description="Use a smaller (11MB vs 13MB download) build of the language server, at the expense of some performance."/>
 
-                {downloadingLanguageServer && <div className={styles.loading}><LoadingSpinner width="24px" /> Downloading...</div>}
+                {downloadingLanguageServer && <div className="flex gap-2 p-4"><LoadingSpinner width="24px" /> Downloading...</div>}
             </Checkbox>
         </Section>
     </>
