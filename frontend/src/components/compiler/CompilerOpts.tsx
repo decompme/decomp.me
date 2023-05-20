@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react"
+import { createContext, useContext, ReactElement } from "react"
 
 import * as api from "@/lib/api"
 import useTranslation from "@/lib/i18n/translate"
@@ -20,7 +20,9 @@ interface IOptsContext {
 
 const OptsContext = createContext<IOptsContext>(undefined)
 
-function Checkbox({ flag, description }) {
+type CheckboxProps = {flag: string, description: string}
+
+function Checkbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -32,7 +34,7 @@ function Checkbox({ flag, description }) {
     </div>
 }
 
-function DiffCheckbox({ flag, description }) {
+function DiffCheckbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -43,7 +45,9 @@ function DiffCheckbox({ flag, description }) {
     </div>
 }
 
-function FlagSet({ name, children, value }) {
+type FlagSetProps = {name: string, children: ReactElement<FlagOptionProps>[], value: string};
+
+function FlagSet({ name, children, value }: FlagSetProps) {
     const { setFlag } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
@@ -63,7 +67,7 @@ function FlagSet({ name, children, value }) {
     </div>
 }
 
-function DiffFlagSet({ name, children, value }) {
+function DiffFlagSet({ name, children, value }: FlagSetProps) {
     const { setFlags } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
@@ -85,13 +89,15 @@ function DiffFlagSet({ name, children, value }) {
     </div>
 }
 
-function FlagOption({ flag, description }: { flag: string, description?: string }) {
+type FlagOptionProps = { flag: string, description?: string };
+
+function FlagOption({ flag, description }: FlagOptionProps) {
     return <option value={flag}>
         {flag} {description && description !== NO_TRANSLATION && `(${description})`}
     </option>
 }
 
-function DiffFlagOption({ flag, description }: { flag: string, description?: string }) {
+function DiffFlagOption({ flag, description }: FlagOptionProps) {
     return <option value={flag}>
         {description || flag}
     </option>
