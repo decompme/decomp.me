@@ -1112,6 +1112,7 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    Preset("Donkey Kong 64", IDO53, "-O2 -mips2"),
     Preset(
         "Dr. Mario 64 N64",
         GCC272KMC,
@@ -1184,6 +1185,12 @@ _all_presets = [
         "Rocket Robot on Wheels",
         GCC272SNEW,
         "-mips2 -O2 -gdwarf -funsigned-char",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Shadowgate 64",
+        GCC272KMC,
+        "-mips2 -O1 -g2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
