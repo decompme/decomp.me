@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import LoadingSpinner from "@/components/loading.svg"
 import * as settings from "@/lib/settings"
@@ -8,6 +8,8 @@ import Checkbox from "../Checkbox"
 import Section from "../Section"
 import SliderField from "../SliderField"
 
+import styles from "./EditorSettings.module.scss"
+
 export default function EditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
@@ -15,11 +17,17 @@ export default function EditorSettings() {
     const [preferSmallLanguageServer, setPreferSmallLanguageServer] = settings.usePreferSmallLanguageServer()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
-    const [languageServerSettingsMutated, setLanguageServerSettingsMutated] = useState(false)
+
+    const isInitialMount = useRef(true)
 
     useEffect(() => {
         // Prevent the language server binary from being downloaded if the user has it enabled, then enters settings
-        if (languageServerEnabled && languageServerSettingsMutated) {
+        if (isInitialMount.current) {
+            isInitialMount.current = false
+            return
+        }
+
+        if (languageServerEnabled) {
             setDownloadingLanguageServer(true)
 
             import("@clangd-wasm/clangd-wasm").then(({ ClangdStdioTransport }) => {
@@ -30,7 +38,7 @@ export default function EditorSettings() {
                     .then(() => setDownloadingLanguageServer(false))
             })
         }
-    }, [languageServerEnabled, languageServerSettingsMutated, preferSmallLanguageServer])
+    }, [languageServerEnabled, preferSmallLanguageServer])
 
     return <>
         <Section title="Automatic compilation">
@@ -57,23 +65,17 @@ export default function EditorSettings() {
         <Section title="Language server">
             <Checkbox
                 checked={languageServerEnabled}
-                onChange={state => {
-                    setLanguageServerEnabled(state)
-                    setLanguageServerSettingsMutated(true)
-                }}
+                onChange={setLanguageServerEnabled}
                 label="Enable language server"
                 description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~11 - 13MB download, and bump up resource usage during editing.">
 
                 <Checkbox
                     checked={preferSmallLanguageServer}
-                    onChange={state => {
-                        setPreferSmallLanguageServer(state)
-                        setLanguageServerSettingsMutated(true)
-                    }}
+                    onChange={setPreferSmallLanguageServer}
                     label="Prefer small language server build"
                     description="Use a smaller (11MB vs 13MB download) build of the language server, at the expense of some performance."/>
 
-                {downloadingLanguageServer && <LoadingSpinner width="24px" />}
+                {downloadingLanguageServer && <div className={styles.loading}><LoadingSpinner width="24px" /> Downloading...</div>}
             </Checkbox>
         </Section>
     </>
