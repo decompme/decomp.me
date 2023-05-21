@@ -30,22 +30,6 @@ ExperimentalAutoDetectBinPacking: true
 BinPackParameters: false
 AlignAfterOpenBracket: BlockIndent
 
-AlignConsecutiveAssignments:
-  Enabled: true
-  AcrossEmptyLines: false
-  AcrossComments: false
-  AlignCompound: true
-  PadOperators: true
-AlignConsecutiveDeclarations: # structs etc
-  Enabled: true
-  AcrossEmptyLines: false
-  AcrossComments: false
-AlignConsecutiveMacros:
-  Enabled: true
-  AcrossEmptyLines: false
-  AcrossComments: false
-AlignTrailingComments: true
-
 AllowShortFunctionsOnASingleLine: None
 ---
 
