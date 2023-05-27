@@ -123,15 +123,16 @@
 
 .source_other { font-style: italic; }
 .source_line_num { font-style: italic; }
-.rotation0 { color: magenta; }
-.rotation1 { color: cyan; }
-.rotation2 { color: rgb(0, 212, 0); }
-.rotation3 { color: red; }
-.rotation4 { color: rgb(103, 106, 255); }
-.rotation5 { color: lightpink; }
-.rotation6 { color: lightcyan; }
-.rotation7 { color: lightgreen; }
-.rotation8 { color: grey; }
+
+.rotation0 { color: rgb(205, 82, 82); }
+.rotation1 { color: rgb(205, 164, 82); }
+.rotation2 { color: rgb(164, 205, 82); }
+.rotation3 { color: rgb(82, 205, 82); }
+.rotation4 { color: rgb(82, 205, 164); }
+.rotation5 { color: rgb(82, 164, 205); }
+.rotation6 { color: rgb(82, 82, 205); }
+.rotation7 { color: rgb(164, 82, 205); }
+.rotation8 { color: rgb(205, 82, 164); }
 
 .highlighted {
     color: white;
