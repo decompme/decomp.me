@@ -59,6 +59,7 @@ class DiffResult:
     result: Dict[str, Any]
     errors: str
 
+
 @dataclass
 class CompilationResult:
     elf_object: bytes

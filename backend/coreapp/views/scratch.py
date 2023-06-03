@@ -82,6 +82,7 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
     except DiffError as e:
         return DiffResult({}, str(e))
 
+
 def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
     """
     Given a scratch and a diff, update the scratch's score
