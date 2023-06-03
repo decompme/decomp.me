@@ -21,3 +21,4 @@ sandbox/
 /frontend/public/workbox-*
 .vscode/launch.json
 .vercel
+.turbo

@@ -11,6 +11,16 @@
 
 A collaborative decompilation and reverse engineering website, built with Next.js and Django.
 
+## Local development
+
+TODO: make this work in docker etc
+
+```
+pnpm install
+pnpm install turbo --global
+turbo dev
+```
+
 ## Contributing
 
 Contributions are very much welcome! You may want to [join our Discord server](https://discord.gg/sutqNShRRs).

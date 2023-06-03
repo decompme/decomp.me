@@ -1,45 +1,44 @@
 {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+
     "files.trimTrailingWhitespace": true,
     // eslint
-    "eslint.workingDirectories": [
-        "frontend"
-    ],
+    "eslint.workingDirectories": ["frontend"],
     "eslint.format.enable": true,
     "[javascript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[javascriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[typescript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[typescriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     // stylelint
     "[css]": {
         "editor.defaultFormatter": "stylelint.vscode-stylelint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[scss]": {
         "editor.defaultFormatter": "stylelint.vscode-stylelint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[python]": {
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "python.formatting.provider": "black",
     "mypy.configFile": "backend/mypy.ini",
     "mypy.runUsingActiveInterpreter": true,
-    "mypy.targets": [
-        "backend/coreapp",
-        "backend/decompme"
-    ],
+    "mypy.targets": ["backend/coreapp", "backend/decompme"],
     "typescript.tsdk": "frontend/node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true
 }
