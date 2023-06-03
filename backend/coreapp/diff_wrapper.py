@@ -252,17 +252,13 @@ class DiffWrapper:
         try:
             display = asm_differ.Display(basedump, mydump, config)
         except Exception as e:
-            error = f"Error running asm-differ: {e}"
-            logger.error(error)
-            return DiffResult({"rows": [{"base": {"text": [{"text": "Error running asm-differ"}]}}]}, error)
+            raise DiffError(e)
 
         try:
             # TODO: It would be nice to get a python object from `run_diff()` to avoid the
             # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
             result = DiffResult(json.loads(display.run_diff()[0]), "")
         except Exception as e:
-            error = f"Error running asm-differ: {e}"
-            logger.error(error)
-            return DiffResult({"rows": [{"base": {"text": [{"text": "Error running asm-differ"}]}}]}, error)
+            raise DiffError(e)
 
         return result
