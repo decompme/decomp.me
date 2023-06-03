@@ -33,8 +33,6 @@ else:
 
 logger = logging.getLogger(__name__)
 
-DiffResult = Dict[str, Any]
-
 PATH: str
 if settings.USE_SANDBOX_JAIL:
     PATH = "/bin:/usr/bin"
@@ -54,6 +52,12 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
     WIBO = ""
 else:
     WIBO = "wibo"
+
+
+@dataclass
+class DiffResult:
+    result: Dict[str, Any]
+    errors: str
 
 
 @dataclass

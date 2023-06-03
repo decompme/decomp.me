@@ -223,7 +223,7 @@ class DiffWrapper:
     ) -> DiffResult:
         if platform == DUMMY:
             # Todo produce diff for dummy
-            return {"rows": ["a", "b"]}
+            return DiffResult({"rows": ["a", "b"]}, "")
 
         try:
             arch = asm_differ.get_arch(platform.arch or "")
@@ -257,8 +257,7 @@ class DiffWrapper:
         try:
             # TODO: It would be nice to get a python object from `run_diff()` to avoid the
             # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
-            result = json.loads(display.run_diff()[0])
-            result["error"] = None
+            result = DiffResult(json.loads(display.run_diff()[0]), "")
         except Exception as e:
             raise DiffError(f"Error running asm-differ: {e}")
 

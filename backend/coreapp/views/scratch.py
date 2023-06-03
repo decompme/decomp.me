@@ -25,7 +25,7 @@ from ..compilers import Language
 from ..decorators.django import condition
 
 from ..diff_wrapper import DiffWrapper
-from ..error import CompilationError
+from ..error import CompilationError, DiffError
 from ..middleware import Request
 from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction
@@ -71,13 +71,16 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
 
 
 def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
-    return DiffWrapper.diff(
-        scratch.target_assembly,
-        platforms.from_id(scratch.platform),
-        scratch.diff_label,
-        bytes(compilation.elf_object),
-        diff_flags=scratch.diff_flags,
-    )
+    try:
+        return DiffWrapper.diff(
+            scratch.target_assembly,
+            platforms.from_id(scratch.platform),
+            scratch.diff_label,
+            bytes(compilation.elf_object),
+            diff_flags=scratch.diff_flags,
+        )
+    except DiffError as e:
+        return DiffResult({}, str(e))
 
 
 def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
@@ -85,8 +88,8 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
     Given a scratch and a diff, update the scratch's score
     """
 
-    score = diff.get("current_score", scratch.score)
-    max_score = diff.get("max_score", scratch.max_score)
+    score = diff.result.get("current_score", scratch.score)
+    max_score = diff.result.get("max_score", scratch.max_score)
     if score != scratch.score or max_score != scratch.max_score:
         scratch.score = score
         scratch.max_score = max_score
@@ -107,12 +110,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
     except Exception:
-        try:
-            # Attempt to process just the target asm so we can populate max_score
-            diff = diff_compilation(scratch, compilation)
-            update_scratch_score(scratch, diff)
-        except Exception:
-            pass
+        pass
 
 
 def scratch_last_modified(
@@ -377,10 +375,16 @@ class ScratchViewSet(
         if request.method == "GET":
             update_scratch_score(scratch, diff)
 
+        compiler_output = ""
+        if compilation.errors:
+            compiler_output += compilation.errors + "\n"
+        if diff.errors:
+            compiler_output += diff.errors + "\n"
+
         return Response(
             {
-                "diff_output": diff,
-                "compiler_output": compilation.errors,
+                "diff_output": diff.result,
+                "compiler_output": compiler_output,
                 "success": compilation.elf_object is not None
                 and len(compilation.elf_object) > 0,
             }
