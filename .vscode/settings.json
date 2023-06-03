@@ -40,5 +40,19 @@
     "mypy.runUsingActiveInterpreter": true,
     "mypy.targets": ["backend/coreapp", "backend/decompme"],
     "typescript.tsdk": "frontend/node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+
+    "workbench.editor.labelFormat": "short",
+
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true,
+        "**/.svelte-kit": true,
+        "**/.turbo": true
+    }
 }
