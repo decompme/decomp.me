@@ -557,8 +557,9 @@ nop
             diff_flags=[],
         )
 
-        self.assertTrue("rows" in diff)
-        self.assertGreater(len(diff["rows"]), 0)
+        self.assertTrue("rows" in diff.result)
+        self.assertGreater(len(diff.result["rows"]), 0)
+        self.assertEqual("", diff.errors)
 
 
 class TimeoutTests(BaseTestCase):
