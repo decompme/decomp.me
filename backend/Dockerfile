@@ -50,12 +50,12 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
+RUN curl -sSL https://install.python-poetry.org/ | \
   POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.2.4 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.4.2 /usr/local/sbin/wibo /usr/bin/
 
 # windows compilers need i386 wine
 ARG ENABLE_NDS_SUPPORT
