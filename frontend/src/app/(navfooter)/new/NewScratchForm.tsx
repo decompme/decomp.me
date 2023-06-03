@@ -215,8 +215,6 @@ export default function NewScratchForm({ serverCompilers }: {
             </div>
         </div>
 
-        <hr className={styles.rule} />
-
         <div>
             <label className={styles.label} htmlFor="label">
                 Diff label <small>(asm label from which the diff will begin)</small>
@@ -255,8 +253,6 @@ export default function NewScratchForm({ serverCompilers }: {
                 extensions={[basicSetup, cpp()]}
             />
         </div>
-
-        <hr className={styles.rule} />
 
         <div>
             <AsyncButton
