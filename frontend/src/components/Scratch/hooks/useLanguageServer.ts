@@ -7,7 +7,7 @@ import { EditorView } from "codemirror"
 import * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
-export default function useLanguageServer(enabled: boolean, useSmallBinary: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
+export default function useLanguageServer(enabled: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {
     const [initialScratchState, setInitialScratchState] = useState<api.Scratch>(undefined)
     const [defaultClangFormat, setDefaultClangFormat] = useState<string>(undefined)
 
@@ -75,7 +75,7 @@ export default function useLanguageServer(enabled: boolean, useSmallBinary: bool
             transport: new ClangdStdioTransportModule({
                 compileCommands,
                 initialFileState,
-                useSmallBinary,
+                useSmallBinary: false,
             }),
 
             rootUri: "file:///",
@@ -103,7 +103,7 @@ export default function useLanguageServer(enabled: boolean, useSmallBinary: bool
         })
 
         // TODO: return the codemirror extensions instead of hotpatching them in?
-        // Given the async nature of the extension being ready, it'd require updaing the Codemirror
+        // Given the async nature of the extension being ready, it'd require updating the Codemirror
         // component to support inserting extensions when the extension prop changes
         sourceEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(sourceLsExtension) })
         contextEditor.current?.dispatch({ effects: StateEffect.appendConfig.of(contextLsExtension) })
@@ -115,7 +115,7 @@ export default function useLanguageServer(enabled: boolean, useSmallBinary: bool
             _lsClient.exit()
         }
 
-    }, [ClangdStdioTransportModule, initialScratchState, defaultClangFormat, useSmallBinary, sourceEditor, contextEditor])
+    }, [ClangdStdioTransportModule, initialScratchState, defaultClangFormat, sourceEditor, contextEditor])
 
     const saveSourceRet = () => {
         if (saveSource)

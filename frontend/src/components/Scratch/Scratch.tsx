@@ -7,7 +7,7 @@ import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, usePreferSmallLanguageServer } from "@/lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled } from "@/lib/settings"
 
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
@@ -131,7 +131,6 @@ export default function Scratch({
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
     const [languageServerEnabledSetting] = useLanguageServerEnabled()
-    const [preferSmallLanguageServerSetting] = usePreferSmallLanguageServer()
     const { compilation, isCompiling, isCompilationOld, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
     const userIsYou = api.useUserIsYou()
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
@@ -149,7 +148,7 @@ export default function Scratch({
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
-    const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, preferSmallLanguageServerSetting, scratch, sourceEditor, contextEditor)
+    const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, scratch, sourceEditor, contextEditor)
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)

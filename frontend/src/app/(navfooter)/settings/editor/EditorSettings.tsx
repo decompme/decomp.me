@@ -12,7 +12,6 @@ export default function EditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
     const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
-    const [preferSmallLanguageServer, setPreferSmallLanguageServer] = settings.usePreferSmallLanguageServer()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -31,12 +30,12 @@ export default function EditorSettings() {
             import("@clangd-wasm/clangd-wasm").then(({ ClangdStdioTransport }) => {
                 // We don't need to do anything with the result of this fetch - all this
                 // is is a way to make sure the wasm file ends up in the browser's cache.
-                fetch(ClangdStdioTransport.getDefaultWasmURL(preferSmallLanguageServer))
+                fetch(ClangdStdioTransport.getDefaultWasmURL(false))
                     .then(res => res.blob())
                     .then(() => setDownloadingLanguageServer(false))
             })
         }
-    }, [languageServerEnabled, preferSmallLanguageServer])
+    }, [languageServerEnabled])
 
     return <>
         <Section title="Automatic compilation">
@@ -65,13 +64,7 @@ export default function EditorSettings() {
                 checked={languageServerEnabled}
                 onChange={setLanguageServerEnabled}
                 label="Enable language server"
-                description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~11 - 13MB download, and bump up resource usage during editing.">
-
-                <Checkbox
-                    checked={preferSmallLanguageServer}
-                    onChange={setPreferSmallLanguageServer}
-                    label="Prefer small language server build"
-                    description="Use a smaller (11MB vs 13MB download) build of the language server, at the expense of some performance."/>
+                description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~13MB download, and bump up resource usage during editing.">
 
                 {downloadingLanguageServer && <div className="flex gap-2 p-4"><LoadingSpinner width="24px" /> Downloading...</div>}
             </Checkbox>
