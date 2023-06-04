@@ -9,6 +9,7 @@
     import { MenuIcon, XIcon } from "svelte-feather-icons"
 
     import Logotype from "./Logotype.svelte"
+    import Session from "./Session.svelte"
 
     let isSidebarOpen = false
 </script>
@@ -29,7 +30,7 @@
     <div class="flex-grow"></div>
 
     <div>
-        user stuff
+        <Session />
     </div>
 </nav>
 
