@@ -7,12 +7,11 @@
 -->
 
 <script lang="ts">
-    const promise = fetch("https://decomp.me/api/user",{
-        credentials: "include",
-        headers: {
-            "Accept": "application/json",
-        },
-    }).then(res => res.json())
+    import api from "@decompme/api"
+
+    console.log(api)
+
+    const promise = api.get("/user", {})
 </script>
 
 {#await promise}

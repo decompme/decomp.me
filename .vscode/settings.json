@@ -16,9 +16,10 @@
         "editor.formatOnSave": true
     },
     "[python]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "mypy.configFile": "backend/mypy.ini",
     "mypy.runUsingActiveInterpreter": true,
     "mypy.targets": ["backend/coreapp", "backend/decompme"],

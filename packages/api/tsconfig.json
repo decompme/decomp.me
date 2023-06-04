@@ -1,0 +1,16 @@
+{
+    "include": ["src"],
+    "compilerOptions": {
+        "outDir": "out",
+        "sourceMap": true,
+
+        "declaration": true,
+        "declarationDir": "out",
+        "declarationMap": true,
+
+        "strict": true,
+
+        "module": "Node16"
+    },
+    "compileOnSave": true
+}

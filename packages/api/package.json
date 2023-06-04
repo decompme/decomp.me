@@ -1,0 +1,18 @@
+{
+    "name": "@decompme/api",
+    "version": "1.0.0",
+    "main": "out/index.js",
+    "type": "module",
+    "types": "out/index.d.ts",
+    "scripts": {
+        "build": "openapi-typescript ../../backend/api/schema.yml -o ./src/schema.d.ts && cp src/schema.d.ts out && tsc",
+        "test": "node test.js"
+    },
+    "dependencies": {
+        "openapi-fetch": "^0.2.1"
+    },
+    "devDependencies": {
+        "openapi-typescript": "^6.2.6",
+        "typescript": "^5.0.0"
+    }
+}

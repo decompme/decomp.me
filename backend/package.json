@@ -1,6 +1,9 @@
 {
     "name": "backend",
     "scripts": {
-        "dev": "poetry run python manage.py migrate && poetry run python manage.py runserver"
+        "dev": "poetry run python manage.py migrate && poetry run python manage.py runserver",
+        "lint": "poetry run mypy",
+        "format": "poetry run black .",
+        "build": "poetry run python manage.py spectacular --color --file api/schema.yml --validate"
     }
 }

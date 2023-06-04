@@ -9,6 +9,11 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
     },
+    "type": "module",
+    "dependencies": {
+        "svelte-feather-icons": "^4.0.1",
+        "@decompme/api": "workspace:*"
+    },
     "devDependencies": {
         "@radix-ui/colors": "^0.1.8",
         "@sveltejs/adapter-auto": "^2.0.0",
@@ -24,9 +29,5 @@
         "tslib": "^2.4.1",
         "typescript": "^5.0.0",
         "vite": "^4.3.0"
-    },
-    "type": "module",
-    "dependencies": {
-        "svelte-feather-icons": "^4.0.1"
     }
 }

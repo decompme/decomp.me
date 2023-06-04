@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_filters",
     "django_cleanup.apps.CleanupConfig",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -92,6 +93,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "coreapp.error.custom_exception_handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 ROOT_URLCONF = "decompme.urls"
@@ -187,6 +189,16 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'decomp.me API',
+    'DESCRIPTION': 'decomp.me REST API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api',
+    'SCHEMA_PATH_PREFIX_TRIM': True,
+    'SERVERS': [{'url': 'https://decomp.me/api'}],
 }
 
 SECURE_SSL_REDIRECT = env("SECURE_SSL_REDIRECT")

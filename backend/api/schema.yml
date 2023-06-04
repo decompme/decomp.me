@@ -1,0 +1,1403 @@
+openapi: 3.0.3
+info:
+  title: decomp.me API
+  version: 1.0.0
+  description: decomp.me REST API
+paths:
+  /compilers:
+    get:
+      operationId: compilers_retrieve
+      tags:
+      - compilers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /projects:
+    get:
+      operationId: projects_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+    post:
+      operationId: projects_create
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /projects/{parent_lookup_slug}/functions:
+    get:
+      operationId: projects_functions_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectFunctionList'
+          description: ''
+  /projects/{parent_lookup_slug}/functions/{id}:
+    get:
+      operationId: projects_functions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFunction'
+          description: ''
+  /projects/{parent_lookup_slug}/functions/{id}/attempts:
+    get:
+      operationId: projects_functions_attempts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFunction'
+          description: ''
+    post:
+      operationId: projects_functions_attempts_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectFunction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectFunction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectFunction'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFunction'
+          description: ''
+  /projects/{parent_lookup_slug}/members:
+    get:
+      operationId: projects_members_list
+      parameters:
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectMember'
+          description: ''
+    post:
+      operationId: projects_members_create
+      parameters:
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectMember'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectMember'
+          description: ''
+  /projects/{parent_lookup_slug}/members/{id}:
+    get:
+      operationId: projects_members_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectMember'
+          description: ''
+    delete:
+      operationId: projects_members_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: parent_lookup_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /projects/{slug}:
+    get:
+      operationId: projects_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    put:
+      operationId: projects_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    patch:
+      operationId: projects_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProject'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    delete:
+      operationId: projects_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /projects/{slug}/pr:
+    post:
+      operationId: projects_pr_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /projects/{slug}/pull:
+    post:
+      operationId: projects_pull_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this project.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /scratch:
+    get:
+      operationId: scratch_list
+      parameters:
+      - in: query
+        name: compiler
+        schema:
+          type: string
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: platform
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTerseScratchList'
+          description: ''
+    post:
+      operationId: scratch_create
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}:
+    get:
+      operationId: scratch_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+    put:
+      operationId: scratch_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+    patch:
+      operationId: scratch_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedScratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedScratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedScratch'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+    delete:
+      operationId: scratch_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /scratch/{slug}/claim:
+    post:
+      operationId: scratch_claim_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}/compile:
+    get:
+      operationId: scratch_compile_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+    post:
+      operationId: scratch_compile_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}/decompile:
+    post:
+      operationId: scratch_decompile_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}/export:
+    get:
+      operationId: scratch_export_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}/family:
+    get:
+      operationId: scratch_family_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /scratch/{slug}/fork:
+    post:
+      operationId: scratch_fork_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: A unique value identifying this scratch.
+        required: true
+      tags:
+      - scratch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Scratch'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scratch'
+          description: ''
+  /stats:
+    get:
+      operationId: stats_retrieve
+      tags:
+      - stats
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /user:
+    get:
+      operationId: user_retrieve
+      description: View to access the current user profile.
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: user_create
+      description: Login if the 'code' parameter is provided. Log out otherwise.
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /user/scratches:
+    get:
+      operationId: user_scratches_list
+      description: Gets the current user's scratches
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTerseScratchList'
+          description: ''
+  /users/{username}:
+    get:
+      operationId: users_retrieve
+      description: Gets a user's basic data
+      parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /users/{username}/scratches:
+    get:
+      operationId: users_scratches_list
+      description: Gets a user's scratches
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTerseScratchList'
+          description: ''
+components:
+  schemas:
+    GitHubRepo:
+      type: object
+      properties:
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        owner:
+          type: string
+          maxLength: 100
+        repo:
+          type: string
+          maxLength: 100
+        branch:
+          type: string
+          maxLength: 100
+        is_pulling:
+          type: boolean
+          readOnly: true
+        last_pulled:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - html_url
+      - is_pulling
+      - last_pulled
+      - owner
+      - repo
+    PaginatedProjectFunctionList:
+      type: object
+      properties:
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectFunction'
+    PaginatedProjectList:
+      type: object
+      properties:
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    PaginatedTerseScratchList:
+      type: object
+      properties:
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerseScratch'
+    PatchedProject:
+      type: object
+      properties:
+        slug:
+          type: string
+          pattern: ^[-a-zA-Z0-9_]+$
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        repo:
+          $ref: '#/components/schemas/GitHubRepo'
+        platform:
+          type: string
+          nullable: true
+          readOnly: true
+        unmatched_function_count:
+          type: integer
+          readOnly: true
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        icon:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          maxLength: 1000
+    PatchedScratch:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        parent:
+          type: string
+          format: uri
+          readOnly: true
+        owner:
+          type: string
+          readOnly: true
+        source_code:
+          type: string
+        context:
+          type: string
+        project:
+          type: string
+          nullable: true
+          readOnly: true
+        project_function:
+          type: string
+          nullable: true
+          readOnly: true
+        name:
+          type: string
+          maxLength: 1024
+        description:
+          type: string
+          maxLength: 5000
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+        compiler:
+          type: string
+          maxLength: 100
+        platform:
+          type: string
+          readOnly: true
+        compiler_flags:
+          type: string
+          maxLength: 1000
+        diff_flags:
+          type: object
+          additionalProperties: {}
+        preset:
+          type: string
+          nullable: true
+          maxLength: 100
+        diff_label:
+          type: string
+          maxLength: 1024
+        score:
+          type: integer
+        max_score:
+          type: integer
+    Project:
+      type: object
+      properties:
+        slug:
+          type: string
+          pattern: ^[-a-zA-Z0-9_]+$
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        repo:
+          $ref: '#/components/schemas/GitHubRepo'
+        platform:
+          type: string
+          nullable: true
+          readOnly: true
+        unmatched_function_count:
+          type: integer
+          readOnly: true
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        icon:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          maxLength: 1000
+      required:
+      - creation_time
+      - html_url
+      - platform
+      - repo
+      - slug
+      - unmatched_function_count
+      - url
+    ProjectFunction:
+      type: object
+      properties:
+        url:
+          type: string
+          readOnly: true
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        project:
+          type: string
+          format: uri
+          readOnly: true
+        attempts_count:
+          type: integer
+          readOnly: true
+        rom_address:
+          type: integer
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        display_name:
+          type: string
+          maxLength: 128
+        is_matched_in_repo:
+          type: boolean
+        src_file:
+          type: string
+          maxLength: 256
+        asm_file:
+          type: string
+          maxLength: 256
+      required:
+      - asm_file
+      - attempts_count
+      - creation_time
+      - display_name
+      - html_url
+      - project
+      - rom_address
+      - src_file
+      - url
+    ProjectMember:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+      required:
+      - url
+      - username
+    Scratch:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        parent:
+          type: string
+          format: uri
+          readOnly: true
+        owner:
+          type: string
+          readOnly: true
+        source_code:
+          type: string
+        context:
+          type: string
+        project:
+          type: string
+          nullable: true
+          readOnly: true
+        project_function:
+          type: string
+          nullable: true
+          readOnly: true
+        name:
+          type: string
+          maxLength: 1024
+        description:
+          type: string
+          maxLength: 5000
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+        compiler:
+          type: string
+          maxLength: 100
+        platform:
+          type: string
+          readOnly: true
+        compiler_flags:
+          type: string
+          maxLength: 1000
+        diff_flags:
+          type: object
+          additionalProperties: {}
+        preset:
+          type: string
+          nullable: true
+          maxLength: 100
+        diff_label:
+          type: string
+          maxLength: 1024
+        score:
+          type: integer
+        max_score:
+          type: integer
+      required:
+      - compiler
+      - context
+      - creation_time
+      - html_url
+      - last_updated
+      - owner
+      - parent
+      - platform
+      - project
+      - project_function
+      - slug
+      - source_code
+      - url
+    TerseScratch:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        html_url:
+          type: string
+          format: uri
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        owner:
+          type: string
+          readOnly: true
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+        creation_time:
+          type: string
+          format: date-time
+          readOnly: true
+        platform:
+          type: string
+          maxLength: 100
+        compiler:
+          type: string
+          maxLength: 100
+        name:
+          type: string
+          maxLength: 1024
+        score:
+          type: integer
+        max_score:
+          type: integer
+        project:
+          type: string
+          nullable: true
+          readOnly: true
+        project_function:
+          type: string
+          nullable: true
+          readOnly: true
+        parent:
+          type: string
+          format: uri
+          readOnly: true
+      required:
+      - compiler
+      - creation_time
+      - html_url
+      - last_updated
+      - owner
+      - parent
+      - project
+      - project_function
+      - slug
+      - url
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+servers:
+- url: https://decomp.me/api
