@@ -5,24 +5,7 @@
 
     "files.trimTrailingWhitespace": true,
     // eslint
-    "eslint.workingDirectories": ["frontend"],
-    "eslint.format.enable": true,
-    "[javascript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true
-    },
-    "[javascriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true
-    },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true
-    },
+    "eslint.workingDirectories": ["frontend", ""],
     // stylelint
     "[css]": {
         "editor.defaultFormatter": "stylelint.vscode-stylelint",
