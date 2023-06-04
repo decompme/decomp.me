@@ -1,0 +1,36 @@
+# Based on https://github.com/pmret/papermario/blob/main/.clang-format
+
+DisableFormat: true # clang-format supports many filetypes
+---
+Language: Cpp
+DisableFormat: false
+BasedOnStyle: WebKit
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 120
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  # Place opening brace on next line if the statement is multi-line
+  # e.g.
+  #  if (very
+  #      long
+  #      condition)
+  #  {
+  AfterControlStatement: MultiLine
+
+IndentCaseLabels: true
+
+BreakBeforeBinaryOperators: NonAssignment
+
+ExperimentalAutoDetectBinPacking: true
+BinPackParameters: false
+AlignAfterOpenBracket: BlockIndent
+
+AllowShortFunctionsOnASingleLine: None
+---
+
+...

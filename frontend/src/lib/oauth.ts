@@ -1,5 +1,3 @@
-import { mutate } from "swr"
-
 import { ResponseError } from "./api"
 
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
@@ -9,20 +7,9 @@ export function isGitHubLoginSupported(): boolean {
 }
 
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
-export function showGitHubLoginWindow(popup: boolean, scope: string) {
+export function showGitHubLoginWindow(scope: string) {
     const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${encodeURIComponent(scope)}`
-    const win = popup && window.open(url, "Sign in with GitHub", "popup,width=520,height=520,resizable,status")
-
-    if (win) {
-        win.addEventListener("message", event => {
-            if (event.data?.source === "decomp_me_login") {
-                console.info("Got new user from popup", event.data.user)
-                mutate("/user", event.data.user)
-            }
-        })
-    } else {
-        window.location.href = url
-    }
+    window.location.href = url
 }
 
 export async function requestMissingScopes<T>(makeRequest: () => Promise<T>): Promise<T> {
@@ -33,7 +20,7 @@ export async function requestMissingScopes<T>(makeRequest: () => Promise<T>): Pr
             const scope = error.json.detail
 
             console.warn("Missing scopes", scope)
-            showGitHubLoginWindow(true, scope)
+            showGitHubLoginWindow(scope)
 
             throw new Error("Accept permissions and retry")
         } else {

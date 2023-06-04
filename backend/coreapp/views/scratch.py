@@ -20,7 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
-from ..compilers import Language
+from ..flags import Language
 
 from ..decorators.django import condition
 

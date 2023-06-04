@@ -32,7 +32,7 @@ export default function LoginState({ className }: { className?: string }) {
     }
 
     if (api.isAnonUser(user)) {
-        return <GitHubLoginButton popup label="Sign in" />
+        return <GitHubLoginButton label="Sign in" />
     }
 
     return <button

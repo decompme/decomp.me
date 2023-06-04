@@ -14,10 +14,15 @@
     }
 
     :global(.cm-gutters),
-    :global(.cm-content) {
+    :global(.cm-content),
+    :global(.cm-tooltip-hover) {
         font-size: var(--cm-font-size, 0.8rem);
         font-family: var(--monospace);
         line-height: var(--code-line-height, 1.5);
+    }
+
+    :global(.cm-tooltip-section) {
+        padding: 1em;
     }
 
     :global(.cm-gutters) {

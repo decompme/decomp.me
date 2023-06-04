@@ -1,4 +1,3 @@
-import enum
 import logging
 from dataclasses import dataclass, field
 from functools import cache
@@ -18,6 +17,7 @@ from coreapp.flags import (
     COMMON_MWCC_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
     Flags,
+    Language,
 )
 
 from coreapp.platforms import (
@@ -42,23 +42,6 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
-
-
-class Language(enum.Enum):
-    C = "C"
-    OLD_CXX = "C++"
-    CXX = "C++"
-    PASCAL = "Pascal"
-    ASSEMBLY = "Assembly"
-
-    def get_file_extension(self) -> str:
-        return {
-            Language.C: "c",
-            Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
-            Language.PASCAL: "p",
-            Language.ASSEMBLY: "s",
-        }[self]
 
 
 @dataclass(frozen=True)
