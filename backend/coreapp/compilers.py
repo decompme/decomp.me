@@ -220,6 +220,12 @@ ARMCC_41_713 = ArmccCompiler(
     cc=ARMCC_CC,
 )
 
+ARMCC_41_791 = ArmccCompiler(
+    id="armcc_41_791",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
 ARMCC_41_894 = ArmccCompiler(
     id="armcc_41_894",
     platform=N3DS,
@@ -888,6 +894,7 @@ _all_compilers: List[Compiler] = [
     ARMCC_40_821,
     ARMCC_41_561,
     ARMCC_41_713,
+    ARMCC_41_791,
     ARMCC_41_894,
     ARMCC_41_921,
     ARMCC_41_1049,
