@@ -65,7 +65,7 @@ class GitHubUser(models.Model):
         if cached:
             return cached
 
-        details = Github(self.access_token).get_user_by_id(self.github_id)
+        details = Github().get_user_by_id(self.github_id)
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
