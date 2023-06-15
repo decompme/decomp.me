@@ -12,7 +12,7 @@ from django.core.cache import cache
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.utils.timezone import now
-from github import Github
+from github import Github, BadCredentialsException
 from github.NamedUser import NamedUser
 from github.Repository import Repository
 from rest_framework import status
@@ -65,7 +65,10 @@ class GitHubUser(models.Model):
         if cached:
             return cached
 
-        details = Github().get_user_by_id(self.github_id)
+        try:
+            details = Github(self.access_token).get_user_by_id(self.github_id)
+        except BadCredentialsException:
+            details = Github().get_user_by_id(self.github_id)
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
