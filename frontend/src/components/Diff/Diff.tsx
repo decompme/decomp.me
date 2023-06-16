@@ -21,7 +21,7 @@ const PADDING_BOTTOM = 8
 // Regex for tokenizing lines for click-to-highlight purposes.
 // Strings matched by the first regex group (spaces, punctuation)
 // are treated as non-highlightable.
-const RE_TOKEN = /([ \t,():]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,():]+/g
+const RE_TOKEN = /([ \t,()[\]:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]:]+/g
 
 const SelectedSourceLineContext = createContext<number | null>(null)
 
