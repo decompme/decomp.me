@@ -332,59 +332,6 @@ PSYQ46 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
-PS1_GCC = (
-    'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
-    '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
-)
-
-GCC263_PSX = GCCPS1Compiler(
-    id="gcc2.6.3-psx",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC263_MIPSEL = GCCPS1Compiler(
-    id="gcc2.6.3-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC271_MIPSEL = GCCPS1Compiler(
-    id="gcc2.7.1-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC2672MIPSEL = GCCPS1Compiler(
-    id="gcc2.7.2-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC2721_MIPSEL = GCCPS1Compiler(
-    id="gcc2.7.2.1-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC2723_MIPSEL = GCCPS1Compiler(
-    id="gcc2.7.2.3-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC281_MIPSEL = GCCPS1Compiler(
-    id="gcc2.8.1-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC2952_MIPSEL = GCCPS1Compiler(
-    id="gcc2.95.2-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
 # Saturn
 SATURN_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
@@ -978,14 +925,6 @@ _all_compilers: List[Compiler] = [
     PSYQ43,
     PSYQ45,
     PSYQ46,
-    GCC263_PSX,
-    GCC263_MIPSEL,
-    GCC271_MIPSEL,
-    GCC2672MIPSEL,
-    GCC2721_MIPSEL,
-    GCC2723_MIPSEL,
-    GCC281_MIPSEL,
-    GCC2952_MIPSEL,
     # Saturn
     CYGNUS_2_7_96Q3,
     # PS2
@@ -1157,8 +1096,8 @@ _all_presets = [
     ),
     Preset(
         "Evo's Space Adventures",
-        GCC2952_MIPSEL,
-        "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
+        PSYQ46,
+        "-O2",
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
