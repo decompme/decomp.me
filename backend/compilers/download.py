@@ -636,6 +636,9 @@ def download_ps2():
 
     ps2_compilers = {
         "ee-gcc2.9-990721": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306679806464060/ee-gcc2.9-990721.tar.xz",
+        "ee-gcc2.9-991111": "https://cdn.discordapp.com/attachments/1067192766918037536/1120445542279954482/ee-gcc2.9-991111.tar.xz",
+        "ee-gcc2.9-991111a": "https://cdn.discordapp.com/attachments/1067192766918037536/1120445479797395506/ee-gcc2.9-991111a.tar.xz",
+        "ee-gcc2.9-991111-01": "https://cdn.discordapp.com/attachments/1067192766918037536/1119832299400331314/ee-gcc2.9-991111-01.tar.xz",
         "ee-gcc2.96": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680179752990/ee-gcc2.96.tar.xz",
         "ee-gcc3.2-040921": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680548855908/ee-gcc3.2-040921.tar.xz",
     }
@@ -651,7 +654,7 @@ def download_ps2():
 
     # Extra compiler collection
     download_tar(
-        url="https://cdn.discordapp.com/attachments/1067904954779586650/1083990728365068328/ps2_compilers.tar.xz",
+        url="https://cdn.discordapp.com/attachments/1067192766918037536/1120445708516995118/ps2_compilers.tar.xz",
         mode="r:xz",
         dl_name="ps2_compilers.tar.xz",
         create_subdir=False,
