@@ -359,7 +359,13 @@ EE_GCC29_990721 = GCCCompiler(
 EE_GCC29_991111 = GCCCompiler(
     id="ee-gcc2.9-991111",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.9-ee-991111/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC29_991111A = GCCCompiler(
+    id="ee-gcc2.9-991111a",
+    platform=PS2,
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC29_991111_01 = GCCCompiler(
@@ -924,6 +930,7 @@ _all_compilers: List[Compiler] = [
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,
+    EE_GCC29_991111A,
     EE_GCC29_991111_01,
     EE_GCC2952_273A,
     EE_GCC2952_274,
