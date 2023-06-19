@@ -1500,6 +1500,16 @@ _all_presets = [
         EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math",
     ),
+    Preset(
+        "Klonoa 2: Lunatea's Veil (C)",
+        EE_GCC29_991111_01,
+        "-O1 -gstabs",
+    ),
+    Preset(
+        "Klonoa 2: Lunatea's Veil (C++)",
+        EE_GCC29_991111_01,
+        "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
+    ),
 ]
 
 
