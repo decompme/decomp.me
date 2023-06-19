@@ -161,7 +161,7 @@ def download_zip(
 
 
 def set_x(file: Path) -> None:
-    file.chmod(file.stat().st_mode | stat.S_IEXEC)
+    file.chmod(file.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 def download_ppc_darwin():
@@ -458,11 +458,7 @@ def download_n64():
             dest_path=dest / "psyq-obj-parser",
         )
         # TODO: upload +x'd version of this
-        psyq_obj_parser = dest / "psyq-obj-parser"
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
-        set_x(psyq_obj_parser)
+        set_x(dest / "psyq-obj-parser")
 
     # SN
     dest = COMPILERS_DIR / "gcc2.7.2snew"
@@ -507,10 +503,7 @@ def download_n64():
             dest_path=dest / "psyq-obj-parser",
         )
         # NOTE: github strips the +x flag
-        psyq_obj_parser = dest / "psyq-obj-parser"
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
+        set_x(dest / "psyq-obj-parser")
 
     # iQue
     dest = COMPILERS_DIR / "egcs_1.1.2-4"
@@ -590,9 +583,6 @@ def download_ps1():
             compilers_path / "psyq",
             psyq_obj_parser,
         )
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
         set_x(psyq_obj_parser)
 
         # +x exes
@@ -600,6 +590,76 @@ def download_ps1():
             set_x(file)
         for file in dest.glob("*.EXE"):
             set_x(file)
+
+    # vanilla gcc + maspsx patch
+
+    old_gcc_urls = {
+        "gcc2.6.3-psx": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3-psx.tar.gz",
+        "gcc2.6.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3.tar.gz",
+        "gcc2.7.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.1.tar.gz",
+        "gcc2.7.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.tar.gz",
+        "gcc2.7.2.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.1.tar.gz",
+        "gcc2.7.2.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.3.tar.gz",
+        "gcc2.8.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.8.1.tar.gz",
+        "gcc2.95.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.95.2.tar.gz",
+    }
+    old_gcc_ids = {
+        "gcc2.6.3-psx": "gcc2.6.3-psx",
+        "gcc2.6.3": "gcc2.6.3-mipsel",
+        "gcc2.7.1": "gcc2.7.1-mipsel",
+        "gcc2.7.2": "gcc2.7.2-mipsel",
+        "gcc2.7.2.1": "gcc2.7.2.1-mipsel",
+        "gcc2.7.2.3": "gcc2.7.2.3-mipsel",
+        "gcc2.8.1": "gcc2.8.1-mipsel",
+        "gcc2.95.2": "gcc2.95.2-mipsel",
+    }
+
+    maspsx_hash = "d955ce698076c76324a8ab200a00d2a0747b3a8f"
+    download_zip(
+        url=f"https://github.com/mkst/maspsx/archive/{maspsx_hash}.zip",
+        dl_name="maspsx",
+        dest_name=compilers_path,
+        create_subdir=True,
+    )
+
+    download_file(
+        url="https://raw.githubusercontent.com/Decompollaborate/rabbitizer/3d0221687b587497ed60b1cf1f207a873ade7cf9/docs/r3000gte/gte_macros.s",
+        dest_path=compilers_path / "gte_macros.s",
+        log_name="gte_macros.s",
+    )
+
+    for gcc_name, url in old_gcc_urls.items():
+        gcc_id = old_gcc_ids[gcc_name]
+        gcc_dir = COMPILERS_DIR / f"{gcc_id}"
+        if gcc_dir.exists():
+            print(f"{gcc_dir} already exists, skipping download.")
+        else:
+            download_tar(
+                url=url,
+                dl_name=f"{gcc_name}.tar.gz",
+                dest_name=f"{gcc_id}",
+            )
+
+        # always copy in maspsx
+        shutil.copytree(
+            compilers_path / f"maspsx-{maspsx_hash}",
+            gcc_dir / "maspsx",
+            dirs_exist_ok=True,
+        )
+        with open(gcc_dir / "as", "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write(
+                "python3 $(dirname -- $0)/maspsx/maspsx.py --run-assembler -I${COMPILER_DIR} $@\n"
+            )
+        set_x(gcc_dir / "as")
+
+        # always copy in macros
+        shutil.copy(
+            compilers_path / "gte_macros.s",
+            gcc_dir,
+        )
+        with open(gcc_dir / "macro.inc", "w") as f:
+            f.write('.include "gte_macros.s"\n')
 
     shutil.rmtree(compilers_path)
 
@@ -823,7 +883,7 @@ def download_3ds():
 
             # Set +x to allow WSL without wine
             exe_path = compiler_dir / "bin/armcc.exe"
-            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+            set_x(exe_path)
         shutil.rmtree(COMPILERS_DIR / group_id)
 
 
