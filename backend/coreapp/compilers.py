@@ -1492,12 +1492,12 @@ _all_presets = [
     # PS2
     Preset(
         "Ty the Tasmanian Tiger (July 1st)",
-        EE_GCC29_991111,
+        EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math -finline-functions",
     ),
     Preset(
         "Sunny Garcia Surfing",
-        EE_GCC29_991111,
+        EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math",
     ),
 ]
