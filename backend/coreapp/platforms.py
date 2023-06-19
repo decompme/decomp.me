@@ -226,10 +226,6 @@ PS1 = Platform(
     \label:
 .endm
 
-.macro move a, b
-	addu \\a, \\b, $zero
-.endm
-
 .set noat
 .set noreorder
 
