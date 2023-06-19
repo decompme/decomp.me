@@ -642,13 +642,15 @@ def download_ps1():
 
         # always copy in maspsx
         shutil.copytree(
-            compilers_path /  f"maspsx-{maspsx_hash}",
+            compilers_path / f"maspsx-{maspsx_hash}",
             gcc_dir / "maspsx",
             dirs_exist_ok=True,
         )
         with open(gcc_dir / "as", "w") as f:
             f.write("#!/bin/bash\n")
-            f.write("python3 $(dirname -- $0)/maspsx/maspsx.py --run-assembler -I${COMPILER_DIR} $@\n")
+            f.write(
+                "python3 $(dirname -- $0)/maspsx/maspsx.py --run-assembler -I${COMPILER_DIR} $@\n"
+            )
         set_x(gcc_dir / "as")
 
         # always copy in macros
@@ -660,6 +662,7 @@ def download_ps1():
             f.write('.include "gte_macros.s"\n')
 
     shutil.rmtree(compilers_path)
+
 
 def download_saturn():
     if host_os != LINUX:
