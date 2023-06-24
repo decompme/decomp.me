@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 from pathlib import Path
+import datetime
 
 from typing import Any, Optional
 
@@ -8,6 +9,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 from django.core.cache import cache
 from django.db import models, transaction
 from django.dispatch import receiver
@@ -68,6 +70,23 @@ class GitHubUser(models.Model):
         try:
             details = Github(self.access_token).get_user_by_id(self.github_id)
         except BadCredentialsException:
+            # Uh oh - the user we're getting details for has an invalid token
+            # Revoke their session to force them to log in again ...
+            all_sessions = Session.objects.filter(
+                expire_date__gte=datetime.datetime.now()
+            )
+
+            user_sessions = [
+                i
+                for i in all_sessions
+                if i.get_decoded().get("_auth_user_id") == self.user.pk
+            ]
+
+            Session.objects.filter(pk__in=user_sessions).delete()
+
+            # ... and fallback to using the github api unauthenticated
+            # This *does* have a much stricter rate limit of 60 requests per minute,
+            # which is why we tried using an auth token first
             details = Github().get_user_by_id(self.github_id)
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
