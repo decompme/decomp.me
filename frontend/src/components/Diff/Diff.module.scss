@@ -123,16 +123,27 @@
 
 .source_other { font-style: italic; }
 .source_line_num { font-style: italic; }
+.rotation0 { color: magenta; }
+.rotation1 { color: cyan; }
+.rotation2 { color: rgb(0, 212, 0); }
+.rotation3 { color: red; }
+.rotation4 { color: rgb(103, 106, 255); }
+.rotation5 { color: lightpink; }
+.rotation6 { color: lightcyan; }
+.rotation7 { color: lightgreen; }
+.rotation8 { color: grey; }
 
-.rotation0 { color: rgb(205, 82, 82); }
-.rotation1 { color: rgb(205, 164, 82); }
-.rotation2 { color: rgb(164, 205, 82); }
-.rotation3 { color: rgb(82, 205, 82); }
-.rotation4 { color: rgb(82, 205, 164); }
-.rotation5 { color: rgb(82, 164, 205); }
-.rotation6 { color: rgb(82, 82, 205); }
-.rotation7 { color: rgb(164, 82, 205); }
-.rotation8 { color: rgb(205, 82, 164); }
+:global(html:not(.dark)) {
+    .rotation0 { color: rgb(205, 82, 82); } // hsv(0° 60% 80%)
+    .rotation1 { color: rgb(205, 164, 82); } // hsv(40° 60% 80%)
+    .rotation2 { color: rgb(164, 205, 82); } // hsv(80° 60% 80%)
+    .rotation3 { color: rgb(82, 205, 82); } // hsv(120° 60% 80%)
+    .rotation4 { color: rgb(82, 205, 164); } // hsv(160° 60% 80%)
+    .rotation5 { color: rgb(82, 164, 205); } // hsv(200° 60% 80%)
+    .rotation6 { color: rgb(82, 82, 205); } // hsv(240° 60% 80%)
+    .rotation7 { color: rgb(164, 82, 205); } // hsv(280° 60% 80%)
+    .rotation8 { color: rgb(205, 82, 164); } // hsv(320° 60% 80%)
+}
 
 .highlighted {
     color: white;
