@@ -210,3 +210,37 @@ COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(id="gcc_arch", flags=["-m2"]),
 ]
+
+COMMON_WATCOM_FLAGS: Flags = [
+    FlagSet(
+        id="watcom_codegen",
+        flags=[
+            "-0",
+            "-1",
+            "-2",
+            "-3r",
+            "-3s",
+            "-4r",
+            "-4s",
+            "-5r",
+            "-5s",
+            "-6r",
+            "-6s",
+        ],
+    ),
+    FlagSet(id="watcom_packing", flags=["-zp1", "-zp2", "-zp4", "-zp8"]),
+    FlagSet(id="watcom_platform", flags=["-bt=nt", "-bt=dos"]),
+    Checkbox("watcom_disable_opt", "-od"),
+    Checkbox("watcom_favour_space", "-os"),
+    Checkbox("watcom_favour_perf", "-ot"),
+    Checkbox("watcom_stack_frames", "-of+"),
+    Checkbox("watcom_instr_sched", "-or"),
+    Checkbox("watcom_inline_lib", "-oi"),
+    Checkbox("watcom_inline_fpu", "-om"),
+    Checkbox("watcom_loop_opt", "-ol"),
+    Checkbox("watcom_fpu_recip", "-on"),
+    Checkbox("watcom_fpu_result", "-op"),
+    Checkbox("watcom_nostackchk", "-s"),
+    Checkbox("watcom_signedchar", "-j"),
+    Checkbox("watcom_fpu", "-fpi87"),
+]

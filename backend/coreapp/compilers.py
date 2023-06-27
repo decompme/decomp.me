@@ -16,6 +16,7 @@ from coreapp.flags import (
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_WATCOM_FLAGS,
     Flags,
     Language,
 )
@@ -26,6 +27,7 @@ from coreapp.platforms import (
     IRIX,
     MACOS9,
     MACOSX,
+    MSDOS,
     N3DS,
     N64,
     NDS_ARM9,
@@ -132,6 +134,11 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+
+
+@dataclass(frozen=True)
+class WatcomCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -893,6 +900,70 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
+# Watcom doesn't like '/' in paths passed to it so we need to replace them.
+WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
+WATCOM_CC = (
+    '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
+    + WATCOM_ARGS
+    + "\" | sed \'s:/:\\\\:g\')"
+)
+WATCOM_CXX = (
+    '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
+    + WATCOM_ARGS
+    + "\" | sed \'s:/:\\\\:g\')"
+)
+
+WATCOM_105_C = WatcomCompiler(
+    id="wcc10.5",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_105_CPP = WatcomCompiler(
+    id="wpp10.5",
+    base_id="wcc10.5",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_105A_C = WatcomCompiler(
+    id="wcc10.5a",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_105A_CPP = WatcomCompiler(
+    id="wpp10.5a",
+    base_id="wcc10.5a",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_106_C = WatcomCompiler(
+    id="wcc10.6",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_106_CPP = WatcomCompiler(
+    id="wpp10.6",
+    base_id="wcc10.6",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_110_C = WatcomCompiler(
+    id="wcc11.0",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_110_CPP = WatcomCompiler(
+    id="wpp11.0",
+    base_id="wcc11.0",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
 
 _all_compilers: List[Compiler] = [
     DUMMY,
@@ -1018,6 +1089,15 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # Watcom, DOS and Win9x
+    WATCOM_105_C,
+    WATCOM_105_CPP,
+    WATCOM_105A_C,
+    WATCOM_105A_CPP,
+    WATCOM_106_C,
+    WATCOM_106_CPP,
+    WATCOM_110_C,
+    WATCOM_110_CPP,
 ]
 
 # MKWII Common flags
