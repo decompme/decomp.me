@@ -148,8 +148,11 @@ class DiffWrapper:
             "--disassemble",
             "--disassemble-zeroes",
             "--line-numbers",
-            "--reloc",
         ]
+
+        # --reloc seems to add a bunch of noise to x86 disasm?
+        if platform.arch != "i686":
+            flags += "--reloc"
 
         with Sandbox() as sandbox:
             target_path = sandbox.path / "out.s"
