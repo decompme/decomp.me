@@ -25,6 +25,7 @@ const ICON_SOURCES = {
     "Happy Mac by NiloGlock": "https://commons.wikimedia.org/wiki/File:Happy_Mac.svg",
     "Tiger-like-x by Althepal": "https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg",
     "Saturn by JustDanPatrick": "https://upload.wikimedia.org/wikipedia/commons/archive/7/78/20220518145749%21Sega_Saturn_Black_Logo.svg",
+    "MS-DOS by Microsoft": "https://commons.wikimedia.org/wiki/File:Msdos-icon.svg",
 }
 
 type Contributor = {
