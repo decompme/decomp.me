@@ -1477,12 +1477,12 @@ _all_presets = [
     Preset(
         "Pokémon Diamond / Pearl",
         MWCC_30_123,
-        "-O4,p -proc arm946e -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+        "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     Preset(
         "Pokémon HeartGold / SoulSilver",
         MWCC_30_137,
-        "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
+        "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     # MACOS9
     Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
