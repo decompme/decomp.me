@@ -25,6 +25,7 @@ from coreapp.platforms import (
     GBA,
     GC_WII,
     IRIX,
+    LINUX,
     MACOS9,
     MACOSX,
     MSDOS,
@@ -1017,6 +1018,23 @@ WATCOM_110_CPP = WatcomCompiler(
     platform=MSDOS,
     cc=WATCOM_CXX,
 )
+RHGCC_PRE = 'export PATH="$COMPILER_DIR"/bin:$PATH && export LD_LIBRARY_PATH="$COMPILER_DIR"/lib && export LD_PRELOAD="$COMPILER_DIR"/lib/inode64.so && '
+RHGCC_POST = ' -c -nostdinc -I"$COMPILER_DIR"/include ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+RHGCC_CC = RHGCC_PRE + '"$COMPILER_DIR"/bin/i386-redhat-linux-gcc' + RHGCC_POST
+RHGCC_CXX = RHGCC_PRE + '"$COMPILER_DIR"/bin/i386-redhat-linux-g++' + RHGCC_POST
+
+RHGCC_32 = GCCCompiler(
+    id="rh8_gcc3.2",
+    platform=LINUX,
+    cc=RHGCC_CC,
+)
+
+RHGPP_32 = GCCCompiler(
+    id="rh8_g++3.2",
+    base_id="rh8_gcc3.2",
+    platform=LINUX,
+    cc=RHGCC_CXX,
+)
 
 _all_compilers: List[Compiler] = [
     DUMMY,
@@ -1150,6 +1168,9 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # LINUX
+    RHGCC_32,
+    RHGPP_32,
     # Watcom, DOS and Win9x
     WATCOM_105_C,
     WATCOM_105_CPP,
@@ -1196,6 +1217,12 @@ _all_presets = [
         "Pokemon Mystery Dungeon: Red Rescue Team",
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
+    ),
+    # Linux
+    Preset(
+        "Renegade Redhat 8 FDS Server Beta",
+        RHGPP_32,
+        "-O2 -fomit-frame-pointer",
     ),
     # N3DS
     Preset(

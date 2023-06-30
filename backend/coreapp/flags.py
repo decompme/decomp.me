@@ -116,6 +116,7 @@ COMMON_GCC_FLAGS: Flags = [
     ),
     FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
     Checkbox("gcc_force_addr", "-fforce-addr"),
+    Checkbox("gcc_omit_frame_ptr", "-fomit-frame-pointer"),
 ]
 
 COMMON_IDO_FLAGS: Flags = [

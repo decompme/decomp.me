@@ -64,6 +64,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/etc/passwd",
             "--bindmount_ro", "/lib",
             "--bindmount_ro", "/lib64",
+            "--bindmount_ro", "/lib32",
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
             "--bindmount", f"{self.path}:/var/tmp",

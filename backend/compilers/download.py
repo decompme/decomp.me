@@ -915,6 +915,25 @@ def download_dos():
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
 
+def download_linux():
+    if host_os != LINUX:
+        print("linux compilers unsupported on " + host_os.name)
+        return
+
+    def download_chkdir(url: str, dest: str):
+        dest_dir = COMPILERS_DIR / dest
+        if dest_dir.exists():
+            print(f"{dest} already exists, skipping")
+            return
+
+        download_tar(url=url, dest_name=dest)
+
+    download_chkdir(
+        "https://github.com/OmniBlade/decomp.me/releases/download/rh8_gcc3.2/rh8_gcc3.2.tar.gz",
+        "rh8_gcc3.2",
+    )
+
+
 def main(args):
     def should_download(platform):
         # assume enabled unless explicitly disabled
@@ -946,6 +965,8 @@ def main(args):
         download_3ds()
     if should_download("msdos"):
         download_dos()
+    if should_download("linux"):
+        download_linux()
 
     print("Compilers finished downloading!")
 

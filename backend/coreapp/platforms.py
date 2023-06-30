@@ -40,6 +40,19 @@ DUMMY = Platform(
     asm_prelude="",
 )
 
+LINUX = Platform(
+    id="linux",
+    name="Linux",
+    description="x86 (32bit)",
+    arch="i686",
+    # We strip here as otherwise it treats labels as symbols and confuses the diff.
+    assemble_cmd='as --32 -o "$OUTPUT" "$INPUT" && strip --discard-all "$OUTPUT"',
+    objdump_cmd="objdump",
+    nm_cmd="nm",
+    asm_prelude="",
+    supports_objdump_disassemble=True,
+)
+
 MSDOS = Platform(
     id="msdos",
     name="Microsoft DOS",
@@ -731,6 +744,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "dummy": DUMMY,
         "switch": SWITCH,
         "irix": IRIX,
+        "linux": LINUX,
         "n64": N64,
         "ps1": PS1,
         "saturn": SATURN,
