@@ -19,7 +19,7 @@ const getEnvBool = (key, fallback=false) => {
 
 let git_hash
 try {
-    git_hash = execSync("git rev-parse HEAD").toString().trim()
+    git_hash = execSync("git rev-parse HEAD", {stdio: "pipe"}).toString().trim()
 } catch (error) {
     console.log("Unable to get git hash, assume running inside Docker")
     git_hash = "abc123"
