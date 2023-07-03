@@ -1,7 +1,6 @@
 import shutil
 import subprocess
 from pathlib import Path
-import datetime
 
 from typing import Any, Optional
 
@@ -72,14 +71,12 @@ class GitHubUser(models.Model):
         except BadCredentialsException:
             # Uh oh - the user we're getting details for has an invalid token
             # Revoke their session to force them to log in again ...
-            all_sessions = Session.objects.filter(
-                expire_date__gte=datetime.datetime.now()
-            )
+            all_sessions = Session.objects.filter(expire_date__gte=now())
 
             user_sessions = [
-                i
+                i.pk
                 for i in all_sessions
-                if i.get_decoded().get("_auth_user_id") == self.user.pk
+                if i.get_decoded().get("_auth_user_id") == str(self.user.id)
             ]
 
             Session.objects.filter(pk__in=user_sessions).delete()
