@@ -887,6 +887,34 @@ def download_3ds():
         shutil.rmtree(COMPILERS_DIR / group_id)
 
 
+def download_dos():
+    for compiler in [
+        "wcc10.5",
+        "wcc10.5a",
+        "wcc10.6",
+        "wcc11.0",
+    ]:
+        url = (
+            "https://github.com/OmniBlade/decomp.me/releases/download/wcc10.5/"
+            + compiler
+            + ".tar.gz"
+        )
+        download_tar(url=url, dest_name=compiler)
+
+    # Download some custom tools needed for watcom object format.
+    download_tar(
+        url="https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz",
+        dest_name="i386_tools",
+    )
+
+    exe_path = COMPILERS_DIR / "i386_tools/jwasm"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    exe_path = COMPILERS_DIR / "i386_tools/omf-objdump"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    exe_path = COMPILERS_DIR / "i386_tools/omf-nm"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+
+
 def main(args):
     def should_download(platform):
         # assume enabled unless explicitly disabled
@@ -916,6 +944,8 @@ def main(args):
         download_wii_gc()
     if should_download("n3ds"):
         download_3ds()
+    if should_download("msdos"):
+        download_dos()
 
     print("Compilers finished downloading!")
 
