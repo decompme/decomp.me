@@ -251,9 +251,7 @@ class CompilerWrapper:
             try:
                 assemble_proc = sandbox.run_subprocess(
                     platform.assemble_cmd,
-                    mounts=[
-                        settings.COMPILER_BASE_PATH
-                    ],
+                    mounts=[],
                     shell=True,
                     env={
                         "PATH": PATH,
