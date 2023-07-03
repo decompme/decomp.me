@@ -90,7 +90,7 @@ class GitHubUser(models.Model):
         return details
 
     def __str__(self) -> str:
-        return "@" + self.details().login
+        return "@" + self.user.username
 
     @staticmethod
     @transaction.atomic
