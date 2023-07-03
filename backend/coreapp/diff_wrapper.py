@@ -104,6 +104,9 @@ class DiffWrapper:
                 shell=True,
                 env={
                     "PATH": PATH,
+                    "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                        settings.COMPILER_BASE_PATH
+                    ),
                 },
                 timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
