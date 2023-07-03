@@ -905,12 +905,12 @@ WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPI
 WATCOM_CC = (
     '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
     + WATCOM_ARGS
-    + "\" | sed 's:/:\\\\:g\')"
+    + "\" | sed 's:/:\\\\:g')"
 )
 WATCOM_CXX = (
     '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
     + WATCOM_ARGS
-    + "\" | sed 's:/:\\\\:g\')"
+    + "\" | sed 's:/:\\\\:g')"
 )
 
 WATCOM_105_C = WatcomCompiler(
