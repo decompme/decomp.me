@@ -257,6 +257,9 @@ class CompilerWrapper:
                         "PATH": PATH,
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
+                        "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                            settings.COMPILER_BASE_PATH
+                        ),
                     },
                     timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
                 )
