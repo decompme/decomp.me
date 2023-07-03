@@ -251,13 +251,17 @@ class CompilerWrapper:
             try:
                 assemble_proc = sandbox.run_subprocess(
                     platform.assemble_cmd,
-                    mounts=[],
+                    mounts=[
+                        settings.COMPILER_BASE_PATH
+                    ],
                     shell=True,
                     env={
                         "PATH": PATH,
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_BASE_PATH": sandbox.rewrite_path(settings.COMPILER_BASE_PATH),
+                        "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                            settings.COMPILER_BASE_PATH
+                        ),
                     },
                     timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
                 )
