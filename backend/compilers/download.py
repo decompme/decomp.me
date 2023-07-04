@@ -833,7 +833,7 @@ def download_wii_gc():
         COMPILERS_DIR / "mwcc_233_163e" / "mwcceppc.125.exe",
     )
     download_file(
-        url="https://raw.githubusercontent.com/projectPiki/pikmin/main/tools/frank.py",
+        url="https://raw.githubusercontent.com/doldecomp/melee/master/tools/frank.py",
         log_name="frank",
         dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
     )
