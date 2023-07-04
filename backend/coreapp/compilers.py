@@ -16,6 +16,7 @@ from coreapp.flags import (
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_MSVC_FLAGS,
     COMMON_WATCOM_FLAGS,
     Flags,
     Language,
@@ -36,6 +37,7 @@ from coreapp.platforms import (
     PS2,
     SWITCH,
     SATURN,
+    WIN9X,
 )
 
 import platform as platform_stdlib
@@ -134,6 +136,11 @@ class IDOCompiler(Compiler):
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+
+
+@dataclass(frozen=True)
+class MSVCCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
 
 
 @dataclass(frozen=True)
@@ -953,6 +960,49 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
+CL_WIN = '${WINE} "${COMPILER_DIR}"/Bin/CL.EXE /c /nologo /IZ:"${COMPILER_DIR}"/Include/ ${COMPILER_FLAGS} /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+MSVC60 = MSVCCompiler(
+    id="msvc6.0",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC63 = MSVCCompiler(
+    id="msvc6.3",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC64 = MSVCCompiler(
+    id="msvc6.4",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC65 = MSVCCompiler(
+    id="msvc6.5",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC65PP = MSVCCompiler(
+    id="msvc6.5pp",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC66 = MSVCCompiler(
+    id="msvc6.6",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
+
+MSVC70 = MSVCCompiler(
+    id="msvc7.0",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1150,6 +1200,14 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # WIN9X
+    MSVC60,
+    MSVC63,
+    MSVC64,
+    MSVC65,
+    MSVC65PP,
+    MSVC66,
+    MSVC70,
     # Watcom, DOS and Win9x
     WATCOM_105_C,
     WATCOM_105_CPP,

@@ -73,7 +73,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_fsize", "soft",
             "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
+            "--bindmount", f"{settings.WINEPREFIX}:/wine",
+            # This would be better but doesn't work?
+            # "--bindmount", f"{self.path}:/wine/drive_c/users/{os.getlogin()}/TEMP",
             "--env", "WINEDEBUG=-all",
             "--env", "WINEPREFIX=/wine",
         ]
