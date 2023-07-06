@@ -26,6 +26,7 @@ const ICON_SOURCES = {
     "Tiger-like-x by Althepal": "https://commons.wikimedia.org/wiki/File:Tiger-like-x.svg",
     "Saturn by JustDanPatrick": "https://upload.wikimedia.org/wikipedia/commons/archive/7/78/20220518145749%21Sega_Saturn_Black_Logo.svg",
     "MS-DOS by Microsoft": "https://commons.wikimedia.org/wiki/File:Msdos-icon.svg",
+    "Windows 9x by Microsoft": "https://commons.wikimedia.org/wiki/File:Windows_Logo_(1992-2001).svg",
 }
 
 type Contributor = {
