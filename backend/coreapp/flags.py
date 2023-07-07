@@ -1,7 +1,27 @@
+import enum
 from dataclasses import dataclass
 from typing import Dict, List, Union
 
 ASMDIFF_FLAG_PREFIX = "-DIFF"
+
+
+class Language(enum.Enum):
+    C = "C"
+    OLD_CXX = "C++"
+    CXX = "C++"
+    PASCAL = "Pascal"
+    ASSEMBLY = "Assembly"
+    OBJECTIVE_C = "ObjectiveC"
+
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.OLD_CXX: "c++",
+            Language.PASCAL: "p",
+            Language.ASSEMBLY: "s",
+            Language.OBJECTIVE_C: "m",
+        }[self]
 
 
 @dataclass(frozen=True)
@@ -30,13 +50,31 @@ class FlagSet:
         }
 
 
-Flags = List[Union[Checkbox, FlagSet]]
+@dataclass(frozen=True)
+class LanguageFlagSet:
+    id: str
+    flags: Dict[str, Language]
+
+    def to_json(self) -> Dict[str, Union[str, List[str]]]:
+        # To the client, we're a regular FlagSet - the extra metadata we carry
+        # is purely for the backend to determine the scratch's language
+        return {
+            "type": "flagset",
+            "id": self.id,
+            "flags": list(self.flags.keys()),
+        }
+
+
+Flags = List[Union[Checkbox, FlagSet, LanguageFlagSet]]
 
 COMMON_ARMCC_FLAGS: Flags = [
     FlagSet(
         id="armcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ospace", "-Otime"]
     ),
-    FlagSet(id="armcc_language", flags=["--c90", "--c99", "--cpp"]),
+    LanguageFlagSet(
+        id="armcc_language",
+        flags={"--c90": Language.C, "--c99": Language.C, "--cpp": Language.CXX},
+    ),
     FlagSet(id="armcc_instset", flags=["--arm", "--thumb"]),
     Checkbox(id="armcc_debug", flag="--debug"),
 ]
@@ -46,7 +84,9 @@ COMMON_CLANG_FLAGS: Flags = [
         id="clang_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ofast", "-Os", "-Oz"]
     ),
     FlagSet(id="clang_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
-    FlagSet(id="clang_language", flags=["-x c++", "-x c"]),
+    LanguageFlagSet(
+        id="clang_language", flags={"-x c++": Language.CXX, "-x c": Language.C}
+    ),
     FlagSet(
         id="clang_language_standard",
         flags=[
@@ -136,9 +176,15 @@ COMMON_MWCC_FLAGS: Flags = [
         id="mwcc_string_constant_options",
         flags=["-str reuse", "-str pool", "-str readonly", "-str reuse,pool,readonly"],
     ),
-    FlagSet(
+    LanguageFlagSet(
         id="mwcc_language",
-        flags=["-lang=c", "-lang=c++", "-lang=c99", "-lang=ec++", "-lang=objc"],
+        flags={
+            "-lang=c": Language.C,
+            "-lang=c++": Language.CXX,
+            "-lang=c99": Language.C,
+            "-lang=ec++": Language.CXX,
+            "-lang=objc": Language.OBJECTIVE_C,
+        },
     ),
     FlagSet(id="mwcc_char_signedness", flags=["-char signed", "-char unsigned"]),
     Checkbox(id="mwcc_cpp_exceptions_off", flag="-Cpp_exceptions off"),
@@ -163,4 +209,38 @@ COMMON_GCC_PS1_FLAGS: Flags = [
 COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(id="gcc_arch", flags=["-m2"]),
+]
+
+COMMON_WATCOM_FLAGS: Flags = [
+    FlagSet(
+        id="watcom_codegen",
+        flags=[
+            "-0",
+            "-1",
+            "-2",
+            "-3r",
+            "-3s",
+            "-4r",
+            "-4s",
+            "-5r",
+            "-5s",
+            "-6r",
+            "-6s",
+        ],
+    ),
+    FlagSet(id="watcom_packing", flags=["-zp1", "-zp2", "-zp4", "-zp8"]),
+    FlagSet(id="watcom_platform", flags=["-bt=nt", "-bt=dos"]),
+    Checkbox("watcom_disable_opt", "-od"),
+    Checkbox("watcom_favour_space", "-os"),
+    Checkbox("watcom_favour_perf", "-ot"),
+    Checkbox("watcom_stack_frames", "-of+"),
+    Checkbox("watcom_instr_sched", "-or"),
+    Checkbox("watcom_inline_lib", "-oi"),
+    Checkbox("watcom_inline_fpu", "-om"),
+    Checkbox("watcom_loop_opt", "-ol"),
+    Checkbox("watcom_fpu_recip", "-on"),
+    Checkbox("watcom_fpu_result", "-op"),
+    Checkbox("watcom_nostackchk", "-s"),
+    Checkbox("watcom_signedchar", "-j"),
+    Checkbox("watcom_fpu", "-fpi87"),
 ]

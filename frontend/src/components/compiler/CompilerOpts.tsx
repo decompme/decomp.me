@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react"
+import { createContext, useContext, ReactElement } from "react"
 
 import * as api from "@/lib/api"
 import useTranslation from "@/lib/i18n/translate"
@@ -15,11 +15,14 @@ const NO_TRANSLATION = "NO_TRANSLATION"
 interface IOptsContext {
     checkFlag(flag: string): boolean
     setFlag(flag: string, value: boolean): void
+    setFlags(edits: {flag: string, value: boolean}[]): void
 }
 
 const OptsContext = createContext<IOptsContext>(undefined)
 
-function Checkbox({ flag, description }) {
+type CheckboxProps = {flag: string, description: string}
+
+function Checkbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -31,7 +34,7 @@ function Checkbox({ flag, description }) {
     </div>
 }
 
-function DiffCheckbox({ flag, description }) {
+function DiffCheckbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -42,7 +45,9 @@ function DiffCheckbox({ flag, description }) {
     </div>
 }
 
-function FlagSet({ name, children, value }) {
+type FlagSetProps = {name: string, children: ReactElement<FlagOptionProps>[], value: string};
+
+function FlagSet({ name, children, value }: FlagSetProps) {
     const { setFlag } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
@@ -62,18 +67,20 @@ function FlagSet({ name, children, value }) {
     </div>
 }
 
-function DiffFlagSet({ name, children, value }) {
-    const { setFlag } = useContext(OptsContext)
+function DiffFlagSet({ name, children, value }: FlagSetProps) {
+    const { setFlags } = useContext(OptsContext)
 
     return <div className={styles.flagSet}>
         <div className={styles.flagSetName}>{name}</div>
         <Select
             onChange={event => {
-                for (const child of children) {
-                    setFlag(child.props.flag, false)
-                }
+                const trueFlag = (event.target as HTMLSelectElement).value
 
-                setFlag((event.target as HTMLSelectElement).value, true)
+                const edits = children.map(child => {
+                    return { flag: child.props.flag, value: child.props.flag == trueFlag }
+                })
+
+                setFlags(edits)
             }}
             value={value}
         >
@@ -82,13 +89,15 @@ function DiffFlagSet({ name, children, value }) {
     </div>
 }
 
-function FlagOption({ flag, description }: { flag: string, description?: string }) {
+type FlagOptionProps = { flag: string, description?: string };
+
+function FlagOption({ flag, description }: FlagOptionProps) {
     return <option value={flag}>
         {flag} {description && description !== NO_TRANSLATION && `(${description})`}
     </option>
 }
 
-function DiffFlagOption({ flag, description }: { flag: string, description?: string }) {
+function DiffFlagOption({ flag, description }: FlagOptionProps) {
     return <option value={flag}>
         {description || flag}
     </option>
@@ -195,6 +204,46 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
         })
     }
 
+    const optsEditorProvider = {
+        checkFlag(flag: string) {
+            return (" " + opts + " ").includes(" " + flag + " ")
+        },
+
+        setFlag(flag: string, enable: boolean) {
+            if (enable) {
+                opts = opts + " " + flag
+            } else {
+                opts = (" " + opts + " ").replace(" " + flag + " ", " ")
+            }
+            opts = opts.trim()
+            setOpts(opts)
+        },
+
+        setFlags(edits: {flag: string, value: boolean}[]) {
+            edits.forEach(({ flag, value }) => optsEditorProvider.setFlag(flag, value))
+        },
+
+    }
+
+    const diffOptsEditorProvider = {
+        checkFlag(flag: string) {
+            return diff_opts.includes(flag)
+        },
+
+        setFlag(flag: string, enable: boolean) {
+            diffOptsEditorProvider.setFlags([{ flag, value: enable }])
+        },
+
+        setFlags(edits: {flag: string, value: boolean}[]) {
+            const positiveEdits = edits.filter(o => o.value).map(o => o.flag)
+            const negativeEdits = edits.filter(o => !o.value).map(o => o.flag)
+
+            const negativeState = diff_opts.filter(o => !negativeEdits.includes(o))
+
+            setDiffOpts([...negativeState, ...positiveEdits])
+        },
+    }
+
     return <div>
         <section className={styles.header}>
             <PlatformIcon platform={platform} size={32} />
@@ -203,39 +252,13 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
             </div>
         </section>
-        <OptsContext.Provider value={{
-            checkFlag(flag: string) {
-                return (" " + opts + " ").includes(" " + flag + " ")
-            },
-
-            setFlag(flag: string, enable: boolean) {
-                if (enable) {
-                    opts = opts + " " + flag
-                } else {
-                    opts = (" " + opts + " ").replace(" " + flag + " ", " ")
-                }
-                opts = opts.trim()
-                setOpts(opts)
-            },
-        }}>
+        <OptsContext.Provider value={optsEditorProvider}>
             <section className={styles.section}>
                 <h3 className={styles.heading}>Compiler options</h3>
                 <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
             </section>
         </OptsContext.Provider>
-        <OptsContext.Provider value={{
-            checkFlag(flag: string) {
-                return diff_opts.includes(flag)
-            },
-
-            setFlag(flag: string, enable: boolean) {
-                if (enable && !diff_opts.includes(flag)) {
-                    setDiffOpts([...diff_opts, flag])
-                } else if (!enable && diff_opts.includes(flag)) {
-                    setDiffOpts(diff_opts.filter(o => o != flag))
-                }
-            },
-        }}>
+        <OptsContext.Provider value={diffOptsEditorProvider}>
             <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
                 <DiffOptsEditor platform={platform} compiler={compiler} diffLabel={diffLabel} onDiffLabelChange={onDiffLabelChange} />

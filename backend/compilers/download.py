@@ -161,7 +161,7 @@ def download_zip(
 
 
 def set_x(file: Path) -> None:
-    file.chmod(file.stat().st_mode | stat.S_IEXEC)
+    file.chmod(file.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 def download_ppc_darwin():
@@ -458,11 +458,7 @@ def download_n64():
             dest_path=dest / "psyq-obj-parser",
         )
         # TODO: upload +x'd version of this
-        psyq_obj_parser = dest / "psyq-obj-parser"
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
-        set_x(psyq_obj_parser)
+        set_x(dest / "psyq-obj-parser")
 
     # SN
     dest = COMPILERS_DIR / "gcc2.7.2snew"
@@ -507,10 +503,7 @@ def download_n64():
             dest_path=dest / "psyq-obj-parser",
         )
         # NOTE: github strips the +x flag
-        psyq_obj_parser = dest / "psyq-obj-parser"
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
+        set_x(dest / "psyq-obj-parser")
 
     # iQue
     dest = COMPILERS_DIR / "egcs_1.1.2-4"
@@ -590,9 +583,6 @@ def download_ps1():
             compilers_path / "psyq",
             psyq_obj_parser,
         )
-        psyq_obj_parser.chmod(
-            psyq_obj_parser.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
         set_x(psyq_obj_parser)
 
         # +x exes
@@ -600,6 +590,76 @@ def download_ps1():
             set_x(file)
         for file in dest.glob("*.EXE"):
             set_x(file)
+
+    # vanilla gcc + maspsx patch
+
+    old_gcc_urls = {
+        "gcc2.6.3-psx": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3-psx.tar.gz",
+        "gcc2.6.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3.tar.gz",
+        "gcc2.7.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.1.tar.gz",
+        "gcc2.7.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.tar.gz",
+        "gcc2.7.2.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.1.tar.gz",
+        "gcc2.7.2.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.3.tar.gz",
+        "gcc2.8.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.8.1.tar.gz",
+        "gcc2.95.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.95.2.tar.gz",
+    }
+    old_gcc_ids = {
+        "gcc2.6.3-psx": "gcc2.6.3-psx",
+        "gcc2.6.3": "gcc2.6.3-mipsel",
+        "gcc2.7.1": "gcc2.7.1-mipsel",
+        "gcc2.7.2": "gcc2.7.2-mipsel",
+        "gcc2.7.2.1": "gcc2.7.2.1-mipsel",
+        "gcc2.7.2.3": "gcc2.7.2.3-mipsel",
+        "gcc2.8.1": "gcc2.8.1-mipsel",
+        "gcc2.95.2": "gcc2.95.2-mipsel",
+    }
+
+    maspsx_hash = "521eb3a512106a5643f768039da6db9f2a768fa7"
+    download_zip(
+        url=f"https://github.com/mkst/maspsx/archive/{maspsx_hash}.zip",
+        dl_name="maspsx",
+        dest_name=compilers_path,
+        create_subdir=True,
+    )
+
+    download_file(
+        url="https://raw.githubusercontent.com/Decompollaborate/rabbitizer/3d0221687b587497ed60b1cf1f207a873ade7cf9/docs/r3000gte/gte_macros.s",
+        dest_path=compilers_path / "gte_macros.s",
+        log_name="gte_macros.s",
+    )
+
+    for gcc_name, url in old_gcc_urls.items():
+        gcc_id = old_gcc_ids[gcc_name]
+        gcc_dir = COMPILERS_DIR / f"{gcc_id}"
+        if gcc_dir.exists():
+            print(f"{gcc_dir} already exists, skipping download.")
+        else:
+            download_tar(
+                url=url,
+                dl_name=f"{gcc_name}.tar.gz",
+                dest_name=f"{gcc_id}",
+            )
+
+        # always copy in maspsx
+        shutil.copytree(
+            compilers_path / f"maspsx-{maspsx_hash}",
+            gcc_dir / "maspsx",
+            dirs_exist_ok=True,
+        )
+        with open(gcc_dir / "as", "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write(
+                "python3 $(dirname -- $0)/maspsx/maspsx.py --run-assembler -I${COMPILER_DIR} $@\n"
+            )
+        set_x(gcc_dir / "as")
+
+        # always copy in macros
+        shutil.copy(
+            compilers_path / "gte_macros.s",
+            gcc_dir,
+        )
+        with open(gcc_dir / "macro.inc", "w") as f:
+            f.write('.include "gte_macros.s"\n')
 
     shutil.rmtree(compilers_path)
 
@@ -609,14 +669,23 @@ def download_saturn():
         print("saturn compilers unsupported on " + host_os.name)
         return
 
+    src = COMPILERS_DIR / "saturn-compilers-main"
+    if src.is_dir():
+        shutil.rmtree(src)
+
+    dest = COMPILERS_DIR / "cygnus-2.7-96Q3"
+    if dest.is_dir():
+        shutil.rmtree(dest)
+
     download_zip(
-        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip"
     )
 
     shutil.move(
         f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
         f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
     )
+
     shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
 
 
@@ -627,6 +696,9 @@ def download_ps2():
 
     ps2_compilers = {
         "ee-gcc2.9-990721": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306679806464060/ee-gcc2.9-990721.tar.xz",
+        "ee-gcc2.9-991111": "https://cdn.discordapp.com/attachments/1067192766918037536/1120445542279954482/ee-gcc2.9-991111.tar.xz",
+        "ee-gcc2.9-991111a": "https://cdn.discordapp.com/attachments/1067192766918037536/1120445479797395506/ee-gcc2.9-991111a.tar.xz",
+        "ee-gcc2.9-991111-01": "https://cdn.discordapp.com/attachments/1067192766918037536/1119832299400331314/ee-gcc2.9-991111-01.tar.xz",
         "ee-gcc2.96": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680179752990/ee-gcc2.96.tar.xz",
         "ee-gcc3.2-040921": "https://cdn.discordapp.com/attachments/1067192766918037536/1067306680548855908/ee-gcc3.2-040921.tar.xz",
     }
@@ -642,7 +714,7 @@ def download_ps2():
 
     # Extra compiler collection
     download_tar(
-        url="https://cdn.discordapp.com/attachments/1067904954779586650/1083990728365068328/ps2_compilers.tar.xz",
+        url="https://cdn.discordapp.com/attachments/1067192766918037536/1120445708516995118/ps2_compilers.tar.xz",
         mode="r:xz",
         dl_name="ps2_compilers.tar.xz",
         create_subdir=False,
@@ -761,7 +833,7 @@ def download_wii_gc():
         COMPILERS_DIR / "mwcc_233_163e" / "mwcceppc.125.exe",
     )
     download_file(
-        url="https://raw.githubusercontent.com/projectPiki/pikmin/main/tools/frank.py",
+        url="https://raw.githubusercontent.com/doldecomp/melee/master/tools/frank.py",
         log_name="frank",
         dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
     )
@@ -789,6 +861,7 @@ def download_3ds():
         "4.1": {
             "b561": "armcc_41_561",
             "b713": "armcc_41_713",
+            "b791": "armcc_41_791",
             "b894": "armcc_41_894",
             "b921": "armcc_41_921",
             "b1049": "armcc_41_1049",
@@ -810,8 +883,36 @@ def download_3ds():
 
             # Set +x to allow WSL without wine
             exe_path = compiler_dir / "bin/armcc.exe"
-            exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+            set_x(exe_path)
         shutil.rmtree(COMPILERS_DIR / group_id)
+
+
+def download_dos():
+    for compiler in [
+        "wcc10.5",
+        "wcc10.5a",
+        "wcc10.6",
+        "wcc11.0",
+    ]:
+        url = (
+            "https://github.com/OmniBlade/decomp.me/releases/download/wcc10.5/"
+            + compiler
+            + ".tar.gz"
+        )
+        download_tar(url=url, dest_name=compiler)
+
+    # Download some custom tools needed for watcom object format.
+    download_tar(
+        url="https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz",
+        dest_name="i386_tools",
+    )
+
+    exe_path = COMPILERS_DIR / "i386_tools/jwasm"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    exe_path = COMPILERS_DIR / "i386_tools/omf-objdump"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    exe_path = COMPILERS_DIR / "i386_tools/omf-nm"
+    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
 
 def main(args):
@@ -843,6 +944,8 @@ def main(args):
         download_wii_gc()
     if should_download("n3ds"):
         download_3ds()
+    if should_download("msdos"):
+        download_dos()
 
     print("Compilers finished downloading!")
 

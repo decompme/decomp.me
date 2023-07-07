@@ -131,7 +131,7 @@ class ProjectViewSet(
     mixins.UpdateModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
-    GenericViewSet,
+    GenericViewSet,  # type: ignore
 ):
     queryset = Project.objects.all()
     pagination_class = ProjectPagination
@@ -345,7 +345,7 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
 class ProjectFunctionViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    GenericViewSet,
+    GenericViewSet,  # type: ignore
 ):
     pagination_class = ProjectFunctionPagination
     serializer_class = ProjectFunctionSerializer
@@ -397,7 +397,7 @@ class ProjectMemberViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    GenericViewSet,
+    GenericViewSet,  # type: ignore
 ):
     serializer_class = ProjectMemberSerializer
     permission_classes = [IsProjectMemberOrReadOnly]

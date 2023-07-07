@@ -111,7 +111,7 @@ export default function NewProjectPage() {
                         disabled={!isSignedIn}
                     >
                         Create project
-                    </AsyncButton> : <GitHubLoginButton popup label="Sign in to create projects" />}
+                    </AsyncButton> : <GitHubLoginButton label="Sign in to create projects" />}
                 </div>
             </div>
         </main>

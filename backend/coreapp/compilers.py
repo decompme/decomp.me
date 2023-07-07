@@ -1,4 +1,3 @@
-import enum
 import logging
 from dataclasses import dataclass, field
 from functools import cache
@@ -17,7 +16,9 @@ from coreapp.flags import (
     COMMON_IDO_FLAGS,
     COMMON_MWCC_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_WATCOM_FLAGS,
     Flags,
+    Language,
 )
 
 from coreapp.platforms import (
@@ -26,6 +27,7 @@ from coreapp.platforms import (
     IRIX,
     MACOS9,
     MACOSX,
+    MSDOS,
     N3DS,
     N64,
     NDS_ARM9,
@@ -42,23 +44,6 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
-
-
-class Language(enum.Enum):
-    C = "C"
-    OLD_CXX = "C++"
-    CXX = "C++"
-    PASCAL = "Pascal"
-    ASSEMBLY = "Assembly"
-
-    def get_file_extension(self) -> str:
-        return {
-            Language.C: "c",
-            Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
-            Language.PASCAL: "p",
-            Language.ASSEMBLY: "s",
-        }[self]
 
 
 @dataclass(frozen=True)
@@ -151,6 +136,11 @@ class MWCCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
 
 
+@dataclass(frozen=True)
+class WatcomCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
+
+
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
         raise CompilationError(f"Unknown compiler: {compiler_id}")
@@ -233,6 +223,12 @@ ARMCC_41_561 = ArmccCompiler(
 
 ARMCC_41_713 = ArmccCompiler(
     id="armcc_41_713",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_791 = ArmccCompiler(
+    id="armcc_41_791",
     platform=N3DS,
     cc=ARMCC_CC,
 )
@@ -343,6 +339,59 @@ PSYQ46 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
+PS1_GCC = (
+    'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
+    '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
+)
+
+GCC263_PSX = GCCPS1Compiler(
+    id="gcc2.6.3-psx",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC263_MIPSEL = GCCPS1Compiler(
+    id="gcc2.6.3-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC271_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.1-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC2672MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.2-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC2721_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.2.1-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC2723_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.2.3-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC281_MIPSEL = GCCPS1Compiler(
+    id="gcc2.8.1-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC2952_MIPSEL = GCCPS1Compiler(
+    id="gcc2.95.2-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 # Saturn
 SATURN_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
@@ -370,7 +419,19 @@ EE_GCC29_990721 = GCCCompiler(
 EE_GCC29_991111 = GCCCompiler(
     id="ee-gcc2.9-991111",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.9-ee-991111/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC29_991111A = GCCCompiler(
+    id="ee-gcc2.9-991111a",
+    platform=PS2,
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC29_991111_01 = GCCCompiler(
+    id="ee-gcc2.9-991111-01",
+    platform=PS2,
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2952_273A = GCCCompiler(
@@ -892,6 +953,70 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
+# Watcom doesn't like '/' in paths passed to it so we need to replace them.
+WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
+WATCOM_CC = (
+    '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
+    + WATCOM_ARGS
+    + "\" | sed 's:/:\\\\:g')"
+)
+WATCOM_CXX = (
+    '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
+    + WATCOM_ARGS
+    + "\" | sed 's:/:\\\\:g')"
+)
+
+WATCOM_105_C = WatcomCompiler(
+    id="wcc10.5",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_105_CPP = WatcomCompiler(
+    id="wpp10.5",
+    base_id="wcc10.5",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_105A_C = WatcomCompiler(
+    id="wcc10.5a",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_105A_CPP = WatcomCompiler(
+    id="wpp10.5a",
+    base_id="wcc10.5a",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_106_C = WatcomCompiler(
+    id="wcc10.6",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_106_CPP = WatcomCompiler(
+    id="wpp10.6",
+    base_id="wcc10.6",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
+
+WATCOM_110_C = WatcomCompiler(
+    id="wcc11.0",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_110_CPP = WatcomCompiler(
+    id="wpp11.0",
+    base_id="wcc11.0",
+    platform=MSDOS,
+    cc=WATCOM_CXX,
+)
 
 _all_compilers: List[Compiler] = [
     DUMMY,
@@ -905,6 +1030,7 @@ _all_compilers: List[Compiler] = [
     ARMCC_40_821,
     ARMCC_41_561,
     ARMCC_41_713,
+    ARMCC_41_791,
     ARMCC_41_894,
     ARMCC_41_921,
     ARMCC_41_1049,
@@ -923,11 +1049,21 @@ _all_compilers: List[Compiler] = [
     PSYQ43,
     PSYQ45,
     PSYQ46,
+    GCC263_PSX,
+    GCC263_MIPSEL,
+    GCC271_MIPSEL,
+    GCC2672MIPSEL,
+    GCC2721_MIPSEL,
+    GCC2723_MIPSEL,
+    GCC281_MIPSEL,
+    GCC2952_MIPSEL,
     # Saturn
     CYGNUS_2_7_96Q3,
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,
+    EE_GCC29_991111A,
+    EE_GCC29_991111_01,
     EE_GCC2952_273A,
     EE_GCC2952_274,
     EE_GCC2953_107,
@@ -1014,6 +1150,15 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # Watcom, DOS and Win9x
+    WATCOM_105_C,
+    WATCOM_105_CPP,
+    WATCOM_105A_C,
+    WATCOM_105A_CPP,
+    WATCOM_106_C,
+    WATCOM_106_CPP,
+    WATCOM_110_C,
+    WATCOM_110_CPP,
 ]
 
 # MKWII Common flags
@@ -1050,7 +1195,7 @@ _all_presets = [
     Preset(
         "Pokemon Mystery Dungeon: Red Rescue Team",
         AGBCC,
-        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm",
+        "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
     ),
     # N3DS
     Preset(
@@ -1092,8 +1237,8 @@ _all_presets = [
     ),
     Preset(
         "Evo's Space Adventures",
-        PSYQ46,
-        "-O2",
+        GCC2952_MIPSEL,
+        "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
@@ -1129,6 +1274,7 @@ _all_presets = [
     Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
     Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
     Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    Preset("Donkey Kong 64", IDO53, "-O2 -mips2"),
     Preset(
         "Dr. Mario 64 N64",
         GCC272KMC,
@@ -1186,6 +1332,12 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
+        "Pokémon Puzzle League",
+        GCC272KMC,
+        "-O2 -mips3 -g",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
         "Quest64",
         IDO53,
         "-O2 -g3 -mips2",
@@ -1195,6 +1347,12 @@ _all_presets = [
         "Rocket Robot on Wheels",
         GCC272SNEW,
         "-mips2 -O2 -gdwarf -funsigned-char",
+        diff_flags=["-Mreg-names=32"],
+    ),
+    Preset(
+        "Shadowgate 64",
+        GCC272KMC,
+        "-mips2 -O1 -g2",
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
@@ -1289,7 +1447,7 @@ _all_presets = [
     Preset(
         "Super Smash Bros. Melee",
         MWCC_233_163E,
-        "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
+        "-O4,p -nodefaults -proc gekko -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto -DM2CTX -DMUST_MATCH -DWIP",
     ),
     Preset(
         "Kirby Air Ride",
@@ -1350,6 +1508,16 @@ _all_presets = [
         "Super Mario Galaxy",
         MWCC_41_60126,
         "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
+    ),
+    Preset(
+        "Super Mario Galaxy 2",
+        MWCC_43_172,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,s -sdata 4 -sdata2 4",
+    ),
+    Preset(
+        "Super Mario Galaxy 2 (RVL)",
+        MWCC_43_172,
+        "-lang=c99 -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,p -sdata 8 -sdata2 8",
     ),
     Preset(
         "Xenoblade Chronicles (JP)",
@@ -1439,7 +1607,7 @@ _all_presets = [
     Preset(
         "Animal Crossing (REL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off",
+        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off, -enum int",
     ),
     Preset(
         "Animal Crossing (DOL)",
@@ -1450,12 +1618,12 @@ _all_presets = [
     Preset(
         "Pokémon Diamond / Pearl",
         MWCC_30_123,
-        "-O4,p -proc arm946e -gccext,on -fp soft -lang c99 -Cpp_exceptions off -interworking -enum int",
+        "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     Preset(
         "Pokémon HeartGold / SoulSilver",
         MWCC_30_137,
-        "-O4,p -enum int -lang c99 -Cpp_exceptions off -gccext,on -gccinc -interworking -gccdep -MD",
+        "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     # MACOS9
     Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
@@ -1465,13 +1633,23 @@ _all_presets = [
     # PS2
     Preset(
         "Ty the Tasmanian Tiger (July 1st)",
-        EE_GCC29_991111,
+        EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math -finline-functions",
     ),
     Preset(
         "Sunny Garcia Surfing",
-        EE_GCC29_991111,
+        EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math",
+    ),
+    Preset(
+        "Klonoa 2: Lunatea's Veil (C)",
+        EE_GCC29_991111_01,
+        "-O1 -gstabs",
+    ),
+    Preset(
+        "Klonoa 2: Lunatea's Veil (C++)",
+        EE_GCC29_991111_01,
+        "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
     ),
 ]
 

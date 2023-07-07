@@ -18,7 +18,7 @@ export default function UserMenuItems() {
                 </div>
             </MenuItem>
             <MenuItem>
-                <GitHubLoginButton popup />
+                <GitHubLoginButton />
             </MenuItem>
         </>
     }

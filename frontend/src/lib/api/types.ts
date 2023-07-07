@@ -42,6 +42,7 @@ export interface TerseScratch {
     last_updated: string
     compiler: string
     platform: string
+    language: string
     score: number // -1 = doesn't compile
     max_score: number
     project: string

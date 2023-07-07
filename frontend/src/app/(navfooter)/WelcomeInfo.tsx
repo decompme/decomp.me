@@ -4,7 +4,6 @@ import Link from "next/link"
 import { ArrowRightIcon } from "@primer/octicons-react"
 
 import Button from "@/components/Button"
-import GhostButton from "@/components/GhostButton"
 import GitHubLoginButton from "@/components/GitHubLoginButton"
 import ScrollingPlatformIcons from "@/components/PlatformSelect/ScrollingPlatformIcons"
 
@@ -49,7 +48,7 @@ export default function WelcomeInfo() {
                         <ArrowRightIcon />
                     </Button>
                 </Link>
-                <GitHubLoginButton popup />
+                <GitHubLoginButton />
             </div>
             <div className="my-6 hidden sm:block">
                 <SiteStats />

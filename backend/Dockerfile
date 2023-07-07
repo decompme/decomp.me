@@ -50,20 +50,22 @@ RUN apt-get -y update && apt-get install -y \
     libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | \
+RUN curl -sSL https://install.python-poetry.org/ | \
   POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.2.4 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.4.2 /usr/local/sbin/wibo /usr/bin/
 
 # windows compilers need i386 wine
 ARG ENABLE_NDS_SUPPORT
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_WII_GC_SUPPORT
 ARG ENABLE_SATURN_SUPPORT
+ARG ENABLE_MSDOS_SUPPORT
 RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
@@ -101,6 +103,7 @@ ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
+ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
 
 RUN python3.10 -m pip install requests tqdm \
     && python3.10 /compilers/download.py \
@@ -125,6 +128,7 @@ USER user
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi

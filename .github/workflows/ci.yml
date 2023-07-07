@@ -9,7 +9,7 @@ jobs:
     name: full test and build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install poetry
         run: pipx install poetry
@@ -26,7 +26,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
-          sudo apt-get purge -yqq libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
+          sudo apt-get install -yqq --allow-downgrades libc6:i386 libgcc-s1:i386 libstdc++6:i386 wine
 
           sudo apt-get install \
             ca-certificates \
@@ -50,8 +50,7 @@ jobs:
             libprotobuf-dev \
             libnl-route-3-dev \
             libncurses5 \
-            protobuf-compiler \
-            wine
+            protobuf-compiler
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
@@ -96,7 +95,7 @@ jobs:
           sudo mv bin/arm* /usr/bin/
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/WiBo/releases/download/0.2.4/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/WiBo/releases/download/0.4.2/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
@@ -133,7 +132,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
@@ -157,7 +156,7 @@ jobs:
     name: backend tests (docker)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build decompme_backend image
         run: |-
           docker build backend \
@@ -189,7 +188,7 @@ jobs:
     name: eslint & stylelint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
         with:
@@ -204,7 +203,7 @@ jobs:
     name: mypy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
       - name: Setup Python 3.9
@@ -222,7 +221,7 @@ jobs:
     name: black
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
           src: "./backend"

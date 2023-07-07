@@ -44,7 +44,7 @@ class CurrentUser(APIView):
             return self.get(request)
 
 
-class CurrentUserScratchList(generics.ListAPIView):
+class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     """
     Gets the current user's scratches
     """
@@ -56,7 +56,7 @@ class CurrentUserScratchList(generics.ListAPIView):
         return Scratch.objects.filter(owner=self.request.profile)
 
 
-class UserScratchList(generics.ListAPIView):
+class UserScratchList(generics.ListAPIView):  # type: ignore
     """
     Gets a user's scratches
     """
@@ -68,7 +68,7 @@ class UserScratchList(generics.ListAPIView):
         return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
 
 
-@api_view(["GET"])
+@api_view(["GET"])  # type: ignore
 def user(request: Request, username: str) -> Response:
     """
     Gets a user's basic data

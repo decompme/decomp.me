@@ -40,6 +40,20 @@ DUMMY = Platform(
     asm_prelude="",
 )
 
+MSDOS = Platform(
+    id="msdos",
+    name="Microsoft DOS",
+    description="x86",
+    arch="i686",
+    assemble_cmd='${COMPILER_BASE_PATH}/i386_tools/jwasm -c -Fo"$OUTPUT" "$INPUT"',
+    objdump_cmd="${COMPILER_BASE_PATH}/i386_tools/omf-objdump",
+    nm_cmd="${COMPILER_BASE_PATH}/i386_tools/omf-nm",
+    asm_prelude="""
+        .386P
+        .model FLAT
+    """,
+)
+
 SWITCH = Platform(
     id="switch",
     name="Nintendo Switch",
@@ -224,6 +238,10 @@ PS1 = Platform(
 
 .macro jlabel label
     \label:
+.endm
+
+.macro move a, b
+	addu \\a, \\b, $zero
 .endm
 
 .set noat
@@ -722,6 +740,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "gba": GBA,
         "macos9": MACOS9,
         "macosx": MACOSX,
+        "msdos": MSDOS,
         "n3ds": N3DS,
     }
 )

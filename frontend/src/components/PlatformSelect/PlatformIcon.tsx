@@ -3,6 +3,7 @@ import LogoGCWii from "./gc_wii.svg"
 import LogoIRIX from "./irix.svg"
 import LogoMacOS from "./macos9.svg"
 import LogoMacOSX from "./macosx.svg"
+import LogoMSDOS from "./msdos.svg"
 import LogoN3DS from "./n3ds.svg"
 import LogoN64 from "./n64.svg"
 import LogoNDS from "./nds.svg"
@@ -14,6 +15,7 @@ import UnknownIcon from "./unknown.svg"
 
 /** In release-date order */
 const ICONS = {
+    "msdos": LogoMSDOS,
     "irix": LogoIRIX,
     "macos9": LogoMacOS,
     "macosx": LogoMacOSX,

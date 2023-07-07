@@ -33,8 +33,6 @@ else:
 
 logger = logging.getLogger(__name__)
 
-DiffResult = Dict[str, Any]
-
 PATH: str
 if settings.USE_SANDBOX_JAIL:
     PATH = "/bin:/usr/bin"
@@ -54,6 +52,12 @@ if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
     WIBO = ""
 else:
     WIBO = "wibo"
+
+
+@dataclass
+class DiffResult:
+    result: Dict[str, Any]
+    errors: str
 
 
 @dataclass
@@ -253,6 +257,9 @@ class CompilerWrapper:
                         "PATH": PATH,
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
+                        "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                            settings.COMPILER_BASE_PATH
+                        ),
                     },
                     timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
                 )

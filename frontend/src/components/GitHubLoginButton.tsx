@@ -9,7 +9,7 @@ import Button from "./Button"
 
 const DEFAULT_SCOPE_STR = ""
 
-export default function GitHubLoginButton({ label, popup, className }: { label?: string, popup: boolean, className?: string }) {
+export default function GitHubLoginButton({ label, className }: { label?: string, className?: string }) {
     const user = useThisUser()
 
     if (user && !isAnonUser(user)) {
@@ -18,7 +18,7 @@ export default function GitHubLoginButton({ label, popup, className }: { label?:
     }
 
     if (isGitHubLoginSupported()) {
-        return <Button className={className} onClick={() => showGitHubLoginWindow(popup, DEFAULT_SCOPE_STR)}>
+        return <Button className={className} onClick={() => showGitHubLoginWindow(DEFAULT_SCOPE_STR)}>
             <MarkGithubIcon size={16} /> {label ?? "Sign in with GitHub"}
         </Button>
     } else {

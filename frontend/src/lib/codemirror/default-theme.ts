@@ -25,8 +25,14 @@ export const theme = EditorView.theme(
             borderLeftColor: cursor,
         },
 
-        "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
-      { backgroundColor: selection },
+        // TODO: make unfocused style less opaque than focused style
+        ".cm-selectionBackground": {
+            backgroundColor: selection,
+        },
+
+        "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
+            backgroundColor: selection,
+        },
 
         ".cm-panels": { backgroundColor: background, color: "#ffffff" },
         ".cm-panels.cm-panels-top": { borderBottom: "2px solid black" },
