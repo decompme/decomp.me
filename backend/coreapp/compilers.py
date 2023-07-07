@@ -1019,7 +1019,7 @@ WATCOM_110_CPP = WatcomCompiler(
     cc=WATCOM_CXX,
 )
 RHGCC_PRE = 'export PATH="$COMPILER_DIR"/bin:$PATH && export LD_LIBRARY_PATH="$COMPILER_DIR"/lib && export LD_PRELOAD="$COMPILER_DIR"/lib/inode64.so && '
-RHGCC_POST = ' -c -nostdinc -I"$COMPILER_DIR"/include ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+RHGCC_POST = ' -c -nostdinc -I"${COMPILER_DIR}"/include -I"${COMPILER_DIR}"/lib/gcc-lib/i386-redhat-linux/3.2/include ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 RHGCC_CC = RHGCC_PRE + '"$COMPILER_DIR"/bin/i386-redhat-linux-gcc' + RHGCC_POST
 RHGCC_CXX = RHGCC_PRE + '"$COMPILER_DIR"/bin/i386-redhat-linux-g++' + RHGCC_POST
 
