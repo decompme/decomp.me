@@ -81,6 +81,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
+            match_override: undefinedIfUnchanged(savedScratch, localScratch, "match_override"),
         })
 
         await mutate(localScratch.url, updatedScratch, false)
@@ -132,7 +133,8 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         JSON.stringify(scratch.diff_flags) === JSON.stringify(saved.diff_flags) &&
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
-        scratch.context === saved.context
+        scratch.context === saved.context &&
+        scratch.match_override === saved.match_override
     )
 }
 

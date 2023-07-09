@@ -77,7 +77,7 @@ function FamilyMember({
             title={getScoreAsFraction(scratch.score, scratch.max_score)}
             className={classNames({ "text-gray-11": !isBetter })}
         >
-            {getScoreText(scratch.score, scratch.max_score)}
+            {getScoreText(scratch.score, scratch.max_score, scratch.match_override)}
         </div>
     </div>
 }

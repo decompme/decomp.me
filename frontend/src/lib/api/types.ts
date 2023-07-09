@@ -45,6 +45,7 @@ export interface TerseScratch {
     language: string
     score: number // -1 = doesn't compile
     max_score: number
+    match_override: boolean
     project: string
     project_function: string
 }

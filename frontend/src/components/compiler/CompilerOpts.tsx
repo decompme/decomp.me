@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactElement } from "react"
 
+import Checkbox from "@/app/(navfooter)/settings/Checkbox"
 import * as api from "@/lib/api"
 import useTranslation from "@/lib/i18n/translate"
 
@@ -22,7 +23,7 @@ const OptsContext = createContext<IOptsContext>(undefined)
 
 type CheckboxProps = {flag: string, description: string}
 
-function Checkbox({ flag, description }: CheckboxProps) {
+function FlagCheckbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
 
     const isChecked = checkFlag(flag)
@@ -114,7 +115,7 @@ function Flags({ schema }: FlagsProps) {
     return <>
         {schema.map(flag => {
             if (flag.type === "checkbox") {
-                return <Checkbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
+                return <FlagCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
@@ -161,9 +162,12 @@ export type Props = {
 
     diffLabel: string
     onDiffLabelChange: (diffLabel: string) => void
+
+    matchOverride: boolean
+    onMatchOverrideChange: (matchOverride: boolean) => void
 }
 
-export default function CompilerOpts({ platform, value, onChange, diffLabel, onDiffLabelChange }: Props) {
+export default function CompilerOpts({ platform, value, onChange, diffLabel, onDiffLabelChange, matchOverride, onMatchOverrideChange }: Props) {
     const compiler = value.compiler
     let opts = value.compiler_flags
     const diff_opts = value.diff_flags || []
@@ -264,6 +268,16 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 <DiffOptsEditor platform={platform} compiler={compiler} diffLabel={diffLabel} onDiffLabelChange={onDiffLabelChange} />
             </section>
         </OptsContext.Provider>
+
+        <section className={styles.section}>
+            <h3 className={styles.heading}>Other options</h3>
+            <Checkbox
+                checked={matchOverride}
+                onChange={onMatchOverrideChange}
+                label="Match override"
+                description="If checked, this scratch will be considered matching (100%)"
+            />
+        </section>
     </div>
 }
 

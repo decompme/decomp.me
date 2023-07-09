@@ -129,7 +129,7 @@ export default function ProjectFunctionPage({ project, func, attempts }: { proje
                         </div> : <ul>
                             {attempts.map(scratch => {
                                 const isInPr = !!basket.scratches.find(s => s.url == scratch.url)
-                                const isMatch = scratch.score == 0
+                                const isMatch = scratch.score == 0 || scratch.match_override
 
                                 return <ScratchItem key={scratch.url} scratch={scratch}>
                                     {canCreatePr && isMatch && <Button

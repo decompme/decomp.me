@@ -23,11 +23,13 @@ export function percentToString(percent: number): string {
     return `${percent.toFixed(2)}%`
 }
 
-export function getScoreText(score: number, maxScore: number): string {
+export function getScoreText(score: number, maxScore: number, matchOverride: boolean): string {
     if (score === -1) {
         return "No score available"
     } else if (score === 0) {
         return "0 (100%) 🎊"
+    } else if (matchOverride) {
+        return `${score} (100%) 🎊 (override)`
     } else {
         const percent = calculateScorePercent(score, maxScore)
 
@@ -46,10 +48,11 @@ export function getScoreAsFraction(score: number, maxScore: number): string {
 export type Props = {
     score: number
     maxScore: number
+    matchOverride: boolean
     compiledSuccessfully: boolean
 }
 
-export default function ScoreBadge({ score, maxScore, compiledSuccessfully }: Props) {
+export default function ScoreBadge({ score, maxScore, matchOverride, compiledSuccessfully }: Props) {
     if (!compiledSuccessfully || score === -1) {
         return <div className={classNames(styles.badge, { [styles.error]: true })} title="Does not compile">
             <AlertIcon className={styles.icon} />
@@ -59,7 +62,7 @@ export default function ScoreBadge({ score, maxScore, compiledSuccessfully }: Pr
             <CheckIcon className={styles.icon} />
         </div>
     } else {
-        const text = getScoreText(score, maxScore)
+        const text = getScoreText(score, maxScore, matchOverride)
         const title = getScoreAsFraction(score, maxScore)
 
         return <div className={styles.badge} aria-label="Score" title={title}>
