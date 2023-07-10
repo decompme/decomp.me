@@ -68,12 +68,20 @@ export function LoadedScratchList({ className, item, scratches }: Pick<Props, "c
     </ul>
 }
 
+export function getMatchPercentString(scratch: api.TerseScratch) {
+    if (scratch.match_override) {
+        return "100%"
+    }
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return matchPercentString
+}
+
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
-
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.item}>
@@ -105,9 +113,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
-
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.item}>
@@ -129,8 +135,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
 }
 
 export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }) {
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.singleLine}>

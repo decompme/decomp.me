@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: { params: { slug: string }}, 
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
     const parentData = await parent
 
-    let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1)}`
+    let description = `Score: ${getScoreText(compilation?.diff_output?.current_score ?? -1, compilation?.diff_output?.max_score ?? -1, scratch.match_override)}`
     if (scratch.owner)
         description += `\nOwner: ${scratch.owner.username}`
     if (parentScratch)

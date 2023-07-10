@@ -3,6 +3,7 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
+import Checkbox from "@/app/(navfooter)/settings/Checkbox"
 import * as api from "@/lib/api"
 
 import LoadingSpinner from "../loading.svg"
@@ -55,7 +56,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
             <div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Score</p>
-                    <span>{getScoreText(scratch.score, scratch.max_score)}</span>
+                    <span>{getScoreText(scratch.score, scratch.max_score, scratch.match_override)}</span>
                 </div>
                 {<div className={styles.horizontalField}>
                     <p className={styles.label}>Owner</p>

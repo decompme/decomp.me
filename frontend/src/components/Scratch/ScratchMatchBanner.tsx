@@ -12,6 +12,7 @@ export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScra
         refreshInterval: 60 * 1000, // 1 minute
     })
 
+    // Consciously not including match_override here, since it's not really banner-worthy
     const match = data?.find(s => s.score == 0 && s.url != scratch.url)
 
     if (error)

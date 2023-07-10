@@ -66,6 +66,7 @@ class Scratch(models.Model):
     )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
+    match_override = models.BooleanField(default=False)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
     project_function = models.ForeignKey(

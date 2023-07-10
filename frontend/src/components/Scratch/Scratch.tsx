@@ -230,6 +230,9 @@ export default function Scratch({
 
                         diffLabel={scratch.diff_label}
                         onDiffLabelChange={d => setScratch({ diff_label: d })}
+
+                        matchOverride={scratch.match_override}
+                        onMatchOverrideChange={m => setScratch({ match_override: m })}
                     />
                 </div>}
             </Tab>
@@ -242,6 +245,7 @@ export default function Scratch({
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
                         maxScore={compilation?.diff_output?.max_score ?? -1}
+                        matchOverride={scratch.match_override}
                         compiledSuccessfully={compilation?.success ?? false} />}
                 </>}
                 className={styles.diffTab}
