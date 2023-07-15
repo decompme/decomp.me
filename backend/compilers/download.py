@@ -803,7 +803,7 @@ def download_wii_gc():
     }
 
     download_zip(
-        url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip",
+        url="https://cdn.discordapp.com/attachments/727918646525165659/1129757563991363685/GC_WII_COMPILERS.zip",
     )
 
     for group_id, group in compiler_groups.items():
