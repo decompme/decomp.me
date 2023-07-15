@@ -740,6 +740,12 @@ MWCC_233_163E = MWCCCompiler(
     cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
 )
 
+MWCC_233_163N = MWCCCompiler(
+    id="mwcc_233_163n",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_242_81 = MWCCCompiler(
     id="mwcc_242_81",
     platform=GC_WII,
@@ -1103,6 +1109,7 @@ _all_compilers: List[Compiler] = [
     MWCC_233_159,
     MWCC_233_163,
     MWCC_233_163E,
+    MWCC_233_163N,
     MWCC_242_81,
     MWCC_247_92,
     MWCC_247_105,
@@ -1441,12 +1448,12 @@ _all_presets = [
     ),
     Preset(
         "Pikmin",
-        MWCC_233_163E,
+        MWCC_233_163N,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
     Preset(
         "Super Smash Bros. Melee",
-        MWCC_233_163E,
+        MWCC_233_163N,
         "-O4,p -nodefaults -proc gekko -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto -DM2CTX -DMUST_MATCH -DWIP",
     ),
     Preset(
