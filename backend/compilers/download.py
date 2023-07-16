@@ -786,6 +786,7 @@ def download_wii_gc():
             "1.1": "mwcc_233_159",
             "1.2.5": "mwcc_233_163",
             "1.2.5e": "mwcc_233_163e",
+            "1.2.5n": "mwcc_233_163n",
             "1.3.2": "mwcc_242_81",
             "2.0": "mwcc_247_92",
             "2.5": "mwcc_247_105",
@@ -803,7 +804,7 @@ def download_wii_gc():
     }
 
     download_zip(
-        url="https://cdn.discordapp.com/attachments/727918646525165659/1129757563991363685/GC_WII_COMPILERS.zip",
+        url="https://cdn.discordapp.com/attachments/727918646525165659/1129759991696457728/GC_WII_COMPILERS.zip"
     )
 
     for group_id, group in compiler_groups.items():
