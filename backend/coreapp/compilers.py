@@ -1222,7 +1222,7 @@ _all_presets = [
     Preset(
         "Renegade Redhat 8 FDS Server Beta",
         RHGPP_32,
-        "-O2 -fomit-frame-pointer",
+        "-O1 -fomit-frame-pointer",
     ),
     # N3DS
     Preset(
