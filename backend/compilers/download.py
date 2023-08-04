@@ -803,6 +803,10 @@ def download_wii_gc():
         },
     }
 
+    single_compilers = {
+        "1.3.2r": ["mwcc_242_81r", "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip"]
+    }
+
     download_zip(
         url="https://cdn.discordapp.com/attachments/727918646525165659/1129759991696457728/GC_WII_COMPILERS.zip"
     )
@@ -827,6 +831,37 @@ def download_wii_gc():
             (compiler_dir / "license.dat").touch()
 
         shutil.rmtree(COMPILERS_DIR / group_id)
+
+    # copy single compilers over
+    for ver, info in single_compilers.items():
+        compiler_id = info[0]
+        url = info[1]
+
+        # download zip to COMPILERS_DIR
+        download_zip(url=url)
+
+        compiler_dir = COMPILERS_DIR / compiler_id
+
+        # move version dir to compiler dir
+        if not compiler_dir.exists():
+            shutil.move(COMPILERS_DIR / ver, compiler_dir)
+
+        # Rename dll to uppercase - WSL is case sensitive without wine
+        lowercase_lmgr = compiler_dir / "lmgr326b.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
+
+        lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
+        set_x(compiler_dir / "mwcceppc.exe")
+
+        (compiler_dir / "license.dat").touch()
+
+        # remove old dir
+        shutil.rmtree(COMPILERS_DIR / ver)
+
 
     # copy in clean 1.2.5 for frank
     shutil.copy(
