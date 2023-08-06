@@ -752,6 +752,12 @@ MWCC_242_81 = MWCCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_242_81R = MWCCCompiler(
+    id="mwcc_242_81r",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_247_92 = MWCCCompiler(
     id="mwcc_247_92",
     platform=GC_WII,
@@ -1613,13 +1619,13 @@ _all_presets = [
     ),
     Preset(
         "Animal Crossing (REL)",
-        MWCC_242_81,
-        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off, -enum int",
+        MWCC_242_81R,
+        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -enum int -sym on",
     ),
     Preset(
         "Animal Crossing (DOL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off, -char unsigned, -enum int",
+        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off -char unsigned -enum int",
     ),
     # NDS
     Preset(
