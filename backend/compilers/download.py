@@ -806,7 +806,7 @@ def download_wii_gc():
     single_compilers = {
         "1.3.2r": [
             "mwcc_242_81r",
-            "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip"
+            "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip",
         ]
     }
 
