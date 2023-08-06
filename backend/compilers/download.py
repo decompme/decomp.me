@@ -804,7 +804,10 @@ def download_wii_gc():
     }
 
     single_compilers = {
-        "1.3.2r": ["mwcc_242_81r", "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip"]
+        "1.3.2r": [
+            "mwcc_242_81r",
+            "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip"
+        ]
     }
 
     download_zip(
@@ -858,10 +861,6 @@ def download_wii_gc():
         set_x(compiler_dir / "mwcceppc.exe")
 
         (compiler_dir / "license.dat").touch()
-
-        # remove old dir
-        shutil.rmtree(COMPILERS_DIR / ver)
-
 
     # copy in clean 1.2.5 for frank
     shutil.copy(
