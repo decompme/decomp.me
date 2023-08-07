@@ -1117,6 +1117,7 @@ _all_compilers: List[Compiler] = [
     MWCC_233_163E,
     MWCC_233_163N,
     MWCC_242_81,
+    MWCC_242_81R,
     MWCC_247_92,
     MWCC_247_105,
     MWCC_247_107,
