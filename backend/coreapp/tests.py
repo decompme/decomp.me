@@ -1121,6 +1121,30 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 2)
 
+    def test_family_checks_hash_only_empty_asm(self) -> None:
+        """
+        Ensure that scratches with empty asm do not have a family, even if their asm is the same
+        """
+
+        scratch1_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": " ",
+        }
+        scratch2_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": " ",
+        }
+
+        scratch1 = self.create_scratch(scratch1_dict)
+        scratch2 = self.create_scratch(scratch2_dict)
+
+        response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
+        self.assertEqual(len(response.json()), 1)
+
 
 @dataclass
 class MockRepository:

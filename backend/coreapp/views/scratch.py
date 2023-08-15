@@ -146,9 +146,12 @@ scratch_condition = condition(
 def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
-        family = Scratch.objects.filter(
-            target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-        )
+        if scratch.target_assembly.source_asm.data.strip() == "":
+            family = Scratch.objects.filter(slug=scratch.slug).order_by("creation_time")
+        else:
+            family = Scratch.objects.filter(
+                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
+            )
 
         return str(hash((family, request.headers.get("Accept"))))
     else:
@@ -492,9 +495,12 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        family = Scratch.objects.filter(
-            target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-        ).order_by("creation_time")
+        if scratch.target_assembly.source_asm.data.strip() == "":
+            family = Scratch.objects.filter(slug=scratch.slug).order_by("creation_time")
+        else:
+            family = Scratch.objects.filter(
+                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
+            ).order_by("creation_time")
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
