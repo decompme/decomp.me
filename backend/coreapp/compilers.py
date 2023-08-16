@@ -1264,6 +1264,11 @@ _all_presets = [
         PSYQ43,
         "-O2 -G8",
     ),
+    Preset(
+        "vib-ribbon",
+        PSYQ45,
+        "-O2 -G4 -mel -mno-abicalls -fno-builtin",
+    ),
     # Saturn
     Preset(
         "Castlevania: Symphony of the Night",
