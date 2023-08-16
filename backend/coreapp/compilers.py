@@ -386,6 +386,12 @@ GCC281_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC29166_MIPSEL = GCCPS1Compiler(
+    id="gcc2.91.66-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC2952_MIPSEL = GCCPS1Compiler(
     id="gcc2.95.2-mipsel",
     platform=PS1,
@@ -1068,6 +1074,7 @@ _all_compilers: List[Compiler] = [
     GCC2721_MIPSEL,
     GCC2723_MIPSEL,
     GCC281_MIPSEL,
+    GCC29166_MIPSEL,
     GCC2952_MIPSEL,
     # Saturn
     CYGNUS_2_7_96Q3,

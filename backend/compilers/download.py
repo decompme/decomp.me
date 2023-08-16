@@ -593,15 +593,17 @@ def download_ps1():
 
     # vanilla gcc + maspsx patch
 
+    old_gcc_base_url = "https://github.com/decompals/old-gcc/releases/download/0.2"
     old_gcc_urls = {
-        "gcc2.6.3-psx": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3-psx.tar.gz",
-        "gcc2.6.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3.tar.gz",
-        "gcc2.7.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.1.tar.gz",
-        "gcc2.7.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.tar.gz",
-        "gcc2.7.2.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.1.tar.gz",
-        "gcc2.7.2.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.3.tar.gz",
-        "gcc2.8.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.8.1.tar.gz",
-        "gcc2.95.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.95.2.tar.gz",
+        "gcc2.6.3-psx": f"{old_gcc_base_url}/gcc-2.6.3-psx.tar.gz",
+        "gcc2.6.3": f"{old_gcc_base_url}/gcc-2.6.3.tar.gz",
+        "gcc2.7.1": f"{old_gcc_base_url}/gcc-2.7.1.tar.gz",
+        "gcc2.7.2": f"{old_gcc_base_url}/gcc-2.7.2.tar.gz",
+        "gcc2.7.2.1": f"{old_gcc_base_url}/gcc-2.7.2.1.tar.gz",
+        "gcc2.7.2.3": f"{old_gcc_base_url}/gcc-2.7.2.3.tar.gz",
+        "gcc2.8.1": f"{old_gcc_base_url}/gcc-2.8.1.tar.gz",
+        "gcc2.91.66": f"{old_gcc_base_url}/gcc-2.91.66.tar.gz",
+        "gcc2.95.2": f"{old_gcc_base_url}/gcc-2.95.2.tar.gz",
     }
     old_gcc_ids = {
         "gcc2.6.3-psx": "gcc2.6.3-psx",
@@ -611,6 +613,7 @@ def download_ps1():
         "gcc2.7.2.1": "gcc2.7.2.1-mipsel",
         "gcc2.7.2.3": "gcc2.7.2.3-mipsel",
         "gcc2.8.1": "gcc2.8.1-mipsel",
+        "gcc2.91.66": "gcc2.91.66-mipsel",
         "gcc2.95.2": "gcc2.95.2-mipsel",
     }
 
