@@ -1274,7 +1274,7 @@ _all_presets = [
     Preset(
         "vib-ribbon",
         PSYQ45,
-        "-O2 -G4 -mel -mno-abicalls -fno-builtin",
+        "-Os -G4 -mel -mno-abicalls -fno-builtin",
     ),
     # Saturn
     Preset(
