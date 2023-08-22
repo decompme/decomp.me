@@ -617,7 +617,7 @@ def download_ps1():
         "gcc2.95.2": "gcc2.95.2-mipsel",
     }
 
-    maspsx_hash = "be47f97fe0d6bd6e5ee9e4b1476b806a26afd2df"
+    maspsx_hash = "92c02bf8b6a1acababd704a3d540af44b50fadcf"
     download_zip(
         url=f"https://github.com/mkst/maspsx/archive/{maspsx_hash}.zip",
         dl_name="maspsx",
