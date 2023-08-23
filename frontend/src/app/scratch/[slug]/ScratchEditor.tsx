@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import useSWR from "swr"
+import useSWR, { Middleware, SWRConfig } from "swr"
 
 import Scratch from "@/components/Scratch"
 import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload"
@@ -18,13 +18,7 @@ function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     return <SetPageTitle title={title} />
 }
 
-export interface Props {
-    initialScratch: api.Scratch
-    parentScratch?: api.Scratch
-    initialCompilation?: api.Compilation
-}
-
-export default function ScratchEditor({ initialScratch, parentScratch, initialCompilation }: Props) {
+function ScratchEditorInner({ initialScratch, parentScratch, initialCompilation, offline }: Props) {
     const [scratch, setScratch] = useState(initialScratch)
 
     useWarnBeforeScratchUnload(scratch)
@@ -75,7 +69,42 @@ export default function ScratchEditor({ initialScratch, parentScratch, initialCo
                         return { ...scratch, ...partial }
                     })
                 }}
+                offline={offline}
             />
         </main>
+    </>
+}
+
+export interface Props {
+    initialScratch: api.Scratch
+    parentScratch?: api.Scratch
+    initialCompilation?: api.Compilation
+    offline?: boolean
+}
+
+export default function ScratchEditor(props: Props) {
+    const [offline, setOffline] = useState(false)
+
+    const offlineMiddleware: Middleware = _useSWRNext => {
+        return (key, fetcher, config) => {
+            let swr = _useSWRNext(key, fetcher, config)
+
+            if (swr.error instanceof api.RequestFailedError) {
+                setOffline(true)
+                swr = Object.assign({}, swr, { error: null })
+            }
+
+            return swr
+        }
+    }
+
+    const onSuccess = () => {
+        setOffline(false)
+    }
+
+    return <>
+        <SWRConfig value={{ use: [offlineMiddleware], onSuccess }}>
+            <ScratchEditorInner {...props} offline={offline} />
+        </SWRConfig>
     </>
 }

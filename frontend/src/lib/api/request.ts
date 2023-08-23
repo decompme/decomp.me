@@ -33,6 +33,13 @@ export class ResponseError extends Error {
     }
 }
 
+export class RequestFailedError extends Error {
+    constructor(message: string, url: string) {
+        super(`${message} (occured when fetching ${url})`)
+        this.name = "RequestFailedError"
+    }
+}
+
 export function normalizeUrl(url: string) {
     if (url.startsWith("/")) {
         url = API_BASE + url
@@ -40,22 +47,36 @@ export function normalizeUrl(url: string) {
     return url
 }
 
-export async function get(url: string) {
+export async function errorHandledFetchJson(url: string, init?: RequestInit) {
+    let response: Response
+
     url = normalizeUrl(url)
 
-    console.info("GET", url)
+    try {
+        response = await fetch(url, init)
+    } catch (error) {
+        if (error instanceof TypeError) {
+            throw new RequestFailedError(error.message, url)
+        }
 
-    const response = await fetch(url, {
-        ...commonOpts,
-        cache: "no-cache",
-        next: { revalidate: 10 },
-    })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
+        throw error
     }
 
     try {
+        if (response.status == 502) {
+            // We've received a "Gateway Unavailable" message from nginx.
+            // The backend's down.
+            throw new RequestFailedError("Backend gateway unavailable", url)
+        }
+
+        if (!response.ok) {
+            throw new ResponseError(response, await response.json())
+        }
+
+        if (response.status == 204) {
+            return null
+        }
+
         return await response.json()
     } catch (error) {
         if (error instanceof SyntaxError) {
@@ -69,10 +90,17 @@ export async function get(url: string) {
     }
 }
 
-export async function post(url: string, data: Json | FormData, method = "POST") {
-    url = normalizeUrl(url)
+export async function get(url: string) {
+    console.info("GET", normalizeUrl(url))
+    return await errorHandledFetchJson(url, {
+        ...commonOpts,
+        cache: "no-cache",
+        next: { revalidate: 10 },
+    })
+}
 
-    console.info(method, url, data)
+export async function post(url: string, data: Json | FormData, method = "POST") {
+    console.info(method, normalizeUrl(url), data)
 
     let body: string | FormData
     if (data instanceof FormData) {
@@ -81,7 +109,7 @@ export async function post(url: string, data: Json | FormData, method = "POST") 
         body = JSON.stringify(data)
     }
 
-    const response = await fetch(url, {
+    return await errorHandledFetchJson(url, {
         ...commonOpts,
         method,
         body,
@@ -89,16 +117,6 @@ export async function post(url: string, data: Json | FormData, method = "POST") 
             "Content-Type": "application/json",
         },
     })
-
-    if (!response.ok) {
-        throw new ResponseError(response, await response.json())
-    }
-
-    if (response.status == 204) {
-        return null
-    } else {
-        return await response.json()
-    }
 }
 
 export async function patch(url: string, data: Json | FormData) {
