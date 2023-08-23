@@ -23,7 +23,7 @@ function NetworkErrorPage({ error, reset }: ErrorPageProps) {
             </div>
 
             <p className="py-4">
-                If your internet connection is okay, we're probably down for maintenence, and will be back shortly. If this issue persists - <a href="https://discord.gg/sutqNShRRs" className="text-blue-11 hover:underline active:translate-y-px">let us know</a>.
+                If your internet connection is okay, we're probably down for maintenance, and will be back shortly. If this issue persists - <a href="https://discord.gg/sutqNShRRs" className="text-blue-11 hover:underline active:translate-y-px">let us know</a>.
             </p>
 
             <ErrorBoundary>
