@@ -34,8 +34,8 @@ export class ResponseError extends Error {
 }
 
 export class RequestFailedError extends Error {
-    constructor(message: string) {
-        super(message)
+    constructor(message: string, url: string) {
+        super(`${message} (occured when fetching ${url})`)
         this.name = "RequestFailedError"
     }
 }
@@ -56,7 +56,7 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
         response = await fetch(url, init)
     } catch (error) {
         if (error instanceof TypeError) {
-            throw new RequestFailedError(error.message)
+            throw new RequestFailedError(error.message, url)
         }
 
         throw error
@@ -66,7 +66,7 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
         if (response.status == 502) {
             // We've received a "Gateway Unavailable" message from nginx.
             // The backend's down.
-            throw new RequestFailedError("Backend gateway unavailable")
+            throw new RequestFailedError("Backend gateway unavailable", url)
         }
 
         if (!response.ok) {
