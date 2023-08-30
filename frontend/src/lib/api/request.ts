@@ -35,7 +35,7 @@ export class ResponseError extends Error {
 
 export class RequestFailedError extends Error {
     constructor(message: string, url: string) {
-        super(`${message} (occured when fetching ${url})`)
+        super(`${message} (occurred when fetching ${url})`)
         this.name = "RequestFailedError"
     }
 }
