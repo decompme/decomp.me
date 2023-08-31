@@ -1278,8 +1278,8 @@ _all_presets = [
     ),
     Preset(
         "vib-ribbon",
-        PSYQ45,
-        "-Os -G4 -mel -mno-abicalls -fno-builtin",
+        GCC29166_MIPSEL,
+        "-Os -G4 -mel -g0 -mno-abicalls -fno-builtin -fsigned-char -fpeephole -ffunction-cse -fkeep-static-consts -fpcc-struct-return -fcommon -fgnu-linker -fargument-alias -msplit-addresses -mgas -mgpOPT -mgpopt -msoft-float -gcoff",
     ),
     # Saturn
     Preset(
