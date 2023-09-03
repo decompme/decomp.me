@@ -54,6 +54,17 @@ MSDOS = Platform(
     """,
 )
 
+WIN9X = Platform(
+    id="win9x",
+    name="Windows 9x",
+    description="x86 (32bit)",
+    arch="i686",
+    assemble_cmd='i386-pc-msdosdjgpp-as --32 -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="i386-pc-msdosdjgpp-objdump",
+    nm_cmd="i386-pc-msdosdjgpp-nm",
+    asm_prelude="",
+)
+
 SWITCH = Platform(
     id="switch",
     name="Nintendo Switch",
@@ -774,5 +785,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "macosx": MACOSX,
         "msdos": MSDOS,
         "n3ds": N3DS,
+        "win9x": WIN9X,
     }
 )

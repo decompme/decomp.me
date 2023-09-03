@@ -20,6 +20,7 @@ services:
         ENABLE_PS1_SUPPORT: "NO"
         ENABLE_WII_GC_SUPPORT: "NO"
         ENABLE_MSDOS_SUPPORT: "NO"
+        ENABLE_WIN9X_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
         ENABLE_SATURN_SUPPORT: "NO"

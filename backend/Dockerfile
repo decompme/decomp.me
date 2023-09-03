@@ -38,6 +38,7 @@ RUN apt-get -y update && apt-get install -y \
     binutils-powerpc-linux-gnu \
     binutils-aarch64-linux-gnu \
     binutils-sh-elf \
+    binutils-djgpp \
     curl \
     gcc-mips-linux-gnu \
     git \
@@ -63,9 +64,11 @@ ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_WII_GC_SUPPORT
 ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_MSDOS_SUPPORT
+ARG ENABLE_WIN9X_SUPPORT
 RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
@@ -104,6 +107,7 @@ ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
+ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
 
 RUN python3.10 -m pip install requests tqdm \
     && python3.10 /compilers/download.py \
@@ -129,6 +133,7 @@ USER user
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi

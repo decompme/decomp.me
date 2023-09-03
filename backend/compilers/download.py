@@ -911,7 +911,7 @@ def download_3ds():
         },
     }
     download_zip(
-        url="http://al.littun.co/dl/armcc.zip",
+        url="https://cdn.discordapp.com/attachments/710646040792924172/1148006502980927528/armcc.zip",
     )
     for group_id, group in compiler_groups.items():
         for ver, compiler_id in group.items():
@@ -953,6 +953,24 @@ def download_dos():
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
 
+def download_win9x():
+    for compiler in [
+        "msvc6.0",
+        "msvc6.3",
+        "msvc6.4",
+        "msvc6.5",
+        "msvc6.5pp",
+        "msvc6.6",
+        "msvc7.0",
+    ]:
+        url = (
+            "https://github.com/OmniBlade/decomp.me/releases/download/msvcwin9x/"
+            + compiler
+            + ".tar.gz"
+        )
+        download_tar(url=url, dest_name=compiler)
+
+
 def main(args):
     def should_download(platform):
         # assume enabled unless explicitly disabled
@@ -984,6 +1002,8 @@ def main(args):
         download_3ds()
     if should_download("msdos"):
         download_dos()
+    if should_download("win9x"):
+        download_win9x()
 
     print("Compilers finished downloading!")
 

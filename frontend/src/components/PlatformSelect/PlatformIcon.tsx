@@ -12,11 +12,13 @@ import LogoPS2 from "./ps2.svg"
 import LogoSaturn from "./saturn.svg"
 import LogoSwitch from "./switch.svg"
 import UnknownIcon from "./unknown.svg"
+import LogoWin9x from "./win9x.svg"
 
 /** In release-date order */
 const ICONS = {
     "msdos": LogoMSDOS,
     "irix": LogoIRIX,
+    "win9x": LogoWin9x,
     "macos9": LogoMacOS,
     "macosx": LogoMacOSX,
     "n64": LogoN64,
