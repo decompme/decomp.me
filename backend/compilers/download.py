@@ -264,7 +264,7 @@ def download_gba():
         download_tar(url=url, dest_name=dest)
 
     download_agbcc(
-        "https://github.com/ethteck/agbcc/releases/download/master/agbcc.tar.gz",
+        "https://github.com/pret/agbcc/releases/download/release/agbcc.tar.gz",
         "agbcc",
     )
     download_agbcc(
