@@ -1276,6 +1276,11 @@ _all_presets = [
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
     ),
+    Preset(
+        "Pokemon Pinball: Ruby and Sapphire",
+        AGBCC,
+        "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm -fprologue-bugfix",
+    ),
     # N3DS
     Preset(
         "Ocarina of Time 3D",
