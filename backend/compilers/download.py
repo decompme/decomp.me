@@ -54,7 +54,7 @@ DOWNLOAD_CACHE.mkdir(exist_ok=True)
 
 
 # Downloads a file to the file cache
-def download_file(url: str, log_name: str, dest_path: Path) -> Optional[Path]:
+def download_file(url: str, log_name: str, dest_path: Path):
     if dest_path.exists():
         print(f"Download of {log_name} already exists; skipping download")
         return
@@ -963,6 +963,11 @@ def download_win9x():
         "msvc6.6",
         "msvc7.0",
     ]:
+        compiler_path = COMPILERS_DIR / compiler
+        if compiler_path.exists():
+            print(f"{compiler_path} already exists, skipping")
+            continue
+
         url = (
             "https://github.com/OmniBlade/decomp.me/releases/download/msvcwin9x/"
             + compiler
