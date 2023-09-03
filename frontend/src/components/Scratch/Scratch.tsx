@@ -116,6 +116,7 @@ export type Props = {
     onChange: (scratch: Partial<api.Scratch>) => void
     parentScratch?: api.Scratch
     initialCompilation?: Readonly<api.Compilation>
+    offline: boolean
 }
 
 export default function Scratch({
@@ -123,6 +124,7 @@ export default function Scratch({
     onChange,
     parentScratch,
     initialCompilation,
+    offline,
 }: Props) {
     const container = useSize<HTMLDivElement>()
     const [layout, setLayout] = useState<Layout>(undefined)
@@ -286,6 +288,15 @@ export default function Scratch({
         }
     }
 
+    const offlineOverlay = (
+        offline ? <>
+            <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
+                <p className="text-sm">The scratch editor is in offline mode. We're attempting to reconnect to the backend - as long as this tab is open, your work is safe.</p>
+            </div>
+        </>
+            : <></>
+    )
+
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
@@ -306,5 +317,6 @@ export default function Scratch({
                 renderTab={renderTab}
             />}
         </ErrorBoundary>
+        {offlineOverlay}
     </div>
 }

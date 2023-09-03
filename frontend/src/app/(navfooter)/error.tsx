@@ -2,6 +2,6 @@
 
 "use client"
 
-import Error from "../error"
+import ErrorPage from "../error"
 
-export default Error
+export default ErrorPage

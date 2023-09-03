@@ -393,6 +393,12 @@ GCC281_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC29166_MIPSEL = GCCPS1Compiler(
+    id="gcc2.91.66-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC2952_MIPSEL = GCCPS1Compiler(
     id="gcc2.95.2-mipsel",
     platform=PS1,
@@ -722,7 +728,7 @@ PBX_GCC3 = GCCCompiler(
 # GC_WII
 # Thanks to Gordon Davisson for the xargs trick:
 # https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
-MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -pragma "msg_show_realref off" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -747,8 +753,20 @@ MWCC_233_163E = MWCCCompiler(
     cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
 )
 
+MWCC_233_163N = MWCCCompiler(
+    id="mwcc_233_163n",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_242_81 = MWCCCompiler(
     id="mwcc_242_81",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_242_81R = MWCCCompiler(
+    id="mwcc_242_81r",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
@@ -1106,6 +1124,7 @@ _all_compilers: List[Compiler] = [
     GCC2721_MIPSEL,
     GCC2723_MIPSEL,
     GCC281_MIPSEL,
+    GCC29166_MIPSEL,
     GCC2952_MIPSEL,
     # Saturn
     CYGNUS_2_7_96Q3,
@@ -1153,7 +1172,9 @@ _all_compilers: List[Compiler] = [
     MWCC_233_159,
     MWCC_233_163,
     MWCC_233_163E,
+    MWCC_233_163N,
     MWCC_242_81,
+    MWCC_242_81R,
     MWCC_247_92,
     MWCC_247_105,
     MWCC_247_107,
@@ -1223,7 +1244,7 @@ _all_compilers: List[Compiler] = [
 MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -func_align 4 -sym dwarf-2"
 
 # SPM Common flags
-SPM_SHARED = "-enc SJIS -lang c99 -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
+SPM_SHARED = "-enc SJIS -lang c++ -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
 
 # Rat Proto Common flags
 RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions off -schedule on -lang=c++ -char signed -str reuse,pool,readonly -fp fmadd -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off'
@@ -1283,6 +1304,11 @@ _all_presets = [
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
     Preset(
+        "Splatoon 2 3.1.0",
+        CLANG_401,
+        "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
+    ),
+    Preset(
         "Super Mario 3D World + Bowser's Fury",
         CLANG_800,
         "-x c++ -O3 -g2 -std=c++17 -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
@@ -1307,6 +1333,11 @@ _all_presets = [
         "Metal Gear Solid",
         PSYQ43,
         "-O2 -G8",
+    ),
+    Preset(
+        "vib-ribbon",
+        GCC29166_MIPSEL,
+        "-Os -G4 -mel -g0 -mno-abicalls -fno-builtin -fsigned-char -fpeephole -ffunction-cse -fkeep-static-consts -fpcc-struct-return -fcommon -fgnu-linker -fargument-alias -msplit-addresses -mgas -mgpOPT -mgpopt -msoft-float -gcoff",
     ),
     # Saturn
     Preset(
@@ -1499,12 +1530,12 @@ _all_presets = [
     ),
     Preset(
         "Pikmin",
-        MWCC_233_163E,
+        MWCC_233_163N,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
     Preset(
         "Super Smash Bros. Melee",
-        MWCC_233_163E,
+        MWCC_233_163N,
         "-O4,p -nodefaults -proc gekko -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto -DM2CTX -DMUST_MATCH -DWIP",
     ),
     Preset(
@@ -1664,13 +1695,13 @@ _all_presets = [
     ),
     Preset(
         "Animal Crossing (REL)",
-        MWCC_242_81,
-        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -pool off, -enum int",
+        MWCC_242_81R,
+        "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -enum int -sym on",
     ),
     Preset(
         "Animal Crossing (DOL)",
         MWCC_242_81,
-        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off, -char unsigned, -enum int",
+        "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off -char unsigned -enum int",
     ),
     # NDS
     Preset(

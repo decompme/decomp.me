@@ -45,7 +45,7 @@ export default function Footer() {
                         Status
                     </GhostButton>
                     <Separator />
-                    <GhostButton href="https://stats.decomp.me">
+                    <GhostButton href="https://stats.decomp.me/decomp.me">
                         Stats
                     </GhostButton>
                 </div>

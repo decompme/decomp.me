@@ -654,6 +654,38 @@ GC_WII = Platform(
 .set qr5, 5
 .set qr6, 6
 .set qr7, 7
+.set cr0lt, 0
+.set cr0gt, 1
+.set cr0eq, 2
+.set cr0un, 3
+.set cr1lt, 4
+.set cr1gt, 5
+.set cr1eq, 6
+.set cr1un, 7
+.set cr2lt, 8
+.set cr2gt, 9
+.set cr2eq, 10
+.set cr2un, 11
+.set cr3lt, 12
+.set cr3gt, 13
+.set cr3eq, 14
+.set cr3un, 15
+.set cr4lt, 16
+.set cr4gt, 17
+.set cr4eq, 18
+.set cr4un, 19
+.set cr5lt, 20
+.set cr5gt, 21
+.set cr5eq, 22
+.set cr5un, 23
+.set cr6lt, 24
+.set cr6gt, 25
+.set cr6eq, 26
+.set cr6un, 27
+.set cr7lt, 28
+.set cr7gt, 29
+.set cr7eq, 30
+.set cr7un, 31
 """,
 )
 

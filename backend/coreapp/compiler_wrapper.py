@@ -140,6 +140,7 @@ class CompilerWrapper:
         with Sandbox() as sandbox:
             ext = compiler.language.get_file_extension()
             code_file = f"code.{ext}"
+            src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"
 
             code_path = sandbox.path / code_file
@@ -149,16 +150,26 @@ class CompilerWrapper:
                 f.write(context)
                 f.write("\n")
 
-                f.write(f'#line 1 "{code_file}"\n')
+                f.write(f'#line 1 "{src_file}"\n')
                 f.write(code)
                 f.write("\n")
 
             cc_cmd = compiler.cc
 
-            # Fix for MWCC line numbers in GC 3.0+
+            # MWCC requires the file to exist for DWARF line numbers,
+            # and requires the file contents for error messages
             if compiler.is_mwcc:
                 ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
+                with ctx_path.open("w") as f:
+                    f.write(context)
+                    f.write("\n")
+
+                src_path = sandbox.path / src_file
+                src_path.touch()
+                with src_path.open("w") as f:
+                    f.write(code)
+                    f.write("\n")
 
             # IDO hack to support -KPIC
             if compiler.is_ido and "-KPIC" in compiler_flags:

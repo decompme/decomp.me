@@ -1090,6 +1090,61 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(etag, response.headers.get("Etag"))
 
+    def test_family_checks_hash_only(self) -> None:
+        """
+        Ensure that scratches with the same target_asm hash belong to the same family, even if their Assembly instances differ somehow
+        """
+
+        scratch1_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+        }
+        scratch2_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+        }
+
+        scratch1 = self.create_scratch(scratch1_dict)
+        scratch2 = self.create_scratch(scratch2_dict)
+
+        assembly_2: Assembly = scratch1.target_assembly
+        assembly_2.hash = 0
+        assembly_2.pk = None
+        assembly_2.save()
+        scratch2.target_assembly = assembly_2
+        scratch2.save()
+
+        response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
+        self.assertEqual(len(response.json()), 2)
+
+    def test_family_checks_hash_only_empty_asm(self) -> None:
+        """
+        Ensure that scratches with empty asm do not have a family, even if their asm is the same
+        """
+
+        scratch1_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": " ",
+        }
+        scratch2_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": " ",
+        }
+
+        scratch1 = self.create_scratch(scratch1_dict)
+        scratch2 = self.create_scratch(scratch2_dict)
+
+        response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
+        self.assertEqual(len(response.json()), 1)
+
 
 @dataclass
 class MockRepository:

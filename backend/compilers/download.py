@@ -593,15 +593,17 @@ def download_ps1():
 
     # vanilla gcc + maspsx patch
 
+    old_gcc_base_url = "https://github.com/decompals/old-gcc/releases/download/0.2"
     old_gcc_urls = {
-        "gcc2.6.3-psx": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3-psx.tar.gz",
-        "gcc2.6.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.6.3.tar.gz",
-        "gcc2.7.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.1.tar.gz",
-        "gcc2.7.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.tar.gz",
-        "gcc2.7.2.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.1.tar.gz",
-        "gcc2.7.2.3": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.7.2.3.tar.gz",
-        "gcc2.8.1": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.8.1.tar.gz",
-        "gcc2.95.2": "https://github.com/decompals/old-gcc/releases/download/0.1/gcc-2.95.2.tar.gz",
+        "gcc2.6.3-psx": f"{old_gcc_base_url}/gcc-2.6.3-psx.tar.gz",
+        "gcc2.6.3": f"{old_gcc_base_url}/gcc-2.6.3.tar.gz",
+        "gcc2.7.1": f"{old_gcc_base_url}/gcc-2.7.1.tar.gz",
+        "gcc2.7.2": f"{old_gcc_base_url}/gcc-2.7.2.tar.gz",
+        "gcc2.7.2.1": f"{old_gcc_base_url}/gcc-2.7.2.1.tar.gz",
+        "gcc2.7.2.3": f"{old_gcc_base_url}/gcc-2.7.2.3.tar.gz",
+        "gcc2.8.1": f"{old_gcc_base_url}/gcc-2.8.1.tar.gz",
+        "gcc2.91.66": f"{old_gcc_base_url}/gcc-2.91.66.tar.gz",
+        "gcc2.95.2": f"{old_gcc_base_url}/gcc-2.95.2.tar.gz",
     }
     old_gcc_ids = {
         "gcc2.6.3-psx": "gcc2.6.3-psx",
@@ -611,10 +613,11 @@ def download_ps1():
         "gcc2.7.2.1": "gcc2.7.2.1-mipsel",
         "gcc2.7.2.3": "gcc2.7.2.3-mipsel",
         "gcc2.8.1": "gcc2.8.1-mipsel",
+        "gcc2.91.66": "gcc2.91.66-mipsel",
         "gcc2.95.2": "gcc2.95.2-mipsel",
     }
 
-    maspsx_hash = "521eb3a512106a5643f768039da6db9f2a768fa7"
+    maspsx_hash = "44f8a152e5b49e56640fd3cfc20d6bf428e1205e"
     download_zip(
         url=f"https://github.com/mkst/maspsx/archive/{maspsx_hash}.zip",
         dl_name="maspsx",
@@ -786,6 +789,7 @@ def download_wii_gc():
             "1.1": "mwcc_233_159",
             "1.2.5": "mwcc_233_163",
             "1.2.5e": "mwcc_233_163e",
+            "1.2.5n": "mwcc_233_163n",
             "1.3.2": "mwcc_242_81",
             "2.0": "mwcc_247_92",
             "2.5": "mwcc_247_105",
@@ -802,8 +806,15 @@ def download_wii_gc():
         },
     }
 
+    single_compilers = {
+        "1.3.2r": [
+            "mwcc_242_81r",
+            "https://cdn.discordapp.com/attachments/598600200084258822/1136883349642825728/MWCCEPPC_1.3.2r.zip",
+        ]
+    }
+
     download_zip(
-        url="https://cdn.discordapp.com/attachments/727918646525165659/917185027656286218/GC_WII_COMPILERS.zip",
+        url="https://cdn.discordapp.com/attachments/727918646525165659/1129759991696457728/GC_WII_COMPILERS.zip"
     )
 
     for group_id, group in compiler_groups.items():
@@ -826,6 +837,33 @@ def download_wii_gc():
             (compiler_dir / "license.dat").touch()
 
         shutil.rmtree(COMPILERS_DIR / group_id)
+
+    # copy single compilers over
+    for ver, info in single_compilers.items():
+        compiler_id = info[0]
+        url = info[1]
+
+        # download zip to COMPILERS_DIR
+        download_zip(url=url)
+
+        compiler_dir = COMPILERS_DIR / compiler_id
+
+        # move version dir to compiler dir
+        if not compiler_dir.exists():
+            shutil.move(COMPILERS_DIR / ver, compiler_dir)
+
+        # Rename dll to uppercase - WSL is case sensitive without wine
+        lowercase_lmgr = compiler_dir / "lmgr326b.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / "LMGR326B.dll")
+
+        lowercase_lmgr = compiler_dir / "lmgr8c.dll"
+        if lowercase_lmgr.exists():
+            shutil.move(lowercase_lmgr, compiler_dir / "LMGR8C.dll")
+
+        set_x(compiler_dir / "mwcceppc.exe")
+
+        (compiler_dir / "license.dat").touch()
 
     # copy in clean 1.2.5 for frank
     shutil.copy(
