@@ -911,7 +911,7 @@ def download_3ds():
         },
     }
     download_zip(
-        url="http://al.littun.co/dl/armcc.zip",
+        url="https://cdn.discordapp.com/attachments/710646040792924172/1148006502980927528/armcc.zip",
     )
     for group_id, group in compiler_groups.items():
         for ver, compiler_id in group.items():
