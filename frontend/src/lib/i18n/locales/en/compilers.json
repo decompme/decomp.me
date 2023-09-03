@@ -53,6 +53,8 @@
     "ido7.1": "IDO 7.1",
     "ido7.1Pascal": "IDO 7.1 Pascal",
     "mips_pro_744": "MIPS Pro 7.4.4",
+    "msvc40": "Microsoft Visual C/C++ 4.0",
+    "msvc42": "Microsoft Visual C/C++ 4.2",
     "msvc6.0": "Microsoft Visual C/C++ 6.0",
     "msvc6.3": "Microsoft Visual C/C++ 6.0 Service Pack 3",
     "msvc6.4": "Microsoft Visual C/C++ 6.0 Service Pack 4",

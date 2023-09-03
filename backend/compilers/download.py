@@ -975,6 +975,8 @@ def download_win9x():
         )
         download_tar(url=url, dest_name=compiler)
 
+    download_zip(url="https://github.com/itsmattkc/MSVC400/archive/refs/heads/master.zip", dest_name="msvc40")
+    download_zip(url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip", dest_name="msvc42")
 
 def main(args):
     def should_download(platform):
