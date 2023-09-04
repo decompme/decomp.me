@@ -979,10 +979,12 @@ def download_win9x():
         url="https://github.com/itsmattkc/MSVC400/archive/refs/heads/master.zip",
         dest_name="msvc40",
     )
+    shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
     download_zip(
         url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip",
         dest_name="msvc42",
     )
+    shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
 
 
 def main(args):

@@ -981,13 +981,13 @@ MWCC_40_1051 = MWCCCompiler(
 CL_WIN = '${WINE} "${COMPILER_DIR}"/Bin/CL.EXE /c /nologo /IZ:"${COMPILER_DIR}"/Include/ ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC40 = MSVCCompiler(
-    id="msvc40",
+    id="msvc4.0",
     platform=WIN9X,
     cc=CL_WIN,
 )
 
 MSVC42 = MSVCCompiler(
-    id="msvc42",
+    id="msvc4.2",
     platform=WIN9X,
     cc=CL_WIN,
 )
@@ -1760,10 +1760,7 @@ _all_presets = [
         "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
     ),
     # Windows
-    Preset("LEGO Island",
-        MSVC42,
-        "/W3 /GX /O2"
-    )
+    Preset("LEGO Island", MSVC42, "/W3 /GX /O2"),
 ]
 
 
