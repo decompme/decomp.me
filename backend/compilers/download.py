@@ -982,7 +982,7 @@ def download_win9x():
     )
     shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
     shutil.move(COMPILERS_DIR / "msvc4.0/BIN", COMPILERS_DIR / "msvc4.0/Bin")
-    os.system("chmod -R +x " + str(COMPILERS_DIR / "msvc4.0" / "Bin"))
+    set_x(COMPILERS_DIR / "msvc4.0/Bin/CL.EXE")
 
     download_zip(
         url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip",
@@ -990,7 +990,7 @@ def download_win9x():
     )
     shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
     shutil.move(COMPILERS_DIR / "msvc4.2/bin", COMPILERS_DIR / "msvc4.2/Bin")
-    os.system("chmod -R +x " + str(COMPILERS_DIR / "msvc4.2" / "Bin"))
+    set_x(COMPILERS_DIR / "msvc4.2/Bin/CL.EXE")
 
 
 def main(args):
