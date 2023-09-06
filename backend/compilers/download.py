@@ -975,6 +975,23 @@ def download_win9x():
         )
         download_tar(url=url, dest_name=compiler)
 
+    # For the repo these compilers are stored in they need a few location adjustments for neatness, and permissions set to executable
+    download_zip(
+        url="https://github.com/itsmattkc/MSVC400/archive/refs/heads/master.zip",
+        dest_name="msvc40",
+    )
+    shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
+    shutil.move(COMPILERS_DIR / "msvc4.0/BIN", COMPILERS_DIR / "msvc4.0/Bin")
+    set_x(COMPILERS_DIR / "msvc4.0/Bin/CL.EXE")
+
+    download_zip(
+        url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip",
+        dest_name="msvc42",
+    )
+    shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
+    shutil.move(COMPILERS_DIR / "msvc4.2/bin", COMPILERS_DIR / "msvc4.2/Bin")
+    set_x(COMPILERS_DIR / "msvc4.2/Bin/CL.EXE")
+
 
 def main(args):
     def should_download(platform):
