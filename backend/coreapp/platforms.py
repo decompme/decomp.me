@@ -59,7 +59,7 @@ WIN9X = Platform(
     name="Windows 9x",
     description="x86 (32bit)",
     arch="i686",
-    assemble_cmd='i386-pc-msdosdjgpp-as --32 -o "$OUTPUT" "$INPUT"',
+    assemble_cmd='i386-pc-msdosdjgpp-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$INPUT"',
     objdump_cmd="i386-pc-msdosdjgpp-objdump",
     nm_cmd="i386-pc-msdosdjgpp-nm",
     asm_prelude="",
