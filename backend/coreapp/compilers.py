@@ -1033,6 +1033,12 @@ MSVC70 = MSVCCompiler(
     platform=WIN9X,
     cc=CL_WIN,
 )
+
+MSVC71 = MSVCCompiler(
+    id="msvc7.1",
+    platform=WIN9X,
+    cc=CL_WIN,
+)
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1243,6 +1249,7 @@ _all_compilers: List[Compiler] = [
     MSVC65PP,
     MSVC66,
     MSVC70,
+    MSVC71,
     # Watcom, DOS and Win9x
     WATCOM_105_C,
     WATCOM_105_CPP,
