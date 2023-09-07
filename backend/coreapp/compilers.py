@@ -1768,6 +1768,8 @@ _all_presets = [
     ),
     # Windows
     Preset("LEGO Island", MSVC42, "/W3 /GX /O2"),
+    Preset("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
+    Preset("Touhou 6 (C++)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1 /TP"),
 ]
 
 
