@@ -1767,7 +1767,7 @@ _all_presets = [
         "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
     ),
     # Windows
-    Preset("LEGO Island", MSVC42, "/W3 /GX /O2"),
+    Preset("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
     Preset("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
     Preset("Touhou 6 (C++)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1 /TP"),
 ]
