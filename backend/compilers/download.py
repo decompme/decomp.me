@@ -990,7 +990,9 @@ def download_win9x():
         dest_name="msvc40",
     )
 
-    if os.path.exists(COMPILERS_DIR / "MSVC400-master"):
+    if os.path.exists(COMPILERS_DIR / "MSVC400-master") and not os.path.exists(
+        COMPILERS_DIR / "msvc4.0/MSVC400-master"
+    ):
         shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
     if os.path.exists(COMPILERS_DIR / "msvc4.0/BIN"):
         shutil.move(COMPILERS_DIR / "msvc4.0/BIN", COMPILERS_DIR / "msvc4.0/Bin")
@@ -1001,7 +1003,9 @@ def download_win9x():
         dest_name="msvc42",
     )
 
-    if os.path.exists(COMPILERS_DIR / "MSVC420-master"):
+    if os.path.exists(COMPILERS_DIR / "MSVC420-master") and not os.path.exists(
+        COMPILERS_DIR / "msvc4.2/MSVC420-master"
+    ):
         shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
     if os.path.exists(COMPILERS_DIR / "msvc4.2/bin"):
         shutil.move(COMPILERS_DIR / "msvc4.2/bin", COMPILERS_DIR / "msvc4.2/Bin")
