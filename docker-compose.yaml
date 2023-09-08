@@ -42,7 +42,7 @@ services:
     tmpfs:
     # Use a separate tmpfs to prevent a rogue jailed process
     # from filling /tmp on the parent container
-    - /sandbox/tmp:uid=1000,gid=1000,size=64M,mode=0700
+    - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
     build: frontend
     environment:

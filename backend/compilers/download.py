@@ -973,7 +973,16 @@ def download_win9x():
             + compiler
             + ".tar.gz"
         )
-        download_tar(url=url, dest_name=compiler)
+        # This is actually msvc 7.1.
+        if compiler == "msvc7.0":
+            download_tar(url=url, dest_name="msvc7.1")
+
+    # Download Visual C/C++ 2002 (MSVC 7.0). Note that this toolchain, unlike
+    # the others, also contains the PlatformSDK and DirectX 8
+    download_tar(
+        url="https://github.com/roblabla/MSVC-7.0-Portable/releases/download/release/msvc7.0.tar.gz",
+        dest_name="msvc7.0",
+    )
 
     # For the repo these compilers are stored in they need a few location adjustments for neatness, and permissions set to executable
     download_zip(
