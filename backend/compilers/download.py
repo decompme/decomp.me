@@ -963,11 +963,6 @@ def download_win9x():
         "msvc6.6",
         "msvc7.0",
     ]:
-        compiler_path = COMPILERS_DIR / compiler
-        if compiler_path.exists():
-            print(f"{compiler_path} already exists, skipping")
-            continue
-
         url = (
             "https://github.com/OmniBlade/decomp.me/releases/download/msvcwin9x/"
             + compiler
@@ -975,7 +970,14 @@ def download_win9x():
         )
         # This is actually msvc 7.1.
         if compiler == "msvc7.0":
-            download_tar(url=url, dest_name="msvc7.1")
+            compiler = "msvc7.1"
+
+        compiler_path = COMPILERS_DIR / compiler
+        if compiler_path.exists():
+            print(f"{compiler_path} already exists, skipping")
+            continue
+
+        download_tar(url=url, dest_name=compiler)
 
     # Download Visual C/C++ 2002 (MSVC 7.0). Note that this toolchain, unlike
     # the others, also contains the PlatformSDK and DirectX 8
