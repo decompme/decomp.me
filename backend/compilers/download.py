@@ -989,7 +989,9 @@ def download_win9x():
         url="https://github.com/itsmattkc/MSVC400/archive/refs/heads/master.zip",
         dest_name="msvc40",
     )
-    shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
+
+    if os.path.exists(COMPILERS_DIR / "MSVC400-master"):
+        shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
     if os.path.exists(COMPILERS_DIR / "msvc4.0/BIN"):
         shutil.move(COMPILERS_DIR / "msvc4.0/BIN", COMPILERS_DIR / "msvc4.0/Bin")
     set_x(COMPILERS_DIR / "msvc4.0/Bin/CL.EXE")
@@ -998,7 +1000,9 @@ def download_win9x():
         url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip",
         dest_name="msvc42",
     )
-    shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
+
+    if os.path.exists(COMPILERS_DIR / "MSVC420-master"):
+        shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
     if os.path.exists(COMPILERS_DIR / "msvc4.2/bin"):
         shutil.move(COMPILERS_DIR / "msvc4.2/bin", COMPILERS_DIR / "msvc4.2/Bin")
     set_x(COMPILERS_DIR / "msvc4.2/Bin/CL.EXE")
