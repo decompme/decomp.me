@@ -1,11 +1,13 @@
+import json
 import logging
 
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import List
+from typing import Any, List
 
 from .profile import Profile
+from ..libraries import Library
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,27 @@ class CompilerConfig(models.Model):
     diff_flags = models.JSONField(default=list)
 
 
+class LibrariesField(models.JSONField):
+    def __init__(self, **kwargs: Any):
+        class MyEncoder(json.JSONEncoder):
+            def default(self, obj: Any) -> str:
+                if isinstance(obj, Library):
+                    obj = {"name": obj.name, "version": obj.version}
+                return super().default(obj)
+
+        return super().__init__(encoder=MyEncoder, **kwargs)
+
+    def to_python(self, value: Any) -> list[Library]:
+        res = super().to_python(value)
+        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+
+    def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
+        # We ignore the type error here as this is a bug in the django stubs.
+        # CC: https://github.com/typeddjango/django-stubs/issues/934
+        res = super().from_db_value(*args, **kwargs)  # type: ignore
+        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=1024, default="Untitled", blank=False)
@@ -67,6 +90,7 @@ class Scratch(models.Model):
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     match_override = models.BooleanField(default=False)
+    libraries = LibrariesField(default=list)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
     project_function = models.ForeignKey(

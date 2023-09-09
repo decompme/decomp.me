@@ -68,6 +68,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/proc",
             "--bindmount", f"{self.path}:/var/tmp",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
+            "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",

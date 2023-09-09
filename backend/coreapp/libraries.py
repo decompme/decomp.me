@@ -14,16 +14,29 @@ class Library:
 
     @property
     def path(self) -> Path:
-        return LIBRARY_BASE_PATH / name / version
+        return LIBRARY_BASE_PATH / self.name / self.version
 
-    def available(self) -> bool:
-        return self.path.exists()
+    @property
+    def include_path(self) -> Path:
+        return self.path / "include"
+
+
+@dataclass(frozen=True)
+class LibraryVersions:
+    name: str
+    supported_versions: list[str]
+
+    @property
+    def path(self) -> Path:
+        return LIBRARY_BASE_PATH / self.name
+
 
 @cache
-def available_libraries() -> list[Library]:
+def available_libraries() -> list[LibraryVersions]:
     results = []
 
     for lib_dir in LIBRARY_BASE_PATH.iterdir():
+        versions = []
         if not lib_dir.is_dir():
             continue
         for version_dir in lib_dir.iterdir():
@@ -32,8 +45,14 @@ def available_libraries() -> list[Library]:
             if not (version_dir / "include").exists():
                 continue
 
-            results.append(Library(
-                name=lib_dir.name,
-                version=version_dir.name,
-            ))
+            versions.append(version_dir.name)
+
+        if len(versions) > 0:
+            results.append(
+                LibraryVersions(
+                    name=lib_dir.name,
+                    supported_versions=versions,
+                )
+            )
+
     return results

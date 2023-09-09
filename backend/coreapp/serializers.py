@@ -18,6 +18,7 @@ from .models.scratch import CompilerConfig, Scratch
 
 from .flags import LanguageFlagSet
 from . import compilers
+from .libraries import Library
 
 
 def serialize_profile(
@@ -135,6 +136,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     rom_address = serializers.IntegerField(required=False)
 
 
+class LibrarySerializer(serializers.Serializer[Library]):
+    name = serializers.CharField()
+    version = serializers.CharField()
+
+
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
     url = UrlField()
@@ -146,6 +152,7 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     project = serializers.SerializerMethodField()
     project_function = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
 
     class Meta:
         model = Scratch
@@ -243,6 +250,7 @@ class TerseScratchSerializer(ScratchSerializer):
             "project_function",
             "parent",
             "preset",
+            "libraries",
         ]
 
 

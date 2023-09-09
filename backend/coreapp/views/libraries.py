@@ -16,7 +16,7 @@ class LibrariesDetail(APIView):
     @staticmethod
     def libraries_json() -> list[dict[str, object]]:
         return [
-            { 'name': l.name, 'version': l.version }
+            {"name": l.name, "supported_versions": l.supported_versions}
             for l in libraries.available_libraries()
         ]
 

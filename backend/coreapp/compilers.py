@@ -53,6 +53,7 @@ class Compiler:
     cc: str
     platform: Platform
     flags: ClassVar[Flags]
+    library_include_flag: str
     base_compiler: Optional["Compiler"] = None
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
@@ -96,6 +97,7 @@ class Preset:
 @dataclass(frozen=True)
 class DummyCompiler(Compiler):
     flags: ClassVar[Flags] = []
+    library_include_flag: str = ""
 
     def available(self) -> bool:
         return settings.DUMMY_COMPILER
@@ -110,17 +112,20 @@ class DummyLongRunningCompiler(DummyCompiler):
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
+    library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class ArmccCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
+    library_include_flag: str = "-J"
 
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
     is_gcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_GCC_FLAGS
+    library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
@@ -137,22 +142,26 @@ class GCCSaturnCompiler(GCCCompiler):
 class IDOCompiler(Compiler):
     is_ido: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_IDO_FLAGS
+    library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     is_mwcc: ClassVar[bool] = True
     flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+    library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MSVCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
+    library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
+    library_include_flag: str = "/IZ:"
 
 
 def from_id(compiler_id: str) -> Compiler:

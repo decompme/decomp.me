@@ -26,6 +26,7 @@ from ..decorators.django import condition
 
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..libraries import Library
 from ..middleware import Request
 from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction
@@ -65,6 +66,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             scratch.source_code,
             scratch.context,
             scratch.diff_label,
+            tuple(scratch.libraries),
         )
     except CompilationError as e:
         return CompilationResult(b"", str(e))
@@ -371,6 +373,12 @@ class ScratchViewSet(
                 scratch.source_code = request.data["source_code"]
             if "context" in request.data:
                 scratch.context = request.data["context"]
+            if "libraries" in request.data:
+                libs = [
+                    Library(name=data["name"], version=data["version"])
+                    for data in request.data["libraries"]
+                ]
+                scratch.libraries = libs
 
         compilation = compile_scratch(scratch)
         diff = diff_compilation(scratch, compilation)
