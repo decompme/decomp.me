@@ -380,7 +380,7 @@ def download_switch():
     # Set up musl
     download_zip(
         url="https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip",
-        platform_id="n64",
+        platform_id="switch",
         log_name="musl",
     )
     musl_name = "botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba"
