@@ -1461,7 +1461,7 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
-        "Pok?mon Puzzle League",
+        "Pokémon Puzzle League",
         GCC272KMC,
         "-O2 -mips3 -g",
         diff_flags=["-Mreg-names=32"],
@@ -1745,12 +1745,12 @@ _all_presets = [
     ),
     # NDS
     Preset(
-        "Pok?mon Diamond / Pearl",
+        "Pokémon Diamond / Pearl",
         MWCC_30_123,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     Preset(
-        "Pok?mon HeartGold / SoulSilver",
+        "Pokémon HeartGold / SoulSilver",
         MWCC_30_137,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
