@@ -61,7 +61,7 @@ COPY --from=ghcr.io/decompals/wibo:0.4.2 /usr/local/sbin/wibo /usr/bin/
 # windows compilers need i386 wine
 ARG ENABLE_NDS_SUPPORT
 ARG ENABLE_PS1_SUPPORT
-ARG ENABLE_WII_GC_SUPPORT
+ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
@@ -69,7 +69,7 @@ RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
+       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
@@ -100,7 +100,7 @@ ARG ENABLE_N64_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 
 ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
-ENV ENABLE_WII_GC_SUPPORT=${ENABLE_WII_GC_SUPPORT}
+ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
 ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
 ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
@@ -131,7 +131,7 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \

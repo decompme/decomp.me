@@ -8,7 +8,6 @@ import sys
 import tarfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 from zipfile import ZipFile
 
 import requests
@@ -86,21 +85,28 @@ def download_file(url: str, log_name: str, dest_path: Path):
 
 # Used for compiler packages
 def download_file_wrapper(
-    url: str, dl_name: str, dest_name: str, create_subdir: bool, log_name: str
+    url: str,
+    dl_name: str,
+    dest_name: str,
+    platform_id: str,
+    create_subdir: bool,
+    log_name: str,
 ):
-    download_file(url=url, log_name=log_name, dest_path=DOWNLOAD_CACHE / dl_name)
+    download_file(
+        url=url, log_name=log_name, dest_path=DOWNLOAD_CACHE / platform_id / dl_name
+    )
 
+    dest_path = COMPILERS_DIR / platform_id
     if create_subdir:
-        dest_path = COMPILERS_DIR / dest_name
-        dest_path.mkdir(exist_ok=True)
-    else:
-        dest_path = COMPILERS_DIR
+        dest_path = COMPILERS_DIR / platform_id / dest_name
 
+    dest_path.mkdir(exist_ok=True)
     return dest_path
 
 
 def download_tar(
     url: str,
+    platform_id: str,
     mode: str = "r:gz",
     dl_name: str = "",
     dest_name: str = "",
@@ -119,7 +125,9 @@ def download_tar(
     if not log_name:
         log_name = dest_name
 
-    dest_path = download_file_wrapper(url, dl_name, dest_name, create_subdir, log_name)
+    dest_path = download_file_wrapper(
+        url, dl_name, dest_name, platform_id, create_subdir, log_name
+    )
 
     with tarfile.open(DOWNLOAD_CACHE / dl_name, mode=mode) as f:
         for member in tqdm(
@@ -132,6 +140,7 @@ def download_tar(
 
 def download_zip(
     url: str,
+    platform_id: str,
     dl_name: str = "",
     dest_name: str = "",
     create_subdir: bool = False,
@@ -149,7 +158,9 @@ def download_zip(
     if not log_name:
         log_name = dest_name
 
-    dest_path = download_file_wrapper(url, dl_name, dest_name, create_subdir, log_name)
+    dest_path = download_file_wrapper(
+        url, dl_name, dest_name, platform_id, create_subdir, log_name
+    )
 
     with ZipFile(file=DOWNLOAD_CACHE / dl_name) as f:
         for file in tqdm(
@@ -164,49 +175,56 @@ def set_x(file: Path) -> None:
     file.chmod(file.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-def download_ppc_darwin():
+def download_macosx():
     if host_os != LINUX:
         print("MAC OS X cross compiler unsupported on " + host_os.name)
         return
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5370.tar.gz",
         dest_name="gcc-5370",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5370-cpp.tar.gz",
         dest_name="gcc-5370-cpp",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5026.tar.gz",
         dest_name="gcc-5026",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5026-cpp.tar.gz",
         dest_name="gcc-5026-cpp",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5363.tar.gz",
         dest_name="gcc-5363",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
+        platform_id="macosx",
         dl_name="gcc-5363-cpp.tar.gz",
         dest_name="gcc-5363-cpp",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
+        platform_id="macosx",
         dl_name="gcc3-1041.tar.gz",
-        dest_name="gcc3-1041",
+        dest_name="macosx/gcc3-1041",
     )
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/d7c6fc639310b938fa519e68a8f8d4909acba2ad/convert_gas_syntax.py",
         log_name="convert_gas_syntax.py",
-        dest_path=DOWNLOAD_CACHE / "convert_gas_syntax.py",
+        dest_path=DOWNLOAD_CACHE / "macosx" / "convert_gas_syntax.py",
     )
     for compiler in [
         "gcc-5370",
@@ -219,18 +237,19 @@ def download_ppc_darwin():
     ]:
         shutil.copy(
             DOWNLOAD_CACHE / "convert_gas_syntax.py",
-            COMPILERS_DIR / compiler / "convert_gas_syntax.py",
+            COMPILERS_DIR / "macosx" / compiler / "convert_gas_syntax.py",
         )
 
 
-def download_codewarrior():
+def download_macos9():
     download_zip(
         url="https://github.com/simdecomp/sims1_mac_decomp/files/8766562/MWCPPC_COMPILERS.zip",
+        platform_id="macos9",
         dl_name="codewarrior_compilers.zip",
         dest_name="codewarrior",
         create_subdir=True,
     )
-    compiler_dir = COMPILERS_DIR / "codewarrior" / "compilers"
+    compiler_dir = COMPILERS_DIR / "macos9" / "codewarrior" / "compilers"
     for ver in ["Pro5", "Pro6"]:
         lowercase_lmgr = compiler_dir / ver / "lmgr326b.dll"
         if lowercase_lmgr.exists():
@@ -244,8 +263,8 @@ def download_codewarrior():
         set_x(compiler_dir / ver / "MWLinkPPC.exe")
 
     try:
-        shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "mwcppc_23")
-        shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "mwcppc_24")
+        shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "macos9" / "mwcppc_23")
+        shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "macos9" / "mwcppc_24")
     except shutil.Error:
         pass
 
@@ -256,12 +275,16 @@ def download_gba():
         return
 
     def download_agbcc(url: str, dest: str):
-        dest_dir = COMPILERS_DIR / dest
+        dest_dir = COMPILERS_DIR / "gba" / dest
         if dest_dir.exists():
             print(f"{dest} already exists, skipping")
             return
 
-        download_tar(url=url, dest_name=dest)
+        download_tar(
+            url=url,
+            platform_id="gba",
+            dest_name=dest,
+        )
 
     download_agbcc(
         "https://github.com/pret/agbcc/releases/download/release/agbcc.tar.gz",
@@ -275,7 +298,7 @@ def download_gba():
 
 def download_switch():
     def dest_for_version(version: str) -> Path:
-        return COMPILERS_DIR / f"clang-{version}"
+        return COMPILERS_DIR / "switch" / f"clang-{version}"
 
     @dataclass
     class Version:
@@ -328,15 +351,23 @@ def download_switch():
         package_name = f"clang+llvm-{version_str}-x86_64-{clang_package_name}"
         url = f"https://releases.llvm.org/{version_str}/{package_name}.tar.xz"
 
-        download_tar(url=url, mode="r:xz", log_name=log_name, create_subdir=False)
+        download_tar(
+            url=url,
+            platform_id="switch",
+            mode="r:xz",
+            log_name=log_name,
+            create_subdir=False,
+        )
 
         # Somehow the MacOS tar extracts to a directory with a different name, so we have to find it again
         if host_os == MACOS:
             package_name = next(
-                COMPILERS_DIR.glob(f"clang+llvm-{version_str}-x86_64-*" + os.path.sep)
+                (COMPILERS_DIR / "switch").glob(
+                    f"clang+llvm-{version_str}-x86_64-*" + os.path.sep
+                )
             ).name
 
-        shutil.move(COMPILERS_DIR / package_name, dest_dir)
+        shutil.move(COMPILERS_DIR / "switch" / package_name, dest_dir)
 
         # 3.9.1 requires ld.lld and doesn't have it, so we copy it from 4.0.1
         if version_str == "3.9.1":
@@ -347,10 +378,11 @@ def download_switch():
     # Set up musl
     download_zip(
         url="https://github.com/open-ead/botw-lib-musl/archive/25ed8669943bee65a650700d340e451eda2a26ba.zip",
+        platform_id="n64",
         log_name="musl",
     )
     musl_name = "botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba"
-    musl_dest = COMPILERS_DIR / musl_name
+    musl_dest = COMPILERS_DIR / "switch" / musl_name
     for version_str in botw_lib_musl_versions:
         ver_dest = dest_for_version(version_str)
         if ver_dest.exists():
@@ -360,16 +392,18 @@ def download_switch():
 
 def download_n64():
     def download_gcc(gcc_url: str, binutils_url, dest: str):
-        dest_path = COMPILERS_DIR / dest
+        dest_path = COMPILERS_DIR / "n64" / dest
         if dest_path.exists():
             print(f"{dest} already exists, skipping")
         else:
             download_tar(
                 url=gcc_url,
+                platform_id="n64",
                 dest_name=dest,
             )
             download_tar(
                 url=binutils_url,
+                platform_id="n64",
                 dl_name=f"{dest}-binutils",
                 dest_name=dest,
             )
@@ -391,53 +425,57 @@ def download_n64():
     # IDO
     ido_versions = ["5.3", "7.1"]
     for version in ido_versions:
-        dest = COMPILERS_DIR / f"ido{version}"
+        dest = COMPILERS_DIR / "n64" / f"ido{version}"
         if dest.exists():
             print(f"ido{version} already exists, skipping")
         else:
             download_tar(
                 url=f"https://github.com/ethteck/ido-static-recomp/releases/download/v0.5/ido-{version}-recomp-{host_os.ido_pkg}.tar.gz",
+                platform_id="n64",
                 dest_name=f"ido{version}",
             )
 
-    dest = COMPILERS_DIR / "ido6.0"
+    dest = COMPILERS_DIR / "n64" / "ido6.0"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido6.0.tar.xz",
+            platform_id="n64",
             mode="r:xz",
             dl_name="ido6.0" + ".tar.xz",
             dest_name="ido6.0",
         )
 
-    dest = COMPILERS_DIR / "ido5.3_c++"
+    dest = COMPILERS_DIR / "n64" / "ido5.3_c++"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/ido5.3_c++.tar.xz",
+            platform_id="n64",
             mode="r:xz",
             dl_name="ido5.3_c++" + ".tar.xz",
             dest_name="ido5.3_c++",
         )
 
-    dest = COMPILERS_DIR / "MipsPro7.4.4"
+    dest = COMPILERS_DIR / "n64" / "MipsPro7.4.4"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/mipspro7.4.4.tar.xz",
+            platform_id="n64",
             mode="r:xz",
             dl_name="mipspro7.4.4" + ".tar.xz",
             dest_name="MipsPro7.4.4",
         )
 
     # SN
-    dest = COMPILERS_DIR / "gcc2.7.2sn"
+    dest = COMPILERS_DIR / "n64" / "gcc2.7.2sn"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
@@ -461,13 +499,14 @@ def download_n64():
         set_x(dest / "psyq-obj-parser")
 
     # SN
-    dest = COMPILERS_DIR / "gcc2.7.2snew"
+    dest = COMPILERS_DIR / "n64" / "gcc2.7.2snew"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/decompals/SN64-gcc/releases/download/gcc-2.7.2-970404/SN64-gcc-2.7.2-970404-linux.tar.gz",
+            platform_id="n64",
             dest_name="gcc2.7.2snew",
         )
         download_file(
@@ -477,7 +516,7 @@ def download_n64():
         )
 
     # SN
-    dest = COMPILERS_DIR / "gcc2.8.1sn"
+    dest = COMPILERS_DIR / "n64" / "gcc2.8.1sn"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
@@ -506,24 +545,26 @@ def download_n64():
         set_x(dest / "psyq-obj-parser")
 
     # iQue
-    dest = COMPILERS_DIR / "egcs_1.1.2-4"
+    dest = COMPILERS_DIR / "n64" / "egcs_1.1.2-4"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/AngheloAlf/egcs_1.1.2-4/releases/download/latest/egcs_1.1.2-4.tar.gz",
+            platform_id="n64",
             dest_name="egcs_1.1.2-4",
         )
 
     # libdragon
-    dest = COMPILERS_DIR / "gcc4.4.0-mips64-elf"
+    dest = COMPILERS_DIR / "n64" / "gcc4.4.0-mips64-elf"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
         dest.mkdir()
         download_tar(
             url="https://github.com/devwizard64/gcc4.4.0-mips64-elf/releases/download/latest/gcc4.4.0-mips64-elf.tar.gz",
+            platform_id="n64",
             dest_name="gcc4.4.0-mips64-elf",
         )
 
@@ -533,35 +574,41 @@ def download_ps1():
         print("ps1 compilers unsupported on " + host_os.name)
         return
 
-    compilers_path = COMPILERS_DIR / "psyq-compilers"
+    compilers_path = COMPILERS_DIR / "ps1" / "psyq-compilers"
 
     download_tar(
         url="https://github.com/Xeeynamo/wine-psyq/releases/download/psyq-binaries/psyq-msdos.tar.gz",
+        platform_id="ps1",
         dest_name="psyq-msdos-compilers",
     )
 
     download_tar(
         url="https://github.com/mkst/esa/releases/download/psyq-binaries/psyq-compilers.tar.gz",
+        platform_id="ps1",
         dest_name="psyq-compilers",
     )
 
     download_file(
         url="https://github.com/mkst/pcsx-redux/releases/download/rodata-rodata/psyq-obj-parser",
+        platform_id="ps1",
         log_name="psyq-obj-parser",
         dest_path=compilers_path / "psyq",
     )
 
     # transfer MS-DOS compilers into the same directory of their Win32 counterpart
     shutil.move(
-        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.3", COMPILERS_DIR / "psyq-compilers"
+        COMPILERS_DIR / "ps1" / "psyq-msdos-compilers/psyq3.3",
+        COMPILERS_DIR / "ps1" / "psyq-compilers",
     )
     shutil.move(
-        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.5", COMPILERS_DIR / "psyq-compilers"
+        COMPILERS_DIR / "ps1" / "psyq-msdos-compilers/psyq3.5",
+        COMPILERS_DIR / "ps1" / "psyq-compilers",
     )
     shutil.move(
-        COMPILERS_DIR / "psyq-msdos-compilers/psyq3.6", COMPILERS_DIR / "psyq-compilers"
+        COMPILERS_DIR / "ps1" / "psyq-msdos-compilers/psyq3.6",
+        COMPILERS_DIR / "ps1" / "psyq-compilers",
     )
-    shutil.rmtree(COMPILERS_DIR / "psyq-msdos-compilers/")
+    shutil.rmtree(COMPILERS_DIR / "ps1" / "psyq-msdos-compilers/")
 
     psyq_to_gcc = {
         "3.3": "2.6.0",
@@ -575,9 +622,9 @@ def download_ps1():
     }
 
     for version in psyq_to_gcc.keys():
-        dest = COMPILERS_DIR / f"psyq{version}"
+        dest = COMPILERS_DIR / "ps1" / f"psyq{version}"
         if not dest.exists():
-            shutil.move(compilers_path / f"psyq{version}", COMPILERS_DIR)
+            shutil.move(compilers_path / f"psyq{version}", COMPILERS_DIR / "ps1")
         psyq_obj_parser = dest / "psyq-obj-parser"
         shutil.copy(
             compilers_path / "psyq",
@@ -620,6 +667,7 @@ def download_ps1():
     maspsx_hash = "44f8a152e5b49e56640fd3cfc20d6bf428e1205e"
     download_zip(
         url=f"https://github.com/mkst/maspsx/archive/{maspsx_hash}.zip",
+        platform_id="ps1",
         dl_name="maspsx",
         dest_name=compilers_path,
         create_subdir=True,
@@ -633,12 +681,13 @@ def download_ps1():
 
     for gcc_name, url in old_gcc_urls.items():
         gcc_id = old_gcc_ids[gcc_name]
-        gcc_dir = COMPILERS_DIR / f"{gcc_id}"
+        gcc_dir = COMPILERS_DIR / "ps1" / f"{gcc_id}"
         if gcc_dir.exists():
             print(f"{gcc_dir} already exists, skipping download.")
         else:
             download_tar(
                 url=url,
+                platform_id="ps1",
                 dl_name=f"{gcc_name}.tar.gz",
                 dest_name=f"{gcc_id}",
             )
@@ -672,24 +721,25 @@ def download_saturn():
         print("saturn compilers unsupported on " + host_os.name)
         return
 
-    src = COMPILERS_DIR / "saturn-compilers-main"
+    src = COMPILERS_DIR / "saturn" / "saturn-compilers-main"
     if src.is_dir():
         shutil.rmtree(src)
 
-    dest = COMPILERS_DIR / "cygnus-2.7-96Q3"
+    dest = COMPILERS_DIR / "saturn" / "cygnus-2.7-96Q3"
     if dest.is_dir():
         shutil.rmtree(dest)
 
     download_zip(
-        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip"
+        url="https://github.com/sozud/saturn-compilers/archive/refs/heads/main.zip",
+        platform_id="saturn",
     )
 
     shutil.move(
-        f"{COMPILERS_DIR}/saturn-compilers-main/cygnus-2.7-96Q3-bin",
-        f"{COMPILERS_DIR}/cygnus-2.7-96Q3",
+        f"{COMPILERS_DIR}/saturn/saturn-compilers-main/cygnus-2.7-96Q3-bin",
+        f"{COMPILERS_DIR}/saturn/cygnus-2.7-96Q3",
     )
 
-    shutil.rmtree(f"{COMPILERS_DIR}/saturn-compilers-main")
+    shutil.rmtree(f"{COMPILERS_DIR}/saturn/saturn-compilers-main")
 
 
 def download_ps2():
@@ -709,6 +759,7 @@ def download_ps2():
     for name, url in ps2_compilers.items():
         download_tar(
             url=url,
+            platform_id="ps2",
             mode="r:xz",
             dl_name=name + ".tar.xz",
             dest_name=name,
@@ -718,6 +769,7 @@ def download_ps2():
     # Extra compiler collection
     download_tar(
         url="https://cdn.discordapp.com/attachments/1067192766918037536/1120445708516995118/ps2_compilers.tar.xz",
+        platform_id="ps2",
         mode="r:xz",
         dl_name="ps2_compilers.tar.xz",
         create_subdir=False,
@@ -759,14 +811,15 @@ def download_nds():
 
     download_zip(
         url="https://cdn.discordapp.com/attachments/698589325620936736/845499146982129684/mwccarm.zip",
+        platform_id="nds_arm9",
     )
 
     # Organize dirs, copy license
     for group_id, group in compiler_groups.items():
-        mwccarm_dir = COMPILERS_DIR / "mwccarm" / group_id
-        license_path = COMPILERS_DIR / "mwccarm" / "license.dat"
+        mwccarm_dir = COMPILERS_DIR / "nds_arm9" / "mwccarm" / group_id
+        license_path = COMPILERS_DIR / "nds_arm9" / "mwccarm" / "license.dat"
         for ver, compiler_id in group.items():
-            compiler_dir = COMPILERS_DIR / compiler_id
+            compiler_dir = COMPILERS_DIR / "nds_arm9" / compiler_id
             if not compiler_dir.exists():
                 shutil.move(mwccarm_dir / ver, compiler_dir)
 
@@ -779,10 +832,10 @@ def download_nds():
 
             set_x(compiler_dir / "mwccarm.exe")
 
-    shutil.rmtree(COMPILERS_DIR / "mwccarm")
+    shutil.rmtree(COMPILERS_DIR / "nds_arm9" / "mwccarm")
 
 
-def download_wii_gc():
+def download_gc_wii():
     compiler_groups = {
         "GC": {
             "1.0": "mwcc_233_144",
@@ -814,14 +867,15 @@ def download_wii_gc():
     }
 
     download_zip(
-        url="https://cdn.discordapp.com/attachments/727918646525165659/1129759991696457728/GC_WII_COMPILERS.zip"
+        url="https://cdn.discordapp.com/attachments/727918646525165659/1129759991696457728/GC_WII_COMPILERS.zip",
+        platform_id="gc_wii",
     )
 
     for group_id, group in compiler_groups.items():
         for ver, compiler_id in group.items():
-            compiler_dir = COMPILERS_DIR / compiler_id
+            compiler_dir = COMPILERS_DIR / "gc_wii" / compiler_id
             if not compiler_dir.exists():
-                shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
+                shutil.move(COMPILERS_DIR / "gc_wii" / group_id / ver, compiler_dir)
 
             # Rename dll to uppercase - WSL is case sensitive without wine
             lowercase_lmgr = compiler_dir / "lmgr326b.dll"
@@ -836,7 +890,7 @@ def download_wii_gc():
 
             (compiler_dir / "license.dat").touch()
 
-        shutil.rmtree(COMPILERS_DIR / group_id)
+        shutil.rmtree(COMPILERS_DIR / "gc_wii" / group_id)
 
     # copy single compilers over
     for ver, info in single_compilers.items():
@@ -844,13 +898,16 @@ def download_wii_gc():
         url = info[1]
 
         # download zip to COMPILERS_DIR
-        download_zip(url=url)
+        download_zip(
+            url=url,
+            platform_id="gc_wii",
+        )
 
-        compiler_dir = COMPILERS_DIR / compiler_id
+        compiler_dir = COMPILERS_DIR / "gc_wii" / compiler_id
 
         # move version dir to compiler dir
         if not compiler_dir.exists():
-            shutil.move(COMPILERS_DIR / ver, compiler_dir)
+            shutil.move(COMPILERS_DIR / "gc_wii" / ver, compiler_dir)
 
         # Rename dll to uppercase - WSL is case sensitive without wine
         lowercase_lmgr = compiler_dir / "lmgr326b.dll"
@@ -867,21 +924,24 @@ def download_wii_gc():
 
     # copy in clean 1.2.5 for frank
     shutil.copy(
-        COMPILERS_DIR / "mwcc_233_163" / "mwcceppc.exe",
-        COMPILERS_DIR / "mwcc_233_163e" / "mwcceppc.125.exe",
+        COMPILERS_DIR / "gc_wii" / "mwcc_233_163" / "mwcceppc.exe",
+        COMPILERS_DIR / "gc_wii" / "mwcc_233_163e" / "mwcceppc.125.exe",
     )
     download_file(
         url="https://raw.githubusercontent.com/doldecomp/melee/master/tools/frank.py",
         log_name="frank",
-        dest_path=COMPILERS_DIR / "mwcc_233_163e" / "frank.py",
+        dest_path=COMPILERS_DIR / "gc_wii" / "mwcc_233_163e" / "frank.py",
     )
 
     # copy contents of _142 to _127 to prepare for patched version
-    if not os.path.exists(COMPILERS_DIR / "mwcc_42_127"):
-        shutil.copytree(COMPILERS_DIR / "mwcc_42_142", COMPILERS_DIR / "mwcc_42_127")
-        os.remove(COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe")
+    if not os.path.exists(COMPILERS_DIR / "gc_wii" / "mwcc_42_127"):
+        shutil.copytree(
+            COMPILERS_DIR / "gc_wii" / "mwcc_42_142",
+            COMPILERS_DIR / "gc_wii" / "mwcc_42_127",
+        )
+        os.remove(COMPILERS_DIR / "gc_wii" / "mwcc_42_127" / "mwcceppc.exe")
 
-    exe_path = COMPILERS_DIR / "mwcc_42_127" / "mwcceppc.exe"
+    exe_path = COMPILERS_DIR / "gc_wii" / "mwcc_42_127" / "mwcceppc.exe"
     download_file(
         url="https://cdn.discordapp.com/attachments/804212941054279722/954854566304833567/mwcceppc_PATCHED.exe",
         log_name="mwcc_42_127",
@@ -890,7 +950,7 @@ def download_wii_gc():
     set_x(exe_path)
 
 
-def download_3ds():
+def download_n3ds():
     compiler_groups = {
         "4.0": {
             "b771": "armcc_40_771",
@@ -912,20 +972,21 @@ def download_3ds():
     }
     download_zip(
         url="https://cdn.discordapp.com/attachments/710646040792924172/1148006502980927528/armcc.zip",
+        platform_id="n3ds",
     )
     for group_id, group in compiler_groups.items():
         for ver, compiler_id in group.items():
-            compiler_dir = COMPILERS_DIR / compiler_id
+            compiler_dir = COMPILERS_DIR / "n3ds" / compiler_id
             if not compiler_dir.exists():
-                shutil.move(COMPILERS_DIR / group_id / ver, compiler_dir)
+                shutil.move(COMPILERS_DIR / "n3ds" / group_id / ver, compiler_dir)
 
             # Set +x to allow WSL without wine
             exe_path = compiler_dir / "bin/armcc.exe"
             set_x(exe_path)
-        shutil.rmtree(COMPILERS_DIR / group_id)
+        shutil.rmtree(COMPILERS_DIR / "n3ds" / group_id)
 
 
-def download_dos():
+def download_msdos():
     for compiler in [
         "wcc10.5",
         "wcc10.5a",
@@ -937,19 +998,24 @@ def download_dos():
             + compiler
             + ".tar.gz"
         )
-        download_tar(url=url, dest_name=compiler)
+        download_tar(
+            url=url,
+            platform_id="msdos",
+            dest_name=compiler,
+        )
 
     # Download some custom tools needed for watcom object format.
     download_tar(
         url="https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz",
+        platform_id="msdos",
         dest_name="i386_tools",
     )
 
-    exe_path = COMPILERS_DIR / "i386_tools/jwasm"
+    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/jwasm"
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-    exe_path = COMPILERS_DIR / "i386_tools/omf-objdump"
+    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/omf-objdump"
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-    exe_path = COMPILERS_DIR / "i386_tools/omf-nm"
+    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/omf-nm"
     exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
 
 
@@ -963,7 +1029,7 @@ def download_win9x():
         "msvc6.6",
         "msvc7.0",
     ]:
-        compiler_path = COMPILERS_DIR / compiler
+        compiler_path = COMPILERS_DIR / "win9x" / compiler
         if compiler_path.exists():
             print(f"{compiler_path} already exists, skipping")
             continue
@@ -975,41 +1041,60 @@ def download_win9x():
         )
         # This is actually msvc 7.1.
         if compiler == "msvc7.0":
-            download_tar(url=url, dest_name="msvc7.1")
+            download_tar(
+                url=url,
+                platform_id="win9x",
+                dest_name="msvc7.1",
+            )
 
     # Download Visual C/C++ 2002 (MSVC 7.0). Note that this toolchain, unlike
     # the others, also contains the PlatformSDK and DirectX 8
     download_tar(
         url="https://github.com/roblabla/MSVC-7.0-Portable/releases/download/release/msvc7.0.tar.gz",
+        platform_id="win9x",
         dest_name="msvc7.0",
     )
 
     # For the repo these compilers are stored in they need a few location adjustments for neatness, and permissions set to executable
     download_zip(
         url="https://github.com/itsmattkc/MSVC400/archive/refs/heads/master.zip",
+        platform_id="win9x",
         dest_name="msvc40",
     )
 
-    if os.path.exists(COMPILERS_DIR / "MSVC400-master") and not os.path.exists(
-        COMPILERS_DIR / "msvc4.0/MSVC400-master"
-    ):
-        shutil.move(COMPILERS_DIR / "MSVC400-master", COMPILERS_DIR / "msvc4.0")
-    if os.path.exists(COMPILERS_DIR / "msvc4.0/BIN"):
-        shutil.move(COMPILERS_DIR / "msvc4.0/BIN", COMPILERS_DIR / "msvc4.0/Bin")
-    set_x(COMPILERS_DIR / "msvc4.0/Bin/CL.EXE")
+    if os.path.exists(
+        COMPILERS_DIR / "win9x" / "MSVC400-master"
+    ) and not os.path.exists(COMPILERS_DIR / "win9x" / "msvc4.0/MSVC400-master"):
+        shutil.move(
+            COMPILERS_DIR / "win9x" / "MSVC400-master",
+            COMPILERS_DIR / "win9x" / "msvc4.0",
+        )
+    if os.path.exists(COMPILERS_DIR / "win9x" / "msvc4.0/BIN"):
+        shutil.move(
+            COMPILERS_DIR / "win9x" / "msvc4.0/BIN",
+            COMPILERS_DIR / "win9x" / "msvc4.0/Bin",
+        )
+    set_x(COMPILERS_DIR / "win9x" / "msvc4.0/Bin/CL.EXE")
 
     download_zip(
         url="https://github.com/itsmattkc/MSVC420/archive/refs/heads/master.zip",
+        platform_id="win9x",
         dest_name="msvc42",
     )
 
-    if os.path.exists(COMPILERS_DIR / "MSVC420-master") and not os.path.exists(
-        COMPILERS_DIR / "msvc4.2/MSVC420-master"
-    ):
-        shutil.move(COMPILERS_DIR / "MSVC420-master", COMPILERS_DIR / "msvc4.2")
-    if os.path.exists(COMPILERS_DIR / "msvc4.2/bin"):
-        shutil.move(COMPILERS_DIR / "msvc4.2/bin", COMPILERS_DIR / "msvc4.2/Bin")
-    set_x(COMPILERS_DIR / "msvc4.2/Bin/CL.EXE")
+    if os.path.exists(
+        COMPILERS_DIR / "win9x" / "MSVC420-master"
+    ) and not os.path.exists(COMPILERS_DIR / "win9x" / "msvc4.2/MSVC420-master"):
+        shutil.move(
+            COMPILERS_DIR / "win9x" / "MSVC420-master",
+            COMPILERS_DIR / "win9x" / "msvc4.2",
+        )
+    if os.path.exists(COMPILERS_DIR / "win9x" / "msvc4.2/bin"):
+        shutil.move(
+            COMPILERS_DIR / "win9x" / "msvc4.2/bin",
+            COMPILERS_DIR / "win9x" / "msvc4.2/Bin",
+        )
+    set_x(COMPILERS_DIR / "win9x" / "msvc4.2/Bin/CL.EXE")
 
 
 def main(args):
@@ -1022,9 +1107,9 @@ def main(args):
     if should_download("gba"):
         download_gba()
     if should_download("macosx"):
-        download_ppc_darwin()
+        download_macosx()
     if should_download("macos9"):
-        download_codewarrior()
+        download_macos9()
     if should_download("n64"):
         download_n64()
     if should_download("nds"):
@@ -1037,12 +1122,12 @@ def main(args):
         download_ps2()
     if should_download("switch"):
         download_switch()
-    if should_download("wii_gc"):
-        download_wii_gc()
+    if should_download("gc_wii"):
+        download_gc_wii()
     if should_download("n3ds"):
-        download_3ds()
+        download_n3ds()
     if should_download("msdos"):
-        download_dos()
+        download_msdos()
     if should_download("win9x"):
         download_win9x()
 

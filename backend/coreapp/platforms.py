@@ -772,19 +772,19 @@ N3DS = Platform(
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
-        "switch": SWITCH,
         "irix": IRIX,
         "n64": N64,
-        "ps1": PS1,
-        "saturn": SATURN,
-        "ps2": PS2,
         "gc_wii": GC_WII,
-        "nds_arm9": NDS_ARM9,
+        "switch": SWITCH,
         "gba": GBA,
+        "nds_arm9": NDS_ARM9,
+        "n3ds": N3DS,
+        "ps1": PS1,
+        "ps2": PS2,
+        "saturn": SATURN,
         "macos9": MACOS9,
         "macosx": MACOSX,
         "msdos": MSDOS,
-        "n3ds": N3DS,
         "win9x": WIN9X,
     }
 )
