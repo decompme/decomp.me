@@ -61,7 +61,7 @@ class DiffWrapper:
             arch=arch,
             # Build/objdump options
             diff_obj=True,
-            objfile="",
+            file="",
             make=False,
             source_old_binutils=True,
             diff_section=".text",
