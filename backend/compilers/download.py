@@ -204,7 +204,7 @@ def download_macosx():
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
         platform_id="macosx",
         dl_name="gcc3-1041.tar.gz",
-        dest_name="macosx/gcc3-1041",
+        dest_name="gcc3-1041",
     )
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/d7c6fc639310b938fa519e68a8f8d4909acba2ad/convert_gas_syntax.py",
@@ -544,7 +544,6 @@ def download_ps1():
 
     download_file(
         url="https://github.com/mkst/pcsx-redux/releases/download/rodata-rodata/psyq-obj-parser",
-        platform_id="ps1",
         log_name="psyq-obj-parser",
         dest_path=compilers_path / "psyq",
     )
