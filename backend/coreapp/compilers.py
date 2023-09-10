@@ -381,6 +381,12 @@ GCC2721_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC2722_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.2.2-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC2723_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.2.3-mipsel",
     platform=PS1,
@@ -1146,6 +1152,7 @@ _all_compilers: List[Compiler] = [
     GCC271_MIPSEL,
     GCC2672MIPSEL,
     GCC2721_MIPSEL,
+    GCC2722_MIPSEL,
     GCC2723_MIPSEL,
     GCC280_MIPSEL,
     GCC281_MIPSEL,
@@ -1454,7 +1461,7 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
-        "Pokémon Puzzle League",
+        "Pok?mon Puzzle League",
         GCC272KMC,
         "-O2 -mips3 -g",
         diff_flags=["-Mreg-names=32"],
@@ -1738,12 +1745,12 @@ _all_presets = [
     ),
     # NDS
     Preset(
-        "Pokémon Diamond / Pearl",
+        "Pok?mon Diamond / Pearl",
         MWCC_30_123,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     Preset(
-        "Pokémon HeartGold / SoulSilver",
+        "Pok?mon HeartGold / SoulSilver",
         MWCC_30_137,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
