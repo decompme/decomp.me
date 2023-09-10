@@ -381,6 +381,12 @@ GCC2721_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC2722_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.2.2-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC2723_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.2.3-mipsel",
     platform=PS1,
@@ -1146,6 +1152,7 @@ _all_compilers: List[Compiler] = [
     GCC271_MIPSEL,
     GCC2672MIPSEL,
     GCC2721_MIPSEL,
+    GCC2722_MIPSEL,
     GCC2723_MIPSEL,
     GCC280_MIPSEL,
     GCC281_MIPSEL,
