@@ -58,6 +58,8 @@ def download_file(url: str, log_name: str, dest_path: Path):
         print(f"Download of {log_name} already exists; skipping download")
         return
 
+    dest_path.parent.mkdir(exist_ok=True, parents=True)
+
     response = requests.get(url, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 1024
@@ -100,7 +102,7 @@ def download_file_wrapper(
     if create_subdir:
         dest_path = COMPILERS_DIR / platform_id / dest_name
 
-    dest_path.mkdir(exist_ok=True)
+    dest_path.mkdir(exist_ok=True, parents=True)
     return dest_path
 
 
@@ -129,7 +131,7 @@ def download_tar(
         url, dl_name, dest_name, platform_id, create_subdir, log_name
     )
 
-    with tarfile.open(DOWNLOAD_CACHE / dl_name, mode=mode) as f:
+    with tarfile.open(DOWNLOAD_CACHE / platform_id / dl_name, mode=mode) as f:
         for member in tqdm(
             desc=f"Extracting {log_name}",
             iterable=f.getmembers(),
@@ -162,7 +164,7 @@ def download_zip(
         url, dl_name, dest_name, platform_id, create_subdir, log_name
     )
 
-    with ZipFile(file=DOWNLOAD_CACHE / dl_name) as f:
+    with ZipFile(file=DOWNLOAD_CACHE / platform_id / dl_name) as f:
         for file in tqdm(
             desc=f"Extracting {log_name}",
             iterable=f.namelist(),
@@ -219,7 +221,7 @@ def download_macosx():
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
         platform_id="macosx",
         dl_name="gcc3-1041.tar.gz",
-        dest_name="macosx/gcc3-1041",
+        dest_name="gcc3-1041",
     )
     download_file(
         url="https://gist.githubusercontent.com/ChrisNonyminus/ec53837b151a65e4233fa53604de4549/raw/d7c6fc639310b938fa519e68a8f8d4909acba2ad/convert_gas_syntax.py",
@@ -236,7 +238,7 @@ def download_macosx():
         "gcc3-1041",
     ]:
         shutil.copy(
-            DOWNLOAD_CACHE / "convert_gas_syntax.py",
+            DOWNLOAD_CACHE / "macosx" / "convert_gas_syntax.py",
             COMPILERS_DIR / "macosx" / compiler / "convert_gas_syntax.py",
         )
 
@@ -590,7 +592,6 @@ def download_ps1():
 
     download_file(
         url="https://github.com/mkst/pcsx-redux/releases/download/rodata-rodata/psyq-obj-parser",
-        platform_id="ps1",
         log_name="psyq-obj-parser",
         dest_path=compilers_path / "psyq",
     )
