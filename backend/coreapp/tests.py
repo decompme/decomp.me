@@ -20,11 +20,10 @@ from coreapp import compilers, platforms
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
     Compiler,
-    GCC281,
+    GCC281PM,
     IDO53,
     IDO71,
     MWCC_247_92,
-    MWCPPC_24,
     PBX_GCC3,
 )
 from coreapp.diff_wrapper import DiffWrapper
@@ -160,14 +159,14 @@ nop
 
 
 class ScratchModificationTests(BaseTestCase):
-    @requiresCompiler(GCC281, IDO53)
+    @requiresCompiler(GCC281PM, IDO53)
     def test_update_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
             "platform": N64.id,
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "context": "",
             "target_asm": "jr $ra",
         }
@@ -194,14 +193,14 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 200)
 
-    @requiresCompiler(GCC281)
+    @requiresCompiler(GCC281PM)
     def test_update_scratch_score_on_compile_get(self) -> None:
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
         scratch_dict = {
             "platform": N64.id,
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "compiler_flags": "-O2",
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
@@ -327,13 +326,13 @@ class ScratchForkTests(BaseTestCase):
 
 
 class CompilationTests(BaseTestCase):
-    @requiresCompiler(GCC281)
+    @requiresCompiler(GCC281PM)
     def test_simple_compilation(self) -> None:
         """
         Ensure that we can run a simple compilation via the api
         """
         scratch_dict = {
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "platform": N64.id,
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
@@ -344,7 +343,7 @@ class CompilationTests(BaseTestCase):
 
         compile_dict = {
             "slug": scratch.slug,
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "compiler_flags": "-mips2 -O2",
             "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
         }
@@ -355,13 +354,13 @@ class CompilationTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @requiresCompiler(GCC281)
+    @requiresCompiler(GCC281PM)
     def test_giant_compilation(self) -> None:
         """
         Ensure that we can compile a giant file
         """
         scratch_dict = {
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "platform": N64.id,
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
@@ -376,7 +375,7 @@ class CompilationTests(BaseTestCase):
 
         compile_dict = {
             "slug": scratch.slug,
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "compiler_flags": "-mips2 -O2",
             "source_code": "int add(int a, int b){\nreturn a + b;\n}\n",
             "context": context,
@@ -467,21 +466,6 @@ nop
         self.assertTrue(response.json()["success"])
         # Confirm the output does not contain the expected fpr reg names
         self.assertFalse("fv1f" in str(response.json()))
-
-    @requiresCompiler(MWCPPC_24)
-    def test_mac_mwcc(self) -> None:
-        """
-        Ensure that we can invoke the MACOS9 compiler
-        """
-        result = CompilerWrapper.compile_code(
-            MWCPPC_24,
-            "-str reuse -inline on -O0",
-            "int func(void) { return 5; }",
-            "extern char libvar1;\r\nextern char libvar2;\r\n",
-        )
-        self.assertGreater(
-            len(result.elf_object), 0, "The compilation result should be non-null"
-        )
 
     @requiresCompiler(PBX_GCC3)
     def test_pbx_gcc3(self) -> None:
@@ -608,13 +592,13 @@ class TimeoutTests(BaseTestCase):
 
 
 class DecompilationTests(BaseTestCase):
-    @requiresCompiler(GCC281)
+    @requiresCompiler(GCC281PM)
     def test_default_decompilation(self) -> None:
         """
         Ensure that a scratch's initial decompilation makes sense
         """
         scratch_dict = {
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "platform": N64.id,
             "context": "",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
@@ -622,13 +606,13 @@ class DecompilationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
 
-    @requiresCompiler(GCC281)
+    @requiresCompiler(GCC281PM)
     def test_decompile_endpoint(self) -> None:
         """
         Ensure that the decompile endpoint works
         """
         scratch_dict = {
-            "compiler": GCC281.id,
+            "compiler": GCC281PM.id,
             "platform": N64.id,
             "context": "typedef int s32;",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",

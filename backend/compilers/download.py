@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import os
 import platform
@@ -243,34 +244,6 @@ def download_macosx():
         )
 
 
-def download_macos9():
-    download_zip(
-        url="https://github.com/simdecomp/sims1_mac_decomp/files/8766562/MWCPPC_COMPILERS.zip",
-        platform_id="macos9",
-        dl_name="codewarrior_compilers.zip",
-        dest_name="codewarrior",
-        create_subdir=True,
-    )
-    compiler_dir = COMPILERS_DIR / "macos9" / "codewarrior" / "compilers"
-    for ver in ["Pro5", "Pro6"]:
-        lowercase_lmgr = compiler_dir / ver / "lmgr326b.dll"
-        if lowercase_lmgr.exists():
-            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR326B.dll")
-
-        lowercase_lmgr = compiler_dir / ver / "lmgr8c.dll"
-        if lowercase_lmgr.exists():
-            shutil.move(lowercase_lmgr, compiler_dir / ver / "LMGR8C.dll")
-
-        set_x(compiler_dir / ver / "MWCPPC.exe")
-        set_x(compiler_dir / ver / "MWLinkPPC.exe")
-
-    try:
-        shutil.move(compiler_dir / "Pro5", COMPILERS_DIR / "macos9" / "mwcppc_23")
-        shutil.move(compiler_dir / "Pro6", COMPILERS_DIR / "macos9" / "mwcppc_24")
-    except shutil.Error:
-        pass
-
-
 def download_gba():
     if host_os != LINUX:
         print("agbcc unsupported on " + host_os.name)
@@ -410,11 +383,11 @@ def download_n64():
                 dest_name=dest,
             )
 
-    # GCC 2.8.1
+    # GCC 2.8.1 (Paper Mario)
     download_gcc(
         gcc_url=f"https://github.com/pmret/gcc-papermario/releases/download/master/{host_os.n64_gcc_os}.tar.gz",
         binutils_url=f"https://github.com/pmret/binutils-papermario/releases/download/master/{host_os.n64_gcc_os}.tar.gz",
-        dest="gcc2.8.1",
+        dest="gcc2.8.1pm",
     )
 
     # GCC 2.7.2 KMC
@@ -463,7 +436,7 @@ def download_n64():
             dest_name="ido5.3_c++",
         )
 
-    dest = COMPILERS_DIR / "n64" / "MipsPro7.4.4"
+    dest = COMPILERS_DIR / "n64" / "mips_pro_744"
     if dest.is_dir():
         print(f"{dest} already exists, skipping")
     else:
@@ -472,8 +445,8 @@ def download_n64():
             url="https://github.com/LLONSIT/qemu-irix-helpers/raw/n/qemu/mipspro7.4.4.tar.xz",
             platform_id="n64",
             mode="r:xz",
-            dl_name="mipspro7.4.4" + ".tar.xz",
-            dest_name="MipsPro7.4.4",
+            dl_name="mips_pro_744" + ".tar.xz",
+            dest_name="mips_pro_744",
         )
 
     # SN
@@ -1040,13 +1013,18 @@ def download_win9x():
             + compiler
             + ".tar.gz"
         )
+
         # This is actually msvc 7.1.
         if compiler == "msvc7.0":
-            download_tar(
-                url=url,
-                platform_id="win9x",
-                dest_name="msvc7.1",
-            )
+            dest_name = "msvc7.1"
+        else:
+            dest_name = compiler
+
+        download_tar(
+            url=url,
+            platform_id="win9x",
+            dest_name=dest_name,
+        )
 
     # Download Visual C/C++ 2002 (MSVC 7.0). Note that this toolchain, unlike
     # the others, also contains the PlatformSDK and DirectX 8
@@ -1109,8 +1087,6 @@ def main(args):
         download_gba()
     if should_download("macosx"):
         download_macosx()
-    if should_download("macos9"):
-        download_macos9()
     if should_download("n64"):
         download_n64()
     if should_download("nds"):
