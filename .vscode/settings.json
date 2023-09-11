@@ -41,5 +41,7 @@
         "backend/decompme"
     ],
     "typescript.tsdk": "frontend/node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true
 }

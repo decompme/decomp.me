@@ -26,7 +26,6 @@ from coreapp.platforms import (
     GBA,
     GC_WII,
     IRIX,
-    MACOS9,
     MACOSX,
     MSDOS,
     N3DS,
@@ -54,7 +53,7 @@ class Compiler:
     cc: str
     platform: Platform
     flags: ClassVar[Flags]
-    base_id: Optional[str] = None
+    base_compiler: Optional["Compiler"] = None
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
@@ -63,10 +62,18 @@ class Compiler:
 
     @property
     def path(self) -> Path:
-        return COMPILER_BASE_PATH / (self.base_id or self.id)
+        if self.base_compiler is not None:
+            return (
+                COMPILER_BASE_PATH
+                / self.base_compiler.platform.id
+                / self.base_compiler.id
+            )
+        return COMPILER_BASE_PATH / self.platform.id / self.id
 
     def available(self) -> bool:
         # consider compiler binaries present if the compiler's directory is found
+        if not self.path.exists():
+            print(f"Compiler {self.id} not found at {self.path}")
         return self.path.exists()
 
 
@@ -163,10 +170,6 @@ def available_compilers() -> List[Compiler]:
 def available_platforms() -> List[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
 
-    # Disable MACOS9 for now, as it's not working properly
-    if MACOS9 in pset:
-        pset.remove(MACOS9)
-
     return sorted(pset, key=lambda p: p.name)
 
 
@@ -199,7 +202,7 @@ OLD_AGBCC = GCCCompiler(
     id="old_agbcc",
     platform=GBA,
     cc='cc -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/old_agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
-    base_id="agbcc",
+    base_compiler=AGBCC,
 )
 
 AGBCCPP = GCCCompiler(
@@ -531,67 +534,6 @@ MWCPS2_30B22_020926 = MWCCCompiler(
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-# IRIX
-IDO53_IRIX = IDOCompiler(
-    id="ido5.3_irix",
-    platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3",
-)
-
-IDO53_ASM_IRIX = IDOCompiler(
-    id="ido5.3_asm_irix",
-    platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3",
-    language=Language.ASSEMBLY,
-)
-
-IDO53_CXX_IRIX = IDOCompiler(
-    id="ido5.3_c++_irix",
-    platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3_c++",
-    language=Language.OLD_CXX,
-)
-
-IDO53PASCAL = IDOCompiler(
-    id="ido5.3Pascal",
-    platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3",
-    language=Language.PASCAL,
-)
-
-
-IDO60_IRIX = IDOCompiler(
-    id="ido6.0_irix",
-    platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido6.0",
-)
-
-IDO71_IRIX = IDOCompiler(
-    id="ido7.1_irix",
-    platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-)
-
-IDO71PASCAL = IDOCompiler(
-    id="ido7.1Pascal",
-    platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido7.1",
-    language=Language.PASCAL,
-)
-
-MIPS_PRO_744_IRIX = IDOCompiler(
-    id="mips_pro_744_irix",
-    platform=IRIX,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="MipsPro7.4.4",
-)
 
 # N64
 IDO53 = IDOCompiler(
@@ -604,7 +546,6 @@ IDO53_CXX = IDOCompiler(
     id="ido5.3_c++",
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido5.3_c++",
     language=Language.OLD_CXX,
 )
 
@@ -618,14 +559,12 @@ IDO60 = IDOCompiler(
     id="ido6.0",
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="ido6.0",
 )
 
 MIPS_PRO_744 = IDOCompiler(
     id="mips_pro_744",
     platform=N64,
     cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    base_id="MipsPro7.4.4",
 )
 
 GCC272KMC = GCCCompiler(
@@ -634,8 +573,8 @@ GCC272KMC = GCCCompiler(
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G0 -mgp32 -mfp32 ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
-GCC281 = GCCCompiler(
-    id="gcc2.8.1",
+GCC281PM = GCCCompiler(
+    id="gcc2.8.1pm",
     platform=N64,
     cc='"${COMPILER_DIR}"/gcc -G0 -c -B "${COMPILER_DIR}"/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
@@ -652,9 +591,18 @@ GCC272SNEW = GCCCompiler(
     cc='"${COMPILER_DIR}"/cpp -lang-c -undef "$INPUT" | "${COMPILER_DIR}"/cc1 -mfp32 -mgp32 -G0 -quiet -mcpu=vr4300 -fno-exceptions ${COMPILER_FLAGS} -o "$OUTPUT".s && python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mips3 -O1 -mabi=32 -mgp32 -march=vr4300 -mfp32 -mno-shared -o "$OUTPUT"',
 )
 
+GCC281SN = GCCCompiler(
+    id="gcc2.8.1sn",
+    platform=N64,
+    cc='cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
+    '| ${WINE} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
 GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
-    base_id="gcc2.8.1sn",
+    base_compiler=GCC281SN,
     platform=N64,
     cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
     '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
@@ -674,19 +622,65 @@ GCC440MIPS64ELF = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
-# MACOS9
-MWCPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWCPPC.exe" -o object.o "${INPUT}" && printf "%s" "-dis -h -module ".${FUNCTION}" -nonames -nodata" | xargs -x -- ${WINE} "${COMPILER_DIR}/MWLinkPPC.exe" "${OUTPUT}" > "${OUTPUT}.s" && python3 ${COMPILER_DIR}/convert_gas_syntax.py "${OUTPUT}.s" ".${FUNCTION}" > "${OUTPUT}_new.s" && powerpc-linux-gnu-as "${OUTPUT}_new.s" -o "${OUTPUT}"'
-
-MWCPPC_23 = MWCCCompiler(
-    id="mwcppc_23",
-    platform=MACOS9,
-    cc=MWCPPC_CC,
+# IRIX
+IDO53_IRIX = IDOCompiler(
+    id="ido5.3_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53,
 )
 
-MWCPPC_24 = MWCCCompiler(
-    id="mwcppc_24",
-    platform=MACOS9,
-    cc=MWCPPC_CC,
+IDO53_ASM_IRIX = IDOCompiler(
+    id="ido5.3_asm_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53,
+    language=Language.ASSEMBLY,
+)
+
+IDO53_CXX_IRIX = IDOCompiler(
+    id="ido5.3_c++_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/CC" -I "${COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53_CXX,
+    language=Language.OLD_CXX,
+)
+
+IDO53PASCAL = IDOCompiler(
+    id="ido5.3Pascal",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO53,
+    language=Language.PASCAL,
+)
+
+IDO60_IRIX = IDOCompiler(
+    id="ido6.0_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO60,
+)
+
+IDO71_IRIX = IDOCompiler(
+    id="ido7.1_irix",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO71,
+)
+
+IDO71PASCAL = IDOCompiler(
+    id="ido7.1Pascal",
+    platform=IRIX,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO71,
+    language=Language.PASCAL,
+)
+
+MIPS_PRO_744_IRIX = IDOCompiler(
+    id="mips_pro_744_irix",
+    platform=IRIX,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=MIPS_PRO_744,
 )
 
 # MACOSX
@@ -1072,7 +1066,7 @@ WATCOM_105_C = WatcomCompiler(
 
 WATCOM_105_CPP = WatcomCompiler(
     id="wpp10.5",
-    base_id="wcc10.5",
+    base_compiler=WATCOM_105_C,
     platform=MSDOS,
     cc=WATCOM_CXX,
 )
@@ -1085,7 +1079,7 @@ WATCOM_105A_C = WatcomCompiler(
 
 WATCOM_105A_CPP = WatcomCompiler(
     id="wpp10.5a",
-    base_id="wcc10.5a",
+    base_compiler=WATCOM_105A_C,
     platform=MSDOS,
     cc=WATCOM_CXX,
 )
@@ -1098,7 +1092,7 @@ WATCOM_106_C = WatcomCompiler(
 
 WATCOM_106_CPP = WatcomCompiler(
     id="wpp10.6",
-    base_id="wcc10.6",
+    base_compiler=WATCOM_106_C,
     platform=MSDOS,
     cc=WATCOM_CXX,
 )
@@ -1111,7 +1105,7 @@ WATCOM_110_C = WatcomCompiler(
 
 WATCOM_110_CPP = WatcomCompiler(
     id="wpp11.0",
-    base_id="wcc11.0",
+    base_compiler=WATCOM_110_C,
     platform=MSDOS,
     cc=WATCOM_CXX,
 )
@@ -1186,7 +1180,8 @@ _all_compilers: List[Compiler] = [
     GCC272KMC,
     GCC272SN,
     GCC272SNEW,
-    GCC281,
+    GCC281PM,
+    GCC281SN,
     GCC281SNCXX,
     EGCS1124,
     GCC440MIPS64ELF,
@@ -1242,9 +1237,6 @@ _all_compilers: List[Compiler] = [
     MWCC_40_1034,
     MWCC_40_1036,
     MWCC_40_1051,
-    # MACOS9
-    MWCPPC_23,
-    MWCPPC_24,
     # MACOSX
     XCODE_GCC401_C,
     XCODE_GCC401_CPP,
@@ -1456,7 +1448,7 @@ _all_presets = [
     ),
     Preset(
         "Paper Mario",
-        GCC281,
+        GCC281PM,
         "-O2 -fforce-addr -gdwarf-2",
         diff_flags=["-Mreg-names=32"],
     ),
@@ -1754,8 +1746,6 @@ _all_presets = [
         MWCC_30_137,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
-    # MACOS9
-    Preset("The Sims", MWCPPC_24, "-lang=c++ -O3 -str pool -g"),
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
     Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
