@@ -995,14 +995,6 @@ def download_msdos():
             platform_id="msdos",
             dest_name=compiler,
         )
-        shutil.copytree(
-            tools_dir,
-            COMPILERS_DIR / "msdos" / compiler / "i386_tools",
-            dirs_exist_ok=True,
-        )
-
-    if tools_dir.exists():
-        shutil.rmtree(tools_dir)
 
 
 def download_win9x():
