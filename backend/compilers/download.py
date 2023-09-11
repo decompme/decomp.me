@@ -900,6 +900,9 @@ def download_gc_wii():
 
         (compiler_dir / "license.dat").touch()
 
+        if (COMPILERS_DIR / "gc_wii" / ver).exists():
+            shutil.rmtree(COMPILERS_DIR / "gc_wii" / ver)
+
     # copy in clean 1.2.5 for frank
     shutil.copy(
         COMPILERS_DIR / "gc_wii" / "mwcc_233_163" / "mwcceppc.exe",
@@ -959,12 +962,23 @@ def download_n3ds():
                 shutil.move(COMPILERS_DIR / "n3ds" / group_id / ver, compiler_dir)
 
             # Set +x to allow WSL without wine
-            exe_path = compiler_dir / "bin/armcc.exe"
-            set_x(exe_path)
+            set_x(compiler_dir / "bin/armcc.exe")
         shutil.rmtree(COMPILERS_DIR / "n3ds" / group_id)
 
 
 def download_msdos():
+    # Download some custom tools needed for watcom object format.
+    download_tar(
+        url="https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz",
+        platform_id="msdos",
+        dest_name="i386_tools",
+    )
+
+    tools_dir = COMPILERS_DIR / "msdos" / "i386_tools"
+    set_x(tools_dir / "jwasm")
+    set_x(tools_dir / "omf-objdump")
+    set_x(tools_dir / "omf-nm")
+
     for compiler in [
         "wcc10.5",
         "wcc10.5a",
@@ -981,20 +995,14 @@ def download_msdos():
             platform_id="msdos",
             dest_name=compiler,
         )
+        shutil.copytree(
+            tools_dir,
+            COMPILERS_DIR / "msdos" / compiler / "i386_tools",
+            dirs_exist_ok=True,
+        )
 
-    # Download some custom tools needed for watcom object format.
-    download_tar(
-        url="https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz",
-        platform_id="msdos",
-        dest_name="i386_tools",
-    )
-
-    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/jwasm"
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/omf-objdump"
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
-    exe_path = COMPILERS_DIR / "msdos" / "i386_tools/omf-nm"
-    exe_path.chmod(exe_path.stat().st_mode | stat.S_IEXEC)
+    if tools_dir.exists():
+        shutil.rmtree(tools_dir)
 
 
 def download_win9x():

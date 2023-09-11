@@ -4,34 +4,34 @@ from time import sleep
 from typing import Any, Callable, Dict, Optional
 from unittest import skip, skipIf
 from unittest.mock import Mock, patch
-from parameterized import parameterized
 
 import responses
-from django.contrib.auth.models import User
-from django.test.testcases import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase
-from coreapp.compilers import DummyCompiler
-from coreapp.flags import Language
-from coreapp.sandbox import Sandbox
 from coreapp import compilers, platforms
-
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
-    Compiler,
     GCC281PM,
     IDO53,
     IDO71,
     MWCC_247_92,
     PBX_GCC3,
+    WATCOM_105_C,
+    Compiler,
+    DummyCompiler,
 )
 from coreapp.diff_wrapper import DiffWrapper
+from coreapp.flags import Language
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
+from coreapp.sandbox import Sandbox
 from coreapp.views.scratch import compile_scratch_update_score
-from .models.github import GitHubRepo, GitHubUser
+from django.contrib.auth.models import User
+from django.test.testcases import TestCase
+from django.urls import reverse
+from parameterized import parameterized
+from rest_framework import status
+from rest_framework.test import APITestCase
 
+from .models.github import GitHubRepo, GitHubUser
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
 from .models.scratch import Assembly, CompilerConfig, Scratch
@@ -490,6 +490,21 @@ nop
         result = CompilerWrapper.compile_code(
             MWCC_247_92,
             "-str reuse -inline on -fp off -O0",
+            "int func(void) { return 5; }",
+            "extern char libvar1;\r\nextern char libvar2;\r\n",
+        )
+        self.assertGreater(
+            len(result.elf_object), 0, "The compilation result should be non-null"
+        )
+
+    @requiresCompiler(WATCOM_105_C)
+    def test_watcom_cc(self) -> None:
+        """
+        Ensure that we can invoke watcom cc
+        """
+        result = CompilerWrapper.compile_code(
+            WATCOM_105_C,
+            "",
             "int func(void) { return 5; }",
             "extern char libvar1;\r\nextern char libvar2;\r\n",
         )
