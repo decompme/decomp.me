@@ -189,34 +189,16 @@ def download_macosx():
         dest_name="gcc-5370",
     )
     download_tar(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5370.tar.gz",
-        platform_id="macosx",
-        dl_name="gcc-5370-cpp.tar.gz",
-        dest_name="gcc-5370-cpp",
-    )
-    download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
         platform_id="macosx",
         dl_name="gcc-5026.tar.gz",
         dest_name="gcc-5026",
     )
     download_tar(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5026.tar.gz",
-        platform_id="macosx",
-        dl_name="gcc-5026-cpp.tar.gz",
-        dest_name="gcc-5026-cpp",
-    )
-    download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
         platform_id="macosx",
         dl_name="gcc-5363.tar.gz",
         dest_name="gcc-5363",
-    )
-    download_tar(
-        url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc-5363.tar.gz",
-        platform_id="macosx",
-        dl_name="gcc-5363-cpp.tar.gz",
-        dest_name="gcc-5363-cpp",
     )
     download_tar(
         url="https://github.com/ChrisNonyminus/powerpc-darwin-cross/releases/download/initial/gcc3-1041.tar.gz",
@@ -231,11 +213,8 @@ def download_macosx():
     )
     for compiler in [
         "gcc-5370",
-        "gcc-5370-cpp",
         "gcc-5026",
-        "gcc-5026-cpp",
         "gcc-5363",
-        "gcc-5363-cpp",
         "gcc3-1041",
     ]:
         shutil.copy(
