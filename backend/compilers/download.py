@@ -974,11 +974,6 @@ def download_msdos():
             platform_id="msdos",
             dest_name=compiler,
         )
-        shutil.copytree(
-            tools_dir,
-            COMPILERS_DIR / "msdos" / compiler / "i386_tools",
-            dirs_exist_ok=True,
-        )
 
 
 def download_win9x():
@@ -991,7 +986,13 @@ def download_win9x():
         "msvc6.6",
         "msvc7.0",
     ]:
-        compiler_path = COMPILERS_DIR / "win9x" / compiler
+        # This is actually msvc 7.1.
+        if compiler == "msvc7.0":
+            dest_compiler = "msvc7.1"
+        else:
+            dest_compiler = compiler
+
+        compiler_path = COMPILERS_DIR / "win9x" / dest_compiler
         if compiler_path.exists():
             print(f"{compiler_path} already exists, skipping")
             continue
@@ -1002,16 +1003,10 @@ def download_win9x():
             + ".tar.gz"
         )
 
-        # This is actually msvc 7.1.
-        if compiler == "msvc7.0":
-            dest_name = "msvc7.1"
-        else:
-            dest_name = compiler
-
         download_tar(
             url=url,
             platform_id="win9x",
-            dest_name=dest_name,
+            dest_name=dest_compiler,
         )
 
     # Download Visual C/C++ 2002 (MSVC 7.0). Note that this toolchain, unlike
