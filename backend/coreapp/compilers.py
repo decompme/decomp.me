@@ -699,6 +699,7 @@ XCODE_GCC401_CPP = GCCCompiler(
     id="gcc-5370-cpp",
     platform=MACOSX,
     cc=GCC_CC1PLUS,
+    base_compiler=XCODE_GCC401_C,
 )
 
 XCODE_24_C = GCCCompiler(
@@ -711,6 +712,7 @@ XCODE_24_CPP = GCCCompiler(
     id="gcc-5363-cpp",
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
+    base_compiler=XCODE_24_C,
 )
 
 XCODE_GCC400_C = GCCCompiler(
@@ -723,6 +725,7 @@ XCODE_GCC400_CPP = GCCCompiler(
     id="gcc-5026-cpp",
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
+    base_compiler=XCODE_GCC400_C,
 )
 
 PBX_GCC3 = GCCCompiler(
