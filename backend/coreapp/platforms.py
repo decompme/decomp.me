@@ -45,9 +45,9 @@ MSDOS = Platform(
     name="Microsoft DOS",
     description="x86",
     arch="i686",
-    assemble_cmd='${COMPILER_BASE_PATH}/msdos/i386_tools/jwasm -c -Fo"$OUTPUT" "$INPUT"',
-    objdump_cmd="${COMPILER_BASE_PATH}/msdos/i386_tools/omf-objdump",
-    nm_cmd="${COMPILER_BASE_PATH}/msdos/i386_tools/omf-nm",
+    assemble_cmd='jwasm -c -Fo"$OUTPUT" "$INPUT"',
+    objdump_cmd="omf-objdump",
+    nm_cmd="omf-nm",
     asm_prelude="""
         .386P
         .model FLAT
