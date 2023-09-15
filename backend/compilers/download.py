@@ -190,7 +190,7 @@ else:
     }
 
 
-class ContainerManager():
+class ContainerManager:
     def pull(self, docker_image):
         return self.client.images.pull(docker_image)
 
@@ -215,7 +215,9 @@ class PodmanManager(ContainerManager):
             manifest = self.client.manifests.get(docker_image)
         except podman.errors.exceptions.NotFound:
             return None
-        os_digest = list(filter(lambda x: x["platform"]["os"] == os, manifest.attrs["manifests"]))
+        os_digest = list(
+            filter(lambda x: x["platform"]["os"] == os, manifest.attrs["manifests"])
+        )
         digest = os_digest[0]["digest"]
         return digest
 
@@ -257,7 +259,14 @@ class DockerManager(ContainerManager):
         return digest.split("@")[-1]
 
 
-def get_compiler(platform_id, compiler_id, host_arch="linux", podman=False, force=False, github_repo="mkst/compilers"):
+def get_compiler(
+    platform_id,
+    compiler_id,
+    host_arch="linux",
+    podman=False,
+    force=False,
+    github_repo="mkst/compilers",
+):
     # TODO: seems to be issues trying to share a single instance?
     client_manager = PodmanManager() if podman else DockerManager()
 
@@ -291,7 +300,9 @@ def get_compiler(platform_id, compiler_id, host_arch="linux", podman=False, forc
             logger.info("%s has newer image available; pulling ...", docker_image)
             client_manager.pull(docker_image)
         else:
-            logger.info(f"%s is present and at latest version, continuing!", compiler_id)
+            logger.info(
+                f"%s is present and at latest version, continuing!", compiler_id
+            )
 
     else:
         # compiler_dir exists, is it up to date with remote?
@@ -301,7 +312,6 @@ def get_compiler(platform_id, compiler_id, host_arch="linux", podman=False, forc
         # image_digest missing or out of date, so pull
         logger.info("%s has newer image available; pulling ...", docker_image)
         client_manager.pull(docker_image)
-
 
     try:
         container = client_manager.create_container(docker_image)
@@ -383,21 +393,33 @@ def main():
             to_download += [(platform_id, compiler) for compiler in compilers]
 
     if len(to_download) == 0:
-        logger.warning("No platforms are configured to be downloaded for host architecture (%s)", HOST_ARCH)
+        logger.warning(
+            "No platforms are configured to be downloaded for host architecture (%s)",
+            HOST_ARCH,
+        )
         return
 
     start = datetime.datetime.now()
     with Pool(processes=args.threads) as pool:
         results = pool.starmap(
             functools.partial(
-                get_compiler, host_arch=HOST_ARCH, podman=args.podman, force=args.force, github_repo=args.github_repo
+                get_compiler,
+                host_arch=HOST_ARCH,
+                podman=args.podman,
+                force=args.force,
+                github_repo=args.github_repo,
             ),
             to_download,
         )
     end = datetime.datetime.now()
 
     compilers_downloaded = len(list(filter(lambda x: x, results)))
-    logger.info("Updated %i / %i compiler(s) in %.2f second(s)", compilers_downloaded, len(to_download), (end - start).total_seconds())
+    logger.info(
+        "Updated %i / %i compiler(s) in %.2f second(s)",
+        compilers_downloaded,
+        len(to_download),
+        (end - start).total_seconds(),
+    )
 
 
 if __name__ == "__main__":
