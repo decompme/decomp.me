@@ -174,7 +174,7 @@ jobs:
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
-          docker run \
+          container_id=$(docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             --security-opt apparmor=unconfined \
@@ -185,10 +185,11 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            decompme_backend -c 'cd /decomp.me/backend && \
-            podman system service --time=0 unix:///tmp/podman.sock & && \
-            poetry run /backend/compilers/download.py --podman && \
+            decompme_backend -c 'podman system service --time=0 unix:///tmp/podman.sock')
+
+          docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
+            poetry run /backend/compilers/download.py --podman && \
             poetry run python manage.py test'
 
   frontend_lint:
