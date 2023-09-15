@@ -117,6 +117,19 @@
     "gcc-5026": "GCC 4.0.0 (Xcode 2.1) (C)",
     "gcc-5026-cpp": "GCC 4.0.0 (Xcode 2.1) (C++)",
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
+
+    "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
+    "gcc2.6.3-mipsel": "gcc 2.6.3 + maspsx",
+    "gcc2.7.1-mipsel": "gcc 2.7.1 + maspsx",
+    "gcc2.7.2-mipsel": "gcc 2.7.2 + maspsx",
+    "gcc2.7.2.1-mipsel": "gcc 2.7.2.1 + maspsx",
+    "gcc2.7.2.2-mipsel": "gcc 2.7.2.2 + maspsx",
+    "gcc2.7.2.3-mipsel": "gcc 2.7.2.3 + maspsx",
+    "gcc2.8.0-mipsel": "gcc 2.8.0 + maspsx",
+    "gcc2.8.1-mipsel": "gcc 2.8.1 + maspsx",
+    "gcc2.91.66-mipsel": "gcc 2.91.66 + maspsx",
+    "gcc2.95.2-mipsel": "gcc 2.95.2 + maspsx",
+
     "psyq3.5": "PSYQ3.5 (gcc 2.6.0 + aspsx 2.34)",
     "psyq3.6": "PSYQ3.6 (gcc 2.6.3 + aspsx 2.34)",
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2)",
@@ -124,6 +137,7 @@
     "psyq4.3": "PSYQ4.3 (gcc 2.8.1)",
     "psyq4.5": "PSYQ4.5 (gcc 2.91.66)",
     "psyq4.6": "PSYQ4.6 (gcc 2.95.2)",
+
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
     "wcc10.5a": "Watcom Optimizing C i386 Compiler 10.5a",
