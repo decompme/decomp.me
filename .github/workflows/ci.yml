@@ -52,6 +52,10 @@ jobs:
             libnl-route-3-dev \
             libncurses5 \
             protobuf-compiler
+      - name: Install msdos assembler
+        run: |-
+          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
+          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
@@ -164,7 +168,8 @@ jobs:
             -t decompme_backend \
             --build-arg ENABLE_GC_WII_SUPPORT=YES \
             --build-arg ENABLE_PS1_SUPPORT=YES \
-            --build-arg ENABLE_SATURN_SUPPORT=YES
+            --build-arg ENABLE_SATURN_SUPPORT=YES \
+            --build-arg ENABLE_MSDOS_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
@@ -175,13 +180,14 @@ jobs:
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
-            -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
             decompme_backend -c 'cd /decomp.me/backend && \
+            podman system service --time=0 unix:///tmp/podman.sock & && \
+            poetry run /backend/compilers/download.py --podman && \
             poetry install && \
             poetry run python manage.py test'
 
