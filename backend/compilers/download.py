@@ -205,6 +205,8 @@ class PodmanManager(ContainerManager):
             self.client.images.list()
         except FileNotFoundError:
             raise Exception("%s not found, is the podman service running?")
+        except podman.errors.exceptions.APIError as err:
+            logger.error("Podman error: %s, will try to continue", err)
 
     def get_remote_image_digest(self, docker_image, os="linux"):
         # this is the arch-specific sha256
