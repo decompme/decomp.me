@@ -269,7 +269,7 @@ def get_compiler(
     logger.info("Processing %s (%s)", compiler_id, platform_id)
 
     # fast-fail if we cannot create the download_cache
-    download_cache = compilers_dir / "download_cache"
+    download_cache = compilers_dir / ".download_cache"
     download_cache.mkdir(parents=True, exist_ok=True)
 
     # TODO: podman seems to have issues sharing a single instance
@@ -428,7 +428,8 @@ def main():
         if args.compilers is not None:
             compilers = filter(lambda x: x in args.compilers, compilers)
 
-        to_download += [(platform_id, compiler) for compiler in compilers]
+        if platform_enabled:
+            to_download += [(platform_id, compiler) for compiler in compilers]
 
     if len(to_download) == 0:
         logger.warning(
