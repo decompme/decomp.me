@@ -180,6 +180,7 @@ jobs:
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
+            --device /dev/fuse \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
