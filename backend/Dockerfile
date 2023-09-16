@@ -31,6 +31,57 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
     && make
 
 
+FROM ubuntu:22.04 as podman
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    golang-go \
+    libassuan-dev \
+    libbtrfs-dev \
+    libc6-dev \
+    libdevmapper-dev \
+    libglib2.0-dev \
+    libgpg-error-dev \
+    libgpgme-dev \
+    libprotobuf-c-dev \
+    libprotobuf-dev \
+    libseccomp-dev \
+    libselinux1-dev \
+    libsystemd-dev
+
+WORKDIR /root
+
+ENV BUILD_DIR=/build
+
+RUN mkdir -p ${BUILD_DIR}
+
+ARG CONMON_VERSION=v2.1.8
+RUN git clone https://github.com/containers/conmon && \
+    cd conmon && \
+    git checkout ${CONMON_VERSION} && \
+    export GOCACHE="$(mktemp -d)" && \
+    make && \
+    make podman PREFIX=${BUILD_DIR}/usr/local
+
+ARG RUNC_VERSION=v1.1.9
+RUN git clone https://github.com/opencontainers/runc runc && \
+    cd runc && \
+    git checkout ${RUNC_VERSION} && \
+    make BUILDTAGS="selinux seccomp" && \
+    mkdir -p ${BUILD_DIR}/usr/bin && \
+    cp runc ${BUILD_DIR}/usr/bin/runc
+
+ARG PODMAN_VERSION=v4.6.2
+RUN git clone https://github.com/containers/podman && \
+    cd podman && \
+    git checkout ${PODMAN_VERSION} && \
+    make BUILDTAGS="selinux seccomp" PREFIX=/usr && \
+    make install PREFIX=/build
+
+
 FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
@@ -43,21 +94,32 @@ RUN apt-get -y update && apt-get install -y \
     curl \
     gcc-mips-linux-gnu \
     git \
+    iptables \
     libc6-dev-i386 \
+    libcap2-bin \
+    libdevmapper1.02.1 \
+    libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
     libtinfo5 \
     netcat \
     software-properties-common \
+    uidmap \
     unzip \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN add-apt-repository ppa:quarckster/containers --yes && \
-    apt-get install -y podman
+COPY --from=podman /build/bin /bin
+COPY --from=podman /build/lib /lib
+COPY --from=podman /build/libexec /libexec
+COPY --from=podman /build/share /share
+COPY --from=podman /build/usr /usr
 
 RUN setcap 'cap_setuid=ep' $(which newuidmap) && \
     setcap 'cap_setgid=ep' $(which newgidmap)
+
+RUN mkdir -p /etc/containers && \
+    curl --silent https://src.fedoraproject.org/rpms/containers-common/raw/main/f/default-policy.json > /etc/containers/policy.json
 
 RUN curl -sSL https://install.python-poetry.org/ | \
   POETRY_VERSION=1.4.2 POETRY_HOME=/etc/poetry python3.10 -
