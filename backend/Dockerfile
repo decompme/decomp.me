@@ -79,7 +79,7 @@ RUN git clone https://github.com/containers/podman && \
     cd podman && \
     git checkout ${PODMAN_VERSION} && \
     make BUILDTAGS="selinux seccomp" PREFIX=/usr && \
-    make install PREFIX=/build
+    make install PREFIX=/build/usr
 
 
 FROM base AS build
@@ -96,30 +96,19 @@ RUN apt-get -y update && apt-get install -y \
     git \
     iptables \
     libc6-dev-i386 \
-    libcap2-bin \
     libdevmapper1.02.1 \
     libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
     libtinfo5 \
     netcat \
-    software-properties-common \
-    uidmap \
+    podman \
     unzip \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=podman /build/bin /bin
-COPY --from=podman /build/lib /lib
-COPY --from=podman /build/libexec /libexec
-COPY --from=podman /build/share /share
+# replace podman with newer version
 COPY --from=podman /build/usr /usr
-
-RUN setcap 'cap_setuid=ep' $(which newuidmap) && \
-    setcap 'cap_setgid=ep' $(which newgidmap)
-
-RUN mkdir -p /etc/containers && \
-    curl --silent https://src.fedoraproject.org/rpms/containers-common/raw/main/f/default-policy.json > /etc/containers/policy.json
 
 RUN curl -sSL https://install.python-poetry.org/ | \
   POETRY_VERSION=1.4.2 POETRY_HOME=/etc/poetry python3.10 -
