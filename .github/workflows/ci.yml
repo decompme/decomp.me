@@ -182,6 +182,7 @@ jobs:
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/compilers \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
@@ -191,7 +192,7 @@ jobs:
 
           docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
-            poetry run compilers/download.py --podman && \
+            poetry run compilers/download.py --compiler-dir ${COMPILER_BASE_PATH} --podman --threads 1 && \
             poetry run python manage.py test'
 
   frontend_lint:
