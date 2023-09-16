@@ -174,11 +174,12 @@ jobs:
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
-          chmod 777 backend/compilers
+          mkdir -p compilers && chmod 777 compilers
           container_id=$(docker run \
             --detach \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/compilers:/compilers \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
