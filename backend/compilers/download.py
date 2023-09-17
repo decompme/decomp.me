@@ -36,13 +36,13 @@ class ContainerManager:
 class PodmanManager(ContainerManager):
     def __init__(self, uri="unix:///tmp/podman.sock"):
         self.client = podman.PodmanClient(base_url=uri)
-        # sanity check that service is up and running
         try:
-            self.client.images.list()
+            # sanity check that service is up and running
+            self.client.ping()
         except FileNotFoundError:
-            raise Exception("%s not found, is the podman service running?")
-        except podman.errors.exceptions.APIError as err:
-            logger.error("Podman error: %s, will try to continue", err)
+            raise Exception("%s not found, is the podman service running?", uri)
+        except podman.errors.exceptions.APIError:
+            raise Exception("%s found, is the podman service running?", uri)
 
     def get_remote_image_digest(self, docker_image, os="linux"):
         # NOTE: this is the arch-specific sha256
@@ -70,7 +70,12 @@ class PodmanManager(ContainerManager):
 
 class DockerManager(ContainerManager):
     def __init__(self):
-        self.client = docker.from_env()
+        try:
+            self.client = docker.from_env()
+        except FileNotFoundError:
+            raise Exception("%s not found, is the docker service running?", "/var/run/docker.sock")
+        except docker.errors.DockerException:
+            raise Exception("%s found, is the docker service running?", "/var/run/docker.sock")
 
     def get_remote_image_digest(self, docker_image):
         try:

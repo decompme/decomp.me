@@ -194,7 +194,7 @@ jobs:
 
           docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
-            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman --threads 4 && \
+            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman && \
             poetry run python manage.py test'
 
   frontend_lint:
