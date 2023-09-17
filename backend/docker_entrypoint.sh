@@ -10,9 +10,9 @@ poetry config virtualenvs.path /backend/virtualenvs
 
 poetry install
 
-PODMAN_USERNS=auto podman system service --time=0 unix:///tmp/podman.sock &
+podman system service --time=0 unix:///tmp/podman.sock &
 
-poetry run /backend/compilers/download.py --podman --threads 4
+poetry run /backend/compilers/download.py --podman
 
 skill podman
 
