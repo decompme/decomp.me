@@ -7,182 +7,18 @@ import logging
 import os
 import platform
 import shutil
+import sys
 import tempfile
 
 from pathlib import Path
 
 from multiprocessing import Pool
 
+import yaml
 import docker
 import podman
 
 logger = logging.getLogger(__name__)
-
-
-# TODO: can we pull this out into json/yaml and load based on host arch instead?
-if platform.system().lower() == "darwin":
-    COMPILERS = {
-        "n64": [
-            "ido5.3",
-            "ido7.1",
-            "gcc2.7.2kmc",
-            "gcc2.8.1pm",
-        ],
-        "switch": [
-            "clang-4.0.1",
-            "clang-8.0.0",
-        ],
-    }
-else:
-    COMPILERS = {
-        "n64": [
-            "gcc2.7.2kmc",
-            "gcc2.7.2sn",
-            "gcc2.7.2snew",
-            "gcc2.8.1pm",
-            "gcc2.8.1sn",
-            "ido5.3",
-            "ido5.3_c++",
-            "ido6.0",
-            "ido7.1",
-            "mips_pro_744",
-            "egcs_1.1.2-4",
-            "gcc4.4.0-mips64-elf",
-        ],
-        "ps1": [
-            "psyq3.3",
-            "psyq3.5",
-            "psyq3.6",
-            "psyq4.0",
-            "psyq4.1",
-            "psyq4.3",
-            "psyq4.5",
-            "psyq4.6",
-            "gcc2.6.3-psx",
-            "gcc2.6.3-mipsel",
-            "gcc2.7.1-mipsel",
-            "gcc2.7.2-mipsel",
-            "gcc2.7.2.1-mipsel",
-            "gcc2.7.2.2-mipsel",
-            "gcc2.7.2.3-mipsel",
-            "gcc2.8.0-mipsel",
-            "gcc2.8.1-mipsel",
-            "gcc2.91.66-mipsel",
-            "gcc2.95.2-mipsel",
-        ],
-        "ps2": [
-            "ee-gcc2.9-990721",
-            "ee-gcc2.9-991111",
-            "ee-gcc2.9-991111a",
-            "ee-gcc2.9-991111-01",
-            "ee-gcc2.95.2-273a",
-            "ee-gcc2.95.2-274",
-            "ee-gcc2.95.3-107",
-            "ee-gcc2.95.3-114",
-            "ee-gcc2.95.3-136",
-            "ee-gcc2.96",
-            "ee-gcc3.2-040921",
-            "mwcps2-2.3-991202",
-            "mwcps2-3.0b22-011126",
-            "mwcps2-3.0b22-020123",
-            "mwcps2-3.0b22-020716",
-            "mwcps2-3.0b22-020926",
-        ],
-        "macosx": [
-            "gcc-5370",
-            "gcc-5026",
-            "gcc-5363",
-            "gcc3-1041",
-        ],
-        "gba": [
-            "agbcc",
-            "agbccpp",
-        ],
-        "saturn": [
-            "cygnus-2.7-96Q3",
-        ],
-        "switch": [
-            "clang-3.9.1",
-            "clang-4.0.1",
-            "clang-8.0.0",
-        ],
-        "nds_arm9": [
-            "mwcc_20_72",
-            "mwcc_20_79",
-            "mwcc_20_82",
-            "mwcc_20_84",
-            "mwcc_20_87",
-            "mwcc_30_114",
-            "mwcc_30_123",
-            "mwcc_30_126",
-            "mwcc_30_131",
-            "mwcc_30_133",
-            "mwcc_30_134",
-            "mwcc_30_136",
-            "mwcc_30_137",
-            "mwcc_30_138",
-            "mwcc_30_139",
-            "mwcc_40_1018",
-            "mwcc_40_1024",
-            "mwcc_40_1026",
-            "mwcc_40_1027",
-            "mwcc_40_1028",
-            "mwcc_40_1034",
-            "mwcc_40_1036",
-            "mwcc_40_1051",
-        ],
-        "n3ds": [
-            "armcc_40_771",
-            "armcc_40_821",
-            "armcc_41_561",
-            "armcc_41_713",
-            "armcc_41_791",
-            "armcc_41_894",
-            "armcc_41_921",
-            "armcc_41_1049",
-            "armcc_41_1440",
-            "armcc_41_1454",
-            "armcc_504_82",
-        ],
-        "gc_wii": [
-            "mwcc_233_144",
-            "mwcc_233_159",
-            "mwcc_233_163",
-            "mwcc_233_163n",
-            "mwcc_242_81",
-            "mwcc_247_92",
-            "mwcc_247_105",
-            "mwcc_247_107",
-            "mwcc_247_108",
-            "mwcc_41_60831",
-            "mwcc_41_60126",
-            "mwcc_42_142",
-            "mwcc_43_151",
-            "mwcc_43_172",
-            "mwcc_43_213",
-            "mwcc_242_81r",
-            "mwcc_233_163e",
-            "mwcc_42_127",
-        ],
-        "msdos": [
-            "wcc10.5",
-            "wcc10.5a",
-            "wcc10.6",
-            "wcc11.0",
-        ],
-        "win9x": [
-            "msvc6.0",
-            "msvc6.3",
-            "msvc6.4",
-            "msvc6.5",
-            "msvc6.5pp",
-            "msvc6.6",
-            "msvc7.0",
-            "msvc7.1",
-            "msvc4.0",
-            "msvc4.2",
-        ],
-    }
 
 
 class ContainerManager:
@@ -301,10 +137,10 @@ def get_compiler(
     if not compiler_dir.exists() or force is True:
         # we need to extract something, check if we need to pull the image
         if client_manager.get_local_image_digest(docker_image) != remote_image_digest:
-            logger.info("%s has newer image available; pulling ...", docker_image)
+            logger.debug("%s has newer image available; pulling ...", docker_image)
             client_manager.pull(docker_image)
         else:
-            logger.info(
+            logger.debug(
                 f"%s (%s) image is present and at latest version, continuing!",
                 compiler_id,
                 platform_id,
@@ -312,12 +148,12 @@ def get_compiler(
     else:
         # compiler_dir exists, is it up to date with remote?
         if image_digest.exists() and image_digest.read_text() == remote_image_digest:
-            logger.info(
+            logger.debug(
                 f"%s image is present and at latest version, skipping!", compiler_id
             )
             return
         # image_digest missing or out of date, so pull
-        logger.info("%s has newer image available; pulling ...", docker_image)
+        logger.debug("%s has newer image available; pulling ...", docker_image)
         client_manager.pull(docker_image)
 
     try:
@@ -415,8 +251,23 @@ def main():
     else:
         compilers_dir: Path = Path(os.path.dirname(os.path.realpath(__file__)))
 
+    host_arch = platform.system().lower()
+    if host_arch not in ["darwin", "linux"]:
+        logger.fatal(
+            "No compiler configuration is available for '%s' architecture, exiting",
+            host_arch,
+        )
+        sys.exit(0)
+
     to_download = []
-    for platform_id, compilers in COMPILERS.items():
+
+    compilers_yaml = (
+        Path(os.path.dirname(os.path.realpath(__file__)))
+        / f"compilers.{host_arch}.yaml"
+    )
+    compilers_config = yaml.safe_load(compilers_yaml.open())
+
+    for platform_id, compilers in compilers_config.items():
         if args.platforms is not None:
             platform_enabled = platform_id in args.platforms
         else:
@@ -434,7 +285,7 @@ def main():
     if len(to_download) == 0:
         logger.warning(
             "No platforms/compilers configured or enabled for host architecture (%s)",
-            platform.system().lower(),
+            host_arch,
         )
         return
 
