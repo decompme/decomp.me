@@ -307,6 +307,12 @@ PSYQ_MSDOS_CC = (
 )
 PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
 
+PSYQ33 = GCCPS1Compiler(
+    id="psyq3.3",
+    platform=PS1,
+    cc=PSYQ_MSDOS_CC,
+)
+
 PSYQ35 = GCCPS1Compiler(
     id="psyq3.5",
     platform=PS1,
@@ -333,6 +339,12 @@ PSYQ41 = GCCPS1Compiler(
 
 PSYQ43 = GCCPS1Compiler(
     id="psyq4.3",
+    platform=PS1,
+    cc=PSYQ_CC,
+)
+
+PSYQ44 = GCCPS1Compiler(
+    id="psyq4.4",
     platform=PS1,
     cc=PSYQ_CC,
 )
@@ -1137,11 +1149,13 @@ _all_compilers: List[Compiler] = [
     CLANG_401,
     CLANG_800,
     # PS1
+    PSYQ33,
     PSYQ35,
     PSYQ36,
     PSYQ40,
     PSYQ41,
     PSYQ43,
+    PSYQ44,
     PSYQ45,
     PSYQ46,
     GCC263_PSX,
@@ -1361,12 +1375,12 @@ _all_presets = [
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
-        PSYQ43,
+        PSYQ44,
         "-O2 -G65536",
     ),
     Preset(
         "Metal Gear Solid",
-        PSYQ43,
+        PSYQ44,
         "-O2 -G8",
     ),
     Preset(

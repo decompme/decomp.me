@@ -23,6 +23,4 @@ done
 
 poetry run /backend/manage.py migrate
 
-poetry run /backend/manage.py loaddata /backend/db.json
-
 poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
