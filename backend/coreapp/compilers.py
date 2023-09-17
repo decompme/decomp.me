@@ -59,7 +59,6 @@ class Compiler:
     is_gcc: ClassVar[bool] = False
     is_ido: ClassVar[bool] = False
     is_mwcc: ClassVar[bool] = False
-    needs_wine = False
     language: Language = Language.C
 
     @property
@@ -508,31 +507,31 @@ EE_GCC29_991111_01 = GCCCompiler(
 EE_GCC2952_273A = GCCCompiler(
     id="ee-gcc2.95.2-273a",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2952_274 = GCCCompiler(
     id="ee-gcc2.95.2-274",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_107 = GCCCompiler(
     id="ee-gcc2.95.3-107",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_114 = GCCCompiler(
     id="ee-gcc2.95.3-114",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_136 = GCCCompiler(
     id="ee-gcc2.95.3-136",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC296 = GCCCompiler(
@@ -550,31 +549,31 @@ EE_GCC32_040921 = GCCCompiler(
 MWCPS2_23_991202 = MWCCCompiler(
     id="mwcps2-2.3-991202",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_30B22_011126 = MWCCCompiler(
     id="mwcps2-3.0b22-011126",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_30B22_020123 = MWCCCompiler(
     id="mwcps2-3.0b22-020123",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_30B22_020716 = MWCCCompiler(
     id="mwcps2-3.0b22-020716",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_30B22_020926 = MWCCCompiler(
     id="mwcps2-3.0b22-020926",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 
@@ -914,7 +913,7 @@ PRODG_393 = GCCCompiler(
 )
 
 # NDS_ARM9
-MWCCARM_CC = '${WINE} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+MWCCARM_CC = '${WIBO} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_20_72 = MWCCCompiler(
     id="mwcc_20_72",
@@ -1054,7 +1053,7 @@ MWCC_40_1051 = MWCCCompiler(
     cc=MWCCARM_CC,
 )
 
-CL_WIN = '${WINE} "${COMPILER_DIR}"/Bin/CL.EXE /c /nologo /IZ:"${COMPILER_DIR}"/Include/ ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+CL_WIN = '${WIBO} "${COMPILER_DIR}"/Bin/CL.EXE /c /nologo /IZ:"${COMPILER_DIR}"/Include/ ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC40 = MSVCCompiler(
     id="msvc4.0",
@@ -1118,12 +1117,12 @@ MSVC71 = MSVCCompiler(
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
-    '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )
 WATCOM_CXX = (
-    '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )

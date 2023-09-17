@@ -49,13 +49,6 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
-WINE: str
-if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wine not required.")
-    WINE = ""
-else:
-    WINE = "wine"
-
 WIBO: str
 if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
     logger.info("WSL detected & nsjail disabled: wibo not required.")
@@ -207,7 +200,6 @@ class CompilerWrapper:
                     shell=True,
                     env={
                         "PATH": PATH,
-                        "WINE": WINE,
                         "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
