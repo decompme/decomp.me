@@ -45,7 +45,7 @@ class PodmanManager(ContainerManager):
             logger.error("Podman error: %s, will try to continue", err)
 
     def get_remote_image_digest(self, docker_image, os="linux"):
-        # this is the arch-specific sha256
+        # NOTE: this is the arch-specific sha256
         try:
             manifest = self.client.manifests.get(docker_image)
         except podman.errors.exceptions.NotFound:
@@ -57,18 +57,15 @@ class PodmanManager(ContainerManager):
         return digest
 
     def get_local_image_digest(self, docker_image):
-        local_tags = []
-        for image in self.client.images.list():
-            local_tags += image.tags
-        if docker_image in local_tags:
+        try:
             image = self.client.images.get(docker_image)
-            # NOTE: image.attrs["Digest"] is the overall sha256 of a multi-arch image
-            #       but we cannot get the equivalent from the registry using podman's API.
-            rd = image.manager.get_registry_data(docker_image)
-            digest = rd.attrs["RepoDigests"][-1]
-            return digest.split("@")[-1]
-
-        return None
+        except podman.errors.exceptions.ImageNotFound:
+            return None
+        # NOTE: image.attrs["Digest"] is the overall sha256 of a multi-arch image
+        #       but we cannot get the equivalent from the registry using podman's API.
+        registry_data = image.manager.get_registry_data(docker_image)
+        digest = registry_data.attrs["RepoDigests"][-1]
+        return digest.split("@")[-1]
 
 
 class DockerManager(ContainerManager):
