@@ -73,9 +73,13 @@ class DockerManager(ContainerManager):
         try:
             self.client = docker.from_env()
         except FileNotFoundError:
-            raise Exception("%s not found, is the docker service running?", "/var/run/docker.sock")
+            raise Exception(
+                "%s not found, is the docker service running?", "/var/run/docker.sock"
+            )
         except docker.errors.DockerException:
-            raise Exception("%s found, is the docker service running?", "/var/run/docker.sock")
+            raise Exception(
+                "%s found, is the docker service running?", "/var/run/docker.sock"
+            )
 
     def get_remote_image_digest(self, docker_image):
         try:
