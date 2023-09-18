@@ -294,7 +294,7 @@ class ScratchViewSet(
 ):
     queryset = Scratch.objects.all()
     pagination_class = ScratchPagination
-    filter_fields = ["platform", "compiler"]
+    filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
