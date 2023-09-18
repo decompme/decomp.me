@@ -1112,7 +1112,7 @@ MSVC70 = MSVCCompiler(
 MSVC71 = MSVCCompiler(
     id="msvc7.1",
     platform=WIN9X,
-    cc=CL_WIN,
+    cc=CL_WIN.replace("CL.EXE", "cl.exe"),
 )
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
