@@ -242,6 +242,7 @@ class TerseScratchSerializer(ScratchSerializer):
             "project",
             "project_function",
             "parent",
+            "preset",
         ]
 
 
