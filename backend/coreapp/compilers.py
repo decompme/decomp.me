@@ -1773,6 +1773,7 @@ _all_presets = [
         EE_GCC29_991111_01,
         "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
     ),
+    Preset("Kingdom Hearts", EE_GCC296, "-O2 -G0 -g"),
     # Windows
     Preset("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
     Preset("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
