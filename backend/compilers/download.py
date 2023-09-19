@@ -37,7 +37,7 @@ class ContainerManager:
         self,
         docker_image,
         docker_registry="ghcr.io",
-        github_repo="mkst/compilers",
+        github_repo="decompme/compilers",
         tag="latest",
     ):
         token_url = f"https://{docker_registry}/token?scope=repository:{github_repo}/{docker_image}:pull"
@@ -117,7 +117,7 @@ def get_compiler(
     force=False,
     use_podman=False,
     docker_registry="ghcr.io",
-    github_repo="mkst/compilers",
+    github_repo="decompme/compilers",
     tag="latest",
 ):
     logger.info("Processing %s (%s)", compiler_id, platform_id)
@@ -271,7 +271,7 @@ def main():
     parser.add_argument(
         "--github-repo",
         type=str,
-        default="mkst/compilers",
+        default="decompme/compilers",
         help="Name of github repo that owns the packages",
     )
     parser.add_argument(
