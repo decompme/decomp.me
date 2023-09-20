@@ -1763,6 +1763,11 @@ _all_presets = [
         MWCC_30_137,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
+    Preset(
+        "Pokémon Mystery Dungeon: Explorers of Sky",
+        MWCC_30_137,
+        "-O4,s -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
+    ),
     # MACOSX
     Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
     Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
