@@ -31,28 +31,87 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
     && make
 
 
+FROM ubuntu:22.04 as podman
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    golang-go \
+    libassuan-dev \
+    libbtrfs-dev \
+    libc6-dev \
+    libdevmapper-dev \
+    libglib2.0-dev \
+    libgpg-error-dev \
+    libgpgme-dev \
+    libprotobuf-c-dev \
+    libprotobuf-dev \
+    libseccomp-dev \
+    libselinux1-dev \
+    libsystemd-dev
+
+WORKDIR /root
+
+ENV BUILD_DIR=/build
+
+RUN mkdir -p ${BUILD_DIR}
+
+ARG CONMON_VERSION=v2.1.8
+RUN git clone https://github.com/containers/conmon && \
+    cd conmon && \
+    git checkout ${CONMON_VERSION} && \
+    export GOCACHE="$(mktemp -d)" && \
+    make && \
+    make podman PREFIX=${BUILD_DIR}/usr/local
+
+ARG RUNC_VERSION=v1.1.9
+RUN git clone https://github.com/opencontainers/runc runc && \
+    cd runc && \
+    git checkout ${RUNC_VERSION} && \
+    make BUILDTAGS="selinux seccomp" && \
+    mkdir -p ${BUILD_DIR}/usr/bin && \
+    cp runc ${BUILD_DIR}/usr/bin/runc
+
+ARG PODMAN_VERSION=v4.6.2
+RUN git clone https://github.com/containers/podman && \
+    cd podman && \
+    git checkout ${PODMAN_VERSION} && \
+    make BUILDTAGS="selinux seccomp" PREFIX=/usr && \
+    make install PREFIX=/build/usr
+
+
 FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
+    binutils-aarch64-linux-gnu \
+    binutils-djgpp \
     binutils-mips-linux-gnu \
     binutils-powerpc-linux-gnu \
-    binutils-aarch64-linux-gnu \
     binutils-sh-elf \
-    binutils-djgpp \
+    ca-certificates \
     curl \
     gcc-mips-linux-gnu \
     git \
+    iptables \
+    libc6-dev-i386 \
+    libdevmapper1.02.1 \
+    libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
+    libtinfo5 \
     netcat \
+    podman \
     unzip \
     wget \
-    libtinfo5 \
-    libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
+# replace podman with newer version
+COPY --from=podman /build/usr /usr
+
 RUN curl -sSL https://install.python-poetry.org/ | \
-  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.10 -
+  POETRY_VERSION=1.4.2 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -92,8 +151,12 @@ COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /
 # nds specifics
 COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
 
-# download compilers
-COPY compilers/download.py /compilers/
+# msdos specific
+RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
+    wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
+    tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump && \
+    rm omftools.tar.gz; \
+    fi
 
 ARG ENABLE_GBA_SUPPORT
 ARG ENABLE_N64_SUPPORT
@@ -109,10 +172,6 @@ ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
 ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
 
-RUN python3.10 -m pip install requests tqdm \
-    && python3.10 /compilers/download.py \
-    && rm -rf /compilers/download_cache/
-
 RUN mkdir -p /etc/fonts
 
 WORKDIR /backend
@@ -125,6 +184,9 @@ RUN useradd --create-home user \
     && chown -R user:user /sandbox \
     && mkdir -p "${WINEPREFIX}" \
     && chown user:user "${WINEPREFIX}"
+
+# FIXME: how to properly configure subuids/subgids for podman?
+RUN echo -e "" >/etc/subgid && echo -e "" >/etc/subuid
 
 # switch to non-root user
 USER user

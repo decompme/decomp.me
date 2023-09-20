@@ -52,6 +52,10 @@ jobs:
             libnl-route-3-dev \
             libncurses5 \
             protobuf-compiler
+      - name: Install msdos assembler
+        run: |-
+          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
+          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
@@ -164,14 +168,19 @@ jobs:
             -t decompme_backend \
             --build-arg ENABLE_GC_WII_SUPPORT=YES \
             --build-arg ENABLE_PS1_SUPPORT=YES \
-            --build-arg ENABLE_SATURN_SUPPORT=YES
+            --build-arg ENABLE_SATURN_SUPPORT=YES \
+            --build-arg ENABLE_MSDOS_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
-          docker run \
+          mkdir -p compilers && chmod 777 compilers
+          container_id=$(docker run \
+            --detach \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/compilers:/compilers \
+            --device /dev/fuse \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
@@ -181,8 +190,11 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            decompme_backend -c 'cd /decomp.me/backend && \
+            decompme_backend -c 'podman system service --time=0 unix:///tmp/podman.sock')
+
+          docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
+            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman && \
             poetry run python manage.py test'
 
   frontend_lint:

@@ -30,19 +30,21 @@ services:
       - setuid
       - setgid
       - setfcap
+    devices:
+      - "/dev/fuse:/dev/fuse"
     env_file:
-    - backend/docker.dev.env
+      - backend/docker.dev.env
     ports:
-    - "8000:8000"
+      - "8000:8000"
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
-    - ./backend:/backend
+      - ./backend:/backend
     tmpfs:
-    # Use a separate tmpfs to prevent a rogue jailed process
-    # from filling /tmp on the parent container
-    - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
     build: frontend
     environment:
@@ -50,14 +52,14 @@ services:
       INTERNAL_API_BASE: http://backend:8000/api
       FRONTEND_USE_IMAGE_PROXY: "off"
     ports:
-    - "8080:8080"
+      - "8080:8080"
     volumes:
-    - ./frontend:/frontend
-    - .env:/.env
+      - ./frontend:/frontend
+      - .env:/.env
   nginx:
     image: nginx:1.22-alpine
     ports:
-    - "80:80"
+      - "80:80"
     volumes:
-    - ./nginx:/etc/nginx/conf.d
-    - ./backend/media:/media
+      - ./nginx:/etc/nginx/conf.d
+      - ./backend/media:/media

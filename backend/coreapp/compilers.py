@@ -283,19 +283,19 @@ ARMCC_504_82 = ArmccCompiler(
 CLANG_391 = ClangCompiler(
     id="clang-3.9.1",
     platform=SWITCH,
-    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -D_LIBCPP_HAS_MUSL_LIBC -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -D_LIBCPP_HAS_MUSL_LIBC -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
 CLANG_401 = ClangCompiler(
     id="clang-4.0.1",
     platform=SWITCH,
-    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
 CLANG_800 = ClangCompiler(
     id="clang-8.0.0",
     platform=SWITCH,
-    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -fuse-ld=lld -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
 # PS1
@@ -306,6 +306,12 @@ PSYQ_MSDOS_CC = (
     + '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
 )
 PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+
+PSYQ33 = GCCPS1Compiler(
+    id="psyq3.3",
+    platform=PS1,
+    cc=PSYQ_MSDOS_CC,
+)
 
 PSYQ35 = GCCPS1Compiler(
     id="psyq3.5",
@@ -333,6 +339,12 @@ PSYQ41 = GCCPS1Compiler(
 
 PSYQ43 = GCCPS1Compiler(
     id="psyq4.3",
+    platform=PS1,
+    cc=PSYQ_CC,
+)
+
+PSYQ44 = GCCPS1Compiler(
+    id="psyq4.4",
     platform=PS1,
     cc=PSYQ_CC,
 )
@@ -1137,11 +1149,13 @@ _all_compilers: List[Compiler] = [
     CLANG_401,
     CLANG_800,
     # PS1
+    PSYQ33,
     PSYQ35,
     PSYQ36,
     PSYQ40,
     PSYQ41,
     PSYQ43,
+    PSYQ44,
     PSYQ45,
     PSYQ46,
     GCC263_PSX,
@@ -1361,12 +1375,12 @@ _all_presets = [
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
-        PSYQ43,
+        PSYQ44,
         "-O2 -G65536",
     ),
     Preset(
         "Metal Gear Solid",
-        PSYQ43,
+        PSYQ44,
         "-O2 -G8",
     ),
     Preset(
