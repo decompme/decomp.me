@@ -175,6 +175,10 @@ class CompilerWrapper:
             if compiler.is_ido and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
+            if compiler.platform != platforms.DUMMY and not compiler.path.exists():
+                logging.warning("%s does not exist, creating it!", compiler.path)
+                compiler.path.mkdir(parents=True)
+
             # Run compiler
             try:
                 st = round(time.time() * 1000)
