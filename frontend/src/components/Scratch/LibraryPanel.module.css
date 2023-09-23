@@ -1,0 +1,42 @@
+.section {
+    padding: 1.5em;
+    border-radius: 0;
+    background: transparent;
+}
+
+.section > h3 {
+    font-size: 1.1em;
+    font-weight: 500;
+
+    padding: 0.5em;
+    padding-top: 0;
+
+    color: var(--g1200);
+}
+
+.section:not(:last-child) {
+    border-bottom: 1px solid var(--a100);
+}
+
+.library {
+    display: inline-flex;
+    flex-direction: row;
+
+    width: 100%;
+    border-radius: 0.5em;
+}
+
+.libraryName {
+    cursor: default;
+    font-size: 0.8rem;
+
+    font-size: 1.0em;
+    font-weight: 500;
+
+    padding: .5em;
+
+}
+
+.librarySelect {
+    flex-grow: 1;
+}

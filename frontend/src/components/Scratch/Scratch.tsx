@@ -21,6 +21,7 @@ import AboutScratch from "./AboutScratch"
 import DecompilationPanel from "./DecompilePanel"
 import FamilyPanel from "./FamilyPanel"
 import useLanguageServer from "./hooks/useLanguageServer"
+import LibraryPanel from "./LibraryPanel"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchToolbar from "./ScratchToolbar"
@@ -33,6 +34,7 @@ enum TabId {
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
     FAMILY = "scratch_family",
+    LIBRARIES = "libraries",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -52,6 +54,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
+                    TabId.LIBRARIES,
                 ],
             },
             {
@@ -92,6 +95,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
+                    TabId.LIBRARIES,
                 ],
             },
         ],
@@ -273,6 +277,10 @@ export default function Scratch({
         case TabId.FAMILY:
             return <Tab key={id} tabKey={id} label="Family">
                 {() => <FamilyPanel scratch={scratch} />}
+            </Tab>
+        case TabId.LIBRARIES:
+            return <Tab key={id} tabKey={id} label="Libraries">
+                <LibraryPanel scratch={scratch} onChange={setScratch} />
             </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />
