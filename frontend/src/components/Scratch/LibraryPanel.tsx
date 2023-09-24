@@ -6,6 +6,7 @@ import { TrashIcon } from "@primer/octicons-react"
 
 import Button from "@/components/Button"
 import Select from "@/components/Select2"
+import useTranslation from "@/lib/i18n/translate"
 
 import styles from "./LibraryPanel.module.css"
 
@@ -20,6 +21,7 @@ type Props = {
 
 export default function LibraryPanel({ scratch, onChange }: Props) {
     const libraries = useLibraries()
+    const librariesTranslations = useTranslation("libraries")
 
     const hasLibrary = libName => scratch.libraries.some(lib => lib.name == libName)
     const libraryVersions = scratchlib => {
@@ -67,14 +69,14 @@ export default function LibraryPanel({ scratch, onChange }: Props) {
         // Filter out libraries that are already in the scratch
         .filter(lib => !scratch.libraries.some(scratchlib => scratchlib.name == lib.name))
         // Turn them into something the Select component accepts.
-        .map(lib => lib.supported_versions.map(ver => [lib.name, lib.name]))
+        .map(lib => lib.supported_versions.map(ver => [lib.name, librariesTranslations.t(lib.name)]))
         .flat()
 
     // Prepend a null value to the selector.
     const selectOptions = Object.fromEntries([["__NULL__", "---"], ...librariesSelectOptions])
 
     const scratchLibraryElements = scratch.libraries.map(lib => <Fragment key={lib.name}>
-        <label className={styles.libraryName}>{lib.name}</label>
+        <label className={styles.libraryName}>{librariesTranslations.t(lib.name)}</label>
         <Select
             value={lib.version}
             onChange={value => setLibraryVersion(lib.name, value)}
