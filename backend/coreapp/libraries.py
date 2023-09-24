@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 
-LIBRARY_BASE_PATH: Path = settings.LIBRARY_BASE_PATH
+if TYPE_CHECKING:
+    LIBRARY_BASE_PATH: Path
+else:
+    LIBRARY_BASE_PATH: Path = settings.LIBRARY_BASE_PATH
 
 
 @dataclass(frozen=True)
