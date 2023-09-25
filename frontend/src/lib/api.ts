@@ -135,7 +135,8 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context &&
-        scratch.match_override === saved.match_override
+        scratch.match_override === saved.match_override &&
+        JSON.stringify(scratch.libraries) === JSON.stringify(saved.libraries)
     )
 }
 
@@ -221,6 +222,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         scratch.compiler,
         scratch.compiler_flags, scratch.diff_flags, scratch.diff_label,
         scratch.source_code, scratch.context,
+        scratch.libraries,
     ])
 
     return {
