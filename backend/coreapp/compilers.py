@@ -1633,6 +1633,11 @@ _all_presets = [
         "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
     Preset(
+        "The Wind Waker (Dolphin)",
+        MWCC_233_163E,
+        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on"
+    ),
+    Preset(
         "Super Paper Mario (DOL)",
         MWCC_41_60831,
         f"{SPM_SHARED} -inline all -sdata 4 -sdata2 4",
