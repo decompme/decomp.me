@@ -1384,6 +1384,11 @@ _all_presets = [
         "-O2 -G8",
     ),
     Preset(
+        "Metal Gear Solid (overlays)",
+        PSYQ44,
+        "-O2 -G0 -Wall",
+    ),
+    Preset(
         "vib-ribbon",
         GCC29166_MIPSEL,
         "-Os -G4 -mel -g0 -mno-abicalls -fno-builtin -fsigned-char -fpeephole -ffunction-cse -fkeep-static-consts -fpcc-struct-return -fcommon -fgnu-linker -fargument-alias -msplit-addresses -mgas -mgpOPT -mgpopt -msoft-float -gcoff",
