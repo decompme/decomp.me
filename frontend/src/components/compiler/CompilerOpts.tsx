@@ -380,9 +380,9 @@ export function LibrariesEditor({ libraries, setLibraries }: {
     const libraryVersions = scratchlib => {
         const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)
         if (lib != null) {
-            return lib.supported_versions
+            return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
         } else {
-            return [scratchlib.version]
+            return { [scratchlib.version]: scratchlib.version }
         }
     }
 
