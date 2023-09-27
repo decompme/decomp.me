@@ -1031,7 +1031,7 @@ MSVC64 = MSVCCompiler(
     cc=CL_WIN,
 )
 
-MSVC65 = MSVCCompiler(
+MSVC65 = MSVCCompiler(G
     id="msvc6.5",
     platform=WIN9X,
     cc=CL_WIN,
@@ -1634,12 +1634,12 @@ _all_presets = [
     ),
     Preset(
         "The Wind Waker (DOL)",
-        MWCC_233_163E,
+        MWCC_242_81,
         "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto flags -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on",
         ),
     Preset(
         "The Wind Waker (REL)",
-        MWCC_233_163E,
+        MMWCC_242_81,
         "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto flags -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on -sdata 0 -sdata2 0",
         ),
     Preset(
