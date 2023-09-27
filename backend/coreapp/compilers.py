@@ -1632,15 +1632,15 @@ _all_presets = [
         MWCC_233_163E,
         "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
-    Preset(
+Preset(
         "The Wind Waker (DOL)",
         MWCC_233_163E,
-        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on",
+        "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto flags -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on",
     ),
-    Preset(
+Preset(
         "The Wind Waker (REL)",
         MWCC_233_163E,
-        "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on -sdata 0 -sdata2 0",
+        "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto flags -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on -sdata 0 -sdata2 0",
     ),
     Preset(
         "Super Paper Mario (DOL)",
