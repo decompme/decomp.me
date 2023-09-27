@@ -80,6 +80,10 @@ jobs:
         run: |-
           cd backend
           poetry run python3 compilers/download.py
+      - name: Download libraries
+        run: |-
+          cd backend
+          poetry run python3 libraries/download.py
       - name: Install dkp dependencies (ppc)
         run: |-
           mkdir -p bin
@@ -197,7 +201,8 @@ jobs:
 
           docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
-            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --libraries-dir ${LIBRARY_BASE_PATH} --podman && \
+            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman && \
+            poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
             poetry run python manage.py test'
 
   frontend_lint:

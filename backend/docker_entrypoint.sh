@@ -13,6 +13,7 @@ poetry install
 podman system service --time=0 unix:///tmp/podman.sock &
 
 poetry run /backend/compilers/download.py --podman
+poetry run /backend/libraries/download.py
 
 skill podman
 
