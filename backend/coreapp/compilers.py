@@ -1376,7 +1376,7 @@ _all_presets = [
     Preset(
         "Frogger",
         GCC263_PSX,
-        "-O3 -G0",
+        "-O3 -G0 -gcoff",
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
