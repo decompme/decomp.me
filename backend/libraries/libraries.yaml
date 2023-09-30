@@ -1,0 +1,5 @@
+directx:
+  '8.0':
+    git:
+      url: https://github.com/roblabla/directx-headers
+      branch: main

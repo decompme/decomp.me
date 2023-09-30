@@ -6,7 +6,16 @@ from dataclasses import dataclass
 from platform import uname
 import time
 
-from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    TypeVar,
+    Sequence,
+)
 
 from django.conf import settings
 
@@ -17,6 +26,7 @@ from coreapp.platforms import Platform
 import coreapp.util as util
 
 from .error import AssemblyError, CompilationError
+from .libraries import LIBRARY_BASE_PATH, Library
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
 
@@ -130,6 +140,7 @@ class CompilerWrapper:
         code: str,
         context: str,
         function: str = "",
+        libraries: Sequence[Library] = (),
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
@@ -182,6 +193,12 @@ class CompilerWrapper:
             # Run compiler
             try:
                 st = round(time.time() * 1000)
+                libraries_compiler_flags = " ".join(
+                    (
+                        compiler.library_include_flag + str(lib.include_path)
+                        for lib in libraries
+                    )
+                )
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
@@ -195,7 +212,9 @@ class CompilerWrapper:
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
-                        "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "COMPILER_FLAGS": sandbox.quote_options(
+                            compiler_flags + " " + libraries_compiler_flags
+                        ),
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",

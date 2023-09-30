@@ -1,7 +1,12 @@
-import { createContext, useContext, ReactElement } from "react"
+import { createContext, useContext, useState, Fragment, ReactElement } from "react"
+
+import { TrashIcon } from "@primer/octicons-react"
 
 import Checkbox from "@/app/(navfooter)/settings/Checkbox"
+import Button from "@/components/Button"
+import Select2 from "@/components/Select2"
 import * as api from "@/lib/api"
+import { Library } from "@/lib/api/types"
 import useTranslation from "@/lib/i18n/translate"
 
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -149,10 +154,11 @@ function DiffFlags({ schema }: FlagsProps) {
 }
 
 export type CompilerOptsT = {
-    compiler: string
-    compiler_flags: string
-    diff_flags: string[]
-    preset: string
+    compiler?: string
+    compiler_flags?: string
+    diff_flags?: string[]
+    preset?: string
+    libraries?: Library[]
 }
 
 export type Props = {
@@ -206,6 +212,10 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             diff_flags: preset.diff_flags,
             preset: preset.name,
         })
+    }
+
+    const setLibraries = (libraries: Library[]) => {
+        onChange({ libraries })
     }
 
     const optsEditorProvider = {
@@ -262,6 +272,11 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
             </section>
         </OptsContext.Provider>
+
+        <section className={styles.section}>
+            <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} />
+        </section>
+
         <OptsContext.Provider value={diffOptsEditorProvider}>
             <section className={styles.section}>
                 <h3 className={styles.heading}>Diff options</h3>
@@ -353,4 +368,84 @@ export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDi
             {(compilerId && compiler) ? <DiffFlags schema={compiler.diff_flags} /> : <div />}
         </div>
     </div>
+}
+
+export function LibrariesEditor({ libraries, setLibraries }: {
+    libraries: Library[]
+    setLibraries: (libraries: Library[]) => void
+}) {
+    const supportedLibraries = api.useLibraries()
+    const librariesTranslations = useTranslation("libraries")
+
+    const libraryVersions = scratchlib => {
+        const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)
+        if (lib != null) {
+            return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
+        } else {
+            return { [scratchlib.version]: scratchlib.version }
+        }
+    }
+
+    const addLibrary = libName => {
+        const lib = supportedLibraries.find(lib => lib.name == libName)
+        if (lib != null) {
+            return setLibraryVersion(libName, lib.supported_versions[0])
+        }
+    }
+    const setLibraryVersion = (libName, ver) => {
+        // clone the libraries
+        const libs = JSON.parse(JSON.stringify(libraries))
+        // Check if the library is already enabled, if so return it
+        const scratchlib = libraries.find(scratchlib => scratchlib.name == libName)
+        if (scratchlib != null) {
+            // If it is, set the version
+            scratchlib.version = ver
+        } else {
+            // If it isn't, add the library to the list
+            libs.push({ name: libName, version: ver })
+        }
+        setLibraries(libs)
+    }
+    const removeLibrary = libName => {
+        // clone the libraries
+        let libs = JSON.parse(JSON.stringify(libraries))
+        // Only keep the libs whose name are not libName
+        libs = libs.filter(lib => lib.name != libName)
+        setLibraries(libs)
+    }
+
+    const librariesSelectOptions = supportedLibraries
+        // Filter out libraries that are already in the scratch
+        .filter(lib => !libraries.some(scratchlib => scratchlib.name == lib.name))
+        // Turn them into something the Select component accepts.
+        .map(lib => [lib.name, librariesTranslations.t(lib.name)])
+
+    // Prepend a null value to the selector.
+    const selectOptions = Object.fromEntries([["__NULL__", "---"], ...librariesSelectOptions])
+
+    const scratchLibraryElements = libraries.map(lib => <Fragment key={lib.name}>
+        <label className={styles.libraryName}>{librariesTranslations.t(lib.name)}</label>
+        <Select2
+            value={lib.version}
+            onChange={value => setLibraryVersion(lib.name, value)}
+            options={libraryVersions(lib)} />
+        <button className={styles.deleteButton} onClick={() => removeLibrary(lib.name)}><TrashIcon />Remove library</button>
+    </Fragment>)
+
+    const [selectedLib, setSelectedLib] = useState("__NULL__")
+
+    return <>
+        <h3 className={styles.heading}>Libraries</h3>
+        <div className={styles.addLibraryRow}>
+            <Select2
+                value={selectedLib}
+                onChange={setSelectedLib}
+                options={selectOptions}
+                className={styles.librarySelect} />
+            <Button primary onClick={() => addLibrary(selectedLib)}>Add library</Button>
+        </div>
+        <div className={styles.librariesGrid}>
+            {scratchLibraryElements}
+        </div>
+    </>
 }

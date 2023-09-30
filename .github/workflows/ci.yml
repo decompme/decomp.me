@@ -80,6 +80,10 @@ jobs:
         run: |-
           cd backend
           poetry run python3 compilers/download.py
+      - name: Download libraries
+        run: |-
+          cd backend
+          poetry run python3 libraries/download.py
       - name: Install dkp dependencies (ppc)
         run: |-
           mkdir -p bin
@@ -175,16 +179,19 @@ jobs:
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
           mkdir -p compilers && chmod 777 compilers
+          mkdir -p libraries && chmod 777 libraries
           container_id=$(docker run \
             --detach \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
+            -v $(pwd)/libraries:/libraries \
             --device /dev/fuse \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
@@ -195,6 +202,7 @@ jobs:
           docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
             poetry install && \
             poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman && \
+            poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
             poetry run python manage.py test'
 
   frontend_lint:

@@ -152,3 +152,63 @@
     display: block;
     width: 100%;
 }
+
+.libraryName {
+    cursor: default;
+    font-size: 0.8rem;
+
+    font-size: 1.0em;
+    font-weight: 500;
+
+    padding: .5em;
+
+}
+
+.librarySelect {
+    flex-grow: 1;
+}
+
+.deleteButton {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+
+    cursor: pointer;
+
+    color: var(--g1900);
+    background: none;
+    border: 0;
+
+}
+
+.deleteButton > svg {
+    width: 1em;
+    color: var(--g1200);
+}
+
+.deleteButton:hover {
+    border-radius: 4px;
+    color: var(--g2000);
+    background: var(--g400);
+}
+
+.addLibraryRow {
+    display: inline-flex;
+    margin: 1em;
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.addLibraryRow > button {
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+.librariesGrid {
+    margin-top: 1.5em;
+    display: grid;
+    grid-template-columns: max-content 1fr max-content;
+    grid-auto-flow: row;
+    gap: 0.4em 0;
+}

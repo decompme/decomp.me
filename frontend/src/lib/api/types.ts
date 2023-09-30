@@ -48,6 +48,7 @@ export interface TerseScratch {
     match_override: boolean
     project: string
     project_function: string
+    libraries: Library[]
 }
 
 export interface Scratch extends TerseScratch {
@@ -163,6 +164,16 @@ export type Compiler = {
     platform: string
     flags: Flag[]
     diff_flags: Flag[]
+}
+
+export type Library = {
+    name: string
+    version: string
+}
+
+export type LibraryVersions = {
+    name: string
+    supported_versions: string[]
 }
 
 export type Platform = {

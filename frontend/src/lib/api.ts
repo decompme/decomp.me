@@ -6,7 +6,7 @@ import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch, delete_ } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, Platform, Project, ProjectMember } from "./api/types"
+import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember } from "./api/types"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
@@ -82,6 +82,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
             description: undefinedIfUnchanged(savedScratch, localScratch, "description"),
             match_override: undefinedIfUnchanged(savedScratch, localScratch, "match_override"),
+            libraries: undefinedIfUnchanged(savedScratch, localScratch, "libraries"),
         })
 
         await mutate(localScratch.url, updatedScratch, false)
@@ -134,7 +135,8 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
         scratch.diff_label === saved.diff_label &&
         scratch.source_code === saved.source_code &&
         scratch.context === saved.context &&
-        scratch.match_override === saved.match_override
+        scratch.match_override === saved.match_override &&
+        JSON.stringify(scratch.libraries) === JSON.stringify(saved.libraries)
     )
 }
 
@@ -166,6 +168,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             compiler_flags: scratch.compiler_flags,
             diff_flags: scratch.diff_flags,
             diff_label: scratch.diff_label,
+            libraries: scratch.libraries,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
         }).then((compilation: Compilation) => {
@@ -219,6 +222,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         scratch.compiler,
         scratch.compiler_flags, scratch.diff_flags, scratch.diff_label,
         scratch.source_code, scratch.context,
+        scratch.libraries,
     ])
 
     return {
@@ -249,6 +253,16 @@ export function useCompilers(): Record<string, Compiler> {
     })
 
     return data.compilers
+}
+
+export function useLibraries(): LibraryVersions[] {
+    const { data } = useSWR("/libraries", get, {
+        refreshInterval: 0,
+        suspense: true, // TODO: remove
+        onErrorRetry,
+    })
+
+    return data.libraries
 }
 
 export function usePaginated<T>(url: string, firstPage?: Page<T>): {
