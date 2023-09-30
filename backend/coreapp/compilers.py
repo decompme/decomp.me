@@ -1374,6 +1374,11 @@ _all_presets = [
         "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
     ),
     Preset(
+        "Frogger",
+        GCC263_PSX,
+        "-O3 -G0 -gcoff",
+    ),
+    Preset(
         "Legacy of Kain: Soul Reaver",
         PSYQ44,
         "-O2 -G65536",
