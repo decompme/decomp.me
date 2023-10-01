@@ -31,57 +31,6 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
     && make
 
 
-FROM ubuntu:22.04 as podman
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \
-    golang-go \
-    libassuan-dev \
-    libbtrfs-dev \
-    libc6-dev \
-    libdevmapper-dev \
-    libglib2.0-dev \
-    libgpg-error-dev \
-    libgpgme-dev \
-    libprotobuf-c-dev \
-    libprotobuf-dev \
-    libseccomp-dev \
-    libselinux1-dev \
-    libsystemd-dev
-
-WORKDIR /root
-
-ENV BUILD_DIR=/build
-
-RUN mkdir -p ${BUILD_DIR}
-
-ARG CONMON_VERSION=v2.1.8
-RUN git clone https://github.com/containers/conmon && \
-    cd conmon && \
-    git checkout ${CONMON_VERSION} && \
-    export GOCACHE="$(mktemp -d)" && \
-    make && \
-    make podman PREFIX=${BUILD_DIR}/usr/local
-
-ARG RUNC_VERSION=v1.1.9
-RUN git clone https://github.com/opencontainers/runc runc && \
-    cd runc && \
-    git checkout ${RUNC_VERSION} && \
-    make BUILDTAGS="selinux seccomp" && \
-    mkdir -p ${BUILD_DIR}/usr/bin && \
-    cp runc ${BUILD_DIR}/usr/bin/runc
-
-ARG PODMAN_VERSION=v4.6.2
-RUN git clone https://github.com/containers/podman && \
-    cd podman && \
-    git checkout ${PODMAN_VERSION} && \
-    make BUILDTAGS="selinux seccomp" PREFIX=/usr && \
-    make install PREFIX=/build/usr
-
-
 FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
@@ -102,13 +51,9 @@ RUN apt-get -y update && apt-get install -y \
     libprotobuf-dev \
     libtinfo5 \
     netcat \
-    podman \
     unzip \
     wget \
     && rm -rf /var/lib/apt/lists/*
-
-# replace podman with newer version
-COPY --from=podman /build/usr /usr
 
 RUN curl -sSL https://install.python-poetry.org/ | \
   POETRY_VERSION=1.6.1 POETRY_HOME=/etc/poetry python3.10 -
@@ -184,9 +129,6 @@ RUN useradd --create-home user \
     && chown -R user:user /sandbox \
     && mkdir -p "${WINEPREFIX}" \
     && chown user:user "${WINEPREFIX}"
-
-# FIXME: how to properly configure subuids/subgids for podman?
-RUN echo -e "" >/etc/subgid && echo -e "" >/etc/subuid
 
 # switch to non-root user
 USER user
