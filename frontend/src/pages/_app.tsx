@@ -2,8 +2,6 @@
 
 import { useEffect } from "react"
 
-import type {} from "react/next"
-
 import Head from "next/head"
 
 import PlausibleProvider from "next-plausible"
