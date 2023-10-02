@@ -37,7 +37,6 @@ function MountedSearch({ className }: { className?: string }) {
         isOpen,
         getMenuProps,
         getInputProps,
-        getComboboxProps,
         getItemProps,
         setInputValue,
     } = useCombobox({
@@ -97,7 +96,6 @@ function MountedSearch({ className }: { className?: string }) {
 
     return <div
         className={classNames(styles.container, className)}
-        {...getComboboxProps()}
         onKeyDown={evt => {
             if (evt.key === "Enter") {
                 evt.stopPropagation()
