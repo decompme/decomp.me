@@ -95,7 +95,6 @@ export async function get(url: string) {
     return await errorHandledFetchJson(url, {
         ...commonOpts,
         cache: "no-cache",
-        next: { revalidate: 10 },
     })
 }
 
