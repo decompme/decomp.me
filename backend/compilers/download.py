@@ -46,7 +46,7 @@ def get_remote_image_digest(
     }
     resp = requests.get(image_url, headers=headers, timeout=10)
     if resp.status_code != 200:
-        logger.error(
+        logger.debug(
             "Unable to get image manifest for %s:%s from %s: %s",
             docker_image,
             tag,
