@@ -3,7 +3,6 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import Checkbox from "@/app/(navfooter)/settings/Checkbox"
 import * as api from "@/lib/api"
 
 import LoadingSpinner from "../loading.svg"
