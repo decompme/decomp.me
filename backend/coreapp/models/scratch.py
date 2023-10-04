@@ -4,7 +4,7 @@ import logging
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import Any, List
+from typing import Any, List, Sequence
 
 from .profile import Profile
 from ..libraries import Library
@@ -53,7 +53,16 @@ class LibrariesField(models.JSONField):
                     obj = {"name": obj.name, "version": obj.version}
                 return super().default(obj)
 
+        kwargs.pop("encoder", None)
         return super().__init__(encoder=MyEncoder, **kwargs)
+
+    def deconstruct(self) -> tuple[str, str, Sequence[Any], dict[str, Any]]:
+        name, path, args, kwargs = super().deconstruct()
+        # remove encoder from the generated migrations. If we don't do this,
+        # makemigrations generates invalid migrations that try to access the
+        # local MyEncoder...
+        kwargs.pop("encoder", None)
+        return name, path, args, kwargs
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
