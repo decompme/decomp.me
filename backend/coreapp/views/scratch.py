@@ -145,11 +145,17 @@ scratch_condition = condition(
 )
 
 
+def is_asm_empty(asm: str) -> bool:
+    asm = asm.strip()
+
+    return asm == "" or asm == "nop"
+
+
 def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
-        if scratch.target_assembly.source_asm.data.strip() == "":
-            family = Scratch.objects.filter(slug=scratch.slug).order_by("creation_time")
+        if is_asm_empty(scratch.target_assembly.source_asm.data):
+            family = Scratch.objects.filter(slug=scratch.slug)
         else:
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
@@ -503,8 +509,8 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        if scratch.target_assembly.source_asm.data.strip() == "":
-            family = Scratch.objects.filter(slug=scratch.slug).order_by("creation_time")
+        if is_asm_empty(scratch.target_assembly.source_asm.data):
+            family = Scratch.objects.filter(slug=scratch.slug)
         else:
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
