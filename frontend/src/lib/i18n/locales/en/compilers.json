@@ -119,7 +119,9 @@
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
 
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
+    "gcc2.6.0-mipsel": "gcc 2.6.0 + maspsx",
     "gcc2.6.3-mipsel": "gcc 2.6.3 + maspsx",
+    "gcc2.7.0-mipsel": "gcc 2.7.0 + maspsx",
     "gcc2.7.1-mipsel": "gcc 2.7.1 + maspsx",
     "gcc2.7.2-mipsel": "gcc 2.7.2 + maspsx",
     "gcc2.7.2.1-mipsel": "gcc 2.7.2.1 + maspsx",
@@ -134,7 +136,7 @@
     "psyq3.5": "PSYQ3.5 (gcc 2.6.0 + aspsx 2.34)",
     "psyq3.6": "PSYQ3.6 (gcc 2.7.2 + aspsx 2.34)",
     "psyq4.0": "PSYQ4.0 (gcc 2.7.2 + aspsx 2.56)",
-    "psyq4.1": "PSYQ4.1 (gcc 2.7.2 + aspsx 2.67)",
+    "psyq4.1": "PSYQ4.1 (gcc 2.7.2-970404 + aspsx 2.67)",
     "psyq4.3": "PSYQ4.3 (gcc 2.8.0 + aspsx 2.77)",
     "psyq4.4": "PSYQ4.4 (gcc 2.8.1 + aspsx 2.79)",
     "psyq4.5": "PSYQ4.5 (gcc 2.91.66 + aspsx 2.81)",

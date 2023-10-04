@@ -310,11 +310,16 @@ CLANG_800 = ClangCompiler(
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") &&'
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
-    + '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
+    '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
 )
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = (
+    'cpp -P "$INPUT" | unix2dos | '
+    '${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && '
+    '${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && '
+    '${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+)
 
 PSYQ33 = GCCPS1Compiler(
     id="psyq3.3",
@@ -381,8 +386,20 @@ GCC263_PSX = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC260_MIPSEL = GCCPS1Compiler(
+    id="gcc2.6.0-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC263_MIPSEL = GCCPS1Compiler(
     id="gcc2.6.3-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC270_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.0-mipsel",
     platform=PS1,
     cc=PS1_GCC,
 )
@@ -393,7 +410,7 @@ GCC271_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
-GCC2672MIPSEL = GCCPS1Compiler(
+GCC272_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.2-mipsel",
     platform=PS1,
     cc=PS1_GCC,
@@ -444,12 +461,12 @@ GCC2952_MIPSEL = GCCPS1Compiler(
 # Saturn
 SATURN_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
-    + "cp -r ${COMPILER_DIR}/* . && "
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
-    + "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o &&"
-    + 'cp as_out.o "$OUTPUT"'
+    'cp -r ${COMPILER_DIR}/* . && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
+    'sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && '
+    'cp as_out.o "$OUTPUT"'
 )
 
 CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
@@ -1168,9 +1185,11 @@ _all_compilers: List[Compiler] = [
     PSYQ45,
     PSYQ46,
     GCC263_PSX,
+    GCC260_MIPSEL,
     GCC263_MIPSEL,
+    GCC270_MIPSEL,
     GCC271_MIPSEL,
-    GCC2672MIPSEL,
+    GCC272_MIPSEL,
     GCC2721_MIPSEL,
     GCC2722_MIPSEL,
     GCC2723_MIPSEL,
@@ -1380,11 +1399,11 @@ _all_presets = [
     Preset(
         "Evo's Space Adventures",
         GCC2952_MIPSEL,
-        "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
+        "-mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
     ),
     Preset(
         "Frogger",
-        GCC263_PSX,
+        GCC260_MIPSEL,
         "-O3 -G0 -gcoff",
     ),
     Preset(
