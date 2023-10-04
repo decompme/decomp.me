@@ -16,106 +16,54 @@ from multiprocessing import Pool
 
 import requests
 import yaml
-import docker
-import podman
 
 logger = logging.getLogger(__name__)
 
 
-class ContainerManager:
-    def pull(self, docker_image):
-        return self.client.images.pull(docker_image)
+def get_token(docker_registry, github_repo, docker_image):
+    token_url = f"https://{docker_registry}/token?scope=repository:{github_repo}/{docker_image}:pull"
+    resp = requests.get(token_url, timeout=10)
+    if resp.status_code != 200:
+        # hopefully the image does not exist in remote registry
+        return None
+    return resp.json().get("token", "")
 
-    def create_container(self, docker_image, commands=None):
-        if commands is None:
-            commands = [""]
-        if not isinstance(commands, list):
-            commands = [commands]
-        return self.client.containers.create(docker_image, command=commands)
 
-    def get_remote_image_digest(
-        self,
-        docker_image,
-        docker_registry="ghcr.io",
-        github_repo="decompme/compilers",
-        tag="latest",
-    ):
-        token_url = f"https://{docker_registry}/token?scope=repository:{github_repo}/{docker_image}:pull"
-        resp = requests.get(token_url, timeout=10)
-        if resp.status_code != 200:
-            # hopefully the image does not exist in remote registry
-            return None
-        token = resp.json().get("token", "")
+def get_remote_image_digest(
+    docker_image,
+    docker_registry="ghcr.io",
+    github_repo="decompme/compilers",
+    tag="latest",
+):
+    token = get_token(docker_registry, github_repo, docker_image)
 
-        image_url = (
-            f"https://{docker_registry}/v2/{github_repo}/{docker_image}/manifests/{tag}"
+    image_url = (
+        f"https://{docker_registry}/v2/{github_repo}/{docker_image}/manifests/{tag}"
+    )
+    headers = {
+        "Accept": "application/vnd.oci.image.index.v1+json",
+        "Authorization": f"Bearer {token}",
+    }
+    resp = requests.get(image_url, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        logger.debug(
+            "Unable to get image manifest for %s:%s from %s: %s",
+            docker_image,
+            tag,
+            github_repo,
+            resp.text,
         )
-        headers = {
-            "Accept": "application/vnd.oci.image.index.v1+json",
-            "Authorization": f"Bearer {token}",
-        }
-        resp = requests.get(image_url, headers=headers, timeout=10)
-        if resp.status_code != 200:
-            logger.error(
-                "Unable to get image manifest for %s from %s: %s",
-                docker_image,
-                github_repo,
-                resp.text,
-            )
-            return None
+        return None
 
-        digest = resp.headers.get("docker-content-digest")
-        return digest
+    digest = resp.headers.get("docker-content-digest")
+    return digest
 
 
-class PodmanManager(ContainerManager):
-    def __init__(self, uri="unix:///tmp/podman.sock"):
-        self.client = podman.PodmanClient(base_url=uri)
-        try:
-            # sanity check that the podman service is up and running
-            self.client.ping()
-        except FileNotFoundError:
-            raise Exception("%s not found, is the podman service running?", uri)
-        except podman.errors.exceptions.APIError:
-            raise Exception("%s found, is the podman service running?", uri)
-
-    def get_local_image_digest(self, docker_image):
-        try:
-            image = self.client.images.get(docker_image)
-        except podman.errors.exceptions.ImageNotFound:
-            return None
-        return image.attrs["Digest"]
-
-
-class DockerManager(ContainerManager):
-    def __init__(self):
-        try:
-            self.client = docker.from_env()
-        except FileNotFoundError:
-            raise Exception(
-                "%s not found, is the docker service running?", "/var/run/docker.sock"
-            )
-        except docker.errors.DockerException:
-            raise Exception(
-                "%s found, is the docker service running?", "/var/run/docker.sock"
-            )
-
-    def get_local_image_digest(self, docker_image):
-        try:
-            image = self.client.api.inspect_image(docker_image)
-        except docker.errors.ImageNotFound:
-            return None
-        # TODO: confirm assumption that we are only getting 1 digest back...
-        digest = image["RepoDigests"][-1]
-        return digest.split("@")[-1]
-
-
-def get_compiler(
+def get_compiler_raw(
     platform_id,
     compiler_id,
     compilers_dir="/tmp",
     force=False,
-    use_podman=False,
     docker_registry="ghcr.io",
     github_repo="decompme/compilers",
     tag="latest",
@@ -126,14 +74,11 @@ def get_compiler(
     download_cache = compilers_dir / ".download_cache"
     download_cache.mkdir(parents=True, exist_ok=True)
 
-    # TODO: podman seems to have issues sharing a single instance
-    client_manager = PodmanManager() if use_podman else DockerManager()
-
     clean_compiler_id = compiler_id.lower().replace("+", "plus")
     docker_image = f"{platform_id}/{clean_compiler_id}"
 
     logger.debug("Checking for %s in registry", docker_image)
-    remote_image_digest = client_manager.get_remote_image_digest(
+    remote_image_digest = get_remote_image_digest(
         docker_image, docker_registry=docker_registry, github_repo=github_repo, tag=tag
     )
     if remote_image_digest is None:
@@ -144,7 +89,7 @@ def get_compiler(
             host_arch,
         )
         docker_image = f"{platform_id}/{clean_compiler_id}/{host_arch}"
-        remote_image_digest = client_manager.get_remote_image_digest(
+        remote_image_digest = get_remote_image_digest(
             docker_image,
             docker_registry=docker_registry,
             github_repo=github_repo,
@@ -154,97 +99,114 @@ def get_compiler(
             logger.error("%s not found in registry!", docker_image)
             return
 
-    full_docker_image = f"{docker_registry}/{github_repo}/{docker_image}:{tag}"
-
     compiler_dir = compilers_dir / platform_id / compiler_id
     image_digest = compiler_dir / ".image_digest"
 
-    if not compiler_dir.exists() or force is True:
-        # we need to extract something, check if we need to pull the image
-        if (
-            client_manager.get_local_image_digest(full_docker_image)
-            != remote_image_digest
-        ):
-            logger.debug("%s has newer image available; pulling ...", full_docker_image)
-            client_manager.pull(full_docker_image)
-        else:
-            logger.debug(
-                "%s (%s) image is present and at latest version, continuing!",
-                compiler_id,
-                platform_id,
-            )
-    else:
-        # compiler_dir exists, is it up to date with remote?
-        if image_digest.exists() and image_digest.read_text() == remote_image_digest:
-            logger.debug(
-                "%s image is present and at latest version, skipping!", compiler_id
-            )
-            return
-        # image_digest missing or out of date, so pull
-        logger.debug("%s has newer image available; pulling ...", full_docker_image)
-        client_manager.pull(full_docker_image)
-
-    try:
-        container = client_manager.create_container(full_docker_image)
-    except Exception as err:
-        logger.error("Unable to create container for %s: %s", full_docker_image, err)
-        return
-
-    try:
-        compiler_container_path = f"/compilers/{platform_id}/{compiler_id}"
-        stream, _ = container.get_archive(compiler_container_path)
-    except Exception as err:
-        logger.error(
-            "Unable to pull '%s' from container: %s", compiler_container_path, err
+    if (
+        image_digest.exists()
+        and image_digest.read_text() == remote_image_digest
+        and not force
+    ):
+        logger.debug(
+            "%s image is present and at latest version, skipping!", compiler_id
         )
-        container.remove()
         return
 
-    try:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            tar_file = Path(temp_dir) / f"{platform_id}_{compiler_id}.tar"
-            logger.debug("Writing to %s...", tar_file)
+    # First, get a token to do our operations with
+    token = get_token(docker_registry, github_repo, docker_image)
+
+    # Then, get the container image index. This will give us all the
+    # container images associated with this tag. There may be different
+    # images for different OSes/platforms. In our case, we only expect one
+    # though.
+    image_url = (
+        f"https://{docker_registry}/v2/{github_repo}/{docker_image}/manifests/{tag}"
+    )
+    headers = {
+        "Accept": "application/vnd.oci.image.index.v1+json",
+        "Authorization": f"Bearer {token}",
+    }
+    resp = requests.get(image_url, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        return None
+    data = resp.json()
+
+    # Grab the first image manifest, and download it.
+    manifest = next(
+        (
+            manifest
+            for manifest in data["manifests"]
+            if manifest["mediaType"] == "application/vnd.oci.image.manifest.v1+json"
+        )
+    )
+    digest = manifest["digest"]
+    mime = manifest["mediaType"]
+    headers["Accept"] = mime
+    url = (
+        f"https://{docker_registry}/v2/{github_repo}/{docker_image}/manifests/{digest}"
+    )
+    resp = requests.get(url, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        return None
+    data = resp.json()
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Then, download all the layers
+        for layer_num, layer in enumerate(data["layers"]):
+            digest = layer["digest"]
+            mime = layer["mediaType"]
+            url = f"https://{docker_registry}/v2/{github_repo}/{docker_image}/blobs/{digest}"
+
+            resp = requests.get(url, headers=headers, stream=True)
+            resp.raise_for_status()
+
+            # TODO: Get extension from mime
+            tar_file = (
+                Path(temp_dir) / f"{platform_id}_{compiler_id}_{layer_num}.tar.gz"
+            )
+
+            logger.debug("Writing layer %s (%s) to %s...", layer_num, digest, tar_file)
             with tar_file.open("wb") as f:
-                for chunk in stream:
+                for chunk in resp.iter_content(chunk_size=10 * 1024 * 1024):
                     f.write(chunk)
 
-            logger.debug("Extracting %s to %s", tar_file, download_cache)
+        # Extract all the layers
+        for layer_num, layer in enumerate(data["layers"]):
+            tar_file = (
+                Path(temp_dir) / f"{platform_id}_{compiler_id}_{layer_num}.tar.gz"
+            )
+            logger.debug("Extracting layer %s to %s", tar_file, download_cache)
             shutil.unpack_archive(tar_file, download_cache)
 
-            if compiler_dir.exists():
-                logger.debug("Removing existing compiler dir: %s", compiler_dir)
-                shutil.rmtree(compiler_dir)
+        # And finally, move the compiler_container_path (the prefix where the
+        # compiler is stored in the docker archive) to the final destination.
+        compiler_container_path = f"compilers/{platform_id}/{compiler_id}"
 
-            logger.debug(
-                "shutil.move %s -> %s", download_cache / compiler_id, compiler_dir
-            )
-            shutil.move(str(download_cache / compiler_id), str(compiler_dir))
+        compiler_download_cache = download_cache / compiler_container_path
+        if not compiler_download_cache.exists():
+            logger.error("Extracting failed to create %s", compiler_download_cache)
+            return False
 
-            image_digest.write_text(remote_image_digest)
+        if compiler_dir.exists():
+            logger.debug("Removing existing compiler dir: %s", compiler_dir)
+            shutil.rmtree(compiler_dir)
 
-            logger.info(
-                "%s (%s) was successfully downloaded into %s",
-                compiler_id,
-                platform_id,
-                compiler_dir,
-            )
-    except Exception as err:
-        logger.error(err)
-        container.remove()
-        return False
+        logger.debug("shutil.move %s -> %s", compiler_download_cache, compiler_dir)
+        shutil.move(str(compiler_download_cache), str(compiler_dir))
 
-    container.remove()
-    return True
+        image_digest.write_text(remote_image_digest)
+
+        logger.info(
+            "%s (%s) was successfully downloaded into %s",
+            compiler_id,
+            platform_id,
+            compiler_dir,
+        )
+        return True
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--use-podman",
-        "--podman",
-        action="store_true",
-        help="Use podman instead of docker",
-    )
     parser.add_argument(
         "--force",
         help="Force (re)downloading of compilers",
@@ -330,9 +292,8 @@ def main():
     with Pool(processes=args.threads) as pool:
         results = pool.starmap(
             functools.partial(
-                get_compiler,
+                get_compiler_raw,
                 compilers_dir=compilers_dir,
-                use_podman=args.use_podman,
                 force=args.force,
                 docker_registry=args.docker_registry,
                 github_repo=args.github_repo,

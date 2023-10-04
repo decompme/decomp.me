@@ -180,13 +180,11 @@ jobs:
           mkdir -p local_files && chmod 777 local_files
           mkdir -p compilers && chmod 777 compilers
           mkdir -p libraries && chmod 777 libraries
-          container_id=$(docker run \
-            --detach \
+          docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
-            --device /dev/fuse \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
@@ -197,13 +195,12 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            decompme_backend -c 'podman system service --time=0 unix:///tmp/podman.sock')
-
-          docker exec ${container_id} /bin/bash -c 'cd /decomp.me/backend && \
-            poetry install && \
-            poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} --podman && \
-            poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
-            poetry run python manage.py test'
+            decompme_backend \
+              -c 'cd /decomp.me/backend && \
+              poetry install && \
+              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              poetry run python manage.py test'
 
   frontend_lint:
     name: eslint & stylelint
