@@ -10,8 +10,7 @@ from ..middleware import Request
 from ..models.github import GitHubUser
 from ..models.profile import Profile
 from ..models.scratch import Scratch
-from ..serializers import serialize_profile, TerseScratchSerializer
-
+from ..serializers import TerseScratchSerializer, serialize_profile
 from .scratch import ScratchPagination
 
 

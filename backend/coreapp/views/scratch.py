@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
+from coreapp import compilers, platforms
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -17,15 +18,12 @@ from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
-from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
-from ..flags import Language
-
 from ..decorators.django import condition
-
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
 from ..models.github import GitHubRepo, GitHubRepoBusyException
@@ -37,7 +35,6 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
-
 
 logger = logging.getLogger(__name__)
 

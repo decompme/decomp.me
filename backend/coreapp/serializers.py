@@ -1,24 +1,21 @@
-from platform import platform
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
-from html_json_forms.serializers import JSONFormSerializer
 
+from . import compilers
+from .flags import LanguageFlagSet
+from .libraries import Library
 from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
-
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
-from .models.scratch import CompilerConfig, Scratch
-
-from .flags import LanguageFlagSet
-from . import compilers
-from .libraries import Library
+from .models.scratch import Scratch
 
 
 def serialize_profile(
