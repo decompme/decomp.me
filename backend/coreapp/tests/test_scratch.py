@@ -2,7 +2,7 @@ from time import sleep
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71
-from coreapp.models.project import ProjectFunction, ProjectImportConfig
+from coreapp.models.project import ProjectFunction
 from coreapp.models.scratch import Assembly, CompilerConfig, Scratch
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -228,13 +228,9 @@ class ScratchForkTests(BaseTestCase):
         compiler_config = CompilerConfig()
         compiler_config.save()
 
-        config = ProjectImportConfig(compiler_config=compiler_config, project=project)
-        config.save()
-
         project_function = ProjectFunction(
             display_name="howdy",
             rom_address=1000,
-            import_config=config,
             project=project,
         )
         project_function.save()

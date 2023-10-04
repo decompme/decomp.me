@@ -358,11 +358,9 @@ class ProjectFunctionViewSet(
     def get_queryset(self) -> QuerySet[ProjectFunction]:
         return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
 
-    @action(detail=True, methods=["GET", "POST"])
+    @action(detail=True, methods=["GET"])
     def attempts(self, request: Request, **kwargs: Any) -> Response:
         fn: ProjectFunction = self.get_object()
-        project: Project = fn.project
-        repo: GitHubRepo = project.repo
 
         if request.method == "GET":
             attempts = Scratch.objects.filter(project_function=fn).order_by(
@@ -372,19 +370,6 @@ class ProjectFunctionViewSet(
                 TerseScratchSerializer(
                     attempts, many=True, context={"request": request}
                 ).data
-            )
-        elif request.method == "POST":
-            if repo.is_pulling:
-                raise GitHubRepoBusyException()
-
-            scratch = fn.create_scratch()
-            if scratch.is_claimable():
-                scratch.owner = request.profile
-                scratch.save()
-
-            return Response(
-                ScratchSerializer(scratch, context={"request": request}).data,
-                status=status.HTTP_201_CREATED,
             )
         else:
             raise Exception("Unsupported method")

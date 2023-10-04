@@ -14,7 +14,7 @@ from .libraries import Library
 from .middleware import Request
 from .models.github import GitHubRepo, GitHubUser
 from .models.profile import Profile
-from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
+from .models.project import Project, ProjectFunction, ProjectMember
 from .models.scratch import Scratch
 
 
@@ -286,11 +286,7 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
         return instance
 
     def get_platform(self, project: Project) -> Optional[str]:
-        import_config = ProjectImportConfig.objects.filter(project=project).first()
-        if import_config:
-            return import_config.compiler_config.platform
-        else:
-            return None
+        return None
 
     def get_unmatched_function_count(self, project: Project) -> int:
         return ProjectFunction.objects.filter(

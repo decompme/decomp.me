@@ -1,26 +1,19 @@
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import Mock, patch
 
 import responses
-from coreapp import compilers, platforms
+from coreapp.models.github import GitHubRepo, GitHubUser
+from coreapp.models.profile import Profile
+from coreapp.models.project import Project, ProjectFunction, ProjectMember
+from coreapp.models.scratch import CompilerConfig
+from coreapp.tests.common import BaseTestCase
+from coreapp.tests.test_user import GITHUB_USER
 from django.contrib.auth.models import User
 from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
-
-from coreapp.models.github import GitHubRepo, GitHubUser
-from coreapp.models.profile import Profile
-from coreapp.models.project import (
-    Project,
-    ProjectFunction,
-    ProjectImportConfig,
-    ProjectMember,
-)
-from coreapp.models.scratch import CompilerConfig
-from coreapp.tests.common import BaseTestCase
-from coreapp.tests.test_user import GITHUB_USER
 
 
 @dataclass
@@ -76,24 +69,12 @@ class ScratchPRTests(BaseTestCase):
         )
         compiler_config.save()
         self.compiler_config = compiler_config
-        import_config = ProjectImportConfig(
-            project=project,
-            display_name="test",
-            compiler_config=compiler_config,
-            src_dir="src",
-            nonmatchings_dir="asm/nonmatchings",
-            nonmatchings_glob="**/*.s",
-            symbol_addrs_path="symbol_addrs.txt",
-        )
-        import_config.save()
-        self.import_config = import_config
         project_fn = ProjectFunction(
             project=project,
             rom_address="10",
             display_name="some_function",
             src_file="src/some_file.c",
             asm_file="asm/some_file.s",
-            import_config=import_config,
         )
         project_fn.save()
         self.project_fn = project_fn
@@ -301,85 +282,6 @@ class ProjectTests(TestCase):
         project.delete()
         project.repo.delete()
         mock_rmtree.assert_called_once_with(mock_dir)
-
-    def test_import_function(self) -> None:
-        with tempfile.TemporaryDirectory() as local_files_dir:
-            with self.settings(LOCAL_FILE_DIR=local_files_dir):
-                project = ProjectTests.create_test_project()
-
-                # add some asm
-                dir = project.repo.get_dir(check_exists=False)
-                (dir / "asm" / "nonmatchings" / "section").mkdir(parents=True)
-                (dir / "src").mkdir(parents=True)
-                asm_file = dir / "asm" / "nonmatchings" / "section" / "test.s"
-                with asm_file.open("w") as f:
-                    f.writelines(
-                        [
-                            "glabel test\n",
-                            "jr $ra\n",
-                            "nop\n",
-                        ]
-                    )
-                with (dir / "src" / "section.c").open("w") as f:
-                    f.writelines(
-                        [
-                            "typedef int s32;\n",
-                        ]
-                    )
-                with (dir / "symbol_addrs.txt").open("w") as f:
-                    f.writelines(
-                        [
-                            "test = 0x80240000; // type:func rom:0x1000\n",
-                        ]
-                    )
-
-                # configure the import
-                compiler_config = CompilerConfig(
-                    platform=platforms.DUMMY.id,
-                    compiler=compilers.DUMMY.id,
-                    compiler_flags="",
-                )
-                compiler_config.save()
-                import_config = ProjectImportConfig(
-                    project=project,
-                    display_name="test",
-                    compiler_config=compiler_config,
-                    src_dir="src",
-                    nonmatchings_dir="asm/nonmatchings",
-                    nonmatchings_glob="**/*.s",
-                    symbol_addrs_path="symbol_addrs.txt",
-                )
-                import_config.save()
-
-                # import the function
-                self.assertEqual(ProjectFunction.objects.count(), 0)
-                project.import_functions()
-                self.assertEqual(ProjectFunction.objects.count(), 1)
-
-                pf = ProjectFunction.objects.first()
-
-                assert pf is not None
-                self.assertFalse(pf.is_matched_in_repo)
-
-                # create a scratch from the function
-                fn: Optional[ProjectFunction] = ProjectFunction.objects.first()
-                assert fn is not None
-
-                scratch = fn.create_scratch()
-                self.assertEqual(scratch.platform, compiler_config.platform)
-                self.assertEqual(scratch.compiler, compiler_config.compiler)
-                self.assertEqual(scratch.compiler_flags, compiler_config.compiler_flags)
-                self.assertEqual(scratch.project_function, fn)
-
-                # match the function (by deleting the asm) and verify it is marked as matching
-                asm_file.unlink()
-                project.import_functions()
-                self.assertEqual(ProjectFunction.objects.count(), 1)
-
-                pf = ProjectFunction.objects.first()
-                assert pf is not None
-
-                self.assertTrue(pf.is_matched_in_repo)
 
     def test_put_project_permissions(self) -> None:
         with tempfile.TemporaryDirectory() as local_files_dir:

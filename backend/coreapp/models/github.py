@@ -226,9 +226,6 @@ class GitHubRepo(models.Model):
 
             self.last_pulled = now()
             self.save()
-
-            for project in Project.objects.filter(repo=self):
-                project.import_functions()
         finally:
             self.is_pulling = False
             self.save()
