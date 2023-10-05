@@ -1,11 +1,9 @@
 import logging
+import platform as platform_stdlib
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
 from typing import ClassVar, Dict, List, Optional, OrderedDict
-
-from django.conf import settings
-from coreapp.error import CompilationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -13,15 +11,14 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
-    COMMON_IDO_FLAGS,
-    COMMON_MWCC_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
+    COMMON_MWCC_FLAGS,
     COMMON_WATCOM_FLAGS,
     Flags,
     Language,
 )
-
 from coreapp.platforms import (
     GBA,
     GC_WII,
@@ -31,15 +28,16 @@ from coreapp.platforms import (
     N3DS,
     N64,
     NDS_ARM9,
-    Platform,
     PS1,
     PS2,
-    SWITCH,
     SATURN,
+    SWITCH,
     WIN9X,
+    Platform,
 )
-
-import platform as platform_stdlib
+from django.conf import settings
+from rest_framework import status
+from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +77,7 @@ class Compiler:
 
 
 @dataclass(frozen=True)
-class Preset:
+class PresetDC:
     name: str
     compiler: Compiler
     flags: str
@@ -166,7 +164,10 @@ class WatcomCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise CompilationError(f"Unknown compiler: {compiler_id}")
+        raise APIException(
+            f"Unknown compiler: {compiler_id}",
+            str(status.HTTP_400_BAD_REQUEST),
+        )
     return _compilers[compiler_id]
 
 
@@ -183,11 +184,11 @@ def available_platforms() -> List[Platform]:
 
 
 @cache
-def available_presets(platform: Platform) -> List[Preset]:
+def available_presets(platform: Platform) -> List[PresetDC]:
     return [p for p in _presets if p.compiler.platform == platform]
 
 
-def preset_from_name(name: str) -> Optional[Preset]:
+def preset_from_name(name: str) -> Optional[PresetDC]:
     for p in _presets:
         if p.name == name:
             return p
@@ -1304,528 +1305,528 @@ RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions of
 
 _all_presets = [
     # GBA
-    Preset(
+    PresetDC(
         "Rhythm Tengoku",
         AGBCC,
         "-mthumb-interwork -Wparentheses -O2 -fhex-asm",
     ),
-    Preset(
+    PresetDC(
         "The Minish Cap",
         AGBCC,
         "-O2 -Wimplicit -Wparentheses -Werror -Wno-multichar -g3",
     ),
-    Preset(
+    PresetDC(
         "Mother 3",
         AGBCCPP,
         "-fno-exceptions -fno-rtti -fhex-asm -mthumb-interwork -Wimplicit -Wparentheses -O2 -g3",
     ),
-    Preset(
+    PresetDC(
         "Kirby and the Amazing Mirror",
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm",
     ),
-    Preset(
+    PresetDC(
         "Pokemon Mystery Dungeon: Red Rescue Team",
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Wunused -Werror -O2 -fhex-asm -g",
     ),
-    Preset(
+    PresetDC(
         "Pokemon Pinball: Ruby and Sapphire",
         AGBCC,
         "-mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm -fprologue-bugfix",
     ),
     # N3DS
-    Preset(
+    PresetDC(
         "Ocarina of Time 3D",
         ARMCC_40_821,
         "--cpp --arm --split_sections --debug --no_debug_macros --gnu --debug_info=line_inlining_extensions -O3 -Otime --data_reorder --signed_chars --multibyte_chars --remove_unneeded_entities --force_new_nothrow --remarks --no_rtti",
     ),
-    Preset(
+    PresetDC(
         "Super Mario 3D Land",
         ARMCC_41_894,
         "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
-    Preset(
+    PresetDC(
         "Ikachan 3DS",
         ARMCC_41_894,
         "--cpp --arm -O3 -Otime --no_rtti_data --no_rtti --no_exceptions --vfe --data_reorder --signed_chars --multibyte_chars --locale=japanese --force_new_nothrow --remarks",
     ),
     # Switch
-    Preset(
+    PresetDC(
         "Super Mario Odyssey",
         CLANG_391,
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
-    Preset(
+    PresetDC(
         "Breath of the Wild",
         CLANG_401,
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
-    Preset(
+    PresetDC(
         "Splatoon 2 3.1.0",
         CLANG_401,
         "-x c++ -O3 -g2 -std=c++1z -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
-    Preset(
+    PresetDC(
         "Super Mario 3D World + Bowser's Fury",
         CLANG_800,
         "-x c++ -O3 -g2 -std=c++17 -fno-rtti -fno-exceptions -Wall -Wextra -Wdeprecated -Wno-unused-parameter -Wno-unused-private-field -fno-strict-aliasing -Wno-invalid-offsetof -D SWITCH -D NNSDK -D MATCHING_HACK_NX_CLANG",
     ),
     # PS1
-    Preset(
+    PresetDC(
         "Castlevania: Symphony of the Night",
         PSYQ35,
         "-O2 -G0 -fsigned-char",
     ),
-    Preset(
+    PresetDC(
         "Evo's Space Adventures",
         GCC2952_MIPSEL,
         "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
     ),
-    Preset(
+    PresetDC(
         "Frogger",
         GCC263_PSX,
         "-O3 -G0 -gcoff",
     ),
-    Preset(
+    PresetDC(
         "Legacy of Kain: Soul Reaver",
         PSYQ44,
         "-O2 -G65536",
     ),
-    Preset(
+    PresetDC(
         "Metal Gear Solid",
         PSYQ44,
         "-O2 -G8",
     ),
-    Preset(
+    PresetDC(
         "Metal Gear Solid (overlays)",
         PSYQ44,
         "-O2 -G0 -Wall",
     ),
-    Preset(
+    PresetDC(
         "vib-ribbon",
         GCC29166_MIPSEL,
         "-Os -G4 -mel -g0 -mno-abicalls -fno-builtin -fsigned-char -fpeephole -ffunction-cse -fkeep-static-consts -fpcc-struct-return -fcommon -fgnu-linker -fargument-alias -msplit-addresses -mgas -mgpOPT -mgpopt -msoft-float -gcoff",
     ),
     # Saturn
-    Preset(
+    PresetDC(
         "Castlevania: Symphony of the Night",
         CYGNUS_2_7_96Q3,
         "-O2 -m2 -fsigned-char",
     ),
     # N64
-    Preset("AeroGauge", IDO53, "-O2 -mips2"),
-    Preset("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
-    Preset(
+    PresetDC("AeroGauge", IDO53, "-O2 -mips2"),
+    PresetDC("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
+    PresetDC(
         "Chameleon Twist 1",
         IDO53,
         "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Chameleon Twist 2",
         IDO53,
         "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Diddy Kong Racing", IDO53, "-O2 -mips1"),
-    Preset("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
-    Preset("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
-    Preset("Donkey Kong 64", IDO53, "-O2 -mips2"),
-    Preset(
+    PresetDC("Diddy Kong Racing", IDO53, "-O2 -mips1"),
+    PresetDC("Dinosaur Planet", IDO53, "-O2 -g3 -mips2"),
+    PresetDC("Dinosaur Planet (DLLs)", IDO53, "-O2 -g3 -mips2 -KPIC"),
+    PresetDC("Donkey Kong 64", IDO53, "-O2 -mips2"),
+    PresetDC(
         "Dr. Mario 64 N64",
         GCC272KMC,
         "-O2 -mips3 -DVERSION_US=1",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Dr. Mario 64 iQue",
         EGCS1124,
         "-O2 -g -mips2 -mcpu=4300 -funsigned-char -DVERSION_CN=1",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
-    Preset(
+    PresetDC("GoldenEye / Perfect Dark", IDO53, "-Olimit 2000 -mips2 -O2"),
+    PresetDC(
         "libultra iQue",
         EGCS1124,
         "-O2 -mips2 -mcpu=4300 -mno-abicalls",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Majora's Mask",
         IDO71,
         "-O2 -g3 -mips2 -woff 624",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Mario Kart 64", IDO53, "-O2 -mips2"),
-    Preset(
+    PresetDC("Mario Kart 64", IDO53, "-O2 -mips2"),
+    PresetDC(
         "Mario Party 1",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Mario Party 2",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Mario Party 3",
         GCC272KMC,
         "-O1 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Ocarina of Time",
         IDO71,
         "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Paper Mario",
         GCC281PM,
         "-O2 -fforce-addr -gdwarf-2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Pokémon Puzzle League",
         GCC272KMC,
         "-O2 -mips3 -g",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Quest64",
         IDO53,
         "-O2 -g3 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Rocket Robot on Wheels",
         GCC272SNEW,
         "-mips2 -O2 -gdwarf -funsigned-char",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Shadowgate 64",
         GCC272KMC,
         "-mips2 -O1 -g2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Space Station Silicon Valley",
         IDO53,
         "-O2 -mips2 -Xfullwarn -signed -nostdinc",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Super Mario 64",
         IDO53,
         "-O1 -g -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Super Smash Bros.",
         IDO71,
         "-O2 -mips2",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "Duke Nukem Zero Hour",
         GCC272KMC,
         "-O2 -g2 -mips3",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset("Wave Race 64", IDO53, "-O2 -mips2"),
-    Preset(
+    PresetDC("Wave Race 64", IDO53, "-O2 -mips2"),
+    PresetDC(
         "Animal Forest",
         IDO71,
         "-O2 -g3 -mips2",
     ),
     # IRIX
-    Preset(
+    PresetDC(
         "IDO 5.3 cc",
         IDO53_IRIX,
         "-KPIC -mips1 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "IDO 5.3 libraries",
         IDO53_IRIX,
         "-KPIC -mips1 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "IDO 5.3 Pascal",
         IDO53PASCAL,
         "-KPIC -mips1 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "IDO 7.1 cc",
         IDO71_IRIX,
         "-KPIC -mips2 -O1 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "IDO 7.1 libraries",
         IDO71_IRIX,
         "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "IDO 7.1 Pascal",
         IDO71PASCAL,
         "-KPIC -mips2 -O2 -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
-    Preset(
+    PresetDC(
         "7.1 N64 SDK",
         IDO71_IRIX,
         "-KPIC -mips2 -g -fullwarn",
         diff_flags=["-Mreg-names=32"],
     ),
     # GC_WII
-    Preset(
+    PresetDC(
         "Super Monkey Ball",
         MWCC_233_159,
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -inline auto",
     ),
-    Preset(
+    PresetDC(
         "Super Mario Sunshine",
         MWCC_233_163,
         "-lang=c++ -Cpp_exceptions off -fp hard -O4 -nodefaults -enum int -rostr",
     ),
-    Preset(
+    PresetDC(
         "Pikmin",
         MWCC_233_163N,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI on -fp hard -O4,p -common on",
     ),
-    Preset(
+    PresetDC(
         "Super Smash Bros. Melee",
         MWCC_233_163N,
         "-O4,p -nodefaults -proc gekko -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto -DM2CTX -DMUST_MATCH -DWIP",
     ),
-    Preset(
+    PresetDC(
         "Kirby Air Ride",
         MWCC_242_81,
         "-O4,p -nodefaults -fp hard -Cpp_exceptions off -enum int -fp_contract on -inline auto",
     ),
-    Preset(
+    PresetDC(
         "Battle for Bikini Bottom",
         MWCC_247_92,
         '-DMASTER -fp_contract on -RTTI off -nodefaults -Cpp_exceptions off -schedule on -opt level=4,peephole,speed -lang=c++ -char unsigned -str reuse,pool,readonly -fp hard -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off',
     ),
-    Preset(
+    PresetDC(
         "Mario Kart: Double Dash",
         MWCC_247_105,
         "-lang=c++ -use_lmw_stmw on -inline on -O4 -char signed -Cpp_exceptions off -fp_contract on -fp fmadd -enum int",
     ),
-    Preset(
+    PresetDC(
         "Pikmin 2",
         MWCC_247_107,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -rostr -O4,p -use_lmw_stmw on -enum int -inline auto -sdata 8 -sdata2 8 -common on",
     ),
-    Preset(
+    PresetDC(
         "The Thousand-Year Door",
         MWCC_247_108,
         "-fp hard -fp_contract on -enum int -O4,p -sdata 48 -sdata2 6 -rostr -multibyte -use_lmw_stmw on -inline deferred -Cpp_exceptions off",
     ),
-    Preset(
+    PresetDC(
         "Twilight Princess (DOL)",
         MWCC_247_108,
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int",
     ),
-    Preset(
+    PresetDC(
         "Twilight Princess (REL)",
         MWCC_247_108,
         "-lang=c++ -Cpp_exceptions off -nodefaults -O3 -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sdata 0 -sdata2 0",
     ),
-    Preset(
+    PresetDC(
         "Twilight Princess (Dolphin)",
         MWCC_233_163E,
         "-lang=c -Cpp_exceptions off -nodefaults -O4,p -fp hard -str reuse -maxerrors 1 -enum int",
     ),
-    Preset(
+    PresetDC(
         "The Wind Waker (DOL)",
         MWCC_242_81,
         "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on",
     ),
-    Preset(
+    PresetDC(
         "The Wind Waker (REL)",
         MWCC_242_81,
         "-lang=c++ -Cpp_exceptions off -schedule off -inline noauto -nodefaults -O3,s -fp hard -msgstyle gcc -str pool,readonly,reuse -RTTI off -maxerrors 1 -enum int -sym on -sdata 0 -sdata2 0",
     ),
-    Preset(
+    PresetDC(
         "Super Paper Mario (DOL)",
         MWCC_41_60831,
         f"{SPM_SHARED} -inline all -sdata 4 -sdata2 4",
     ),
-    Preset(
+    PresetDC(
         "Super Paper Mario (REL)",
         MWCC_41_60831,
         f"{SPM_SHARED} -sdata 0 -sdata2 0 -pool off -ordered-fp-compares",
     ),
-    Preset(
+    PresetDC(
         "Wii Sports",
         MWCC_41_60831,
         "-lang=c++ -enum int -inline auto -Cpp_exceptions off -RTTI off -fp hard -O4,p -nodefaults",
     ),
-    Preset(
+    PresetDC(
         "Super Mario Galaxy",
         MWCC_41_60126,
         "-Cpp_exceptions off -stdinc -nodefaults -fp hard -lang=c++ -inline auto,level=2 -ipa file -O4,s -rtti off -sdata 4 -sdata2 4 -enum int",
     ),
-    Preset(
+    PresetDC(
         "Super Mario Galaxy 2",
         MWCC_43_172,
         "-lang=c++ -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,s -sdata 4 -sdata2 4",
     ),
-    Preset(
+    PresetDC(
         "Super Mario Galaxy 2 (RVL)",
         MWCC_43_172,
         "-lang=c99 -Cpp_exceptions off -nodefaults -cwd explicit -proc gekko -fp hard -ipa file -inline auto -rtti off -align powerpc -enum int -O4,p -sdata 8 -sdata2 8",
     ),
-    Preset(
+    PresetDC(
         "Xenoblade Chronicles (JP)",
         MWCC_43_151,
         "-lang=c++ -O4,p -nodefaults -proc gecko -str pool,readonly,reuse -enum int -fp hard -RTTI on -ipa file -enc SJIS",
     ),
-    Preset(
+    PresetDC(
         "Xenoblade Chronicles (JP) (Wii SDK)",
         MWCC_43_151,
         "-lang=c99 -O4,p -nodefaults  -proc gekko -inline auto -str pool -enum int -fp hard  -ipa file -func_align 16",
     ),
-    Preset(
+    PresetDC(
         "Mario Party 4",
         MWCC_242_81,
         "-O0,p -str pool -fp hard -Cpp_exceptions off",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (DOL)",
         MWCC_42_127,
         f"{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (RVL_SDK)",
         MWCC_41_60831,
         f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (MSL)",
         MWCC_42_127,
         f"{MKW_SHARED} -lang=c99 -ipa file",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (NintendoWare)",
         MWCC_42_127,
         f'{MKW_SHARED} -lang=c++ -ipa file -inline auto -O4,p -pragma "legacy_struct_alignment on"',
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (DWC/GameSpy)",
         MWCC_41_60831,
         f"{MKW_SHARED} -lang=c99 -ipa file -w nounusedexpr -w nounusedarg",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (EGG)",
         MWCC_42_127,
         f"{MKW_SHARED} -lang=c++ -ipa function -rostr",
     ),
-    Preset(
+    PresetDC(
         "Mario Kart Wii (REL)",
         MWCC_42_127,
         f'{MKW_SHARED} -lang=c++ -ipa file -rostr -sdata 0 -sdata2 0 -use_lmw_stmw=on -pragma "legacy_struct_alignment on"',
     ),
-    Preset(
+    PresetDC(
         "Metroid Prime (USA)",
         MWCC_242_81,
         "-lang=c++ -nodefaults -Cpp_exceptions off -RTTI off -fp hard -fp_contract on -str reuse,pool,readonly -rostr -O4,p -maxerrors 1 -use_lmw_stmw on -enum int -inline deferred,noauto -common on",
     ),
-    Preset(
+    PresetDC(
         "Luigi's Mansion",
         MWCC_233_159,
         "-lang=c++ -O4,p -nodefaults -fp hard -inline auto",
     ),
-    Preset(
+    PresetDC(
         "Ratatouille Prototype (Debug)",
         MWCC_247_108,
         f"{RAT_SHARED} -DDEBUG -DRWDEBUG -opt peep, speed -sdata 20 -sdata2 20",
     ),
-    Preset(
+    PresetDC(
         "Ratatouille Prototype (Release)",
         MWCC_247_108,
         f"{RAT_SHARED} -DRELEASE -opt level=4, peep, speed-sdata 24 -sdata2 24",
     ),
-    Preset(
+    PresetDC(
         "Ratatouille Prototype (Master w/ Debug)",
         MWCC_247_108,
         f"{RAT_SHARED} -DMASTERDEBUG -opt level=4, peep, space -sdata 64 -sdata2 64",
     ),
-    Preset(
+    PresetDC(
         "Ratatouille Prototype (Master)",
         MWCC_247_108,
         f"{RAT_SHARED} -DMASTER -opt level=4, peep, space -sdata 64 -sdata2 64",
     ),
-    Preset(
+    PresetDC(
         "Ty the Tasmanian Tiger",
         MWCC_242_81,
         "-lang=c++ -fp hard -sym on -nodefaults -enum int -O4,p -inline auto -str reuse -Cpp_exceptions off",
     ),
-    Preset(
+    PresetDC(
         "Animal Crossing (REL)",
         MWCC_242_81R,
         "-O4 -fp hard -sdata 0 -sdata2 0 -Cpp_exceptions off -enum int -sym on",
     ),
-    Preset(
+    PresetDC(
         "Animal Crossing (DOL)",
         MWCC_242_81,
         "-O4 -fp hard -sdata 8 -sdata2 8 -Cpp_exceptions off -char unsigned -enum int",
     ),
     # NDS
-    Preset(
+    PresetDC(
         "Pokémon Diamond / Pearl",
         MWCC_30_123,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
-    Preset(
+    PresetDC(
         "Pokémon HeartGold / SoulSilver",
         MWCC_30_137,
         "-O4,p -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
-    Preset(
+    PresetDC(
         "Pokémon Mystery Dungeon: Explorers of Sky",
         MWCC_30_137,
         "-O4,s -enum int -proc arm946e -gccext,on -fp soft -lang c99 -char signed -inline on,noauto -Cpp_exceptions off -gccinc -interworking -gccdep -MD -g",
     ),
     # MACOSX
-    Preset("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
-    Preset("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
+    PresetDC("Fallout 2", PBX_GCC3, "-std=c99 -fPIC -O1 -g3"),
+    PresetDC("The Sims 2", XCODE_GCC400_CPP, "-g3 -O1"),
     # PS2
-    Preset(
+    PresetDC(
         "Ty the Tasmanian Tiger (July 1st)",
         EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math -finline-functions",
     ),
-    Preset(
+    PresetDC(
         "Sunny Garcia Surfing",
         EE_GCC29_991111A,
         "-x c++ -O2 -fno-exceptions -gstabs -ffast-math",
     ),
-    Preset(
+    PresetDC(
         "Klonoa 2: Lunatea's Veil (C)",
         EE_GCC29_991111_01,
         "-O1 -gstabs",
     ),
-    Preset(
+    PresetDC(
         "Klonoa 2: Lunatea's Veil (C++)",
         EE_GCC29_991111_01,
         "-x c++ -O2 -gstabs -fno-exceptions -finline-functions",
     ),
-    Preset("Kingdom Hearts", EE_GCC296, "-O2 -G0 -g"),
+    PresetDC("Kingdom Hearts", EE_GCC296, "-O2 -G0 -g"),
     # Windows
-    Preset("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
-    Preset("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
-    Preset("Touhou 6 (C++)", MSVC70, "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP"),
+    PresetDC("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
+    PresetDC("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
+    PresetDC("Touhou 6 (C++)", MSVC70, "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP"),
 ]
 
 

@@ -4,17 +4,19 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
 
-from coreapp.models.preset import Preset
+from coreapp import platforms
 
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
 from .models.github import GitHubUser
+from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectMember
 from .models.scratch import Scratch
@@ -142,6 +144,30 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             "last_updated",
         ]
 
+    def validate_platform(self, platform: str) -> str:
+        try:
+            platforms.from_id(platform)
+        except:
+            raise serializers.ValidationError(f"Unknown platform {platform}")
+        return platform
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except:
+            raise serializers.ValidationError(f"Unknown compiler {compiler}")
+        return compiler
+
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        compiler = compilers.from_id(data["compiler"])
+        platform = platforms.from_id(data["platform"])
+
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
@@ -158,6 +184,30 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
+
+    def validate_platform(self, platform: str) -> str:
+        try:
+            platforms.from_id(platform)
+        except:
+            raise serializers.ValidationError(f"Unknown platform {platform}")
+        return platform
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except:
+            raise serializers.ValidationError(f"Unknown compiler {compiler}")
+        return compiler
+
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        compiler = compilers.from_id(data["compiler"])
+        platform = platforms.from_id(data["platform"])
+
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
 
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):

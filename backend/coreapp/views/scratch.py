@@ -64,7 +64,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             scratch.diff_label,
             tuple(scratch.libraries),
         )
-    except CompilationError as e:
+    except (CompilationError, APIException) as e:
         return CompilationResult(b"", str(e))
 
 
@@ -193,25 +193,12 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     project = data.get("project")
     rom_address = data.get("rom_address")
 
-    if platform:
-        if compiler.platform != platform:
-            raise APIException(
-                f"Compiler {compiler.id} is not compatible with platform {platform.id}",
-                str(status.HTTP_400_BAD_REQUEST),
-            )
-    else:
-        platform = compiler.platform
-
     if not platform:
-        raise serializers.ValidationError("Unknown compiler")
+        platform = compiler.platform
 
     target_asm: str = data["target_asm"]
     context: str = data["context"]
     diff_label: str = data.get("diff_label", "")
-
-    assert isinstance(target_asm, str)
-    assert isinstance(context, str)
-    assert isinstance(diff_label, str)
 
     asm = get_db_asm(target_asm)
 

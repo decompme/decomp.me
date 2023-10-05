@@ -394,13 +394,13 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "django"
-version = "4.2.5"
+version = "4.2.6"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Django-4.2.5-py3-none-any.whl", hash = "sha256:b6b2b5cae821077f137dc4dade696a1c2aa292f892eca28fa8d7bfdf2608ddd4"},
-    {file = "Django-4.2.5.tar.gz", hash = "sha256:5e5c1c9548ffb7796b4a8a4782e9a2e5a3df3615259fc1bfd3ebc73b646146c1"},
+    {file = "Django-4.2.6-py3-none-any.whl", hash = "sha256:a64d2487cdb00ad7461434320ccc38e60af9c404773a2f95ab0093b4453a3215"},
+    {file = "Django-4.2.6.tar.gz", hash = "sha256:08f41f468b63335aea0d904c5729e0250300f6a1907bf293a65499496cdbc68f"},
 ]
 
 [package.dependencies]
@@ -552,17 +552,17 @@ pytz = "*"
 
 [[package]]
 name = "djangorestframework-stubs"
-version = "3.14.2"
+version = "3.14.3"
 description = "PEP-484 stubs for django-rest-framework"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "djangorestframework-stubs-3.14.2.tar.gz", hash = "sha256:4a9169253d2d46885a007c085d64e96efc8a78bd938c747e9ad0654725c4e7d0"},
-    {file = "djangorestframework_stubs-3.14.2-py3-none-any.whl", hash = "sha256:38f078cdf80228bd73e3ff5dcf00263f847da37c30d113e0fc8fda09f9dbc89a"},
+    {file = "djangorestframework-stubs-3.14.3.tar.gz", hash = "sha256:6ca33f80627ef5faeaf4200c6549bff709983df797b2b84d98859d590b9c3f2b"},
+    {file = "djangorestframework_stubs-3.14.3-py3-none-any.whl", hash = "sha256:a391b7fc20d60fc956e08494cf13be270c5d16704fa0bcae060b65a5350b3d7b"},
 ]
 
 [package.dependencies]
-django-stubs = ">=4.2.2"
+django-stubs = ">=4.2.4"
 mypy = ">=0.991"
 requests = ">=2.0.0"
 types-PyYAML = ">=5.4.3"
@@ -570,7 +570,7 @@ types-requests = ">=0.1.12"
 typing-extensions = ">=3.10.0"
 
 [package.extras]
-compatible-mypy = ["mypy (==1.4.*)"]
+compatible-mypy = ["mypy (==1.5.*)"]
 coreapi = ["coreapi (>=2.0.0)"]
 markdown = ["types-Markdown (>=0.1.5)"]
 
@@ -1776,4 +1776,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d898836568307dddef9b3cd62a4ef28669a2d84f506fed204b8b422711a221bc"
+content-hash = "1d087268e1ab077362bdc212b25e10fec9d759ea431f9e6007d1f8032a4a8dd1"

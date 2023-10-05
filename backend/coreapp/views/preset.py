@@ -19,7 +19,7 @@ class PresetPagination(CursorPagination):
 
 
 class PresetViewSet(ModelViewSet):  # type: ignore
-    queryset = Preset.objects.all()
+    queryset = Preset.objects.all()  # type: ignore
     pagination_class = PresetPagination
     filterset_fields = ["platform", "compiler"]
     filter_backends = [
@@ -28,7 +28,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     ]
     search_fields = ["id", "name", "platform", "compiler"]
 
-    def get_serializer_class(self) -> type[serializers.ModelSerializer]:
+    def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         return PresetSerializer
 
 
