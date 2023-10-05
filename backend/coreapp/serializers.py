@@ -119,6 +119,11 @@ class HtmlUrlField(UrlField):
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
 
+class LibrarySerializer(serializers.Serializer[Library]):
+    name = serializers.CharField()
+    version = serializers.CharField()
+
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -130,15 +135,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_asm = serializers.CharField(allow_blank=True)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
 
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
-
-
-class LibrarySerializer(serializers.Serializer[Library]):
-    name = serializers.CharField()
-    version = serializers.CharField()
 
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):

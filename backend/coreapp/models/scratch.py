@@ -48,10 +48,11 @@ class CompilerConfig(models.Model):
 class LibrariesField(models.JSONField):
     def __init__(self, **kwargs: Any):
         class MyEncoder(json.JSONEncoder):
-            def default(self, obj: Any) -> str:
+            def default(self, obj: Any) -> Any:
                 if isinstance(obj, Library):
-                    obj = {"name": obj.name, "version": obj.version}
-                return super().default(obj)
+                    return {"name": obj.name, "version": obj.version}
+                else:
+                    return super().default(obj)
 
         kwargs.pop("encoder", None)
         return super().__init__(encoder=MyEncoder, **kwargs)

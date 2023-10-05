@@ -210,12 +210,16 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler: preset.compiler,
             compiler_flags: preset.flags,
             diff_flags: preset.diff_flags,
+            libraries: preset.libraries,
             preset: preset.name,
         })
     }
 
     const setLibraries = (libraries: Library[]) => {
-        onChange({ libraries })
+        onChange({
+            libraries,
+            preset: "",
+        })
     }
 
     const optsEditorProvider = {
