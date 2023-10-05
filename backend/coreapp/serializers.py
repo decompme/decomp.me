@@ -8,11 +8,13 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
 
+from coreapp.models.preset import Preset
+
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
-from .models.github import GitHubRepo, GitHubUser
+from .models.github import GitHubUser
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectMember
 from .models.scratch import Scratch
@@ -116,6 +118,31 @@ class HtmlUrlField(UrlField):
         raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
 
+class LibrarySerializer(serializers.Serializer[Library]):
+    name = serializers.CharField()
+    version = serializers.CharField()
+
+
+class PresetSerializer(serializers.ModelSerializer[Preset]):
+    class Meta:
+        model = Preset
+        fields = [
+            "id",
+            "name",
+            "platform",
+            "compiler",
+            "assembler_flags",
+            "compiler_flags",
+            "diff_flags",
+            "decompiler_flags",
+            "libraries",
+        ]
+        read_only_fields = [
+            "creation_time",
+            "last_updated",
+        ]
+
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
     compiler = serializers.CharField(allow_blank=True, required=True)
@@ -131,11 +158,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
-
-
-class LibrarySerializer(serializers.Serializer[Library]):
-    name = serializers.CharField()
-    version = serializers.CharField()
 
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
@@ -251,32 +273,18 @@ class TerseScratchSerializer(ScratchSerializer):
         ]
 
 
-class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
-    html_url = HtmlUrlField()
-
-    class Meta:
-        model = GitHubRepo
-        exclude = ["id"]
-        read_only_fields = ["last_pulled", "is_pulling"]
-
-
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
     url = UrlField()
     html_url = HtmlUrlField()
-    repo = GitHubRepoSerializer()
-    platform = SerializerMethodField()
     unmatched_function_count = SerializerMethodField()
 
     class Meta:
         model = Project
         exclude: List[str] = []
-        depth = 1  # repo
 
     def create(self, validated_data: Any) -> Project:
-        repo_data = validated_data.pop("repo")
-        repo = GitHubRepo.objects.create(**repo_data)
-        project = Project.objects.create(repo=repo, **validated_data)
+        project = Project.objects.create(**validated_data)
         return project
 
     def update(self, instance: Project, validated_data: Any) -> Project:
@@ -284,9 +292,6 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
             setattr(instance, attr, value)
         instance.save()
         return instance
-
-    def get_platform(self, project: Project) -> Optional[str]:
-        return None
 
     def get_unmatched_function_count(self, project: Project) -> int:
         return ProjectFunction.objects.filter(

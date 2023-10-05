@@ -2,11 +2,9 @@ from time import sleep
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71
-from coreapp.models.project import ProjectFunction
 from coreapp.models.scratch import Assembly, CompilerConfig, Scratch
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
-from coreapp.tests.test_project import ProjectTests
 from coreapp.views.scratch import compile_scratch_update_score
 from django.urls import reverse
 from rest_framework import status
@@ -223,21 +221,10 @@ class ScratchForkTests(BaseTestCase):
             "name": "cat scratch",
         }
 
-        project = ProjectTests.create_test_project()
-
         compiler_config = CompilerConfig()
         compiler_config.save()
 
-        project_function = ProjectFunction(
-            display_name="howdy",
-            rom_address=1000,
-            project=project,
-        )
-        project_function.save()
-
         scratch = self.create_scratch(scratch_dict)
-        scratch.project_function = project_function
-        scratch.save()
 
         slug = scratch.slug
 
@@ -265,9 +252,6 @@ class ScratchForkTests(BaseTestCase):
 
         # Make sure the name carried over to the fork
         self.assertEqual(scratch.name, fork.name)
-
-        # Make sure the project_function carried over to the fork
-        self.assertEqual(scratch.project_function, fork.project_function)
 
 
 class ScratchDetailTests(BaseTestCase):

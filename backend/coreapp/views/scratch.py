@@ -26,7 +26,6 @@ from ..error import CompilationError, DiffError
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
-from ..models.github import GitHubRepo, GitHubRepoBusyException
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
@@ -243,10 +242,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
         if not project_obj:
             raise serializers.ValidationError("Unknown project")
-
-        repo: GitHubRepo = project_obj.repo
-        if repo.is_pulling:
-            raise GitHubRepoBusyException()
 
         project_function = ProjectFunction.objects.filter(
             project=project_obj, rom_address=rom_address

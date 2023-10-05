@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-from coreapp.models.preset import Preset
 from django.contrib.auth.models import User
 from django.db import models
 from django_resized import ResizedImageField
@@ -18,7 +17,6 @@ def icon_path(instance: "Project", filename: str) -> str:
 class Project(models.Model):
     slug = models.SlugField(primary_key=True)
     creation_time = models.DateTimeField(auto_now_add=True)
-    repo = models.OneToOneField("GithubRepo", on_delete=models.PROTECT)
     icon = ResizedImageField(size=[256, 256], upload_to=icon_path, null=True)
     description = models.TextField(default="", blank=True, max_length=1000)
 

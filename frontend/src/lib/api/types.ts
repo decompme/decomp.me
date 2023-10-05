@@ -65,14 +65,6 @@ export interface Project {
     slug: string
     url: string
     html_url: string
-    repo: {
-        html_url: string
-        owner: string
-        repo: string
-        branch: string
-        is_pulling: boolean
-        last_pulled: string | null
-    }
     creation_time: string
     icon?: string
     description: string

@@ -1,8 +1,6 @@
 import logging
 import random
-import re
 import string
-from threading import Thread
 from typing import Any, Optional
 
 import django_filters
@@ -10,9 +8,6 @@ from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from django.db.utils import IntegrityError
 from django.views import View
-from github import Github, UnknownObjectException
-from github.GithubException import GithubException
-from github.Repository import Repository
 from rest_framework import filters, mixins, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -24,19 +19,13 @@ from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
-from ..models.github import (
-    GitHubRepo,
-    GitHubRepoBusyException,
-    GitHubUser,
-    MissingOAuthScopeException,
-)
+from ..models.github import GitHubUser
 from ..models.project import Project, ProjectFunction, ProjectMember
 from ..models.scratch import Scratch
 from ..serializers import (
     ProjectFunctionSerializer,
     ProjectMemberSerializer,
     ProjectSerializer,
-    ScratchSerializer,
     TerseScratchSerializer,
 )
 
@@ -156,9 +145,6 @@ class ProjectViewSet(
 
         project = serializer.save()
 
-        repo: GitHubRepo = project.repo
-        repo.pull()
-
         ProjectMember(project=project, user=request.profile.user).save()
 
         return Response(
@@ -168,144 +154,10 @@ class ProjectViewSet(
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         project: Project = self.get_object()
-        repo: GitHubRepo = project.repo
 
         project.delete()
-        repo.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=["POST"])
-    def pull(self, request: Request, pk: str) -> Response:
-        project: Project = self.get_object()
-        repo: GitHubRepo = project.repo
-
-        if not repo.is_pulling:
-            t = Thread(target=GitHubRepo.pull, args=(project.repo,))
-            t.start()
-
-        repo.is_pulling = True  # Respond with is_pulling=True; the thread will save is_pulling=True to the DB
-        return Response(
-            ProjectSerializer(project, context={"request": request}).data,
-            status=status.HTTP_202_ACCEPTED,
-        )
-
-    @action(detail=True, methods=["POST"])
-    def pr(self, request: Request, pk: str) -> Response:
-        scratch_slugs = request.data.get("scratch_slugs", [])
-
-        if isinstance(scratch_slugs, str):
-            scratch_slugs = [scratch_slugs]
-
-        if not isinstance(scratch_slugs, list) or len(scratch_slugs) == 0:
-            raise PrMustHaveScratchesException()
-
-        project: Project = self.get_object()
-        user: Optional[User] = request.profile.user
-        if not user:
-            raise GithubLoginException()
-        token = user.github.access_token
-        github_repo: Repository = project.repo.details(token)
-        head_sha = project.repo.get_sha()
-
-        # Get or create fork
-        try:
-            fork = Github(token).get_repo(f"{request.profile}/{github_repo.name}")
-        except UnknownObjectException:
-            fork = Github(token).get_user().create_fork(github_repo)
-
-        # Create branch on fork
-        fork_branch = generate_branch_name()
-        while True:
-            try:
-                fork.create_git_ref(ref=f"refs/heads/{fork_branch}", sha=head_sha)
-                break
-            except GithubException as e:
-                if e.status == 422:
-                    # Branch already exists, pick a new one
-                    fork_branch = generate_branch_name()
-                elif e.status == 404:
-                    # Missing permissions (unsure why 404, but that's what Github returns)
-                    raise MissingOAuthScopeException("public_repo")
-                else:
-                    raise e
-
-        files_to_funcs: dict[str, list[str]] = {}
-        filesystem: dict[str, str] = {}  # Local cache
-        for scratch_slug in scratch_slugs:
-            assert isinstance(scratch_slug, str)
-            scratch: Scratch = Scratch.objects.get(slug=scratch_slug)
-
-            fn: Optional[ProjectFunction] = scratch.project_function
-            if fn is None or fn.project != project:
-                raise ScratchNotProjectFunctionException()
-
-            # Get file contents if needed
-            if fn.src_file not in filesystem:
-                contents_data = fork.get_contents(fn.src_file)
-                contents = (
-                    contents_data[0]
-                    if isinstance(contents_data, list)
-                    else contents_data
-                )
-                filesystem[fn.src_file] = contents.decoded_content.decode() or ""
-
-            # Change file contents
-            old_content = filesystem[fn.src_file]
-            new_content = re.sub(
-                # TODO: escape function name?
-                rf"INCLUDE_ASM\([^,]+, [^,]+, {scratch.diff_label}[^\)]*\);",
-                scratch.source_code,
-                old_content,
-                flags=re.MULTILINE,
-            )
-            assert (
-                new_content != old_content
-            ), f"Unable to find INCLUDE_ASM for {scratch.diff_label}"
-
-            # Prepare commit message
-            commit_message = f"Match {fn.display_name} ({fn.src_file})\n"
-            seen_usernames = set()
-            seen_usernames.add(user.username)
-            for parent_scratch in scratch.all_parents():
-                profile = parent_scratch.owner
-
-                # Skip anons
-                if not profile or not profile.user:
-                    continue
-
-                if profile.user.username not in seen_usernames:
-                    seen_usernames.add(profile.user.username)
-                    gh_user = GitHubUser.objects.get(user=profile.user)
-                    commit_message += f"\nCo-authored by: {gh_user.details().name} <{profile.user.email}>"
-
-            # Update the file on the branch & in our local cache
-            fork.update_file(
-                message=commit_message,
-                path=fn.src_file,
-                content=new_content,
-                sha=contents.sha,
-                branch=fork_branch,
-            )
-            filesystem[fn.src_file] = new_content
-
-            files_to_funcs.setdefault(fn.src_file, []).append(fn.display_name)
-
-        # Create PR
-        body = "Matches:\n"
-        for file in files_to_funcs:
-            body += f"- {file}\n"
-            for func in files_to_funcs[file]:
-                body += f"  - {func}\n"
-        body += "\n\n###### Generated by [decomp.me](https://decomp.me)"
-        response = github_repo.create_pull(
-            title=make_pr_name(files_to_funcs),
-            body=body,
-            head=f"{request.profile}:{fork_branch}",
-            base=github_repo.default_branch,
-            draft=True,
-        )
-        return Response({"url": response.html_url})
 
 
 def truncate_comma_separate(string_list: list[str], max_length: int) -> str:
