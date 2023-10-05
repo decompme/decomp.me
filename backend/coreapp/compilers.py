@@ -461,11 +461,11 @@ GCC2952_MIPSEL = GCCPS1Compiler(
 # Saturn
 SATURN_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
-    'cp -r ${COMPILER_DIR}/* . && '
+    "cp -r ${COMPILER_DIR}/* . && "
     '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
     '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
     '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
-    'sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && '
+    "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && "
     'cp as_out.o "$OUTPUT"'
 )
 
