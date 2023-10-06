@@ -258,9 +258,12 @@ export function useCompilers(): Record<string, Compiler> {
 export function useLibraries(): LibraryVersions[] {
     const { data } = useSWR("/libraries", get, {
         refreshInterval: 0,
-        suspense: true, // TODO: remove
         onErrorRetry,
     })
+
+    if (!data) {
+        return []
+    }
 
     return data.libraries
 }
