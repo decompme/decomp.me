@@ -68,6 +68,15 @@ def get_library(
         )
         return False
 
+    include_dir = library_dir / "include"
+    if not include_dir.is_dir():
+        logger.error(
+            f"Failed to download {library_name} {library_version}: {include_dir} does not exist or isn't a directory."
+        )
+        return False
+
+    return True
+
 
 def download_libraries(args, libraries_config):
     to_download = []
