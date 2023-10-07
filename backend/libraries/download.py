@@ -113,9 +113,6 @@ def main():
         help="Directory where libraries will be stored",
     )
     parser.add_argument(
-        "--libraries", type=str, nargs="+", help="Only run for these libraries"
-    )
-    parser.add_argument(
         "--threads", type=int, default=4, help="Number of download threads to use"
     )
     parser.add_argument("--verbose", action="store_true", help="Enable DEBUG log level")
