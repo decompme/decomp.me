@@ -37,7 +37,7 @@ def get_library(
     if "git" in download_info:
         # Download with git. Get url and ref, and download using git clone.
         url = download_info["git"]["url"]
-        branch = download_info["git"]["branch"]
+        branch = str(download_info["git"]["branch"])
         logger.debug("Using git to download library at %s branch %s", url, branch)
 
         # Recreate repository if force is set.
