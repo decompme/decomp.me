@@ -122,9 +122,7 @@ def main():
         logger.setLevel("DEBUG")
 
     if args.libraries_dir == None:
-        args.libraries_dir = (
-            Path(os.path.dirname(os.path.realpath(__file__))).parent / "libraries"
-        )
+        args.libraries_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
     libraries_yaml = (
         Path(os.path.dirname(os.path.realpath(__file__))) / f"libraries.yaml"
