@@ -16,7 +16,7 @@ services:
         ENABLE_GBA_SUPPORT: "YES"
         ENABLE_N64_SUPPORT: "YES"
         # dont install wine32 etc by default
-        ENABLE_NDS_SUPPORT: "NO"
+        ENABLE_NDS_ARM9_SUPPORT: "NO"
         ENABLE_PS1_SUPPORT: "NO"
         ENABLE_GC_WII_SUPPORT: "NO"
         ENABLE_MSDOS_SUPPORT: "NO"
