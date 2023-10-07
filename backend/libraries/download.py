@@ -108,7 +108,7 @@ def main():
     )
     parser.add_argument(
         "--libraries-dir",
-        type=str,
+        type=Path,
         default=None,
         help="Directory where libraries will be stored",
     )
@@ -121,9 +121,7 @@ def main():
     if args.verbose:
         logger.setLevel("DEBUG")
 
-    if args.libraries_dir:
-        args.libraries_dir = Path(args.libraries_dir)
-    else:
+    if args.libraries_dir == None:
         args.libraries_dir = (
             Path(os.path.dirname(os.path.realpath(__file__))).parent / "libraries"
         )
