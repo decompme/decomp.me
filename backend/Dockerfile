@@ -60,25 +60,29 @@ RUN curl -sSL https://install.python-poetry.org/ | \
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.5.2 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.3 /usr/local/sbin/wibo /usr/bin/
 
 # windows compilers need i386 wine
-ARG ENABLE_NDS_ARM9_SUPPORT
-ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
-ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_MSDOS_SUPPORT
+ARG ENABLE_NDS_ARM9_SUPPORT
+ARG ENABLE_N3DS_SUPPORT
+ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
-RUN if [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ]; then \
+       [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
     fi
 
+ARG ENABLE_SATURN_SUPPORT
 # install dos2unix and dosemu2 for ps1 and saturn
 RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
@@ -103,20 +107,6 @@ RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
     rm omftools.tar.gz; \
     fi
 
-ARG ENABLE_GBA_SUPPORT
-ARG ENABLE_N64_SUPPORT
-ARG ENABLE_SWITCH_SUPPORT
-
-ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
-ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
-ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
-ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
-ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
-ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
-ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
-ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
-ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
-
 RUN mkdir -p /etc/fonts
 
 WORKDIR /backend
@@ -134,14 +124,35 @@ RUN useradd --create-home user \
 USER user
 
 # initialize wine files to /home/user/.wine
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
+RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ]; then \
+       [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
 ENV PATH="$PATH:/etc/poetry/bin"
+
+# no special dependencies required for these platforms
+ARG ENABLE_GBA_SUPPORT
+ARG ENABLE_MACOSX_SUPPORT
+ARG ENABLE_N64_SUPPORT
+ARG ENABLE_SWITCH_SUPPORT
+
+ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
+ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
+ENV ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT}
+ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
+ENV ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT}
+ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
+ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
+ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
+ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
+ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
+ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
+ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
