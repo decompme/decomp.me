@@ -47,7 +47,7 @@ def get_library(
 
         # Make sure the git repo is initialized. If it already exists, this is
         # essentially a noop.
-        subprocess.run(["git", "init", str(library_dir)], check=True)
+        subprocess.run(["git", "init", "-b", branch, str(library_dir)], check=True)
 
         # Fetch the ref we want to download, and git reset --hard to it.
         subprocess.run(
