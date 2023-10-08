@@ -41,6 +41,7 @@ RUN apt-get -y update && apt-get install -y \
     binutils-sh-elf \
     ca-certificates \
     curl \
+    dos2unix \
     gcc-mips-linux-gnu \
     git \
     iptables \
@@ -51,6 +52,7 @@ RUN apt-get -y update && apt-get install -y \
     libprotobuf-dev \
     libtinfo5 \
     netcat \
+    software-properties-common \
     unzip \
     wget \
     && rm -rf /var/lib/apt/lists/*
@@ -67,14 +69,12 @@ ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_N3DS_SUPPORT
-ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
 RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
@@ -83,12 +83,8 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
     fi
 
 ARG ENABLE_SATURN_SUPPORT
-# install dos2unix and dosemu2 for ps1 and saturn
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
-    apt-get update && \
-    apt-get install -y -o APT::Immediate-Configure=false \
-        dos2unix software-properties-common && \
+# install dosemu2 for saturn
+RUN if [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
     add-apt-repository -y ppa:dosemu2/ppa && \
     apt-get update && \
     apt-get install -y dosemu2; \
@@ -128,7 +124,6 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
@@ -140,6 +135,7 @@ ENV PATH="$PATH:/etc/poetry/bin"
 ARG ENABLE_GBA_SUPPORT
 ARG ENABLE_MACOSX_SUPPORT
 ARG ENABLE_N64_SUPPORT
+ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 
 ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
