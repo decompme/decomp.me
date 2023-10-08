@@ -2,7 +2,7 @@ directx:
   '5.0':
     git:
       url: https://github.com/roblabla/directx-headers
-      branch: 5.0
+      branch: '5.0'
   '8.0':
     git:
       url: https://github.com/roblabla/directx-headers
