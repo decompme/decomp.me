@@ -21,7 +21,7 @@ from coreapp.flags import (
     Flags,
     Language,
 )
-from coreapp.libraries import Library
+from coreapp.libraries import *
 
 from coreapp.platforms import (
     GBA,
@@ -1832,19 +1832,19 @@ _all_presets = [
         "LEGO Island",
         MSVC42,
         "/W3 /GX /O2 /TP",
-        libraries=[Library("directx", "5.0")],
+        libraries=[DIRECTX5],
     ),
     Preset(
         "Touhou 6 (C)",
         MSVC70,
         "/MT /G5 /GS /Od /Oi /Ob1",
-        libraries=[Library("directx", "8.0")],
+        libraries=[DIRECTX8],
     ),
     Preset(
         "Touhou 6 (C++)",
         MSVC70,
         "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP",
-        libraries=[Library("directx", "8.0")],
+        libraries=[DIRECTX8],
     ),
 ]
 
