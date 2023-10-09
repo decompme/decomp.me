@@ -261,6 +261,10 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     else:
         project_function = None
 
+    libraries = [
+        Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
+    ]
+
     ser = ScratchSerializer(
         data={
             "name": name,
@@ -278,6 +282,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         target_assembly=assembly,
         platform=platform.id,
         project_function=project_function,
+        libraries=libraries,
     )
 
     compile_scratch_update_score(scratch)

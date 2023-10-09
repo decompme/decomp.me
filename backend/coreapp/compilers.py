@@ -21,6 +21,7 @@ from coreapp.flags import (
     Flags,
     Language,
 )
+from coreapp.libraries import *
 
 from coreapp.platforms import (
     GBA,
@@ -84,6 +85,7 @@ class Preset:
     compiler: Compiler
     flags: str
     diff_flags: List[str] = field(default_factory=list)
+    libraries: List[Library] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, object]:
         return {
@@ -91,6 +93,9 @@ class Preset:
             "compiler": self.compiler.id,
             "flags": self.flags,
             "diff_flags": self.diff_flags,
+            "libraries": [
+                {"name": lib.name, "version": lib.version} for lib in self.libraries
+            ],
         }
 
 
@@ -1843,14 +1848,33 @@ _all_presets = [
     ),
     Preset("Kingdom Hearts", EE_GCC296, "-O2 -G0 -g"),
     # Windows
-    Preset("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
-    Preset("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
-    Preset("Touhou 6 (C++)", MSVC70, "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP"),
+    Preset(
+        "LEGO Island",
+        MSVC42,
+        "/W3 /GX /O2 /TP",
+        libraries=[DIRECTX5],
+    ),
+    Preset(
+        "Touhou 6 (C)",
+        MSVC70,
+        "/MT /G5 /GS /Od /Oi /Ob1",
+        libraries=[DIRECTX8],
+    ),
+    Preset(
+        "Touhou 6 (C++)",
+        MSVC70,
+        "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP",
+        libraries=[DIRECTX8],
+    ),
 ]
 
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
-_presets = [p for p in _all_presets if p.compiler.available()]
+_presets = [
+    p
+    for p in _all_presets
+    if p.compiler.available() and all((lib.available() for lib in p.libraries))
+]
 
 logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
 logger.info(

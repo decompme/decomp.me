@@ -24,6 +24,13 @@ class Library:
     def include_path(self) -> Path:
         return self.path / "include"
 
+    def available(self) -> bool:
+        if not self.include_path.exists():
+            print(
+                f"Library {self.name} {self.version} not found at {self.include_path}"
+            )
+        return self.include_path.exists()
+
 
 @dataclass(frozen=True)
 class LibraryVersions:
@@ -60,3 +67,7 @@ def available_libraries() -> list[LibraryVersions]:
             )
 
     return results
+
+
+DIRECTX5 = Library("directx", "5.0")
+DIRECTX8 = Library("directx", "8.0")
