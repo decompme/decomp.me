@@ -400,7 +400,7 @@ export function LibrariesEditor({ libraries, setLibraries }: {
         // clone the libraries
         const libs = JSON.parse(JSON.stringify(libraries))
         // Check if the library is already enabled, if so return it
-        const scratchlib = libraries.find(scratchlib => scratchlib.name == libName)
+        const scratchlib = libs.find(scratchlib => scratchlib.name == libName)
         if (scratchlib != null) {
             // If it is, set the version
             scratchlib.version = ver
