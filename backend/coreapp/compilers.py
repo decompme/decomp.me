@@ -1435,6 +1435,7 @@ _all_presets = [
     # N64
     Preset("AeroGauge", IDO53, "-O2 -mips2"),
     Preset("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
+    Preset("Bomberman Hero", IDO53, "-g -mips1"),
     Preset(
         "Chameleon Twist 1",
         IDO53,
