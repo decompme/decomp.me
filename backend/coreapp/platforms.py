@@ -605,8 +605,6 @@ NDS_ARM9 = Platform(
     assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
-
-
     asm_prelude="""
 .macro glabel label
     .global \label
