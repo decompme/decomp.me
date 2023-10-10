@@ -35,6 +35,7 @@ FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
     binutils-aarch64-linux-gnu \
+    binutils-arm-none-eabi \
     binutils-djgpp \
     binutils-mips-linux-gnu \
     binutils-powerpc-linux-gnu \
@@ -89,12 +90,6 @@ RUN if [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
     apt-get update && \
     apt-get install -y dosemu2; \
     fi
-
-# gc/wii specifics
-COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
-
-# nds specifics
-COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
 
 # msdos specific
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \

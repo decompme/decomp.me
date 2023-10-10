@@ -447,9 +447,9 @@ GC_WII = Platform(
     name="GameCube / Wii",
     description="PowerPC",
     arch="ppc",
-    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="powerpc-eabi-objdump -M broadway",
-    nm_cmd="powerpc-eabi-nm",
+    assemble_cmd='powerpc-linux-gnu-as -mgekko -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="powerpc-linux-gnu-objdump -M broadway",
+    nm_cmd="powerpc-linux-gnu-nm",
     asm_prelude="""
 .macro glabel label
     .global \label
@@ -605,6 +605,8 @@ NDS_ARM9 = Platform(
     assemble_cmd='sed "$INPUT" -e "s/;/;@/" | arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+
+
     asm_prelude="""
 .macro glabel label
     .global \label
