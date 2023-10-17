@@ -1544,6 +1544,11 @@ _all_presets = [
         diff_flags=["-Mreg-names=32"],
     ),
     Preset(
+        "Starfox 64",
+        IDO53,
+        "-O2 -g3 -mips2",
+    ),
+    Preset(
         "Super Mario 64",
         IDO53,
         "-O1 -g -mips2",
