@@ -21,6 +21,9 @@ gc_wii:
   - mwcc_242_81r
   - mwcc_233_163e
   - mwcc_42_127
+  - prodg_35
+  - prodg_37
+  - prodg_393
 
 n64:
   - gcc2.7.2kmc
