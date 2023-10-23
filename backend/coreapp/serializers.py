@@ -171,7 +171,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
-    compiler = serializers.CharField(allow_blank=True, required=True)
+    compiler = serializers.CharField(allow_blank=True, required=False)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     diff_flags = serializers.JSONField(required=False)
@@ -200,14 +200,31 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
             raise serializers.ValidationError(f"Unknown compiler {compiler}")
         return compiler
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        compiler = compilers.from_id(data["compiler"])
-        platform = platforms.from_id(data["platform"])
+    def validate_preset(self, preset: str) -> str:
+        try:
+            Preset.objects.get(id=preset)  # type: ignore
+        except:
+            raise serializers.ValidationError(f"Unknown preset: {preset}")
+        return preset
 
-        if compiler.platform != platform:
-            raise serializers.ValidationError(
-                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
-            )
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        if "preset" in data:
+            preset = Preset.objects.filter(id=data["preset"]).first()  # type: ignore
+            data["platform"] = preset.platform
+            data["compiler"] = preset.compiler
+            data["compiler_flags"] = preset.compiler_flags
+            data["diff_flags"] = preset.diff_flags
+            data["libraries"] = preset.libraries
+        else:
+            if "compiler" not in data:
+                raise serializers.ValidationError("compiler is required")
+            compiler = compilers.from_id(data["compiler"])
+            platform = platforms.from_id(data["platform"])
+
+            if compiler.platform != platform:
+                raise serializers.ValidationError(
+                    f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+                )
         return data
 
 

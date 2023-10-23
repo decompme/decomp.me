@@ -26,6 +26,7 @@ from ..error import CompilationError, DiffError
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
+from ..models.preset import Preset
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
@@ -216,9 +217,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset = data.get("preset", "")
-    if preset and not compilers.preset_from_name(preset):
-        raise serializers.ValidationError("Unknown preset:" + preset)
+    preset: str = data.get("preset", "")
 
     name = data.get("name", diff_label) or "Untitled"
 

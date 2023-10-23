@@ -59,3 +59,19 @@ class PresetTests(BaseTestCase):
         self.create_preset(
             {**SAMPLE_PRESET_DICT, "platform": N64.id, "compiler": GCC281PM.id}
         )
+
+    def test_create_scratch_from_preset(self) -> None:
+        preset = self.create_preset(SAMPLE_PRESET_DICT)
+        scratch_dict = {
+            "preset": preset.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.preset, preset.id)
+        self.assertEqual(scratch.platform, preset.platform)
+        self.assertEqual(scratch.compiler, preset.compiler)
+        # self.assertEqual(scratch.assembler_flags, preset.assembler_flags)
+        self.assertEqual(scratch.compiler_flags, preset.compiler_flags)
+        # self.assertEqual(scratch.decompiler_flags, preset.decompiler_flags)
+        self.assertEqual(scratch.libraries, preset.libraries)
