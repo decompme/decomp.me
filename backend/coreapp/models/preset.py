@@ -1,6 +1,5 @@
-from django.db import models
-
 from coreapp.models.scratch import LibrariesField
+from django.db import models
 
 
 class Preset(models.Model):

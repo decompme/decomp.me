@@ -1,13 +1,12 @@
 import json
 import logging
+from typing import Any, List, Sequence
 
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import Any, List, Sequence
-
-from .profile import Profile
 from ..libraries import Library
+from .profile import Profile
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 from typing import Dict
 
 from coreapp import compilers
+from coreapp.serializers import PresetSerializer
 from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -32,7 +33,10 @@ class CompilersDetail(APIView):
                 "name": platform.name,
                 "description": platform.description,
                 "arch": platform.arch,
-                "presets": [p.to_json() for p in compilers.available_presets(platform)],
+                "presets": [
+                    PresetSerializer(p).data
+                    for p in compilers.available_presets(platform)
+                ],
             }
 
         return ret
