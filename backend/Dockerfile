@@ -63,17 +63,15 @@ RUN curl -sSL https://install.python-poetry.org/ | \
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.6.4 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.7 /usr/local/sbin/wibo /usr/bin/
 
 # windows compilers need i386 wine
 
 ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_NDS_ARM9_SUPPORT
-ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
@@ -115,7 +113,6 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_N3DS_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
@@ -128,6 +125,7 @@ ENV PATH="$PATH:/etc/poetry/bin"
 ARG ENABLE_GBA_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_MACOSX_SUPPORT
+ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT
 ARG ENABLE_PS1_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
