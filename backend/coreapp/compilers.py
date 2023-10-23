@@ -19,6 +19,8 @@ from coreapp.flags import (
     Flags,
     Language,
 )
+from coreapp.libraries import *
+
 from coreapp.platforms import (
     GBA,
     GC_WII,
@@ -82,6 +84,7 @@ class PresetDC:
     compiler: Compiler
     flags: str
     diff_flags: List[str] = field(default_factory=list)
+    libraries: List[Library] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, object]:
         return {
@@ -89,6 +92,9 @@ class PresetDC:
             "compiler": self.compiler.id,
             "flags": self.flags,
             "diff_flags": self.diff_flags,
+            "libraries": [
+                {"name": lib.name, "version": lib.version} for lib in self.libraries
+            ],
         }
 
 
@@ -311,11 +317,16 @@ CLANG_800 = ClangCompiler(
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") &&'
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
-    + '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
+    '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
 )
-PSYQ_CC = 'cpp -P "$INPUT" | unix2dos | ${WINE} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && ${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+PSYQ_CC = (
+    'cpp -P "$INPUT" | unix2dos | '
+    '${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && '
+    '${WIBO} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && '
+    '${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+)
 
 PSYQ33 = GCCPS1Compiler(
     id="psyq3.3",
@@ -382,8 +393,20 @@ GCC263_PSX = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC260_MIPSEL = GCCPS1Compiler(
+    id="gcc2.6.0-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC263_MIPSEL = GCCPS1Compiler(
     id="gcc2.6.3-mipsel",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC270_MIPSEL = GCCPS1Compiler(
+    id="gcc2.7.0-mipsel",
     platform=PS1,
     cc=PS1_GCC,
 )
@@ -394,7 +417,7 @@ GCC271_MIPSEL = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
-GCC2672MIPSEL = GCCPS1Compiler(
+GCC272_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.2-mipsel",
     platform=PS1,
     cc=PS1_GCC,
@@ -445,12 +468,12 @@ GCC2952_MIPSEL = GCCPS1Compiler(
 # Saturn
 SATURN_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
-    + "cp -r ${COMPILER_DIR}/* . && "
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
-    + '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
-    + "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o &&"
-    + 'cp as_out.o "$OUTPUT"'
+    "cp -r ${COMPILER_DIR}/* . && "
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
+    '(HOME="." dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
+    "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && "
+    'cp as_out.o "$OUTPUT"'
 )
 
 CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
@@ -604,7 +627,7 @@ GCC281PM = GCCCompiler(
 GCC272SN = GCCCompiler(
     id="gcc2.7.2sn",
     platform=N64,
-    cc='cpp -P "$INPUT" | ${WINE} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+    cc='cpp -P "$INPUT" | ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
 GCC272SNEW = GCCCompiler(
@@ -617,8 +640,8 @@ GCC281SN = GCCCompiler(
     id="gcc2.8.1sn",
     platform=N64,
     cc='cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
-    '| ${WINE} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
-    '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
@@ -627,8 +650,8 @@ GCC281SNCXX = GCCCompiler(
     base_compiler=GCC281SN,
     platform=N64,
     cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
-    '| ${WINE} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
-    '&& ${WINE} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
@@ -759,7 +782,7 @@ PBX_GCC3 = GCCCompiler(
 # GC_WII
 # Thanks to Gordon Davisson for the xargs trick:
 # https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
-MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -pragma "msg_show_realref off" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -pragma "msg_show_realref off" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
 MWCC_233_144 = MWCCCompiler(
     id="mwcc_233_144",
@@ -781,7 +804,7 @@ MWCC_233_163 = MWCCCompiler(
 MWCC_233_163E = MWCCCompiler(
     id="mwcc_233_163e",
     platform=GC_WII,
-    cc='${WINE} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WINE} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
+    cc='${WIBO} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
 )
 
 MWCC_233_163N = MWCCCompiler(
@@ -1169,9 +1192,11 @@ _all_compilers: List[Compiler] = [
     PSYQ45,
     PSYQ46,
     GCC263_PSX,
+    GCC260_MIPSEL,
     GCC263_MIPSEL,
+    GCC270_MIPSEL,
     GCC271_MIPSEL,
-    GCC2672MIPSEL,
+    GCC272_MIPSEL,
     GCC2721_MIPSEL,
     GCC2722_MIPSEL,
     GCC2723_MIPSEL,
@@ -1381,11 +1406,11 @@ _all_presets = [
     PresetDC(
         "Evo's Space Adventures",
         GCC2952_MIPSEL,
-        "-mel -mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
+        "-mgpopt -mgpOPT -msoft-float -msplit-addresses -mno-abicalls -fno-builtin -fsigned-char -gcoff -O2 -G8",
     ),
     PresetDC(
         "Frogger",
-        GCC263_PSX,
+        GCC260_MIPSEL,
         "-O3 -G0 -gcoff",
     ),
     PresetDC(
@@ -1417,6 +1442,7 @@ _all_presets = [
     # N64
     PresetDC("AeroGauge", IDO53, "-O2 -mips2"),
     PresetDC("AeroGauge JP Kiosk Demo", IDO53, "-O2 -mips1"),
+    PresetDC("Bomberman Hero", IDO53, "-g -mips1"),
     PresetDC(
         "Chameleon Twist 1",
         IDO53,
@@ -1518,6 +1544,11 @@ _all_presets = [
         IDO53,
         "-O2 -mips2 -Xfullwarn -signed -nostdinc",
         diff_flags=["-Mreg-names=32"],
+    ),
+    PresetDC(
+        "Starfox 64",
+        IDO53,
+        "-O2 -g3 -mips2",
     ),
     PresetDC(
         "Super Mario 64",
@@ -1824,14 +1855,33 @@ _all_presets = [
     ),
     PresetDC("Kingdom Hearts", EE_GCC296, "-O2 -G0 -g"),
     # Windows
-    PresetDC("LEGO Island", MSVC42, "/W3 /GX /O2 /TP"),
-    PresetDC("Touhou 6 (C)", MSVC70, "/MT /G5 /GS /Od /Oi /Ob1"),
-    PresetDC("Touhou 6 (C++)", MSVC70, "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP"),
+    PresetDC(
+        "LEGO Island",
+        MSVC42,
+        "/W3 /GX /O2 /TP",
+        libraries=[DIRECTX5],
+    ),
+    PresetDC(
+        "Touhou 6 (C)",
+        MSVC70,
+        "/MT /G5 /GS /Od /Oi /Ob1",
+        libraries=[DIRECTX8],
+    ),
+    PresetDC(
+        "Touhou 6 (C++)",
+        MSVC70,
+        "/MT /EHsc /G5 /GS /Od /Oi /Ob1 /TP",
+        libraries=[DIRECTX8],
+    ),
 ]
 
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
-_presets = [p for p in _all_presets if p.compiler.available()]
+_presets = [
+    p
+    for p in _all_presets
+    if p.compiler.available() and all((lib.available() for lib in p.libraries))
+]
 
 logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
 logger.info(

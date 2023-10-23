@@ -15,23 +15,26 @@ services:
       args:
         ENABLE_GBA_SUPPORT: "YES"
         ENABLE_N64_SUPPORT: "YES"
+        ENABLE_PS1_SUPPORT: "YES"
+        ENABLE_GC_WII_SUPPORT: "YES"
         # dont install wine32 etc by default
-        ENABLE_NDS_SUPPORT: "NO"
-        ENABLE_PS1_SUPPORT: "NO"
-        ENABLE_GC_WII_SUPPORT: "NO"
         ENABLE_MSDOS_SUPPORT: "NO"
+        ENABLE_N3DS_SUPPORT: "NO"
+        ENABLE_NDS_ARM9_SUPPORT: "NO"
+        ENABLE_PS2_SUPPORT: "NO"
         ENABLE_WIN9X_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
+        # dont install dosemu by default
         ENABLE_SATURN_SUPPORT: "NO"
+        # dont download macosx compilers by default
+        ENABLE_MACOSX_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:
       - setuid
       - setgid
       - setfcap
-    devices:
-      - "/dev/fuse:/dev/fuse"
     env_file:
       - backend/docker.dev.env
     ports:

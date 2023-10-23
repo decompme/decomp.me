@@ -1,6 +1,7 @@
 gba:
   - agbcc
   - agbccpp
+
 gc_wii:
   - mwcc_233_144
   - mwcc_233_159
@@ -20,6 +21,7 @@ gc_wii:
   - mwcc_242_81r
   - mwcc_233_163e
   - mwcc_42_127
+
 n64:
   - gcc2.7.2kmc
   - gcc2.7.2sn
@@ -33,6 +35,7 @@ n64:
   - mips_pro_744
   - egcs_1.1.2-4
   - gcc4.4.0-mips64-elf
+
 n3ds:
   - armcc_40_771
   - armcc_40_821
@@ -45,6 +48,7 @@ n3ds:
   - armcc_41_1440
   - armcc_41_1454
   - armcc_504_82
+
 nds_arm9:
   - mwcc_20_72
   - mwcc_20_79
@@ -69,6 +73,7 @@ nds_arm9:
   - mwcc_40_1034
   - mwcc_40_1036
   - mwcc_40_1051
+
 switch:
   - clang-3.9.1
   - clang-4.0.1
@@ -85,7 +90,9 @@ ps1:
   - psyq4.5
   - psyq4.6
   - gcc2.6.3-psx
+  - gcc2.6.0-mipsel
   - gcc2.6.3-mipsel
+  - gcc2.7.0-mipsel
   - gcc2.7.1-mipsel
   - gcc2.7.2-mipsel
   - gcc2.7.2.1-mipsel
@@ -95,6 +102,7 @@ ps1:
   - gcc2.8.1-mipsel
   - gcc2.91.66-mipsel
   - gcc2.95.2-mipsel
+
 ps2:
   - ee-gcc2.9-990721
   - ee-gcc2.9-991111

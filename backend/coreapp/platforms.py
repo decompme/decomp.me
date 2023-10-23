@@ -447,9 +447,9 @@ GC_WII = Platform(
     name="GameCube / Wii",
     description="PowerPC",
     arch="ppc",
-    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="powerpc-eabi-objdump -M broadway",
-    nm_cmd="powerpc-eabi-nm",
+    assemble_cmd='powerpc-linux-gnu-as -mgekko -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="powerpc-linux-gnu-objdump -M broadway",
+    nm_cmd="powerpc-linux-gnu-nm",
     asm_prelude="""
 .macro glabel label
     .global \label

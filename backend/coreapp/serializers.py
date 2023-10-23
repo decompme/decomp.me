@@ -180,6 +180,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_asm = serializers.CharField(allow_blank=True)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
 
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)

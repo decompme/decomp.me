@@ -43,10 +43,11 @@ jobs:
 
           sudo apt-get install \
             binutils-aarch64-linux-gnu \
+            binutils-arm-none-eabi \
+            binutils-djgpp \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             binutils-sh-elf \
-            binutils-djgpp \
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \
@@ -84,27 +85,9 @@ jobs:
         run: |-
           cd backend
           poetry run python3 libraries/download.py
-      - name: Install dkp dependencies (ppc)
-        run: |-
-          mkdir -p bin
-          docker run \
-            -v $(pwd)/bin:/tmp/bin \
-            --entrypoint /bin/sh \
-            devkitpro/devkitppc:20210726 \
-            -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
-          sudo mv bin/powerpc* /usr/bin/
-      - name: Install dkp dependencies (arm)
-        run: |-
-          mkdir -p bin
-          docker run \
-            -v $(pwd)/bin:/tmp/bin \
-            --entrypoint /bin/sh \
-            devkitpro/devkitarm:20210726 \
-            -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
-          sudo mv bin/arm* /usr/bin/
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/WiBo/releases/download/0.5.2/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/WiBo/releases/download/0.6.4/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
@@ -171,7 +154,6 @@ jobs:
           docker build backend \
             -t decompme_backend \
             --build-arg ENABLE_GC_WII_SUPPORT=YES \
-            --build-arg ENABLE_PS1_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
             --build-arg ENABLE_MSDOS_SUPPORT=YES
       - name: Run tests

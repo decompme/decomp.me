@@ -145,19 +145,6 @@ export type Flag = {
     flags: string[]
 }
 
-export type CompilerPreset = {
-    name: string
-    flags: string
-    compiler: string
-    diff_flags: string[]
-}
-
-export type Compiler = {
-    platform: string
-    flags: Flag[]
-    diff_flags: Flag[]
-}
-
 export type Library = {
     name: string
     version: string
@@ -166,6 +153,20 @@ export type Library = {
 export type LibraryVersions = {
     name: string
     supported_versions: string[]
+}
+
+export type CompilerPreset = {
+    name: string
+    flags: string
+    compiler: string
+    diff_flags: string[]
+    libraries: Library[]
+}
+
+export type Compiler = {
+    platform: string
+    flags: Flag[]
+    diff_flags: Flag[]
 }
 
 export type Platform = {
