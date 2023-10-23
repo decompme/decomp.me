@@ -333,7 +333,7 @@ class ScratchViewSet(
     def destroy(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         # Check permission
         scratch = self.get_object()
-        if scratch.owner != request.profile:
+        if scratch.owner != request.profile and not request.profile.is_staff():
             response = self.retrieve(request, *args, **kwargs)
             response.status_code = status.HTTP_403_FORBIDDEN
             return response

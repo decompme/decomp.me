@@ -173,7 +173,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                     Fork
                 </button>
             </li>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
+            {((scratch.owner && userIsYou(scratch.owner)) || api.useThisUser().is_admin) && <li>
                 <button onClick={event => {
                     if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
                         deleteScratch(scratch)
