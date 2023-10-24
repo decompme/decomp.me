@@ -13,7 +13,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     with transaction.atomic():
         db_preset = Preset(
-            id="Rhythm Tengoku",
             name="Rhythm Tengoku",
             compiler="agbcc",
             platform="gba",
@@ -21,7 +20,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="The Minish Cap",
             name="The Minish Cap",
             compiler="agbcc",
             platform="gba",
@@ -29,7 +27,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mother 3",
             name="Mother 3",
             compiler="agbccpp",
             platform="gba",
@@ -37,7 +34,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Kirby and the Amazing Mirror",
             name="Kirby and the Amazing Mirror",
             compiler="agbcc",
             platform="gba",
@@ -45,7 +41,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokemon Mystery Dungeon: Red Rescue Team",
             name="Pokemon Mystery Dungeon: Red Rescue Team",
             compiler="agbcc",
             platform="gba",
@@ -53,7 +48,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokemon Pinball: Ruby and Sapphire",
             name="Pokemon Pinball: Ruby and Sapphire",
             compiler="agbcc",
             platform="gba",
@@ -61,7 +55,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ocarina of Time 3D",
             name="Ocarina of Time 3D",
             compiler="armcc_40_821",
             platform="n3ds",
@@ -69,7 +62,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario 3D Land",
             name="Super Mario 3D Land",
             compiler="armcc_41_894",
             platform="n3ds",
@@ -77,7 +69,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ikachan 3DS",
             name="Ikachan 3DS",
             compiler="armcc_41_894",
             platform="n3ds",
@@ -85,7 +76,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario Odyssey",
             name="Super Mario Odyssey",
             compiler="clang-3.9.1",
             platform="switch",
@@ -93,7 +83,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Breath of the Wild",
             name="Breath of the Wild",
             compiler="clang-4.0.1",
             platform="switch",
@@ -101,7 +90,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Splatoon 2 3.1.0",
             name="Splatoon 2 3.1.0",
             compiler="clang-4.0.1",
             platform="switch",
@@ -109,7 +97,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario 3D World + Bowser's Fury",
             name="Super Mario 3D World + Bowser's Fury",
             compiler="clang-8.0.0",
             platform="switch",
@@ -117,7 +104,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Castlevania: Symphony of the Night",
             name="Castlevania: Symphony of the Night",
             compiler="psyq3.5",
             platform="ps1",
@@ -125,7 +111,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Evo's Space Adventures",
             name="Evo's Space Adventures",
             compiler="gcc2.95.2-mipsel",
             platform="ps1",
@@ -133,7 +118,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Frogger",
             name="Frogger",
             compiler="gcc2.6.0-mipsel",
             platform="ps1",
@@ -141,7 +125,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Legacy of Kain: Soul Reaver",
             name="Legacy of Kain: Soul Reaver",
             compiler="psyq4.4",
             platform="ps1",
@@ -149,7 +132,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Metal Gear Solid",
             name="Metal Gear Solid",
             compiler="psyq4.4",
             platform="ps1",
@@ -157,7 +139,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Metal Gear Solid (overlays)",
             name="Metal Gear Solid (overlays)",
             compiler="psyq4.4",
             platform="ps1",
@@ -165,7 +146,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="vib-ribbon",
             name="vib-ribbon",
             compiler="gcc2.91.66-mipsel",
             platform="ps1",
@@ -173,7 +153,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Castlevania: Symphony of the Night (saturn)",
             name="Castlevania: Symphony of the Night (saturn)",
             compiler="cygnus-2.7-96Q3",
             platform="saturn",
@@ -181,7 +160,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="AeroGauge",
             name="AeroGauge",
             compiler="ido5.3",
             platform="n64",
@@ -189,7 +167,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="AeroGauge JP Kiosk Demo",
             name="AeroGauge JP Kiosk Demo",
             compiler="ido5.3",
             platform="n64",
@@ -197,7 +174,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Bomberman Hero",
             name="Bomberman Hero",
             compiler="ido5.3",
             platform="n64",
@@ -205,7 +181,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Chameleon Twist 1",
             name="Chameleon Twist 1",
             compiler="ido5.3",
             platform="n64",
@@ -214,7 +189,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Chameleon Twist 2",
             name="Chameleon Twist 2",
             compiler="ido5.3",
             platform="n64",
@@ -223,7 +197,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Diddy Kong Racing",
             name="Diddy Kong Racing",
             compiler="ido5.3",
             platform="n64",
@@ -231,7 +204,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Dinosaur Planet",
             name="Dinosaur Planet",
             compiler="ido5.3",
             platform="n64",
@@ -239,7 +211,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Dinosaur Planet (DLLs)",
             name="Dinosaur Planet (DLLs)",
             compiler="ido5.3",
             platform="n64",
@@ -247,7 +218,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Donkey Kong 64",
             name="Donkey Kong 64",
             compiler="ido5.3",
             platform="n64",
@@ -255,7 +225,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Dr. Mario 64 N64",
             name="Dr. Mario 64 N64",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -264,7 +233,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Dr. Mario 64 iQue",
             name="Dr. Mario 64 iQue",
             compiler="egcs_1.1.2-4",
             platform="n64",
@@ -273,7 +241,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="GoldenEye / Perfect Dark",
             name="GoldenEye / Perfect Dark",
             compiler="ido5.3",
             platform="n64",
@@ -281,7 +248,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="libultra iQue",
             name="libultra iQue",
             compiler="egcs_1.1.2-4",
             platform="n64",
@@ -290,7 +256,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Majora's Mask",
             name="Majora's Mask",
             compiler="ido7.1",
             platform="n64",
@@ -299,7 +264,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart 64",
             name="Mario Kart 64",
             compiler="ido5.3",
             platform="n64",
@@ -307,7 +271,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Party 1",
             name="Mario Party 1",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -316,7 +279,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Party 2",
             name="Mario Party 2",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -325,7 +287,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Party 3",
             name="Mario Party 3",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -334,7 +295,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ocarina of Time",
             name="Ocarina of Time",
             compiler="ido7.1",
             platform="n64",
@@ -343,7 +303,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Paper Mario",
             name="Paper Mario",
             compiler="gcc2.8.1pm",
             platform="n64",
@@ -352,7 +311,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokémon Puzzle League",
             name="Pokémon Puzzle League",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -361,7 +319,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Quest64",
             name="Quest64",
             compiler="ido5.3",
             platform="n64",
@@ -370,7 +327,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Rocket Robot on Wheels",
             name="Rocket Robot on Wheels",
             compiler="gcc2.7.2snew",
             platform="n64",
@@ -379,7 +335,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Shadowgate 64",
             name="Shadowgate 64",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -388,7 +343,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Space Station Silicon Valley",
             name="Space Station Silicon Valley",
             compiler="ido5.3",
             platform="n64",
@@ -397,7 +351,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Starfox 64",
             name="Starfox 64",
             compiler="ido5.3",
             platform="n64",
@@ -405,7 +358,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario 64",
             name="Super Mario 64",
             compiler="ido5.3",
             platform="n64",
@@ -414,7 +366,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Smash Bros.",
             name="Super Smash Bros.",
             compiler="ido7.1",
             platform="n64",
@@ -423,7 +374,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Duke Nukem Zero Hour",
             name="Duke Nukem Zero Hour",
             compiler="gcc2.7.2kmc",
             platform="n64",
@@ -432,7 +382,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Wave Race 64",
             name="Wave Race 64",
             compiler="ido5.3",
             platform="n64",
@@ -440,7 +389,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Animal Forest",
             name="Animal Forest",
             compiler="ido7.1",
             platform="n64",
@@ -448,7 +396,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 5.3 cc",
             name="IDO 5.3 cc",
             compiler="ido5.3_irix",
             platform="irix",
@@ -457,7 +404,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 5.3 libraries",
             name="IDO 5.3 libraries",
             compiler="ido5.3_irix",
             platform="irix",
@@ -466,7 +412,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 5.3 Pascal",
             name="IDO 5.3 Pascal",
             compiler="ido5.3Pascal",
             platform="irix",
@@ -475,7 +420,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 7.1 cc",
             name="IDO 7.1 cc",
             compiler="ido7.1_irix",
             platform="irix",
@@ -484,7 +428,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 7.1 libraries",
             name="IDO 7.1 libraries",
             compiler="ido7.1_irix",
             platform="irix",
@@ -493,7 +436,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="IDO 7.1 Pascal",
             name="IDO 7.1 Pascal",
             compiler="ido7.1Pascal",
             platform="irix",
@@ -502,7 +444,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="7.1 N64 SDK",
             name="7.1 N64 SDK",
             compiler="ido7.1_irix",
             platform="irix",
@@ -511,7 +452,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Monkey Ball",
             name="Super Monkey Ball",
             compiler="mwcc_233_159",
             platform="gc_wii",
@@ -519,7 +459,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario Sunshine",
             name="Super Mario Sunshine",
             compiler="mwcc_233_163",
             platform="gc_wii",
@@ -527,7 +466,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pikmin",
             name="Pikmin",
             compiler="mwcc_233_163n",
             platform="gc_wii",
@@ -535,7 +473,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Smash Bros. Melee",
             name="Super Smash Bros. Melee",
             compiler="mwcc_233_163n",
             platform="gc_wii",
@@ -543,7 +480,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Kirby Air Ride",
             name="Kirby Air Ride",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -551,7 +487,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Battle for Bikini Bottom",
             name="Battle for Bikini Bottom",
             compiler="mwcc_247_92",
             platform="gc_wii",
@@ -559,7 +494,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart: Double Dash",
             name="Mario Kart: Double Dash",
             compiler="mwcc_247_105",
             platform="gc_wii",
@@ -567,7 +501,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pikmin 2",
             name="Pikmin 2",
             compiler="mwcc_247_107",
             platform="gc_wii",
@@ -575,7 +508,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="The Thousand-Year Door",
             name="The Thousand-Year Door",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -583,7 +515,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Twilight Princess (DOL)",
             name="Twilight Princess (DOL)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -591,7 +522,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Twilight Princess (REL)",
             name="Twilight Princess (REL)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -599,7 +529,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Twilight Princess (Dolphin)",
             name="Twilight Princess (Dolphin)",
             compiler="mwcc_233_163e",
             platform="gc_wii",
@@ -607,7 +536,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="The Wind Waker (DOL)",
             name="The Wind Waker (DOL)",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -615,7 +543,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="The Wind Waker (REL)",
             name="The Wind Waker (REL)",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -623,7 +550,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Paper Mario (DOL)",
             name="Super Paper Mario (DOL)",
             compiler="mwcc_41_60831",
             platform="gc_wii",
@@ -631,7 +557,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Paper Mario (REL)",
             name="Super Paper Mario (REL)",
             compiler="mwcc_41_60831",
             platform="gc_wii",
@@ -639,7 +564,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Wii Sports",
             name="Wii Sports",
             compiler="mwcc_41_60831",
             platform="gc_wii",
@@ -647,7 +571,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario Galaxy",
             name="Super Mario Galaxy",
             compiler="mwcc_41_60126",
             platform="gc_wii",
@@ -655,7 +578,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario Galaxy 2",
             name="Super Mario Galaxy 2",
             compiler="mwcc_43_172",
             platform="gc_wii",
@@ -663,7 +585,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Super Mario Galaxy 2 (RVL)",
             name="Super Mario Galaxy 2 (RVL)",
             compiler="mwcc_43_172",
             platform="gc_wii",
@@ -671,7 +592,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Xenoblade Chronicles (JP)",
             name="Xenoblade Chronicles (JP)",
             compiler="mwcc_43_151",
             platform="gc_wii",
@@ -679,7 +599,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Xenoblade Chronicles (JP) (Wii SDK)",
             name="Xenoblade Chronicles (JP) (Wii SDK)",
             compiler="mwcc_43_151",
             platform="gc_wii",
@@ -687,7 +606,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Party 4",
             name="Mario Party 4",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -695,7 +613,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (DOL)",
             name="Mario Kart Wii (DOL)",
             compiler="mwcc_42_127",
             platform="gc_wii",
@@ -703,7 +620,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (RVL_SDK)",
             name="Mario Kart Wii (RVL_SDK)",
             compiler="mwcc_41_60831",
             platform="gc_wii",
@@ -711,7 +627,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (MSL)",
             name="Mario Kart Wii (MSL)",
             compiler="mwcc_42_127",
             platform="gc_wii",
@@ -719,7 +634,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (NintendoWare)",
             name="Mario Kart Wii (NintendoWare)",
             compiler="mwcc_42_127",
             platform="gc_wii",
@@ -727,7 +641,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (DWC/GameSpy)",
             name="Mario Kart Wii (DWC/GameSpy)",
             compiler="mwcc_41_60831",
             platform="gc_wii",
@@ -735,7 +648,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (EGG)",
             name="Mario Kart Wii (EGG)",
             compiler="mwcc_42_127",
             platform="gc_wii",
@@ -743,7 +655,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Mario Kart Wii (REL)",
             name="Mario Kart Wii (REL)",
             compiler="mwcc_42_127",
             platform="gc_wii",
@@ -751,7 +662,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Metroid Prime (USA)",
             name="Metroid Prime (USA)",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -759,7 +669,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Luigi's Mansion",
             name="Luigi's Mansion",
             compiler="mwcc_233_159",
             platform="gc_wii",
@@ -767,7 +676,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ratatouille Prototype (Debug)",
             name="Ratatouille Prototype (Debug)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -775,7 +683,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ratatouille Prototype (Release)",
             name="Ratatouille Prototype (Release)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -783,7 +690,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ratatouille Prototype (Master w/ Debug)",
             name="Ratatouille Prototype (Master w/ Debug)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -791,7 +697,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ratatouille Prototype (Master)",
             name="Ratatouille Prototype (Master)",
             compiler="mwcc_247_108",
             platform="gc_wii",
@@ -799,7 +704,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ty the Tasmanian Tiger",
             name="Ty the Tasmanian Tiger",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -807,7 +711,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Animal Crossing (REL)",
             name="Animal Crossing (REL)",
             compiler="mwcc_242_81r",
             platform="gc_wii",
@@ -815,7 +718,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Animal Crossing (DOL)",
             name="Animal Crossing (DOL)",
             compiler="mwcc_242_81",
             platform="gc_wii",
@@ -823,7 +725,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokémon Diamond / Pearl",
             name="Pokémon Diamond / Pearl",
             compiler="mwcc_30_123",
             platform="nds_arm9",
@@ -831,7 +732,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokémon HeartGold / SoulSilver",
             name="Pokémon HeartGold / SoulSilver",
             compiler="mwcc_30_137",
             platform="nds_arm9",
@@ -839,7 +739,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Pokémon Mystery Dungeon: Explorers of Sky",
             name="Pokémon Mystery Dungeon: Explorers of Sky",
             compiler="mwcc_30_137",
             platform="nds_arm9",
@@ -847,7 +746,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Fallout 2",
             name="Fallout 2",
             compiler="gcc3-1041",
             platform="macosx",
@@ -855,7 +753,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="The Sims 2",
             name="The Sims 2",
             compiler="gcc-5026-cpp",
             platform="macosx",
@@ -863,7 +760,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Ty the Tasmanian Tiger (July 1st)",
             name="Ty the Tasmanian Tiger (July 1st)",
             compiler="ee-gcc2.9-991111a",
             platform="ps2",
@@ -871,7 +767,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Sunny Garcia Surfing",
             name="Sunny Garcia Surfing",
             compiler="ee-gcc2.9-991111a",
             platform="ps2",
@@ -879,7 +774,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Klonoa 2: Lunatea's Veil (C)",
             name="Klonoa 2: Lunatea's Veil (C)",
             compiler="ee-gcc2.9-991111-01",
             platform="ps2",
@@ -887,7 +781,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Klonoa 2: Lunatea's Veil (C++)",
             name="Klonoa 2: Lunatea's Veil (C++)",
             compiler="ee-gcc2.9-991111-01",
             platform="ps2",
@@ -895,7 +788,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Kingdom Hearts",
             name="Kingdom Hearts",
             compiler="ee-gcc2.96",
             platform="ps2",
@@ -903,7 +795,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="LEGO Island",
             name="LEGO Island",
             compiler="msvc4.2",
             platform="win9x",
@@ -912,7 +803,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Touhou 6 (C)",
             name="Touhou 6 (C)",
             compiler="msvc7.0",
             platform="win9x",
@@ -921,7 +811,6 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
-            id="Touhou 6 (C++)",
             name="Touhou 6 (C++)",
             compiler="msvc7.0",
             platform="win9x",
@@ -933,7 +822,7 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0042_remove_project_repo_alter_preset_id_and_more"),
+        ("coreapp", "0043_alter_preset_id"),
     ]
 
     operations = [
