@@ -227,13 +227,13 @@ class UserTests(BaseTestCase):
                 "target_asm": "jr $ra\nnop\n",
             },
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         slug = response.json()["slug"]
 
         self.test_github_login()
 
         response = self.client.post(f"/api/scratch/{slug}/claim")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertTrue(response.json()["success"])
 
         response = self.client.get(f"/api/scratch/{slug}")
@@ -242,7 +242,7 @@ class UserTests(BaseTestCase):
 
         # Log out
         response = self.client.post(self.current_user_url, {})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertEqual(response.json()["is_you"], True)
         self.assertEqual(response.json()["is_anonymous"], True)
 

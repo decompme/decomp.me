@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0040_preset_remove_projectfunction_import_config_and_more"),
+        ("coreapp", "0040_create_preset"),
     ]
 
     operations = [

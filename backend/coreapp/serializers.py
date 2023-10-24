@@ -243,9 +243,9 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     project_function = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
-    # preset = serializers.PrimaryKeyRelatedField(
-    #     required=False, queryset=Preset.objects.all()
-    # )
+    preset = serializers.PrimaryKeyRelatedField(
+        required=False, allow_null=True, queryset=Preset.objects.all()
+    )
 
     class Meta:
         model = Scratch
