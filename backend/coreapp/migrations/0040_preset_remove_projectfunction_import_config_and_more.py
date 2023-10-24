@@ -15,7 +15,12 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.CharField(max_length=64, primary_key=True, serialize=False),
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
                 ),
                 ("name", models.CharField(max_length=100)),
                 ("creation_time", models.DateTimeField(auto_now_add=True)),
@@ -31,6 +36,10 @@ class Migration(migrations.Migration):
                     models.TextField(blank=True, default="", max_length=1000),
                 ),
                 ("diff_flags", models.JSONField(default=list)),
+                (
+                    "decompiler_flags",
+                    models.TextField(blank=True, default="", max_length=1000),
+                ),
                 ("libraries", coreapp.models.scratch.LibrariesField(default=list)),
             ],
             options={

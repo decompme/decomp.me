@@ -11,7 +11,6 @@ from django.urls import reverse
 from rest_framework import status
 
 SAMPLE_PRESET_DICT = {
-    "id": "meowp",
     "name": "Kitty's Adventure",
     "platform": N64.id,
     "compiler": GCC281PM.id,
@@ -96,7 +95,7 @@ class PresetTests(BaseTestCase):
         self.create_admin()
         preset = self.create_preset(SAMPLE_PRESET_DICT)
         scratch_dict = {
-            "preset": preset.id,
+            "preset": str(preset.id),
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }

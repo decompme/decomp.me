@@ -26,6 +26,7 @@ from ..error import CompilationError, DiffError
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
+from ..models.preset import Preset
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
@@ -216,7 +217,10 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset: str = data.get("preset", "")
+    preset_id: Optional[str] = None
+    if data.get("preset"):
+        preset: Preset = data["preset"]
+        preset_id = str(preset.id)
 
     name = data.get("name", diff_label) or "Untitled"
 
@@ -248,7 +252,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "diff_flags": diff_flags,
-            "preset": preset,
+            "preset": preset_id,
             "context": context,
             "diff_label": diff_label,
             "source_code": source_code,

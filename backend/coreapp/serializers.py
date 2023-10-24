@@ -177,7 +177,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     diff_flags = serializers.JSONField(required=False)
-    preset = serializers.CharField(allow_blank=True, required=False)
+    preset = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Preset.objects.all()
+    )
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
     context = serializers.CharField(allow_blank=True)  # type: ignore
@@ -202,18 +204,10 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
-    def validate_preset(self, preset: str) -> str:
-        try:
-            Preset.objects.get(id=preset)
-        except:
-            raise serializers.ValidationError(f"Unknown preset: {preset}")
-        return preset
-
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if "preset" in data:
-            preset = Preset.objects.filter(id=data["preset"]).first()
-            if preset is None:
-                raise serializers.ValidationError(f"Unknown preset: {data['preset']}")
+            preset: Preset = data["preset"]
+            # TODO don't overwrite if already set
             data["platform"] = preset.platform
             data["compiler"] = preset.compiler
             data["compiler_flags"] = preset.compiler_flags
@@ -222,13 +216,18 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         else:
             if "compiler" not in data:
                 raise serializers.ValidationError("compiler is required")
-            compiler = compilers.from_id(data["compiler"])
-            platform = platforms.from_id(data["platform"])
 
-            if compiler.platform != platform:
-                raise serializers.ValidationError(
-                    f"Compiler {compiler.id} is not compatible with platform {platform.id}"
-                )
+            compiler = compilers.from_id(data["compiler"])
+
+            if "platform" not in data:
+                data["platform"] = compiler.platform
+            else:
+                platform = platforms.from_id(data["platform"])
+
+                if compiler.platform != platform:
+                    raise serializers.ValidationError(
+                        f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+                    )
         return data
 
 
@@ -244,6 +243,9 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     project_function = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    # preset = serializers.PrimaryKeyRelatedField(
+    #     required=False, queryset=Preset.objects.all()
+    # )
 
     class Meta:
         model = Scratch
