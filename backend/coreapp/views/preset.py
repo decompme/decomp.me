@@ -4,9 +4,9 @@ from typing import Any
 import django_filters
 from coreapp.models.preset import Preset
 from coreapp.serializers import PresetSerializer
-from rest_framework import filters, serializers, status
+from rest_framework import filters, serializers
 from rest_framework.pagination import CursorPagination
-from rest_framework.response import Response
+from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 
@@ -20,7 +20,13 @@ class PresetPagination(CursorPagination):
     max_page_size = 100
 
 
+class ReadOnly(BasePermission):
+    def has_permission(self, request: Any, view: Any) -> bool:
+        return request.method in SAFE_METHODS
+
+
 class PresetViewSet(ModelViewSet):  # type: ignore
+    permission_classes = [IsAdminUser | ReadOnly]
     queryset = Preset.objects.all()
     pagination_class = PresetPagination
     filterset_fields = ["platform", "compiler"]
@@ -32,36 +38,6 @@ class PresetViewSet(ModelViewSet):  # type: ignore
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         return PresetSerializer
-
-    def create(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        # Check permission
-        if not request.profile.is_staff():
-            response = self.retrieve(request, *args, **kwargs)
-            response.status_code = status.HTTP_403_FORBIDDEN
-            return response
-
-        response = super().create(request, *args, **kwargs)
-        return response
-
-    def update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        # Check permission
-        if not request.profile.is_staff():
-            response = self.retrieve(request, *args, **kwargs)
-            response.status_code = status.HTTP_403_FORBIDDEN
-            return response
-
-        response = super().update(request, *args, **kwargs)
-        return response
-
-    def destroy(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        # Check permission
-        if not request.profile.is_staff():
-            response = self.retrieve(request, *args, **kwargs)
-            response.status_code = status.HTTP_403_FORBIDDEN
-            return response
-
-        response = super().destroy(request, *args, **kwargs)
-        return response
 
 
 router = DefaultRouter(trailing_slash=False)
