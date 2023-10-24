@@ -156,10 +156,14 @@ export type LibraryVersions = {
 }
 
 export type CompilerPreset = {
+    id: string
     name: string
-    flags: string
+    platform: string
     compiler: string
+    assembler_flags: string
+    compiler_flags: string
     diff_flags: string[]
+    decompiler_flags: string
     libraries: Library[]
 }
 

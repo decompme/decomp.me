@@ -29,6 +29,9 @@ def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]
             status=HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+    if response is not None and isinstance(response.data, dict):
+        response.data["kind"] = exc.__class__.__name__
+
     return response
 
 

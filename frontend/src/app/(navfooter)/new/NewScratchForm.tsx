@@ -79,7 +79,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const setPreset = (preset: api.CompilerPreset) => {
         setCompiler(preset.compiler)
-        setCompilerFlags(preset.flags)
+        setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)
         setPresetName(preset.name)
         setLibraries(preset.libraries)

@@ -19,8 +19,6 @@ from coreapp.flags import (
     Flags,
     Language,
 )
-from coreapp.libraries import *
-from coreapp.models.preset import Preset
 from coreapp.platforms import (
     GBA,
     GC_WII,
@@ -166,19 +164,6 @@ def available_platforms() -> List[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
 
     return sorted(pset, key=lambda p: p.name)
-
-
-def available_presets(platform: Platform) -> List[Preset]:
-    ret = []
-    db_presets = Preset.objects.filter(platform=platform)  # type: ignore
-
-    for preset in db_presets:
-        compiler = from_id(preset.compiler)
-        if compiler.available() and all(
-            (lib.available() for lib in preset.libraries.to_python())
-        ):
-            ret.append(preset)
-    return ret
 
 
 DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")

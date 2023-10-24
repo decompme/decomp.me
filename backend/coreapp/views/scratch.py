@@ -26,7 +26,6 @@ from ..error import CompilationError, DiffError
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
-from ..models.preset import Preset
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform

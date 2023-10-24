@@ -126,6 +126,8 @@ class LibrarySerializer(serializers.Serializer[Library]):
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+
     class Meta:
         model = Preset
         fields = [
