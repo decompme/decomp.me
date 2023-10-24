@@ -150,14 +150,14 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         try:
             platforms.from_id(platform)
         except:
-            raise serializers.ValidationError(f"Unknown platform {platform}")
+            raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
         except:
-            raise serializers.ValidationError(f"Unknown compiler {compiler}")
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -192,14 +192,14 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         try:
             platforms.from_id(platform)
         except:
-            raise serializers.ValidationError(f"Unknown platform {platform}")
+            raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
         except:
-            raise serializers.ValidationError(f"Unknown compiler {compiler}")
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
     def validate_preset(self, preset: str) -> str:
