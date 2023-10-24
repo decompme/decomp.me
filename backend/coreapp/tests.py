@@ -47,8 +47,8 @@ def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
     def create_scratch(self, partial: Dict[str, str]) -> Scratch:
-        response = self.client.post(reverse("scratch-list"), partial)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(reverse("scratch-list"), partial, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         scratch = Scratch.objects.get(slug=response.json()["slug"])
         assert scratch is not None
         return scratch
@@ -265,13 +265,14 @@ class ScratchForkTests(BaseTestCase):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
-        scratch_dict = {
+        scratch_dict: Dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
             "platform": compilers.DUMMY.id,
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
             "name": "cat scratch",
+            "libraries": [{"name": "directx", "version": "8.0"}],
         }
 
         project = ProjectTests.create_test_project()

@@ -461,11 +461,17 @@ class ScratchViewSet(
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
+
+        libraries = [
+            Library(name=lib["name"], version=lib["version"])
+            for lib in ser.data["libraries"]
+        ]
         new_scratch = ser.save(
             parent=parent,
             target_assembly=parent.target_assembly,
             platform=parent.platform,
             project_function=parent.project_function,
+            libraries=libraries,
         )
 
         compile_scratch_update_score(new_scratch)
