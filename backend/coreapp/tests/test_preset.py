@@ -5,7 +5,7 @@ from django.test import Client
 from coreapp.compilers import GCC281PM
 from coreapp.models.preset import Preset
 from coreapp.platforms import N64, PS1
-from coreapp.tests.common import BaseTestCase
+from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
@@ -40,6 +40,7 @@ class PresetTests(BaseTestCase):
         assert preset is not None
         return preset
 
+    @requiresCompiler(GCC281PM)
     def test_create_preset(self) -> None:
         self.create_admin()
         self.create_preset(SAMPLE_PRESET_DICT)
@@ -53,6 +54,7 @@ class PresetTests(BaseTestCase):
         except AssertionError:
             pass
 
+    @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_compiler(self) -> None:
         self.create_admin()
         try:
@@ -63,6 +65,7 @@ class PresetTests(BaseTestCase):
 
         self.create_preset({**SAMPLE_PRESET_DICT, "compiler": GCC281PM.id})
 
+    @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_platform(self) -> None:
         self.create_admin()
         try:
@@ -73,6 +76,7 @@ class PresetTests(BaseTestCase):
 
         self.create_preset({**SAMPLE_PRESET_DICT, "platform": N64.id})
 
+    @requiresCompiler(GCC281PM)
     def test_create_preset_with_mismatched_compiler_and_platform(self) -> None:
         self.create_admin()
         try:
@@ -87,6 +91,7 @@ class PresetTests(BaseTestCase):
             {**SAMPLE_PRESET_DICT, "platform": N64.id, "compiler": GCC281PM.id}
         )
 
+    @requiresCompiler(GCC281PM)
     def test_create_scratch_from_preset(self) -> None:
         self.create_admin()
         preset = self.create_preset(SAMPLE_PRESET_DICT)
