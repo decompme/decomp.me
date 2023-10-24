@@ -36,7 +36,7 @@ class CompilersDetail(APIView):
                 "arch": platform.arch,
                 "presets": [
                     PresetSerializer(p).data
-                    for p in Preset.objects.filter(platform=platform)
+                    for p in Preset.objects.filter(platform=platform.id)
                 ],
             }
 

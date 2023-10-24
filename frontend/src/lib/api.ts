@@ -36,6 +36,12 @@ export function useThisUser(): User | AnonymousUser | undefined {
     return user
 }
 
+export function useThisUserIsAdmin(): boolean {
+    const user = useThisUser()
+
+    return user?.is_admin
+}
+
 export function isUserEq(a: User | AnonymousUser | undefined, b: User | AnonymousUser | undefined): boolean {
     return a && b && a.id === b.id && a.is_anonymous === b.is_anonymous
 }
