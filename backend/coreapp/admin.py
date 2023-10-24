@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models.course import Course, CourseChapter, CourseScenario
 from .models.github import GitHubUser
+from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectFunction, ProjectMember
 from .models.scratch import Asm, Assembly, CompilerConfig, Scratch
@@ -12,6 +13,7 @@ admin.site.register(Asm)
 admin.site.register(Assembly)
 admin.site.register(Scratch)
 admin.site.register(CompilerConfig)
+admin.site.register(Preset)
 admin.site.register(Project)
 admin.site.register(ProjectFunction)
 admin.site.register(ProjectMember)
