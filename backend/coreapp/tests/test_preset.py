@@ -22,7 +22,7 @@ class PresetTests(BaseTestCase):
     def create_preset(self, partial: Dict[str, Any]) -> Preset:
         response = self.client.post(reverse("preset-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
-        preset = Preset.objects.get(id=response.json()["id"])  # type: ignore
+        preset = Preset.objects.get(id=response.json()["id"])
         assert preset is not None
         return preset
 

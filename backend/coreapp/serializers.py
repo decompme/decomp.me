@@ -204,14 +204,16 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
     def validate_preset(self, preset: str) -> str:
         try:
-            Preset.objects.get(id=preset)  # type: ignore
+            Preset.objects.get(id=preset)
         except:
             raise serializers.ValidationError(f"Unknown preset: {preset}")
         return preset
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if "preset" in data:
-            preset = Preset.objects.filter(id=data["preset"]).first()  # type: ignore
+            preset = Preset.objects.filter(id=data["preset"]).first()
+            if preset is None:
+                raise serializers.ValidationError(f"Unknown preset: {data['preset']}")
             data["platform"] = preset.platform
             data["compiler"] = preset.compiler
             data["compiler_flags"] = preset.compiler_flags

@@ -21,7 +21,7 @@ class PresetPagination(CursorPagination):
 
 
 class PresetViewSet(ModelViewSet):  # type: ignore
-    queryset = Preset.objects.all()  # type: ignore
+    queryset = Preset.objects.all()
     pagination_class = PresetPagination
     filterset_fields = ["platform", "compiler"]
     filter_backends = [
