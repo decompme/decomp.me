@@ -44,6 +44,13 @@ def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
     return skipIf(False, "")
 
 
+def all_compilers_name_func(
+    testcase_func: Callable[[Any], None], param_num: int, param: param
+) -> str:
+    compiler: Compiler = param.args[0]
+    return f"{testcase_func.__name__}_{parameterized.to_safe_name(compiler.platform.id + '_' + compiler.id)}"
+
+
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
     def create_scratch(self, partial: Dict[str, str]) -> Scratch:
@@ -524,13 +531,6 @@ nop
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
-
-    @staticmethod
-    def all_compilers_name_func(
-        testcase_func: Callable[[Any], None], param_num: int, param: param
-    ) -> str:
-        compiler: Compiler = param.args[0]
-        return f"{testcase_func.__name__}_{parameterized.to_safe_name(compiler.platform.id + '_' + compiler.id)}"
 
     @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], name_func=all_compilers_name_func, skip_on_empty=True)  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
