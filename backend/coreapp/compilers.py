@@ -889,6 +889,30 @@ MWCC_43_213 = MWCCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+PRODG_CC = (
+    'cpp -E "${INPUT}" -o "${INPUT}".i && '
+    "${WIBO} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
+    "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
+)
+
+PRODG_35 = GCCCompiler(
+    id="prodg_35",
+    platform=GC_WII,
+    cc=PRODG_CC,
+)
+
+PRODG_37 = GCCCompiler(
+    id="prodg_37",
+    platform=GC_WII,
+    cc=PRODG_CC,
+)
+
+PRODG_393 = GCCCompiler(
+    id="prodg_393",
+    platform=GC_WII,
+    cc=PRODG_CC,
+)
+
 # NDS_ARM9
 MWCCARM_CC = '${WINE} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
@@ -1263,6 +1287,9 @@ _all_compilers: List[Compiler] = [
     MWCC_43_151,
     MWCC_43_172,
     MWCC_43_213,
+    PRODG_35,
+    PRODG_37,
+    PRODG_393,
     # NDS
     MWCC_20_72,
     MWCC_20_79,
