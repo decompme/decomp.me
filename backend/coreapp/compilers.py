@@ -1408,8 +1408,8 @@ _all_presets = [
     ),
     Preset(
         "Frogger",
-        GCC260_MIPSEL,
-        "-O3 -G0 -gcoff",
+        GCC263_MIPSEL,
+        "-O3 -G8 -gcoff -w -fpeephole -ffunction-cse -fpcc-struct-return -fcommon -fverbose-asm -funsigned-char -msoft-float -g -Wa,--expand-div",
     ),
     Preset(
         "Legacy of Kain: Soul Reaver",
