@@ -261,7 +261,9 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     else:
         project_function = None
 
-    libraries = [Library(**lib) for lib in data["libraries"]]
+    libraries = [
+        Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
+    ]
 
     ser = ScratchSerializer(
         data={
@@ -460,10 +462,7 @@ class ScratchViewSet(
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
 
-        libraries = [
-            Library(name=lib["name"], version=lib["version"])
-            for lib in ser.validated_data["libraries"]
-        ]
+        libraries = [Library(**lib) for lib in ser.validated_data["libraries"]]
         new_scratch = ser.save(
             parent=parent,
             target_assembly=parent.target_assembly,
