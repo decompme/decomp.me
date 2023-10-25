@@ -119,9 +119,9 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
         db_preset.save(force_insert=True)
         db_preset = Preset(
             name="Frogger",
-            compiler="gcc2.6.0-mipsel",
+            compiler="gcc2.6.3-mipsel",
             platform="ps1",
-            compiler_flags="-O3 -G0 -gcoff",
+            compiler_flags="-O3 -G0 -gcoff -w -fpeephole -ffunction-cse -fpcc-struct-return -fcommon -fverbose-asm -funsigned-char -msoft-float -g -Wa,--expand-div",
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
