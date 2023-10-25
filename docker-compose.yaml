@@ -14,12 +14,12 @@ services:
       context: backend
       args:
         ENABLE_GBA_SUPPORT: "YES"
+        ENABLE_GC_WII_SUPPORT: "YES"
+        ENABLE_N3DS_SUPPORT: "YES"
         ENABLE_N64_SUPPORT: "YES"
         ENABLE_PS1_SUPPORT: "YES"
-        ENABLE_GC_WII_SUPPORT: "YES"
         # dont install wine32 etc by default
         ENABLE_MSDOS_SUPPORT: "NO"
-        ENABLE_N3DS_SUPPORT: "NO"
         ENABLE_NDS_ARM9_SUPPORT: "NO"
         ENABLE_PS2_SUPPORT: "NO"
         ENABLE_WIN9X_SUPPORT: "NO"
