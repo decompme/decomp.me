@@ -16,7 +16,6 @@ from github import BadCredentialsException, Github
 from github.NamedUser import NamedUser
 from github.Repository import Repository
 from requests import RequestException
-from requests import ConnectTimeout
 from rest_framework import status
 from rest_framework.exceptions import APIException
 

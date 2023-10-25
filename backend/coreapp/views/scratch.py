@@ -261,9 +261,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     else:
         project_function = None
 
-    libraries = [
-        Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
-    ]
+    libraries = [Library(**lib) for lib in data["libraries"]]
 
     ser = ScratchSerializer(
         data={
