@@ -153,7 +153,7 @@ nop
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """
-        Ensure that max_score is available upon scratch creation even if the initial compialtion fails
+        Ensure that max_score is available upon scratch creation even if the initial compilation fails
         """
         scratch_dict = {
             "platform": N64.id,
