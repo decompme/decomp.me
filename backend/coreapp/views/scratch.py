@@ -464,7 +464,7 @@ class ScratchViewSet(
 
         libraries = [
             Library(name=lib["name"], version=lib["version"])
-            for lib in ser.data["libraries"]
+            for lib in ser.validated_data["libraries"]
         ]
         new_scratch = ser.save(
             parent=parent,
