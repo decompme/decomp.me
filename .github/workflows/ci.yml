@@ -87,7 +87,7 @@ jobs:
           poetry run python3 libraries/download.py
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/wibo/releases/download/0.6.7/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/wibo/releases/download/0.6.8/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
@@ -153,9 +153,10 @@ jobs:
         run: |-
           docker build backend \
             -t decompme_backend \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES \
+            --build-arg ENABLE_MSDOS_SUPPORT=YES \
+            --build-arg ENABLE_PS2_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
-            --build-arg ENABLE_MSDOS_SUPPORT=YES
+            --build-arg ENABLE_WIN9X_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
