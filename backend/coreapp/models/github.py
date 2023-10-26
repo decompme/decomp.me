@@ -10,6 +10,7 @@ from django.db import models, transaction
 from django.utils.timezone import now
 from github import BadCredentialsException, Github
 from github.NamedUser import NamedUser
+from requests import RequestException
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
@@ -87,17 +88,24 @@ class GitHubUser(models.Model):
     @staticmethod
     @transaction.atomic
     def login(request: Request, oauth_code: str) -> "GitHubUser":
-        response = requests.post(
-            "https://github.com/login/oauth/access_token",
-            json={
-                "client_id": settings.GITHUB_CLIENT_ID,
-                "client_secret": settings.GITHUB_CLIENT_SECRET,
-                "code": oauth_code,
-            },
-            headers={"Accept": "application/json"},
-        ).json()
+        try:
+            response = requests.post(
+                "https://github.com/login/oauth/access_token",
+                json={
+                    "client_id": settings.GITHUB_CLIENT_ID,
+                    "client_secret": settings.GITHUB_CLIENT_SECRET,
+                    "code": oauth_code,
+                },
+                headers={"Accept": "application/json"},
+            )
+        except RequestException:
+            raise MalformedGitHubApiResponseException(
+                "GitHub API login request failed."
+            )
 
-        error: Optional[str] = response.get("error")
+        response_json = response.json()
+
+        error: Optional[str] = response_json.get("error")
         if error == "bad_verification_code":
             raise BadOAuthCodeException()
         elif error:
@@ -106,8 +114,8 @@ class GitHubUser(models.Model):
             )
 
         try:
-            scope_str = str(response["scope"])
-            access_token = str(response["access_token"])
+            scope_str = str(response_json["scope"])
+            access_token = str(response_json["access_token"])
         except KeyError:
             raise MalformedGitHubApiResponseException()
 

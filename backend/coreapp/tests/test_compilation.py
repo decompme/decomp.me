@@ -1,3 +1,4 @@
+from typing import Any, Callable
 from coreapp import compilers
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
@@ -16,8 +17,15 @@ from coreapp.models.scratch import Assembly
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.urls import reverse
-from parameterized import parameterized
+from parameterized import param, parameterized
 from rest_framework import status
+
+
+def all_compilers_name_func(
+    testcase_func: Callable[[Any], None], param_num: int, param: param
+) -> str:
+    compiler: Compiler = param.args[0]
+    return f"{testcase_func.__name__}_{parameterized.to_safe_name(compiler.platform.id + '_' + compiler.id)}"
 
 
 class CompilationTests(BaseTestCase):
@@ -219,7 +227,7 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], skip_on_empty=True)  # type: ignore
+    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], name_func=all_compilers_name_func, skip_on_empty=True)  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
         """
         Ensure that we can run a simple compilation/diff for all available compilers

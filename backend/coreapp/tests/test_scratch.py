@@ -1,4 +1,5 @@
 from time import sleep
+from typing import Any, Dict
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71
@@ -93,7 +94,7 @@ nop
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """
-        Ensure that max_score is available upon scratch creation even if the initial compialtion fails
+        Ensure that max_score is available upon scratch creation even if the initial compilation fails
         """
         scratch_dict = {
             "platform": N64.id,
@@ -212,13 +213,14 @@ class ScratchForkTests(BaseTestCase):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
-        scratch_dict = {
+        scratch_dict: Dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
             "platform": compilers.DUMMY.id,
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
             "name": "cat scratch",
+            "libraries": [{"name": "directx", "version": "8.0"}],
         }
 
         compiler_config = CompilerConfig()
