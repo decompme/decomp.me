@@ -108,3 +108,25 @@ class PresetTests(BaseTestCase):
         self.assertEqual(scratch.compiler_flags, preset.compiler_flags)
         # self.assertEqual(scratch.decompiler_flags, preset.decompiler_flags)
         self.assertEqual(scratch.libraries, preset.libraries)
+
+    @requiresCompiler(GCC281PM)
+    def test_create_scratch_from_preset_override(self) -> None:
+        self.create_admin()
+        preset = self.create_preset(SAMPLE_PRESET_DICT)
+        scratch_dict = {
+            "preset": str(preset.id),
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+            "compiler_flags": "-O3",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        assert scratch.preset is not None
+        self.assertEqual(scratch.preset.id, preset.id)
+        self.assertEqual(scratch.platform, preset.platform)
+        self.assertEqual(scratch.compiler, preset.compiler)
+        # self.assertEqual(scratch.assembler_flags, preset.assembler_flags)
+        self.assertEqual(
+            scratch.compiler_flags, "-O3"
+        )  # should override preset's value
+        # self.assertEqual(scratch.decompiler_flags, preset.decompiler_flags)
+        self.assertEqual(scratch.libraries, preset.libraries)

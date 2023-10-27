@@ -204,6 +204,7 @@ export default function NewScratchForm({ serverCompilers }: {
                             setCompiler(c)
                             setCompilerFlags("")
                             setDiffFlags([])
+                            setPresetId(undefined)
                             setLibraries([])
                         }}
                     />

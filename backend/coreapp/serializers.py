@@ -207,22 +207,42 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
-            # TODO don't overwrite if already set
+            # Preset dictates platform
             data["platform"] = preset.platform
-            data["compiler"] = preset.compiler
-            data["compiler_flags"] = preset.compiler_flags
-            data["diff_flags"] = preset.diff_flags
-            data["libraries"] = preset.libraries
+
+            if "compiler" not in data or not data["compiler"]:
+                data["compiler"] = preset.compiler
+
+            if "compiler_flags" not in data or not data["compiler_flags"]:
+                data["compiler_flags"] = preset.compiler_flags
+
+            if "diff_flags" not in data or not data["diff_flags"]:
+                data["diff_flags"] = preset.diff_flags
+
+            if "libraries" not in data or not data["libraries"]:
+                data["libraries"] = preset.libraries
         else:
-            if "compiler" not in data:
-                raise serializers.ValidationError("compiler is required")
+            if "compiler" not in data or not data["compiler"]:
+                raise serializers.ValidationError(
+                    "Compiler must be provided when preset is not"
+                )
 
-            compiler = compilers.from_id(data["compiler"])
+            try:
+                compiler = compilers.from_id(data["compiler"])
+            except APIException:
+                raise serializers.ValidationError(
+                    f"Unknown compiler: {data['compiler']}"
+                )
 
-            if "platform" not in data:
+            if "platform" not in data or not data["platform"]:
                 data["platform"] = compiler.platform
             else:
-                platform = platforms.from_id(data["platform"])
+                try:
+                    platform = platforms.from_id(data["platform"])
+                except APIException:
+                    raise serializers.ValidationError(
+                        f"Unknown platform: {data['platform']}"
+                    )
 
                 if compiler.platform != platform:
                     raise serializers.ValidationError(
