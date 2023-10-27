@@ -157,7 +157,7 @@ export type CompilerOptsT = {
     compiler?: string
     compiler_flags?: string
     diff_flags?: string[]
-    preset?: string
+    preset?: number
     libraries?: Library[]
 }
 
@@ -183,7 +183,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: "",
+            preset: undefined,
         })
     }
 
@@ -192,7 +192,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: "",
+            preset: undefined,
         })
     }
 
@@ -201,24 +201,24 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: "",
+            preset: undefined,
         })
     }
 
     const setPreset = (preset: api.CompilerPreset) => {
         onChange({
             compiler: preset.compiler,
-            compiler_flags: preset.flags,
+            compiler_flags: preset.compiler_flags,
             diff_flags: preset.diff_flags,
             libraries: preset.libraries,
-            preset: preset.name,
+            preset: preset.id,
         })
     }
 
     const setLibraries = (libraries: Library[]) => {
         onChange({
             libraries,
-            preset: "",
+            preset: undefined,
         })
     }
 
@@ -267,7 +267,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             <PlatformIcon platform={platform} size={32} />
             <div className={styles.preset}>
                 Preset
-                <PresetSelect platform={platform} presetName={value.preset} setPreset={setPreset} />
+                <PresetSelect platform={platform} presetId={value.preset} setPreset={setPreset} />
             </div>
         </section>
         <OptsContext.Provider value={optsEditorProvider}>

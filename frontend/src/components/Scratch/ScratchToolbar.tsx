@@ -142,6 +142,8 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
         compile()
     })
 
+    const isAdmin = api.useThisUserIsAdmin()
+
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
@@ -173,7 +175,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                     Fork
                 </button>
             </li>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
+            {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && <li>
                 <button onClick={event => {
                     if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
                         deleteScratch(scratch)

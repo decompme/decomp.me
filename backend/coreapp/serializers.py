@@ -1,24 +1,25 @@
-from platform import platform
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
-from html_json_forms.serializers import JSONFormSerializer
 
-from .middleware import Request
-from .models.github import GitHubRepo, GitHubUser
+from coreapp import platforms
 
-from .models.profile import Profile
-from .models.project import Project, ProjectFunction, ProjectImportConfig, ProjectMember
-from .models.scratch import CompilerConfig, Scratch
-
-from .flags import LanguageFlagSet
 from . import compilers
+from .flags import LanguageFlagSet
 from .libraries import Library
+from .middleware import Request
+from .models.github import GitHubUser
+from .models.preset import Preset
+from .models.profile import Profile
+from .models.project import Project, ProjectFunction, ProjectMember
+from .models.scratch import Scratch
 
 
 def serialize_profile(
@@ -124,13 +125,61 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
+class PresetSerializer(serializers.ModelSerializer[Preset]):
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+
+    class Meta:
+        model = Preset
+        fields = [
+            "id",
+            "name",
+            "platform",
+            "compiler",
+            "assembler_flags",
+            "compiler_flags",
+            "diff_flags",
+            "decompiler_flags",
+            "libraries",
+        ]
+        read_only_fields = [
+            "creation_time",
+            "last_updated",
+        ]
+
+    def validate_platform(self, platform: str) -> str:
+        try:
+            platforms.from_id(platform)
+        except:
+            raise serializers.ValidationError(f"Unknown platform: {platform}")
+        return platform
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        compiler = compilers.from_id(data["compiler"])
+        platform = platforms.from_id(data["platform"])
+
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
+
 class ScratchCreateSerializer(serializers.Serializer[None]):
     name = serializers.CharField(allow_blank=True, required=False)
-    compiler = serializers.CharField(allow_blank=True, required=True)
+    compiler = serializers.CharField(allow_blank=True, required=False)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     diff_flags = serializers.JSONField(required=False)
-    preset = serializers.CharField(allow_blank=True, required=False)
+    preset = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Preset.objects.all()
+    )
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True)
     context = serializers.CharField(allow_blank=True)  # type: ignore
@@ -140,6 +189,66 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
+
+    def validate_platform(self, platform: str) -> str:
+        try:
+            platforms.from_id(platform)
+        except:
+            raise serializers.ValidationError(f"Unknown platform: {platform}")
+        return platform
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        if "preset" in data:
+            preset: Preset = data["preset"]
+            # Preset dictates platform
+            data["platform"] = preset.platform
+
+            if "compiler" not in data or not data["compiler"]:
+                data["compiler"] = preset.compiler
+
+            if "compiler_flags" not in data or not data["compiler_flags"]:
+                data["compiler_flags"] = preset.compiler_flags
+
+            if "diff_flags" not in data or not data["diff_flags"]:
+                data["diff_flags"] = preset.diff_flags
+
+            if "libraries" not in data or not data["libraries"]:
+                data["libraries"] = preset.libraries
+        else:
+            if "compiler" not in data or not data["compiler"]:
+                raise serializers.ValidationError(
+                    "Compiler must be provided when preset is omitted"
+                )
+
+            try:
+                compiler = compilers.from_id(data["compiler"])
+            except APIException:
+                raise serializers.ValidationError(
+                    f"Unknown compiler: {data['compiler']}"
+                )
+
+            if "platform" not in data or not data["platform"]:
+                data["platform"] = compiler.platform
+            else:
+                try:
+                    platform = platforms.from_id(data["platform"])
+                except APIException:
+                    raise serializers.ValidationError(
+                        f"Unknown platform: {data['platform']}"
+                    )
+
+                if compiler.platform != platform:
+                    raise serializers.ValidationError(
+                        f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+                    )
+        return data
 
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
@@ -154,6 +263,9 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     project_function = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    preset = serializers.PrimaryKeyRelatedField(
+        required=False, allow_null=True, queryset=Preset.objects.all()
+    )
 
     class Meta:
         model = Scratch
@@ -255,32 +367,18 @@ class TerseScratchSerializer(ScratchSerializer):
         ]
 
 
-class GitHubRepoSerializer(serializers.ModelSerializer[GitHubRepo]):
-    html_url = HtmlUrlField()
-
-    class Meta:
-        model = GitHubRepo
-        exclude = ["id"]
-        read_only_fields = ["last_pulled", "is_pulling"]
-
-
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
     url = UrlField()
     html_url = HtmlUrlField()
-    repo = GitHubRepoSerializer()
-    platform = SerializerMethodField()
     unmatched_function_count = SerializerMethodField()
 
     class Meta:
         model = Project
         exclude: List[str] = []
-        depth = 1  # repo
 
     def create(self, validated_data: Any) -> Project:
-        repo_data = validated_data.pop("repo")
-        repo = GitHubRepo.objects.create(**repo_data)
-        project = Project.objects.create(repo=repo, **validated_data)
+        project = Project.objects.create(**validated_data)
         return project
 
     def update(self, instance: Project, validated_data: Any) -> Project:
@@ -288,13 +386,6 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
             setattr(instance, attr, value)
         instance.save()
         return instance
-
-    def get_platform(self, project: Project) -> Optional[str]:
-        import_config = ProjectImportConfig.objects.filter(project=project).first()
-        if import_config:
-            return import_config.compiler_config.platform
-        else:
-            return None
 
     def get_unmatched_function_count(self, project: Project) -> int:
         return ProjectFunction.objects.filter(

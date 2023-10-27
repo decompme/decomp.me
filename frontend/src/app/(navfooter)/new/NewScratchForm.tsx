@@ -65,7 +65,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [compilerFlags, setCompilerFlags] = useState<string>("")
     const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [libraries, setLibraries] = useState<Library[]>([])
-    const [presetName, setPresetName] = useState<string>("")
+    const [presetId, setPresetId] = useState<number | undefined>()
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -79,9 +79,9 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const setPreset = (preset: api.CompilerPreset) => {
         setCompiler(preset.compiler)
-        setCompilerFlags(preset.flags)
+        setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)
-        setPresetName(preset.name)
+        setPresetId(preset.id)
         setLibraries(preset.libraries)
     }
 
@@ -96,7 +96,7 @@ export default function NewScratchForm({ serverCompilers }: {
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
             setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
             setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
-            setPresetName(localStorage["new_scratch_presetName"] ?? "")
+            setPresetId(localStorage["new_scratch_preset"] ?? undefined)
             incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
@@ -113,8 +113,8 @@ export default function NewScratchForm({ serverCompilers }: {
         localStorage["new_scratch_compilerFlags"] = compilerFlags
         localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
-        localStorage["new_scratch_presetName"] = presetName
-    }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetName])
+        localStorage["new_scratch_presetId"] = presetId
+    }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compiler = platformCompilers[compilerId]
@@ -154,7 +154,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 compiler_flags: compilerFlags,
                 diff_flags: diffFlags,
                 libraries: libraries,
-                preset: presetName,
+                preset: presetId,
                 diff_label: label || defaultLabel || "",
             })
 
@@ -204,6 +204,7 @@ export default function NewScratchForm({ serverCompilers }: {
                             setCompiler(c)
                             setCompilerFlags("")
                             setDiffFlags([])
+                            setPresetId(undefined)
                             setLibraries([])
                         }}
                     />
@@ -214,7 +215,7 @@ export default function NewScratchForm({ serverCompilers }: {
                     <PresetSelect
                         className={styles.compilerChoiceSelect}
                         platform={platform}
-                        presetName={presetName}
+                        presetId={presetId}
                         setPreset={setPreset}
                         serverPresets={platform && serverCompilers.platforms[platform].presets}
                     />

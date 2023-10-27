@@ -3,7 +3,6 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from platform import uname
 import time
 
 from typing import (
@@ -26,7 +25,7 @@ from coreapp.platforms import Platform
 import coreapp.util as util
 
 from .error import AssemblyError, CompilationError
-from .libraries import LIBRARY_BASE_PATH, Library
+from .libraries import Library
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
 
@@ -49,19 +48,8 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
-WINE: str
-if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wine not required.")
-    WINE = ""
-else:
-    WINE = "wine"
-
-WIBO: str
-if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wibo not required.")
-    WIBO = ""
-else:
-    WIBO = "wibo"
+WINE = "wine"
+WIBO = "wibo"
 
 
 @dataclass

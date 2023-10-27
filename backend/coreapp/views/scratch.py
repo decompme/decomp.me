@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
+from coreapp import compilers, platforms
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -17,18 +18,15 @@ from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
-from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
-from ..flags import Language
-
 from ..decorators.django import condition
-
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
-from ..models.github import GitHubRepo, GitHubRepoBusyException
+from ..models.preset import Preset
 from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
@@ -37,7 +35,6 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +65,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             scratch.diff_label,
             tuple(scratch.libraries),
         )
-    except CompilationError as e:
+    except (CompilationError, APIException) as e:
         return CompilationResult(b"", str(e))
 
 
@@ -197,25 +194,12 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     project = data.get("project")
     rom_address = data.get("rom_address")
 
-    if platform:
-        if compiler.platform != platform:
-            raise APIException(
-                f"Compiler {compiler.id} is not compatible with platform {platform.id}",
-                str(status.HTTP_400_BAD_REQUEST),
-            )
-    else:
-        platform = compiler.platform
-
     if not platform:
-        raise serializers.ValidationError("Unknown compiler")
+        platform = compiler.platform
 
     target_asm: str = data["target_asm"]
     context: str = data["context"]
     diff_label: str = data.get("diff_label", "")
-
-    assert isinstance(target_asm, str)
-    assert isinstance(context, str)
-    assert isinstance(diff_label, str)
 
     asm = get_db_asm(target_asm)
 
@@ -233,9 +217,10 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset = data.get("preset", "")
-    if preset and not compilers.preset_from_name(preset):
-        raise serializers.ValidationError("Unknown preset:" + preset)
+    preset_id: Optional[str] = None
+    if data.get("preset"):
+        preset: Preset = data["preset"]
+        preset_id = str(preset.id)
 
     name = data.get("name", diff_label) or "Untitled"
 
@@ -246,10 +231,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
         if not project_obj:
             raise serializers.ValidationError("Unknown project")
-
-        repo: GitHubRepo = project_obj.repo
-        if repo.is_pulling:
-            raise GitHubRepoBusyException()
 
         project_function = ProjectFunction.objects.filter(
             project=project_obj, rom_address=rom_address
@@ -271,7 +252,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "diff_flags": diff_flags,
-            "preset": preset,
+            "preset": preset_id,
             "context": context,
             "diff_label": diff_label,
             "source_code": source_code,
@@ -355,7 +336,7 @@ class ScratchViewSet(
     def destroy(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         # Check permission
         scratch = self.get_object()
-        if scratch.owner != request.profile:
+        if scratch.owner != request.profile and not request.profile.is_staff():
             response = self.retrieve(request, *args, **kwargs)
             response.status_code = status.HTTP_403_FORBIDDEN
             return response

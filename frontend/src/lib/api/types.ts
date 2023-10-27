@@ -55,7 +55,7 @@ export interface Scratch extends TerseScratch {
     description: string
     compiler_flags: string
     diff_flags: string[]
-    preset: string
+    preset: number
     source_code: string
     context: string
     diff_label: string
@@ -65,14 +65,6 @@ export interface Project {
     slug: string
     url: string
     html_url: string
-    repo: {
-        html_url: string
-        owner: string
-        repo: string
-        branch: string
-        is_pulling: boolean
-        last_pulled: string | null
-    }
     creation_time: string
     icon?: string
     description: string
@@ -164,10 +156,14 @@ export type LibraryVersions = {
 }
 
 export type CompilerPreset = {
+    id: number
     name: string
-    flags: string
+    platform: string
     compiler: string
+    assembler_flags: string
+    compiler_flags: string
     diff_flags: string[]
+    decompiler_flags: string
     libraries: Library[]
 }
 

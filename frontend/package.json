@@ -19,6 +19,7 @@
         "@codemirror/search": "^6.4.0",
         "@codemirror/state": "^6.2.0",
         "@codemirror/view": "^6.10.1",
+        "@ducanh2912/next-pwa": "^9.7.1",
         "@lezer/common": "^1.0.2",
         "@lezer/highlight": "^1.1.4",
         "@open-rpc/client-js": "^1.8.1",
@@ -55,7 +56,6 @@
         "vscode-languageserver-protocol": "^3.17.3"
     },
     "devDependencies": {
-        "@babel/core": "^7.21.8",
         "@next/bundle-analyzer": "^13.3.4",
         "@next/eslint-plugin-next": "^13.3.4",
         "@svgr/webpack": "^8.1.0",
@@ -67,7 +67,6 @@
         "@typescript-eslint/eslint-plugin": "^6.7.4",
         "@typescript-eslint/parser": "^6.7.4",
         "autoprefixer": "^10.4.14",
-        "babel-loader": "^9.1.2",
         "css-loader": "^6.7.3",
         "cssnano": "^6.0.1",
         "eslint": "^8.39.0",

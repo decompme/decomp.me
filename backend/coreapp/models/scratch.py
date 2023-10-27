@@ -1,13 +1,12 @@
 import json
 import logging
+from typing import Any, List, Sequence
 
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import Any, List, Sequence
-
-from .profile import Profile
 from ..libraries import Library
+from .profile import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +89,9 @@ class Scratch(models.Model):
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
     diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
-    preset = models.CharField(max_length=100, blank=True, null=True)
+    preset = models.ForeignKey(
+        "Preset", null=True, blank=True, on_delete=models.SET_NULL
+    )
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
