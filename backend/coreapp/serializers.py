@@ -224,7 +224,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         else:
             if "compiler" not in data or not data["compiler"]:
                 raise serializers.ValidationError(
-                    "Compiler must be provided when preset is not"
+                    "Compiler must be provided when preset is omitted"
                 )
 
             try:
