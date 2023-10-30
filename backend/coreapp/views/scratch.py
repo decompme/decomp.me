@@ -185,11 +185,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Optional[Platform] = None
-    given_platform = data.get("platform")
-    if given_platform:
-        platform = platforms.from_id(given_platform)
-
+    platform: Optional[Platform] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
     rom_address = data.get("rom_address")

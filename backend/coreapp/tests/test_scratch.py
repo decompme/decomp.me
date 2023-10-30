@@ -105,7 +105,6 @@ nop
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
-
     @requiresCompiler(IDO71)
     def test_import_scratch(self) -> None:
         """
