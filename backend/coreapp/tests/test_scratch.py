@@ -105,6 +105,23 @@ nop
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
+    @requiresCompiler(IDO71)
+    def test_import_scratch(self) -> None:
+        """
+        Ensure that creating a scratch created via permuter import.py is successful
+        """
+        scratch_dict = {
+            "name": "imported_function",
+            "target_asm": ".text\nglabel imported_function\njr $ra\nnop",
+            "context": "/* context */",
+            "source_code": "void imported_function(void) {}",
+            "compiler": IDO71.id,
+            "compiler_flags": "-O2",
+            "diff_label": "imported_function",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.name, "imported_function")
+
 
 class ScratchModificationTests(BaseTestCase):
     @requiresCompiler(GCC281PM, IDO53)

@@ -208,7 +208,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         if "preset" in data:
             preset: Preset = data["preset"]
             # Preset dictates platform
-            data["platform"] = preset.platform
+            data["platform"] = platforms.from_id(preset.platform)
 
             if "compiler" not in data or not data["compiler"]:
                 data["compiler"] = preset.compiler
@@ -248,6 +248,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                     raise serializers.ValidationError(
                         f"Compiler {compiler.id} is not compatible with platform {platform.id}"
                     )
+                data["platform"] = platform
         return data
 
 
