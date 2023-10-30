@@ -88,7 +88,9 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
-    diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
+    diff_flags = models.JSONField(
+        default=list, blank=True
+    )  # TODO: reference a CompilerConfig
     preset = models.ForeignKey(
         "Preset", null=True, blank=True, on_delete=models.SET_NULL
     )
