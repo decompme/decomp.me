@@ -6,7 +6,7 @@ import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch, delete_ } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember } from "./api/types"
+import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember, Preset } from "./api/types"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
@@ -272,6 +272,15 @@ export function useLibraries(): LibraryVersions[] {
     }
 
     return data.libraries
+}
+
+export function usePreset(id: number): Preset {
+    const url = `/preset/${id}`
+    const { data } = useSWR(url, get, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+    return data
 }
 
 export function usePaginated<T>(url: string, firstPage?: Page<T>): {

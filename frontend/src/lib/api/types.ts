@@ -155,7 +155,7 @@ export type LibraryVersions = {
     supported_versions: string[]
 }
 
-export type CompilerPreset = {
+export type Preset = {
     id: number
     name: string
     platform: string
@@ -174,12 +174,17 @@ export type Compiler = {
 }
 
 export type Platform = {
+    id: string
     name: string
     description: string
     arch: string
-    presets: CompilerPreset[]
+    presets: Preset[]
 }
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
+}
+
+export function presetUrl(preset: Preset): string {
+    return `/preset/${preset.id}`
 }

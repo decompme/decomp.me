@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import useSWRImmutable from "swr/immutable"
 
 import * as api from "@/lib/api"
@@ -17,6 +19,8 @@ export default function PlatformName({ platform }: Props) {
     }>("/compilers", api.get)
 
     return <>
-        {data?.platforms[platform]?.name ?? platform}
+        <Link href={"/platform/" + platform}>
+            {data?.platforms[platform]?.name ?? platform}
+        </Link>
     </>
 }

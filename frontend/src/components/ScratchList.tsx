@@ -134,6 +134,25 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     )
 }
 
+export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }) {
+    const matchPercentString = getMatchPercentString(scratch)
+
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </Link>
+                </div>
+                <div className={styles.metadata}>
+                    {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                </div>
+            </div>
+        </li>
+    )
+}
+
 export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }) {
     const matchPercentString = getMatchPercentString(scratch)
 

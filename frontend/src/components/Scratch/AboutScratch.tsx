@@ -4,6 +4,7 @@ import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import * as api from "@/lib/api"
+import { Preset, presetUrl, usePreset } from "@/lib/api"
 
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -48,7 +49,7 @@ export type Props = {
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
     const { data: project } = useSWR<api.Project>(scratch.project, api.get)
-    const { data: projectFunction } = useSWR<api.ProjectFunction>(scratch.project_function, api.get)
+    const preset: Preset = usePreset(scratch.preset)
 
     return (
         <div className={styles.container}>
@@ -70,13 +71,14 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                     <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
                     <PlatformName platform={scratch.platform} />
                 </div>
-                {projectFunction && project && <div className={styles.horizontalField}>
-                    <p className={styles.label}>Attempt of</p>
+                {preset && <div className={styles.horizontalField}>
+                    <p className={styles.label}>Preset</p>
+                    <Link href={presetUrl(preset)}>
+                        {preset.name}
+                    </Link>
+                </div>}
+                {project && <div className={styles.horizontalField}>
                     <div className={styles.projectFunctionLinks}>
-                        <Link href={projectFunction.html_url}>
-                            {projectFunction.display_name}
-                        </Link>
-                        {" "}
                         <Link href={project.html_url}>
                             ({project.slug})
                         </Link>

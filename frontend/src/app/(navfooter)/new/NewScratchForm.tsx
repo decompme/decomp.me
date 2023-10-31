@@ -77,7 +77,7 @@ export default function NewScratchForm({ serverCompilers }: {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
-    const setPreset = (preset: api.CompilerPreset) => {
+    const setPreset = (preset: api.Preset) => {
         setCompiler(preset.compiler)
         setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)

@@ -31,6 +31,7 @@ class CompilersDetail(APIView):
 
         for platform in compilers.available_platforms():
             ret[platform.id] = {
+                "id": platform.id,
                 "name": platform.name,
                 "description": platform.description,
                 "arch": platform.arch,
