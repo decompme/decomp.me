@@ -5,8 +5,6 @@ import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { Platform } from "@/lib/api/types"
 
-import styles from "./page.module.scss"
-
 export async function generateMetadata({ params }: { params: { id: number } }) {
     let platform: Platform
 
@@ -38,13 +36,13 @@ export default async function Page({ params }: { params: { id: number } }) {
     }
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <div className={styles.header}>
+        <div className="flex items-center gap-2 text-2xl font-medium">
             <PlatformIcon platform={platform.id} size={32} />
-            <p className={styles.name}>
+            <h1>
                 {platform.name}
-            </p>
+            </h1>
         </div>
-        <p>{platform.description}</p>
+        <p className="py-3 text-gray-11">{platform.description}</p>
 
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
