@@ -184,7 +184,3 @@ export type Platform = {
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
-
-export function presetUrl(preset: Preset): string {
-    return `/preset/${preset.id}`
-}

@@ -3,8 +3,7 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import * as api from "@/lib/api"
-import { Preset, presetUrl, usePreset } from "@/lib/api"
+import { Scratch, Project, Preset, get, usePreset } from "@/lib/api"
 
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -15,7 +14,7 @@ import UserLink from "../user/UserLink"
 import styles from "./AboutScratch.module.scss"
 
 function ScratchLink({ url }: { url: string }) {
-    const { data: scratch, error } = useSWR<api.Scratch>(url, api.get)
+    const { data: scratch, error } = useSWR<Scratch>(url, get)
 
     if (error) {
         throw error
@@ -43,12 +42,12 @@ function ScratchLink({ url }: { url: string }) {
 }
 
 export type Props = {
-    scratch: api.Scratch
-    setScratch?: (scratch: Partial<api.Scratch>) => void
+    scratch: Scratch
+    setScratch?: (scratch: Partial<Scratch>) => void
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
-    const { data: project } = useSWR<api.Project>(scratch.project, api.get)
+    const { data: project } = useSWR<Project>(scratch.project, get)
     const preset: Preset = usePreset(scratch.preset)
 
     return (
