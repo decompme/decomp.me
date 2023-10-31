@@ -29,7 +29,7 @@ class PlatformDetail(APIView):
         )
 
 
-@api_view(["GET"])  # type: ignore
+@api_view(["GET"])
 def single_platform(request: Request, id: str) -> Response:
     """
     Gets a platform's basic data
