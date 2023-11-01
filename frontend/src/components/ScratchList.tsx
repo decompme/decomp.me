@@ -144,10 +144,11 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                     <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
                         {scratch.name}
                     </Link>
+                    <div className={styles.metadata}>
+                        {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </div>
                 </div>
-                <div className={styles.metadata}>
-                    {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
-                </div>
+
             </div>
         </li>
     )

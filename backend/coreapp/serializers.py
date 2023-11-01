@@ -127,6 +127,7 @@ class LibrarySerializer(serializers.Serializer[Library]):
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    num_scratches = serializers.SerializerMethodField()
 
     class Meta:
         model = Preset
@@ -140,11 +141,15 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             "diff_flags",
             "decompiler_flags",
             "libraries",
+            "num_scratches",
         ]
         read_only_fields = [
             "creation_time",
             "last_updated",
         ]
+
+    def get_num_scratches(self, preset: Preset) -> int:
+        return Scratch.objects.filter(preset=preset).count()
 
     def validate_platform(self, platform: str) -> str:
         try:

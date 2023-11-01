@@ -3,10 +3,10 @@ import { notFound } from "next/navigation"
 import PlatformIcon from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
-import { Platform } from "@/lib/api/types"
+import { PlatformMetadata } from "@/lib/api/types"
 
 export async function generateMetadata({ params }: { params: { id: number } }) {
-    let platform: Platform
+    let platform: PlatformMetadata
 
     try {
         platform = await get(`/platform/${params.id}`)
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { id: number } }) {
 }
 
 export default async function Page({ params }: { params: { id: number } }) {
-    let platform: Platform
+    let platform: PlatformMetadata
     try {
         platform = await get(`/platform/${params.id}`)
     } catch (error) {
@@ -42,7 +42,7 @@ export default async function Page({ params }: { params: { id: number } }) {
                 {platform.name}
             </h1>
         </div>
-        <p className="py-3 text-gray-11">{platform.description}</p>
+        <p className="py-3 text-gray-11">{platform.description} • {platform.num_scratches} scratches</p>
 
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>

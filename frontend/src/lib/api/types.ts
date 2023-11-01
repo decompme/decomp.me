@@ -165,6 +165,7 @@ export type Preset = {
     diff_flags: string[]
     decompiler_flags: string
     libraries: Library[]
+    num_scratches: number
 }
 
 export type Compiler = {
@@ -173,11 +174,18 @@ export type Compiler = {
     diff_flags: Flag[]
 }
 
-export type Platform = {
+export interface PlatformBase {
     id: string
     name: string
     description: string
     arch: string
+}
+
+export interface PlatformMetadata extends PlatformBase {
+    num_scratches: number
+}
+
+export interface Platform extends PlatformBase {
     presets: Preset[]
 }
 

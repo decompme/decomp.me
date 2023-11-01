@@ -1,8 +1,5 @@
-from typing import Dict
-
 from coreapp import compilers
 from coreapp.models.preset import Preset
-from coreapp.serializers import PresetSerializer
 from coreapp.views.compilers import CompilersDetail
 from django.utils.timezone import now
 from rest_framework.decorators import api_view
@@ -16,15 +13,17 @@ boot_time = now()
 
 
 class PlatformDetail(APIView):
-    @condition(last_modified_func=lambda request: boot_time)
+    @condition(last_modified_func=Preset.most_recent_updated)
     def head(self, request: Request) -> Response:
         return Response()
 
-    @condition(last_modified_func=lambda request: boot_time)
+    @condition(last_modified_func=Preset.most_recent_updated)
     def get(self, request: Request) -> Response:
         return Response(
             {
-                "platforms": CompilersDetail.platforms_json(),
+                "platforms": CompilersDetail.platforms_json(
+                    include_presets=False, include_num_scratches=True
+                ),
             }
         )
 
@@ -39,16 +38,7 @@ def single_platform(request: Request, id: str) -> Response:
     for platform in platforms:
         if platform.id == id:
             return Response(
-                {
-                    "id": platform.id,
-                    "name": platform.name,
-                    "description": platform.description,
-                    "arch": platform.arch,
-                    "presets": [
-                        PresetSerializer(p).data
-                        for p in Preset.objects.filter(platform=platform.id)
-                    ],
-                }
+                platform.to_json(include_presets=False, include_num_scratches=True)
             )
 
     return Response(status=404)
