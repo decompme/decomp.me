@@ -4,7 +4,7 @@ import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import { Scratch, Project, Preset, get, usePreset } from "@/lib/api"
-import { presetUrl } from "@/lib/api/urls"
+import { presetUrl, projectUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -29,7 +29,7 @@ function ScratchLink({ url }: { url: string }) {
 
     return (
         <span className={styles.scratchLinkContainer}>
-            <Link href={scratch.html_url} className={styles.scratchLink}>
+            <Link href={scratchUrl(scratch)} className={styles.scratchLink}>
 
                 {scratch.name || "Untitled scratch"}
 
@@ -64,7 +64,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 </div>}
                 {scratch.parent &&<div className={styles.horizontalField}>
                     <p className={styles.label}>Fork of</p>
-                    <ScratchLink url={scratch.parent} />
+                    <ScratchLink url={scratchParentUrl(scratch)} />
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Platform</p>
@@ -79,7 +79,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 </div>}
                 {project && <div className={styles.horizontalField}>
                     <div className={styles.projectLinks}>
-                        <Link href={project.html_url}>
+                        <Link href={projectUrl(project)}>
                             ({project.slug})
                         </Link>
                     </div>

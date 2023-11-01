@@ -13,7 +13,7 @@ export type Props = {
 }
 
 export default function ProjectIcon({ project, size, className, priority }: Props) {
-    const { data, error } = useSWR<api.Project>(typeof project === "string" ? project : project.url, api.get, {
+    const { data, error } = useSWR<api.Project>(typeof project === "string" ? project : projectUrl(project), api.get, {
         fallbackData: typeof project === "string" ? undefined : project,
     })
 

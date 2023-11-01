@@ -206,7 +206,7 @@ class ProjectMemberViewSet(
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
-projects_router = router.register(r"projects", ProjectViewSet)
+projects_router = router.register(r"project", ProjectViewSet)
 projects_router.register(
     r"members",
     ProjectMemberViewSet,

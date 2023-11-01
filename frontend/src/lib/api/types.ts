@@ -5,8 +5,6 @@ export interface Page<T> {
 }
 
 export interface AnonymousUser {
-    url: null
-    html_url: null
     is_anonymous: true
     id: number
     is_online: boolean
@@ -17,8 +15,6 @@ export interface AnonymousUser {
 }
 
 export interface User {
-    url: string
-    html_url: string
     is_anonymous: false
     id: number
     is_online: boolean
@@ -32,8 +28,6 @@ export interface User {
 }
 
 export interface TerseScratch {
-    url: string
-    html_url: string
     slug: string
     owner: AnonymousUser | User | null // null = unclaimed
     parent: string | null
@@ -62,8 +56,6 @@ export interface Scratch extends TerseScratch {
 
 export interface Project {
     slug: string
-    url: string
-    html_url: string
     creation_time: string
     icon?: string
     description: string
@@ -71,7 +63,6 @@ export interface Project {
 }
 
 export interface ProjectMember {
-    url: string
     username: string
 }
 

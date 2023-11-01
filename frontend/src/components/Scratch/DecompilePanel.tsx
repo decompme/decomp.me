@@ -5,6 +5,7 @@ import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
 import * as api from "@/lib/api"
+import { scratchUrl } from "@/lib/api/urls"
 import { decompileSetup } from "@/lib/codemirror/basic-setup"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 
@@ -25,14 +26,14 @@ export default function DecompilePanel({ scratch }: Props) {
     const [valueVersion, setValueVersion] = useState(0)
 
     useEffect(() => {
-        api.post(scratch.url + "/decompile", {
+        api.post(scratchUrl(scratch) + "/decompile", {
             context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {
             setDecompiledCode(decompilation)
             setValueVersion(v => v + 1)
         })
-    }, [scratch.compiler, debouncedContext, scratch.url])
+    }, [scratch.compiler, debouncedContext, scratch])
 
     const isLoading = decompiledCode === null || scratch.context !== debouncedContext
 

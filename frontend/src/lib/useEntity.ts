@@ -29,8 +29,9 @@ export interface HasUrl {
     url: string
 }
 
-export default function useEntity<T extends HasUrl>(entity: T | string): [T, Actions<T>] {
-    const url = typeof entity === "string" ? entity : entity.url
+// TODO possibly broken now?
+export default function useEntity<T>(entityUrl: string): [T, Actions<T>] {
+    const url = entityUrl
     const swr = useSWR(url, get, { suspense: true })
     const [localPatch, setLocalPatch] = useState<Partial<T> | null>(null)
     const isModified = localPatch !== null
@@ -49,7 +50,7 @@ export default function useEntity<T extends HasUrl>(entity: T | string): [T, Act
             }
 
             setLocalPatch(null)
-            await swr.mutate(() => patch(data.url, localPatch), {
+            await swr.mutate(() => patch(url, localPatch), {
                 optimisticData: data,
                 rollbackOnError: true,
             })

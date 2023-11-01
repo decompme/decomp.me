@@ -215,13 +215,12 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         return data
 
 
-class ScratchSerializer(serializers.HyperlinkedModelSerializer):
+class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
-    parent = UrlField(target_field="parent")  # type: ignore
+    parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
-    project = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     preset = serializers.PrimaryKeyRelatedField(
@@ -289,7 +288,6 @@ class TerseScratchSerializer(ScratchSerializer):
             "score",
             "max_score",
             "match_override",
-            "project",
             "parent",
             "preset",
             "libraries",
