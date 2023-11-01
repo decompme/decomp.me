@@ -27,14 +27,10 @@ from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
 from ..models.preset import Preset
-from ..models.project import Project, ProjectFunction
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
-from ..serializers import (
-    ScratchCreateSerializer,
-    ScratchSerializer,
-    TerseScratchSerializer,
-)
+from ..serializers import (ScratchCreateSerializer, ScratchSerializer,
+                           TerseScratchSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -220,24 +216,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    if allow_project and (project or rom_address):
-        assert isinstance(project, str)
-        assert isinstance(rom_address, int)
-
-        project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
-        if not project_obj:
-            raise serializers.ValidationError("Unknown project")
-
-        project_function = ProjectFunction.objects.filter(
-            project=project_obj, rom_address=rom_address
-        ).first()
-        if not project_function:
-            raise serializers.ValidationError(
-                "Function with given rom address does not exist in project"
-            )
-    else:
-        project_function = None
-
     libraries = [
         Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
     ]
@@ -258,7 +236,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     scratch = ser.save(
         target_assembly=assembly,
         platform=platform.id,
-        project_function=project_function,
         libraries=libraries,
     )
 
@@ -444,7 +421,6 @@ class ScratchViewSet(
             parent=parent,
             target_assembly=parent.target_assembly,
             platform=parent.platform,
-            project_function=parent.project_function,
             libraries=libraries,
         )
 

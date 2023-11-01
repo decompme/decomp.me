@@ -47,7 +47,6 @@ export interface TerseScratch {
     max_score: number
     match_override: boolean
     project: string
-    project_function: string
     libraries: Library[]
 }
 
@@ -69,7 +68,6 @@ export interface Project {
     icon?: string
     description: string
     platform?: string
-    unmatched_function_count: number
 }
 
 export interface ProjectMember {

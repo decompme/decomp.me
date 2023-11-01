@@ -18,7 +18,7 @@ from .middleware import Request
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
-from .models.project import Project, ProjectFunction, ProjectMember
+from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
 
 
@@ -150,7 +150,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     diff_label = serializers.CharField(allow_blank=True, required=False)
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
 
-    # ProjectFunction reference
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
 
@@ -223,7 +222,6 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
     project = serializers.SerializerMethodField()
-    project_function = serializers.SerializerMethodField()
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     preset = serializers.PrimaryKeyRelatedField(
@@ -240,33 +238,6 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
             "creation_time",
             "platform",
         ]
-
-    def get_project(self, scratch: Scratch) -> Optional[str]:
-        if (
-            hasattr(scratch, "project_function")
-            and scratch.project_function is not None
-        ):
-            return reverse(
-                "project-detail",
-                args=[scratch.project_function.project.slug],
-                request=self.context["request"],  # type: ignore
-            )
-        return None
-
-    def get_project_function(self, scratch: Scratch) -> Optional[str]:
-        if (
-            hasattr(scratch, "project_function")
-            and scratch.project_function is not None
-        ):
-            return reverse(
-                "projectfunction-detail",
-                args=[
-                    scratch.project_function.project.slug,
-                    scratch.project_function.id,
-                ],
-                request=self.context["request"],  # type: ignore
-            )
-        return None
 
     def get_language(self, scratch: Scratch) -> Optional[str]:
         """
@@ -319,7 +290,6 @@ class TerseScratchSerializer(ScratchSerializer):
             "max_score",
             "match_override",
             "project",
-            "project_function",
             "parent",
             "preset",
             "libraries",
@@ -328,7 +298,6 @@ class TerseScratchSerializer(ScratchSerializer):
 
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
-    unmatched_function_count = SerializerMethodField()
 
     class Meta:
         model = Project
@@ -343,24 +312,6 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
             setattr(instance, attr, value)
         instance.save()
         return instance
-
-    def get_unmatched_function_count(self, project: Project) -> int:
-        return ProjectFunction.objects.filter(
-            is_matched_in_repo=False, project=project
-        ).count()
-
-
-class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
-    project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)  # type: ignore
-    attempts_count = SerializerMethodField()
-
-    class Meta:
-        model = ProjectFunction
-        exclude = ["id", "import_config"]
-        read_only_fields = ["creation_time"]
-
-    def get_attempts_count(self, fn: ProjectFunction) -> int:
-        return Scratch.objects.filter(project_function=fn).count()
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):

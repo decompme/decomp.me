@@ -33,33 +33,6 @@ class Project(models.Model):
         return [m for m in ProjectMember.objects.filter(project=self)]
 
 
-class ProjectFunction(models.Model):
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE
-    )  # note: redundant w.r.t. import_config.project
-    rom_address = models.IntegerField()
-
-    creation_time = models.DateTimeField(auto_now_add=True)
-
-    display_name = models.CharField(max_length=128, blank=False)
-    is_matched_in_repo = models.BooleanField(default=False)
-    # complexity = models.IntegerField()
-
-    src_file = models.CharField(max_length=256)
-    asm_file = models.CharField(max_length=256)
-
-    class Meta:
-        constraints = [
-            # ProjectFunctions are identified uniquely by (project, rom_address)
-            models.UniqueConstraint(
-                fields=["project", "rom_address"], name="unique_project_function_addr"
-            ),
-        ]
-
-    def __str__(self) -> str:
-        return f"{self.display_name} ({self.project})"
-
-
 class ProjectMember(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
