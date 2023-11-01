@@ -271,7 +271,7 @@ class ScratchViewSet(
     ]
     search_fields = ["name", "diff_label"]
 
-    def get_serializer_class(self) -> type[serializers.HyperlinkedModelSerializer]:
+    def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":
             return TerseScratchSerializer
         else:
