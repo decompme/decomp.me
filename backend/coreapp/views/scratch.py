@@ -29,8 +29,11 @@ from ..middleware import Request
 from ..models.preset import Preset
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
-from ..serializers import (ScratchCreateSerializer, ScratchSerializer,
-                           TerseScratchSerializer)
+from ..serializers import (
+    ScratchCreateSerializer,
+    ScratchSerializer,
+    TerseScratchSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
