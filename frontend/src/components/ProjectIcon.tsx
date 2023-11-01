@@ -4,6 +4,7 @@ import { ProjectIcon as ProjectOcticon } from "@primer/octicons-react"
 import useSWR from "swr"
 
 import * as api from "@/lib/api"
+import { projectUrl } from "@/lib/api/urls"
 
 export type Props = {
     project: api.Project | string
