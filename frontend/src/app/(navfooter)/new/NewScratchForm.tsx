@@ -96,7 +96,7 @@ export default function NewScratchForm({ serverCompilers }: {
             setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
             setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
             setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
-            setPresetId(localStorage["new_scratch_preset"] ?? undefined)
+            setPresetId(parseInt(localStorage["new_scratch_preset"]) ?? undefined)
             incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
