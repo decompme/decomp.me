@@ -29,7 +29,6 @@ export interface HasUrl {
     url: string
 }
 
-// TODO possibly broken now?
 export default function useEntity<T>(entityUrl: string): [T, Actions<T>] {
     const url = entityUrl
     const swr = useSWR(url, get, { suspense: true })

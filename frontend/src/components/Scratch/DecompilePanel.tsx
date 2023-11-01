@@ -24,16 +24,17 @@ export default function DecompilePanel({ scratch }: Props) {
     const compareExtension = useCompareExtension(viewRef, scratch.source_code)
     const [debouncedContext] = useDebounce(scratch.context, 1000, { leading: false, trailing: true })
     const [valueVersion, setValueVersion] = useState(0)
+    const url = scratchUrl(scratch)
 
     useEffect(() => {
-        api.post(scratchUrl(scratch) + "/decompile", {
+        api.post(url + "/decompile", {
             context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {
             setDecompiledCode(decompilation)
             setValueVersion(v => v + 1)
         })
-    }, [scratch.compiler, debouncedContext, scratch])
+    }, [scratch.compiler, debouncedContext, url])
 
     const isLoading = decompiledCode === null || scratch.context !== debouncedContext
 
