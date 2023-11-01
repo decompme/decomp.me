@@ -27,8 +27,6 @@ def serialize_profile(
 ) -> Dict[str, Any]:
     if profile.user is None:
         return {
-            "url": None,
-            "html_url": None,
             "is_you": profile == request.profile,  # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
@@ -44,8 +42,6 @@ def serialize_profile(
         github_details = github.details() if github else None
 
         small_obj = {
-            "url": reverse("user-detail", args=[user.username], request=request),
-            "html_url": profile.get_html_url(),
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": profile.id,
@@ -81,43 +77,6 @@ class ProfileField(ProfileFieldBaseClass):
 class TerseProfileField(ProfileField):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile, small=True)
-
-
-class UrlField(serializers.HyperlinkedIdentityField):
-    """
-    Read-only field that takes the value returned by the model's get_url method.
-    get_url should return a path relative to API_BASE that can be used to retrieve the model from the API.
-    """
-
-    def __init__(self, **kwargs: Any):
-        kwargs["view_name"] = "__unused__"
-        self.target_field = kwargs.pop("target_field", "")
-        super().__init__(**kwargs)
-
-    def get_url(
-        self, value: Any, view_name: str, request: Any, format: Any
-    ) -> Optional[str]:
-        if self.target_field:
-            value = getattr(value, self.target_field)
-        if not value:
-            return None
-        if hasattr(value, "get_url"):
-            return value.get_url()
-
-        raise ImproperlyConfigured("UrlField does not support this type of model")
-
-
-class HtmlUrlField(UrlField):
-    """
-    Read-only field that takes the value returned by the model's get_html_url method.
-    get_html_url should return a path relative to the frontend that can be used to look at the HTML page for the model.
-    """
-
-    def get_url(self, value: Any, view_name: str, request: Any, format: Any) -> str:
-        if hasattr(value, "get_html_url"):
-            return value.get_html_url()
-
-        raise ImproperlyConfigured("HtmlUrlField does not support this type of model")
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
@@ -259,8 +218,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
 class ScratchSerializer(serializers.HyperlinkedModelSerializer):
     slug = serializers.SlugField(read_only=True)
-    url = UrlField()
-    html_url = HtmlUrlField()
     parent = UrlField(target_field="parent")  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
@@ -277,8 +234,6 @@ class ScratchSerializer(serializers.HyperlinkedModelSerializer):
         model = Scratch
         exclude = ["target_assembly"]
         read_only_fields = [
-            "url",
-            "html_url",
             "parent",
             "owner",
             "last_updated",
@@ -352,8 +307,6 @@ class TerseScratchSerializer(ScratchSerializer):
     class Meta:
         model = Scratch
         fields = [
-            "url",
-            "html_url",
             "slug",
             "owner",
             "last_updated",
@@ -375,8 +328,6 @@ class TerseScratchSerializer(ScratchSerializer):
 
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
-    url = UrlField()
-    html_url = HtmlUrlField()
     unmatched_function_count = SerializerMethodField()
 
     class Meta:
@@ -400,8 +351,6 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
 
 
 class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
-    url = SerializerMethodField()
-    html_url = HtmlUrlField()
     project = HyperlinkedRelatedField(view_name="project-detail", read_only=True)  # type: ignore
     attempts_count = SerializerMethodField()
 
@@ -410,19 +359,11 @@ class ProjectFunctionSerializer(serializers.ModelSerializer[ProjectFunction]):
         exclude = ["id", "import_config"]
         read_only_fields = ["creation_time"]
 
-    def get_url(self, fn: ProjectFunction) -> str:
-        return reverse(
-            "projectfunction-detail",
-            args=[fn.project.slug, fn.id],
-            request=self.context["request"],
-        )
-
     def get_attempts_count(self, fn: ProjectFunction) -> int:
         return Scratch.objects.filter(project_function=fn).count()
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
-    url = UrlField()
     username = SlugRelatedField(
         source="user",
         slug_field="username",
@@ -431,4 +372,4 @@ class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
 
     class Meta:
         model = ProjectMember
-        fields = ["url", "username"]
+        fields = ["username"]

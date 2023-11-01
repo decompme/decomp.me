@@ -72,19 +72,6 @@ export interface Project {
     unmatched_function_count: number
 }
 
-export interface ProjectFunction {
-    url: string
-    html_url: string
-    project: string
-    rom_address: number
-    creation_time: string
-    display_name: string
-    is_matched_in_repo: boolean
-    src_file: string
-    asm_file: string
-    attempts_count: number
-}
-
 export interface ProjectMember {
     url: string
     username: string

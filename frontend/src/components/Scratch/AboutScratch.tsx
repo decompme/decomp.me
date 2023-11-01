@@ -78,7 +78,7 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                     </Link>
                 </div>}
                 {project && <div className={styles.horizontalField}>
-                    <div className={styles.projectFunctionLinks}>
+                    <div className={styles.projectLinks}>
                         <Link href={project.html_url}>
                             ({project.slug})
                         </Link>

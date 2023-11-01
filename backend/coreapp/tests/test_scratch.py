@@ -352,7 +352,6 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
 
         # fork the root
         response = self.client.post(reverse("scratch-fork", args=[root.slug]))
@@ -386,8 +385,6 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.json()[0]["html_url"], root.get_html_url())
-        self.assertEqual(response.json()[1]["html_url"], fork["html_url"])
 
     def test_family_etag(self) -> None:
         root = self.create_nop_scratch()

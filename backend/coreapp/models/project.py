@@ -23,12 +23,6 @@ class Project(models.Model):
     def __str__(self) -> str:
         return self.slug
 
-    def get_url(self) -> str:
-        return f"/projects/{self.slug}"
-
-    def get_html_url(self) -> str:
-        return f"/projects/{self.slug}"
-
     def is_member(self, profile: Profile) -> bool:
         for member in self.members():
             if member.user.profile == profile:
@@ -62,9 +56,6 @@ class ProjectFunction(models.Model):
             ),
         ]
 
-    def get_html_url(self) -> str:
-        return f"{self.project.get_html_url()}/functions/{self.rom_address:X}"
-
     def __str__(self) -> str:
         return f"{self.display_name} ({self.project})"
 
@@ -82,6 +73,3 @@ class ProjectMember(models.Model):
 
     def __str__(self) -> str:
         return f"({self.project}, {self.user})"
-
-    def get_url(self) -> str:
-        return f"{self.project.get_url()}/members/{self.user.username}"

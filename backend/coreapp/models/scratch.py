@@ -121,12 +121,6 @@ class Scratch(models.Model):
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
-    def get_url(self) -> str:
-        return "/scratch/" + self.slug
-
-    def get_html_url(self) -> str:
-        return "/scratch/" + self.slug
-
     def is_claimable(self) -> bool:
         return self.owner is None
 
