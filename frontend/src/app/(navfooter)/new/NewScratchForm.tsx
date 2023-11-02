@@ -66,6 +66,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [libraries, setLibraries] = useState<Library[]>([])
     const [presetId, setPresetId] = useState<number | undefined>()
+    const [presets, setPresets] = useState({})
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -78,6 +79,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [label, setLabel] = useState<string>("")
 
     const setPreset = (preset: api.CompilerPreset) => {
+        setPlatform(preset.platform)
         setCompiler(preset.compiler)
         setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)
@@ -85,23 +87,40 @@ export default function NewScratchForm({ serverCompilers }: {
         setLibraries(preset.libraries)
     }
 
+    useEffect(() => {
+        const dict = {}
+        for (const [_, v] of Object.entries(serverCompilers.platforms)) {
+            for (const p of v.presets) {
+                dict[p.id] = p
+            }
+        }
+        setPresets(dict)
+    }, [serverCompilers])
+
     // Load fields from localStorage
     useEffect(() => {
         try {
             setLabel(localStorage["new_scratch_label"] ?? "")
             setAsm(localStorage["new_scratch_asm"] ?? "")
             setContext(localStorage["new_scratch_context"] ?? "")
-            setPlatform(localStorage["new_scratch_platform"] ?? "")
-            setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
-            setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-            setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
-            setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
-            setPresetId(parseInt(localStorage["new_scratch_preset"]) ?? undefined)
+            const pid = parseInt(localStorage["new_scratch_presetId"])
+            if (!isNaN(pid)) {
+                const preset = presets[pid]
+                if (preset) {
+                    setPreset(preset)
+                }
+            } else {
+                setPlatform(localStorage["new_scratch_platform"] ?? "")
+                setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
+                setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
+                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
+                setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
+            }
             incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
         }
-    }, [])
+    }, [presets])
 
     // Update localStorage
     useEffect(() => {
@@ -113,7 +132,9 @@ export default function NewScratchForm({ serverCompilers }: {
         localStorage["new_scratch_compilerFlags"] = compilerFlags
         localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
-        localStorage["new_scratch_presetId"] = presetId
+        if (presetId != undefined) {
+            localStorage["new_scratch_presetId"] = presetId
+        }
     }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
