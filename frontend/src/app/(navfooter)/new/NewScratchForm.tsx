@@ -61,12 +61,11 @@ export default function NewScratchForm({ serverCompilers }: {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [platform, setPlatform] = useState("")
-    const [compilerId, setCompiler] = useState<string>()
+    const [compilerId, setCompilerId] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
     const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [libraries, setLibraries] = useState<Library[]>([])
     const [presetId, setPresetId] = useState<number | undefined>()
-    const [presets, setPresets] = useState({})
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -79,22 +78,22 @@ export default function NewScratchForm({ serverCompilers }: {
     const [label, setLabel] = useState<string>("")
 
     const setPreset = (preset: api.CompilerPreset) => {
+        setPresetId(preset.id)
         setPlatform(preset.platform)
-        setCompiler(preset.compiler)
+        setCompilerId(preset.compiler)
         setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)
-        setPresetId(preset.id)
         setLibraries(preset.libraries)
     }
 
-    useEffect(() => {
+    const presets = useMemo(() => {
         const dict = {}
         for (const [_, v] of Object.entries(serverCompilers.platforms)) {
             for (const p of v.presets) {
                 dict[p.id] = p
             }
         }
-        setPresets(dict)
+        return dict
     }, [serverCompilers])
 
     // Load fields from localStorage
@@ -111,7 +110,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 }
             } else {
                 setPlatform(localStorage["new_scratch_platform"] ?? "")
-                setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
+                setCompilerId(localStorage["new_scratch_compilerId"] ?? undefined)
                 setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
                 setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
                 setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
@@ -128,36 +127,38 @@ export default function NewScratchForm({ serverCompilers }: {
         localStorage["new_scratch_asm"] = asm
         localStorage["new_scratch_context"] = context
         localStorage["new_scratch_platform"] = platform
-        localStorage["new_scratch_compiler"] = compilerId
+        localStorage["new_scratch_compilerId"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
         localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
         if (presetId != undefined) {
             localStorage["new_scratch_presetId"] = presetId
+        } else {
+            // FIXME: we do not ever clear presetId
+            // localStorage.removeItem("new_scratch_presetId")
         }
     }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     const compiler = platformCompilers[compilerId]
 
-    // wtf
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
+    // FIXME: this should handle state
     if (!compiler) { // We just changed platforms, probably
         if (Object.keys(platformCompilers).length === 0) {
             console.warn("No compilers supported for platform", platform)
         } else {
             // Fall back to the first supported compiler and no flags
-            setCompiler(Object.keys(platformCompilers)[0])
+            setCompilerId(Object.keys(platformCompilers)[0])
             setCompilerFlags("")
             setDiffFlags([])
 
             // If there is a preset for this platform, use it
             for (const [k, v] of Object.entries(serverCompilers.compilers)) {
                 if (v.platform === platform && serverCompilers.platforms[platform].presets.length > 0) {
-                    setCompiler(k)
                     setPreset(serverCompilers.platforms[platform].presets[0])
                     break
                 }
@@ -222,7 +223,7 @@ export default function NewScratchForm({ serverCompilers }: {
                         }, {})}
                         value={compilerId}
                         onChange={c => {
-                            setCompiler(c)
+                            setCompilerId(c)
                             setCompilerFlags("")
                             setDiffFlags([])
                             setPresetId(undefined)
