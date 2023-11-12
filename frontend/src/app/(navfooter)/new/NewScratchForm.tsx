@@ -91,7 +91,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const presets = useMemo(() => {
         const dict = {}
-        for (const [_, v] of Object.entries(serverCompilers.platforms)) {
+        for (const v of Object.values(serverCompilers.platforms)) {
             for (const p of v.presets) {
                 dict[p.id] = p
             }
@@ -143,17 +143,14 @@ export default function NewScratchForm({ serverCompilers }: {
         } else {
             localStorage["new_scratch_presetId"] = presetId
         }
-    }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
+    }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     // wtf
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    const platformCompilers = useMemo(() => {
-        return useCompilersForPlatform(platform, serverCompilers.compilers)
-    }, [platform, serverCompilers])
-
+    const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     useEffect(() => {
         if (!ready)
             return
@@ -174,25 +171,24 @@ export default function NewScratchForm({ serverCompilers }: {
             setPresetId(undefined)
 
             // If there is a preset for this platform, use it
-            for (const [k, v] of Object.entries(serverCompilers.compilers)) {
+            for (const v of Object.values(serverCompilers.compilers)) {
                 if (v.platform === platform && serverCompilers.platforms[platform].presets.length > 0) {
                     setPreset(serverCompilers.platforms[platform].presets[0])
                     break
                 }
             }
         }
-    }, [ready, platform])
+    }, [ready, presetId, compilerId, platformCompilers, serverCompilers, platform])
 
+    const compilersTranslation = useTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
-        const compilersTranslation = useTranslation("compilers")
-
         return Object.keys(platformCompilers).reduce((sum, id) => {
             return {
                 ...sum,
                 [id]: compilersTranslation.t(id),
             }
         }, {})
-    }, [platformCompilers])
+    }, [platformCompilers, compilersTranslation])
 
     const submit = async () => {
         try {
