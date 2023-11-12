@@ -67,6 +67,9 @@ export default function NewScratchForm({ serverCompilers }: {
     const [libraries, setLibraries] = useState<Library[]>([])
     const [presetId, setPresetId] = useState<number | undefined>()
 
+    // FIXME: what is the React way to handle this
+    const [ready, setReady] = useState(false)
+
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
     const router = useRouter()
@@ -119,10 +122,14 @@ export default function NewScratchForm({ serverCompilers }: {
         } catch (error) {
             console.warn("bad localStorage", error)
         }
+        setReady(true)
     }, [presets])
 
     // Update localStorage
     useEffect(() => {
+        if (!ready)
+            return
+
         localStorage["new_scratch_label"] = label
         localStorage["new_scratch_asm"] = asm
         localStorage["new_scratch_context"] = context
@@ -131,30 +138,40 @@ export default function NewScratchForm({ serverCompilers }: {
         localStorage["new_scratch_compilerFlags"] = compilerFlags
         localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
         localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
-        if (presetId != undefined) {
-            localStorage["new_scratch_presetId"] = presetId
+        if (presetId == undefined) {
+            localStorage.removeItem("new_scratch_presetId")
         } else {
-            // FIXME: we do not ever clear presetId
-            // localStorage.removeItem("new_scratch_presetId")
+            localStorage["new_scratch_presetId"] = presetId
         }
     }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
-    const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
-    const compiler = platformCompilers[compilerId]
-
+    // wtf
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    // FIXME: this should handle state
-    if (!compiler) { // We just changed platforms, probably
+    const platformCompilers = useMemo(() => {
+        return useCompilersForPlatform(platform, serverCompilers.compilers)
+    }, [platform, serverCompilers])
+
+    useEffect(() => {
+        if (!ready)
+            return
+
+        if (presetId != undefined || compilerId != undefined) {
+            // User has specified a preset or compiler, don't override it
+            return
+        }
+
         if (Object.keys(platformCompilers).length === 0) {
             console.warn("No compilers supported for platform", platform)
         } else {
             // Fall back to the first supported compiler and no flags
-            setCompilerId(Object.keys(platformCompilers)[0])
+            const c = Object.keys(platformCompilers)[0]
+            setCompilerId(c)
             setCompilerFlags("")
             setDiffFlags([])
+            setPresetId(undefined)
 
             // If there is a preset for this platform, use it
             for (const [k, v] of Object.entries(serverCompilers.compilers)) {
@@ -164,7 +181,18 @@ export default function NewScratchForm({ serverCompilers }: {
                 }
             }
         }
-    }
+    }, [ready, platform])
+
+    const compilerChoiceOptions = useMemo(() => {
+        const compilersTranslation = useTranslation("compilers")
+
+        return Object.keys(platformCompilers).reduce((sum, id) => {
+            return {
+                ...sum,
+                [id]: compilersTranslation.t(id),
+            }
+        }, {})
+    }, [platformCompilers])
 
     const submit = async () => {
         try {
@@ -192,8 +220,6 @@ export default function NewScratchForm({ serverCompilers }: {
         }
     }
 
-    const compilersTranslation = useTranslation("compilers")
-
     return <div>
         <div>
             <p className={styles.label}>
@@ -202,7 +228,14 @@ export default function NewScratchForm({ serverCompilers }: {
             <PlatformSelect
                 platforms={serverCompilers.platforms}
                 value={platform}
-                onChange={a => setPlatform(a)}
+                onChange={p => {
+                    setPlatform(p)
+                    setCompilerId(undefined)
+                    setCompilerFlags("")
+                    setDiffFlags([])
+                    setPresetId(undefined)
+                    setLibraries([])
+                }}
             />
         </div>
 
@@ -215,12 +248,7 @@ export default function NewScratchForm({ serverCompilers }: {
                     <span className={styles.compilerChoiceHeading}>Select a compiler</span>
                     <Select
                         className={styles.compilerChoiceSelect}
-                        options={Object.keys(platformCompilers).reduce((sum, id) => {
-                            return {
-                                ...sum,
-                                [id]: compilersTranslation.t(id),
-                            }
-                        }, {})}
+                        options={compilerChoiceOptions}
                         value={compilerId}
                         onChange={c => {
                             setCompilerId(c)

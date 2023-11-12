@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { ChevronDownIcon } from "@primer/octicons-react"
 
 import styles from "./Select.module.scss"
@@ -10,8 +11,11 @@ export type Props = {
 }
 
 export default function Select({ options, value, onChange, className }: Props) {
-    if (!value)
-        onChange(Object.keys(options)[0])
+
+    useEffect(() => {
+        if (!value)
+            onChange(Object.keys(options)[0])
+    }, [value, options])
 
     return <div className={`${styles.group} ${className}`}>
         <select
