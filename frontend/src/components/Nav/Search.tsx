@@ -9,6 +9,7 @@ import { useCombobox } from "downshift"
 import { useLayer } from "react-laag"
 
 import * as api from "@/lib/api"
+import { scratchUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
@@ -67,7 +68,7 @@ function MountedSearch({ className }: { className?: string }) {
             if (selectedItem) {
                 console.info("<Search> onSelectedItemChange")
                 close()
-                router.push(selectedItem.html_url)
+                router.push(scratchUrl(selectedItem))
             }
         },
     })
@@ -104,7 +105,7 @@ function MountedSearch({ className }: { className?: string }) {
                 if (searchItems.length > 0) {
                     console.info("<Search> Enter pressed")
                     close()
-                    router.push(searchItems[0].html_url)
+                    router.push(scratchUrl(searchItems[0]))
                 }
             }
         }}
@@ -143,11 +144,11 @@ function MountedSearch({ className }: { className?: string }) {
                     }
 
                     return <li
-                        key={scratch.url}
+                        key={scratchUrl(scratch)}
                         {...props}
                     >
                         <a
-                            href={scratch.html_url}
+                            href={scratchUrl(scratch)}
                             className={classNames(verticalMenuStyles.item, styles.item)}
                         >
                             <ScratchIcon scratch={scratch} size={16} />

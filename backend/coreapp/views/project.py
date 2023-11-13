@@ -3,13 +3,11 @@ import random
 import string
 from typing import Any, Optional
 
-import django_filters
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from django.db.utils import IntegrityError
 from django.views import View
-from rest_framework import filters, mixins, permissions, status
-from rest_framework.decorators import action
+from rest_framework import mixins, permissions, status
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.parsers import JSONParser, MultiPartParser
@@ -20,14 +18,8 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from ..models.github import GitHubUser
-from ..models.project import Project, ProjectFunction, ProjectMember
-from ..models.scratch import Scratch
-from ..serializers import (
-    ProjectFunctionSerializer,
-    ProjectMemberSerializer,
-    ProjectSerializer,
-    TerseScratchSerializer,
-)
+from ..models.project import Project, ProjectMember
+from ..serializers import ProjectMemberSerializer, ProjectSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +32,6 @@ class NotProjectMaintainer(APIException):
 class GithubLoginException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must be logged in to Github to perform this action."
-
-
-class ScratchNotProjectFunctionException(APIException):
-    status_code = status.HTTP_403_FORBIDDEN
-    default_detail = "Scratches given must be part of the project."
 
 
 class PrMustHaveScratchesException(APIException):
@@ -75,13 +62,6 @@ class TemporaryProjectCreationStaffOnlyException(APIException):
 
 
 class ProjectPagination(CursorPagination):
-    ordering = "-creation_time"
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
-class ProjectFunctionPagination(CursorPagination):
     ordering = "-creation_time"
     page_size = 20
     page_size_query_param = "page_size"
@@ -192,41 +172,6 @@ def make_pr_name(files_to_funcs: dict[str, list[str]]) -> str:
         )
 
 
-class ProjectFunctionViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,  # type: ignore
-):
-    pagination_class = ProjectFunctionPagination
-    serializer_class = ProjectFunctionSerializer
-
-    filter_fields = ["rom_address", "is_matched_in_repo"]
-    filter_backends = [
-        django_filters.rest_framework.DjangoFilterBackend,
-        filters.SearchFilter,
-    ]
-    search_fields = ["display_name"]
-
-    def get_queryset(self) -> QuerySet[ProjectFunction]:
-        return ProjectFunction.objects.filter(project=self.kwargs["parent_lookup_slug"])
-
-    @action(detail=True, methods=["GET"])
-    def attempts(self, request: Request, **kwargs: Any) -> Response:
-        fn: ProjectFunction = self.get_object()
-
-        if request.method == "GET":
-            attempts = Scratch.objects.filter(project_function=fn).order_by(
-                "-last_updated"
-            )
-            return Response(
-                TerseScratchSerializer(
-                    attempts, many=True, context={"request": request}
-                ).data
-            )
-        else:
-            raise Exception("Unsupported method")
-
-
 class ProjectMemberViewSet(
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -261,13 +206,7 @@ class ProjectMemberViewSet(
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
-projects_router = router.register(r"projects", ProjectViewSet)
-projects_router.register(
-    r"functions",
-    ProjectFunctionViewSet,
-    basename="projectfunction",
-    parents_query_lookups=["slug"],
-)
+projects_router = router.register(r"project", ProjectViewSet)
 projects_router.register(
     r"members",
     ProjectMemberViewSet,

@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from coreapp.models.scratch import LibrariesField
 from django.db import models
+from rest_framework.request import Request
 
 
 class Preset(models.Model):
@@ -19,3 +22,7 @@ class Preset(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    @staticmethod
+    def most_recent_updated(request: Request) -> datetime:
+        return Preset.objects.latest("last_updated").last_updated

@@ -1,10 +1,13 @@
 import logging
 from dataclasses import dataclass, field
-from typing import OrderedDict
+from typing import Any, Dict, OrderedDict
 
+from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
+from coreapp.models.preset import Preset
+from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
-from coreapp.flags import COMMON_MIPS_DIFF_FLAGS, COMMON_DIFF_FLAGS, Flags
 
+from coreapp.serializers import PresetSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +24,27 @@ class Platform:
     asm_prelude: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
+
+    def get_num_scratches(self) -> int:
+        return Scratch.objects.filter(platform=self.id).count()
+
+    def to_json(
+        self, include_presets: bool = True, include_num_scratches: bool = False
+    ) -> Dict[str, Any]:
+        ret: Dict[str, Any] = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "arch": self.arch,
+        }
+        if include_presets:
+            ret["presets"] = [
+                PresetSerializer(p).data
+                for p in Preset.objects.filter(platform=self.id)
+            ]
+        if include_num_scratches:
+            ret["num_scratches"] = self.get_num_scratches()
+        return ret
 
 
 def from_id(platform_id: str) -> Platform:

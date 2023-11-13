@@ -6,7 +6,8 @@ import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch, delete_ } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember } from "./api/types"
+import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember, Preset } from "./api/types"
+import { projectUrl, scratchUrl } from "./api/urls"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
@@ -55,7 +56,7 @@ export function useUserIsYou(): (user: User | AnonymousUser | undefined) => bool
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {
-    const { data: savedScratch, error } = useSWR(scratch.url, get, {
+    const { data: savedScratch, error } = useSWR(scratchUrl(scratch), get, {
         fallbackData: scratch, // No loading state, just use the local scratch
     })
 
@@ -77,7 +78,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             throw new Error("Cannot save scratch which you do not own")
         }
 
-        const updatedScratch = await patch(localScratch.url, {
+        const updatedScratch = await patch(scratchUrl(localScratch), {
             source_code: undefinedIfUnchanged(savedScratch, localScratch, "source_code"),
             context: undefinedIfUnchanged(savedScratch, localScratch, "context"),
             compiler: undefinedIfUnchanged(savedScratch, localScratch, "compiler"),
@@ -91,7 +92,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             libraries: undefinedIfUnchanged(savedScratch, localScratch, "libraries"),
         })
 
-        await mutate(localScratch.url, updatedScratch, false)
+        await mutate(scratchUrl(localScratch), updatedScratch, false)
 
         return updatedScratch
     }, [localScratch, savedScratch, userIsYou])
@@ -100,20 +101,20 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
 }
 
 export async function claimScratch(scratch: Scratch): Promise<void> {
-    const { success } = await post(`${scratch.url}/claim`, {})
+    const { success } = await post(`${scratchUrl(scratch)}/claim`, {})
     const user = await get("/user")
 
     if (!success)
         throw new Error("Scratch cannot be claimed")
 
-    await mutate(scratch.url, {
+    await mutate(scratchUrl(scratch), {
         ...scratch,
         owner: user,
     })
 }
 
 export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
-    const scratch = await post(`${parent.url}/fork`, parent)
+    const scratch = await post(`${scratchUrl(parent)}/fork`, parent)
     await claimScratch(scratch)
     return scratch
 }
@@ -125,7 +126,7 @@ export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
         const fork = await forkScratch(parent)
 
         ignoreNextWarnBeforeUnload()
-        await router.push(fork.html_url)
+        await router.push(scratchUrl(fork))
     }, [parent, router])
 }
 
@@ -157,6 +158,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(initial)
     const [isCompilationOld, setIsCompilationOld] = useState(false)
+    const sUrl = scratchUrl(scratch)
 
     const compile = useCallback(() => {
         if (compileRequestPromise)
@@ -168,7 +170,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         if (!scratch.compiler)
             return Promise.reject(new Error("Cannot compile before a compiler is set"))
 
-        const promise = post(`${scratch.url}/compile`, {
+        const promise = post(`${scratchUrl(scratch)}/compile`, {
             // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
             compiler: scratch.compiler,
             compiler_flags: scratch.compiler_flags,
@@ -196,13 +198,13 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     }, [compileRequestPromise, savedScratch, scratch])
 
     // If the scratch we're looking at changes, we need to recompile
-    const [url, setUrl] = useState(scratch.url)
+    const [url, setUrl] = useState(sUrl)
     useEffect(() => {
-        if (url !== scratch.url) {
-            setUrl(scratch.url)
+        if (url !== sUrl) {
+            setUrl(sUrl)
             compile()
         }
-    }, [compile, scratch.url, url])
+    }, [compile, sUrl, url])
 
     const debouncedCompile = useDebouncedCallback(compile, autoRecompileDelay, { leading: false, trailing: true })
 
@@ -272,6 +274,15 @@ export function useLibraries(): LibraryVersions[] {
     }
 
     return data.libraries
+}
+
+export function usePreset(id: number): Preset {
+    const url = `/preset/${id}`
+    const { data } = useSWR(url, get, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+    return data
 }
 
 export function usePaginated<T>(url: string, firstPage?: Page<T>): {
@@ -361,7 +372,7 @@ export function useProjectMembers(project: Project): {
     addMember: (username: string) => Promise<void>
     removeMember: (username: string) => Promise<void>
 } {
-    const url = `${project.url}/members`
+    const url = `${projectUrl(project)}/members`
     const { data, error, mutate } = useSWR<ProjectMember[]>(url, get)
 
     if (error) {

@@ -7,6 +7,7 @@ import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
 import UserAvatar from "@/components/user/UserAvatar"
 import { get } from "@/lib/api/request"
 import { User } from "@/lib/api/types"
+import { userUrl } from "@/lib/api/urls"
 
 export async function generateMetadata({ params }: { params: { username: string } }) {
     let user: User
@@ -60,7 +61,7 @@ export default async function Page({ params }: { params: { username: string } })
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
             <ScratchList
-                url={user.url + "/scratches?page_size=32"}
+                url={userUrl(user) + "/scratches?page_size=32"}
                 item={ScratchItemNoOwner}
             />
         </section>

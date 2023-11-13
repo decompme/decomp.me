@@ -2,7 +2,7 @@ import * as api from "@/lib/api"
 
 import Select from "../Select2"
 
-function presetsToOptions(presets: api.CompilerPreset[], addCustom: boolean): { [key: string]: string } {
+function presetsToOptions(presets: api.Preset[], addCustom: boolean): { [key: string]: string } {
     const options = {}
 
     if (addCustom) {
@@ -20,8 +20,8 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
     className?: string
     platform: string
     presetId?: number
-    setPreset: (preset: api.CompilerPreset) => void
-    serverPresets?: api.CompilerPreset[]
+    setPreset: (preset: api.Preset) => void
+    serverPresets?: api.Preset[]
 }) {
     if (!serverPresets)
         serverPresets = api.usePlatforms()[platform].presets

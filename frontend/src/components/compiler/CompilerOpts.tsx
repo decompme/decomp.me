@@ -205,7 +205,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
         })
     }
 
-    const setPreset = (preset: api.CompilerPreset) => {
+    const setPreset = (preset: api.Preset) => {
         onChange({
             compiler: preset.compiler,
             compiler_flags: preset.compiler_flags,

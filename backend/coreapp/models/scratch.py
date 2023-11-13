@@ -106,9 +106,6 @@ class Scratch(models.Model):
     libraries = LibrariesField(default=list)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    project_function = models.ForeignKey(
-        "ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL
-    )  # The function, if any, that this scratch is an attempt of
 
     class Meta:
         ordering = ["-creation_time"]
@@ -120,12 +117,6 @@ class Scratch(models.Model):
     # hash for etagging
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
-
-    def get_url(self) -> str:
-        return "/scratch/" + self.slug
-
-    def get_html_url(self) -> str:
-        return "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
         return self.owner is None
