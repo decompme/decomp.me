@@ -47,10 +47,10 @@ export default async function Page({ params }: { params: { id: number } }) {
                 {preset.name}
             </h1>
         </div>
-        <p className="py-3 text-gray-11">{compilerName} • {preset.num_scratches} scratches</p>
+        <p className="py-3 text-gray-11">{compilerName}</p>
 
         <section>
-            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
+            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({preset.num_scratches})</h2>
             <ScratchList
                 url={"/scratch?preset=" + preset.id + "&page_size=32"}
                 item={ScratchItemPresetList}

@@ -42,10 +42,10 @@ export default async function Page({ params }: { params: { id: number } }) {
                 {platform.name}
             </h1>
         </div>
-        <p className="py-3 text-gray-11">{platform.description} • {platform.num_scratches} scratches</p>
+        <p className="py-3 text-gray-11">{platform.description}</p>
 
         <section>
-            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
+            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({platform.num_scratches})</h2>
             <ScratchList
                 url={"/scratch?platform=" + platform.id + "&page_size=32"}
                 item={ScratchItemNoOwner}
