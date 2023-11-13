@@ -13,8 +13,6 @@ GITHUB_USER = {
     "node_id": "MDQ6VXNlcjg5NDIyMjEy",
     "avatar_url": "https://avatars.githubusercontent.com/u/89422212?v=4",
     "gravatar_id": "",
-    "url": "https://api.github.com/users/BowserSlug",
-    "html_url": "https://github.com/BowserSlug",
     "followers_url": "https://api.github.com/users/BowserSlug/followers",
     "following_url": "https://api.github.com/users/BowserSlug/following{/other_user}",
     "gists_url": "https://api.github.com/users/BowserSlug/gists{/gist_id}",

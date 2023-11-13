@@ -15,6 +15,7 @@ import PlatformSelect from "@/components/PlatformSelect"
 import Select from "@/components/Select2"
 import * as api from "@/lib/api"
 import { Library } from "@/lib/api/types"
+import { scratchUrl } from "@/lib/api/urls"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useTranslation from "@/lib/i18n/translate"
 
@@ -80,7 +81,7 @@ export default function NewScratchForm({ serverCompilers }: {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
-    const setPreset = (preset: api.CompilerPreset) => {
+    const setPreset = (preset: api.Preset) => {
         setPresetId(preset.id)
         setPlatform(preset.platform)
         setCompilerId(preset.compiler)
@@ -209,7 +210,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
             await api.claimScratch(scratch)
 
-            router.push(scratch.html_url)
+            router.push(scratchUrl(scratch))
         } catch (error) {
             console.error(error)
             throw error

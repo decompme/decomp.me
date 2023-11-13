@@ -23,12 +23,6 @@ class Project(models.Model):
     def __str__(self) -> str:
         return self.slug
 
-    def get_url(self) -> str:
-        return f"/projects/{self.slug}"
-
-    def get_html_url(self) -> str:
-        return f"/projects/{self.slug}"
-
     def is_member(self, profile: Profile) -> bool:
         for member in self.members():
             if member.user.profile == profile:
@@ -37,36 +31,6 @@ class Project(models.Model):
 
     def members(self) -> List["ProjectMember"]:
         return [m for m in ProjectMember.objects.filter(project=self)]
-
-
-class ProjectFunction(models.Model):
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE
-    )  # note: redundant w.r.t. import_config.project
-    rom_address = models.IntegerField()
-
-    creation_time = models.DateTimeField(auto_now_add=True)
-
-    display_name = models.CharField(max_length=128, blank=False)
-    is_matched_in_repo = models.BooleanField(default=False)
-    # complexity = models.IntegerField()
-
-    src_file = models.CharField(max_length=256)
-    asm_file = models.CharField(max_length=256)
-
-    class Meta:
-        constraints = [
-            # ProjectFunctions are identified uniquely by (project, rom_address)
-            models.UniqueConstraint(
-                fields=["project", "rom_address"], name="unique_project_function_addr"
-            ),
-        ]
-
-    def get_html_url(self) -> str:
-        return f"{self.project.get_html_url()}/functions/{self.rom_address:X}"
-
-    def __str__(self) -> str:
-        return f"{self.display_name} ({self.project})"
 
 
 class ProjectMember(models.Model):
@@ -82,6 +46,3 @@ class ProjectMember(models.Model):
 
     def __str__(self) -> str:
         return f"({self.project}, {self.user})"
-
-    def get_url(self) -> str:
-        return f"{self.project.get_url()}/members/{self.user.username}"
