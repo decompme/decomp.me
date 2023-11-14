@@ -5,7 +5,7 @@ import { LinkExternalIcon } from "@primer/octicons-react"
 import Button from "@/components/Button"
 import GhostButton from "@/components/GhostButton"
 import { useThisUser, isAnonUser } from "@/lib/api"
-import { userUrl } from "@/lib/api/urls"
+import { userHtmlUrl } from "@/lib/api/urls"
 
 import Section from "../Section"
 
@@ -26,7 +26,7 @@ export default function ProfileSection() {
                 Edit on GitHub
                 <LinkExternalIcon />
             </Button>
-            <GhostButton href={userUrl(user)}>View decomp.me profile</GhostButton>
+            <GhostButton href={userHtmlUrl(user)}>View decomp.me profile</GhostButton>
         </div>
     </Section>
 }
