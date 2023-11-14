@@ -1,7 +1,11 @@
 import { Preset, Project, ProjectMember, TerseScratch, User } from "./types"
 
-export function userUrl(user: User): string {
+export function userHtmlUrl(user: User): string {
     return `/u/${user.username}`
+}
+
+export function userUrl(user: User): string {
+    return `/users/${user.username}`
 }
 
 export function presetUrl(preset: Preset): string {
