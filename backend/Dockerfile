@@ -65,6 +65,10 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY --from=ghcr.io/decompals/wibo:0.6.8 /usr/local/sbin/wibo /usr/bin/
 
+RUN add-apt-repository -y ppa:dosemu2/ppa && \
+    apt-get update && \
+    apt-get install -y dosemu2
+
 # windows compilers need i386 wine
 
 ARG ENABLE_MSDOS_SUPPORT
@@ -76,14 +80,6 @@ RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
-    fi
-
-ARG ENABLE_SATURN_SUPPORT
-# install dosemu2 for saturn
-RUN if [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
-    add-apt-repository -y ppa:dosemu2/ppa && \
-    apt-get update && \
-    apt-get install -y dosemu2; \
     fi
 
 # msdos specific
@@ -127,6 +123,7 @@ ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT
 ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 
 ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
