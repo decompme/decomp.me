@@ -122,9 +122,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                 <div className={styles.header}>
                     <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
-
                         {scratch.name}
-
                     </Link>
                 </div>
                 <div className={styles.metadata}>
@@ -148,6 +146,9 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                     <div className={styles.metadata}>
                         {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                     </div>
+                    {scratch.owner && <div className={styles.owner}>
+                        <UserLink user={scratch.owner} />
+                    </div>}
                 </div>
 
             </div>
@@ -162,9 +163,7 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
         <li className={styles.singleLine}>
             <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
             <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
-
                 {scratch.name}
-
             </Link>
             <div className={styles.metadata}>
                 {matchPercentString}
