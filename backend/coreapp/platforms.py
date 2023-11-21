@@ -40,7 +40,7 @@ class Platform:
         if include_presets:
             ret["presets"] = [
                 PresetSerializer(p).data
-                for p in Preset.objects.filter(platform=self.id)
+                for p in Preset.objects.filter(platform=self.id).order_by("name")
             ]
         if include_num_scratches:
             ret["num_scratches"] = self.get_num_scratches()
