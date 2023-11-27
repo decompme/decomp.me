@@ -14,6 +14,8 @@ import CodeMirror from "@/components/Editor/CodeMirror"
 import PlatformSelect from "@/components/PlatformSelect"
 import Select from "@/components/Select2"
 import * as api from "@/lib/api"
+import { Library } from "@/lib/api/types"
+import { scratchUrl } from "@/lib/api/urls"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useTranslation from "@/lib/i18n/translate"
 
@@ -60,10 +62,14 @@ export default function NewScratchForm({ serverCompilers }: {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [platform, setPlatform] = useState("")
-    const [compilerId, setCompiler] = useState<string>()
+    const [compilerId, setCompilerId] = useState<string>()
     const [compilerFlags, setCompilerFlags] = useState<string>("")
     const [diffFlags, setDiffFlags] = useState<string[]>([])
-    const [presetName, setPresetName] = useState<string>("")
+    const [libraries, setLibraries] = useState<Library[]>([])
+    const [presetId, setPresetId] = useState<number | undefined>()
+
+    // FIXME: what is the React way to handle this
+    const [ready, setReady] = useState(false)
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -75,12 +81,24 @@ export default function NewScratchForm({ serverCompilers }: {
     }, [asm])
     const [label, setLabel] = useState<string>("")
 
-    const setPreset = (preset: api.CompilerPreset) => {
-        setCompiler(preset.compiler)
-        setCompilerFlags(preset.flags)
+    const setPreset = (preset: api.Preset) => {
+        setPresetId(preset.id)
+        setPlatform(preset.platform)
+        setCompilerId(preset.compiler)
+        setCompilerFlags(preset.compiler_flags)
         setDiffFlags(preset.diff_flags)
-        setPresetName(preset.name)
+        setLibraries(preset.libraries)
     }
+
+    const presets = useMemo(() => {
+        const dict = {}
+        for (const v of Object.values(serverCompilers.platforms)) {
+            for (const p of v.presets) {
+                dict[p.id] = p
+            }
+        }
+        return dict
+    }, [serverCompilers])
 
     // Load fields from localStorage
     useEffect(() => {
@@ -88,56 +106,90 @@ export default function NewScratchForm({ serverCompilers }: {
             setLabel(localStorage["new_scratch_label"] ?? "")
             setAsm(localStorage["new_scratch_asm"] ?? "")
             setContext(localStorage["new_scratch_context"] ?? "")
-            setPlatform(localStorage["new_scratch_platform"] ?? "")
-            setCompiler(localStorage["new_scratch_compiler"] ?? undefined)
-            setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-            setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
-            setPresetName(localStorage["new_scratch_presetName"] ?? "")
+            const pid = parseInt(localStorage["new_scratch_presetId"])
+            if (!isNaN(pid)) {
+                const preset = presets[pid]
+                if (preset) {
+                    setPreset(preset)
+                }
+            } else {
+                setPlatform(localStorage["new_scratch_platform"] ?? "")
+                setCompilerId(localStorage["new_scratch_compilerId"] ?? undefined)
+                setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
+                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
+                setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
+            }
             incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
         }
-    }, [])
+        setReady(true)
+    }, [presets])
 
     // Update localStorage
     useEffect(() => {
+        if (!ready)
+            return
+
         localStorage["new_scratch_label"] = label
         localStorage["new_scratch_asm"] = asm
         localStorage["new_scratch_context"] = context
         localStorage["new_scratch_platform"] = platform
-        localStorage["new_scratch_compiler"] = compilerId
+        localStorage["new_scratch_compilerId"] = compilerId
         localStorage["new_scratch_compilerFlags"] = compilerFlags
         localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
-        localStorage["new_scratch_presetName"] = presetName
-    }, [label, asm, context, platform, compilerId, compilerFlags, diffFlags, presetName])
-
-    const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
-    const compiler = platformCompilers[compilerId]
+        localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
+        if (presetId == undefined) {
+            localStorage.removeItem("new_scratch_presetId")
+        } else {
+            localStorage["new_scratch_presetId"] = presetId
+        }
+    }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     // wtf
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
-    if (!compiler) { // We just changed platforms, probably
+    const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
+    useEffect(() => {
+        if (!ready)
+            return
+
+        if (presetId != undefined || compilerId != undefined) {
+            // User has specified a preset or compiler, don't override it
+            return
+        }
+
         if (Object.keys(platformCompilers).length === 0) {
             console.warn("No compilers supported for platform", platform)
         } else {
             // Fall back to the first supported compiler and no flags
-            setCompiler(Object.keys(platformCompilers)[0])
+            const c = Object.keys(platformCompilers)[0]
+            setCompilerId(c)
             setCompilerFlags("")
             setDiffFlags([])
+            setPresetId(undefined)
 
             // If there is a preset for this platform, use it
-            for (const [k, v] of Object.entries(serverCompilers.compilers)) {
+            for (const v of Object.values(serverCompilers.compilers)) {
                 if (v.platform === platform && serverCompilers.platforms[platform].presets.length > 0) {
-                    setCompiler(k)
                     setPreset(serverCompilers.platforms[platform].presets[0])
                     break
                 }
             }
         }
-    }
+    }, [ready, presetId, compilerId, platformCompilers, serverCompilers, platform])
+
+    const compilersTranslation = useTranslation("compilers")
+    const compilerChoiceOptions = useMemo(() => {
+        return Object.keys(platformCompilers).reduce((sum, id) => {
+            return {
+                ...sum,
+                [id]: compilersTranslation.t(id),
+            }
+        }, {})
+    }, [platformCompilers, compilersTranslation])
 
     const submit = async () => {
         try {
@@ -148,7 +200,8 @@ export default function NewScratchForm({ serverCompilers }: {
                 compiler: compilerId,
                 compiler_flags: compilerFlags,
                 diff_flags: diffFlags,
-                preset: presetName,
+                libraries: libraries,
+                preset: presetId,
                 diff_label: label || defaultLabel || "",
             })
 
@@ -157,14 +210,12 @@ export default function NewScratchForm({ serverCompilers }: {
 
             await api.claimScratch(scratch)
 
-            router.push(scratch.html_url)
+            router.push(scratchUrl(scratch))
         } catch (error) {
             console.error(error)
             throw error
         }
     }
-
-    const compilersTranslation = useTranslation("compilers")
 
     return <div>
         <div>
@@ -174,7 +225,14 @@ export default function NewScratchForm({ serverCompilers }: {
             <PlatformSelect
                 platforms={serverCompilers.platforms}
                 value={platform}
-                onChange={a => setPlatform(a)}
+                onChange={p => {
+                    setPlatform(p)
+                    setCompilerId(undefined)
+                    setCompilerFlags("")
+                    setDiffFlags([])
+                    setPresetId(undefined)
+                    setLibraries([])
+                }}
             />
         </div>
 
@@ -187,17 +245,14 @@ export default function NewScratchForm({ serverCompilers }: {
                     <span className={styles.compilerChoiceHeading}>Select a compiler</span>
                     <Select
                         className={styles.compilerChoiceSelect}
-                        options={Object.keys(platformCompilers).reduce((sum, id) => {
-                            return {
-                                ...sum,
-                                [id]: compilersTranslation.t(id),
-                            }
-                        }, {})}
+                        options={compilerChoiceOptions}
                         value={compilerId}
                         onChange={c => {
-                            setCompiler(c)
+                            setCompilerId(c)
                             setCompilerFlags("")
                             setDiffFlags([])
+                            setPresetId(undefined)
+                            setLibraries([])
                         }}
                     />
                 </div>
@@ -207,7 +262,7 @@ export default function NewScratchForm({ serverCompilers }: {
                     <PresetSelect
                         className={styles.compilerChoiceSelect}
                         platform={platform}
-                        presetName={presetName}
+                        presetId={presetId}
                         setPreset={setPreset}
                         serverPresets={platform && serverCompilers.platforms[platform].presets}
                     />

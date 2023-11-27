@@ -116,6 +116,7 @@ export type Props = {
     onChange: (scratch: Partial<api.Scratch>) => void
     parentScratch?: api.Scratch
     initialCompilation?: Readonly<api.Compilation>
+    offline: boolean
 }
 
 export default function Scratch({
@@ -123,6 +124,7 @@ export default function Scratch({
     onChange,
     parentScratch,
     initialCompilation,
+    offline,
 }: Props) {
     const container = useSize<HTMLDivElement>()
     const [layout, setLayout] = useState<Layout>(undefined)
@@ -230,6 +232,9 @@ export default function Scratch({
 
                         diffLabel={scratch.diff_label}
                         onDiffLabelChange={d => setScratch({ diff_label: d })}
+
+                        matchOverride={scratch.match_override}
+                        onMatchOverrideChange={m => setScratch({ match_override: m })}
                     />
                 </div>}
             </Tab>
@@ -242,6 +247,7 @@ export default function Scratch({
                     {compilation && <ScoreBadge
                         score={compilation?.diff_output?.current_score ?? -1}
                         maxScore={compilation?.diff_output?.max_score ?? -1}
+                        matchOverride={scratch.match_override}
                         compiledSuccessfully={compilation?.success ?? false} />}
                 </>}
                 className={styles.diffTab}
@@ -282,6 +288,15 @@ export default function Scratch({
         }
     }
 
+    const offlineOverlay = (
+        offline ? <>
+            <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
+                <p className="text-sm">The scratch editor is in offline mode. We're attempting to reconnect to the backend - as long as this tab is open, your work is safe.</p>
+            </div>
+        </>
+            : <></>
+    )
+
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
@@ -302,5 +317,6 @@ export default function Scratch({
                 renderTab={renderTab}
             />}
         </ErrorBoundary>
+        {offlineOverlay}
     </div>
 }

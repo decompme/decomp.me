@@ -43,6 +43,8 @@ jobs:
 
           sudo apt-get install \
             binutils-aarch64-linux-gnu \
+            binutils-arm-none-eabi \
+            binutils-djgpp \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             binutils-sh-elf \
@@ -51,6 +53,10 @@ jobs:
             libnl-route-3-dev \
             libncurses5 \
             protobuf-compiler
+      - name: Install msdos assembler
+        run: |-
+          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
+          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
@@ -70,32 +76,18 @@ jobs:
         uses: actions/cache@v3
         with:
           path: backend/compilers/download_cache
-          key: ${{ runner.os }}-compilers-${{ hashFiles('backend/compilers/download.py') }}
+          key: ${{ runner.os }}-compilers-${{ hashFiles('backend/compilers/compilers.*.yaml') }}
       - name: Download compilers
         run: |-
           cd backend
           poetry run python3 compilers/download.py
-      - name: Install dkp dependencies (ppc)
+      - name: Download libraries
         run: |-
-          mkdir -p bin
-          docker run \
-            -v $(pwd)/bin:/tmp/bin \
-            --entrypoint /bin/sh \
-            devkitpro/devkitppc:20210726 \
-            -c "cp /opt/devkitpro/devkitPPC/bin/powerpc* /tmp/bin"
-          sudo mv bin/powerpc* /usr/bin/
-      - name: Install dkp dependencies (arm)
-        run: |-
-          mkdir -p bin
-          docker run \
-            -v $(pwd)/bin:/tmp/bin \
-            --entrypoint /bin/sh \
-            devkitpro/devkitarm:20210726 \
-            -c "cp /opt/devkitpro/devkitARM/bin/arm* /tmp/bin"
-          sudo mv bin/arm* /usr/bin/
+          cd backend
+          poetry run python3 libraries/download.py
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/WiBo/releases/download/0.4.2/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/wibo/releases/download/0.6.8/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
@@ -161,28 +153,37 @@ jobs:
         run: |-
           docker build backend \
             -t decompme_backend \
-            --build-arg ENABLE_WII_GC_SUPPORT=YES \
-            --build-arg ENABLE_PS1_SUPPORT=YES \
-            --build-arg ENABLE_SATURN_SUPPORT=YES
+            --build-arg ENABLE_MSDOS_SUPPORT=YES \
+            --build-arg ENABLE_PS2_SUPPORT=YES \
+            --build-arg ENABLE_SATURN_SUPPORT=YES \
+            --build-arg ENABLE_WIN9X_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
+          mkdir -p compilers && chmod 777 compilers
+          mkdir -p libraries && chmod 777 libraries
           docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/compilers:/compilers \
+            -v $(pwd)/libraries:/libraries \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            decompme_backend -c 'cd /decomp.me/backend && \
-            poetry install && \
-            poetry run python manage.py test'
+            decompme_backend \
+              -c 'cd /decomp.me/backend && \
+              poetry install && \
+              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              poetry run python manage.py test'
 
   frontend_lint:
     name: eslint & stylelint

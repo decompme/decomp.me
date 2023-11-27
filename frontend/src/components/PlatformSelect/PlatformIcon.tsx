@@ -1,7 +1,6 @@
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
 import LogoIRIX from "./irix.svg"
-import LogoMacOS from "./macos9.svg"
 import LogoMacOSX from "./macosx.svg"
 import LogoMSDOS from "./msdos.svg"
 import LogoN3DS from "./n3ds.svg"
@@ -12,12 +11,13 @@ import LogoPS2 from "./ps2.svg"
 import LogoSaturn from "./saturn.svg"
 import LogoSwitch from "./switch.svg"
 import UnknownIcon from "./unknown.svg"
+import LogoWin9x from "./win9x.svg"
 
 /** In release-date order */
 const ICONS = {
     "msdos": LogoMSDOS,
     "irix": LogoIRIX,
-    "macos9": LogoMacOS,
+    "win9x": LogoWin9x,
     "macosx": LogoMacOSX,
     "n64": LogoN64,
     "gba": LogoGBA,

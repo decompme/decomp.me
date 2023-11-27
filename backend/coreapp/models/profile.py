@@ -1,7 +1,7 @@
-from typing import Optional, Tuple
-from pathlib import Path
 import json
 import random
+from pathlib import Path
+from typing import Tuple
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -35,6 +35,9 @@ class Profile(models.Model):
     def is_anonymous(self) -> bool:
         return self.user is None
 
+    def is_staff(self) -> bool:
+        return self.user is not None and self.user.is_staff
+
     def __str__(self) -> str:
         if self.user:
             return self.user.username
@@ -42,13 +45,6 @@ class Profile(models.Model):
             return f"{self.pseudonym} (anon)"
         else:
             return str(self.id)
-
-    def get_html_url(self) -> Optional[str]:
-        if self.user:
-            return f"/u/{self.user.username}"
-        else:
-            # No URLs for anonymous profiles
-            return None
 
     def get_frog_color(self) -> Tuple[float, float, float]:
         """Use the ID of this profile to generate a random color for use in a frog profile picture"""

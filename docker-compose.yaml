@@ -14,15 +14,21 @@ services:
       context: backend
       args:
         ENABLE_GBA_SUPPORT: "YES"
+        ENABLE_GC_WII_SUPPORT: "YES"
+        ENABLE_N3DS_SUPPORT: "YES"
         ENABLE_N64_SUPPORT: "YES"
+        ENABLE_NDS_ARM9_SUPPORT: "YES"
+        ENABLE_PS1_SUPPORT: "YES"
         # dont install wine32 etc by default
-        ENABLE_NDS_SUPPORT: "NO"
-        ENABLE_PS1_SUPPORT: "NO"
-        ENABLE_WII_GC_SUPPORT: "NO"
         ENABLE_MSDOS_SUPPORT: "NO"
+        ENABLE_PS2_SUPPORT: "NO"
+        ENABLE_WIN9X_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
+        # dont install dosemu by default
         ENABLE_SATURN_SUPPORT: "NO"
+        # dont download macosx compilers by default
+        ENABLE_MACOSX_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:
@@ -30,18 +36,18 @@ services:
       - setgid
       - setfcap
     env_file:
-    - backend/docker.dev.env
+      - backend/docker.dev.env
     ports:
-    - "8000:8000"
+      - "8000:8000"
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
-    - ./backend:/backend
+      - ./backend:/backend
     tmpfs:
-    # Use a separate tmpfs to prevent a rogue jailed process
-    # from filling /tmp on the parent container
-    - /sandbox/tmp:uid=1000,gid=1000,size=64M,mode=0700
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
     build: frontend
     environment:
@@ -49,14 +55,14 @@ services:
       INTERNAL_API_BASE: http://backend:8000/api
       FRONTEND_USE_IMAGE_PROXY: "off"
     ports:
-    - "8080:8080"
+      - "8080:8080"
     volumes:
-    - ./frontend:/frontend
-    - .env:/.env
+      - ./frontend:/frontend
+      - .env:/.env
   nginx:
     image: nginx:1.22-alpine
     ports:
-    - "80:80"
+      - "80:80"
     volumes:
-    - ./nginx:/etc/nginx/conf.d
-    - ./backend/media:/media
+      - ./nginx:/etc/nginx/conf.d
+      - ./backend/media:/media

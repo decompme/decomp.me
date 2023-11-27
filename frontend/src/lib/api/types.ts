@@ -5,8 +5,6 @@ export interface Page<T> {
 }
 
 export interface AnonymousUser {
-    url: null
-    html_url: null
     is_anonymous: true
     id: number
     is_online: boolean
@@ -17,8 +15,6 @@ export interface AnonymousUser {
 }
 
 export interface User {
-    url: string
-    html_url: string
     is_anonymous: false
     id: number
     is_online: boolean
@@ -32,8 +28,6 @@ export interface User {
 }
 
 export interface TerseScratch {
-    url: string
-    html_url: string
     slug: string
     owner: AnonymousUser | User | null // null = unclaimed
     parent: string | null
@@ -45,15 +39,16 @@ export interface TerseScratch {
     language: string
     score: number // -1 = doesn't compile
     max_score: number
+    match_override: boolean
     project: string
-    project_function: string
+    libraries: Library[]
 }
 
 export interface Scratch extends TerseScratch {
     description: string
     compiler_flags: string
     diff_flags: string[]
-    preset: string
+    preset: number
     source_code: string
     context: string
     diff_label: string
@@ -61,38 +56,13 @@ export interface Scratch extends TerseScratch {
 
 export interface Project {
     slug: string
-    url: string
-    html_url: string
-    repo: {
-        html_url: string
-        owner: string
-        repo: string
-        branch: string
-        is_pulling: boolean
-        last_pulled: string | null
-    }
     creation_time: string
     icon?: string
     description: string
     platform?: string
-    unmatched_function_count: number
-}
-
-export interface ProjectFunction {
-    url: string
-    html_url: string
-    project: string
-    rom_address: number
-    creation_time: string
-    display_name: string
-    is_matched_in_repo: boolean
-    src_file: string
-    asm_file: string
-    attempts_count: number
 }
 
 export interface ProjectMember {
-    url: string
     username: string
 }
 
@@ -151,11 +121,27 @@ export type Flag = {
     flags: string[]
 }
 
-export type CompilerPreset = {
+export type Library = {
     name: string
-    flags: string
+    version: string
+}
+
+export type LibraryVersions = {
+    name: string
+    supported_versions: string[]
+}
+
+export type Preset = {
+    id: number
+    name: string
+    platform: string
     compiler: string
+    assembler_flags: string
+    compiler_flags: string
     diff_flags: string[]
+    decompiler_flags: string
+    libraries: Library[]
+    num_scratches: number
 }
 
 export type Compiler = {
@@ -164,11 +150,19 @@ export type Compiler = {
     diff_flags: Flag[]
 }
 
-export type Platform = {
+export interface PlatformBase {
+    id: string
     name: string
     description: string
     arch: string
-    presets: CompilerPreset[]
+}
+
+export interface PlatformMetadata extends PlatformBase {
+    num_scratches: number
+}
+
+export interface Platform extends PlatformBase {
+    presets: Preset[]
 }
 
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {

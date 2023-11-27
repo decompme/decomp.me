@@ -1,10 +1,11 @@
+import json
 import logging
+from typing import Any, List, Sequence
 
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import List
-
+from ..libraries import Library
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,37 @@ class CompilerConfig(models.Model):
     diff_flags = models.JSONField(default=list)
 
 
+class LibrariesField(models.JSONField):
+    def __init__(self, **kwargs: Any):
+        class MyEncoder(json.JSONEncoder):
+            def default(self, obj: Any) -> Any:
+                if isinstance(obj, Library):
+                    return {"name": obj.name, "version": obj.version}
+                else:
+                    return super().default(obj)
+
+        kwargs.pop("encoder", None)
+        return super().__init__(encoder=MyEncoder, **kwargs)
+
+    def deconstruct(self) -> tuple[str, str, Sequence[Any], dict[str, Any]]:
+        name, path, args, kwargs = super().deconstruct()
+        # remove encoder from the generated migrations. If we don't do this,
+        # makemigrations generates invalid migrations that try to access the
+        # local MyEncoder...
+        kwargs.pop("encoder", None)
+        return name, path, args, kwargs
+
+    def to_python(self, value: Any) -> list[Library]:
+        res = super().to_python(value)
+        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+
+    def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
+        # We ignore the type error here as this is a bug in the django stubs.
+        # CC: https://github.com/typeddjango/django-stubs/issues/934
+        res = super().from_db_value(*args, **kwargs)  # type: ignore
+        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=1024, default="Untitled", blank=False)
@@ -56,8 +88,12 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
-    diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
-    preset = models.CharField(max_length=100, blank=True, null=True)
+    diff_flags = models.JSONField(
+        default=list, blank=True
+    )  # TODO: reference a CompilerConfig
+    preset = models.ForeignKey(
+        "Preset", null=True, blank=True, on_delete=models.SET_NULL
+    )
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
@@ -66,11 +102,10 @@ class Scratch(models.Model):
     )  # blank means diff from the start of the file
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
+    match_override = models.BooleanField(default=False)
+    libraries = LibrariesField(default=list)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    project_function = models.ForeignKey(
-        "ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL
-    )  # The function, if any, that this scratch is an attempt of
 
     class Meta:
         ordering = ["-creation_time"]
@@ -82,12 +117,6 @@ class Scratch(models.Model):
     # hash for etagging
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
-
-    def get_url(self) -> str:
-        return "/scratch/" + self.slug
-
-    def get_html_url(self) -> str:
-        return "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
         return self.owner is None

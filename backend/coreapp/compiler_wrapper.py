@@ -3,10 +3,18 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from platform import uname
 import time
 
-from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    TypeVar,
+    Sequence,
+)
 
 from django.conf import settings
 
@@ -17,6 +25,7 @@ from coreapp.platforms import Platform
 import coreapp.util as util
 
 from .error import AssemblyError, CompilationError
+from .libraries import Library
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
 
@@ -39,19 +48,8 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
-WINE: str
-if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wine not required.")
-    WINE = ""
-else:
-    WINE = "wine"
-
-WIBO: str
-if "microsoft" in uname().release.lower() and not settings.USE_SANDBOX_JAIL:
-    logger.info("WSL detected & nsjail disabled: wibo not required.")
-    WIBO = ""
-else:
-    WIBO = "wibo"
+WINE = "wine"
+WIBO = "wibo"
 
 
 @dataclass
@@ -130,6 +128,7 @@ class CompilerWrapper:
         code: str,
         context: str,
         function: str = "",
+        libraries: Sequence[Library] = (),
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
@@ -140,6 +139,7 @@ class CompilerWrapper:
         with Sandbox() as sandbox:
             ext = compiler.language.get_file_extension()
             code_file = f"code.{ext}"
+            src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"
 
             code_path = sandbox.path / code_file
@@ -149,24 +149,44 @@ class CompilerWrapper:
                 f.write(context)
                 f.write("\n")
 
-                f.write(f'#line 1 "{code_file}"\n')
+                f.write(f'#line 1 "{src_file}"\n')
                 f.write(code)
                 f.write("\n")
 
             cc_cmd = compiler.cc
 
-            # Fix for MWCC line numbers in GC 3.0+
+            # MWCC requires the file to exist for DWARF line numbers,
+            # and requires the file contents for error messages
             if compiler.is_mwcc:
                 ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
+                with ctx_path.open("w") as f:
+                    f.write(context)
+                    f.write("\n")
+
+                src_path = sandbox.path / src_file
+                src_path.touch()
+                with src_path.open("w") as f:
+                    f.write(code)
+                    f.write("\n")
 
             # IDO hack to support -KPIC
             if compiler.is_ido and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
+            if compiler.platform != platforms.DUMMY and not compiler.path.exists():
+                logging.warning("%s does not exist, creating it!", compiler.path)
+                compiler.path.mkdir(parents=True)
+
             # Run compiler
             try:
                 st = round(time.time() * 1000)
+                libraries_compiler_flags = " ".join(
+                    (
+                        compiler.library_include_flag + str(lib.include_path)
+                        for lib in libraries
+                    )
+                )
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
@@ -180,7 +200,9 @@ class CompilerWrapper:
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
-                        "COMPILER_FLAGS": sandbox.quote_options(compiler_flags),
+                        "COMPILER_FLAGS": sandbox.quote_options(
+                            compiler_flags + " " + libraries_compiler_flags
+                        ),
                         "FUNCTION": function,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",

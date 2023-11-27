@@ -43,7 +43,7 @@ export default function Nav({ children }: Props) {
 
     return (
         <nav
-            className={classNames({
+            className={classNames("border-gray-7", {
                 [styles.container]: true,
             })}
             aria-labelledby="navtoggle"

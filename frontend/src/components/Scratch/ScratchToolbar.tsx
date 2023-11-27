@@ -8,6 +8,7 @@ import ContentEditable from "react-contenteditable"
 import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
+import { scratchUrl } from "@/lib/api/urls"
 import { useSize } from "@/lib/hooks"
 
 import Breadcrumbs from "../Breadcrumbs"
@@ -27,7 +28,7 @@ function htmlTextOnly(html: string): string {
 }
 
 function exportScratchZip(scratch: api.Scratch) {
-    const url = api.normalizeUrl(`${scratch.url}/export`)
+    const url = api.normalizeUrl(`${scratchUrl(scratch)}/export`)
     const a = document.createElement("a")
     a.href = url
     a.download = scratch.name + ".zip"
@@ -35,7 +36,7 @@ function exportScratchZip(scratch: api.Scratch) {
 }
 
 async function deleteScratch(scratch: api.Scratch) {
-    await api.delete_(scratch.url, {})
+    await api.delete_(scratchUrl(scratch), {})
 
     window.location.href = scratch.project ? `/${scratch.project}` : "/"
 }
@@ -142,6 +143,8 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
         compile()
     })
 
+    const isAdmin = api.useThisUserIsAdmin()
+
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
@@ -173,7 +176,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                     Fork
                 </button>
             </li>
-            {scratch.owner && userIsYou(scratch.owner) && <li>
+            {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && <li>
                 <button onClick={event => {
                     if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
                         deleteScratch(scratch)

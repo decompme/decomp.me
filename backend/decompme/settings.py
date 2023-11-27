@@ -33,6 +33,7 @@ env = environ.Env(
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
     COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
+    LIBRARY_BASE_PATH=(str, BASE_DIR / "libraries"),
     COMPILATION_CACHE_SIZE=(int, 100),
     WINEPREFIX=(str, "/tmp/wine"),
     COMPILATION_TIMEOUT_SECONDS=(int, 10),
@@ -136,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Japan"
+TIME_ZONE = "Asia/Tokyo"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -201,6 +202,7 @@ else:
     SESSION_COOKIE_SAMESITE = "Lax"
 
 COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
+LIBRARY_BASE_PATH = Path(env("LIBRARY_BASE_PATH"))
 
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))

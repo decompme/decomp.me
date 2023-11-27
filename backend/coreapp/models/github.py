@@ -1,8 +1,4 @@
-import shutil
-import subprocess
-from pathlib import Path
-
-from typing import Any, Optional
+from typing import Optional
 
 import requests
 from django.conf import settings
@@ -11,18 +7,15 @@ from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.core.cache import cache
 from django.db import models, transaction
-from django.dispatch import receiver
 from django.utils.timezone import now
-from github import Github, BadCredentialsException
+from github import BadCredentialsException, Github
 from github.NamedUser import NamedUser
-from github.Repository import Repository
+from requests import RequestException
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from ..middleware import Request
-
 from .profile import Profile
-from .project import Project
 from .scratch import Scratch
 
 API_CACHE_TIMEOUT = 60 * 60  # 1 hour
@@ -95,17 +88,24 @@ class GitHubUser(models.Model):
     @staticmethod
     @transaction.atomic
     def login(request: Request, oauth_code: str) -> "GitHubUser":
-        response = requests.post(
-            "https://github.com/login/oauth/access_token",
-            json={
-                "client_id": settings.GITHUB_CLIENT_ID,
-                "client_secret": settings.GITHUB_CLIENT_SECRET,
-                "code": oauth_code,
-            },
-            headers={"Accept": "application/json"},
-        ).json()
+        try:
+            response = requests.post(
+                "https://github.com/login/oauth/access_token",
+                json={
+                    "client_id": settings.GITHUB_CLIENT_ID,
+                    "client_secret": settings.GITHUB_CLIENT_SECRET,
+                    "code": oauth_code,
+                },
+                headers={"Accept": "application/json"},
+            )
+        except RequestException:
+            raise MalformedGitHubApiResponseException(
+                "GitHub API login request failed."
+            )
 
-        error: Optional[str] = response.get("error")
+        response_json = response.json()
+
+        error: Optional[str] = response_json.get("error")
         if error == "bad_verification_code":
             raise BadOAuthCodeException()
         elif error:
@@ -114,8 +114,8 @@ class GitHubUser(models.Model):
             )
 
         try:
-            scope_str = str(response["scope"])
-            access_token = str(response["access_token"])
+            scope_str = str(response_json["scope"])
+            access_token = str(response_json["access_token"])
         except KeyError:
             raise MalformedGitHubApiResponseException()
 
@@ -169,97 +169,3 @@ class GitHubUser(models.Model):
         request.session["profile_id"] = profile.id
 
         return gh_user
-
-
-class GitHubRepoBusyException(APIException):
-    status_code = status.HTTP_409_CONFLICT
-    default_detail = "This repository is currently being pulled."
-
-
-class GitHubRepo(models.Model):
-    owner = models.CharField(max_length=100)
-    repo = models.CharField(max_length=100)
-    branch = models.CharField(max_length=100, default="master", blank=False)
-    is_pulling = models.BooleanField(default=False)
-    last_pulled = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "GitHub repo"
-        verbose_name_plural = "GitHub repos"
-
-    def pull(self) -> None:
-        if self.is_pulling:
-            raise GitHubRepoBusyException()
-
-        self.is_pulling = True
-        self.save()
-
-        try:
-            repo_dir = self.get_dir(check_exists=False)
-            remote_url = f"https://github.com/{self.owner}/{self.repo}"
-
-            if repo_dir.exists():
-                subprocess.run(
-                    ["git", "remote", "set-url", "origin", remote_url], cwd=repo_dir
-                )
-                subprocess.run(["git", "fetch", "origin", self.branch], cwd=repo_dir)
-                subprocess.run(
-                    ["git", "reset", "--hard", f"origin/{self.branch}"], cwd=repo_dir
-                )
-                subprocess.run(["git", "pull"], cwd=repo_dir)
-            else:
-                repo_dir.mkdir(parents=True)
-                subprocess.run(
-                    [
-                        "git",
-                        "clone",
-                        remote_url,
-                        ".",
-                        "--depth",
-                        "1",
-                        "-b",
-                        self.branch,
-                    ],
-                    check=True,
-                    cwd=repo_dir,
-                )
-
-            self.last_pulled = now()
-            self.save()
-
-            for project in Project.objects.filter(repo=self):
-                project.import_functions()
-        finally:
-            self.is_pulling = False
-            self.save()
-
-    def get_dir(self, check_exists: bool = True) -> Path:
-        repo_dir = Path(settings.LOCAL_FILE_DIR) / "repos" / str(self.id)
-        if check_exists and not repo_dir.exists():
-            raise RuntimeError("Repo directory does not exist.")
-        return repo_dir
-
-    def get_sha(self) -> str:
-        repo_dir = self.get_dir()
-        return (
-            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_dir)
-            .decode("utf-8")
-            .strip()
-        )
-
-    def details(self, access_token: str) -> Repository:
-        return Github(access_token).get_repo(f"{self.owner}/{self.repo}")
-
-    def __str__(self) -> str:
-        return f"{self.owner}/{self.repo}#{self.branch} ({self.id})"
-
-    def get_html_url(self) -> str:
-        return f"https://github.com/{self.owner}/{self.repo}/tree/{self.branch}"
-
-
-# When a GitHubRepo is deleted, delete its directory
-@receiver(models.signals.pre_delete, sender=GitHubRepo)
-def delete_local_repo_dir(instance: GitHubRepo, **kwargs: Any) -> None:
-    dir = instance.get_dir()
-    if dir.exists():
-        shutil.rmtree(dir)

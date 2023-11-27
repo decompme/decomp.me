@@ -34,80 +34,60 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
 FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
+    binutils-aarch64-linux-gnu \
+    binutils-arm-none-eabi \
+    binutils-djgpp \
     binutils-mips-linux-gnu \
     binutils-powerpc-linux-gnu \
-    binutils-aarch64-linux-gnu \
     binutils-sh-elf \
+    ca-certificates \
     curl \
+    dos2unix \
     gcc-mips-linux-gnu \
     git \
+    iptables \
+    libc6-dev-i386 \
+    libdevmapper1.02.1 \
+    libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
+    libtinfo5 \
     netcat \
+    software-properties-common \
     unzip \
     wget \
-    libtinfo5 \
-    libc6-dev-i386 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-  POETRY_VERSION=1.3.1 POETRY_HOME=/etc/poetry python3.10 -
+  POETRY_VERSION=1.6.1 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.4.2 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.8 /usr/local/sbin/wibo /usr/bin/
+
+RUN add-apt-repository -y ppa:dosemu2/ppa && \
+    apt-get update && \
+    apt-get install -y dosemu2
 
 # windows compilers need i386 wine
-ARG ENABLE_NDS_SUPPORT
-ARG ENABLE_PS1_SUPPORT
-ARG ENABLE_WII_GC_SUPPORT
-ARG ENABLE_SATURN_SUPPORT
+
 ARG ENABLE_MSDOS_SUPPORT
-RUN if [ "${ENABLE_NDS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ]; then \
+ARG ENABLE_PS2_SUPPORT
+ARG ENABLE_WIN9X_SUPPORT
+RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
     fi
 
-# install dos2unix and dosemu2 for ps1 and saturn
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
-    apt-get update && \
-    apt-get install -y -o APT::Immediate-Configure=false \
-        dos2unix software-properties-common && \
-    add-apt-repository -y ppa:dosemu2/ppa && \
-    apt-get update && \
-    apt-get install -y dosemu2; \
+# msdos specific
+RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
+    wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
+    tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump && \
+    rm omftools.tar.gz; \
     fi
-
-# gc/wii specifics
-COPY --from=devkitpro/devkitppc:20210726 /opt/devkitpro/devkitPPC/bin/powerpc* /usr/bin/
-
-# nds specifics
-COPY --from=devkitpro/devkitarm:20210726 /opt/devkitpro/devkitARM/bin/arm* /usr/bin/
-
-# download compilers
-COPY compilers/download.py /compilers/
-
-ARG ENABLE_GBA_SUPPORT
-ARG ENABLE_N64_SUPPORT
-ARG ENABLE_SWITCH_SUPPORT
-
-ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
-ENV ENABLE_WII_GC_SUPPORT=${ENABLE_WII_GC_SUPPORT}
-ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
-ENV ENABLE_NDS_SUPPORT=${ENABLE_NDS_SUPPORT}
-ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
-ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
-ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
-ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
-
-RUN python3.10 -m pip install requests tqdm \
-    && python3.10 /compilers/download.py \
-    && rm -rf /compilers/download_cache/
 
 RUN mkdir -p /etc/fonts
 
@@ -126,13 +106,37 @@ RUN useradd --create-home user \
 USER user
 
 # initialize wine files to /home/user/.wine
-RUN if [ "${ENABLE_PS1_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WII_GC_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_SUPPORT}" = "YES" ]; then \
+RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
 ENV PATH="$PATH:/etc/poetry/bin"
+
+# no special dependencies required for these platforms
+ARG ENABLE_GBA_SUPPORT
+ARG ENABLE_GC_WII_SUPPORT
+ARG ENABLE_MACOSX_SUPPORT
+ARG ENABLE_N3DS_SUPPORT
+ARG ENABLE_N64_SUPPORT
+ARG ENABLE_NDS_ARM9_SUPPORT
+ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_SATURN_SUPPORT
+ARG ENABLE_SWITCH_SUPPORT
+
+ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
+ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
+ENV ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT}
+ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
+ENV ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT}
+ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
+ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
+ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
+ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
+ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
+ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
+ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

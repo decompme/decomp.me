@@ -8,6 +8,7 @@ import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
+import { scratchUrl } from "@/lib/api/urls"
 import useTranslation from "@/lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
@@ -40,7 +41,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(scratch => (
-                <Item key={scratch.url} scratch={scratch} />
+                <Item key={scratchUrl(scratch)} scratch={scratch} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -64,23 +65,31 @@ export function LoadedScratchList({ className, item, scratches }: Pick<Props, "c
     const Item = item || ScratchItem
 
     return <ul className={classNames(styles.list, className)}>
-        {scratches.map(scratch => <Item key={scratch.url} scratch={scratch} />)}
+        {scratches.map(scratch => <Item key={scratchUrl(scratch)} scratch={scratch} />)}
     </ul>
+}
+
+export function getMatchPercentString(scratch: api.TerseScratch) {
+    if (scratch.match_override) {
+        return "100%"
+    }
+    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
+    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+
+    return matchPercentString
 }
 
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
-
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
                     <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
 
                         {scratch.name}
 
@@ -105,19 +114,15 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
-
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
                     <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
-
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                         {scratch.name}
-
                     </Link>
                 </div>
                 <div className={styles.metadata}>
@@ -128,17 +133,37 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     )
 }
 
+export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }) {
+    const matchPercentString = getMatchPercentString(scratch)
+
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </Link>
+                    <div className={styles.metadata}>
+                        {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </div>
+                    {scratch.owner && <div className={styles.owner}>
+                        <UserLink user={scratch.owner} />
+                    </div>}
+                </div>
+
+            </div>
+        </li>
+    )
+}
+
 export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }) {
-    const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = getMatchPercentString(scratch)
 
     return (
         <li className={styles.singleLine}>
             <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-            <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
-
+            <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                 {scratch.name}
-
             </Link>
             <div className={styles.metadata}>
                 {matchPercentString}

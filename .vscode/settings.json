@@ -32,14 +32,11 @@
     },
     "[python]": {
         "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
     },
-    "python.formatting.provider": "black",
-    "mypy.configFile": "backend/mypy.ini",
-    "mypy.runUsingActiveInterpreter": true,
-    "mypy.targets": [
-        "backend/coreapp",
-        "backend/decompme"
-    ],
     "typescript.tsdk": "frontend/node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "mypy-type-checker.args": [
+        "--config-file=backend/mypy.ini"
+    ]
 }
