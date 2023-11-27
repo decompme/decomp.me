@@ -349,7 +349,7 @@ PSYQ46 = GCCPS1Compiler(
 
 PS1_GCC = (
     'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
-    '${COMPILER_DIR}/gcc -c -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
+    '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
 )
 
 GCC257_PSX = GCCPS1Compiler(
