@@ -8,7 +8,7 @@ export const metadata = {
     title: "Frequently Asked Questions",
 }
 
-function FaqLink({children, href}: { children: ReactNode, href?: string }) {
+function FaqLink({ children, href }: { children: ReactNode, href?: string }) {
     return <Link href={href} className="hover:underline active:translate-y-px">
         {children}
     </Link>
@@ -22,7 +22,7 @@ export default function Page() {
 
         <h2 className={subtitle}>What is decomp.me?</h2>
         <p className="my-4">
-            decomp.me is a platform that allows users to upload assembly code snippets and write code in an attempt to match them, all within their browser.
+            decomp.me is a platform that allows people to upload assembly code snippets and write code in an attempt to match them, all within their browser.
         </p>
         <p className="my-4">
             It is an <FaqLink href="https://www.github.com/decomp.me">open source project</FaqLink> run by volunteers in their free time.
@@ -33,35 +33,49 @@ export default function Page() {
             decomp.me is designed for users who are working on matching decompilation projects, where the goal is to write high level (e.g. C or C++) code that, when compiled, matches the original binary perfectly.
         </p>
         <p className="my-4">
-            This is a time and labour intensive process and requires the correct compiler, assembler, with correct options selected in addition to the correct code!
+            This is a time and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary. Most importantly, the code has to be written in such a way that the compiler will generate assembly that is identical to what is being compared against. Writing matching code is a skill that takes time to learn, but it can be very rewarding and addicting.
         </p>
 
-        <h2 className={subtitle}>What's a 'scratch'?</h2>
+        <h2 className={subtitle}>What's a scratch?</h2>
         <p className="my-4">
-            A 'scratch' consists of the target assembly, input source code, and input context code.
+            A scratch is a workspace for exploring a compiler's codegen.
+            A scratch consists of the target assembly, input source code, and input context code, as well as additional settings and metadata.
             Most scratches contain a single function - i.e. the function that you are trying to match.
-            Each scratch has a unique link that can be shared.
+            Each scratch has a unique link that can be shared with others. Scratches have a 'family' of forks, which are copies of the original scratch.
         </p>
 
-        <h2 className={subtitle}>What's the 'context' for?</h2>
+        <h2 className={subtitle}>What's the context for?</h2>
         <p className="my-4">
-            The context is a separate section of code that is passed to the decompiler when your target assembly is uploaded.
-            It's used to give context to the decompiler, for example adding variables, struct definitions, function signatures and type definitions.
+            The context is a separate section of code that usually contains definitions and declarations, such as structs, externs, function declarations, and things of that nature. The context is passed to the compiler along with the code, so it's a good way to organize a scratch's functional code from its definitions and macros.
+        </p>
+
+        <p className="my-4">
+            Context is also given to the decompiler to assist with typing information and more accurate decompilation.
         </p>
 
         <h2 className={subtitle}>How does decomp.me work?</h2>
         <p className="my-4">
-            The code from your scratch is submitted to the decomp.me server where it is compiled, objdump'ed and then compared against the target assembly.
+            The code from your scratch is submitted to the decomp.me server where it is compiled, run through objdump, and then compared against the target assembly.
             As you modify your code in the editor, the changes will be sent to the backend and compiled, so you'll see the results of your change in near real-time.
+            The similarity between the compiled code's assembly and the target assembly is represented by a score, which is displayed in the editor.
+        </p>
+
+        <p className="my-4">
+            The score is calculated by comparing the assembly instructions in the compiled code to the target assembly, and a penalty of different size is applied based on the kind of difference present among assembly instructions.
         </p>
 
         <h2 className={subtitle}>Where do I start?</h2>
         <p className="my-4">
-            You can work on existing scratches on the site, if you make progress you can save your scratch which will result in a 'fork' of the original.
+            Currently, this website is meant to be used as a supplementary tool along with an existing decompilation project. Eventually, we hope to make the website a little more friendly to complete newcomers who aren't involved with any specific project. In the meantime, feel free to explore recent scratches and get a feel for how matching decomp works!
+        </p>
+
+        <h2 className={subtitle}>Someone sent me a scratch. What do I do?</h2>
+        <p className="my-4">
+            Any scratch on the site can be played with. If you save a scratch that you don't own, your scratch will become a "fork" of the original.
             If you match the scratch, the original scratch will display a banner to notify visitors that the code is matched.
         </p>
         <p className="my-4">
-            If you want to start your own scratch you will need the assembly code for a the function you are targetting in GNU assembly format.
+            If you want to start your own scratch, you will need the assembly code for the function you are targetting in GNU assembly format.
         </p>
 
         <h2 className={subtitle}>Can you add 'X' platform? e.g. PlayStation 3</h2>

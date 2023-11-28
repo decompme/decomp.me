@@ -103,7 +103,7 @@ def download_libraries(args, libraries_config):
 
     libraries_downloaded = len(list(filter(lambda x: x, results)))
     logger.info(
-        "Updated %i / %i compiler(s) in %.2f second(s)",
+        "Updated %i / %i libraries in %.2f second(s)",
         libraries_downloaded,
         len(to_download),
         (end - start).total_seconds(),
@@ -114,7 +114,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--force",
-        help="Force (re)downloading of compilers",
+        help="Force (re)downloading of libraries",
         action="store_true",
     )
     parser.add_argument(
