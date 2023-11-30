@@ -864,7 +864,7 @@ MWCC_43_213 = MWCCCompiler(
 
 PRODG_CC = (
     'cpp -E "${INPUT}" -o "${INPUT}".i && '
-    "${WIBO} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
+    "${WINE} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
     "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
 )
 
