@@ -33,7 +33,9 @@ export default function Page() {
             decomp.me is designed for users who are working on matching decompilation projects, where the goal is to write high level (e.g. C or C++) code that, when compiled, matches the original binary perfectly.
         </p>
         <p className="my-4">
-            This is a time and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary. Most importantly, the code has to be written in such a way that the compiler will generate assembly that is identical to what is being compared against. Writing matching code is a skill that takes time to learn, but it can be very rewarding and addicting.
+            This is a time and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary.
+            Most importantly, the code has to be written in such a way that the compiler will generate assembly that is identical to what is being compared against.
+            Writing matching code is a skill that takes time to learn, but it can be very rewarding and addictive.
         </p>
 
         <h2 className={subtitle}>What's a scratch?</h2>
@@ -46,7 +48,8 @@ export default function Page() {
 
         <h2 className={subtitle}>What's the context for?</h2>
         <p className="my-4">
-            The context is a separate section of code that usually contains definitions and declarations, such as structs, externs, function declarations, and things of that nature. The context is passed to the compiler along with the code, so it's a good way to organize a scratch's functional code from its definitions and macros.
+            The context is a separate section of code that usually contains definitions and declarations, such as structs, externs, function declarations, and things of that nature.
+            The context is passed to the compiler along with the code, so it's a good way to organize a scratch's functional code from its definitions and macros.
         </p>
 
         <p className="my-4">
@@ -66,7 +69,9 @@ export default function Page() {
 
         <h2 className={subtitle}>Where do I start?</h2>
         <p className="my-4">
-            Currently, this website is meant to be used as a supplementary tool along with an existing decompilation project. Eventually, we hope to make the website a little more friendly to complete newcomers who aren't involved with any specific project. In the meantime, feel free to explore recent scratches and get a feel for how matching decomp works!
+            Currently, this website is meant to be used as a supplementary tool along with an existing decompilation project.
+            Eventually, we hope to make the website a little more friendly to complete newcomers who aren't involved with any specific project.
+            In the meantime, feel free to explore recent scratches and get a feel for how matching decomp works!
         </p>
 
         <h2 className={subtitle}>Someone sent me a scratch. What do I do?</h2>
@@ -78,7 +83,19 @@ export default function Page() {
             If you want to start your own scratch, you will need the assembly code for the function you are targetting in GNU assembly format.
         </p>
 
-        <h2 className={subtitle}>Can you add 'X' platform? e.g. PlayStation 3</h2>
+        <h2 className={subtitle}>Can you add a preset for a game I'm working on?</h2>
+        <p className="my-4">
+            Absolutely we can, either raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub issue</FaqLink> or drop us a message in the Discord server.
+        </p>
+
+        <h2 className={subtitle}>Can you add a compiler for a game I'm working on?</h2>
+        <p className="my-4">
+            This is something that you are able to do yourself.
+            The compilers used by decomp.me can be found in our <FaqLink href="https://github.com/decompme/compilers">compilers repository</FaqLink>.
+            Once the compiler has been added to that repo, it is very simple to add it to decomp.me, see <FaqLink href="https://github.com/decompme/decomp.me/pull/910">this PR</FaqLink> for an example.
+        </p>
+
+        <h2 className={subtitle}>Can you add 'X' platform, e.g. PlayStation 3?</h2>
         <p className="my-4">
             The platforms that decomp.me supports are driven by the support for those platforms in the underlying tools that make up decomp.me.
             If these tools support the architecture for the new platform, and you have the compiler available, it is a straightforward process to add it to decomp.me.
@@ -87,6 +104,7 @@ export default function Page() {
         <h2 className={subtitle}>How do I report bugs?</h2>
         <p className="my-4">
             If you come across a bug, please reach out to us on our Discord server and/or raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub issue</FaqLink> containing the steps necessary to replicate the bug.
+            We will gladly accept bug-squashing PRs if you are able to fix the issue yourself!
         </p>
 
         <h2 className={subtitle}>Why frog?</h2>
