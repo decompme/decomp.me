@@ -1,18 +1,19 @@
 import { ReactNode } from "react"
+
 import Link from "next/link"
 
 import Frog from "@/components/Nav/frog.svg"
 
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11"
 
-export const metadata = {
-    title: "Frequently Asked Questions",
-}
-
 function FaqLink({ children, href }: { children: ReactNode, href?: string }) {
     return <Link href={href} className="hover:underline active:translate-y-px">
         {children}
     </Link>
+}
+
+export const metadata = {
+    title: "Frequently Asked Questions",
 }
 
 export default function Page() {
