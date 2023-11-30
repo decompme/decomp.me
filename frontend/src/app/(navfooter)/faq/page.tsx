@@ -1,3 +1,4 @@
+import { ReactNode } from "react"
 import Link from "next/link"
 
 import Frog from "@/components/Nav/frog.svg"
