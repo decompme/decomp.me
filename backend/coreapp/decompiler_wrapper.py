@@ -1,5 +1,4 @@
 import logging
-
 from coreapp import compilers
 
 from coreapp.compilers import Compiler

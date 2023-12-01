@@ -4,6 +4,7 @@ import { XIcon } from "@primer/octicons-react"
 import useSWR from "swr"
 
 import * as api from "@/lib/api"
+import { projectMemberUrl, projectUrl } from "@/lib/api/urls"
 
 import AsyncButton from "./AsyncButton"
 import FieldSet from "./FieldSet"
@@ -51,7 +52,7 @@ export default function ProjectMembers({ project }: { project: api.Project }) {
     >
         <ul className={styles.list}>
             {members.map(member => <Member
-                key={member.url}
+                key={projectMemberUrl(project, member)}
                 member={member}
                 onRemove={canAct ? async () => {
                     if (member.username === user?.username) {
@@ -63,7 +64,7 @@ export default function ProjectMembers({ project }: { project: api.Project }) {
                     await removeMember(member.username)
 
                     if (member.username === user?.username) {
-                        router.push(project.html_url)
+                        router.push(projectUrl(project))
                     }
                 } : undefined}
             />)}

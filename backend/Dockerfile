@@ -63,29 +63,23 @@ RUN curl -sSL https://install.python-poetry.org/ | \
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.6.8 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.10 /usr/local/sbin/wibo /usr/bin/
+
+RUN add-apt-repository -y ppa:dosemu2/ppa && \
+    apt-get update && \
+    apt-get install -y dosemu2
 
 # windows compilers need i386 wine
 
 ARG ENABLE_MSDOS_SUPPORT
-ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
        [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
         wine; \
-    fi
-
-ARG ENABLE_SATURN_SUPPORT
-# install dosemu2 for saturn
-RUN if [ "${ENABLE_SATURN_SUPPORT}" = "YES" ]; then \
-    add-apt-repository -y ppa:dosemu2/ppa && \
-    apt-get update && \
-    apt-get install -y dosemu2; \
     fi
 
 # msdos specific
@@ -127,7 +121,9 @@ ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_MACOSX_SUPPORT
 ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT
+ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 
 ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}

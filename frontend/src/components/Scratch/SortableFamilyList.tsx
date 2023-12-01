@@ -8,6 +8,7 @@ import useSWR from "swr"
 import Select from "@/components/Select2"
 import { get } from "@/lib/api/request"
 import { TerseScratch } from "@/lib/api/types"
+import { scratchUrl } from "@/lib/api/urls"
 
 import { getScoreAsFraction, getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
@@ -45,7 +46,7 @@ function compareScratchScores(a: TerseScratch, b: TerseScratch) {
 }
 
 function useFamily(scratch: TerseScratch) {
-    const { data: family } = useSWR<TerseScratch[]>(scratch.url + "/family", get, {
+    const { data: family } = useSWR<TerseScratch[]>(scratchUrl(scratch) + "/family", get, {
         suspense: true,
     })
 
@@ -69,7 +70,7 @@ function FamilyMember({
         <span className="mx-2 text-gray-8">/</span>
         {isCurrent ? <span className="font-medium text-gray-11">
             This scratch
-        </span> : <Link href={scratch.html_url} className="font-medium">
+        </span> : <Link href={scratchUrl(scratch)} className="font-medium">
             {scratch.name}
         </Link>}
         <div className="grow" />
@@ -122,10 +123,10 @@ export default function SortableFamilyList({ scratch }: { scratch: TerseScratch 
             </div>
         </div>
         <ol>
-            {family.sorted.map(member => <li key={member.url} className="mb-2">
+            {family.sorted.map(member => <li key={scratchUrl(member)} className="mb-2">
                 <FamilyMember
                     scratch={member}
-                    isCurrent={member.url === scratch.url}
+                    isCurrent={scratchUrl(member) === scratchUrl(scratch)}
                     isBetter={compareScratchScores(member, scratch) < 0}
                 />
             </li>)}

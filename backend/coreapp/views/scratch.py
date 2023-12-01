@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
+from coreapp import compilers, platforms
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -17,19 +18,15 @@ from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
-from coreapp import compilers, platforms
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
-from ..flags import Language
-
 from ..decorators.django import condition
-
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
-from ..models.github import GitHubRepo, GitHubRepoBusyException
-from ..models.project import Project, ProjectFunction
+from ..models.preset import Preset
 from ..models.scratch import Asm, Scratch
 from ..platforms import Platform
 from ..serializers import (
@@ -37,7 +34,6 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +64,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             scratch.diff_label,
             tuple(scratch.libraries),
         )
-    except CompilationError as e:
+    except (CompilationError, APIException) as e:
         return CompilationResult(b"", str(e))
 
 
@@ -188,34 +184,17 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Optional[Platform] = None
-    given_platform = data.get("platform")
-    if given_platform:
-        platform = platforms.from_id(given_platform)
-
+    platform: Optional[Platform] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
     project = data.get("project")
     rom_address = data.get("rom_address")
 
-    if platform:
-        if compiler.platform != platform:
-            raise APIException(
-                f"Compiler {compiler.id} is not compatible with platform {platform.id}",
-                str(status.HTTP_400_BAD_REQUEST),
-            )
-    else:
-        platform = compiler.platform
-
     if not platform:
-        raise serializers.ValidationError("Unknown compiler")
+        platform = compiler.platform
 
     target_asm: str = data["target_asm"]
     context: str = data["context"]
     diff_label: str = data.get("diff_label", "")
-
-    assert isinstance(target_asm, str)
-    assert isinstance(context, str)
-    assert isinstance(diff_label, str)
 
     asm = get_db_asm(target_asm)
 
@@ -233,33 +212,12 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset = data.get("preset", "")
-    if preset and not compilers.preset_from_name(preset):
-        raise serializers.ValidationError("Unknown preset:" + preset)
+    preset_id: Optional[str] = None
+    if data.get("preset"):
+        preset: Preset = data["preset"]
+        preset_id = str(preset.id)
 
     name = data.get("name", diff_label) or "Untitled"
-
-    if allow_project and (project or rom_address):
-        assert isinstance(project, str)
-        assert isinstance(rom_address, int)
-
-        project_obj: Optional[Project] = Project.objects.filter(slug=project).first()
-        if not project_obj:
-            raise serializers.ValidationError("Unknown project")
-
-        repo: GitHubRepo = project_obj.repo
-        if repo.is_pulling:
-            raise GitHubRepoBusyException()
-
-        project_function = ProjectFunction.objects.filter(
-            project=project_obj, rom_address=rom_address
-        ).first()
-        if not project_function:
-            raise serializers.ValidationError(
-                "Function with given rom address does not exist in project"
-            )
-    else:
-        project_function = None
 
     libraries = [
         Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
@@ -271,7 +229,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "diff_flags": diff_flags,
-            "preset": preset,
+            "preset": preset_id,
             "context": context,
             "diff_label": diff_label,
             "source_code": source_code,
@@ -281,7 +239,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     scratch = ser.save(
         target_assembly=assembly,
         platform=platform.id,
-        project_function=project_function,
         libraries=libraries,
     )
 
@@ -314,7 +271,7 @@ class ScratchViewSet(
     ]
     search_fields = ["name", "diff_label"]
 
-    def get_serializer_class(self) -> type[serializers.HyperlinkedModelSerializer]:
+    def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":
             return TerseScratchSerializer
         else:
@@ -355,7 +312,7 @@ class ScratchViewSet(
     def destroy(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         # Check permission
         scratch = self.get_object()
-        if scratch.owner != request.profile:
+        if scratch.owner != request.profile and not request.profile.is_staff():
             response = self.retrieve(request, *args, **kwargs)
             response.status_code = status.HTTP_403_FORBIDDEN
             return response
@@ -467,7 +424,6 @@ class ScratchViewSet(
             parent=parent,
             target_assembly=parent.target_assembly,
             platform=parent.platform,
-            project_function=parent.project_function,
             libraries=libraries,
         )
 

@@ -3,7 +3,8 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import * as api from "@/lib/api"
+import { Scratch, Project, Preset, get, usePreset } from "@/lib/api"
+import { presetUrl, projectUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
 import PlatformIcon from "../PlatformSelect/PlatformIcon"
@@ -14,7 +15,7 @@ import UserLink from "../user/UserLink"
 import styles from "./AboutScratch.module.scss"
 
 function ScratchLink({ url }: { url: string }) {
-    const { data: scratch, error } = useSWR<api.Scratch>(url, api.get)
+    const { data: scratch, error } = useSWR<Scratch>(url, get)
 
     if (error) {
         throw error
@@ -28,7 +29,7 @@ function ScratchLink({ url }: { url: string }) {
 
     return (
         <span className={styles.scratchLinkContainer}>
-            <Link href={scratch.html_url} className={styles.scratchLink}>
+            <Link href={scratchUrl(scratch)} className={styles.scratchLink}>
 
                 {scratch.name || "Untitled scratch"}
 
@@ -42,13 +43,13 @@ function ScratchLink({ url }: { url: string }) {
 }
 
 export type Props = {
-    scratch: api.Scratch
-    setScratch?: (scratch: Partial<api.Scratch>) => void
+    scratch: Scratch
+    setScratch?: (scratch: Partial<Scratch>) => void
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
-    const { data: project } = useSWR<api.Project>(scratch.project, api.get)
-    const { data: projectFunction } = useSWR<api.ProjectFunction>(scratch.project_function, api.get)
+    const { data: project } = useSWR<Project>(scratch.project, get)
+    const preset: Preset = usePreset(scratch.preset)
 
     return (
         <div className={styles.container}>
@@ -63,21 +64,22 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 </div>}
                 {scratch.parent &&<div className={styles.horizontalField}>
                     <p className={styles.label}>Fork of</p>
-                    <ScratchLink url={scratch.parent} />
+                    <ScratchLink url={scratchParentUrl(scratch)} />
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Platform</p>
                     <PlatformIcon platform={scratch.platform} className={styles.platformIcon} />
                     <PlatformName platform={scratch.platform} />
                 </div>
-                {projectFunction && project && <div className={styles.horizontalField}>
-                    <p className={styles.label}>Attempt of</p>
-                    <div className={styles.projectFunctionLinks}>
-                        <Link href={projectFunction.html_url}>
-                            {projectFunction.display_name}
-                        </Link>
-                        {" "}
-                        <Link href={project.html_url}>
+                {preset && <div className={styles.horizontalField}>
+                    <p className={styles.label}>Preset</p>
+                    <Link href={presetUrl(preset)}>
+                        {preset.name}
+                    </Link>
+                </div>}
+                {project && <div className={styles.horizontalField}>
+                    <div className={styles.projectLinks}>
+                        <Link href={projectUrl(project)}>
                             ({project.slug})
                         </Link>
                     </div>

@@ -9,6 +9,7 @@ const MAINTAINER_USERNAMES = ["ethteck", "nanaian"]
 const OTHER_PROJECTS = {
     "asm-differ": "https://github.com/simonlindholm/asm-differ",
     "m2c": "https://github.com/matt-kempster/m2c",
+    "psyq-obj-parser": "https://github.com/grumpycoders/pcsx-redux/tree/main/tools/psyq-obj-parser",
     "Django": "https://www.djangoproject.com/",
     "Django REST Framework": "https://www.django-rest-framework.org/",
     "Next.js": "https://nextjs.org/",

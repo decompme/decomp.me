@@ -195,8 +195,6 @@
 
 .addLibraryRow {
     display: inline-flex;
-    margin: 1em;
-    margin-bottom: 0;
     width: 100%;
 }
 

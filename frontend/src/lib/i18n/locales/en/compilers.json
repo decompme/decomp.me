@@ -122,6 +122,7 @@
     "gcc-5026-cpp": "GCC 4.0.0 (Xcode 2.1) (C++)",
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
 
+    "gcc2.5.7-psx": "gcc 2.5.7-psx + maspsx",
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
     "gcc2.6.0-mipsel": "gcc 2.6.0 + maspsx",
     "gcc2.6.3-mipsel": "gcc 2.6.3 + maspsx",

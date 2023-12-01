@@ -1,13 +1,12 @@
 import json
 import logging
+from typing import Any, List, Sequence
 
 from django.db import models
 from django.utils.crypto import get_random_string
 
-from typing import Any, List, Sequence
-
-from .profile import Profile
 from ..libraries import Library
+from .profile import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -89,8 +88,12 @@ class Scratch(models.Model):
     compiler_flags = models.TextField(
         max_length=1000, default="", blank=True
     )  # TODO: reference a CompilerConfig
-    diff_flags = models.JSONField(default=list)  # TODO: reference a CompilerConfig
-    preset = models.CharField(max_length=100, blank=True, null=True)
+    diff_flags = models.JSONField(
+        default=list, blank=True
+    )  # TODO: reference a CompilerConfig
+    preset = models.ForeignKey(
+        "Preset", null=True, blank=True, on_delete=models.SET_NULL
+    )
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
@@ -103,9 +106,6 @@ class Scratch(models.Model):
     libraries = LibrariesField(default=list)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    project_function = models.ForeignKey(
-        "ProjectFunction", null=True, blank=True, on_delete=models.SET_NULL
-    )  # The function, if any, that this scratch is an attempt of
 
     class Meta:
         ordering = ["-creation_time"]
@@ -117,12 +117,6 @@ class Scratch(models.Model):
     # hash for etagging
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
-
-    def get_url(self) -> str:
-        return "/scratch/" + self.slug
-
-    def get_html_url(self) -> str:
-        return "/scratch/" + self.slug
 
     def is_claimable(self) -> bool:
         return self.owner is None

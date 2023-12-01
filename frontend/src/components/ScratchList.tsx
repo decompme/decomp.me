@@ -8,6 +8,7 @@ import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
+import { scratchUrl } from "@/lib/api/urls"
 import useTranslation from "@/lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
@@ -40,7 +41,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(scratch => (
-                <Item key={scratch.url} scratch={scratch} />
+                <Item key={scratchUrl(scratch)} scratch={scratch} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -64,7 +65,7 @@ export function LoadedScratchList({ className, item, scratches }: Pick<Props, "c
     const Item = item || ScratchItem
 
     return <ul className={classNames(styles.list, className)}>
-        {scratches.map(scratch => <Item key={scratch.url} scratch={scratch} />)}
+        {scratches.map(scratch => <Item key={scratchUrl(scratch)} scratch={scratch} />)}
     </ul>
 }
 
@@ -88,7 +89,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
             <div className={styles.scratch}>
                 <div className={styles.header}>
                     <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
 
                         {scratch.name}
 
@@ -120,15 +121,36 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
             <div className={styles.scratch}>
                 <div className={styles.header}>
                     <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-                    <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
-
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                         {scratch.name}
-
                     </Link>
                 </div>
                 <div className={styles.metadata}>
                     {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                 </div>
+            </div>
+        </li>
+    )
+}
+
+export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }) {
+    const matchPercentString = getMatchPercentString(scratch)
+
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </Link>
+                    <div className={styles.metadata}>
+                        {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </div>
+                    {scratch.owner && <div className={styles.owner}>
+                        <UserLink user={scratch.owner} />
+                    </div>}
+                </div>
+
             </div>
         </li>
     )
@@ -140,10 +162,8 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
     return (
         <li className={styles.singleLine}>
             <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
-            <Link href={scratch.html_url} className={classNames(styles.link, styles.name)}>
-
+            <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                 {scratch.name}
-
             </Link>
             <div className={styles.metadata}>
                 {matchPercentString}

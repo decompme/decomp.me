@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import * as api from "@/lib/api"
+import { projectUrl } from "@/lib/api/urls"
 import useEntity from "@/lib/useEntity"
 
 import AsyncButton from "./AsyncButton"
@@ -19,9 +20,9 @@ function ProjectIconForm({ project }: { project: api.Project }) {
             const data = new FormData()
             data.append("icon", file)
 
-            api.patch(project.url, data).catch(console.error)
+            api.patch(projectUrl(project), data).catch(console.error)
         }
-    }, [file, project.url])
+    }, [file, project])
 
     return <ImageInput
         file={file}
@@ -71,7 +72,7 @@ export default function ProjectSettings({ project }: { project: api.Project }) {
         <FieldSet label="Icon">
             <ProjectIconForm project={project} />
         </FieldSet>
-        <ProjectDescriptionForm url={project.url} />
+        <ProjectDescriptionForm url={projectUrl(project)} />
         <FieldSet
             label="Delete Project"
             className={styles.borderDanger}
@@ -83,8 +84,8 @@ export default function ProjectSettings({ project }: { project: api.Project }) {
                         `Type '${project.slug}' to continue.`,
                     ].join("\n")
                     if (prompt(msg) == project.slug) {
-                        await api.delete_(project.url, {})
-                        router.push("/projects")
+                        await api.delete_(projectUrl(project), {})
+                        router.push("/project")
                     }
                 }}
             >
