@@ -24,15 +24,15 @@ export default function Page() {
 
         <h2 className={subtitle}>What is decomp.me?</h2>
         <p className="my-4">
-            decomp.me is a platform that allows people to upload assembly code snippets and write code in an attempt to match them, all within their browser.
+            decomp.me is an interactive web-based platform where users can collaboratively decompile assembly code snippets by writing matching code.
         </p>
         <p className="my-4">
             It is an <FaqLink href="https://www.github.com/decomp.me">open source project</FaqLink> run by volunteers in their free time.
         </p>
 
-        <h2 className={subtitle}>What do you mean by 'match them'?</h2>
+        <h2 className={subtitle}>What do you mean by 'matching'?</h2>
         <p className="my-4">
-            decomp.me is designed for users who are working on matching decompilation projects, where the goal is to write high level (e.g. C or C++) code that, when compiled, matches the original binary perfectly.
+            decomp.me is designed for users who are working on matching decompilation projects, where the goal is to produce high-level code like C or C++ that perfectly replicates the original assembly upon compilation.
         </p>
         <p className="my-4">
             This is a time and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary.
@@ -103,7 +103,7 @@ export default function Page() {
             If these tools support the architecture for the new platform, and you have the compiler available, it is a straightforward process to add it to decomp.me.
         </p>
 
-        <h2 className={subtitle}>How do I report bugs?</h2>
+        <h2 className={subtitle}>How do I report a bug?</h2>
         <p className="my-4">
             If you come across a bug, please reach out to us on our Discord server and/or raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub issue</FaqLink> containing the steps necessary to replicate the bug.
             We will gladly accept bug-squashing PRs if you are able to fix the issue yourself!
