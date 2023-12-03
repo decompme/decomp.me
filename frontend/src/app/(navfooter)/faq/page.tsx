@@ -7,9 +7,13 @@ import Frog from "@/components/Nav/frog.svg"
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11"
 
 function FaqLink({ children, href }: { children: ReactNode, href?: string }) {
-    return <Link href={href} className="hover:underline active:translate-y-px">
+    return <Link href={href} className="text-blue-11 hover:underline active:translate-y-px">
         {children}
     </Link>
+}
+
+function DiscordLink() {
+    return <FaqLink href="https://discord.gg/sutqNShRRs">Discord Server</FaqLink>
 }
 
 export const metadata = {
@@ -27,25 +31,25 @@ export default function Page() {
             decomp.me is an interactive web-based platform where users can collaboratively decompile assembly code snippets by writing matching code.
         </p>
         <p className="my-4">
-            It is an <FaqLink href="https://www.github.com/decomp.me">open source project</FaqLink> run by volunteers in their free time.
+            It is an <FaqLink href="https://www.github.com/decomp.me">open-source project</FaqLink> run by volunteers in their free time.
         </p>
 
-        <h2 className={subtitle}>What do you mean by 'matching'?</h2>
+        <h2 className={subtitle}>What do you mean by "matching"?</h2>
         <p className="my-4">
             decomp.me is designed for users who are working on matching decompilation projects, where the goal is to produce high-level code like C or C++ that perfectly replicates the original assembly upon compilation.
         </p>
         <p className="my-4">
-            This is a time and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary.
+            This is a time- and labor-intensive process. To produce matching assembly, one usually needs the original compiler, assembler, and flags that were used to produce the original binary.
             Most importantly, the code has to be written in such a way that the compiler will generate assembly that is identical to what is being compared against.
             Writing matching code is a skill that takes time to learn, but it can be very rewarding and addictive.
         </p>
 
         <h2 className={subtitle}>What's a scratch?</h2>
         <p className="my-4">
-            A scratch is a workspace for exploring a compiler's codegen.
+            A scratch is a workspace for exploring a compiler's codegen, similar to <FaqLink href="https://godbolt.org/">Compiler Explorer</FaqLink>.
             A scratch consists of the target assembly, input source code, and input context code, as well as additional settings and metadata.
             Most scratches contain a single function - i.e. the function that you are trying to match.
-            Each scratch has a unique link that can be shared with others. Scratches have a 'family' of forks, which are copies of the original scratch.
+            Each scratch has a unique link that can be shared with others. Scratches have a "family" of forks, which are copies of the original scratch.
         </p>
 
         <h2 className={subtitle}>What's the context for?</h2>
@@ -67,6 +71,7 @@ export default function Page() {
 
         <p className="my-4">
             The score is calculated by comparing the assembly instructions in the compiled code to the target assembly, and a penalty of different size is applied based on the kind of difference present among assembly instructions.
+            The lower the score, the better!
         </p>
 
         <h2 className={subtitle}>Where do I start?</h2>
@@ -82,12 +87,17 @@ export default function Page() {
             If you match the scratch, the original scratch will display a banner to notify visitors that the code is matched.
         </p>
         <p className="my-4">
-            If you want to start your own scratch, you will need the assembly code for the function you are targetting in GNU assembly format.
+            If you want to start your own scratch, you will need the assembly code for the function you are targeting in GNU assembly format.
+        </p>
+
+        <h2 className={subtitle}>Can you help me match a scratch?</h2>
+        <p className="my-4">
+            You are welcome to ask for help in the #general-decompilation channel of our <DiscordLink/>.
         </p>
 
         <h2 className={subtitle}>Can you add a preset for a game I'm working on?</h2>
         <p className="my-4">
-            Absolutely we can, either raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub issue</FaqLink> or drop us a message in the Discord server.
+            Absolutely we can, either raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub Issue</FaqLink> or drop us a message in our <DiscordLink/>.
         </p>
 
         <h2 className={subtitle}>Can you add a compiler for a game I'm working on?</h2>
@@ -97,7 +107,7 @@ export default function Page() {
             Once the compiler has been added to that repo, it is very simple to add it to decomp.me, see <FaqLink href="https://github.com/decompme/decomp.me/pull/910">this PR</FaqLink> for an example.
         </p>
 
-        <h2 className={subtitle}>Can you add 'X' platform, e.g. PlayStation 3?</h2>
+        <h2 className={subtitle}>Can you add "X" platform, e.g. PlayStation 3?</h2>
         <p className="my-4">
             The platforms that decomp.me supports are driven by the support for those platforms in the underlying tools that make up decomp.me.
             If these tools support the architecture for the new platform, and you have the compiler available, it is a straightforward process to add it to decomp.me.
@@ -105,7 +115,7 @@ export default function Page() {
 
         <h2 className={subtitle}>How do I report a bug?</h2>
         <p className="my-4">
-            If you come across a bug, please reach out to us on our Discord server and/or raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub issue</FaqLink> containing the steps necessary to replicate the bug.
+            If you come across a bug, please reach out to us on our <DiscordLink/> and/or raise a <FaqLink href="https://github.com/decompme/decomp.me/issues">GitHub Issue</FaqLink> containing the steps necessary to replicate the bug.
             We will gladly accept bug-squashing PRs if you are able to fix the issue yourself!
         </p>
 
