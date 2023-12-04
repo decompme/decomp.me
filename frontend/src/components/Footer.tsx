@@ -31,6 +31,10 @@ export default function Footer() {
                         Credits
                     </GhostButton>
                     <Separator />
+                    <GhostButton href="/faq">
+                        FAQ
+                    </GhostButton>
+                    <Separator />
                     <GhostButton href="https://github.com/decompme/decomp.me" className="flex items-center gap-1.5">
                         <MarkGithubIcon className="h-4 w-4" />
                         Source code
