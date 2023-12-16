@@ -16,7 +16,7 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install backend Python dependencies
@@ -130,7 +130,7 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install Poetry
@@ -210,7 +210,7 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - run: |-
