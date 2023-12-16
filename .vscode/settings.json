@@ -38,5 +38,6 @@
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "mypy-type-checker.args": [
         "--config-file=backend/mypy.ini"
-    ]
+    ],
+    "editor.formatOnSave": true
 }
