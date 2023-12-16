@@ -22,7 +22,7 @@ backend/
 See [DOCKER.md](DOCKER.md) for instructions on how to run the project in a Docker container. Otherwise, continue reading this guide.
 
 Dependencies:
-- Python >=3.9
+- Python >=3.10
 - Node.js >=14
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [Poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
