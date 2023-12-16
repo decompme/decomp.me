@@ -1,6 +1,6 @@
 ---
-name: Create/Update Compiler Preset
-about: Template for users wishing to create or update a compiler preset
+name: Create or update a compiler preset
+about: Request a new compiler preset or a change to an existing one
 title: "[PRESET] Create/Update Compiler Preset XXXXXXX"
 labels: ''
 assignees: ''
