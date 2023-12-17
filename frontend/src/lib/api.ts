@@ -243,7 +243,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
 }
 
 export function usePlatforms(): Record<string, Platform> {
-    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compilers", get, {
+    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compiler", get, {
         refreshInterval: 0,
         revalidateOnFocus: false,
         suspense: true, // TODO: remove
@@ -254,7 +254,7 @@ export function usePlatforms(): Record<string, Platform> {
 }
 
 export function useCompilers(): Record<string, Compiler> {
-    const { data } = useSWR("/compilers", get, {
+    const { data } = useSWR("/compiler", get, {
         refreshInterval: 0,
         suspense: true, // TODO: remove
         onErrorRetry,
@@ -264,7 +264,7 @@ export function useCompilers(): Record<string, Compiler> {
 }
 
 export function useLibraries(): LibraryVersions[] {
-    const { data } = useSWR("/libraries", get, {
+    const { data } = useSWR("/library", get, {
         refreshInterval: 0,
         onErrorRetry,
     })
