@@ -16,7 +16,7 @@ export default function PlatformName({ platform }: Props) {
                 description: string
             }
         }
-    }>("/compilers", api.get)
+    }>("/compiler", api.get)
 
     return <>
         <Link href={"/platform/" + platform}>

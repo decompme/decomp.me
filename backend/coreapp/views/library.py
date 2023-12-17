@@ -12,7 +12,7 @@ from ..decorators.django import condition
 boot_time = now()
 
 
-class LibrariesDetail(APIView):
+class LibraryDetail(APIView):
     @staticmethod
     def libraries_json() -> list[dict[str, object]]:
         return [
@@ -28,6 +28,6 @@ class LibrariesDetail(APIView):
     def get(self, request: Request) -> Response:
         return Response(
             {
-                "libraries": LibrariesDetail.libraries_json(),
+                "libraries": LibraryDetail.libraries_json(),
             }
         )

@@ -8,7 +8,7 @@ export const metadata = {
 }
 
 export default async function NewScratchPage() {
-    const compilers = await get("/compilers")
+    const compilers = await get("/compiler")
 
     return <main>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">Start a new scratch</h1>
