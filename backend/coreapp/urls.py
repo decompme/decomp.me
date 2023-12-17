@@ -1,8 +1,8 @@
 from django.urls import path
 
 from coreapp.views import (
-    compilers,
-    libraries,
+    compiler,
+    library,
     platform,
     preset,
     stats,
@@ -12,8 +12,8 @@ from coreapp.views import (
 )
 
 urlpatterns = [
-    path("compilers", compilers.CompilersDetail.as_view(), name="compilers"),
-    path("libraries", libraries.LibrariesDetail.as_view(), name="libraries"),
+    path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
+    path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
     path(
         "platform/<slug:id>",
@@ -36,4 +36,7 @@ urlpatterns = [
         user.UserScratchList.as_view(),
         name="user-scratches",
     ),
+    # TODO: remove
+    path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
+    path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]

@@ -1,6 +1,6 @@
 from coreapp import compilers
 from coreapp.models.preset import Preset
-from coreapp.views.compilers import CompilersDetail
+from coreapp.views.compiler import CompilerDetail
 from django.utils.timezone import now
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -21,7 +21,7 @@ class PlatformDetail(APIView):
     def get(self, request: Request) -> Response:
         return Response(
             {
-                "platforms": CompilersDetail.platforms_json(
+                "platforms": CompilerDetail.platforms_json(
                     include_presets=False, include_num_scratches=True
                 ),
             }

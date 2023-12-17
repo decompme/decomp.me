@@ -13,7 +13,7 @@ from ..decorators.django import condition
 boot_time = now()
 
 
-class CompilersDetail(APIView):
+class CompilerDetail(APIView):
     @staticmethod
     def compilers_json() -> Dict[str, Dict[str, object]]:
         return {
@@ -45,7 +45,7 @@ class CompilersDetail(APIView):
     def get(self, request: Request) -> Response:
         return Response(
             {
-                "compilers": CompilersDetail.compilers_json(),
-                "platforms": CompilersDetail.platforms_json(),
+                "compilers": CompilerDetail.compilers_json(),
+                "platforms": CompilerDetail.platforms_json(),
             }
         )
