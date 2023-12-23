@@ -276,8 +276,8 @@ export function useLibraries(): LibraryVersions[] {
     return data.libraries
 }
 
-export function usePreset(id: number): Preset {
-    const url = `/preset/${id}`
+export function usePreset(id: number | undefined): Preset | undefined {
+    const url = typeof id === "number" ? `/preset/${id}` : null
     const { data } = useSWR(url, get, {
         refreshInterval: 0,
         onErrorRetry,
