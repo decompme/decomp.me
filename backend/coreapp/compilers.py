@@ -282,8 +282,8 @@ CLANG_800 = ClangCompiler(
 # PS1
 PSYQ_MSDOS_CC = (
     'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
-    '(HOME="." /usr/bin/dosemu -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
-    '(HOME="." /usr/bin/dosemu -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
+    '(HOME="." /usr/bin/dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
+    '(HOME="." /usr/bin/dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
     '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
 )
 PSYQ_CC = (
