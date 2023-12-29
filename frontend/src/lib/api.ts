@@ -20,7 +20,7 @@ function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidat
 
 function undefinedIfUnchanged<O, K extends keyof O>(saved: O, local: O, key: K): O[K] | undefined {
     if (saved[key] !== local[key]) {
-        return local[key]
+        return local[key] !== undefined ? local[key] : null
     }
 }
 
