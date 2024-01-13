@@ -147,6 +147,8 @@
     "psyq4.5": "PSYQ4.5 (gcc 2.91.66 + aspsx 2.81)",
     "psyq4.6": "PSYQ4.6 (gcc 2.95.2 + aspsx 2.86)",
 
+    "psyq4.4-ccpsx": "CCPSX (PSYQ4.4: gcc 2.8.1 + aspsx 2.79)",
+
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
     "wcc10.5a": "Watcom Optimizing C i386 Compiler 10.5a",
