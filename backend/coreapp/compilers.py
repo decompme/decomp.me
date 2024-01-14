@@ -347,6 +347,21 @@ PSYQ46 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
+PSYQ_CCPSX = (
+    'echo "[ccpsx]" >> SN.INI && '
+    'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
+    'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
+    'SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
+    '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
+)
+
+PSYQ44_CCPSX = GCCPS1Compiler(
+    id="psyq4.4-ccpsx",
+    base_compiler=PSYQ44,
+    platform=PS1,
+    cc=PSYQ_CCPSX,
+)
+
 PS1_GCC = (
     'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
     '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
@@ -1186,6 +1201,7 @@ _all_compilers: List[Compiler] = [
     PSYQ44,
     PSYQ45,
     PSYQ46,
+    PSYQ44_CCPSX,
     GCC257_PSX,
     GCC263_PSX,
     GCC260_MIPSEL,
