@@ -200,10 +200,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     context: str = data["context"]
     diff_label: str = data.get("diff_label", "")
 
-    if target_asm:
-        asm = get_db_asm(target_asm)
-        assembly = CompilerWrapper.assemble_asm(platform, asm)
-    elif target_obj:
+    if target_obj:
         asm = None
         obj_bytes = target_obj.read()
         h = hashlib.sha256(obj_bytes).hexdigest()
@@ -214,9 +211,8 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             elf_object=obj_bytes,
         )
     else:
-        raise serializers.ValidationError(
-            "Either target_asm or target_obj must be present"
-        )
+        asm = get_db_asm(target_asm)
+        assembly = CompilerWrapper.assemble_asm(platform, asm)
 
     source_code = data.get("source_code")
     if asm and not source_code:

@@ -134,8 +134,8 @@ class DiffWrapper:
         ret = []
 
         for flag in diff_flags:
-            if flag in known_objdump_flags or any(
-                flag.startswith(prefix) for prefix in known_objdump_flag_prefixes
+            if flag in known_objdump_flags or flag.startswith(
+                tuple(known_objdump_flag_prefixes)
             ):
                 ret.append(flag)
 
