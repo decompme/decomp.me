@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 import django_filters
 from coreapp import compilers, platforms
+from django.core.files import File
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -27,7 +28,7 @@ from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
 from ..models.preset import Preset
-from ..models.scratch import Asm, Scratch
+from ..models.scratch import Asm, Assembly, Scratch
 from ..platforms import Platform
 from ..serializers import (
     ScratchCreateSerializer,
@@ -150,7 +151,9 @@ def is_asm_empty(asm: str) -> bool:
 def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
-        if is_asm_empty(scratch.target_assembly.source_asm.data):
+        if scratch.target_assembly.source_asm is None or is_asm_empty(
+            scratch.target_assembly.source_asm.data
+        ):
             family = Scratch.objects.filter(slug=scratch.slug)
         else:
             family = Scratch.objects.filter(
@@ -192,16 +195,31 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     if not platform:
         platform = compiler.platform
 
-    target_asm: str = data["target_asm"]
+    target_asm: str = data.get("target_asm", "")
+    target_obj: File[Any] | None = data.get("target_obj")
     context: str = data["context"]
     diff_label: str = data.get("diff_label", "")
 
-    asm = get_db_asm(target_asm)
-
-    assembly = CompilerWrapper.assemble_asm(platform, asm)
+    if target_asm:
+        asm = get_db_asm(target_asm)
+        assembly = CompilerWrapper.assemble_asm(platform, asm)
+    elif target_obj:
+        asm = None
+        obj_bytes = target_obj.read()
+        h = hashlib.sha256(obj_bytes).hexdigest()
+        assembly = Assembly.objects.filter(hash=h).first() or Assembly.objects.create(
+            hash=h,
+            arch=platform.arch,
+            source_asm=None,
+            elf_object=obj_bytes,
+        )
+    else:
+        raise serializers.ValidationError(
+            "Either target_asm or target_obj must be present"
+        )
 
     source_code = data.get("source_code")
-    if not source_code:
+    if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         source_code = DecompilerWrapper.decompile(
             default_source_code, platform, asm.data, context, compiler
@@ -372,6 +390,9 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
+        if scratch.target_assembly.source_asm is None:
+            return Response({"decompilation": None})
+
         context = request.data.get("context", "")
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
 
@@ -448,7 +469,8 @@ class ScratchViewSet(
             zip_bytes, mode="w", compression=zipfile.ZIP_DEFLATED
         ) as zip_f:
             zip_f.writestr("metadata.json", json.dumps(metadata, indent=4))
-            zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
+            if scratch.target_assembly.source_asm is not None:
+                zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
             language = compilers.from_id(scratch.compiler).language
@@ -473,7 +495,9 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        if is_asm_empty(scratch.target_assembly.source_asm.data):
+        if scratch.target_assembly.source_asm is None or is_asm_empty(
+            scratch.target_assembly.source_asm.data
+        ):
             family = Scratch.objects.filter(slug=scratch.slug)
         else:
             family = Scratch.objects.filter(

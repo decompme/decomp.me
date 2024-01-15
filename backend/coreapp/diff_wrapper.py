@@ -129,11 +129,14 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
-        known_objdump_flags = ["-Mreg-names=32", "-Mno-aliases"]
+        known_objdump_flags = ["-Mno-aliases"]
+        known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
         ret = []
 
-        for flag in known_objdump_flags:
-            if flag in diff_flags:
+        for flag in diff_flags:
+            if flag in known_objdump_flags or any(
+                flag.startswith(prefix) for prefix in known_objdump_flag_prefixes
+            ):
                 ret.append(flag)
 
         return ret
@@ -148,7 +151,6 @@ class DiffWrapper:
     ) -> str:
         flags = [flag for flag in flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
         flags += [
-            "--disassemble",
             "--disassemble-zeroes",
             "--line-numbers",
         ]
@@ -161,9 +163,17 @@ class DiffWrapper:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
-            flags += DiffWrapper.get_objdump_target_function_flags(
-                sandbox, target_path, platform, label
-            )
+            # If the flags contain `--disassemble=[symbol]`,
+            # use that instead of `--start-address`.
+            has_symbol = False
+            for flag in flags:
+                if flag.startswith("--disassemble="):
+                    has_symbol = True
+            if not has_symbol:
+                flags.append("--disassemble")
+                flags += DiffWrapper.get_objdump_target_function_flags(
+                    sandbox, target_path, platform, label
+                )
 
             flags += config.arch.arch_flags
 
