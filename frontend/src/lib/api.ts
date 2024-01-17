@@ -101,7 +101,9 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
 }
 
 export async function claimScratch(scratch: Scratch): Promise<void> {
-    const { success } = await post(`${scratchUrl(scratch)}/claim`, {})
+    const { success } = await post(`${scratchUrl(scratch)}/claim`, {
+        token: scratch.claim_token,
+    })
     const user = await get("/user")
 
     if (!success)

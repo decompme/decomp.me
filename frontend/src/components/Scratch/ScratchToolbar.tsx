@@ -131,7 +131,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
-    const canSave = scratch.owner && userIsYou(scratch.owner)
+    const canSave = (scratch.owner && userIsYou(scratch.owner)) || fuzzySaveAction === FuzzySaveAction.CLAIM
 
     const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
         setIsSaving(true)

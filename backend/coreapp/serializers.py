@@ -295,6 +295,11 @@ class TerseScratchSerializer(ScratchSerializer):
         ]
 
 
+# On initial creation, include the "claim_token" field.
+class ClaimableScratchSerializer(ScratchSerializer):
+    claim_token = serializers.CharField(read_only=True)
+
+
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
 

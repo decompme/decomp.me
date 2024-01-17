@@ -31,6 +31,7 @@ from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
 from ..platforms import Platform
 from ..serializers import (
+    ClaimableScratchSerializer,
     ScratchCreateSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
@@ -318,7 +319,7 @@ class ScratchViewSet(
         scratch = create_scratch(request.data)
 
         return Response(
-            ScratchSerializer(scratch, context={"request": request}).data,
+            ClaimableScratchSerializer(scratch, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -426,8 +427,12 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
+        token = request.data.get("token")
 
         if not scratch.is_claimable():
+            return Response({"success": False})
+
+        if scratch.claim_token and scratch.claim_token != token:
             return Response({"success": False})
 
         profile = request.profile
@@ -435,6 +440,7 @@ class ScratchViewSet(
         logger.debug(f"Granting ownership of scratch {scratch} to {profile}")
 
         scratch.owner = profile
+        scratch.claim_token = None
         scratch.save()
 
         return Response({"success": True})
@@ -451,6 +457,7 @@ class ScratchViewSet(
 
         parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
+        fork_data.pop("claim_token")  # ensure a new token is generated
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
@@ -466,7 +473,7 @@ class ScratchViewSet(
         compile_scratch_update_score(new_scratch)
 
         return Response(
-            ScratchSerializer(new_scratch, context={"request": request}).data,
+            ClaimableScratchSerializer(new_scratch, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
