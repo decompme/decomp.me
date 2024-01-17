@@ -55,6 +55,32 @@ def get_db_asm(request_asm: str) -> Asm:
     return asm
 
 
+# 500 KB
+MAX_FILE_SIZE = 500 * 1024
+
+
+def cache_object(platform: Platform, file: File[Any]) -> Assembly:
+    # Validate file size
+    if file.size > MAX_FILE_SIZE:
+        raise serializers.ValidationError(
+            f"Object must be less than {MAX_FILE_SIZE} bytes"
+        )
+
+    # Check if ELF, Mach-O, or PE
+    obj_bytes = file.read()
+    if obj_bytes[:4] not in [b"\x7fELF", b"\xcf\xfa\xed\xfe", b"\x4d\x5a\x90\x00"]:
+        raise serializers.ValidationError("Object must be an ELF, Mach-O, or PE file")
+
+    assembly, _ = Assembly.objects.get_or_create(
+        hash=hashlib.sha256(obj_bytes).hexdigest(),
+        defaults={
+            "arch": platform.arch,
+            "elf_object": obj_bytes,
+        },
+    )
+    return assembly
+
+
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
         return CompilerWrapper.compile_code(
@@ -202,14 +228,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     if target_obj:
         asm = None
-        obj_bytes = target_obj.read()
-        h = hashlib.sha256(obj_bytes).hexdigest()
-        assembly = Assembly.objects.filter(hash=h).first() or Assembly.objects.create(
-            hash=h,
-            arch=platform.arch,
-            source_asm=None,
-            elf_object=obj_bytes,
-        )
+        assembly = cache_object(platform, target_obj)
     else:
         asm = get_db_asm(target_asm)
         assembly = CompilerWrapper.assemble_asm(platform, asm)

@@ -78,7 +78,6 @@ class CompilerWrapper:
         skip_flags_with_args = {
             "-B",
             "-I",
-            "-D",
             "-U",
         }
         skip_flags = {
