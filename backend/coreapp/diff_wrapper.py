@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+import shlex
 from pathlib import Path
 from typing import List
 
@@ -171,7 +172,7 @@ class DiffWrapper:
                 try:
                     objdump_proc = sandbox.run_subprocess(
                         platform.objdump_cmd.split()
-                        + flags
+                        + list(map(shlex.quote, flags))
                         + [sandbox.rewrite_path(target_path)],
                         shell=True,
                         env={
