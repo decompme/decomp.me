@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0048_remove_scratch_project_function_and_more"),
+        ("coreapp", "0049_alter_assembly_source_asm"),
     ]
 
     operations = [
