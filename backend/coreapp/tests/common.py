@@ -18,7 +18,7 @@ def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
 
 class BaseTestCase(APITestCase):
     # Create a scratch and return it as a DB object
-    def create_scratch(self, partial: Dict[str, str]) -> Scratch:
+    def create_scratch(self, partial: Dict[str, Any]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         scratch = Scratch.objects.get(slug=response.json()["slug"])

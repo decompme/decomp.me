@@ -145,7 +145,8 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         required=False, queryset=Preset.objects.all()
     )
     source_code = serializers.CharField(allow_blank=True, required=False)
-    target_asm = serializers.CharField(allow_blank=True)
+    target_asm = serializers.CharField(allow_blank=True, required=False)
+    target_obj = serializers.FileField(allow_null=True, required=False)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)

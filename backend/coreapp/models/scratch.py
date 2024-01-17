@@ -32,7 +32,7 @@ class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     time = models.DateTimeField(auto_now_add=True)
     arch = models.CharField(max_length=100)
-    source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE)
+    source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE, null=True)
     elf_object = models.BinaryField(blank=True)
 
 
