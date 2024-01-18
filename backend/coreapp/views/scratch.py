@@ -457,7 +457,6 @@ class ScratchViewSet(
 
         parent_data = ScratchSerializer(parent, context={"request": request}).data
         fork_data = {**parent_data, **request_data}
-        fork_data.pop("claim_token")  # ensure a new token is generated
 
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)

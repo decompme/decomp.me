@@ -193,7 +193,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const submit = async () => {
         try {
-            const scratch: api.Scratch = await api.post("/scratch", {
+            const scratch: api.ClaimableScratch = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
                 platform,

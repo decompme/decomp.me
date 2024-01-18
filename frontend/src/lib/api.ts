@@ -6,7 +6,7 @@ import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch, delete_ } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember, Preset } from "./api/types"
+import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Project, ProjectMember, Preset, ClaimableScratch } from "./api/types"
 import { projectUrl, scratchUrl } from "./api/urls"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 
@@ -100,7 +100,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
     return saveScratch
 }
 
-export async function claimScratch(scratch: Scratch): Promise<void> {
+export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
     const { success } = await post(`${scratchUrl(scratch)}/claim`, {
         token: scratch.claim_token,
     })
@@ -109,6 +109,7 @@ export async function claimScratch(scratch: Scratch): Promise<void> {
     if (!success)
         throw new Error("Scratch cannot be claimed")
 
+    delete scratch.claim_token
     await mutate(scratchUrl(scratch), {
         ...scratch,
         owner: user,

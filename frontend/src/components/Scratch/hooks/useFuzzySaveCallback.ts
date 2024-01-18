@@ -3,7 +3,6 @@ import { useCallback } from "react"
 import * as api from "@/lib/api"
 
 export enum FuzzySaveAction {
-    CLAIM,
     SAVE,
     FORK,
     NONE,
@@ -18,9 +17,7 @@ export default function useFuzzySaveCallback(
     const userIsYou = api.useUserIsYou()
 
     let action = FuzzySaveAction.NONE
-    if (!scratch.owner) {
-        action = FuzzySaveAction.CLAIM
-    } else if (userIsYou(scratch.owner)) {
+    if (userIsYou(scratch.owner)) {
         action = FuzzySaveAction.SAVE
     } else {
         action = FuzzySaveAction.FORK
@@ -30,9 +27,6 @@ export default function useFuzzySaveCallback(
         action,
         useCallback(async () => {
             switch (action) {
-            case FuzzySaveAction.CLAIM:
-                await api.claimScratch(scratch)
-                // fallthrough
             case FuzzySaveAction.SAVE:
                 setScratch(await saveScratch())
                 break
@@ -42,6 +36,6 @@ export default function useFuzzySaveCallback(
             case FuzzySaveAction.NONE:
                 break
             }
-        }, [action, forkScratch, saveScratch, scratch, setScratch]),
+        }, [action, forkScratch, saveScratch, setScratch]),
     ]
 }

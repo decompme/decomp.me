@@ -52,7 +52,10 @@ export interface Scratch extends TerseScratch {
     source_code: string
     context: string
     diff_label: string
-    claim_token: string | null
+}
+
+export interface ClaimableScratch extends Scratch {
+    claim_token: string
 }
 
 export interface Project {
