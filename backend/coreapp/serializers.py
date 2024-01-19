@@ -303,7 +303,9 @@ class ClaimableScratchSerializer(ScratchSerializer):
     claim_token = serializers.CharField(read_only=True)
 
     class Meta(ScratchSerializer.Meta):
-        exclude = ["target_assembly"]
+        exclude = [
+            field for field in ScratchSerializer.Meta.exclude if field != "claim_token"
+        ]
 
 
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
