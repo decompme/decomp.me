@@ -192,11 +192,12 @@ class UserTests(BaseTestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        claim_token = response.json()["claim_token"]
         slug = response.json()["slug"]
 
         self.test_github_login()
 
-        response = self.client.post(f"/api/scratch/{slug}/claim")
+        response = self.client.post(f"/api/scratch/{slug}/claim", {"token": claim_token})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()["success"])
 
@@ -226,11 +227,12 @@ class UserTests(BaseTestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+        claim_token = response.json()["claim_token"]
         slug = response.json()["slug"]
 
         self.test_github_login()
 
-        response = self.client.post(f"/api/scratch/{slug}/claim")
+        response = self.client.post(f"/api/scratch/{slug}/claim", {"token": claim_token})
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertTrue(response.json()["success"])
 
