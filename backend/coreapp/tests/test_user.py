@@ -197,7 +197,9 @@ class UserTests(BaseTestCase):
 
         self.test_github_login()
 
-        response = self.client.post(f"/api/scratch/{slug}/claim", {"token": claim_token})
+        response = self.client.post(
+            f"/api/scratch/{slug}/claim", {"token": claim_token}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()["success"])
 
@@ -232,7 +234,9 @@ class UserTests(BaseTestCase):
 
         self.test_github_login()
 
-        response = self.client.post(f"/api/scratch/{slug}/claim", {"token": claim_token})
+        response = self.client.post(
+            f"/api/scratch/{slug}/claim", {"token": claim_token}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertTrue(response.json()["success"])
 

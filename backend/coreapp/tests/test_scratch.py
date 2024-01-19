@@ -340,11 +340,15 @@ class ScratchDetailTests(BaseTestCase):
         scratch.claim_token = "1234"
         scratch.save()
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim", {"token": "1234"})
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": "1234"}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()["success"])
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim", {"token": "1234"})
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": "1234"}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.json()["success"])
 
