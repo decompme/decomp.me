@@ -19,7 +19,9 @@ class DecompilationTests(BaseTestCase):
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
         scratch = self.create_scratch(scratch_dict)
-        self.assertEqual(scratch.source_code, "? return_2(void) {\n    return 2;\n}\n")
+        self.assertEqual(
+            scratch.source_code, "s32 return_2(void) {\n    return 2;\n}\n"
+        )
 
     @requiresCompiler(GCC281PM)
     def test_decompile_endpoint(self) -> None:
@@ -38,7 +40,7 @@ class DecompilationTests(BaseTestCase):
             reverse("scratch-decompile", kwargs={"pk": scratch.slug})
         )
         self.assertEqual(
-            response.json()["decompilation"], "? return_2(void) {\n    return 2;\n}\n"
+            response.json()["decompilation"], "s32 return_2(void) {\n    return 2;\n}\n"
         )
 
         # Provide context and see that the decompilation changes
