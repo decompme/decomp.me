@@ -141,7 +141,12 @@ class ScratchModificationTests(BaseTestCase):
         self.assertGreater(scratch.score, 0)
 
         # Obtain ownership of the scratch
-        response = self.client.post(reverse("scratch-claim", kwargs={"pk": slug}))
+        response = self.client.post(
+            reverse("scratch-claim", kwargs={"pk": slug}),
+            {"token": scratch.claim_token},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
 
         # Update the scratch's code and compiler output
         scratch_patch = {
