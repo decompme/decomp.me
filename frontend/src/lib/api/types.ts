@@ -54,6 +54,10 @@ export interface Scratch extends TerseScratch {
     diff_label: string
 }
 
+export interface ClaimableScratch extends Scratch {
+    claim_token: string
+}
+
 export interface Project {
     slug: string
     creation_time: string

@@ -141,7 +141,12 @@ class ScratchModificationTests(BaseTestCase):
         self.assertGreater(scratch.score, 0)
 
         # Obtain ownership of the scratch
-        response = self.client.post(reverse("scratch-claim", kwargs={"pk": slug}))
+        response = self.client.post(
+            reverse("scratch-claim", kwargs={"pk": slug}),
+            {"token": scratch.claim_token},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
 
         # Update the scratch's code and compiler output
         scratch_patch = {
@@ -261,6 +266,7 @@ class ScratchForkTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        new_claim_token = response.json()["claim_token"]
         new_slug = response.json()["slug"]
 
         scratch = Scratch.objects.get(slug=slug)
@@ -271,6 +277,10 @@ class ScratchForkTests(BaseTestCase):
 
         # Make sure the name carried over to the fork
         self.assertEqual(scratch.name, fork.name)
+
+        # Ensure the new scratch has a (unique) claim token
+        self.assertIsNotNone(new_claim_token)
+        self.assertIsNot(new_claim_token, scratch.claim_token)
 
 
 class ScratchDetailTests(BaseTestCase):
@@ -330,20 +340,27 @@ class ScratchDetailTests(BaseTestCase):
         Create a scratch anonymously, claim it, then verify that claiming it again doesn't work.
         """
         scratch = self.create_nop_scratch()
-
         self.assertIsNone(scratch.owner)
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim")
+        scratch.claim_token = "1234"
+        scratch.save()
+
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": "1234"}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()["success"])
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim")
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": "1234"}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.json()["success"])
 
         updated_scratch = Scratch.objects.first()
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
+        self.assertIsNone(updated_scratch.claim_token)
 
     def test_family(self) -> None:
         root = self.create_nop_scratch()

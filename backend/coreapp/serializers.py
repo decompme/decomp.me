@@ -230,7 +230,10 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 
     class Meta:
         model = Scratch
-        exclude = ["target_assembly"]
+        exclude = [
+            "claim_token",
+            "target_assembly",
+        ]
         read_only_fields = [
             "parent",
             "owner",
@@ -292,6 +295,16 @@ class TerseScratchSerializer(ScratchSerializer):
             "parent",
             "preset",
             "libraries",
+        ]
+
+
+# On initial creation, include the "claim_token" field.
+class ClaimableScratchSerializer(ScratchSerializer):
+    claim_token = serializers.CharField(read_only=True)
+
+    class Meta(ScratchSerializer.Meta):
+        exclude = [
+            field for field in ScratchSerializer.Meta.exclude if field != "claim_token"
         ]
 
 

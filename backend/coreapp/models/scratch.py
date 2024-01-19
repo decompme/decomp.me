@@ -20,6 +20,10 @@ def gen_scratch_id() -> str:
     return ret
 
 
+def gen_claim_token() -> str:
+    return get_random_string(length=32)
+
+
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
@@ -106,6 +110,7 @@ class Scratch(models.Model):
     libraries = LibrariesField(default=list)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
+    claim_token = models.CharField(max_length=64, null=True, default=gen_claim_token)
 
     class Meta:
         ordering = ["-creation_time"]
