@@ -351,7 +351,7 @@ PSYQ_CCPSX = (
     'echo "[ccpsx]" >> SN.INI && '
     'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
-    'SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
+    'TMPDIR=. SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
