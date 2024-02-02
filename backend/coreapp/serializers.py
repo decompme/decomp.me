@@ -15,7 +15,7 @@ from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
-from .models.github import GitHubUser
+from .models.github import GitHubUser, NamedUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
@@ -39,7 +39,7 @@ def serialize_profile(
         user = profile.user
 
         github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
-        github_details = github.details() if github else None
+        github_details: Optional[NamedUser] = github.details() if github else None
 
         small_obj = {
             "is_you": user == request.user,  # TODO(#245): remove
