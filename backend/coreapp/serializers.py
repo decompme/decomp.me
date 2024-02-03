@@ -15,7 +15,7 @@ from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
-from .models.github import GitHubUser, NamedUser
+from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
