@@ -8,7 +8,7 @@ from django.contrib.sessions.models import Session
 from django.core.cache import cache
 from django.db import models, transaction
 from django.utils.timezone import now
-from github import BadCredentialsException, Github
+from github import BadCredentialsException, UnknownObjectException, Github
 from github.NamedUser import NamedUser
 from requests import RequestException
 from rest_framework import status
@@ -52,7 +52,7 @@ class GitHubUser(models.Model):
         verbose_name = "GitHub user"
         verbose_name_plural = "GitHub users"
 
-    def details(self) -> NamedUser:
+    def details(self) -> Optional[NamedUser]:
         cache_key = f"github_user_details:{self.github_id}"
         cached = cache.get(cache_key)
 
@@ -77,7 +77,11 @@ class GitHubUser(models.Model):
             # ... and fallback to using the github api unauthenticated
             # This *does* have a much stricter rate limit of 60 requests per minute,
             # which is why we tried using an auth token first
-            details = Github().get_user_by_id(self.github_id)
+            try:
+                details = Github().get_user_by_id(self.github_id)
+            except UnknownObjectException:
+                # The GitHub user id no longer exists!?
+                return None
 
         cache.set(cache_key, details, API_CACHE_TIMEOUT)
         return details
