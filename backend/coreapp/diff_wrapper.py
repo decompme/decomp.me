@@ -156,8 +156,8 @@ class DiffWrapper:
             "--line-numbers",
         ]
 
-        # --reloc seems to add a bunch of noise to x86 disasm?
-        if platform.arch != "i686":
+        # --reloc can cause issues with DOS disasm?
+        if platform.id != "msdos":
             flags += ["--reloc"]
 
         with Sandbox() as sandbox:
