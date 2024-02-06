@@ -282,7 +282,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
 
 class ScratchPagination(CursorPagination):
-    ordering = "-last_updated"
+    ordering = "-creation_time"
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 100
