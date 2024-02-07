@@ -237,7 +237,7 @@ class CompilerWrapper:
 
             compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stdout)
 
-            return CompilationResult(object_path.read_bytes(), compile_errors)
+            return CompilationResult(object_bytes, compile_errors)
 
     @staticmethod
     def assemble_asm(platform: Platform, asm: Asm) -> Assembly:
