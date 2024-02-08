@@ -35,6 +35,7 @@ export interface TerseScratch {
     creation_time: string
     last_updated: string
     compiler: string
+    preset: number
     platform: string
     language: string
     score: number // -1 = doesn't compile
@@ -48,7 +49,6 @@ export interface Scratch extends TerseScratch {
     description: string
     compiler_flags: string
     diff_flags: string[]
-    preset: number
     source_code: string
     context: string
     diff_label: string

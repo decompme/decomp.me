@@ -61,7 +61,7 @@ export default async function Page({ params }: { params: { username: string } })
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
             <ScratchList
-                url={userUrl(user) + "/scratches?page_size=32"}
+                url={userUrl(user) + "/scratches?page_size=20"}
                 item={ScratchItemNoOwner}
             />
         </section>
