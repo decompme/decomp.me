@@ -9,8 +9,8 @@ export type Props = Omit<ScratchListProps, "url">
 export default function YourScratchList(props: Props) {
     const user = useThisUser()
     const url = (!user || isAnonUser(user))
-        ? "/user/scratches?page_size=16" // Using this url all the time results in stale data if you log out
-        : `/users/${user.username}/scratches?page_size=16`
+        ? "/user/scratches?page_size=20" // Using this url all the time results in stale data if you log out
+        : `/users/${user.username}/scratches?page_size=20`
 
     return <ScratchList
         url={url}

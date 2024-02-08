@@ -287,6 +287,7 @@ class TerseScratchSerializer(ScratchSerializer):
             "creation_time",
             "platform",
             "compiler",
+            "preset",
             "language",
             "name",
             "score",

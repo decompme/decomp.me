@@ -16,8 +16,8 @@ export default function Page() {
                 />
             </section>
             <section className="md:w-1/2 lg:w-3/4">
-                <h2 className="mb-2 text-lg">Recently updated</h2>
-                <ScratchList url="/scratch?page_size=30" />
+                <h2 className="mb-2 text-lg">Recent activity</h2>
+                <ScratchList url="/scratch?page_size=20" />
             </section>
         </div>
     </main>

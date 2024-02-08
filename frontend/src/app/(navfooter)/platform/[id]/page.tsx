@@ -47,7 +47,7 @@ export default async function Page({ params }: { params: { id: number } }) {
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({platform.num_scratches})</h2>
             <ScratchList
-                url={"/scratch?platform=" + platform.id + "&page_size=32"}
+                url={"/scratch?platform=" + platform.id + "&page_size=20"}
                 item={ScratchItem}
             />
         </section>

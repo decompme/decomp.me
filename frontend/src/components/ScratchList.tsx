@@ -82,6 +82,8 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
+    const serverPresets = api.usePlatforms()[scratch.platform].presets
+    const presetName = serverPresets.find(p => p.id === scratch.preset)?.name
     const matchPercentString = getMatchPercentString(scratch)
 
     return (
@@ -100,7 +102,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetName || compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                     </span>
                     <div className={styles.actions}>
                         {children}
@@ -114,6 +116,8 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
+    const serverPresets = api.usePlatforms()[scratch.platform].presets
+    const presetName = serverPresets.find(p => p.id === scratch.preset)?.name
     const matchPercentString = getMatchPercentString(scratch)
 
     return (
@@ -126,7 +130,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     </Link>
                 </div>
                 <div className={styles.metadata}>
-                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    {presetName || compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                 </div>
             </div>
         </li>
