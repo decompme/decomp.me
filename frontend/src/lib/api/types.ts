@@ -21,10 +21,7 @@ export interface User {
     is_admin: boolean
     username: string
 
-    name: string
-    avatar_url: string | null
-    github_api_url: string | null
-    github_html_url: string | null
+    github_id: number | null
 }
 
 export interface TerseScratch {

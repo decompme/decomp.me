@@ -7,6 +7,7 @@ import Image from "next/image"
 import classNames from "classnames"
 
 import * as api from "@/lib/api"
+import { userAvatarUrl } from "@/lib/api/urls"
 
 import AnonymousFrogAvatar from "./AnonymousFrog"
 import styles from "./UserAvatar.module.scss"
@@ -31,7 +32,7 @@ export default function UserAvatar({ user, className }: Props) {
     }
 
     return <span className={classNames(styles.avatar, className)}>
-        {api.isAnonUser(user) ? <AnonymousFrogAvatar user={user}/> : user.avatar_url && <Image src={user.avatar_url} alt="" fill sizes="64px" />}
+        {api.isAnonUser(user) ? <AnonymousFrogAvatar user={user}/> : userAvatarUrl(user) && <Image src={userAvatarUrl(user)} alt="" fill sizes="64px" />}
         {isMounted && !userIsYou(user) && user.is_online && <div className={styles.online} title="Online" />}
     </span>
 }

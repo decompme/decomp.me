@@ -42,10 +42,6 @@ class GitHubUser(models.Model):
     )
     github_id = models.PositiveIntegerField(unique=True, editable=False)
     access_token = models.CharField(max_length=100)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    avatar_url = models.URLField(blank=True, null=True)
-    api_url = models.URLField(blank=True, null=True)
-    html_url = models.URLField(blank=True, null=True)
 
     class Meta:
         verbose_name = "GitHub user"
@@ -119,10 +115,6 @@ class GitHubUser(models.Model):
             gh_user.user.save(update_fields=["username"])
 
         gh_user.access_token = access_token
-        gh_user.name = details.name
-        gh_user.avatar_url = details.avatar_url
-        gh_user.api_url = details.url
-        gh_user.html_url = details.html_url
         gh_user.save()
 
         profile: Profile = (

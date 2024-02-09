@@ -8,6 +8,18 @@ export function userUrl(user: User): string {
     return `/users/${user.username}`
 }
 
+export function userAvatarUrl(user: User): string | null {
+    return user.github_id && `https://avatars.githubusercontent.com/u/${user.github_id}?v=4`
+}
+
+export function userGithubHtmlUrl(user: User): string | null {
+    return `https://github.com/${user.username}`
+}
+
+export function userGithubUrl(user: User): string | null {
+    return `https://api.github.com/users/${user.username}`
+}
+
 export function presetUrl(preset: Preset): string {
     return `/preset/${preset.id}`
 }

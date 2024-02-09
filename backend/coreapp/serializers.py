@@ -40,17 +40,6 @@ def serialize_profile(
 
         gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
 
-        if gh_user is None:
-            avatar_url: Optional[str] = None
-            name: Optional[str] = user.username
-            github_api_url: Optional[str] = None
-            github_html_url: Optional[str] = None
-        else:
-            avatar_url = gh_user.avatar_url
-            name = gh_user.name
-            github_api_url = gh_user.api_url
-            github_html_url = gh_user.html_url
-
         small_obj = {
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
@@ -58,7 +47,6 @@ def serialize_profile(
             "is_online": profile.is_online(),
             "is_admin": user.is_staff,
             "username": user.username,
-            "avatar_url": avatar_url,
         }
 
         if small:
@@ -66,10 +54,7 @@ def serialize_profile(
 
         return {
             **small_obj,
-            "email": user.email,
-            "name": name,
-            "github_api_url": github_api_url,
-            "github_html_url": github_html_url,
+            "github_id": gh_user.github_id if gh_user else None,
         }
 
 

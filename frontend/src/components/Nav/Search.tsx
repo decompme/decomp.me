@@ -9,7 +9,7 @@ import { useCombobox } from "downshift"
 import { useLayer } from "react-laag"
 
 import * as api from "@/lib/api"
-import { scratchUrl } from "@/lib/api/urls"
+import { scratchUrl, userAvatarUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
 import ScratchIcon from "../ScratchIcon"
@@ -156,8 +156,8 @@ function MountedSearch({ className }: { className?: string }) {
                                 {scratch.name}
                             </span>
                             {scratch.owner && (!api.isAnonUser(scratch.owner) ?
-                                scratch.owner.avatar_url && <Image
-                                    src={scratch.owner.avatar_url}
+                                userAvatarUrl(scratch.owner) && <Image
+                                    src={userAvatarUrl(scratch.owner)}
                                     alt={scratch.owner.username}
                                     width={16}
                                     height={16}
