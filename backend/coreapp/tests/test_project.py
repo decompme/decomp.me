@@ -20,11 +20,6 @@ class ProjectTests(TestCase):
 
         return project
 
-    @patch.object(
-        GitHubUser,
-        "details",
-        new=Mock(return_value=None),
-    )
     def test_create_api_json(self) -> None:
         """
         Test that you can create a project via the JSON API, and that it only works when is_staff=True

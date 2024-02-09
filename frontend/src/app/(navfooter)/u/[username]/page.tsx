@@ -7,7 +7,7 @@ import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
 import UserAvatar from "@/components/user/UserAvatar"
 import { get } from "@/lib/api/request"
 import { User } from "@/lib/api/types"
-import { userUrl } from "@/lib/api/urls"
+import { userGithubHtmlUrl, userUrl } from "@/lib/api/urls"
 
 export async function generateMetadata({ params }: { params: { username: string } }) {
     let user: User
@@ -44,13 +44,13 @@ export default async function Page({ params }: { params: { username: string } })
             <UserAvatar className="h-16 w-16" user={user} />
             <div>
                 <h1 className="text-center text-2xl font-medium tracking-tight md:text-left">
-                    {user.name}
+                    {user.username}
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1 text-sm text-gray-11">
-                    <GhostButton href={user.github_html_url}>
+                    <GhostButton href={userGithubHtmlUrl(user)}>
                         <div className="flex items-center gap-1">
-                            {user.github_html_url && <MarkGithubIcon size={16} aria-label="GitHub username" />}
+                            {userGithubHtmlUrl(user) && <MarkGithubIcon size={16} aria-label="GitHub username" />}
                             <span>{user.username}</span>
                         </div>
                     </GhostButton>

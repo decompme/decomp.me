@@ -6,6 +6,7 @@ import classNames from "classnames"
 import { useLayer } from "react-laag"
 
 import * as api from "@/lib/api"
+import { userAvatarUrl } from "@/lib/api/urls"
 
 import GitHubLoginButton from "../GitHubLoginButton"
 import VerticalMenu from "../VerticalMenu"
@@ -42,7 +43,7 @@ export default function LoginState({ className }: { className?: string }) {
     >
         <Image
             className={styles.avatar}
-            src={user.avatar_url}
+            src={userAvatarUrl(user)}
             alt="Account menu"
             width={28}
             height={28}

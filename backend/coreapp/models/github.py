@@ -4,12 +4,9 @@ import requests
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
-from django.core.cache import cache
 from django.db import models, transaction
 from django.utils.timezone import now
-from github import BadCredentialsException, UnknownObjectException, Github
-from github.NamedUser import NamedUser
+from github import Github
 from requests import RequestException
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -17,8 +14,6 @@ from rest_framework.exceptions import APIException
 from ..middleware import Request
 from .profile import Profile
 from .scratch import Scratch
-
-API_CACHE_TIMEOUT = 60 * 60  # 1 hour
 
 
 class BadOAuthCodeException(APIException):
@@ -51,40 +46,6 @@ class GitHubUser(models.Model):
     class Meta:
         verbose_name = "GitHub user"
         verbose_name_plural = "GitHub users"
-
-    def details(self) -> Optional[NamedUser]:
-        cache_key = f"github_user_details:{self.github_id}"
-        cached = cache.get(cache_key)
-
-        if cached:
-            return cached
-
-        try:
-            details = Github(self.access_token).get_user_by_id(self.github_id)
-        except BadCredentialsException:
-            # Uh oh - the user we're getting details for has an invalid token
-            # Revoke their session to force them to log in again ...
-            all_sessions = Session.objects.filter(expire_date__gte=now())
-
-            user_sessions = [
-                i.pk
-                for i in all_sessions
-                if i.get_decoded().get("_auth_user_id") == str(self.user.id)
-            ]
-
-            Session.objects.filter(pk__in=user_sessions).delete()
-
-            # ... and fallback to using the github api unauthenticated
-            # This *does* have a much stricter rate limit of 60 requests per minute,
-            # which is why we tried using an auth token first
-            try:
-                details = Github().get_user_by_id(self.github_id)
-            except UnknownObjectException:
-                # The GitHub user id no longer exists!?
-                return None
-
-        cache.set(cache_key, details, API_CACHE_TIMEOUT)
-        return details
 
     def __str__(self) -> str:
         return "@" + self.user.username
