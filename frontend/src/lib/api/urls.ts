@@ -9,17 +9,12 @@ export function userUrl(user: User): string {
 }
 
 export function userAvatarUrl(user: User): string | null {
-    return user.github_id && `https://avatars.githubusercontent.com/u/${user.github_id}?v=4`
+    return user.github_id && `https://avatars.githubusercontent.com/u/${user.github_id}`
 }
 
-// Although we technically only need the internal username, only return if we have a github id
+// Only returns a URL if the user has a GitHub ID
 export function userGithubHtmlUrl(user: User): string | null {
     return user.github_id && `https://github.com/${user.username}`
-}
-
-// Although we technically only need the internal username, only return if we have a github id
-export function userGithubUrl(user: User): string | null {
-    return user.github_id && `https://api.github.com/users/${user.username}`
 }
 
 export function presetUrl(preset: Preset): string {
