@@ -22,9 +22,7 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
 
 
-def serialize_profile(
-    request: Request, profile: Profile, small: bool = False
-) -> Dict[str, Any]:
+def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "is_you": profile == request.profile,  # TODO(#245): remove
@@ -40,20 +38,13 @@ def serialize_profile(
 
         gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
 
-        small_obj = {
+        return {
             "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": profile.id,
             "is_online": profile.is_online(),
             "is_admin": user.is_staff,
             "username": user.username,
-        }
-
-        if small:
-            return small_obj
-
-        return {
-            **small_obj,
             "github_id": gh_user.github_id if gh_user else None,
         }
 
@@ -67,11 +58,6 @@ else:
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(self.context["request"], profile)
-
-
-class TerseProfileField(ProfileField):
-    def to_representation(self, profile: Profile) -> Dict[str, Any]:
-        return serialize_profile(self.context["request"], profile, small=True)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
@@ -271,7 +257,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 
 
 class TerseScratchSerializer(ScratchSerializer):
-    owner = TerseProfileField(read_only=True)
+    owner = ProfileField(read_only=True)
 
     class Meta:
         model = Scratch
