@@ -38,8 +38,18 @@ def serialize_profile(
     else:
         user = profile.user
 
-        github: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
-        github_details = github.details() if github else None
+        gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+
+        if gh_user is None:
+            avatar_url: Optional[str] = None
+            name: Optional[str] = user.username
+            github_api_url: Optional[str] = None
+            github_html_url: Optional[str] = None
+        else:
+            avatar_url = gh_user.avatar_url
+            name = gh_user.name
+            github_api_url = gh_user.api_url
+            github_html_url = gh_user.html_url
 
         small_obj = {
             "is_you": user == request.user,  # TODO(#245): remove
@@ -48,7 +58,7 @@ def serialize_profile(
             "is_online": profile.is_online(),
             "is_admin": user.is_staff,
             "username": user.username,
-            "avatar_url": github_details.avatar_url if github_details else None,
+            "avatar_url": avatar_url,
         }
 
         if small:
@@ -57,9 +67,9 @@ def serialize_profile(
         return {
             **small_obj,
             "email": user.email,
-            "name": github_details.name if github_details else user.username,
-            "github_api_url": github_details.url if github_details else None,
-            "github_html_url": github_details.html_url if github_details else None,
+            "name": name,
+            "github_api_url": github_api_url,
+            "github_html_url": github_html_url,
         }
 
 
