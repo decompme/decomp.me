@@ -3,6 +3,7 @@ import logging
 from typing import Any, List, Sequence
 
 from django.db import models
+from django.contrib import admin
 from django.utils.crypto import get_random_string
 
 from ..libraries import Library
@@ -40,12 +41,16 @@ class Assembly(models.Model):
     elf_object = models.BinaryField(blank=True)
 
 
+class AssemblyAdmin(admin.ModelAdmin[Assembly]):
+    raw_id_fields = ["source_asm"]
+
+
 class CompilerConfig(models.Model):
     # TODO: validate compiler and platform
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
-    diff_flags = models.JSONField(default=list)
+    diff_flags = models.JSONField(default=list, blank=True, null=True)
 
 
 class LibrariesField(models.JSONField):
@@ -107,10 +112,12 @@ class Scratch(models.Model):
     score = models.IntegerField(default=-1)
     max_score = models.IntegerField(default=-1)
     match_override = models.BooleanField(default=False)
-    libraries = LibrariesField(default=list)
+    libraries = LibrariesField(default=list, blank=True, null=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    claim_token = models.CharField(max_length=64, null=True, default=gen_claim_token)
+    claim_token = models.CharField(
+        max_length=64, blank=True, null=True, default=gen_claim_token
+    )
 
     class Meta:
         ordering = ["-creation_time"]
@@ -130,3 +137,8 @@ class Scratch(models.Model):
         if self.parent is None:
             return []
         return [self.parent] + self.parent.all_parents()
+
+
+class ScratchAdmin(admin.ModelAdmin[Scratch]):
+    raw_id_fields = ["owner", "parent"]
+    readonly_fields = ["target_assembly"]
