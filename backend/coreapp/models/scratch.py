@@ -3,6 +3,7 @@ import logging
 from typing import Any, List, Sequence
 
 from django.db import models
+from django.contrib import admin
 from django.utils.crypto import get_random_string
 
 from ..libraries import Library
@@ -38,6 +39,10 @@ class Assembly(models.Model):
     arch = models.CharField(max_length=100)
     source_asm = models.ForeignKey(Asm, on_delete=models.CASCADE, null=True)
     elf_object = models.BinaryField(blank=True)
+
+
+class AssemblyAdmin(admin.ModelAdmin):
+    raw_id_fields = ["source_asm"]
 
 
 class CompilerConfig(models.Model):
@@ -110,7 +115,7 @@ class Scratch(models.Model):
     libraries = LibrariesField(default=list, blank=True, null=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    claim_token = models.CharField(max_length=64, null=True, default=gen_claim_token, editable=False)
+    claim_token = models.CharField(max_length=64, null=True, default=gen_claim_token)
 
     class Meta:
         ordering = ["-creation_time"]
@@ -130,3 +135,9 @@ class Scratch(models.Model):
         if self.parent is None:
             return []
         return [self.parent] + self.parent.all_parents()
+
+
+class ScratchAdmin(admin.ModelAdmin):
+    raw_id_fields = ["owner", "parent"]
+    readonly_fields = ["target_assembly"]
+    exclude = ["claim_token"]
