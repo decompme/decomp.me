@@ -24,7 +24,7 @@ class DecompilerWrapper:
             return f"decompiled({asm})"
 
         ret = default_source_code
-        if platform.arch in ["mips", "mipsee", "mipsel", "ppc"]:
+        if platform.arch in ["mips", "mipsee", "mipsel", "mipsel:4000", "ppc"]:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
                 return "/* Too many lines to decompile; please run m2c manually */"
             try:

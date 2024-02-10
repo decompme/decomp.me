@@ -30,6 +30,7 @@ from coreapp.platforms import (
     NDS_ARM9,
     PS1,
     PS2,
+    PSP,
     SATURN,
     SWITCH,
     WIN9X,
@@ -565,6 +566,30 @@ MWCPS2_30B22_020926 = MWCCCompiler(
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
+# PSP
+PSPSNC_1_2_7503_0 = GCCCompiler(
+    id="pspsnc_1.2.7503.0",
+    platform=PSP,
+    cc='${WINE} ${COMPILER_DIR}/pspsnc.exe -v -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+MWCCPSP_CC = '${WIBO} ${COMPILER_DIR}/mwccpsp.exe -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+
+MWCCPSP_3_0_1_121 = MWCCCompiler(
+    id="mwccpsp_3.0.1_121",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_147 = MWCCCompiler(
+    id="mwccpsp_3.0.1_147",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_151 = MWCCCompiler(
+    id="mwccpsp_3.0.1_151",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
 
 # N64
 IDO53 = IDOCompiler(
@@ -1216,6 +1241,11 @@ _all_compilers: List[Compiler] = [
     GCC281_MIPSEL,
     GCC29166_MIPSEL,
     GCC2952_MIPSEL,
+    # PSP
+    PSPSNC_1_2_7503_0,
+    MWCCPSP_3_0_1_121,
+    MWCCPSP_3_0_1_147,
+    MWCCPSP_3_0_1_151,
     # Saturn
     CYGNUS_2_7_96Q3,
     # PS2

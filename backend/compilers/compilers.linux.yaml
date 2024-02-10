@@ -125,6 +125,12 @@ ps2:
   - mwcps2-3.0b22-020716
   - mwcps2-3.0b22-020926
 
+psp:
+  - pspsnc_1.2.7503.0
+  - mwccpsp_3.0.1_121
+  - mwccpsp_3.0.1_147
+  - mwccpsp_3.0.1_151
+
 saturn:
   - cygnus-2.7-96Q3
 
