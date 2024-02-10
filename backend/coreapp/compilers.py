@@ -573,7 +573,9 @@ PSPSNC_1_2_7503_0 = GCCCompiler(
     cc='${WINE} ${COMPILER_DIR}/pspsnc.exe -v -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
-MWCCPSP_CC = '${WIBO} ${COMPILER_DIR}/mwccpsp.exe -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+MWCCPSP_CC = (
+    '${WIBO} ${COMPILER_DIR}/mwccpsp.exe -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+)
 
 MWCCPSP_3_0_1_121 = MWCCCompiler(
     id="mwccpsp_3.0.1_121",
