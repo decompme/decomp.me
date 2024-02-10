@@ -41,7 +41,7 @@ class Assembly(models.Model):
     elf_object = models.BinaryField(blank=True)
 
 
-class AssemblyAdmin(admin.ModelAdmin):
+class AssemblyAdmin(admin.ModelAdmin[Assembly]):
     raw_id_fields = ["source_asm"]
 
 
@@ -137,7 +137,7 @@ class Scratch(models.Model):
         return [self.parent] + self.parent.all_parents()
 
 
-class ScratchAdmin(admin.ModelAdmin):
+class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent"]
     readonly_fields = ["target_assembly"]
     exclude = ["claim_token"]
