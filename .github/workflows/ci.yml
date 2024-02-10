@@ -87,7 +87,7 @@ jobs:
           poetry run python3 libraries/download.py
       - name: Install wibo
         run: |-
-          wget https://github.com/decompals/wibo/releases/download/0.6.10/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+          wget https://github.com/decompals/wibo/releases/download/0.6.12/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
