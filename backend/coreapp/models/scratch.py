@@ -115,7 +115,7 @@ class Scratch(models.Model):
     libraries = LibrariesField(default=list, blank=True, null=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    claim_token = models.CharField(max_length=64, null=True, default=gen_claim_token)
+    claim_token = models.CharField(max_length=64, blank=True, null=True, default=gen_claim_token)
 
     class Meta:
         ordering = ["-creation_time"]
@@ -140,4 +140,3 @@ class Scratch(models.Model):
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent"]
     readonly_fields = ["target_assembly"]
-    exclude = ["claim_token"]
