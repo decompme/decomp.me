@@ -570,7 +570,7 @@ MWCPS2_30B22_020926 = MWCCCompiler(
 PSPSNC_1_2_7503_0 = GCCCompiler(
     id="pspsnc_1.2.7503.0",
     platform=PSP,
-    cc='${WIBO} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='${WINE} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 MWCCPSP_CC = (
