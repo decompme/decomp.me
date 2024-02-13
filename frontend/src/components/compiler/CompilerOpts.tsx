@@ -183,7 +183,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: undefined,
         })
     }
 
@@ -192,7 +191,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: undefined,
         })
     }
 
@@ -201,7 +199,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-            preset: undefined,
         })
     }
 
@@ -218,7 +215,6 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
     const setLibraries = (libraries: Library[]) => {
         onChange({
             libraries,
-            preset: undefined,
         })
     }
 
