@@ -28,6 +28,7 @@ const ICON_SOURCES = {
     "Saturn by JustDanPatrick": "https://upload.wikimedia.org/wikipedia/commons/archive/7/78/20220518145749%21Sega_Saturn_Black_Logo.svg",
     "MS-DOS by Microsoft": "https://commons.wikimedia.org/wiki/File:Msdos-icon.svg",
     "Windows 9x by Microsoft": "https://commons.wikimedia.org/wiki/File:Windows_Logo_(1992-2001).svg",
+    "PerSPire Font by Sean Liew": "https://www.fontspace.com/sean-liew",
 }
 
 type Contributor = {

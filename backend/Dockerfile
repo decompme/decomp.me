@@ -59,11 +59,11 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-  POETRY_VERSION=1.6.1 POETRY_HOME=/etc/poetry python3.10 -
+    POETRY_VERSION=1.6.1 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.6.10 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.12 /usr/local/sbin/wibo /usr/bin/
 
 RUN add-apt-repository -y ppa:dosemu2/ppa && \
     apt-get update && \
@@ -75,11 +75,11 @@ ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN9X_SUPPORT
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-        wine; \
+    wine; \
     fi
 
 # msdos specific
@@ -107,9 +107,9 @@ USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-       [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
@@ -123,6 +123,7 @@ ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT
 ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_PSP_SUPPORT
 ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 
@@ -135,6 +136,7 @@ ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
 ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
 ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
+ENV ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT}
 ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}

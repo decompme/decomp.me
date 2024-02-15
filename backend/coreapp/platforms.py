@@ -256,7 +256,7 @@ PS1 = Platform(
     name="PlayStation",
     description="MIPS (little-endian)",
     arch="mipsel",
-    assemble_cmd='mips-linux-gnu-as -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
+    assemble_cmd='mips-linux-gnu-as -EL -march=r3000 -mabi=32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
@@ -277,6 +277,36 @@ PS1 = Platform(
 
 .macro move a, b
 	addu \\a, \\b, $zero
+.endm
+
+.set noat
+.set noreorder
+
+""",
+)
+
+PSP = Platform(
+    id="psp",
+    name="PlayStation Portable",
+    description="MIPS (little-endian)",
+    arch="mipsel:4000",
+    assemble_cmd='mips-linux-gnu-as -EL -march=r4000 -mabi=32 -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="mips-linux-gnu-objdump",
+    nm_cmd="mips-linux-gnu-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
+    asm_prelude="""
+.macro .late_rodata
+    .section .rodata
+.endm
+
+.macro glabel label
+    .global \label
+    .type \label, @function
+    \label:
+.endm
+
+.macro jlabel label
+    \label:
 .endm
 
 .set noat
@@ -713,6 +743,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "n3ds": N3DS,
         "ps1": PS1,
         "ps2": PS2,
+        "psp": PSP,
         "saturn": SATURN,
         "macosx": MACOSX,
         "msdos": MSDOS,

@@ -8,6 +8,7 @@ import LogoN64 from "./n64.svg"
 import LogoNDS from "./nds.svg"
 import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
+import LogoPSP from "./psp.svg"
 import LogoSaturn from "./saturn.svg"
 import LogoSwitch from "./switch.svg"
 import UnknownIcon from "./unknown.svg"
@@ -25,6 +26,7 @@ const ICONS = {
     "nds_arm9": LogoNDS,
     "ps1": LogoPS1,
     "ps2": LogoPS2,
+    "psp": LogoPSP,
     "n3ds": LogoN3DS,
     "switch": LogoSwitch,
     "saturn": LogoSaturn,
