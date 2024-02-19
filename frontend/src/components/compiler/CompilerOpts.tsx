@@ -203,13 +203,20 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
     }
 
     const setPreset = (preset: api.Preset) => {
-        onChange({
-            compiler: preset.compiler,
-            compiler_flags: preset.compiler_flags,
-            diff_flags: preset.diff_flags,
-            libraries: preset.libraries,
-            preset: preset.id,
-        })
+        if (preset) {
+            onChange({
+                compiler: preset.compiler,
+                compiler_flags: preset.compiler_flags,
+                diff_flags: preset.diff_flags,
+                libraries: preset.libraries,
+                preset: preset.id,
+            })
+        } else {
+            // "Custom" preset selected
+            onChange({
+                preset: null,
+            })
+        }
     }
 
     const setLibraries = (libraries: Library[]) => {

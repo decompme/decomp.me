@@ -2,12 +2,10 @@ import * as api from "@/lib/api"
 
 import Select from "../Select2"
 
-function presetsToOptions(presets: api.Preset[], addCustom: boolean): { [key: string]: string } {
+function presetsToOptions(presets: api.Preset[]): { [key: string]: string } {
     const options = {}
 
-    if (addCustom) {
-        options["Custom"] = "Custom"
-    }
+    options["Custom"] = "Custom"
 
     for (const preset of presets) {
         options[preset.name] = preset.name
@@ -33,12 +31,10 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
 
     return <Select
         className={className}
-        options={presetsToOptions(serverPresets, !selectedPreset)}
+        options={presetsToOptions(serverPresets)}
         value={selectedPreset?.name || "Custom"}
         onChange={name => {
-            const preset = serverPresets.find(p => p.name === name)
-            if (preset)
-                setPreset(preset)
+            setPreset(serverPresets.find(p => p.name === name))
         }}
     />
 }
