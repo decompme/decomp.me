@@ -169,6 +169,7 @@ jobs:
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
+            --tmpfs /dev/shm:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --entrypoint /bin/bash \
