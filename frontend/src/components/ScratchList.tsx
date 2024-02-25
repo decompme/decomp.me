@@ -127,6 +127,11 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const preset = serverPresets.find(p => p.id === scratch.preset)
     const matchPercentString = getMatchPercentString(scratch)
 
+    const presetOrCompiler = presetName ?
+        <Link href={presetUrl(preset)} className={styles.link}>
+            {presetName}
+        </Link> : <span>{compilerName}</span>
+
     return (
         <li className={styles.item}>
             <div className={styles.scratch}>
@@ -137,10 +142,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     </Link>
                 </div>
                 <div className={styles.metadata}>
-                    <Link href={presetUrl(preset)} className={classNames(styles.link, styles.name)}>
-                        {presetName}
-                    </Link>
-                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                 </div>
             </div>
         </li>
