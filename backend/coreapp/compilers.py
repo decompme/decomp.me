@@ -33,7 +33,7 @@ from coreapp.platforms import (
     PSP,
     SATURN,
     SWITCH,
-    WIN9X,
+    WIN32,
     Platform,
 )
 from django.conf import settings
@@ -1073,61 +1073,61 @@ CL_WIN = '${WINE} "${COMPILER_DIR}"/Bin/CL.EXE /c /nologo /IZ:"${COMPILER_DIR}"/
 
 MSVC40 = MSVCCompiler(
     id="msvc4.0",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC42 = MSVCCompiler(
     id="msvc4.2",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC60 = MSVCCompiler(
     id="msvc6.0",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC63 = MSVCCompiler(
     id="msvc6.3",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC64 = MSVCCompiler(
     id="msvc6.4",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC65 = MSVCCompiler(
     id="msvc6.5",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC65PP = MSVCCompiler(
     id="msvc6.5pp",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC66 = MSVCCompiler(
     id="msvc6.6",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC70 = MSVCCompiler(
     id="msvc7.0",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 
 MSVC71 = MSVCCompiler(
     id="msvc7.1",
-    platform=WIN9X,
+    platform=WIN32,
     cc=CL_WIN,
 )
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
@@ -1344,7 +1344,7 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
-    # WIN9X
+    # WIN32
     MSVC40,
     MSVC42,
     MSVC60,
@@ -1355,7 +1355,7 @@ _all_compilers: List[Compiler] = [
     MSVC66,
     MSVC70,
     MSVC71,
-    # Watcom, DOS and Win9x
+    # Watcom, DOS and Win32
     WATCOM_105_C,
     WATCOM_105_CPP,
     WATCOM_105A_C,

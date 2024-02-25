@@ -157,7 +157,7 @@ jobs:
             --build-arg ENABLE_MSDOS_SUPPORT=YES \
             --build-arg ENABLE_PS2_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
-            --build-arg ENABLE_WIN9X_SUPPORT=YES
+            --build-arg ENABLE_WIN32_SUPPORT=YES
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox

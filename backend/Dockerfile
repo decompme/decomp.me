@@ -74,10 +74,10 @@ RUN add-apt-repository -y ppa:dosemu2/ppa && \
 
 ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_PS2_SUPPORT
-ARG ENABLE_WIN9X_SUPPORT
+ARG ENABLE_WIN32_SUPPORT
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
     wine; \
@@ -110,7 +110,7 @@ USER user
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN9X_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
     wineboot --init; \
     fi
 
@@ -140,6 +140,6 @@ ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
 ENV ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT}
 ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
-ENV ENABLE_WIN9X_SUPPORT=${ENABLE_WIN9X_SUPPORT}
+ENV ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

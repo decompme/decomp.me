@@ -22,7 +22,7 @@ services:
         # dont install wine32 etc by default
         ENABLE_MSDOS_SUPPORT: "NO"
         ENABLE_PS2_SUPPORT: "NO"
-        ENABLE_WIN9X_SUPPORT: "NO"
+        ENABLE_WIN32_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
         # dont install dosemu by default
