@@ -1,3 +1,5 @@
+import { platformUrl } from "@/lib/api/urls"
+
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
 import LogoIRIX from "./irix.svg"
@@ -40,8 +42,12 @@ export type Props = {
     size?: string | number
 }
 
-export default function PlatformIcon({ platform, className, size }: Props) {
-    const Icon = ICONS[platform] || UnknownIcon
+export function platformIcon(platform: string) {
+    return ICONS[platform] || UnknownIcon
+}
+
+export function PlatformIcon({ platform, className, size }: Props) {
+    const Icon = platformIcon(platform)
 
     return <Icon width={size} height={size} className={className} />
 }

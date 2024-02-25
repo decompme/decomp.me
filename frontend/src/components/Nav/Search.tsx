@@ -12,7 +12,7 @@ import * as api from "@/lib/api"
 import { scratchUrl, userAvatarUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
-import ScratchIcon from "../ScratchIcon"
+import PlatformLink from "../PlatformLink"
 import AnonymousFrogAvatar from "../user/AnonymousFrog"
 import verticalMenuStyles from "../VerticalMenu.module.scss" // eslint-disable-line css-modules/no-unused-class
 
@@ -151,7 +151,7 @@ function MountedSearch({ className }: { className?: string }) {
                             href={scratchUrl(scratch)}
                             className={classNames(verticalMenuStyles.item, styles.item)}
                         >
-                            <ScratchIcon scratch={scratch} size={16} />
+                            <PlatformLink scratch={scratch} size={16} />
                             <span className={styles.itemName}>
                                 {scratch.name}
                             </span>

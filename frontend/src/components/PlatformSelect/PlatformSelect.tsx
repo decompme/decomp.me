@@ -1,6 +1,6 @@
 import classNames from "classnames"
 
-import PlatformIcon from "./PlatformIcon"
+import { PlatformIcon } from "./PlatformIcon"
 import styles from "./PlatformSelect.module.scss"
 
 export type Props = {

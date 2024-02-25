@@ -1,6 +1,6 @@
 import classNames from "classnames"
 
-import PlatformIcon, { PLATFORMS } from "./PlatformIcon"
+import { PlatformIcon, PLATFORMS } from "./PlatformIcon"
 import styles from "./ScrollingPlatformIcons.module.scss"
 
 function SingleSet() {

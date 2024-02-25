@@ -15,18 +15,20 @@ import AsyncButton from "./AsyncButton"
 import Button from "./Button"
 import LoadingSpinner from "./loading.svg"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
-import ScratchIcon from "./ScratchIcon"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
+import PlatformLink from "./PlatformLink"
+import { PlatformIcon } from "./PlatformSelect/PlatformIcon"
 
 export interface Props {
     url?: string
     className?: string
-    item?: ({ scratch }: { scratch: api.TerseScratch }) => JSX.Element
+    item?: ({ scratch, noLink }: { scratch: api.TerseScratch, noLink?: boolean }) => JSX.Element
     emptyButtonLabel?: ReactNode
+    noLink?: boolean
 }
 
-export default function ScratchList({ url, className, item, emptyButtonLabel }: Props) {
+export default function ScratchList({ url, className, item, emptyButtonLabel, noLink }: Props) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(url || "/scratch")
 
     if (results.length === 0 && isLoading) {
@@ -41,7 +43,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(scratch => (
-                <Item key={scratchUrl(scratch)} scratch={scratch} />
+                <Item key={scratchUrl(scratch)} scratch={scratch} noLink={noLink} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -79,7 +81,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
     return matchPercentString
 }
 
-export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
+export function ScratchItem({ scratch, children, noLink } : { scratch: api.TerseScratch, children?: ReactNode, noLink?: boolean }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
@@ -96,7 +98,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
-                    <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+                    { (noLink ? <PlatformIcon size={16} platform={scratch.platform} className={styles.icon} /> : <PlatformLink size={16} scratch={scratch} className={styles.icon} />) }
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
 
                         {scratch.name}
@@ -136,7 +138,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
-                    <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+                    <PlatformLink size={16} scratch={scratch} className={styles.icon} />
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                         {scratch.name}
                     </Link>
@@ -177,7 +179,7 @@ export function SingleLineScratchItem({ scratch }: { scratch: api.TerseScratch }
 
     return (
         <li className={styles.singleLine}>
-            <ScratchIcon size={16} scratch={scratch} className={styles.icon} />
+            <PlatformLink size={16} scratch={scratch} className={styles.icon} />
             <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                 {scratch.name}
             </Link>

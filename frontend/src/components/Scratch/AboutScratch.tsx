@@ -7,7 +7,7 @@ import { Scratch, Project, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, projectUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
-import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
 import PlatformName from "../PlatformSelect/PlatformName"
 import { getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
