@@ -14,11 +14,11 @@ import useTranslation from "@/lib/i18n/translate"
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
 import LoadingSpinner from "./loading.svg"
+import PlatformLink from "./PlatformLink"
+import { PlatformIcon } from "./PlatformSelect/PlatformIcon"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
-import PlatformLink from "./PlatformLink"
-import { PlatformIcon } from "./PlatformSelect/PlatformIcon"
 
 export interface Props {
     url?: string

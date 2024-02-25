@@ -1,8 +1,8 @@
-import * as api from "@/lib/api"
-
 import Link from "next/link"
 
+import * as api from "@/lib/api"
 import { platformUrl } from "@/lib/api/urls"
+
 import { platformIcon } from "./PlatformSelect/PlatformIcon"
 
 export type Props = {
