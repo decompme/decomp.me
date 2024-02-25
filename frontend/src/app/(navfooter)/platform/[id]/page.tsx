@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
-import ScratchList, { ScratchItem, ScratchItemPresetList } from "@/components/ScratchList"
+import ScratchList, { ScratchItemPresetList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { PlatformMetadata } from "@/lib/api/types"
 

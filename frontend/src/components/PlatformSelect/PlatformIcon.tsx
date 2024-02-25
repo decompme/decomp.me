@@ -1,5 +1,3 @@
-import { platformUrl } from "@/lib/api/urls"
-
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
 import LogoIRIX from "./irix.svg"

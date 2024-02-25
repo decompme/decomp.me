@@ -15,7 +15,6 @@ import AsyncButton from "./AsyncButton"
 import Button from "./Button"
 import LoadingSpinner from "./loading.svg"
 import PlatformLink from "./PlatformLink"
-import { PlatformIcon } from "./PlatformSelect/PlatformIcon"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
 import UserLink from "./user/UserLink"
@@ -23,7 +22,7 @@ import UserLink from "./user/UserLink"
 export interface Props {
     url?: string
     className?: string
-    item?: ({ scratch  }: { scratch: api.TerseScratch }) => JSX.Element
+    item?: ({ scratch }: { scratch: api.TerseScratch }) => JSX.Element
     emptyButtonLabel?: ReactNode
 }
 
