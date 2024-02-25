@@ -146,7 +146,7 @@ msdos:
   - wcc10.6
   - wcc11.0
 
-win9x:
+win32:
   - msvc4.0
   - msvc4.2
   - msvc6.0

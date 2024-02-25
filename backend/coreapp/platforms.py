@@ -78,9 +78,9 @@ MSDOS = Platform(
     """,
 )
 
-WIN9X = Platform(
-    id="win9x",
-    name="Windows 9x",
+WIN32 = Platform(
+    id="win32",
+    name="Windows (9x/NT)",
     description="x86 (32bit)",
     arch="i686",
     assemble_cmd='i386-pc-msdosdjgpp-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$INPUT"',
@@ -747,6 +747,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "saturn": SATURN,
         "macosx": MACOSX,
         "msdos": MSDOS,
-        "win9x": WIN9X,
+        "win32": WIN32,
     }
 )
