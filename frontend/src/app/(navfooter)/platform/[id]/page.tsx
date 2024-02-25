@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: { id: number } }) {
             <ScratchList
                 url={"/scratch?platform=" + platform.id + "&page_size=20"}
                 item={ScratchItem}
-                noLink={true}
+                isLink={false}
             />
         </section>
     </main>

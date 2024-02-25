@@ -23,12 +23,12 @@ import UserLink from "./user/UserLink"
 export interface Props {
     url?: string
     className?: string
-    item?: ({ scratch, noLink }: { scratch: api.TerseScratch, noLink?: boolean }) => JSX.Element
+    item?: ({ scratch, isLink }: { scratch: api.TerseScratch, isLink?: boolean }) => JSX.Element
     emptyButtonLabel?: ReactNode
-    noLink?: boolean
+    isLink?: boolean
 }
 
-export default function ScratchList({ url, className, item, emptyButtonLabel, noLink }: Props) {
+export default function ScratchList({ url, className, item, emptyButtonLabel, isLink }: Props) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(url || "/scratch")
 
     if (results.length === 0 && isLoading) {
@@ -43,7 +43,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel, no
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(scratch => (
-                <Item key={scratchUrl(scratch)} scratch={scratch} noLink={noLink} />
+                <Item key={scratchUrl(scratch)} scratch={scratch} isLink={isLink} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -81,7 +81,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
     return matchPercentString
 }
 
-export function ScratchItem({ scratch, children, noLink } : { scratch: api.TerseScratch, children?: ReactNode, noLink?: boolean }) {
+export function ScratchItem({ scratch, children, isLink = true } : { scratch: api.TerseScratch, children?: ReactNode, isLink?: boolean }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
@@ -98,7 +98,7 @@ export function ScratchItem({ scratch, children, noLink } : { scratch: api.Terse
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
-                    { (noLink ? <PlatformIcon size={16} platform={scratch.platform} className={styles.icon} /> : <PlatformLink size={16} scratch={scratch} className={styles.icon} />) }
+                    { (isLink ? <PlatformLink size={16} scratch={scratch} className={styles.icon} /> : <PlatformIcon size={16} platform={scratch.platform} className={styles.icon} />) }
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
 
                         {scratch.name}
