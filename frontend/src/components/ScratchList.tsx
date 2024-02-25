@@ -8,7 +8,7 @@ import classNames from "classnames"
 import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
-import { scratchUrl } from "@/lib/api/urls"
+import { presetUrl, scratchUrl } from "@/lib/api/urls"
 import useTranslation from "@/lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
@@ -84,6 +84,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
     const presetName = serverPresets.find(p => p.id === scratch.preset)?.name
+    const preset = serverPresets.find(p => p.id === scratch.preset)
     const matchPercentString = getMatchPercentString(scratch)
 
     return (
@@ -101,8 +102,17 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                     </div>}
                 </div>
                 <div className={styles.metadata}>
+                    {presetName ? (
+                        <Link href={presetUrl(preset)} className={styles.link}>
+                            {presetName}{"\u00A0"}
+                        </Link>
+                    ) : (
+                        <>
+                            {compilerName}{"\u00A0"}
+                        </>
+                    )}
                     <span>
-                        {presetName || compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                     </span>
                     <div className={styles.actions}>
                         {children}
@@ -118,6 +128,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilerName = compilersTranslation.t(scratch.compiler)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
     const presetName = serverPresets.find(p => p.id === scratch.preset)?.name
+    const preset = serverPresets.find(p => p.id === scratch.preset)
     const matchPercentString = getMatchPercentString(scratch)
 
     return (
@@ -130,7 +141,10 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     </Link>
                 </div>
                 <div className={styles.metadata}>
-                    {presetName || compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    <Link href={presetUrl(preset)} className={classNames(styles.link, styles.name)}>
+                        {presetName}
+                    </Link>
+                    {compilerName} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                 </div>
             </div>
         </li>
