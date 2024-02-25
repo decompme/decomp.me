@@ -23,12 +23,11 @@ import UserLink from "./user/UserLink"
 export interface Props {
     url?: string
     className?: string
-    item?: ({ scratch, isLink }: { scratch: api.TerseScratch, isLink?: boolean }) => JSX.Element
+    item?: ({ scratch  }: { scratch: api.TerseScratch }) => JSX.Element
     emptyButtonLabel?: ReactNode
-    isLink?: boolean
 }
 
-export default function ScratchList({ url, className, item, emptyButtonLabel, isLink }: Props) {
+export default function ScratchList({ url, className, item, emptyButtonLabel }: Props) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(url || "/scratch")
 
     if (results.length === 0 && isLoading) {
@@ -43,7 +42,7 @@ export default function ScratchList({ url, className, item, emptyButtonLabel, is
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(scratch => (
-                <Item key={scratchUrl(scratch)} scratch={scratch} isLink={isLink} />
+                <Item key={scratchUrl(scratch)} scratch={scratch} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -81,7 +80,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
     return matchPercentString
 }
 
-export function ScratchItem({ scratch, children, isLink = true } : { scratch: api.TerseScratch, children?: ReactNode, isLink?: boolean }) {
+export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
@@ -98,7 +97,7 @@ export function ScratchItem({ scratch, children, isLink = true } : { scratch: ap
         <li className={styles.item}>
             <div className={styles.scratch}>
                 <div className={styles.header}>
-                    { (isLink ? <PlatformLink size={16} scratch={scratch} className={styles.icon} /> : <PlatformIcon size={16} platform={scratch.platform} className={styles.icon} />) }
+                    <PlatformLink size={16} scratch={scratch} className={styles.icon} />
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
 
                         {scratch.name}
@@ -144,7 +143,9 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     </Link>
                 </div>
                 <div className={styles.metadata}>
-                    {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    <span>
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </span>
                 </div>
             </div>
         </li>
