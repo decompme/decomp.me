@@ -263,7 +263,7 @@ class DiffWrapper:
             objdump_flags,
         )
         # hack to ignore functions other than the one we want to diff, in case debug flags cause inlined/template functions to be included in the diff (it happens)
-        if platform.id in ["win9x"] and diff_label is not None and diff_label:
+        if platform.id in ["win32"] and diff_label is not None and diff_label:
             objdump_flags += [f"--disassemble={diff_label}"]
         try:
             mydump = DiffWrapper.get_dump(
