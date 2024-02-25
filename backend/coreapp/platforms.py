@@ -80,7 +80,7 @@ MSDOS = Platform(
 
 WIN32 = Platform(
     id="win32",
-    name="Windows 32",
+    name="Windows (9x/NT)",
     description="x86 (32bit)",
     arch="i686",
     assemble_cmd='i386-pc-msdosdjgpp-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$INPUT"',
