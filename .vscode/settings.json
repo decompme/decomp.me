@@ -18,7 +18,7 @@
         "editor.formatOnSave": true,
     },
     "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
         "editor.formatOnSave": true,
     },
     // stylelint
