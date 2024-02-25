@@ -87,6 +87,11 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
     const preset = serverPresets.find(p => p.id === scratch.preset)
     const matchPercentString = getMatchPercentString(scratch)
 
+    const presetOrCompiler = presetName ?
+        <Link href={presetUrl(preset)} className={styles.link}>
+            {presetName}
+        </Link> : <span>{compilerName}</span>
+
     return (
         <li className={styles.item}>
             <div className={styles.scratch}>
@@ -102,17 +107,8 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                     </div>}
                 </div>
                 <div className={styles.metadata}>
-                    {presetName ? (
-                        <Link href={presetUrl(preset)} className={styles.link}>
-                            {presetName}{"\u00A0"}
-                        </Link>
-                    ) : (
-                        <>
-                            {compilerName}{"\u00A0"}
-                        </>
-                    )}
                     <span>
-                        • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
                     </span>
                     <div className={styles.actions}>
                         {children}
