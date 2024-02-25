@@ -83,9 +83,9 @@ export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch,
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
+    const matchPercentString = getMatchPercentString(scratch)
     const preset = serverPresets.find(p => p.id === scratch.preset)
     const presetName = preset?.name
-    const matchPercentString = getMatchPercentString(scratch)
 
     const presetOrCompiler = presetName ?
         <Link href={presetUrl(preset)} className={styles.link}>
@@ -98,9 +98,7 @@ export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch,
                 <div className={styles.header}>
                     <PlatformLink size={16} scratch={scratch} className={styles.icon} />
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
-
                         {scratch.name}
-
                     </Link>
                     {scratch.owner && <div className={styles.owner}>
                         <UserLink user={scratch.owner} />
@@ -123,9 +121,9 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
     const serverPresets = api.usePlatforms()[scratch.platform].presets
+    const matchPercentString = getMatchPercentString(scratch)
     const preset = serverPresets.find(p => p.id === scratch.preset)
     const presetName = preset?.name
-    const matchPercentString = getMatchPercentString(scratch)
 
     const presetOrCompiler = presetName ?
         <Link href={presetUrl(preset)} className={styles.link}>
@@ -151,6 +149,40 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     )
 }
 
+export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch }) {
+    const compilersTranslation = useTranslation("compilers")
+    const compilerName = compilersTranslation.t(scratch.compiler)
+    const serverPresets = api.usePlatforms()[scratch.platform].presets
+    const matchPercentString = getMatchPercentString(scratch)
+    const preset = serverPresets.find(p => p.id === scratch.preset)
+    const presetName = preset?.name
+
+    const presetOrCompiler = presetName ?
+        <Link href={presetUrl(preset)} className={styles.link}>
+            {presetName}
+        </Link> : <span>{compilerName}</span>
+
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
+                        {scratch.name}
+                    </Link>
+                    {scratch.owner && <div className={styles.owner}>
+                        <UserLink user={scratch.owner} />
+                    </div>}
+                </div>
+                <div className={styles.metadata}>
+                    <span>
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                    </span>
+                </div>
+            </div>
+        </li>
+    )
+}
+
 export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }) {
     const matchPercentString = getMatchPercentString(scratch)
 
@@ -162,7 +194,9 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                         {scratch.name}
                     </Link>
                     <div className={styles.metadata}>
-                        {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        <span>
+                            {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        </span>
                     </div>
                     {scratch.owner && <div className={styles.owner}>
                         <UserLink user={scratch.owner} />
