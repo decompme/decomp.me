@@ -14,7 +14,10 @@ from coreapp.flags import (
     COMMON_GCC_SATURN_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
-    COMMON_MWCC_FLAGS,
+    COMMON_MWCC_NDS_ARM9_FLAGS,
+    COMMON_MWCC_PS2_FLAGS,
+    COMMON_MWCC_PSP_FLAGS,
+    COMMON_MWCC_WII_GC_FLAGS,
     COMMON_WATCOM_FLAGS,
     Flags,
     Language,
@@ -128,9 +131,30 @@ class IDOCompiler(Compiler):
 
 
 @dataclass(frozen=True)
-class MWCCCompiler(Compiler):
+class MWCCNDSArm9Compiler(Compiler):
     is_mwcc: ClassVar[bool] = True
-    flags: ClassVar[Flags] = COMMON_MWCC_FLAGS
+    flags: ClassVar[Flags] = COMMON_MWCC_NDS_ARM9_FLAGS
+    library_include_flag: str = "-IZ:"
+
+
+@dataclass(frozen=True)
+class MWCCPS2Compiler(Compiler):
+    is_mwcc: ClassVar[bool] = True
+    flags: ClassVar[Flags] = COMMON_MWCC_PS2_FLAGS
+    library_include_flag: str = "-IZ:"
+
+
+@dataclass(frozen=True)
+class MWCCPSPCompiler(Compiler):
+    is_mwcc: ClassVar[bool] = True
+    flags: ClassVar[Flags] = COMMON_MWCC_PSP_FLAGS
+    library_include_flag: str = "-IZ:"
+
+
+@dataclass(frozen=True)
+class MWCCWiiGCCompiler(Compiler):
+    is_mwcc: ClassVar[bool] = True
+    flags: ClassVar[Flags] = COMMON_MWCC_WII_GC_FLAGS
     library_include_flag: str = "-IZ:"
 
 
@@ -536,31 +560,31 @@ EE_GCC32_040921 = GCCCompiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_23_991202 = MWCCCompiler(
+MWCPS2_23_991202 = MWCCPS2Compiler(
     id="mwcps2-2.3-991202",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_011126 = MWCCCompiler(
+MWCPS2_30B22_011126 = MWCCPS2Compiler(
     id="mwcps2-3.0b22-011126",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_020123 = MWCCCompiler(
+MWCPS2_30B22_020123 = MWCCPS2Compiler(
     id="mwcps2-3.0b22-020123",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_020716 = MWCCCompiler(
+MWCPS2_30B22_020716 = MWCCPS2Compiler(
     id="mwcps2-3.0b22-020716",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_020926 = MWCCCompiler(
+MWCPS2_30B22_020926 = MWCCPS2Compiler(
     id="mwcps2-3.0b22-020926",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
@@ -577,17 +601,17 @@ MWCCPSP_CC = (
     '${WIBO} ${COMPILER_DIR}/mwccpsp.exe -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 )
 
-MWCCPSP_3_0_1_121 = MWCCCompiler(
+MWCCPSP_3_0_1_121 = MWCCPSPCompiler(
     id="mwccpsp_3.0.1_121",
     platform=PSP,
     cc=MWCCPSP_CC,
 )
-MWCCPSP_3_0_1_147 = MWCCCompiler(
+MWCCPSP_3_0_1_147 = MWCCPSPCompiler(
     id="mwccpsp_3.0.1_147",
     platform=PSP,
     cc=MWCCPSP_CC,
 )
-MWCCPSP_3_0_1_151 = MWCCCompiler(
+MWCCPSP_3_0_1_151 = MWCCPSPCompiler(
     id="mwccpsp_3.0.1_151",
     platform=PSP,
     cc=MWCCPSP_CC,
@@ -797,108 +821,108 @@ PBX_GCC3 = GCCCompiler(
 # https://superuser.com/questions/1529226/get-bash-to-respect-quotes-when-word-splitting-subshell-output/1529316#1529316
 MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -pragma "msg_show_realref off" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
 
-MWCC_233_144 = MWCCCompiler(
+MWCC_233_144 = MWCCWiiGCCompiler(
     id="mwcc_233_144",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_233_159 = MWCCCompiler(
+MWCC_233_159 = MWCCWiiGCCompiler(
     id="mwcc_233_159",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
-MWCC_233_163 = MWCCCompiler(
+MWCC_233_163 = MWCCWiiGCCompiler(
     id="mwcc_233_163",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_233_163E = MWCCCompiler(
+MWCC_233_163E = MWCCWiiGCCompiler(
     id="mwcc_233_163e",
     platform=GC_WII,
     cc='${WIBO} "${COMPILER_DIR}/mwcceppc.125.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.1" "${INPUT}" && ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -c -proc gekko -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}.2" "${INPUT}" && python3 "${COMPILER_DIR}/frank.py" "${OUTPUT}.1" "${OUTPUT}.2" "${OUTPUT}"',
 )
 
-MWCC_233_163N = MWCCCompiler(
+MWCC_233_163N = MWCCWiiGCCompiler(
     id="mwcc_233_163n",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_242_81 = MWCCCompiler(
+MWCC_242_81 = MWCCWiiGCCompiler(
     id="mwcc_242_81",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_242_81R = MWCCCompiler(
+MWCC_242_81R = MWCCWiiGCCompiler(
     id="mwcc_242_81r",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_92 = MWCCCompiler(
+MWCC_247_92 = MWCCWiiGCCompiler(
     id="mwcc_247_92",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_105 = MWCCCompiler(
+MWCC_247_105 = MWCCWiiGCCompiler(
     id="mwcc_247_105",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_107 = MWCCCompiler(
+MWCC_247_107 = MWCCWiiGCCompiler(
     id="mwcc_247_107",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_247_108 = MWCCCompiler(
+MWCC_247_108 = MWCCWiiGCCompiler(
     id="mwcc_247_108",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_41_60831 = MWCCCompiler(
+MWCC_41_60831 = MWCCWiiGCCompiler(
     id="mwcc_41_60831",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_41_60126 = MWCCCompiler(
+MWCC_41_60126 = MWCCWiiGCCompiler(
     id="mwcc_41_60126",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_42_127 = MWCCCompiler(
+MWCC_42_127 = MWCCWiiGCCompiler(
     id="mwcc_42_127",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_42_142 = MWCCCompiler(
+MWCC_42_142 = MWCCWiiGCCompiler(
     id="mwcc_42_142",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_151 = MWCCCompiler(
+MWCC_43_151 = MWCCWiiGCCompiler(
     id="mwcc_43_151",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_172 = MWCCCompiler(
+MWCC_43_172 = MWCCWiiGCCompiler(
     id="mwcc_43_172",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
-MWCC_43_213 = MWCCCompiler(
+MWCC_43_213 = MWCCWiiGCCompiler(
     id="mwcc_43_213",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
@@ -931,139 +955,139 @@ PRODG_393 = GCCCompiler(
 # NDS_ARM9
 MWCCARM_CC = '${WIBO} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
-MWCC_20_72 = MWCCCompiler(
+MWCC_20_72 = MWCCNDSArm9Compiler(
     id="mwcc_20_72",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_20_79 = MWCCCompiler(
+MWCC_20_79 = MWCCNDSArm9Compiler(
     id="mwcc_20_79",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_20_82 = MWCCCompiler(
+MWCC_20_82 = MWCCNDSArm9Compiler(
     id="mwcc_20_82",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_20_84 = MWCCCompiler(
+MWCC_20_84 = MWCCNDSArm9Compiler(
     id="mwcc_20_84",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_20_87 = MWCCCompiler(
+MWCC_20_87 = MWCCNDSArm9Compiler(
     id="mwcc_20_87",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_114 = MWCCCompiler(
+MWCC_30_114 = MWCCNDSArm9Compiler(
     id="mwcc_30_114",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_123 = MWCCCompiler(
+MWCC_30_123 = MWCCNDSArm9Compiler(
     id="mwcc_30_123",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_126 = MWCCCompiler(
+MWCC_30_126 = MWCCNDSArm9Compiler(
     id="mwcc_30_126",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_131 = MWCCCompiler(
+MWCC_30_131 = MWCCNDSArm9Compiler(
     id="mwcc_30_131",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_133 = MWCCCompiler(
+MWCC_30_133 = MWCCNDSArm9Compiler(
     id="mwcc_30_133",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_134 = MWCCCompiler(
+MWCC_30_134 = MWCCNDSArm9Compiler(
     id="mwcc_30_134",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_136 = MWCCCompiler(
+MWCC_30_136 = MWCCNDSArm9Compiler(
     id="mwcc_30_136",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_137 = MWCCCompiler(
+MWCC_30_137 = MWCCNDSArm9Compiler(
     id="mwcc_30_137",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_138 = MWCCCompiler(
+MWCC_30_138 = MWCCNDSArm9Compiler(
     id="mwcc_30_138",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_30_139 = MWCCCompiler(
+MWCC_30_139 = MWCCNDSArm9Compiler(
     id="mwcc_30_139",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1018 = MWCCCompiler(
+MWCC_40_1018 = MWCCNDSArm9Compiler(
     id="mwcc_40_1018",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1024 = MWCCCompiler(
+MWCC_40_1024 = MWCCNDSArm9Compiler(
     id="mwcc_40_1024",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1026 = MWCCCompiler(
+MWCC_40_1026 = MWCCNDSArm9Compiler(
     id="mwcc_40_1026",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1027 = MWCCCompiler(
+MWCC_40_1027 = MWCCNDSArm9Compiler(
     id="mwcc_40_1027",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1028 = MWCCCompiler(
+MWCC_40_1028 = MWCCNDSArm9Compiler(
     id="mwcc_40_1028",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1034 = MWCCCompiler(
+MWCC_40_1034 = MWCCNDSArm9Compiler(
     id="mwcc_40_1034",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1036 = MWCCCompiler(
+MWCC_40_1036 = MWCCNDSArm9Compiler(
     id="mwcc_40_1036",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,
 )
 
-MWCC_40_1051 = MWCCCompiler(
+MWCC_40_1051 = MWCCNDSArm9Compiler(
     id="mwcc_40_1051",
     platform=NDS_ARM9,
     cc=MWCCARM_CC,

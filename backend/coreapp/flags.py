@@ -159,9 +159,6 @@ COMMON_MWCC_FLAGS: Flags = [
         ],
     ),
     FlagSet(
-        id="mwcc_floating_point", flags=["-fp off", "-fp soft", "-fp hard", "-fp fmadd"]
-    ),
-    FlagSet(
         id="mwcc_inline_options",
         flags=[
             "-inline on",
@@ -170,6 +167,8 @@ COMMON_MWCC_FLAGS: Flags = [
             "-inline noauto",
             "-inline all",
             "-inline deferred",
+            "-inline bottomup",
+            "-inline nobottomup",
         ],
     ),
     FlagSet(
@@ -189,14 +188,50 @@ COMMON_MWCC_FLAGS: Flags = [
     FlagSet(id="mwcc_char_signedness", flags=["-char signed", "-char unsigned"]),
     Checkbox(id="mwcc_cpp_exceptions_off", flag="-Cpp_exceptions off"),
     Checkbox(id="mwcc_enum_int", flag="-enum int"),
-    Checkbox(id="mwcc_rostr", flag="-rostr"),
     Checkbox(id="mwcc_rtti_off", flag="-RTTI off"),
-    Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
-    Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
-    Checkbox(id="mwcc_nodefaults", flag="-nodefaults"),
-    Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
     Checkbox(id="mwcc_line_numbers_on", flag="-sym on"),
 ]
+
+COMMON_MWCC_NDS_ARM9_FLAGS = COMMON_MWCC_FLAGS + [
+    FlagSet(
+        id="mwcc_floating_point",
+        flags=[
+            "-fp soft",
+            "-fp vfpv1",
+            "-fp vfpv2",
+        ],
+    ),
+    Checkbox(id="mwcc_rostr", flag="-rostr"),
+    Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
+]
+print(COMMON_MWCC_NDS_ARM9_FLAGS)
+
+COMMON_MWCC_PS2_FLAGS = COMMON_MWCC_FLAGS + [
+    FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
+]
+
+COMMON_MWCC_PSP_FLAGS = COMMON_MWCC_FLAGS + [
+    FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
+]
+
+COMMON_MWCC_WII_GC_FLAGS = COMMON_MWCC_FLAGS + [
+    FlagSet(
+        id="mwcc_floating_point",
+        flags=[
+            "-fp off",
+            "-fp soft",
+            "-fp hard",
+            "-fp fmadd",
+            "-fp efpu",
+            "-fp dpfp",
+        ],
+    ),
+    Checkbox(id="mwcc_rostr", flag="-rostr"),
+    Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
+    Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
+    Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
+]
+
 
 COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="psyq_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
