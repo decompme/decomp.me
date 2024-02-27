@@ -66,6 +66,11 @@
             max-width: 100%;
             overflow: hidden;
         }
+
+        /* If two children, align them to the left and right */
+        &:has(> :last-child:nth-child(2)) {
+            grid-template-columns: 1fr auto;
+        }
     }
 
     .icon {
