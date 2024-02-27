@@ -25,6 +25,10 @@ export function projectUrl(project: Project): string {
     return `/project/${project.slug}`
 }
 
+export function platformUrl(platform: string): string {
+    return `/platform/${platform}`
+}
+
 export function projectMemberUrl(project: Project, projectMember: ProjectMember): string {
     return `${projectUrl(project)}/members/${projectMember.username}`
 }

@@ -40,8 +40,12 @@ export type Props = {
     size?: string | number
 }
 
-export default function PlatformIcon({ platform, className, size }: Props) {
-    const Icon = ICONS[platform] || UnknownIcon
+export function platformIcon(platform: string) {
+    return ICONS[platform] || UnknownIcon
+}
+
+export function PlatformIcon({ platform, className, size }: Props) {
+    const Icon = platformIcon(platform)
 
     return <Icon width={size} height={size} className={className} />
 }

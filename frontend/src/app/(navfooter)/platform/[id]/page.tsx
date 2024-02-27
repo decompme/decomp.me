@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
-import PlatformIcon from "@/components/PlatformSelect/PlatformIcon"
-import ScratchList, { ScratchItem } from "@/components/ScratchList"
+import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
+import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { PlatformMetadata } from "@/lib/api/types"
 
@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: { id: number } }) {
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({platform.num_scratches})</h2>
             <ScratchList
                 url={"/scratch?platform=" + platform.id + "&page_size=20"}
-                item={ScratchItem}
+                item={ScratchItemPlatformList}
             />
         </section>
     </main>

@@ -9,7 +9,7 @@ import * as api from "@/lib/api"
 import { Library } from "@/lib/api/types"
 import useTranslation from "@/lib/i18n/translate"
 
-import PlatformIcon from "../PlatformSelect/PlatformIcon"
+import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
 import Select from "../Select" // TODO: use Select2
 
 import styles from "./CompilerOpts.module.css"

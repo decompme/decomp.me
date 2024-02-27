@@ -13,7 +13,7 @@ import { useSize } from "@/lib/hooks"
 
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
-import ScratchIcon from "../ScratchIcon"
+import PlatformLink from "../PlatformLink"
 import { SpecialKey, useShortcut } from "../Shortcut"
 import UserAvatar from "../user/UserAvatar"
 
@@ -270,7 +270,7 @@ export default function ScratchToolbar(props: Props) {
                     },
                     {
                         label: <div className={styles.iconNamePair}>
-                            <ScratchIcon scratch={scratch} size={20} />
+                            <PlatformLink scratch={scratch} size={20} />
                             <ScratchName
                                 name={scratch.name}
                                 onChange={userIsYou(scratch.owner) && (name => setScratch({ name }))}
