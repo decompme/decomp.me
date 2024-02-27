@@ -204,7 +204,6 @@ COMMON_MWCC_NDS_ARM9_FLAGS = COMMON_MWCC_FLAGS + [
     Checkbox(id="mwcc_rostr", flag="-rostr"),
     Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
 ]
-print(COMMON_MWCC_NDS_ARM9_FLAGS)
 
 COMMON_MWCC_PS2_FLAGS = COMMON_MWCC_FLAGS + [
     FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
@@ -231,7 +230,6 @@ COMMON_MWCC_WII_GC_FLAGS = COMMON_MWCC_FLAGS + [
     Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
 ]
-
 
 COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="psyq_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
