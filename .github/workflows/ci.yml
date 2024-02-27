@@ -48,6 +48,7 @@ jobs:
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             binutils-sh-elf \
+            binutils-mingw-w64-i686 \
             dos2unix \
             libprotobuf-dev \
             libnl-route-3-dev \

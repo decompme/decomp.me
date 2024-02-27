@@ -83,9 +83,9 @@ WIN32 = Platform(
     name="Windows (9x/NT)",
     description="x86 (32bit)",
     arch="i686",
-    assemble_cmd='i386-pc-msdosdjgpp-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="i386-pc-msdosdjgpp-objdump",
-    nm_cmd="i386-pc-msdosdjgpp-nm",
+    assemble_cmd='i686-w64-mingw32-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="i686-w64-mingw32-objdump",
+    nm_cmd="i686-w64-mingw32-nm",
     asm_prelude="",
 )
 
