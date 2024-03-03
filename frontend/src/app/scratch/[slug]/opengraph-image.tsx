@@ -8,7 +8,7 @@ import getScratchDetails from "./getScratchDetails"
 
 export const runtime = "edge"
 
-export default async function ScratchOG({ params }: { params: { slug: string}}) {
+export default async function ScratchOG({ params }: { params: { slug: string }}) {
 
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
 
@@ -20,7 +20,7 @@ export default async function ScratchOG({ params }: { params: { slug: string}}) 
 
     return new ImageResponse(
         <div
-            tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-200 text-5xl leading-normal"
+            tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl"
             className="dark"
         >
             <div
@@ -28,44 +28,45 @@ export default async function ScratchOG({ params }: { params: { slug: string}}) 
             >
                 <PlatformIcon
                     platform={scratch.platform}
-                    size={96}
+                    size={120}
                 />
-                <div tw={"text-slate-50 ml-10"}>{preset?.name || "Custom Preset"}</div>
+                <div tw="flex flex-col justify-center">
+                    <div tw="flex "></div>
+                    <div tw="flex ml-10 ">{preset?.name || "Custom Preset"}</div>
+                </div>
             </div>
 
-            <div tw="h-4 bg-fuchsia-600">
+            <div tw="h-2 bg-fuchsia-600"></div>
 
+            <div
+                tw="flex ml-10 mr-10"
+            >
+                <div tw="min-w-52">Function:</div>
+                <div tw="ml-10">{scratch.name}</div>
             </div>
 
             <div
-                tw="flex ml-10 mr-10 justify-between"
+                tw="flex ml-10 mr-10"
             >
-                <div tw="">Function:</div>
-                <div tw="text-slate-50 ml-10">{scratch.name}</div>
+                <div tw="min-w-52">Owner:</div>
+                <div tw="ml-10">{scratch.owner.username}</div>
             </div>
 
             <div
-                tw="flex ml-10 mr-10 justify-between"
+                tw="flex ml-10 mr-10"
             >
-                <div tw="">Owner:</div>
-                <div tw="text-slate-50 ml-10">{scratch.owner.username}</div>
-            </div>
-
-            <div
-                tw="flex ml-10 mr-10 justify-between"
-            >
-                <div tw="">Score:</div>
-                <div tw="text-slate-50 ml-10">{score}</div>
+                <div tw="min-w-52">Score:</div>
+                <div tw="ml-10">{score}</div>
             </div>
 
             {fork && (
                 <div
-                    tw="flex ml-10 mr-10 mb-10 justify-between"
+                    tw="flex ml-10 mr-10 mb-10"
                 >
-                    <div tw="">Parent:</div>
+                    <div tw="min-w-52">Parent:</div>
                     <div tw="flex flex-col justify-center">
                         <div tw="flex "></div>
-                        <div tw="flex text-slate-50 ml-10 text-3xl">{fork}</div>
+                        <div tw="flex ml-10 text-4xl">{fork}</div>
                     </div>
                 </div>
             )}
