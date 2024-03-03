@@ -162,6 +162,7 @@ jobs:
           docker build backend \
             -t decompme_backend \
             --build-arg ENABLE_MSDOS_SUPPORT=YES \
+            --build-arg ENABLE_GC_WII_SUPPORT=YES \
             --build-arg ENABLE_PS2_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
             --build-arg ENABLE_WIN32_SUPPORT=YES
