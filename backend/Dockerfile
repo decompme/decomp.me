@@ -47,6 +47,7 @@ RUN apt-get -y update && apt-get install -y \
     gcc-mips-linux-gnu \
     git \
     iptables \
+    libarchive-tools \
     libc6-dev-i386 \
     libdevmapper1.02.1 \
     libgpgme11 \
@@ -91,6 +92,14 @@ RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
     rm omftools.tar.gz; \
     fi
 
+# Patched PowerPC binutils
+ARG ENABLE_GC_WII_SUPPORT
+RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ]; then \
+    curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
+    bsdtar -xvf- -C /usr/bin && \
+    chmod +x /usr/bin/powerpc-eabi-*; \
+  fi
+
 RUN mkdir -p /etc/fonts
 
 WORKDIR /backend
@@ -119,7 +128,6 @@ ENV PATH="$PATH:/etc/poetry/bin"
 
 # no special dependencies required for these platforms
 ARG ENABLE_GBA_SUPPORT
-ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_MACOSX_SUPPORT
 ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT

@@ -50,6 +50,7 @@ jobs:
             binutils-sh-elf \
             binutils-mingw-w64-i686 \
             dos2unix \
+            libarchive-tools \
             libprotobuf-dev \
             libnl-route-3-dev \
             libncurses5 \
@@ -74,6 +75,11 @@ jobs:
           git clone --recursive --branch=3.1 https://github.com/google/nsjail
           make -C nsjail
           sudo cp nsjail/nsjail /usr/bin/
+      - name: Install GC/Wii binutils
+        run: |-
+          curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
+            sudo bsdtar -xvf- -C /usr/bin
+          sudo chmod +x /usr/bin/powerpc-eabi-*
       - name: Cache compilers
         uses: actions/cache@v4
         with:
@@ -156,6 +162,7 @@ jobs:
           docker build backend \
             -t decompme_backend \
             --build-arg ENABLE_MSDOS_SUPPORT=YES \
+            --build-arg ENABLE_GC_WII_SUPPORT=YES \
             --build-arg ENABLE_PS2_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
             --build-arg ENABLE_WIN32_SUPPORT=YES
