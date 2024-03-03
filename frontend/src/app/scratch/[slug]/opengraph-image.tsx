@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/server"
 
-import { getScoreText } from "@/components/ScoreBadge"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
+import { getScoreText } from "@/components/ScoreBadge"
 
 import getScratchDetails from "./getScratchDetails"
 
@@ -16,9 +16,9 @@ export default async function ScratchOG({ params }: { params: { slug: string}}) 
 
     // this is really rubbish, need to either align the text at the botom,
     // or in the middle without resorting to padding...
-    const getTextSize = (text) => {
+    const getTextSize = text => {
         if (!text)
-        return ""
+            return ""
 
         if (text.length < 10) {
             return "text-7xl"
@@ -35,54 +35,52 @@ export default async function ScratchOG({ params }: { params: { slug: string}}) 
     const presetName = "Dummy Preset"
 
     return new ImageResponse(
-        (
         <div
             tw="flex flex-col w-full h-full bg-neutral-800 text-slate-200 text-7xl leading-tight"
-            >
+        >
             <div
                 tw="flex ml-10 mt-10 mb-10"
-                >
+            >
                 <PlatformIcon
-                platform={scratch.platform}
-                size={96}
+                    platform={scratch.platform}
+                    size={96}
                 />
                 <div tw={`text-slate-50 ml-10 ${getTextSize(scratch.name)}`}>{scratch.name}</div>
             </div>
 
             <div
-            tw="flex ml-10 mr-10 justify-between "
+                tw="flex ml-10 mr-10 justify-between "
             >
-            <div tw="">Preset:</div>
-            <div tw={`text-slate-50 ml-10 ${getTextSize(presetName)}`}>{presetName}</div>
+                <div tw="">Preset:</div>
+                <div tw={`text-slate-50 ml-10 ${getTextSize(presetName)}`}>{presetName}</div>
             </div>
 
             <div
-            tw="flex ml-10 mr-10 justify-between "
+                tw="flex ml-10 mr-10 justify-between "
             >
-            <div tw="">Owner:</div>
-            <div tw={`text-slate-50 ml-10 ${getTextSize(scratch.owner.username)}`}>{scratch.owner.username}</div>
+                <div tw="">Owner:</div>
+                <div tw={`text-slate-50 ml-10 ${getTextSize(scratch.owner.username)}`}>{scratch.owner.username}</div>
             </div>
 
             <div
-            tw="flex ml-10 mr-10 justify-between"
+                tw="flex ml-10 mr-10 justify-between"
             >
-            <div tw="">Score:</div>
-            <div tw="text-slate-50 ml-10">{score}</div>
+                <div tw="">Score:</div>
+                <div tw="text-slate-50 ml-10">{score}</div>
             </div>
 
             {fork && (
                 <div
-                tw="flex ml-10 mr-10 justify-between"
+                    tw="flex ml-10 mr-10 justify-between"
                 >
-                <div tw="">Parent:</div>
-                <div tw={`text-slate-50 ml-10 ${getTextSize(fork)}`}>{fork}</div>
+                    <div tw="">Parent:</div>
+                    <div tw={`text-slate-50 ml-10 ${getTextSize(fork)}`}>{fork}</div>
                 </div>
             )}
-        </div>
-        ),
+        </div>,
         {
             width: 1200,
             height: fork ? 630 : 510,
         },
-    );
+    )
 }
