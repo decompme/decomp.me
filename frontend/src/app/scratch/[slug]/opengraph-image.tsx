@@ -53,56 +53,54 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                     {score === -1
                         ?
                         <div tw="flex flex-row">
-                            <div tw="flex mt-1">
-                                <XCircleFillIcon width={64} height={64} />
+                            <div tw="flex flex-col justify-around">
+                                <XCircleFillIcon width={40} height={40} />
                             </div>
-                            <div tw="flex ml-3 mt-2 text-5xl">
-                                ERROR
+                            <div tw="flex flex-col ml-4">
+                                <div tw="flex text-4xl">No</div>
+                                <div tw="flex text-4xl">Score</div>
                             </div>
                         </div>
                         : score === 0
                             ?
                             <div tw="flex flex-row">
-                                <div tw="flex mt-1">
-                                    <CheckCircleFillIcon width={64} height={64}/>
+                                <div tw="flex flex-col justify-around">
+                                    <CheckCircleFillIcon width={48} height={48}/>
                                 </div>
-                                <div tw="flex text-5xl mt-2 ml-3">
-                                    {scratch.match_override ? "OVERRIDE" : "MATCHED"}
+                                <div tw="flex flex-col ml-4 justify-around">
+                                    <div tw="flex text-4xl">Matched</div>
+                                    {scratch.match_override &&
+                                        <div tw="flex text-4xl">(Override)</div>
+                                    }
                                 </div>
                             </div>
                             :
-                            <div tw="flex flex-row justify-around ">
-                                <div tw="flex mt-2">
-                                    <TrophyIcon width={64} height={64} />
+                            <div tw="flex flex-row">
+                                <div tw="flex flex-col justify-around">
+                                    <TrophyIcon width={40} height={40} />
                                 </div>
                                 <div tw="flex flex-col justify-around ml-4">
-                                    <div tw="flex text-3xl">{score}</div>
-                                    <div tw="flex text-3xl">{percentToString(calculateScorePercent(score, maxScore))}</div>
-
+                                    <div tw="flex text-4xl">{score}/{maxScore}</div>
+                                    <div tw="flex text-4xl">{percentToString(calculateScorePercent(score, maxScore))}</div>
                                 </div>
                             </div>
                     }
 
                     {parentScratch &&
-                    <div tw="flex flex-row ml-5 ">
-                        <div tw="flex mt-2">
-                            <RepoForkedIcon width={64} height={64} />
+                    <div tw="flex flex-row ml-5">
+                        <div tw="flex flex-col justify-around">
+                            <RepoForkedIcon width={40} height={40} />
                         </div>
                         <div tw="flex flex-col ml-4 mt-1">
-                            <div tw="flex text-2xl">{parentScratch.owner?.username ?? "?"}/</div>
-                            <div tw="flex text-2xl">{parentScratch.name}</div>
+                            <div tw="flex text-4xl">{parentScratch.owner?.username ?? "?"}/</div>
+                            <div tw="flex text-4xl">{parentScratch.name}</div>
                         </div>
                     </div>
                     }
 
                 </div>
-                <div tw="flex flex-col justify-around ">
-                    <div tw="flex text-4xl">
-                        <PurpleFrog width={48} height={48} />
-                        <div tw="flex ml-3">
-                            decomp.me
-                        </div>
-                    </div>
+                <div tw="flex flex-col justify-around">
+                    <PurpleFrog width={64} height={64} />
                 </div>
 
             </div>
