@@ -22,7 +22,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
 
     const scratchNameSize = scratch.name.length > 20 ? "text-6xl" : "text-7xl"
 
-    const score = -1 //compilation?.diff_output?.current_score ?? -1
+    const score = compilation?.diff_output?.current_score ?? -1
     const maxScore = compilation?.diff_output?.max_score ?? -1
 
     return new ImageResponse(
