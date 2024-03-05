@@ -14,6 +14,10 @@ from ..decorators.django import condition
 boot_time = now()
 
 
+def endpoint_updated(request: Request) -> datetime:
+    return max(Preset.most_recent_updated(request), boot_time)
+
+
 class CompilerDetail(APIView):
     @staticmethod
     def compilers_json() -> Dict[str, Dict[str, object]]:
@@ -37,9 +41,6 @@ class CompilerDetail(APIView):
             ret[platform.id] = platform.to_json(include_presets, include_num_scratches)
 
         return ret
-
-    def endpoint_updated(request: Request) -> datetime:
-        return max(Preset.most_recent_updated(request), boot_time)
 
     @condition(last_modified_func=endpoint_updated)
     def head(self, request: Request) -> Response:
