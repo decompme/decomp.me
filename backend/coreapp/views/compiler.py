@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict
 
 from coreapp import compilers
@@ -11,6 +12,10 @@ from coreapp.models.preset import Preset
 from ..decorators.django import condition
 
 boot_time = now()
+
+
+def endpoint_updated(request: Request) -> datetime:
+    return max(Preset.most_recent_updated(request), boot_time)
 
 
 class CompilerDetail(APIView):
@@ -37,11 +42,11 @@ class CompilerDetail(APIView):
 
         return ret
 
-    @condition(last_modified_func=Preset.most_recent_updated)
+    @condition(last_modified_func=endpoint_updated)
     def head(self, request: Request) -> Response:
         return Response()
 
-    @condition(last_modified_func=Preset.most_recent_updated)
+    @condition(last_modified_func=endpoint_updated)
     def get(self, request: Request) -> Response:
         return Response(
             {
