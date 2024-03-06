@@ -80,7 +80,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                     <TrophyIcon width={40} height={40} />
                                 </div>
                                 <div tw="flex flex-col justify-around ml-4">
-                                    <div tw="flex text-4xl">{score}/{maxScore}</div>
+                                    <div tw="flex text-4xl">{score}</div>
                                     <div tw="flex text-4xl">{percentToString(calculateScorePercent(score, maxScore))}</div>
                                 </div>
                             </div>
@@ -109,8 +109,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
         </div>,
         {
             // match GitHub dimensions
-            width: 1152,
-            height: 576,
+            width: 1800,
+            height: 600,
         },
     )
 }
