@@ -20,7 +20,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
     const compilers = await get("/compiler")
     const preset = compilers["platforms"][scratch.platform].presets.find(p => p.id === scratch.preset)
 
-    const scratchNameSize = scratch.name.length > 20 ? "text-6xl" : "text-7xl"
+    const scratchNameSize = scratch.name.length > 20 ? "text-5xl" : "text-6xl"
 
     const score = compilation?.diff_output?.current_score ?? -1
     const maxScore = compilation?.diff_output?.max_score ?? -1
@@ -70,9 +70,9 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                     <CheckCircleFillIcon width={48} height={48}/>
                                 </div>
                                 <div tw="flex flex-col ml-4 justify-around">
-                                    <div tw="flex text-4xl">Matched</div>
+                                    <div tw="flex text-5xl">Matched</div>
                                     {scratch.match_override &&
-                                        <div tw="flex text-3xl text-slate-300">(Override)</div>
+                                        <div tw="flex text-4xl text-slate-300">(Override)</div>
                                     }
                                 </div>
                             </div>
@@ -82,8 +82,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                     <TrophyIcon width={40} height={40} />
                                 </div>
                                 <div tw="flex flex-col justify-around ml-4">
-                                    <div tw="flex text-3xl text-slate-300">{score}</div>
-                                    <div tw="flex text-4xl">{percentToString(calculateScorePercent(score, maxScore))}</div>
+                                    <div tw="flex text-4xl text-slate-300">{score}</div>
+                                    <div tw="flex text-5xl">{percentToString(calculateScorePercent(score, maxScore))}</div>
                                 </div>
                             </div>
                     }
@@ -94,8 +94,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                             <RepoForkedIcon width={40} height={40} />
                         </div>
                         <div tw="flex flex-col ml-4 mt-1">
-                            <div tw="flex text-3xl text-slate-300">{parentScratch.owner?.username ?? "?"}</div>
-                            <div tw="flex text-4xl">{parentScratch.name}</div>
+                            <div tw="flex text-4xl text-slate-300">{parentScratch.owner?.username ?? "?"}</div>
+                            <div tw="flex text-5xl">{parentScratch.name}</div>
                         </div>
                     </div>
                     }
