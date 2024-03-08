@@ -1,44 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg data-name="Layer 1" version="1.1" viewBox="0 0 235 235" xmlns="http://www.w3.org/2000/svg">
     <defs>
-        <style>.cls-1, .cls-2, .cls-3, .cls-4 {
-        fill-rule: evenodd;
-      }
-
-      .cls-1 {
-        fill: url(#linear-gradient);
-      }
-
-      .cls-2 {
-        fill: url(#linear-gradient-2);
-      }
-
-      .cls-3 {
-        fill: url(#linear-gradient-3);
-      }</style>
-        <linearGradient id="linear-gradient" x1="116.84" x2="116.84" y1="129.72" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#23bcee" offset="0"/>
-            <stop stop-color="#24b0e5" offset=".07"/>
-            <stop stop-color="#2785c3" offset=".36"/>
-            <stop stop-color="#2965aa" offset=".63"/>
-            <stop stop-color="#2b529b" offset=".85"/>
-            <stop stop-color="#2b4b96" offset="1"/>
-        </linearGradient>
-        <linearGradient id="linear-gradient-2" x1="634.51" x2="634.51" y1="125.33" y2="3.46" gradientTransform="translate(.245 52.64)" gradientUnits="userSpaceOnUse">
+        <linearGradient id="linear-gradient" x1="634.51" x2="634.51" y1="125.33" y2="3.46" gradientTransform="translate(.245 52.64)" gradientUnits="userSpaceOnUse">
             <stop stop-color="#09b2cf" offset="0"/>
-            <stop stop-color="#304e97" offset="1"/>
-        </linearGradient>
-        <linearGradient id="linear-gradient-3" x1="358" x2="358" y1="129.72" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#09b2cf" offset="0"/>
-            <stop stop-color="#178fbb" offset=".2"/>
-            <stop stop-color="#2273ab" offset=".4"/>
-            <stop stop-color="#2a5ea0" offset=".6"/>
-            <stop stop-color="#2e5299" offset=".8"/>
             <stop stop-color="#304e97" offset="1"/>
         </linearGradient>
     </defs>
-    <title>PlayStation 2 logo</title>
     <g transform="translate(-517.25)">
-        <path class="cls-2" d="m517.5 52.64v9.15h225.37v50.72h-225.37v69.85h234.51v-9.14h-224.52v-51.56h224.52v-69.02z" fill="url(#linear-gradient-2)" fill-rule="evenodd"/>
+        <path d="m517.5 52.64v9.15h225.37v50.72h-225.37v69.85h234.51v-9.14h-224.52v-51.56h224.52v-69.02z" fill="url(#linear-gradient)" fill-rule="evenodd"/>
     </g>
 </svg>
