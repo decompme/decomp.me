@@ -29,6 +29,10 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
     const score = compilation?.diff_output?.current_score ?? -1
     const maxScore = compilation?.diff_output?.max_score ?? -1
 
+    const percent = scratch.match_override ? 100 : calculateScorePercent(score, maxScore)
+    const doneWidth = Math.floor(percent * 300 / 100) // Unsure why this is 300 rather than 1200...
+    const todoWidth = 300 - doneWidth
+
     return new ImageResponse(
         <div
             tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl"
@@ -65,7 +69,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                 <div tw="flex text-4xl">Score</div>
                             </div>
                         </div>
-                        : score === 0
+                        : score === 0 || scratch.match_override
                             ?
                             <div tw="flex flex-row">
                                 <div tw="flex flex-col justify-around">
@@ -85,7 +89,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                 </div>
                                 <div tw="flex flex-col justify-around ml-4">
                                     <div tw="flex">
-                                        {score} ({percentToString(calculateScorePercent(score, maxScore))})
+                                        {score} ({percentToString(percent)})
                                     </div>
                                 </div>
                             </div>
@@ -108,7 +112,10 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                 </div>
 
             </div>
-            <div tw="flex h-4 bg-purple-500"></div>
+            <div tw="flex flex-row">
+                <div tw={`flex h-4 bg-purple-500 w-${doneWidth}`}></div>
+                <div tw={`flex h-4 bg-purple-900 w-${todoWidth}`}></div>
+            </div>
 
         </div>,
         {
