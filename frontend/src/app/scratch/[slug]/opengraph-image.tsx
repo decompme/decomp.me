@@ -70,10 +70,10 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                 <div tw="flex flex-col justify-around">
                                     <CheckCircleFillIcon width={48} height={48}/>
                                 </div>
-                                <div tw="flex flex-col justify-around ml-5">
+                                <div tw="flex flex-col items-center ml-5">
                                     <div tw="flex">Matched</div>
                                     {scratch.match_override &&
-                                        <div tw="flex text-4xl text-slate-300 align-center">(Override)</div>
+                                        <div tw="flex text-4xl text-slate-300">(Override)</div>
                                     }
                                 </div>
                             </div>
