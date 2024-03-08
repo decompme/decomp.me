@@ -37,7 +37,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
         <div tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl">
             <div tw="flex flex-row justify-between ml-15 mr-15 mt-5 ">
                 <div tw="flex flex-col justify-center">
-                    <div tw="flex text-slate-400">{scratch.owner.username}</div>
+                    <div tw="flex text-slate-300">{scratch.owner.username}</div>
                     <div tw={`flex text-${scratchNameSize}`}>{scratch.name}</div>
                 </div>
                 <div tw="flex bg-zinc-700 rounded-2xl">
@@ -50,7 +50,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                 </div>
             </div>
 
-            <div tw="flex ml-15 mr-15 text-slate-400">{preset?.name || "Custom Preset"}</div>
+            <div tw="flex ml-15 mr-15 text-slate-300">{preset?.name || "Custom Preset"}</div>
 
             <div tw="flex justify-between ml-15 mr-15 ">
                 <div tw="flex">
@@ -73,7 +73,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                 <div tw="flex flex-col justify-around ml-5">
                                     <div tw="flex">Matched</div>
                                     {scratch.match_override &&
-                                        <div tw="flex text-4xl text-slate-400 align-center">(Override)</div>
+                                        <div tw="flex text-4xl text-slate-300 align-center">(Override)</div>
                                     }
                                 </div>
                             </div>
