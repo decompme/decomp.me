@@ -22,9 +22,9 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
 
     // This should cover most scratch names
     const scratchNameSize =
-        scratch.name.length > 45 ? "text-3xl" :
-            scratch.name.length > 35 ? "text-4xl" :
-                scratch.name.length > 25 ? "text-5xl" : "text-6xl"
+        scratch.name.length > 48 ? "text-3xl" :
+            scratch.name.length > 32 ? "text-4xl" :
+                scratch.name.length > 24 ? "text-5xl" : "text-6xl"
 
     const score = compilation?.diff_output?.current_score ?? -1
     const maxScore = compilation?.diff_output?.max_score ?? -1
@@ -40,7 +40,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
         >
             <div tw="flex ml-15 mr-15 mt-5 flex-row justify-between">
                 <div tw="flex flex-col justify-center">
-                    <div tw="flex text-slate-300">{scratch.owner.username}</div>
+                    <div tw="flex text-slate-400">{scratch.owner.username}</div>
                     <div tw={`flex ${scratchNameSize}`}>{scratch.name}</div>
                 </div>
                 <div tw="flex bg-zinc-700 rounded-2xl">
@@ -53,20 +53,18 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                 </div>
             </div>
 
-            <div tw="flex ml-15 mr-15 text-slate-300">{preset?.name || "Custom Preset"}</div>
+            <div tw="flex ml-15 mr-15 text-slate-400">{preset?.name || "Custom Preset"}</div>
 
             <div tw="flex ml-15 mr-15 justify-between">
                 <div tw="flex">
-
                     {score === -1
                         ?
                         <div tw="flex flex-row">
                             <div tw="flex flex-col justify-around">
-                                <XCircleFillIcon width={40} height={40} />
+                                <XCircleFillIcon width={48} height={48} />
                             </div>
-                            <div tw="flex flex-col ml-4">
-                                <div tw="flex text-4xl">No</div>
-                                <div tw="flex text-4xl">Score</div>
+                            <div tw="flex flex-col ml-5 justify-around">
+                                <div tw="flex">No Score</div>
                             </div>
                         </div>
                         : score === 0 || scratch.match_override
@@ -75,19 +73,19 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                                 <div tw="flex flex-col justify-around">
                                     <CheckCircleFillIcon width={48} height={48}/>
                                 </div>
-                                <div tw="flex flex-col ml-4 justify-around">
+                                <div tw="flex flex-col ml-5 justify-around">
                                     <div tw="flex">Matched</div>
                                     {scratch.match_override &&
-                                        <div tw="flex text-4xl text-slate-300 align-center">(Override)</div>
+                                        <div tw="flex text-4xl text-slate-400 align-center">(Override)</div>
                                     }
                                 </div>
                             </div>
                             :
                             <div tw="flex flex-row">
                                 <div tw="flex flex-col justify-around">
-                                    <TrophyIcon width={40} height={40} />
+                                    <TrophyIcon width={48} height={48} />
                                 </div>
-                                <div tw="flex flex-col justify-around ml-4">
+                                <div tw="flex flex-col justify-around ml-5">
                                     <div tw="flex">
                                         {score} ({percentToString(percent)})
                                     </div>
@@ -96,11 +94,11 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                     }
 
                     {parentScratch &&
-                    <div tw="flex flex-row ml-4 ">
+                    <div tw="flex flex-row ml-10">
                         <div tw="flex flex-col justify-around">
-                            <RepoForkedIcon width={40} height={40} />
+                            <RepoForkedIcon width={48} height={48} />
                         </div>
-                        <div tw="flex flex-col justify-around ml-4">
+                        <div tw="flex flex-col justify-around ml-5">
                             {parentScratch.owner?.username ?? "Anonymous User"}
                         </div>
                     </div>
