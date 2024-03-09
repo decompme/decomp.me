@@ -36,24 +36,25 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
 
     return new ImageResponse(
         <div tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl">
-            <div tw="flex flex-row justify-between ml-15 mr-15 mt-5 ">
-                <div tw="flex flex-col justify-center">
-                    <div tw="flex text-slate-300">{scratch.owner.username}</div>
-                    <div tw={`flex text-${scratchNameSize}`}>{scratchName}</div>
-                </div>
-                <div tw="flex bg-zinc-700 rounded-2xl">
-                    <div tw="flex m-3">
-                        <PlatformIcon
-                            platform={scratch.platform}
-                            size={128}
-                        />
+            <div tw="flex flex-col">
+                <div tw="flex flex-row justify-between ml-15 mr-15 mt-5">
+                    <div tw="flex flex-col justify-center">
+                        <div tw="flex text-slate-300">{scratch.owner.username}</div>
+                        <div tw={`flex text-${scratchNameSize}`}>{scratchName}</div>
+                    </div>
+                    <div tw="flex bg-zinc-700 rounded-2xl">
+                        <div tw="flex m-3">
+                            <PlatformIcon
+                                platform={scratch.platform}
+                                size={128}
+                            />
+                        </div>
                     </div>
                 </div>
+                <div tw="flex mt-3 ml-15 mr-15 text-slate-300">{preset?.name || "Custom Preset"}</div>
             </div>
 
-            <div tw="flex ml-15 mr-15 text-slate-300">{preset?.name || "Custom Preset"}</div>
-
-            <div tw="flex justify-between ml-15 mr-15 ">
+            <div tw="flex justify-between mt-5 ml-15 mr-15">
                 <div tw="flex">
                     {score === -1
                         ?
@@ -67,7 +68,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                         </div>
                         : score === 0 || scratch.match_override
                             ?
-                            <div tw="flex ">
+                            <div tw="flex">
                                 <div tw="flex flex-col justify-around">
                                     <CheckCircleFillIcon width={48} height={48}/>
                                 </div>
