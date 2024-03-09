@@ -152,7 +152,9 @@ class DiffWrapper:
         label: str,
         objdump_flags: tuple[str, ...],
     ) -> str:
-        flags = [flag for flag in objdump_flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
+        flags = [
+            flag for flag in objdump_flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)
+        ]
         flags += [
             "--disassemble-zeroes",
             "--line-numbers",
