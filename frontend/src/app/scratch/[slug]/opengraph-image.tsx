@@ -11,6 +11,8 @@ import TrophyIcon from "./assets/trophy.svg"
 import XCircleFillIcon from "./assets/x-circle-fill.svg"
 import getScratchDetails from "./getScratchDetails"
 
+const truncateText = (text: string, length: number) => text.slice(0, length) + "..." + text.slice(-length, text.length)
+
 export const runtime = "edge"
 
 export default async function ScratchOG({ params }: { params: { slug: string }}) {
@@ -20,11 +22,10 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
     const compilers = await get("/compiler")
     const preset = compilers["platforms"][scratch.platform].presets.find(p => p.id === scratch.preset)
 
-    // This should cover most scratch names
+    const scratchName = scratch.name.length > 40 ? truncateText(scratch.name, 18) : scratch.name
     const scratchNameSize =
-        scratch.name.length > 48 ? "3xl" :
-            scratch.name.length > 32 ? "4xl" :
-                scratch.name.length > 24 ? "5xl" : "6xl"
+        scratchName.length > 32 ? "4xl" :
+            scratchName.length > 24 ? "5xl" : "6xl"
 
     const score = compilation?.diff_output?.current_score ?? -1
     const maxScore = compilation?.diff_output?.max_score ?? -1
@@ -38,7 +39,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
             <div tw="flex flex-row justify-between ml-15 mr-15 mt-5 ">
                 <div tw="flex flex-col justify-center">
                     <div tw="flex text-slate-300">{scratch.owner.username}</div>
-                    <div tw={`flex text-${scratchNameSize}`}>{scratch.name}</div>
+                    <div tw={`flex text-${scratchNameSize}`}>{scratchName}</div>
                 </div>
                 <div tw="flex bg-zinc-700 rounded-2xl">
                     <div tw="flex m-3">
