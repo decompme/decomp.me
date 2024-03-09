@@ -13,6 +13,9 @@ import getScratchDetails from "./getScratchDetails"
 
 const truncateText = (text: string, length: number) => text.slice(0, length) + "..." + text.slice(-length, text.length)
 
+const IMAGE_WIDTH_PX = 1200
+const IMAGE_HEIGHT_PX = 400
+
 export const runtime = "edge"
 
 export default async function ScratchOG({ params }: { params: { slug: string }}) {
@@ -31,8 +34,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
     const maxScore = compilation?.diff_output?.max_score ?? -1
 
     const percent = scratch.match_override ? 100 : calculateScorePercent(score, maxScore)
-    const doneWidth = Math.floor(percent * 300 / 100) // Unsure why this is 300 rather than 1200...
-    const todoWidth = 300 - doneWidth
+    const doneWidth = Math.floor(percent * IMAGE_WIDTH_PX / 100)
+    const todoWidth = IMAGE_WIDTH_PX - doneWidth
 
     return new ImageResponse(
         <div tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl">
@@ -70,7 +73,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                             ?
                             <div tw="flex">
                                 <div tw="flex flex-col justify-around">
-                                    <CheckCircleFillIcon width={48} height={48}/>
+                                    <CheckCircleFillIcon width={48} height={48} />
                                 </div>
                                 <div tw="flex flex-col items-center ml-5">
                                     <div tw="flex">Matched</div>
@@ -107,17 +110,16 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
                 <div tw="flex flex-col justify-around ml-15">
                     <PurpleFrog width={64} height={64} />
                 </div>
-
             </div>
+
             <div tw="flex">
-                <div tw={`flex h-4 bg-purple-500 w-${doneWidth}`}></div>
-                <div tw={`flex h-4 bg-purple-900 w-${todoWidth}`}></div>
+                <div tw={`flex h-4 bg-purple-500 w-[${doneWidth}]px`}></div>
+                <div tw={`flex h-4 bg-purple-900 w-[${todoWidth}]px`}></div>
             </div>
-
         </div>,
         {
-            width: 1200,
-            height: 400,
+            width: IMAGE_WIDTH_PX,
+            height: IMAGE_HEIGHT_PX,
         },
     )
 }
