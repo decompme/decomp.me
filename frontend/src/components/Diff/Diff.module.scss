@@ -67,33 +67,28 @@
 
     align-items: stretch;
 
-    button {
-        text-align: left;
+    > .cell {
+        overflow: hidden;
 
-        > .cell {
-            overflow: hidden;
+        color: var(--g1600);
 
-            color: var(--g1600);
+        padding: 0 1em;
 
-            padding: 0 1em;
+        cursor: default;
 
-            cursor: default;
+        &.highlight {
+            background-color: var(--a50);
 
-            &.highlight {
-                background-color: var(--a50);
-
-                .lineNumber {
-                    color: #c6c6c6;
-                }
+            .lineNumber {
+                color: #c6c6c6;
             }
+        }
 
-            &:nth-child(2) {
-                filter: var(--diff-current-filter);
-            }
+        &:nth-child(2) {
+            filter: var(--diff-current-filter);
         }
     }
 }
-
 
 .cell span.lineNumber {
     display: inline-block;
@@ -157,23 +152,4 @@
 
 .highlightable {
     cursor: pointer;
-}
-
-
-.TooltipContent {
-  border-radius: 4px;
-  padding: 10px 15px;
-  font-size: 15px;
-  line-height: 1;
-  color: var(--violet-11);
-  background: var(--g400);
-  box-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
-  user-select: none;
-  animation-duration: 400ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
-}
-
-.TooltipArrow {
-    fill: var(--g400);
 }

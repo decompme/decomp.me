@@ -102,6 +102,8 @@ export type DiffCell = {
     src_comment?: string
     src_line?: number
     src_path?: string
+    mnemonic?: string
+    symbol?: string
 }
 
 export type DiffText = {

@@ -14,7 +14,7 @@ import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
 import DragBar from "./DragBar"
-import * as Tooltip from "@radix-ui/react-tooltip"
+import { MnemonicWithTooltip } from "./MnemonicWithTooltip"
 
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
@@ -49,9 +49,11 @@ function useHighlighter(setAll: Highlighter["setValue"]): Highlighter {
     }
 }
 
-function FormatDiffText({ texts, highlighter }: {
+function FormatDiffText({ texts, mnemonic, highlighter, arch }: {
     texts: api.DiffText[]
+    mnemonic: string | null
     highlighter: Highlighter
+    arch: string
 }) {
     return <> {
         texts.map((t, index1) =>
@@ -59,6 +61,7 @@ function FormatDiffText({ texts, highlighter }: {
                 const text = match[0]
                 const isToken = !match[1]
                 const key = index1 + "," + index2
+                const isMnemonic = mnemonic && text === mnemonic
 
                 let className: string
                 if (t.format == "rotation") {
@@ -80,17 +83,18 @@ function FormatDiffText({ texts, highlighter }: {
                         }
                     }}
                 >
-                    {text}
+                    {isMnemonic ? <MnemonicWithTooltip mnemonic={text} line={t.text} arch={arch} /> : text}
                 </span>
             })
         )
     }</>
 }
 
-function DiffCell({ cell, className, highlighter }: {
+function DiffCell({ cell, className, highlighter, arch }: {
     cell: api.DiffCell | undefined
     className?: string
     highlighter: Highlighter
+    arch: string
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
     const hasLineNo = typeof cell?.src_line != "undefined"
@@ -103,16 +107,17 @@ function DiffCell({ cell, className, highlighter }: {
     })}
     >
         {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
-        <FormatDiffText texts={cell.text} highlighter={highlighter} />
+        <FormatDiffText texts={cell.text} mnemonic={cell.mnemonic} highlighter={highlighter} arch={arch} />
     </div>
 }
 
-function DiffRow({ row, style, highlighter1, highlighter2, highlighter3 }: {
+function DiffRow({ row, style, highlighter1, highlighter2, highlighter3, arch }: {
     row: api.DiffRow
     style: CSSProperties
     highlighter1: Highlighter
     highlighter2: Highlighter
     highlighter3: Highlighter
+    arch: string
 }) {
     return <li
         className={styles.row}
@@ -122,9 +127,9 @@ function DiffRow({ row, style, highlighter1, highlighter2, highlighter3 }: {
             lineHeight: `${style.height.toString()}px`,
         }}
     >
-        <DiffCell cell={row.base} highlighter={highlighter1} />
-        <DiffCell cell={row.current} highlighter={highlighter2} />
-        <DiffCell cell={row.previous} highlighter={highlighter3} />
+        <DiffCell cell={row.base} highlighter={highlighter1} arch={arch} />
+        <DiffCell cell={row.current} highlighter={highlighter2} arch={arch} />
+        <DiffCell cell={row.previous} highlighter={highlighter3} arch={arch} />
     </li>
 }
 
@@ -177,6 +182,7 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number |
                             highlighter1={highlighter1}
                             highlighter2={highlighter2}
                             highlighter3={highlighter3}
+                            arch={diff.arch_str}
                         />
                     }
                 </FixedSizeList>
