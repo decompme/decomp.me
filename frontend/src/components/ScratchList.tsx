@@ -173,11 +173,11 @@ export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch
                         {scratch.name}
                     </Link>
                     <div className={styles.owner}>
-                    {scratch.owner ?
-                        <UserLink user={scratch.owner} />
-                        :
-                        <div>No Owner</div>
-                    }
+                        {scratch.owner ?
+                            <UserLink user={scratch.owner} />
+                            :
+                            <div>No Owner</div>
+                        }
                     </div>
 
                 </div>
@@ -207,11 +207,11 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                         </span>
                     </div>
                     <div className={styles.owner}>
-                    {scratch.owner ?
-                        <UserLink user={scratch.owner} />
-                        :
-                        <div>No Owner</div>
-                    }
+                        {scratch.owner ?
+                            <UserLink user={scratch.owner} />
+                            :
+                            <div>No Owner</div>
+                        }
                     </div>
                 </div>
 
