@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: { id: number } }):P
 
     let description = "There "
     description += preset.num_scratches == 1 ? "is " : "are "
-    description += preset.num_scratches == 0 ? "currently no " : `${preset.num_scratches} `
+    description += preset.num_scratches == 0 ? "currently no " : `${preset.num_scratches.toLocaleString("en-US")} `
     description += preset.num_scratches == 1 ? "scratch " : "scratches "
     description += "that use this preset."
 

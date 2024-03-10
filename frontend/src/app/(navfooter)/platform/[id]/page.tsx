@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { id: number } }):P
 
     let description = "There "
     description += platform.num_scratches == 1 ? "is " : "are "
-    description += platform.num_scratches == 0 ? "currently no " : `${platform.num_scratches} `
+    description += platform.num_scratches == 0 ? "currently no " : `${platform.num_scratches.toLocaleString("en-US")} `
     description += platform.num_scratches == 1 ? "scratch " : "scratches "
     description += "for this platform."
 
