@@ -9,6 +9,7 @@ export async function generateMetadata({ params }: { params: { slug: string }}, 
 
     return {
         title: scratch.name,
+        metadataBase: new URL(process.env.FRONTEND_BASE),
         openGraph: {
             ...parentData.openGraph,
             title: scratch.name,
