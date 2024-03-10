@@ -113,8 +113,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
             </div>
 
             <div tw="flex">
-                <div tw={`flex h-4 bg-purple-500 w-[${doneWidth}]px`}></div>
-                <div tw={`flex h-4 bg-purple-900 w-[${todoWidth}]px`}></div>
+                <div tw={`flex h-4 bg-purple-500 w-[${doneWidth}px]`}></div>
+                <div tw={`flex h-4 bg-purple-900 w-[${todoWidth}px]`}></div>
             </div>
         </div>,
         {
