@@ -31,6 +31,7 @@
         "strictNullChecks": false
     },
     "include": [
+        "src/misc_types.d.ts",
         "next-env.d.ts",
         "**/*.ts",
         "**/*.tsx",
