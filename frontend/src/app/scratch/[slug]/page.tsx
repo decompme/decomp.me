@@ -12,14 +12,6 @@ export async function generateMetadata({ params }: { params: { slug: string }}, 
         openGraph: {
             ...parentData.openGraph,
             title: scratch.name,
-            images: [
-                {
-                    url: `scratch/${scratch.slug}/opengraph-image`,
-                    width: 1200,
-                    height: 400,
-                },
-            ],
-
         },
     }
 }
