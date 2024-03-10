@@ -25,7 +25,6 @@ from .models.scratch import Scratch
 def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
     if profile.user is None:
         return {
-            "is_you": profile == request.profile,  # TODO(#245): remove
             "is_anonymous": True,
             "id": profile.id,
             "is_online": profile.is_online(),
@@ -39,7 +38,6 @@ def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
         gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
 
         return {
-            "is_you": user == request.user,  # TODO(#245): remove
             "is_anonymous": False,
             "id": profile.id,
             "is_online": profile.is_online(),
