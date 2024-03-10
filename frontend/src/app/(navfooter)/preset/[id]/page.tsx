@@ -1,3 +1,5 @@
+import { Metadata } from "next"
+
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
@@ -6,7 +8,7 @@ import { get } from "@/lib/api/request"
 import { Preset } from "@/lib/api/types"
 import useTranslation from "@/lib/i18n/translate"
 
-export async function generateMetadata({ params }: { params: { id: number } }) {
+export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
     let preset: Preset
 
     try {
@@ -19,8 +21,18 @@ export async function generateMetadata({ params }: { params: { id: number } }) {
         return notFound()
     }
 
+    let description = "There "
+    description += preset.num_scratches == 1 ? "is " : "are "
+    description += preset.num_scratches == 0 ? "currently no " : `${preset.num_scratches} `
+    description += preset.num_scratches == 1 ? "scratch " : "scratches "
+    description += "that use this preset."
+
     return {
         title: preset.name,
+        openGraph: {
+            title: preset.name,
+            description: description,
+        },
     }
 }
 
@@ -52,7 +64,7 @@ export default async function Page({ params }: { params: { id: number } }) {
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({preset.num_scratches})</h2>
             <ScratchList
-                url={"/scratch?preset=" + preset.id + "&page_size=20"}
+                url={`/scratch?preset=${preset.id}&page_size=20`}
                 item={ScratchItemPresetList}
             />
         </section>
