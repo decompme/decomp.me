@@ -3,6 +3,7 @@ import { ImageResponse } from "next/server"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { percentToString, calculateScorePercent } from "@/components/ScoreBadge"
 import { get } from "@/lib/api/request"
+import { Preset } from "@/lib/api/types"
 
 import CheckCircleFillIcon from "./assets/check-circle-fill.svg"
 import PurpleFrog from "./assets/purplefrog.svg"
@@ -22,8 +23,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
 
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
 
-    const compilers = await get("/compiler")
-    const preset = compilers["platforms"][scratch.platform].presets.find(p => p.id === scratch.preset)
+    const preset: Preset | null = scratch.preset !== null ? await get(`/preset/${scratch.preset}`) : null
 
     const scratchName = scratch.name.length > 40 ? truncateText(scratch.name, 18) : scratch.name
     const scratchNameSize =
