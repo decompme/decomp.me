@@ -42,7 +42,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
             <div tw="flex flex-col">
                 <div tw="flex flex-row justify-between ml-15 mr-15 mt-5">
                     <div tw="flex flex-col justify-center">
-                        <div tw="flex text-slate-300">{scratch.owner.username}</div>
+                        <div tw="flex text-slate-300">{scratch.owner?.username ?? "No Owner"}</div>
                         <div tw={`flex text-${scratchNameSize}`}>{scratchName}</div>
                     </div>
                     <div tw="flex bg-zinc-700 rounded-2xl">
