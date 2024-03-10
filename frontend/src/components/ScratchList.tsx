@@ -100,9 +100,13 @@ export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch,
                     <Link href={scratchUrl(scratch)} className={classNames(styles.link, styles.name)}>
                         {scratch.name}
                     </Link>
-                    {scratch.owner && <div className={styles.owner}>
-                        <UserLink user={scratch.owner} />
-                    </div>}
+                    <div className={styles.owner}>
+                        {scratch.owner ?
+                            <UserLink user={scratch.owner} />
+                            :
+                            <div>No Owner</div>
+                        }
+                    </div>
                 </div>
                 <div className={styles.metadata}>
                     <span>
