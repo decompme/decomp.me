@@ -4,6 +4,7 @@ import subprocess
 import shlex
 from pathlib import Path
 from typing import List
+from functools import lru_cache
 
 import diff as asm_differ
 
@@ -142,15 +143,18 @@ class DiffWrapper:
 
         return ret
 
+    @lru_cache()
     @staticmethod
     def run_objdump(
         target_data: bytes,
         platform: Platform,
-        config: asm_differ.Config,
+        arch_flags: tuple[str, ...],
         label: str,
-        flags: List[str],
+        objdump_flags: tuple[str, ...],
     ) -> str:
-        flags = [flag for flag in flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)]
+        flags = [
+            flag for flag in objdump_flags if not flag.startswith(ASMDIFF_FLAG_PREFIX)
+        ]
         flags += [
             "--disassemble-zeroes",
             "--line-numbers",
@@ -176,7 +180,7 @@ class DiffWrapper:
                     sandbox, target_path, platform, label
                 )
 
-            flags += config.arch.arch_flags
+            flags += arch_flags
 
             if platform.objdump_cmd:
                 try:
@@ -215,7 +219,11 @@ class DiffWrapper:
             raise AssemblyError("Asm empty")
 
         basedump = DiffWrapper.run_objdump(
-            elf_object, platform, config, diff_label, diff_flags
+            elf_object,
+            platform,
+            tuple(config.arch.arch_flags),
+            diff_label,
+            tuple(diff_flags),
         )
         if not basedump:
             raise ObjdumpError("Error running objdump")
