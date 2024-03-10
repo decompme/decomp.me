@@ -91,7 +91,7 @@ export default function NewScratchForm({ serverCompilers }: {
     }
 
     const presets = useMemo(() => {
-        const dict = {}
+        const dict: Record<string, any> = {}
         for (const v of Object.values(serverCompilers.platforms)) {
             for (const p of v.presets) {
                 dict[p.id] = p

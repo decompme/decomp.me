@@ -1,13 +1,17 @@
 import createPersistedState from "use-persisted-state"
 
-const theme = createPersistedState("theme")
-const autoRecompile = createPersistedState("autoRecompile")
-const autoRecompileDelay = createPersistedState("autoRecompileDelay")
-const codeFontSize = createPersistedState("codeFontSize")
-const monospaceFont = createPersistedState("monospaceFont")
-const codeLineHeight = createPersistedState("codeLineHeight")
-const codeColorScheme = createPersistedState("codeColorScheme")
-const languageServerEnabled = createPersistedState("languageServerEnabled")
+import { Theme } from "@/components/ThemePicker"
+
+import { ColorScheme } from "./codemirror/color-scheme"
+
+const theme = createPersistedState<Theme>("theme")
+const autoRecompile = createPersistedState<boolean>("autoRecompile")
+const autoRecompileDelay = createPersistedState<number>("autoRecompileDelay")
+const codeFontSize = createPersistedState<number>("codeFontSize")
+const monospaceFont = createPersistedState<string|undefined>("monospaceFont")
+const codeLineHeight = createPersistedState<number>("codeLineHeight")
+const codeColorScheme = createPersistedState<ColorScheme>("codeColorScheme")
+const languageServerEnabled = createPersistedState<boolean>("languageServerEnabled")
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)

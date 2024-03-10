@@ -26,7 +26,7 @@ export default function Nav({ children }: Props) {
 
     useEffect(() => {
         if (isOpen) {
-            const onkeydown = evt => {
+            const onkeydown = (evt: KeyboardEvent) => {
                 if (evt.key === "Escape") {
                     toggleOpen()
                     document.getElementById("navtoggle").focus()

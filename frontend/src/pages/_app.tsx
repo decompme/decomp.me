@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 
+import { AppProps } from "next/app"
 import Head from "next/head"
 
 import PlausibleProvider from "next-plausible"
@@ -12,7 +13,7 @@ import * as settings from "@/lib/settings"
 
 import "./_app.scss"
 
-export default function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }: AppProps) {
     const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme()
     useEffect(() => {
         applyColorScheme(codeColorScheme)
@@ -50,7 +51,7 @@ export default function MyApp({ Component, pageProps }) {
     const [codeLineHeight] = settings.useCodeLineHeight()
     useEffect(() => {
         document.body.style.removeProperty("--code-line-height")
-        document.body.style.setProperty("--code-line-height", codeLineHeight)
+        document.body.style.setProperty("--code-line-height", `${codeLineHeight}`)
     }, [codeLineHeight])
 
     // Unregister all service workers (#593) - temporary until we make a new, better service worker

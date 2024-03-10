@@ -15,7 +15,7 @@ export default function useTranslation(section: Section) {
     return {
         t(key: string): string {
             if (key in translations) {
-                return translations[key]
+                return translations[key as keyof typeof translations]
             }
 
             console.warn(`Missing '${section}' translation for key: ${key}`)
@@ -23,7 +23,7 @@ export default function useTranslation(section: Section) {
         },
 
         tWithDefault<T>(key: string, defaultValue: T): string | T {
-            return translations[key] ?? defaultValue
+            return translations[key as keyof typeof translations] ?? defaultValue
         },
     }
 }
