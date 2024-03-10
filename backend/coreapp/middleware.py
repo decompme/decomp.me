@@ -50,6 +50,7 @@ def set_user_profile(
         if "User-Agent" in request.headers and (
             "node-fetch" in request.headers["User-Agent"]
             or "undici" in request.headers["User-Agent"]
+            or "Next.js Middleware" in request.headers["User-Agent"]
         ):
             request.profile = Profile()
             return get_response(request)
