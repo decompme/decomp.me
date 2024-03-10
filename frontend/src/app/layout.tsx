@@ -5,6 +5,8 @@ import ThemeProvider from "./ThemeProvider"
 import "allotment/dist/style.css"
 import "@/pages/_app.scss" // TODO: move to sibling global.scss
 
+const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
+
 export const metadata = {
     title: {
         default: "decomp.me",
@@ -14,6 +16,7 @@ export const metadata = {
         siteName: "decomp.me",
         type: "website",
     },
+    metadataBase: new URL(API_BASE),
 }
 
 export default function RootLayout({

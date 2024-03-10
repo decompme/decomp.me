@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react"
 
 import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
+import * as Progress from "@radix-ui/react-progress"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
@@ -14,7 +15,7 @@ import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
-import ScoreBadge from "../ScoreBadge"
+import ScoreBadge, { calculateScorePercent } from "../ScoreBadge"
 import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
@@ -297,6 +298,10 @@ export default function Scratch({
             : <></>
     )
 
+    const currentScore = compilation?.diff_output?.current_score || scratch.score
+    const currentMaxScore = compilation?.diff_output?.max_score || scratch.max_score
+    const matchPercent = calculateScorePercent(currentScore, currentMaxScore)
+
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
@@ -309,6 +314,12 @@ export default function Scratch({
                 setScratch={setScratch}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
+            <Progress.Root className={styles.ProgressRoot} value={matchPercent}>
+                <Progress.Indicator
+                    className={styles.ProgressIndicator}
+                    style={{ transform: `translateX(-${100 - matchPercent}%)` }}
+                />
+            </Progress.Root>
         </ErrorBoundary>
         <ErrorBoundary>
             {layout && <CustomLayout

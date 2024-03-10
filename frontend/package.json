@@ -25,6 +25,7 @@
         "@open-rpc/client-js": "^1.8.1",
         "@primer/octicons-react": "^19.8.0",
         "@radix-ui/colors": "^0.1.8",
+        "@radix-ui/react-progress": "^1.0.3",
         "@react-hook/resize-observer": "^1.2.6",
         "@replit/codemirror-indentation-markers": "^6.4.2",
         "allotment": "^1.19.0",
