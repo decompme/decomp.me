@@ -1,4 +1,5 @@
 from coreapp.compilers import GCC281PM, IDO53, MWCC_247_92
+from coreapp.decompiler_wrapper import DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -50,6 +51,28 @@ class DecompilationTests(BaseTestCase):
         )
         self.assertEqual(
             response.json()["decompilation"], "s32 return_2(void) {\n    return 2;\n}\n"
+        )
+
+    @requiresCompiler(GCC281PM)
+    def test_decompile_endpoint_with_broken_context(self) -> None:
+        """
+        Ensure that the decompile endpoint works even if the context is broken
+        """
+        scratch_dict = {
+            "compiler": GCC281PM.id,
+            "platform": N64.id,
+            "context": "typedeff jeff;",
+            "target_asm": "glabel return_2\njr $ra\nli $v0,2",
+        }
+        scratch = self.create_scratch(scratch_dict)
+
+        response = self.client.post(
+            reverse("scratch-decompile", kwargs={"pk": scratch.slug}),
+        )
+        self.assertEqual(
+            response.json()["decompilation"],
+            DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
+            + "s32 return_2(void) {\n    return 2;\n}\n",
         )
 
 

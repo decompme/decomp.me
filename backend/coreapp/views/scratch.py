@@ -409,7 +409,7 @@ class ScratchViewSet(
         if scratch.target_assembly.source_asm is None:
             return Response({"decompilation": None})
 
-        context = request.data.get("context", "")
+        context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
 
         platform = platforms.from_id(scratch.platform)
