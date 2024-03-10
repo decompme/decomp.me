@@ -23,7 +23,7 @@ html-json-forms = "^1.1.1"
 django-resized = "^1.0.2"
 django-cleanup = "^8.0.0"
 m2c = {git="https://github.com/matt-kempster/m2c.git"}
-asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
+asm-differ = {git="https://github.com/ethteck/asm-differ.git", branch="mnemonic"}
 sentry-sdk = "^1.39.1"
 django-session-timeout = "^0.1.0"
 django = "^5.0"
