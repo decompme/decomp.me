@@ -49,7 +49,6 @@
         "react-virtualized-auto-sizer": "^1.0.24",
         "react-window": "^1.8.10",
         "sass": "^1.71.1",
-        "sharp": "^0.33.2",
         "swr": "^2.2.5",
         "use-debounce": "^10.0.0",
         "use-persisted-state": "^0.3.3",

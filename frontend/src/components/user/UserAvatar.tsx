@@ -27,7 +27,7 @@ export default function UserAvatar({ user, className }: Props) {
     if (!user) {
         // Skeleton loading state
         return <span className={classNames(styles.avatar, className)}>
-            <div className="h-full w-full animate-pulse rounded-full bg-gray-6" />
+            <div className="size-full animate-pulse rounded-full bg-gray-6" />
         </span>
     }
 

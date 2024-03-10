@@ -4,8 +4,8 @@ import Loading from "@/components/loading.svg"
 import { TerseScratch } from "@/lib/api/types"
 
 const SortableFamilyList = dynamic(() => import("./SortableFamilyList"), {
-    loading: () => <div className="flex h-full w-full items-center justify-center">
-        <Loading className="h-8 w-8 animate-pulse" />
+    loading: () => <div className="flex size-full items-center justify-center">
+        <Loading className="size-8 animate-pulse" />
     </div>,
 })
 

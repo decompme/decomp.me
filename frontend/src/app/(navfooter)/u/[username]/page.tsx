@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: { username: string } })
 
     return <main className="mx-auto w-full max-w-3xl p-4">
         <header className="mb-4 flex flex-col items-center gap-6 border-b border-gray-6 py-4 md:flex-row">
-            <UserAvatar className="h-16 w-16" user={user} />
+            <UserAvatar className="size-16" user={user} />
             <div>
                 <h1 className="text-center text-2xl font-medium tracking-tight md:text-left">
                     {user.username}

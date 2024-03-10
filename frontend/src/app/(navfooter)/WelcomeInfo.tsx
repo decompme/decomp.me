@@ -21,7 +21,7 @@ export default function WelcomeInfo() {
                 <ScrollingPlatformIcons />
             </div>
             <div
-                className="absolute top-0 h-full w-full"
+                className="absolute top-0 size-full"
                 style={{
                     // Gradient to only show icons in the middle
                     background: "linear-gradient(to right, transparent, hsl(var(--color-mauve1)) 40%, hsl(var(--color-mauve1)) 60%, transparent)",
