@@ -67,28 +67,33 @@
 
     align-items: stretch;
 
-    > .cell {
-        overflow: hidden;
+    button {
+        text-align: left;
 
-        color: var(--g1600);
+        > .cell {
+            overflow: hidden;
 
-        padding: 0 1em;
+            color: var(--g1600);
 
-        cursor: default;
+            padding: 0 1em;
 
-        &.highlight {
-            background-color: var(--a50);
+            cursor: default;
 
-            .lineNumber {
-                color: #c6c6c6;
+            &.highlight {
+                background-color: var(--a50);
+
+                .lineNumber {
+                    color: #c6c6c6;
+                }
             }
-        }
 
-        &:nth-child(2) {
-            filter: var(--diff-current-filter);
+            &:nth-child(2) {
+                filter: var(--diff-current-filter);
+            }
         }
     }
 }
+
 
 .cell span.lineNumber {
     display: inline-block;
@@ -152,4 +157,17 @@
 
 .highlightable {
     cursor: pointer;
+}
+
+div.TooltipContent {
+    padding: 0.5em;
+    border-radius: 4px;
+    background: var(--g200);
+    box-shadow: 0 0 8px rgba(255, 255, 0, 1);
+    color: var(--g1200);
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
 }

@@ -14,6 +14,7 @@ import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
 import DragBar from "./DragBar"
+import * as Tooltip from "@radix-ui/react-tooltip"
 
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
@@ -97,10 +98,31 @@ function DiffCell({ cell, className, highlighter }: {
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
 
-    return <div
-        className={classNames(styles.cell, className, {
-            [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
-        })}
+    return (<Tooltip.Provider>
+        <Tooltip.Root
+            defaultOpen={true}
+        >
+            <Tooltip.Trigger >
+                <div className={classNames(styles.cell, className, {
+                    [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
+                })}
+                >
+                    {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
+                    <FormatDiffText texts={cell.text} highlighter={highlighter} />
+                </div>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+                <Tooltip.Content className="TooltipContent" sideOffset={5}>
+                    Add to library
+                    <Tooltip.Arrow className="TooltipArrow" />
+                </Tooltip.Content>
+            </Tooltip.Portal>
+        </Tooltip.Root>
+    </Tooltip.Provider>)
+
+    return <div className={classNames(styles.cell, className, {
+        [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
+    })}
     >
         {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
         <FormatDiffText texts={cell.text} highlighter={highlighter} />
