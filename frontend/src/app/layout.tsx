@@ -5,8 +5,6 @@ import ThemeProvider from "./ThemeProvider"
 import "allotment/dist/style.css"
 import "@/pages/_app.scss" // TODO: move to sibling global.scss
 
-const API_BASE = process.env.INTERNAL_API_BASE ?? process.env.NEXT_PUBLIC_API_BASE
-
 export const metadata = {
     title: {
         default: "decomp.me",
@@ -16,7 +14,8 @@ export const metadata = {
         siteName: "decomp.me",
         type: "website",
     },
-    metadataBase: new URL(API_BASE),
+    // set this to avoid "metadata.metadataBase is not set..." warning
+    metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`),
 }
 
 export default function RootLayout({
