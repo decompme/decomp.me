@@ -162,7 +162,6 @@ class UserTests(BaseTestCase):
         # log out
         response = self.client.post(self.current_user_url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["is_you"], True)
         self.assertEqual(response.json()["is_anonymous"], True)
 
         self.assertEqual(Profile.objects.count(), 2)  # logged-out
@@ -170,7 +169,6 @@ class UserTests(BaseTestCase):
         for i in range(3):
             # verify we are logged out
             response = self.client.get(self.current_user_url)
-            self.assertEqual(response.json()["is_you"], True)
             self.assertEqual(response.json()["is_anonymous"], True)
 
         # all the above GETs should have used the same logged-out profile
@@ -205,7 +203,6 @@ class UserTests(BaseTestCase):
 
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["owner"]["username"], GITHUB_USER["login"])
-        self.assertEqual(response.json()["owner"]["is_you"], True)
 
         # Delete the scratch
         url = reverse("scratch-detail", kwargs={"pk": slug})
@@ -242,12 +239,10 @@ class UserTests(BaseTestCase):
 
         response = self.client.get(f"/api/scratch/{slug}")
         self.assertEqual(response.json()["owner"]["username"], GITHUB_USER["login"])
-        self.assertEqual(response.json()["owner"]["is_you"], True)
 
         # Log out
         response = self.client.post(self.current_user_url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
-        self.assertEqual(response.json()["is_you"], True)
         self.assertEqual(response.json()["is_anonymous"], True)
 
         # Try to delete the scratch

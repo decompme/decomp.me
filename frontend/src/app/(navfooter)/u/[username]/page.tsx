@@ -1,3 +1,5 @@
+import { Metadata } from "next"
+
 import { notFound } from "next/navigation"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
@@ -9,7 +11,7 @@ import { get } from "@/lib/api/request"
 import { User } from "@/lib/api/types"
 import { userGithubHtmlUrl, userUrl } from "@/lib/api/urls"
 
-export async function generateMetadata({ params }: { params: { username: string } }) {
+export async function generateMetadata({ params }: { params: { username: string } }):Promise<Metadata> {
     let user: User
 
     try {
@@ -24,6 +26,9 @@ export async function generateMetadata({ params }: { params: { username: string 
 
     return {
         title: user.username,
+        openGraph: {
+            title: user.username,
+        },
     }
 }
 
