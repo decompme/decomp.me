@@ -124,12 +124,8 @@ $padding: 4px;
 
 .iconNamePair {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 4px;
-
-    > svg {
-        align-self: center;
-    }
 }
 
 .lastEditTime {
