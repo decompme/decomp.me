@@ -153,6 +153,15 @@ export default function Scratch({
 
     const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, scratch, sourceEditor, contextEditor)
 
+    const [lastGoodScore, setLastGoodScore] = useState<number>(scratch.score)
+    const [lastGoodMaxScore, setLastGoodMaxScore] = useState<number>(scratch.max_score)
+    useEffect(() => {
+        if (compilation?.success) {
+            setLastGoodScore(compilation.diff_output.current_score)
+            setLastGoodMaxScore(compilation.diff_output.max_score)
+        }
+    }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
+
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
     useEffect(() => {
@@ -298,9 +307,7 @@ export default function Scratch({
             : <></>
     )
 
-    const currentScore = compilation?.diff_output?.current_score || scratch.score
-    const currentMaxScore = compilation?.diff_output?.max_score || scratch.max_score
-    const matchPercent = calculateScorePercent(currentScore, currentMaxScore)
+    const matchPercent = calculateScorePercent(lastGoodScore, lastGoodMaxScore)
 
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
@@ -317,7 +324,7 @@ export default function Scratch({
             <Progress.Root className={styles.ProgressRoot} value={matchPercent}>
                 <Progress.Indicator
                     className={styles.ProgressIndicator}
-                    style={{ transform: `translateX(-${100 - matchPercent}%)` }}
+                    style={{ transform: `translateX(-${100 - matchPercent}%)`, backgroundColor: `hsl(271, ${matchPercent * 0.91}%, ${30 + (matchPercent * 0.35)}%)` }}
                 />
             </Progress.Root>
         </ErrorBoundary>
