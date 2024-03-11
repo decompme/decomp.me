@@ -52,15 +52,14 @@
 }
 
 .ProgressRoot {
+    align-self: center;
     position: relative;
     overflow: hidden;
     background: var(--g400);
-    width: 100%;
+    width: 98%;
     height: 0.2em;
 
-    /* Fix overflow clipping in Safari */
-
-    /* https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0 */
+    /* Fix overflow clipping in Safari https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0 */
     transform: translateZ(0);
 }
 
