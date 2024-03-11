@@ -2,13 +2,12 @@ import { useEffect, useReducer, useRef, useState } from "react"
 
 import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
-import * as Progress from "@radix-ui/react-progress"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled } from "@/lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
 
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
@@ -24,6 +23,7 @@ import FamilyPanel from "./FamilyPanel"
 import useLanguageServer from "./hooks/useLanguageServer"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
+import ScratchProgressBar from "./ScratchProgressBar"
 import ScratchToolbar from "./ScratchToolbar"
 
 enum TabId {
@@ -134,6 +134,7 @@ export default function Scratch({
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
     const [languageServerEnabledSetting] = useLanguageServerEnabled()
+    const [matchProgressBarEnabledSetting] = useMatchProgressBarEnabled()
     const { compilation, isCompiling, isCompilationOld, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
     const userIsYou = api.useUserIsYou()
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
@@ -321,12 +322,7 @@ export default function Scratch({
                 setScratch={setScratch}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
-            <Progress.Root className={styles.ProgressRoot} value={matchPercent}>
-                <Progress.Indicator
-                    className={styles.ProgressIndicator}
-                    style={{ transform: `translateX(-${100 - matchPercent}%)`, backgroundColor: `hsl(271, ${matchPercent * 0.91}%, ${30 + (matchPercent * 0.35)}%)` }}
-                />
-            </Progress.Root>
+            {matchProgressBarEnabledSetting && <ScratchProgressBar matchPercent={matchPercent} />}
         </ErrorBoundary>
         <ErrorBoundary>
             {layout && <CustomLayout
