@@ -14,7 +14,7 @@ import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
 import DragBar from "./DragBar"
-import { MnemonicWithTooltip } from "./MnemonicWithTooltip"
+import { MnemonicWithTooltip } from "./Mnemonics/MnemonicWithTooltip"
 
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
