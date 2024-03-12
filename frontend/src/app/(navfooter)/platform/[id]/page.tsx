@@ -1,3 +1,5 @@
+import { Metadata } from "next"
+
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
@@ -5,7 +7,7 @@ import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { PlatformMetadata } from "@/lib/api/types"
 
-export async function generateMetadata({ params }: { params: { id: number } }) {
+export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
     let platform: PlatformMetadata
 
     try {
@@ -18,8 +20,18 @@ export async function generateMetadata({ params }: { params: { id: number } }) {
         return notFound()
     }
 
+    let description = "There "
+    description += platform.num_scratches == 1 ? "is " : "are "
+    description += platform.num_scratches == 0 ? "currently no " : `${platform.num_scratches.toLocaleString("en-US")} `
+    description += platform.num_scratches == 1 ? "scratch " : "scratches "
+    description += "for this platform."
+
     return {
         title: platform.name,
+        openGraph: {
+            title: platform.name,
+            description: description,
+        },
     }
 }
 
@@ -47,7 +59,7 @@ export default async function Page({ params }: { params: { id: number } }) {
         <section>
             <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({platform.num_scratches})</h2>
             <ScratchList
-                url={"/scratch?platform=" + platform.id + "&page_size=20"}
+                url={`/scratch?platform=${platform.id}&page_size=20`}
                 item={ScratchItemPlatformList}
             />
         </section>

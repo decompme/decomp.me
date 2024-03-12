@@ -16,10 +16,7 @@ export default function WelcomeInfo() {
 
     return <div className="relative overflow-x-hidden p-2">
         {!saveDataEnabled && <div className="absolute top-14 -z-10 hidden w-full opacity-80 sm:block">
-            <div className="flex">
-                <ScrollingPlatformIcons />
-                <ScrollingPlatformIcons />
-            </div>
+            <ScrollingPlatformIcons />
             <div
                 className="absolute top-0 h-full w-full"
                 style={{
