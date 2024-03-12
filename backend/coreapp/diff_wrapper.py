@@ -3,7 +3,7 @@ import logging
 import subprocess
 import shlex
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 from functools import lru_cache
 
 import diff as asm_differ
@@ -71,7 +71,7 @@ class DiffWrapper:
             max_function_size_lines=MAX_FUNC_SIZE_LINES,
             max_function_size_bytes=MAX_FUNC_SIZE_LINES * 4,
             # Display options
-            formatter=asm_differ.JsonFormatter(arch_str=arch.name),
+            formatter=asm_differ.PythonFormatter(arch_str=arch.name),
             diff_mode=asm_differ.DiffMode.NORMAL,
             base_shift=0,
             skip_lines=0,
@@ -242,6 +242,14 @@ class DiffWrapper:
         return basedump
 
     @staticmethod
+    def run_diff(basedump: str, mydump: str, config: Any) -> Dict[str, Any]:
+        base_lines = asm_differ.process(basedump, config)
+        my_lines = asm_differ.process(mydump, config)
+        diff_output = asm_differ.do_diff(base_lines, my_lines, config)
+        table_data = asm_differ.align_diffs(diff_output, diff_output, config)
+        return config.formatter.raw(table_data)
+
+    @staticmethod
     def diff(
         target_assembly: Assembly,
         platform: Platform,
@@ -278,15 +286,8 @@ class DiffWrapper:
             mydump = ""
 
         try:
-            display = asm_differ.Display(basedump, mydump, config)
+            result = DiffWrapper.run_diff(basedump, mydump, config)
         except Exception as e:
             raise DiffError(f"Error running asm-differ: {e}")
 
-        try:
-            # TODO: It would be nice to get a python object from `run_diff()` to avoid the
-            # JSON roundtrip. See https://github.com/simonlindholm/asm-differ/issues/56
-            result = DiffResult(json.loads(display.run_diff()[0]), "")
-        except Exception as e:
-            raise DiffError(f"Error running asm-differ: {e}")
-
-        return result
+        return DiffResult(result, "")
