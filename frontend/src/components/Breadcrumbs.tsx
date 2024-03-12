@@ -28,7 +28,7 @@ export default function Breadcrumbs({ pages, className }: Props) {
 
                     return (
                         <li key={page.href || index}>
-                            {page.href ? <Link href={page.href} legacyBehavior>{a}</Link> : a}
+                            {page.href ? <Link href={page.href} legacyBehavior>{a}</Link> : page.label}
                         </li>
                     )
                 })}
