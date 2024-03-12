@@ -322,7 +322,7 @@ export default function Scratch({
                 setScratch={setScratch}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
-            {matchProgressBarEnabledSetting && <ScratchProgressBar matchPercent={matchPercent} />}
+            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent}/></div>}
         </ErrorBoundary>
         <ErrorBoundary>
             {layout && <CustomLayout
