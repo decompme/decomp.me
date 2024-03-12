@@ -3,6 +3,7 @@ import { ImageResponse } from "next/server"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { percentToString, calculateScorePercent } from "@/components/ScoreBadge"
 import { get } from "@/lib/api/request"
+import { Preset } from "@/lib/api/types"
 
 import CheckCircleFillIcon from "./assets/check-circle-fill.svg"
 import PurpleFrog from "./assets/purplefrog.svg"
@@ -22,8 +23,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
 
     const { scratch, parentScratch, compilation } = await getScratchDetails(params.slug)
 
-    const compilers = await get("/compiler")
-    const preset = compilers["platforms"][scratch.platform].presets.find(p => p.id === scratch.preset)
+    const preset: Preset | null = scratch.preset !== null ? await get(`/preset/${scratch.preset}`) : null
 
     const scratchName = scratch.name.length > 40 ? truncateText(scratch.name, 18) : scratch.name
     const scratchNameSize =
@@ -42,7 +42,7 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
             <div tw="flex flex-col">
                 <div tw="flex flex-row justify-between ml-15 mr-15 mt-5">
                     <div tw="flex flex-col justify-center">
-                        <div tw="flex text-slate-300">{scratch.owner.username}</div>
+                        <div tw="flex text-slate-300">{scratch.owner?.username ?? "No Owner"}</div>
                         <div tw={`flex text-${scratchNameSize}`}>{scratchName}</div>
                     </div>
                     <div tw="flex bg-zinc-700 rounded-2xl">
