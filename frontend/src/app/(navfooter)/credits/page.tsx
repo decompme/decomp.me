@@ -5,7 +5,7 @@ import { User } from "@/lib/api/types"
 import ContributorsList, { getContributorUsernames, usernameToContributor } from "./ContributorsList"
 import LinkList from "./LinkList"
 
-const MAINTAINER_USERNAMES = ["ethteck", "nanaian"]
+const MAINTAINER_USERNAMES = ["ethteck", "bates64"]
 const OTHER_PROJECTS = {
     "asm-differ": "https://github.com/simonlindholm/asm-differ",
     "m2c": "https://github.com/matt-kempster/m2c",

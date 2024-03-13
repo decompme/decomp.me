@@ -11,7 +11,9 @@ import SliderField from "../SliderField"
 export default function EditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
+    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
     const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
+    const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -59,6 +61,14 @@ export default function EditorSettings() {
                 </div>
             </Checkbox>
         </Section>
+        <Section title="Match progress bar">
+            <Checkbox
+                checked={matchProgressBarEnabled}
+                onChange={setMatchProgressBarEnabled}
+                label="Show progress bar on scratch editor"
+                description="Show a progress bar at the top of the editor to visually display the match percent of a scratch."
+            />
+        </Section>
         <Section title="Language server">
             <Checkbox
                 checked={languageServerEnabled}
@@ -67,6 +77,14 @@ export default function EditorSettings() {
                 description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~13MB download, and bump up resource usage during editing.">
 
                 {downloadingLanguageServer && <div className="flex gap-2 p-4"><LoadingSpinner width="24px" /> Downloading...</div>}
+            </Checkbox>
+        </Section>
+        <Section title="Vim Mode">
+            <Checkbox
+                checked={vimModeEnabled}
+                onChange={setVimModeEnabled}
+                label="Enable Vim bindings"
+                description="Enables Vim bindings to be used inside of the scratch editor">
             </Checkbox>
         </Section>
     </>

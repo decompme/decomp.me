@@ -12,6 +12,8 @@ const monospaceFont = createPersistedState<string|undefined>("monospaceFont")
 const codeLineHeight = createPersistedState<number>("codeLineHeight")
 const codeColorScheme = createPersistedState<ColorScheme>("codeColorScheme")
 const languageServerEnabled = createPersistedState<boolean>("languageServerEnabled")
+const matchProgressBarEnabled = createPersistedState<boolean>("matchProgressBarEnabled")
+const vimModeEnabled = createPersistedState<boolean>("vimModeEnabled")
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)
@@ -21,6 +23,8 @@ export const useMonospaceFont = () => monospaceFont(undefined)
 export const useCodeLineHeight = () => codeLineHeight(1.5)
 export const useCodeColorScheme = () => codeColorScheme("Frog Dark")
 export const useLanguageServerEnabled = () => languageServerEnabled(false)
+export const useMatchProgressBarEnabled = () => matchProgressBarEnabled(true)
+export const useVimModeEnabled = () => vimModeEnabled(false)
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme()

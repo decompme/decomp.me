@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { percentToString, calculateScorePercent } from "@/components/ScoreBadge"
-import * as api from "@/lib/api"
 import { get } from "@/lib/api/request"
 import { Preset } from "@/lib/api/types"
 
