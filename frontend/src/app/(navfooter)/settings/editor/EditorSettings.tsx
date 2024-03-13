@@ -11,6 +11,7 @@ import SliderField from "../SliderField"
 export default function EditorSettings() {
     const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
+    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
     const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
     const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
 
@@ -59,6 +60,14 @@ export default function EditorSettings() {
                     />
                 </div>
             </Checkbox>
+        </Section>
+        <Section title="Match progress bar">
+            <Checkbox
+                checked={matchProgressBarEnabled}
+                onChange={setMatchProgressBarEnabled}
+                label="Show progress bar on scratch editor"
+                description="Show a progress bar at the top of the editor to visually display the match percent of a scratch."
+            />
         </Section>
         <Section title="Language server">
             <Checkbox

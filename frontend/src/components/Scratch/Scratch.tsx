@@ -8,14 +8,14 @@ import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useVimModeEnabled } from "@/lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useVimModeEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
 
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
-import ScoreBadge from "../ScoreBadge"
+import ScoreBadge, { calculateScorePercent } from "../ScoreBadge"
 import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
@@ -24,6 +24,7 @@ import FamilyPanel from "./FamilyPanel"
 import useLanguageServer from "./hooks/useLanguageServer"
 import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
+import ScratchProgressBar from "./ScratchProgressBar"
 import ScratchToolbar from "./ScratchToolbar"
 
 enum TabId {
@@ -133,6 +134,7 @@ export default function Scratch({
     const [autoRecompileSetting] = useAutoRecompileSetting()
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting()
     const [languageServerEnabledSetting] = useLanguageServerEnabled()
+    const [matchProgressBarEnabledSetting] = useMatchProgressBarEnabled()
     const { compilation, isCompiling, isCompilationOld, compile } = api.useCompilation(scratch, autoRecompileSetting, autoRecompileDelaySetting, initialCompilation)
     const userIsYou = api.useUserIsYou()
     const [selectedSourceLine, setSelectedSourceLine] = useState<number | null>()
@@ -151,6 +153,16 @@ export default function Scratch({
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
 
     const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, scratch, sourceEditor, contextEditor)
+
+    const [lastGoodScore, setLastGoodScore] = useState<number>(scratch.score)
+    const [lastGoodMaxScore, setLastGoodMaxScore] = useState<number>(scratch.max_score)
+    useEffect(() => {
+        if (compilation?.success) {
+            setLastGoodScore(compilation.diff_output.current_score)
+            setLastGoodMaxScore(compilation.diff_output.max_score)
+        }
+    }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
+
     const [useVim] = useVimModeEnabled()
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
@@ -306,6 +318,8 @@ export default function Scratch({
             : <></>
     )
 
+    const matchPercent = calculateScorePercent(lastGoodScore, lastGoodMaxScore)
+
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
             <ScratchMatchBanner scratch={scratch} />
@@ -318,6 +332,7 @@ export default function Scratch({
                 setScratch={setScratch}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
+            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent}/></div>}
         </ErrorBoundary>
         <ErrorBoundary>
             {layout && <CustomLayout

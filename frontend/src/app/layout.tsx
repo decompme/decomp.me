@@ -14,6 +14,8 @@ export const metadata = {
         siteName: "decomp.me",
         type: "website",
     },
+    // set this to avoid "metadata.metadataBase is not set..." warning
+    metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`),
 }
 
 export default function RootLayout({
