@@ -2,12 +2,13 @@ import { useEffect, useReducer, useRef, useState } from "react"
 
 import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
+import { vim } from "@replit/codemirror-vim"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
-import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
+import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useVimModeEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
 
 import CompilerOpts from "../compiler/CompilerOpts"
 import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
@@ -103,7 +104,6 @@ const CODEMIRROR_EXTENSIONS = [
     basicSetup,
     cpp(),
 ]
-
 function getDefaultLayout(width: number, _height: number): keyof typeof DEFAULT_LAYOUTS {
     if (width > 700) {
         return "desktop_2col"
@@ -163,6 +163,7 @@ export default function Scratch({
         }
     }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
 
+    const [useVim] = useVimModeEnabled()
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
     useEffect(() => {
@@ -179,6 +180,15 @@ export default function Scratch({
     useEffect(() => {
         incrementValueVersion()
     }, [scratch.slug, scratch.last_updated])
+
+    const cmExtensions = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
+    const cmExtensionsRef = useRef(cmExtensions)
+    useEffect(() => {
+        if (useVim == true) {
+            cmExtensionsRef.current = [...cmExtensionsRef.current, vim()]
+        }
+    })
+    const refCmExtensions = cmExtensionsRef.current
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
@@ -208,7 +218,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={[...CODEMIRROR_EXTENSIONS, sourceCompareExtension]}
+                    extensions={refCmExtensions}
                 />
             </Tab>
         case TabId.CONTEXT:

@@ -1468,6 +1468,11 @@
   resolved "https://registry.yarnpkg.com/@replit/codemirror-indentation-markers/-/codemirror-indentation-markers-6.5.0.tgz#e853e406cf05fea13449578c6c9c1383c6feb219"
   integrity sha512-5RgeuQ6erfROi1EVI2X7G4UR+KByjb07jhYMynvpvlrV22JlnARifmKMGEUKy0pKcxBNfwbFqoUlTYHPgyZNlg==
 
+"@replit/codemirror-vim@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@replit/codemirror-vim/-/codemirror-vim-6.2.0.tgz#aa86be5d8e3dcf6be2ea4acc50aec4ffb7246bba"
+  integrity sha512-05E27W7m9HLwnhIHaXAdBTca1uN6n3j57wAsGI8rb+0LDIWgaLgS65xJ4TRJnwJOX4N0iWLGq38McDheSO5eOQ==
+
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-babel/-/plugin-babel-5.3.1.tgz#04bc0608f4aa4b2e4b1aebf284344d0f68fda283"

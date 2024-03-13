@@ -9,6 +9,7 @@ const codeLineHeight = createPersistedState("codeLineHeight")
 const codeColorScheme = createPersistedState("codeColorScheme")
 const languageServerEnabled = createPersistedState("languageServerEnabled")
 const matchProgressBarEnabled = createPersistedState("matchProgressBarEnabled")
+const vimModeEnabled = createPersistedState("vimModeEnabled")
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)
@@ -19,6 +20,7 @@ export const useCodeLineHeight = () => codeLineHeight(1.5)
 export const useCodeColorScheme = () => codeColorScheme("Frog Dark")
 export const useLanguageServerEnabled = () => languageServerEnabled(false)
 export const useMatchProgressBarEnabled = () => matchProgressBarEnabled(true)
+export const useVimModeEnabled = () => vimModeEnabled(false)
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme()

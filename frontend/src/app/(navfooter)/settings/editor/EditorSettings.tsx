@@ -13,6 +13,7 @@ export default function EditorSettings() {
     const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
     const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
     const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
+    const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -76,6 +77,14 @@ export default function EditorSettings() {
                 description="Enable editor features such as code completion, error checking, and formatting via clangd and WebAssembly magic. WARNING: enabling will incur a one time ~13MB download, and bump up resource usage during editing.">
 
                 {downloadingLanguageServer && <div className="flex gap-2 p-4"><LoadingSpinner width="24px" /> Downloading...</div>}
+            </Checkbox>
+        </Section>
+        <Section title="Vim Mode">
+            <Checkbox
+                checked={vimModeEnabled}
+                onChange={setVimModeEnabled}
+                label="Enable Vim bindings"
+                description="Enables Vim bindings to be used inside of the scratch editor">
             </Checkbox>
         </Section>
     </>

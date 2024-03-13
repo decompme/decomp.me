@@ -67,10 +67,11 @@ def set_user_profile(
 
             if isinstance(id, int):
                 profile = Profile.objects.filter(id=id).first()
-                profile_user = User.objects.filter(profile=profile).first()
+                if profile is not None:
+                    profile_user = User.objects.filter(profile=profile).first()
 
-                if profile_user and request.user.is_anonymous:
-                    request.user = profile_user
+                    if profile_user and request.user.is_anonymous:
+                        request.user = profile_user
 
         # If we still don't have a profile, create a new one
         if not profile:

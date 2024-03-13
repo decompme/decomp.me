@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react"
 
-import { isMacOS } from "@/lib/device"
+import { isMacOS as deviceIsMacOS } from "@/lib/device"
+
+function useIsMacOS() {
+    const [isMacOS, setIsMacOS] = useState(false)
+    useEffect(() => setIsMacOS(deviceIsMacOS()), [])
+    return isMacOS
+}
 
 export type Key = string | SpecialKey
 
@@ -33,29 +39,33 @@ export class KeyMap extends Map<Key, boolean> {
     }
 }
 
-export function translateKey(key: Key): string {
+export function useTranslateKey(key: Key): string {
+    const isMacOS = useIsMacOS()
+
     switch (key) {
     case SpecialKey.CTRL_COMMAND:
-        return isMacOS() ? "⌘" : "Ctrl"
+        return isMacOS ? "⌘" : "Ctrl"
     case SpecialKey.ALT_OPTION:
-        return isMacOS() ? "⌥" : "Alt"
+        return isMacOS ? "⌥" : "Alt"
     case SpecialKey.SHIFT:
-        return isMacOS() ? "⇧" : "Shift"
+        return isMacOS ? "⇧" : "Shift"
     default:
         return key.toLocaleUpperCase()
     }
 }
 
-export function getSeparator(): string {
+export function useGetSeparator(): string {
     const THIN_SPACE = " "
 
-    return isMacOS() ? THIN_SPACE : "+"
+    return useIsMacOS() ? THIN_SPACE : "+"
 }
 
-export function translateKeys(keys: Key[]): string {
+export function useTranslateKeys(keys: Key[]): string {
+    const isMacOS = useIsMacOS()
+
     return keys
         .sort((a, b) => {
-            if (isMacOS() && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
+            if (isMacOS && (a === SpecialKey.SHIFT || b === SpecialKey.SHIFT)) {
                 return a === SpecialKey.SHIFT ? -1 : 1 // Shift comes first on MacOS
             } else if (typeof a === "string" && typeof b === "string") {
                 return a.localeCompare(b) // Sort alphabetically
@@ -67,11 +77,13 @@ export function translateKeys(keys: Key[]): string {
                 return a < b ? -1 : 1 // Sort in order of the enum
             }
         })
-        .map(translateKey)
-        .join(getSeparator())
+        .map(useTranslateKey)
+        .join(useGetSeparator())
 }
 
 export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement): string | undefined {
+    const isMacOS = useIsMacOS()
+
     useEffect(() => {
         const el = element || document.body
         const keysDown = new KeyMap()
@@ -95,7 +107,7 @@ export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: H
 
                 switch (key) {
                 case SpecialKey.CTRL_COMMAND:
-                    if (isMacOS() ? metaKey : ctrlKey)
+                    if (isMacOS ? metaKey : ctrlKey)
                         continue
                     break
                 case SpecialKey.ALT_OPTION:
@@ -139,17 +151,20 @@ export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: H
             el.removeEventListener("keyup", handleKeyUp)
             el.removeEventListener("blur", handleBlur)
         }
-    }, [callback, element, keys])
+    }, [callback, element, isMacOS, keys])
+
+    const keysString = useTranslateKeys(keys)
 
     if (!keys || keys.length === 0) {
         return undefined
     } else {
-        return translateKeys(keys)
+        return keysString
     }
 }
 
 export default function Shortcut({ keys, className }: { keys: Key[], className?: string }) {
     const [mounted, setMounted] = useState(false)
+    const keysString = useTranslateKeys(keys)
 
     useEffect(() => {
         setMounted(true)
@@ -157,6 +172,6 @@ export default function Shortcut({ keys, className }: { keys: Key[], className?:
     }, [])
 
     return <span className={className}>
-        {mounted && translateKeys(keys)}
+        {mounted && keysString}
     </span>
 }
