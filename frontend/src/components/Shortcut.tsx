@@ -62,6 +62,11 @@ export function useGetSeparator(): string {
 
 export function useTranslateKeys(keys: Key[]): string {
     const isMacOS = useIsMacOS()
+    const separator = useGetSeparator()
+
+    if (!keys || keys.length === 0) {
+        return ""
+    }
 
     return keys
         .sort((a, b) => {
@@ -78,7 +83,7 @@ export function useTranslateKeys(keys: Key[]): string {
             }
         })
         .map(useTranslateKey)
-        .join(useGetSeparator())
+        .join(separator)
 }
 
 export function useShortcut(keys: Key[], callback: ShortcutCallback, element?: HTMLElement): string | undefined {
