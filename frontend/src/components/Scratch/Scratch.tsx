@@ -161,7 +161,7 @@ export default function Scratch({
             setLastGoodScore(compilation.diff_output.current_score)
             setLastGoodMaxScore(compilation.diff_output.max_score)
         }
-    }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
+    }, [compilation?.diff_output?.current_score, compilation?.diff_output?.max_score, compilation?.success])
 
     const [useVim] = useVimModeEnabled()
     // TODO: CustomLayout should handle adding/removing tabs
