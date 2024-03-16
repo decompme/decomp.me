@@ -156,6 +156,7 @@ export interface PlatformBase {
     name: string
     description: string
     arch: string
+    has_decompiler: boolean
 }
 
 export interface PlatformMetadata extends PlatformBase {
