@@ -236,7 +236,7 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={[...CODEMIRROR_EXTENSIONS, contextCompareExtension]}
+                    extensions={cmExtensionsRef.current}
                 />
             </Tab>
         case TabId.OPTIONS:
