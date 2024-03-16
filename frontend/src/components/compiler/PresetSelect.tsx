@@ -22,7 +22,7 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
     serverPresets?: api.Preset[]
 }) {
     if (!serverPresets)
-        serverPresets = api.usePlatforms()[platform].presets
+        serverPresets = api.usePresets(platform)
 
     const selectedPreset = serverPresets.find(p => p.id === presetId)
 

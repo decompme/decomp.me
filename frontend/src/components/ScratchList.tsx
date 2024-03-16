@@ -82,9 +82,8 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
 export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
-    const serverPresets = api.usePlatforms()[scratch.platform].presets
     const matchPercentString = getMatchPercentString(scratch)
-    const preset = serverPresets.find(p => p.id === scratch.preset)
+    const preset = api.usePreset(scratch.preset)
     const presetName = preset?.name
 
     const presetOrCompiler = presetName ?
@@ -124,9 +123,8 @@ export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch,
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
-    const serverPresets = api.usePlatforms()[scratch.platform].presets
     const matchPercentString = getMatchPercentString(scratch)
-    const preset = serverPresets.find(p => p.id === scratch.preset)
+    const preset = api.usePreset(scratch.preset)
     const presetName = preset?.name
 
     const presetOrCompiler = presetName ?
@@ -159,9 +157,8 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
 export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
-    const serverPresets = api.usePlatforms()[scratch.platform].presets
     const matchPercentString = getMatchPercentString(scratch)
-    const preset = serverPresets.find(p => p.id === scratch.preset)
+    const preset = api.usePreset(scratch.preset)
     const presetName = preset?.name
 
     const presetOrCompiler = presetName ?
