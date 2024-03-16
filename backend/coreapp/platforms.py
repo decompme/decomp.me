@@ -24,6 +24,7 @@ class Platform:
     asm_prelude: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
+    has_decompiler: bool = False
 
     def get_num_scratches(self) -> int:
         return Scratch.objects.filter(platform=self.id).count()
@@ -36,6 +37,7 @@ class Platform:
             "name": self.name,
             "description": self.description,
             "arch": self.arch,
+            "has_decompiler": self.has_decompiler,
         }
         if include_presets:
             ret["presets"] = [
@@ -137,7 +139,6 @@ N64 = Platform(
 .set noreorder
 .set gp=64
 
-
 # Float register aliases (o32 ABI)
 
 .set $fv0,          $f0
@@ -174,6 +175,7 @@ N64 = Platform(
 .set $fs5f,         $f31
 
 """,
+    has_decompiler=True,
 )
 
 IRIX = Platform(
@@ -249,6 +251,7 @@ IRIX = Platform(
 .set $fs5f,         $f31
 
 """,
+    has_decompiler=True,
 )
 
 PS1 = Platform(
@@ -283,6 +286,7 @@ PS1 = Platform(
 .set noreorder
 
 """,
+    has_decompiler=True,
 )
 
 PSP = Platform(
@@ -313,6 +317,7 @@ PSP = Platform(
 .set noreorder
 
 """,
+    has_decompiler=True,
 )
 
 SATURN = Platform(
@@ -338,7 +343,6 @@ SATURN = Platform(
 .macro jlabel label
     \label:
 .endm
-
 
 """,
 )
@@ -371,6 +375,7 @@ PS2 = Platform(
 .set noreorder
 
 """,
+    has_decompiler=True,
 )
 
 MACOSX = Platform(
