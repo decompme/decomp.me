@@ -182,13 +182,9 @@ export default function Scratch({
     }, [scratch.slug, scratch.last_updated])
 
     const cmExtensions = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
+    if (useVim)
+        cmExtensions.push(vim())
     const cmExtensionsRef = useRef(cmExtensions)
-    useEffect(() => {
-        if (useVim == true) {
-            cmExtensionsRef.current = [...cmExtensionsRef.current, vim()]
-        }
-    })
-    const refCmExtensions = cmExtensionsRef.current
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
@@ -218,7 +214,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={refCmExtensions}
+                    extensions={cmExtensionsRef.current}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -240,7 +236,7 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={[...CODEMIRROR_EXTENSIONS, contextCompareExtension]}
+                    extensions={cmExtensionsRef.current}
                 />
             </Tab>
         case TabId.OPTIONS:
