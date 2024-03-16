@@ -176,7 +176,7 @@ COMMON_MWCC_FLAGS: Flags = [
         flags=["-str reuse", "-str pool", "-str readonly", "-str reuse,pool,readonly"],
     ),
     LanguageFlagSet(
-        id="mwcc_language",
+        id="mwcc_source_language",
         flags={
             "-lang=c": Language.C,
             "-lang=c++": Language.CXX,
