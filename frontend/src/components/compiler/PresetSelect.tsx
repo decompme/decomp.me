@@ -26,7 +26,7 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
 
     const selectedPreset = serverPresets.find(p => p.id === presetId)
 
-    if (!selectedPreset && presetId !== undefined && presetId !== null)
+    if (serverPresets.length > 0 && typeof presetId === "number" && !selectedPreset)
         console.warn(`Scratch.preset == '${presetId}' but no preset with that id was found.`)
 
     return <Select
