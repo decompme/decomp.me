@@ -654,6 +654,7 @@ GC_WII = Platform(
 .set cr7eq, 30
 .set cr7un, 31
 """,
+    has_decompiler=True,
 )
 
 NDS_ARM9 = Platform(
