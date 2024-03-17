@@ -191,7 +191,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
             <li>
                 <button onClick={() => exportScratchZip(scratch)}>
                     <DownloadIcon />
-                        Export..
+                        Export
                 </button>
             </li>
             <li>
@@ -208,7 +208,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                 <li>
                     <button onClick={() => setDecompilationTabEnabled(true)}>
                         <IterationsIcon />
-                        Decompile..
+                        Decompile
                     </button>
                 </li>
             }
