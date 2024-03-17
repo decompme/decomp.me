@@ -163,7 +163,6 @@ export default function Scratch({
         }
     }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
 
-    const [useVim] = useVimModeEnabled()
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
     useEffect(() => {
@@ -181,10 +180,13 @@ export default function Scratch({
         incrementValueVersion()
     }, [scratch.slug, scratch.last_updated])
 
-    const cmExtensions = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
-    if (useVim)
-        cmExtensions.push(vim())
-    const cmExtensionsRef = useRef(cmExtensions)
+    const [useVim] = useVimModeEnabled()
+    const cmExtensionsSource = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
+    const cmExtensionsContext = [...CODEMIRROR_EXTENSIONS, contextCompareExtension]
+    if (useVim) {
+        cmExtensionsSource.push(vim())
+        cmExtensionsContext.push(vim())
+    }
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
@@ -214,7 +216,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={cmExtensionsRef.current}
+                    extensions={cmExtensionsSource}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -236,7 +238,7 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={cmExtensionsRef.current}
+                    extensions={cmExtensionsContext}
                 />
             </Tab>
         case TabId.OPTIONS:
