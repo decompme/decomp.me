@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react"
 import { Allotment, AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
 
 import * as api from "@/lib/api"
+import { interdiff } from "@/lib/interdiff"
 
 import GhostButton from "../GhostButton"
 
@@ -26,23 +27,45 @@ export enum ProblemState {
     ERRORS,
 }
 
+export type ThreeWayDiffBase = {
+    diff?: api.DiffOutput
+}
+
 export type Props = {
     compilation: api.Compilation
     isCompiling?: boolean
     isCompilationOld?: boolean
     selectedSourceLine: number | null
+    threeWayDiffBase: ThreeWayDiffBase
 }
 
-export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, selectedSourceLine }: Props) {
-    const [diff, setDiff] = useState<api.DiffOutput | null>(null)
+export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, selectedSourceLine, threeWayDiffBase }: Props) {
+    const usedCompileRef = useRef<api.Compilation | null>(null)
     const problemState = getProblemState(compilation)
+    const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false)
 
     // Only update the diff if it's never been set or if the compilation succeeded
-    useEffect(() => {
-        if (!diff || compilation.success) {
-            setDiff(compilation.diff_output)
-        }
-    }, [compilation.diff_output, compilation.success, diff])
+    if (!usedCompileRef.current || compilation.success) {
+        usedCompileRef.current = compilation
+    }
+
+    const usedDiff = usedCompileRef.current?.diff_output ?? null
+
+    // If this is the first time we re-render with a new diff base object (e.g.
+    // upon save), store the three-way diff base.
+    if (!threeWayDiffBase.diff && usedCompileRef.current?.success && usedDiff) {
+        threeWayDiffBase.diff = usedDiff
+    }
+
+    const diff = useMemo(
+        () => {
+            if (threeWayDiffEnabled)
+                return interdiff(usedDiff, threeWayDiffBase.diff ?? null)
+            else
+                return usedDiff
+        },
+        [threeWayDiffEnabled, usedDiff, threeWayDiffBase.diff]
+    )
 
     const container = useRef<HTMLDivElement>(null)
     const allotment = useRef<AllotmentHandle>(null)
@@ -67,6 +90,8 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                     diff={diff}
                     isCompiling={isCompiling}
                     isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    threeWayDiffEnabled={threeWayDiffEnabled}
+                    setThreeWayDiffEnabled={setThreeWayDiffEnabled}
                     selectedSourceLine={selectedSourceLine}
                 />
             </Allotment.Pane>

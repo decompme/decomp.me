@@ -126,7 +126,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
     }
 }
 
-function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTabEnabled }: Props) {
+function Actions({ isCompiling, compile, scratch, setScratch, resetThreeWayDiff, setDecompilationTabEnabled }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
@@ -139,6 +139,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
         setIsSaving(true)
         await fuzzySaveScratch()
         setIsSaving(false)
+        resetThreeWayDiff()
     })
 
     const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
@@ -161,6 +162,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                         setIsSaving(true)
                         await fuzzySaveScratch()
                         setIsSaving(false)
+                        resetThreeWayDiff()
                     }}
                     disabled={!canSave || isSaving}
                     title={fuzzyShortcut}
@@ -171,7 +173,10 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
             </li>
             <li>
                 <button
-                    onClick={forkScratch}
+                    onClick={async () => {
+                        await forkScratch()
+                        resetThreeWayDiff()
+                    }}
                     title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
                 >
                     <RepoForkedIcon />
@@ -250,6 +255,7 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
+    resetThreeWayDiff: () => void
     setDecompilationTabEnabled: (enabled: boolean) => void
 }
 

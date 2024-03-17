@@ -1,6 +1,6 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, Fragment, useContext, useEffect, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, Fragment, useContext, useRef, useState } from "react"
 
 import classNames from "classnames"
 import AutoSizer from "react-virtualized-auto-sizer"
@@ -141,7 +141,7 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 })
 innerElementType.displayName = "innerElementType"
 
-function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number | undefined }) {
+function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: number | undefined }) {
     const setHighlightAll: Highlighter["setValue"] = value => {
         highlighter1.setValue(value)
         highlighter2.setValue(value)
@@ -185,49 +185,74 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput, fontSize: number |
     </div>
 }
 
+function ThreeWayToggleButton({ enabled, setEnabled }: { enabled: boolean, setEnabled: (enabled: boolean) => void }) {
+    return <button
+        className={styles.threeWayToggle}
+        onClick={() => {
+            setEnabled(!enabled)
+        }}
+        title={enabled ? "Disable three-way diffing" : "Enable three-way diffing"}
+    >
+        {enabled ? "3" : "2"}
+    </button>
+}
+
 export type Props = {
-    diff: api.DiffOutput
+    diff: api.DiffOutput | null
     isCompiling: boolean
     isCurrentOutdated: boolean
+    threeWayDiffEnabled: boolean
+    setThreeWayDiffEnabled: (value: boolean) => void
     selectedSourceLine: number | null
 }
 
-export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSourceLine }: Props) {
+export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDiffEnabled, setThreeWayDiffEnabled, selectedSourceLine }: Props) {
     const [fontSize] = useCodeFontSize()
 
     const container = useSize<HTMLDivElement>()
 
-    const [barPos, setBarPos] = useState(NaN)
-    const [prevBarPos, setPrevBarPos] = useState(NaN)
-
-    const hasPreviousColumn = !!diff?.rows?.[0]?.previous
+    const [bar1Pos, setBar1Pos] = useState(NaN)
+    const [bar2Pos, setBar2Pos] = useState(NaN)
 
     const columnMinWidth = 100
-    const clampedBarPos = Math.max(columnMinWidth, Math.min(container.width - columnMinWidth - (hasPreviousColumn ? columnMinWidth : 0), barPos))
-    const clampedPrevBarPos = hasPreviousColumn ? Math.max(clampedBarPos + columnMinWidth, Math.min(container.width - columnMinWidth, prevBarPos)) : container.width
+    const clampedBar1Pos = Math.max(columnMinWidth, Math.min(container.width - columnMinWidth - (threeWayDiffEnabled ? columnMinWidth : 0), bar1Pos))
+    const clampedBar2Pos = threeWayDiffEnabled ? Math.max(clampedBar1Pos + columnMinWidth, Math.min(container.width - columnMinWidth, bar2Pos)) : container.width
 
-    useEffect(() => {
-        // Distribute the bar positions across the container when its width changes
-        if (container.width) {
-            const numSections = hasPreviousColumn ? 3 : 2
+    // Distribute the bar positions across the container when its width changes
+    const updateBarPositions = (threeWayDiffEnabled: boolean) => {
+        const numSections = threeWayDiffEnabled ? 3 : 2
+        setBar1Pos(container.width / numSections)
+        setBar2Pos(container.width / numSections * 2)
+    }
+    const lastContainerWidthRef = useRef(NaN)
+    if (lastContainerWidthRef.current !== container.width && container.width) {
+        lastContainerWidthRef.current = container.width
+        updateBarPositions(threeWayDiffEnabled)
+    }
 
-            setBarPos(container.width / numSections)
-            setPrevBarPos(container.width / numSections * 2)
-        }
-    }, [container.width, hasPreviousColumn])
+    const threeWayButton = <>
+        <div className={styles.spacer} />
+        <ThreeWayToggleButton
+            enabled={threeWayDiffEnabled}
+            setEnabled={(enabled: boolean) => {
+                updateBarPositions(enabled)
+                setThreeWayDiffEnabled(enabled)
+            }}
+        />
+    </>
 
     return <div
         ref={container.ref}
         className={styles.diff}
         style={{
             "--diff-font-size": typeof fontSize == "number" ? `${fontSize}px` : "",
-            "--diff-left-width": `${clampedBarPos}px`,
-            "--diff-right-width": `${container.width - clampedPrevBarPos}px`,
+            "--diff-left-width": `${clampedBar1Pos}px`,
+            "--diff-right-width": `${container.width - clampedBar2Pos}px`,
             "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",
         } as CSSProperties}
     >
-        <DragBar pos={clampedBarPos} onChange={setBarPos} />
-        {hasPreviousColumn && <DragBar pos={clampedPrevBarPos} onChange={setPrevBarPos} />}
+        <DragBar pos={clampedBar1Pos} onChange={setBar1Pos} />
+        {threeWayDiffEnabled && <DragBar pos={clampedBar2Pos} onChange={setBar2Pos} />}
         <div className={styles.headers}>
             <div className={styles.header}>
                 Target
@@ -235,9 +260,11 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, selectedSou
             <div className={styles.header}>
                 Current
                 {isCompiling && <Loading width={20} height={20} />}
+                {!threeWayDiffEnabled && threeWayButton}
             </div>
-            {hasPreviousColumn && <div className={styles.header}>
-                Previous
+            {threeWayDiffEnabled && <div className={styles.header}>
+                Saved
+                {threeWayButton}
             </div>}
         </div>
         <SelectedSourceLineContext.Provider value={selectedSourceLine}>

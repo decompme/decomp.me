@@ -32,6 +32,21 @@
     user-select: none;
 }
 
+.spacer {
+    flex: 1;
+}
+
+.threeWayToggle {
+    padding: 4px 8px;
+    cursor: pointer;
+
+    &:hover {
+        border-radius: 4px;
+        color: var(--g1300);
+        background: var(--g400);
+    }
+}
+
 // Columns
 .headers,
 .row {
