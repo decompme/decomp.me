@@ -28,10 +28,10 @@
     "ee-gcc2.95.3-136": "EE GCC 2.95.3 (SN BUILD v1.36)",
     "ee-gcc2.96": "EE GCC 2.96 build 001003-1",
     "ee-gcc3.2-040921": "EE GCC 3.2 build 040921",
-    "mwcps2-2.3-991202": "MWCPS2 2.3",
-    "mwcps2-3.0b22-011126": "MWCPS2 3.0b22 (Built 011126)",
-    "mwcps2-3.0b22-020123": "MWCPS2 3.0b22 (Built 020123)",
-    "mwcps2-3.0b22-020716": "MWCPS2 3.0b22 (Built 020716)",
+    "mwcps2-2.3-991202": "MWCPS 2.3 (Built 991202)",
+    "mwcps2-3.0-011126": "MWCPS 3.0 (Built 011126)",
+    "mwcps2-3.0.1-020123": "MWCPS 3.0.1 (Built 020123)",
+    "mwcps2-3.0.3-020716": "MWCPS 3.0.3 (Built 020716)",
     "mwcps2-3.0b22-020926": "MWCPS2 3.0b22 (Built 020926)",
     "egcs_1.1.2-4": "EGCS 1.1.2-4 (gcc egcs-2.91.66)",
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
@@ -112,7 +112,6 @@
     "prodg_35": "ProDG 3.5 (gcc 2.95.2)",
     "prodg_37": "ProDG 3.7 (gcc 2.95.2)",
     "prodg_393": "ProDG 3.9.3 (gcc 2.95.3)",
-
     "old_agbcc": "old_agbcc",
     "gcc-5370": "GCC 4.0.1 (Xcode 2.5) (C)",
     "gcc-5370-cpp": "GCC 4.0.1 (Xcode 2.5) (C++)",
@@ -121,7 +120,6 @@
     "gcc-5026": "GCC 4.0.0 (Xcode 2.1) (C)",
     "gcc-5026-cpp": "GCC 4.0.0 (Xcode 2.1) (C++)",
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
-
     "gcc2.5.7-psx": "gcc 2.5.7-psx + maspsx",
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
     "gcc2.6.0-mipsel": "gcc 2.6.0 + maspsx",
@@ -136,7 +134,6 @@
     "gcc2.8.1-mipsel": "gcc 2.8.1 + maspsx",
     "gcc2.91.66-mipsel": "gcc 2.91.66 + maspsx",
     "gcc2.95.2-mipsel": "gcc 2.95.2 + maspsx",
-
     "psyq3.3": "PSYQ3.3 (gcc 2.6.0 + aspsx 2.21)",
     "psyq3.5": "PSYQ3.5 (gcc 2.6.0 + aspsx 2.34)",
     "psyq3.6": "PSYQ3.6 (gcc 2.7.2 + aspsx 2.34)",
@@ -146,14 +143,11 @@
     "psyq4.4": "PSYQ4.4 (gcc 2.8.1 + aspsx 2.79)",
     "psyq4.5": "PSYQ4.5 (gcc 2.91.66 + aspsx 2.81)",
     "psyq4.6": "PSYQ4.6 (gcc 2.95.2 + aspsx 2.86)",
-
     "psyq4.4-ccpsx": "CCPSX (PSYQ4.4: gcc 2.8.1 + aspsx 2.79)",
-
     "mwccpsp_3.0.1_121": "MWCC 1.0 (3.0.1 121)",
     "mwccpsp_3.0.1_147": "MWCC 1.1 (3.0.1 147)",
     "mwccpsp_3.0.1_151": "MWCC 1.1 SP1 (3.0.1 151)",
     "pspsnc_1.2.7503.0": "SN 1.2.7503.0",
-
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
     "wcc10.5a": "Watcom Optimizing C i386 Compiler 10.5a",
@@ -162,9 +156,7 @@
     "wpp10.6": "Watcom Optimizing C++ i386 Compiler 10.6",
     "wcc11.0": "Watcom Optimizing C i386 Compiler 11.0",
     "wpp11.0": "Watcom Optimizing C++ i386 Compiler 11.0",
-
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
-
     "armcc_opt_level": "Optimization level",
     "armcc_opt_level.-O0": "No optimization",
     "armcc_opt_level.-O1": "Some optimization",
@@ -180,7 +172,6 @@
     "armcc_instset.--arm": "ARM",
     "armcc_instset.--thumb": "THUMB",
     "armcc_debug": "Debug information",
-
     "clang_opt_level": "Optimization level",
     "clang_opt_level.-O0": "No optimization",
     "clang_opt_level.-O1": "Some optimization",
@@ -213,7 +204,6 @@
     "clang_language_standard.-std=gnu++1z": "Working draft for ISO C++ 2017 and GNU extensions",
     "clang_no_rtti": "Disable standard c++ runtime type information features",
     "clang_no_exceptions": "Disable exception handling",
-
     "gcc_opt_level": "Optimization level",
     "gcc_opt_level.-O0": "No optimization",
     "gcc_opt_level.-O1": "Some optimization",
@@ -227,7 +217,6 @@
     "gcc_debug_level.-gdwarf": "DWARF debug info (for SN64, should not affect codegen)",
     "gcc_debug_level.-gdwarf-2": "DWARF 2 debug info (should not affect codegen)",
     "gcc_force_addr": "Force memory address constants to be copied into registers before doing arithmetic on them",
-
     "ido_opt_level": "Optimization level",
     "ido_opt_level.-O0": "No optimization",
     "ido_opt_level.-O1": "Some optimization",
@@ -238,7 +227,6 @@
     "ido_debug_level.-g1": "Minimal trace info",
     "ido_debug_level.-g2": "Local variable tracking",
     "ido_debug_level.-g3": "Macro expansions",
-
     "mwcc_opt_level": "Optimization level",
     "mwcc_opt_level.-O0": "No optimization",
     "mwcc_opt_level.-O1": "Some optimization",
@@ -289,7 +277,6 @@
     "mwcc_use_lmw_stmw_on": "Use multiple-word load/store instructions for structure copies; default",
     "mwcc_line_numbers_on": "Enable debug info (C line numbers)",
     "mwcc_align_powerpc": "PowerPC alignment; default",
-
     "msvc_opt_level": "Optimization level",
     "msvc_opt_level./O1": "minimize space",
     "msvc_opt_level./O2": "maximize speed",
@@ -310,7 +297,6 @@
     "msvc_cdecl": "__cdecl calling convention",
     "msvc_fastcall": "__fastcall calling convention",
     "msvc_stdcall": "__stdcall calling convention",
-
     "psyq_opt_level": "Optimization level",
     "psyq_opt_level.-O0": "No optimization",
     "psyq_opt_level.-O1": "Some optimization",
@@ -322,7 +308,6 @@
     "psyq_debug_level.-g1": "Minimal trace info",
     "psyq_debug_level.-g2": "Local variable tracking",
     "psyq_debug_level.-g3": "Macro expansions",
-
     "watcom_codegen": "Code generation",
     "watcom_codegen.-0": "Optimize for i086",
     "watcom_codegen.-1": "Optimize for i186",
@@ -356,8 +341,6 @@
     "watcom_inline_fpu": "Inline suitable math functions",
     "watcom_fpu_recip": "Replace fpu div with reciprocal mult",
     "watcom_fpu_result": "Force fpu intermediate result to memory",
-
-
     "gcc_char_type": "Char type",
     "gcc_char_type.-fsigned-char": "char will be signed",
     "gcc_char_type.-funsigned-char": "char will be unsigned",
@@ -374,7 +357,6 @@
     "mreg_names=32": "ABI FPR names",
     "mno_aliases": "Disable pseudo instructions",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
-
     "diff_algorithm": "Diff algorithm",
     "diff_algorithm.-DIFFlevenshtein": "Levenshtein",
     "diff_algorithm.-DIFFdifflib": "difflib"
