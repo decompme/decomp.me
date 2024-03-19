@@ -154,14 +154,12 @@ export default function Scratch({
 
     const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, scratch, sourceEditor, contextEditor)
 
-    const [lastGoodScore, setLastGoodScore] = useState<number>(scratch.score)
-    const [lastGoodMaxScore, setLastGoodMaxScore] = useState<number>(scratch.max_score)
-    useEffect(() => {
-        if (compilation?.success) {
-            setLastGoodScore(compilation.diff_output.current_score)
-            setLastGoodMaxScore(compilation.diff_output.max_score)
-        }
-    }, [compilation.diff_output.current_score, compilation.diff_output.max_score, compilation?.success])
+    const lastGoodScore = useRef<number>(scratch.score)
+    const lastGoodMaxScore = useRef<number>(scratch.max_score)
+    if (compilation?.success) {
+        lastGoodScore.current = compilation?.diff_output?.current_score
+        lastGoodMaxScore.current = compilation?.diff_output?.max_score
+    }
 
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
@@ -316,7 +314,7 @@ export default function Scratch({
             : <></>
     )
 
-    const matchPercent = calculateScorePercent(lastGoodScore, lastGoodMaxScore)
+    const matchPercent = calculateScorePercent(lastGoodScore.current, lastGoodMaxScore.current)
 
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>
