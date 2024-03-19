@@ -133,6 +133,8 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
     const [isSaving, setIsSaving] = useState(false)
     const canSave = scratch.owner && userIsYou(scratch.owner)
 
+    const platform = api.usePlatform(scratch.platform)
+
     const fuzzyShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "S"], async () => {
         setIsSaving(true)
         await fuzzySaveScratch()
@@ -189,7 +191,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
             <li>
                 <button onClick={() => exportScratchZip(scratch)}>
                     <DownloadIcon />
-                        Export..
+                        Export
                 </button>
             </li>
             <li>
@@ -202,12 +204,14 @@ function Actions({ isCompiling, compile, scratch, setScratch, setDecompilationTa
                     Compile
                 </button>
             </li>
-            <li>
-                <button onClick={() => setDecompilationTabEnabled(true)}>
-                    <IterationsIcon />
-                    Decompile..
-                </button>
-            </li>
+            {platform?.has_decompiler &&
+                <li>
+                    <button onClick={() => setDecompilationTabEnabled(true)}>
+                        <IterationsIcon />
+                        Decompile
+                    </button>
+                </li>
+            }
         </ul>
     )
 }

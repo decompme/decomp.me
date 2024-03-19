@@ -154,16 +154,13 @@ export default function Scratch({
 
     const [saveSource, saveContext] = useLanguageServer(languageServerEnabledSetting, scratch, sourceEditor, contextEditor)
 
-    const [lastGoodScore, setLastGoodScore] = useState<number>(scratch.score)
-    const [lastGoodMaxScore, setLastGoodMaxScore] = useState<number>(scratch.max_score)
-    useEffect(() => {
-        if (compilation?.success) {
-            setLastGoodScore(compilation.diff_output.current_score)
-            setLastGoodMaxScore(compilation.diff_output.max_score)
-        }
-    }, [compilation?.diff_output?.current_score, compilation?.diff_output?.max_score, compilation?.success])
+    const lastGoodScore = useRef<number>(scratch.score)
+    const lastGoodMaxScore = useRef<number>(scratch.max_score)
+    if (compilation?.success) {
+        lastGoodScore.current = compilation?.diff_output?.current_score
+        lastGoodMaxScore.current = compilation?.diff_output?.max_score
+    }
 
-    const [useVim] = useVimModeEnabled()
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] = useState(false)
     useEffect(() => {
@@ -181,14 +178,13 @@ export default function Scratch({
         incrementValueVersion()
     }, [scratch.slug, scratch.last_updated])
 
-    const cmExtensions = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
-    const cmExtensionsRef = useRef(cmExtensions)
-    useEffect(() => {
-        if (useVim == true) {
-            cmExtensionsRef.current = [...cmExtensionsRef.current, vim()]
-        }
-    })
-    const refCmExtensions = cmExtensionsRef.current
+    const [useVim] = useVimModeEnabled()
+    const cmExtensionsSource = [...CODEMIRROR_EXTENSIONS, sourceCompareExtension]
+    const cmExtensionsContext = [...CODEMIRROR_EXTENSIONS, contextCompareExtension]
+    if (useVim) {
+        cmExtensionsSource.push(vim())
+        cmExtensionsContext.push(vim())
+    }
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
@@ -218,7 +214,7 @@ export default function Scratch({
                         setScratch({ source_code: value })
                     }}
                     onSelectedLineChange={setSelectedSourceLine}
-                    extensions={refCmExtensions}
+                    extensions={cmExtensionsSource}
                 />
             </Tab>
         case TabId.CONTEXT:
@@ -240,7 +236,7 @@ export default function Scratch({
                     onChange={value => {
                         setScratch({ context: value })
                     }}
-                    extensions={[...CODEMIRROR_EXTENSIONS, contextCompareExtension]}
+                    extensions={cmExtensionsContext}
                 />
             </Tab>
         case TabId.OPTIONS:
@@ -318,7 +314,7 @@ export default function Scratch({
             : <></>
     )
 
-    const matchPercent = calculateScorePercent(lastGoodScore, lastGoodMaxScore)
+    const matchPercent = calculateScorePercent(lastGoodScore.current, lastGoodMaxScore.current)
 
     return <div ref={container.ref} className={styles.container}>
         <ErrorBoundary>

@@ -83,8 +83,8 @@ export default function EditorSettings() {
             <Checkbox
                 checked={vimModeEnabled}
                 onChange={setVimModeEnabled}
-                label="Enable Vim bindings"
-                description="Enables Vim bindings to be used inside of the scratch editor">
+                label="Enable vim bindings"
+                description="Enable vim bindings in the scratch editor">
             </Checkbox>
         </Section>
     </>

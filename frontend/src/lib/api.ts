@@ -256,6 +256,15 @@ export function usePlatforms(): Record<string, Platform> {
     return data?.platforms
 }
 
+export function usePlatform(id: string | undefined): Platform | undefined {
+    const url = typeof id === "string" ? `/platform/${id}` : null
+    const { data } = useSWR(url, get, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+    return data
+}
+
 export function useCompilers(): Record<string, Compiler> {
     const { data } = useSWR("/compiler", get, {
         refreshInterval: 0,
