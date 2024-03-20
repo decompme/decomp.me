@@ -76,12 +76,8 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
             >
                 <div className="flex h-full w-full flex-col">
                     <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
-                        <span className="text-sm font-medium">
-                            {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
-                        </span>
-                        <div className="grow" />
                         <GhostButton
-                            className="text-gray-11"
+                            className="flex w-max grow justify-between text-gray-11"
                             onClick={() => {
                                 const containerHeight = container.current?.clientHeight ?? 0
                                 const newProblemsHeight = isProblemsCollapsed ? problemsDefaultHeight : problemsCollapsedHeight
@@ -91,6 +87,9 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                                 ])
                             }}
                         >
+                            <span className="text-sm font-medium">
+                                {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                            </span>
                             {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
                         </GhostButton>
                     </h2>
