@@ -245,17 +245,6 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     }
 }
 
-export function usePlatforms(): Record<string, Platform> {
-    const { data } = useSWR<{ "platforms": Record<string, Platform> }>("/compiler", get, {
-        refreshInterval: 0,
-        revalidateOnFocus: false,
-        suspense: true, // TODO: remove
-        onErrorRetry,
-    })
-
-    return data?.platforms
-}
-
 export function usePlatform(id: string | undefined): Platform | undefined {
     const url = typeof id === "string" ? `/platform/${id}` : null
     const { data } = useSWR(url, get, {
@@ -286,6 +275,24 @@ export function useLibraries(): LibraryVersions[] {
     }
 
     return data.libraries
+}
+
+export function usePresets(platform: string | undefined): Preset[] {
+    const getByPlatform = ([url, platform]) => {
+        return get(url && platform && `${url}?platform=${platform}&page_size=100`)
+    }
+
+    const url = typeof platform === "string" ? "/preset" : null
+    const { data } = useSWR([url, platform], getByPlatform, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+
+    if (!data) {
+        return []
+    }
+
+    return data.results
 }
 
 export function usePreset(id: number | undefined): Preset | undefined {
