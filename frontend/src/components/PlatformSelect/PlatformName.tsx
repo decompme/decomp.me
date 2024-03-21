@@ -9,18 +9,11 @@ export type Props = {
 }
 
 export default function PlatformName({ platform }: Props) {
-    const { data } = useSWRImmutable<{
-        platforms: {
-            [key: string]: {
-                name: string
-                description: string
-            }
-        }
-    }>("/compiler", api.get)
+    const { data } = useSWRImmutable<api.PlatformBase>(`/platform/${platform}`, api.get)
 
     return <>
-        <Link href={"/platform/" + platform}>
-            {data?.platforms[platform]?.name ?? platform}
+        <Link href={`/platform/${platform}`}>
+            {data?.name ?? platform}
         </Link>
     </>
 }
