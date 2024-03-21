@@ -121,7 +121,7 @@ export default function Page() {
 
         <h2 className={subtitle}>Why frog?</h2>
         <p className="my-4">
-            <Frog className="h-7 w-7" aria-label="Purple frog" />
+            <Frog className="size-7" aria-label="Purple frog" />
         </p>
 
     </main>

@@ -5,7 +5,7 @@ export function useCompilersForPlatform(platform?: string, compilers?: Record<st
         compilers = api.useCompilers()
 
     if (platform) {
-        const c = {}
+        const c: Record<string, api.Compiler> = {}
 
         for (const [k, v] of Object.entries(compilers)) {
             if (v.platform == platform)

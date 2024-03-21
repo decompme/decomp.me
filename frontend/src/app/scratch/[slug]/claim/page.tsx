@@ -16,7 +16,7 @@ export default function Page({ params, searchParams }: {
     // The POST request must happen on the client so
     // that the Django session cookie is present.
     const effectRan = useRef(false)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState<Error>(null)
     useEffect(() => {
         if (!effectRan.current) {
             post(`/scratch/${params.slug}/claim`, { token: searchParams.token })

@@ -7,7 +7,7 @@ export default function NotFound() {
     return <main className="mx-auto my-16 flex max-w-prose items-center justify-center gap-4 px-4 py-6 text-base leading-normal">
         <div>
             <div className="flex items-center justify-center gap-8">
-                <Frog className="h-16 w-16 saturate-0" />
+                <Frog className="size-16 saturate-0" />
                 <h1 className="text-xl font-medium lg:text-3xl">
                     <span className="pr-8 font-normal">404</span>
                     <span className="text-gray-12">frog not found</span>

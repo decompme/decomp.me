@@ -9,5 +9,5 @@ import { usePageTitle } from "@/lib/hooks"
 
 export default function SetPageTitle({ title }: { title: string }) {
     usePageTitle(title)
-    return null
+    return <></>
 }

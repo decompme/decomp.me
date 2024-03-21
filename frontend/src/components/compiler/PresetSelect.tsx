@@ -2,8 +2,8 @@ import * as api from "@/lib/api"
 
 import Select from "../Select2"
 
-function presetsToOptions(presets: api.Preset[]): { [key: string]: string } {
-    const options = {}
+function presetsToOptions(presets: api.Preset[]) {
+    const options: Record<string, string> = {}
 
     options["Custom"] = "Custom"
 

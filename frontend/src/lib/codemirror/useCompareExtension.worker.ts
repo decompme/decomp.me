@@ -7,7 +7,7 @@ ctx.onmessage = ({ data }: { data: DiffRequest }) => {
         return []
     }
 
-    const tokenizeSource = source => {
+    const tokenizeSource = (source: string) => {
         return source.split("\n").map(i => i.trim())
     }
 

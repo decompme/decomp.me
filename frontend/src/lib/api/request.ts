@@ -22,7 +22,7 @@ export class ResponseError extends Error {
     json: Json
     code: string
 
-    constructor(response: Response, json) {
+    constructor(response: Response, json: Json) {
         super(`Server responded with HTTP status code ${response.status}`)
 
         this.status = response.status

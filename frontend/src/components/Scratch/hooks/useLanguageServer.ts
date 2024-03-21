@@ -13,8 +13,8 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
 
     const [ClangdStdioTransportModule, setClangdStdioTransportModule] = useState<typeof ClangdStdioTransport>(undefined)
 
-    const [saveSource, setSaveSource] = useState<(string) => Promise<void>>(undefined)
-    const [saveContext, setSaveContext] = useState<(string) => Promise<void>>(undefined)
+    const [saveSource, setSaveSource] = useState<(source: string) => Promise<void>>(undefined)
+    const [saveContext, setSaveContext] = useState<(context: string) => Promise<void>>(undefined)
 
     useEffect(() => {
         const loadClangdModule = async () => {
@@ -64,7 +64,7 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
             },
         ]
 
-        const initialFileState = {
+        const initialFileState: Record<string, string> = {
             ".clang-format": defaultClangFormat,
         }
 

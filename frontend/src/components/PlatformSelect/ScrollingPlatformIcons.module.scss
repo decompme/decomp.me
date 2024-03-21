@@ -9,7 +9,7 @@
 }
 
 .scrolling {
-    animation: scrolling 20s linear infinite;
+    animation: scrolling 120s linear infinite;
 
     @media (prefers-reduced-motion: reduce) {
         animation: none;

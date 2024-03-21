@@ -5,7 +5,7 @@ import styles from "./ScrollingPlatformIcons.module.scss"
 
 function SingleSet() {
     return <div className={classNames("flex gap-2", styles.scrolling)}>
-        {PLATFORMS.map(platform => <PlatformIcon key={platform} platform={platform} className="ml-16 h-24 w-24 md:h-32 md:w-32" />)}
+        {PLATFORMS.map(platform => <PlatformIcon key={platform} platform={platform} className="ml-16 size-24 md:size-32" />)}
     </div>
 }
 

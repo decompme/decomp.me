@@ -13,7 +13,7 @@ import TextField from "../TextField"
 
 const DynamicExampleCodeMirror = dynamic(() => import("./ExampleCodeMirror"), {
     loading: () => <div className="flex animate-pulse items-center justify-center" style={{ height: "200px" }}>
-        <LoadingSpinner className="h-16 w-16 opacity-50" />
+        <LoadingSpinner className="size-16 opacity-50" />
     </div>,
 })
 

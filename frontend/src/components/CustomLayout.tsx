@@ -51,7 +51,7 @@ export function activateTabInLayout(layout: Layout, tab: string) {
 export interface Props {
     layout: Layout
     onChange: (layout: Layout) => void
-    renderTab: (id: string) => ReactElement<Tab>
+    renderTab: (id: string) => ReactElement<typeof Tab>
 }
 
 export default function CustomLayout({ renderTab, layout, onChange }: Props) {
