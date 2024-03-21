@@ -227,6 +227,9 @@
     "gcc_debug_level.-gdwarf": "DWARF debug info (for SN64, should not affect codegen)",
     "gcc_debug_level.-gdwarf-2": "DWARF 2 debug info (should not affect codegen)",
     "gcc_force_addr": "Force memory address constants to be copied into registers before doing arithmetic on them",
+    "gcc_source_language": "Source language",
+    "gcc_source_language.-x c": "C",
+    "gcc_source_language.-x c++": "C++",
 
     "ido_opt_level": "Optimization level",
     "ido_opt_level.-O0": "No optimization",
