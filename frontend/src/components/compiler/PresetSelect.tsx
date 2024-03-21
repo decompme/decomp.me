@@ -34,7 +34,10 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
         options={presetsToOptions(serverPresets)}
         value={selectedPreset?.name || "Custom"}
         onChange={name => {
-            setPreset(serverPresets.find(p => p.name === name))
+            const p = serverPresets.find(p => p.name === name)
+            if (p) {
+                setPreset(p)
+            }
         }}
     />
 }

@@ -277,8 +277,8 @@ export function useLibraries(): LibraryVersions[] {
     return data.libraries
 }
 
-export function usePresets(platform: string | undefined): Preset[] {
-    const getByPlatform = ([url, platform]) => {
+export function usePresets(platform: string): Preset[] {
+    const getByPlatform = ([url, platform]: [string | null, string]) => {
         return get(url && platform && `${url}?platform=${platform}&page_size=100`)
     }
 
