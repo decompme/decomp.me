@@ -9,6 +9,9 @@
         "analyze": "ANALYZE=true next build",
         "clean": "rm -rf .next node_modules"
     },
+    "engines": {
+        "node": "20.x"
+    },
     "dependencies": {
         "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
         "@codemirror/autocomplete": "^6.15.0",
