@@ -241,7 +241,7 @@ export default function Scratch({
             </Tab>
         case TabId.OPTIONS:
             return <Tab key={id} tabKey={id} label="Options" className={styles.compilerOptsTab}>
-                {() => <div className={styles.compilerOptsContainer}>
+                <div className={styles.compilerOptsContainer}>
                     <CompilerOpts
                         platform={scratch.platform}
                         value={scratch}
@@ -253,7 +253,7 @@ export default function Scratch({
                         matchOverride={scratch.match_override}
                         onMatchOverrideChange={m => setScratch({ match_override: m })}
                     />
-                </div>}
+                </div>
             </Tab>
         case TabId.DIFF:
             return <Tab

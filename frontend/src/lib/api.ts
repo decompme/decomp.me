@@ -288,11 +288,7 @@ export function usePresets(platform: string): Preset[] {
         onErrorRetry,
     })
 
-    if (!data) {
-        return []
-    }
-
-    return data.results
+    return data?.results
 }
 
 export function usePreset(id: number | undefined): Preset | undefined {
