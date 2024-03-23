@@ -24,7 +24,7 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
     if (typeof serverPresets === "undefined")
         serverPresets = api.usePresets(platform)
 
-    const sortedPresets = typeof serverPresets === "undefined" ? null : serverPresets.toSorted((a, b) => a.name[0].localeCompare(b.name[0]))
+    const sortedPresets = typeof serverPresets === "undefined" ? null : serverPresets.toSorted((a, b) => a.name.localeCompare(b.name))
 
     if (sortedPresets === null) {
         return <Select
