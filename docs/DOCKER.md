@@ -43,4 +43,26 @@ You can CTRL+C to stop tailing logs. If you want to stop the processes then runn
 
 ## Configuration
 
-By default the Docker `backend` image is built without PS1 and/or GC/Wii support. They can be enabled by changing the `ENABLE_PS1_SUPPORT` and/or `ENABLE_GC_WII_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker-compose up --build` command.
+By default the Docker `backend` image is built without support for all platforms (e.g. PS2, Switch, Saturn). Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker-compose up --build` command.
+
+E.g. to enable `PS2` platform:
+
+```yaml
+  backend:
+    build:
+      context: backend
+      args:
+        #... <snip>
+        ENABLE_PS2_SUPPORT: "YES"
+```
+
+
+## Connecting from a different host
+
+If you wish to run decomp.me on one machine but connect from a different one (e.g. to test the site on your phone) please edit `./backend/docker.dev.env` to add the `hostname` to the `ALLOWED_HOSTS` environment variable.
+
+E.g. if your hostname is `mylaptop`:
+
+```sh
+ALLOWED_HOSTS="backend,localhost,127.0.0.1,mylaptop"
+```

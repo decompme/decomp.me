@@ -53,9 +53,8 @@ services:
   frontend:
     build: frontend
     environment:
-      API_BASE: http://localhost/api
+      API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
-      FRONTEND_USE_IMAGE_PROXY: "off"
     ports:
       - "8080:8080"
     volumes:
