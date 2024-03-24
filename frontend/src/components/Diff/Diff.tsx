@@ -194,7 +194,7 @@ function ThreeWayToggleButton({ enabled, setEnabled }: { enabled: boolean, setEn
         }}
         title={enabled ? "Disable three-way diffing" : "Enable three-way diffing"}
     >
-        <VersionsIcon size={28} />
+        <VersionsIcon size={24} />
         <div className={styles.threeWayToggleNumber}>
             {enabled ? "3" : "2"}
         </div>
