@@ -5,8 +5,6 @@ import { useEffect, useState, useMemo, useReducer } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { cpp } from "@/lib/codemirror/cpp"
-
 import AsyncButton from "@/components/AsyncButton"
 import { useCompilersForPlatform } from "@/components/compiler/compilers"
 import PresetSelect from "@/components/compiler/PresetSelect"
@@ -17,6 +15,7 @@ import * as api from "@/lib/api"
 import { Library } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 import basicSetup from "@/lib/codemirror/basic-setup"
+import { cpp } from "@/lib/codemirror/cpp"
 import useTranslation from "@/lib/i18n/translate"
 
 import styles from "./new.module.scss"

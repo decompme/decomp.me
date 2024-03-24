@@ -1,11 +1,11 @@
 import { useEffect, useReducer, useRef, useState } from "react"
 
-import { cpp } from "@/lib/codemirror/cpp"
 import { EditorView } from "@codemirror/view"
 import { vim } from "@replit/codemirror-vim"
 
 import * as api from "@/lib/api"
 import basicSetup from "@/lib/codemirror/basic-setup"
+import { cpp } from "@/lib/codemirror/cpp"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 import { useSize } from "@/lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useVimModeEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
