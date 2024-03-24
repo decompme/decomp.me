@@ -114,10 +114,10 @@ jobs:
       - name: Start backend
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
-      - name: Setup Node.js 18
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
@@ -200,10 +200,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js 18
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
