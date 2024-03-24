@@ -4,11 +4,6 @@ import { Theme } from "@/components/ThemePicker"
 
 import { ColorScheme } from "./codemirror/color-scheme"
 
-export enum ThreeWayDiffBase {
-    SAVED = "saved",
-    PREV = "prev",
-}
-
 const theme = createPersistedState<Theme>("theme")
 const autoRecompile = createPersistedState<boolean>("autoRecompile")
 const autoRecompileDelay = createPersistedState<number>("autoRecompileDelay")
@@ -20,6 +15,11 @@ const languageServerEnabled = createPersistedState<boolean>("languageServerEnabl
 const matchProgressBarEnabled = createPersistedState<boolean>("matchProgressBarEnabled")
 const vimModeEnabled = createPersistedState<boolean>("vimModeEnabled")
 const threeWayDiffBase = createPersistedState<ThreeWayDiffBase>("threeWayDiffBase")
+
+export enum ThreeWayDiffBase {
+    SAVED = "saved",
+    PREV = "prev",
+}
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)

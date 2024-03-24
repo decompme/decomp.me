@@ -5,8 +5,8 @@ import { Allotment, AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
 
 import * as api from "@/lib/api"
+import { interdiff } from "@/lib/interdiff"
 import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings"
-import { interdiff, diffsEqual } from "@/lib/interdiff"
 
 import GhostButton from "../GhostButton"
 
@@ -62,13 +62,13 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
     const currDiffRef = useRef<api.DiffOutput | null>(null)
     const prevDiffRef = useRef<api.DiffOutput | null>(null)
 
-    let usedBase;
+    let usedBase
     if (threeWayDiffBase === ThreeWayDiffBase.SAVED) {
         usedBase = perSaveObj.diff ?? null
         currDiffRef.current = null
         prevDiffRef.current = null
     } else {
-        if (!usedDiff || !currDiffRef.current || !diffsEqual(usedDiff, currDiffRef.current)) {
+        if (compilation.success) {
             prevDiffRef.current = currDiffRef.current
             currDiffRef.current = usedDiff
         }

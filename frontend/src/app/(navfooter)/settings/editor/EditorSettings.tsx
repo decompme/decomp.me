@@ -2,21 +2,21 @@
 import { useEffect, useRef, useState } from "react"
 
 import LoadingSpinner from "@/components/loading.svg"
-// import Select2 from "@/components/Select2"
-import * as settings from "@/lib/settings"
+import { ThreeWayDiffBase, useAutoRecompileSetting, useAutoRecompileDelaySetting, useMatchProgressBarEnabled,
+    useLanguageServerEnabled, useVimModeEnabled, useThreeWayDiffBase } from "@/lib/settings"
 
-import RadioList from "../RadioButton"
 import Checkbox from "../Checkbox"
+import RadioList from "../RadioList"
 import Section from "../Section"
 import SliderField from "../SliderField"
 
 export default function EditorSettings() {
-    const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
-    const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
-    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
-    const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
-    const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
-    const [threeWayDiffBase, setThreeWayDiffBase] = settings.useThreeWayDiffBase()
+    const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
+    const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
+    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = useMatchProgressBarEnabled()
+    const [languageServerEnabled, setLanguageServerEnabled] = useLanguageServerEnabled()
+    const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled()
+    const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -43,8 +43,8 @@ export default function EditorSettings() {
     }, [languageServerEnabled])
 
     const threeWayDiffOptions = {
-        [settings.ThreeWayDiffBase.SAVED]: {label: "Latest save"},
-        [settings.ThreeWayDiffBase.PREV]: {label: "Previous compile"},
+        [ThreeWayDiffBase.SAVED]: { label: "Latest save" },
+        [ThreeWayDiffBase.PREV]: { label: "Previous compile" },
     }
 
     return <>
@@ -72,7 +72,9 @@ export default function EditorSettings() {
         <Section title="Three-way diffing mode">
             <RadioList
                 value={threeWayDiffBase}
-                onChange={setThreeWayDiffBase}
+                onChange={(value: string) => {
+                    setThreeWayDiffBase(value as ThreeWayDiffBase)
+                }}
                 options={threeWayDiffOptions}
             />
         </Section>

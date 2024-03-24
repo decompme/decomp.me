@@ -1,17 +1,5 @@
 import { ReactNode, useId } from "react"
 
-export type Option = {
-    label: ReactNode
-    description?: ReactNode
-    children?: ReactNode
-}
-
-export type Props = {
-    value: string
-    onChange: (value: string) => void
-    options: { [key: string]: Option }
-}
-
 function RadioButton({ name, value, checked, onChange, option }: { name: string, value: string, checked: boolean, onChange: (value: string) => void, option: Option }) {
     const id = useId()
 
@@ -36,6 +24,18 @@ function RadioButton({ name, value, checked, onChange, option }: { name: string,
     </div>
 }
 
+export type Option = {
+    label: ReactNode
+    description?: ReactNode
+    children?: ReactNode
+}
+
+export type Props = {
+    value: string
+    onChange: (value: string) => void
+    options: { [key: string]: Option }
+}
+
 export default function RadioList({ value, onChange, options }: Props) {
     const name = useId()
 
@@ -47,6 +47,6 @@ export default function RadioList({ value, onChange, options }: Props) {
             checked={key === value}
             option={options[key]}
             onChange={onChange}
-            />
+        />
     })
 }
