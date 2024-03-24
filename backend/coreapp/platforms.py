@@ -274,6 +274,11 @@ PS1 = Platform(
     \label:
 .endm
 
+.macro dlabel label
+    .global \label
+    \label:
+.endm
+
 .macro jlabel label
     \label:
 .endm
@@ -306,6 +311,11 @@ PSP = Platform(
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
     \label:
 .endm
 
@@ -364,6 +374,11 @@ PS2 = Platform(
 .macro glabel label
     .global \label
     .type \label, @function
+    \label:
+.endm
+
+.macro dlabel label
+    .global \label
     \label:
 .endm
 
