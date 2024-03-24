@@ -8,7 +8,7 @@ import { COLOR_NAMES, ColorScheme, getColors } from "@/lib/codemirror/color-sche
 import styles from "./ColorSchemeEditor.module.scss"
 import ErrorBoundary from "./ErrorBoundary"
 
-function Color({ color, name, onChange }) {
+function Color({ color, name, onChange }: { color: string, name: string, onChange: (color: string) => void }) {
     const [isEditing, setIsEditing] = useState(false)
     const [isDark, setIsDark] = useState(false)
 
@@ -59,7 +59,7 @@ export default function ColorSchemeEditor({ scheme, onChange }: Props) {
     for (const [key, name] of Object.entries(COLOR_NAMES)) {
         els.push(<Color
             key={key}
-            color={colors[key]}
+            color={colors[key as keyof typeof colors]}
             name={name}
             onChange={color => onChange({ ...colors, [key]: color })}
         />)

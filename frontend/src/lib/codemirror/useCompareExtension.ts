@@ -67,7 +67,7 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(class {
         }
     }
 
-    async calculateDiff(targetString, currentString): Promise<DiffResult> {
+    async calculateDiff(targetString: string, currentString: string): Promise<DiffResult> {
         return new Promise(resolve => {
             const diffRequest: DiffRequest = { target: targetString, current: currentString }
             this.worker.postMessage(diffRequest)

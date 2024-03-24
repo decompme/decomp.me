@@ -37,7 +37,7 @@ export async function usernameToContributor(username: string): Promise<Contribut
 
 export function ContributorItem({ contributor }: { contributor: Contributor }) {
     return <li className="flex w-1/2 items-center p-2 sm:w-1/3 md:w-1/4">
-        {!("login" in contributor) && <UserAvatar user={contributor} className="mr-1.5 h-6 w-6" />}
+        {!("login" in contributor) && <UserAvatar user={contributor} className="mr-1.5 size-6" />}
         <UserMention user={contributor} />
     </li>
 }

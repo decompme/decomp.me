@@ -36,12 +36,12 @@ export default function Footer() {
                     </GhostButton>
                     <Separator />
                     <GhostButton href="https://github.com/decompme/decomp.me" className="flex items-center gap-1.5">
-                        <MarkGithubIcon className="h-4 w-4" />
+                        <MarkGithubIcon className="size-4" />
                         Source code
                     </GhostButton>
                     <Separator />
                     <GhostButton href="https://discord.gg/sutqNShRRs" className="flex items-center gap-1.5">
-                        <DiscordIcon className="h-4 w-4" />
+                        <DiscordIcon className="size-4" />
                         Chat
                     </GhostButton>
                     <Separator />

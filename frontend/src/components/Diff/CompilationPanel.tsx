@@ -74,7 +74,7 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
     const problemsDefaultHeight = 320
     const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState == ProblemState.NO_PROBLEMS)
 
-    return <div ref={container} className="h-full w-full">
+    return <div ref={container} className="size-full">
         <Allotment
             ref={allotment}
             vertical
@@ -99,14 +99,10 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                 minSize={problemsCollapsedHeight}
                 preferredSize={isProblemsCollapsed ? problemsCollapsedHeight : problemsDefaultHeight}
             >
-                <div className="flex h-full w-full flex-col">
+                <div className="flex size-full flex-col">
                     <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
-                        <span className="text-sm font-medium">
-                            {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
-                        </span>
-                        <div className="grow" />
                         <GhostButton
-                            className="text-gray-11"
+                            className="flex w-max grow justify-between text-gray-11"
                             onClick={() => {
                                 const containerHeight = container.current?.clientHeight ?? 0
                                 const newProblemsHeight = isProblemsCollapsed ? problemsDefaultHeight : problemsCollapsedHeight
@@ -116,6 +112,9 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                                 ])
                             }}
                         >
+                            <span className="text-sm font-medium">
+                                {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                            </span>
                             {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
                         </GhostButton>
                     </h2>

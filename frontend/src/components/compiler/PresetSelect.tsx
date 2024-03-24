@@ -2,8 +2,8 @@ import * as api from "@/lib/api"
 
 import Select from "../Select2"
 
-function presetsToOptions(presets: api.Preset[]): { [key: string]: string } {
-    const options = {}
+function presetsToOptions(presets: api.Preset[]) {
+    const options: Record<string, string> = {}
 
     options["Custom"] = "Custom"
 
@@ -22,11 +22,11 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
     serverPresets?: api.Preset[]
 }) {
     if (!serverPresets)
-        serverPresets = api.usePlatforms()[platform].presets
+        serverPresets = api.usePresets(platform)
 
     const selectedPreset = serverPresets.find(p => p.id === presetId)
 
-    if (!selectedPreset && presetId !== undefined && presetId !== null)
+    if (serverPresets.length > 0 && typeof presetId === "number" && !selectedPreset)
         console.warn(`Scratch.preset == '${presetId}' but no preset with that id was found.`)
 
     return <Select
@@ -34,7 +34,10 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
         options={presetsToOptions(serverPresets)}
         value={selectedPreset?.name || "Custom"}
         onChange={name => {
-            setPreset(serverPresets.find(p => p.name === name))
+            const p = serverPresets.find(p => p.name === name)
+            if (p) {
+                setPreset(p)
+            }
         }}
     />
 }

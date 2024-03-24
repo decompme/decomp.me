@@ -33,8 +33,6 @@ export default function useFuzzySaveCallback(
             case FuzzySaveAction.FORK:
                 await forkScratch()
                 break
-            case FuzzySaveAction.NONE:
-                break
             }
         }, [action, forkScratch, saveScratch, setScratch]),
     ]

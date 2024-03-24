@@ -11,6 +11,7 @@ from coreapp.flags import (
     COMMON_CLANG_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
+    COMMON_GCC_PS2_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
@@ -116,6 +117,11 @@ class GCCCompiler(Compiler):
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
+
+
+@dataclass(frozen=True)
+class GCCPS2Compiler(GCCCompiler):
+    flags: ClassVar[Flags] = COMMON_GCC_PS2_FLAGS
 
 
 @dataclass(frozen=True)
@@ -494,67 +500,67 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 )
 
 # PS2
-EE_GCC29_990721 = GCCCompiler(
+EE_GCC29_990721 = GCCPS2Compiler(
     id="ee-gcc2.9-990721",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC29_991111 = GCCCompiler(
+EE_GCC29_991111 = GCCPS2Compiler(
     id="ee-gcc2.9-991111",
     platform=PS2,
     cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC29_991111A = GCCCompiler(
+EE_GCC29_991111A = GCCPS2Compiler(
     id="ee-gcc2.9-991111a",
     platform=PS2,
     cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC29_991111_01 = GCCCompiler(
+EE_GCC29_991111_01 = GCCPS2Compiler(
     id="ee-gcc2.9-991111-01",
     platform=PS2,
     cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC2952_273A = GCCCompiler(
+EE_GCC2952_273A = GCCPS2Compiler(
     id="ee-gcc2.95.2-273a",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC2952_274 = GCCCompiler(
+EE_GCC2952_274 = GCCPS2Compiler(
     id="ee-gcc2.95.2-274",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC2953_107 = GCCCompiler(
+EE_GCC2953_107 = GCCPS2Compiler(
     id="ee-gcc2.95.3-107",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC2953_114 = GCCCompiler(
+EE_GCC2953_114 = GCCPS2Compiler(
     id="ee-gcc2.95.3-114",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC2953_136 = GCCCompiler(
+EE_GCC2953_136 = GCCPS2Compiler(
     id="ee-gcc2.95.3-136",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC296 = GCCCompiler(
+EE_GCC296 = GCCPS2Compiler(
     id="ee-gcc2.96",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-EE_GCC32_040921 = GCCCompiler(
+EE_GCC32_040921 = GCCPS2Compiler(
     id="ee-gcc3.2-040921",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
@@ -566,20 +572,20 @@ MWCPS2_23_991202 = MWCCPS2Compiler(
     cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_011126 = MWCCPS2Compiler(
-    id="mwcps2-3.0b22-011126",
+MWCPS2_30_011126 = MWCCPS2Compiler(
+    id="mwcps2-3.0-011126",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_020123 = MWCCPS2Compiler(
-    id="mwcps2-3.0b22-020123",
+MWCPS2_301_020123 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1-020123",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
-MWCPS2_30B22_020716 = MWCCPS2Compiler(
-    id="mwcps2-3.0b22-020716",
+MWCPS2_303_020716 = MWCCPS2Compiler(
+    id="mwcps2-3.0.3-020716",
     platform=PS2,
     cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
@@ -1287,9 +1293,9 @@ _all_compilers: List[Compiler] = [
     EE_GCC296,
     EE_GCC32_040921,
     MWCPS2_23_991202,
-    MWCPS2_30B22_011126,
-    MWCPS2_30B22_020123,
-    MWCPS2_30B22_020716,
+    MWCPS2_30_011126,
+    MWCPS2_301_020123,
+    MWCPS2_303_020716,
     MWCPS2_30B22_020926,
     # N64
     IDO53,

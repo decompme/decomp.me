@@ -239,6 +239,16 @@ COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="endianness", flags=["-mel", "-meb"]),
 ]
 
+COMMON_GCC_PS2_FLAGS: Flags = COMMON_GCC_FLAGS + [
+    LanguageFlagSet(
+        id="gcc_source_language",
+        flags={
+            "-x c": Language.C,
+            "-x c++": Language.CXX,
+        },
+    ),
+]
+
 COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(id="gcc_arch", flags=["-m2"]),

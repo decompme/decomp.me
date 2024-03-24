@@ -13,7 +13,7 @@ export default function UserState() {
 
     return <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
         <div>
-            <UserAvatar user={user} className="h-16 w-16" />
+            <UserAvatar user={user} className="size-16" />
         </div>
         {user ? <div>
             <p>
@@ -24,7 +24,7 @@ export default function UserState() {
                 <SignOutButton />
             </div>
         </div> : <div className="flex animate-pulse items-center gap-2">
-            <LoadingSpinner className="h-6 w-6" />
+            <LoadingSpinner className="size-6" />
             <span>Loading...</span>
         </div>}
     </div>

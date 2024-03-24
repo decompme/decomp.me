@@ -159,7 +159,7 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: n
         }}
     >
         {diff?.rows && <AutoSizer>
-            {({ height, width }: { height: number, width: number }) => (
+            {({ height, width }: {height: number|undefined, width:number|undefined}) => (
                 <FixedSizeList
                     className={styles.body}
                     itemCount={diff.rows.length}

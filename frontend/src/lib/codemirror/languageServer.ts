@@ -512,7 +512,7 @@ interface LanguageServerOptions extends LanguageServerClientOptions {
     client?: LanguageServerClient
 }
 
-function languageServerWithTransport(options: LanguageServerOptions): [Extension[], (string) => Promise<void>]{
+function languageServerWithTransport(options: LanguageServerOptions): [Extension[], (contents: string) => Promise<void>]{
     let plugin: LanguageServerPlugin | null = null
 
     const extension = [

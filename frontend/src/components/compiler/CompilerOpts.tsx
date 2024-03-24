@@ -384,7 +384,7 @@ export function LibrariesEditor({ libraries, setLibraries }: {
     const supportedLibraries = api.useLibraries()
     const librariesTranslations = useTranslation("libraries")
 
-    const libraryVersions = scratchlib => {
+    const libraryVersions = (scratchlib: api.Library) => {
         const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)
         if (lib != null) {
             return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
@@ -393,15 +393,15 @@ export function LibrariesEditor({ libraries, setLibraries }: {
         }
     }
 
-    const addLibrary = libName => {
+    const addLibrary = (libName: string) => {
         const lib = supportedLibraries.find(lib => lib.name == libName)
         if (lib != null) {
             return setLibraryVersion(libName, lib.supported_versions[0])
         }
     }
-    const setLibraryVersion = (libName, ver) => {
+    const setLibraryVersion = (libName: string, ver: string) => {
         // clone the libraries
-        const libs = JSON.parse(JSON.stringify(libraries))
+        const libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Check if the library is already enabled, if so return it
         const scratchlib = libs.find(scratchlib => scratchlib.name == libName)
         if (scratchlib != null) {
@@ -413,9 +413,9 @@ export function LibrariesEditor({ libraries, setLibraries }: {
         }
         setLibraries(libs)
     }
-    const removeLibrary = libName => {
+    const removeLibrary = (libName: string) => {
         // clone the libraries
-        let libs = JSON.parse(JSON.stringify(libraries))
+        let libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Only keep the libs whose name are not libName
         libs = libs.filter(lib => lib.name != libName)
         setLibraries(libs)

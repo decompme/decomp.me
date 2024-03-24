@@ -41,7 +41,7 @@ export type Props = {
 }
 
 export function platformIcon(platform: string) {
-    return ICONS[platform] || UnknownIcon
+    return ICONS[platform as keyof typeof ICONS] || UnknownIcon
 }
 
 export function PlatformIcon({ platform, className, size }: Props) {

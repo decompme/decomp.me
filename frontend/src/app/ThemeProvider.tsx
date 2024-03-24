@@ -41,8 +41,8 @@ export default function ThemeProvider() {
     const [codeLineHeight] = settings.useCodeLineHeight()
     useEffect(() => {
         document.body.style.removeProperty("--code-line-height")
-        document.body.style.setProperty("--code-line-height", codeLineHeight)
+        document.body.style.setProperty("--code-line-height", `${codeLineHeight}`)
     }, [codeLineHeight])
 
-    return null
+    return <></>
 }

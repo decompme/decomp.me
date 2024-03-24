@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -11,8 +11,7 @@ import LoadingSpinner from "@/components/loading.svg"
 import * as api from "@/lib/api"
 import { requestMissingScopes } from "@/lib/oauth"
 
-// Handles GitHub OAuth callback
-export default function Page() {
+function Login() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [error, setError] = useState(null)
@@ -75,4 +74,9 @@ export default function Page() {
             <GitHubLoginButton />
         </div>}
     </main>
+}
+
+// Handles GitHub OAuth callback
+export default function Page() {
+    return <Suspense><Login /></Suspense>
 }

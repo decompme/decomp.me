@@ -121,10 +121,10 @@ function TextSkeleton({ text }: { text: string }) {
 }
 
 export default function LoadingSkeleton() {
-    return <div className="relative flex h-full w-full animate-pulse flex-col overflow-hidden">
+    return <div className="relative flex size-full animate-pulse flex-col overflow-hidden">
         <Nav>
             <div className="ml-1 flex w-full items-center gap-1.5">
-                <div className="h-5 w-5 rounded-full bg-gray-6" />
+                <div className="size-5 rounded-full bg-gray-6" />
                 <div className="h-5 w-16 bg-gray-6" />
                 <div className="h-5 w-48 bg-gray-6" />
             </div>

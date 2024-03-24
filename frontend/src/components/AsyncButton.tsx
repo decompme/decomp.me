@@ -77,7 +77,7 @@ export default function AsyncButton(props: Props) {
                     {...layerProps}
                 >
                     <pre>{errorMessage}</pre>
-                    <Arrow size={12} backgroundColor="#bb4444" {...arrowProps} />
+                    <Arrow onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} size={12} backgroundColor="#bb4444" {...arrowProps} />
                 </motion.div>}
             </AnimatePresence>
         )}
