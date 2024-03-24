@@ -70,6 +70,9 @@ export default function EditorSettings() {
             </Checkbox>
         </Section>
         <Section title="Three-way diffing target">
+            <div className="text-gray-11">
+                When enabling three-way diffing for a scratch, let the third column show a diff against:
+            </div>
             <RadioList
                 value={threeWayDiffBase}
                 onChange={(value: string) => {

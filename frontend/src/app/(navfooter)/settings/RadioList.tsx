@@ -39,14 +39,16 @@ export type Props = {
 export default function RadioList({ value, onChange, options }: Props) {
     const name = useId()
 
-    return Object.keys(options).map(key => {
-        return <RadioButton
-            name={name}
-            key={key}
-            value={key}
-            checked={key === value}
-            option={options[key]}
-            onChange={onChange}
-        />
-    })
+    return <div className="p-1">
+        {Object.keys(options).map(key =>
+            <RadioButton
+                name={name}
+                key={key}
+                value={key}
+                checked={key === value}
+                option={options[key]}
+                onChange={onChange}
+            />
+        )}
+    </div>
 }
