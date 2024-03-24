@@ -1,4 +1,5 @@
 /// Adapted from https://github.com/codemirror/lang-cpp/blob/main/src/cpp.ts
+/// MIT-licensed, Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others
 import { parser } from "@lezer/cpp"
 import { flatIndent, continuedIndent, delimitedIndent, indentNodeProp, foldNodeProp, foldInside, LRLanguage, LanguageSupport } from "@codemirror/language"
 
