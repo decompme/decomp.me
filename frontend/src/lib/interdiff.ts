@@ -54,6 +54,9 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
         // flag or with a '--target' of 'es2015' or higher" -- changing
         // tsconfig compilerOptions.target does not seem to work for me.
         for (const [c0, c1, p0, p1] of Array.from(myersDiff(ckeys, pkeys))) {
+            if (c0 - ci !== p0 - pi) {
+                throw new Error("bad myers-diff range")
+            }
             while (ci != c0)
                 addMatching(cs[ci++], ps[pi++])
             while (ci != c1) {
@@ -71,6 +74,9 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
                 })
             }
         }
+        if (cs.length - ci !== ps.length - pi) {
+            throw new Error("bad myers-diff range")
+        }
         while (ci != cs.length)
             addMatching(cs[ci++], ps[pi++])
     }
@@ -80,6 +86,7 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
     if (currChunks.chunks.length !== prevChunks.chunks.length) {
         // This should logically never happen, since the two diffs are based on
         // the same target.
+        console.warn("Diff base changed size between two diffs?", curr, prev)
         return curr
     }
     for (let i = 0; i < currChunks.chunks.length; i++) {
