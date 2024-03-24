@@ -37,7 +37,8 @@
 }
 
 .threeWayToggle {
-    padding: 4px 8px;
+    position: relative;
+    padding: 4px 4px;
     cursor: pointer;
 
     &:hover {
@@ -45,6 +46,16 @@
         color: var(--g1300);
         background: var(--g400);
     }
+}
+
+.threeWayToggleNumber {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+
+    font-size: 0.9rem;
+
+    color: var(--g1500);
 }
 
 // Columns

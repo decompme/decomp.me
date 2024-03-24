@@ -6,6 +6,8 @@ import classNames from "classnames"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
+import { VersionsIcon } from "@primer/octicons-react"
+
 import * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
 import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings"
@@ -193,7 +195,10 @@ function ThreeWayToggleButton({ enabled, setEnabled }: { enabled: boolean, setEn
         }}
         title={enabled ? "Disable three-way diffing" : "Enable three-way diffing"}
     >
+        <VersionsIcon size={28} />
+        <div className={styles.threeWayToggleNumber}>
         {enabled ? "3" : "2"}
+        </div>
     </button>
 }
 
