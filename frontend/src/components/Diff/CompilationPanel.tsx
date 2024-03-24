@@ -41,36 +41,34 @@ export type Props = {
 }
 
 export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, selectedSourceLine, perSaveObj }: Props) {
-    const usedCompileRef = useRef<api.Compilation | null>(null)
+    const usedCompilationRef = useRef<api.Compilation | null>(null)
     const problemState = getProblemState(compilation)
     const [threeWayDiffBase] = useThreeWayDiffBase()
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false)
+    const prevCompilation = usedCompilationRef.current
 
     // Only update the diff if it's never been set or if the compilation succeeded
-    if (!usedCompileRef.current || compilation.success) {
-        usedCompileRef.current = compilation
+    if (!usedCompilationRef.current || compilation.success) {
+        usedCompilationRef.current = compilation
     }
 
-    const usedDiff = usedCompileRef.current?.diff_output ?? null
+    const usedDiff = usedCompilationRef.current?.diff_output ?? null
 
     // If this is the first time we re-render after a save, store the diff
     // as a possible three-way diff base.
-    if (!perSaveObj.diff && usedCompileRef.current?.success && usedDiff) {
+    if (!perSaveObj.diff && usedCompilationRef.current?.success && usedDiff) {
         perSaveObj.diff = usedDiff
     }
 
-    const currDiffRef = useRef<api.DiffOutput | null>(null)
     const prevDiffRef = useRef<api.DiffOutput | null>(null)
 
     let usedBase
     if (threeWayDiffBase === ThreeWayDiffBase.SAVED) {
         usedBase = perSaveObj.diff ?? null
-        currDiffRef.current = null
         prevDiffRef.current = null
     } else {
-        if (compilation.success) {
-            prevDiffRef.current = currDiffRef.current
-            currDiffRef.current = usedDiff
+        if (compilation.success && compilation !== prevCompilation) {
+            prevDiffRef.current = prevCompilation?.diff_output ?? null
         }
         usedBase = prevDiffRef.current ?? null
     }
