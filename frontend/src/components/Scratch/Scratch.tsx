@@ -147,9 +147,9 @@ export default function Scratch({
         onChange(scratch)
         setIsModified(true)
     }
-    const [threeWayDiffBase, setThreeWayDiffBase] = useState({})
-    const resetThreeWayDiff = () => {
-        setThreeWayDiffBase({})
+    const [perSaveObj, setPerSaveObj] = useState({})
+    const saveCallback = () => {
+        setPerSaveObj({})
     }
 
     const shouldCompare = !isModified
@@ -278,7 +278,7 @@ export default function Scratch({
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
                     selectedSourceLine={selectedSourceLine}
-                    threeWayDiffBase={threeWayDiffBase}
+                    perSaveObj={perSaveObj}
                 />}
             </Tab>
         case TabId.DECOMPILATION:
@@ -331,7 +331,7 @@ export default function Scratch({
                 isCompiling={isCompiling}
                 scratch={scratch}
                 setScratch={setScratch}
-                resetThreeWayDiff={resetThreeWayDiff}
+                saveCallback={saveCallback}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
             {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent}/></div>}

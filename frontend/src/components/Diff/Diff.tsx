@@ -8,7 +8,7 @@ import { FixedSizeList } from "react-window"
 
 import * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
-import { useCodeFontSize } from "@/lib/settings"
+import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings"
 
 import Loading from "../loading.svg"
 
@@ -203,10 +203,11 @@ export type Props = {
     isCurrentOutdated: boolean
     threeWayDiffEnabled: boolean
     setThreeWayDiffEnabled: (value: boolean) => void
+    threeWayDiffBase: ThreeWayDiffBase
     selectedSourceLine: number | null
 }
 
-export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDiffEnabled, setThreeWayDiffEnabled, selectedSourceLine }: Props) {
+export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDiffEnabled, setThreeWayDiffEnabled, threeWayDiffBase, selectedSourceLine }: Props) {
     const [fontSize] = useCodeFontSize()
 
     const container = useSize<HTMLDivElement>()
@@ -263,7 +264,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDif
                 {!threeWayDiffEnabled && threeWayButton}
             </div>
             {threeWayDiffEnabled && <div className={styles.header}>
-                Saved
+                {threeWayDiffBase === ThreeWayDiffBase.SAVED ? "Saved" : "Previous"}
                 {threeWayButton}
             </div>}
         </div>

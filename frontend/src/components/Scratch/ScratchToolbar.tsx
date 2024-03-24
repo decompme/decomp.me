@@ -126,7 +126,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
     }
 }
 
-function Actions({ isCompiling, compile, scratch, setScratch, resetThreeWayDiff, setDecompilationTabEnabled }: Props) {
+function Actions({ isCompiling, compile, scratch, setScratch, saveCallback, setDecompilationTabEnabled }: Props) {
     const userIsYou = api.useUserIsYou()
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
@@ -139,7 +139,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, resetThreeWayDiff,
         setIsSaving(true)
         await fuzzySaveScratch()
         setIsSaving(false)
-        resetThreeWayDiff()
+        saveCallback()
     })
 
     const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
@@ -162,7 +162,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, resetThreeWayDiff,
                         setIsSaving(true)
                         await fuzzySaveScratch()
                         setIsSaving(false)
-                        resetThreeWayDiff()
+                        saveCallback()
                     }}
                     disabled={!canSave || isSaving}
                     title={fuzzyShortcut}
@@ -175,7 +175,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, resetThreeWayDiff,
                 <button
                     onClick={async () => {
                         await forkScratch()
-                        resetThreeWayDiff()
+                        saveCallback()
                     }}
                     title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
                 >
@@ -255,7 +255,7 @@ export type Props = {
     compile: () => Promise<void>
     scratch: Readonly<api.Scratch>
     setScratch: (scratch: Partial<api.Scratch>) => void
-    resetThreeWayDiff: () => void
+    saveCallback: () => void
     setDecompilationTabEnabled: (enabled: boolean) => void
 }
 

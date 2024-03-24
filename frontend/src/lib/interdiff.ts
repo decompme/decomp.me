@@ -99,3 +99,17 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
     }
     return curr
 }
+
+export function diffsEqual(diff1: DiffOutput, diff2: DiffOutput): boolean {
+    if (diff1.rows.length !== diff2.rows.length) {
+        return false
+    }
+    for (let i = 0; i < diff1.rows.length; i++) {
+        const a = diff1.rows[i]
+        const b = diff2.rows[i]
+        if (a.key !== b.key) {
+            return false
+        }
+    }
+    return true
+}

@@ -2,8 +2,10 @@
 import { useEffect, useRef, useState } from "react"
 
 import LoadingSpinner from "@/components/loading.svg"
+// import Select2 from "@/components/Select2"
 import * as settings from "@/lib/settings"
 
+import RadioList from "../RadioButton"
 import Checkbox from "../Checkbox"
 import Section from "../Section"
 import SliderField from "../SliderField"
@@ -14,6 +16,7 @@ export default function EditorSettings() {
     const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
     const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
     const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
+    const [threeWayDiffBase, setThreeWayDiffBase] = settings.useThreeWayDiffBase()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -39,6 +42,11 @@ export default function EditorSettings() {
         }
     }, [languageServerEnabled])
 
+    const threeWayDiffOptions = {
+        [settings.ThreeWayDiffBase.SAVED]: {label: "Latest save"},
+        [settings.ThreeWayDiffBase.PREV]: {label: "Previous compile"},
+    }
+
     return <>
         <Section title="Automatic compilation">
             <Checkbox
@@ -60,6 +68,13 @@ export default function EditorSettings() {
                     />
                 </div>
             </Checkbox>
+        </Section>
+        <Section title="Three-way diffing mode">
+            <RadioList
+                value={threeWayDiffBase}
+                onChange={setThreeWayDiffBase}
+                options={threeWayDiffOptions}
+            />
         </Section>
         <Section title="Match progress bar">
             <Checkbox
