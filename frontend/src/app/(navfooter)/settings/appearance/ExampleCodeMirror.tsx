@@ -1,9 +1,8 @@
 "use client"
 
-import { cpp } from "@codemirror/lang-cpp"
-
 import CodeMirror from "@/components/Editor/CodeMirror"
 import basicSetup from "@/lib/codemirror/basic-setup"
+import { cpp } from "@/lib/codemirror/cpp"
 
 import styles from "./ExampleCodeMirror.module.scss"
 

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 
-import { cpp } from "@codemirror/lang-cpp"
 import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
 import { decompileSetup } from "@/lib/codemirror/basic-setup"
+import { cpp } from "@/lib/codemirror/cpp"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
 
 import CodeMirror from "../Editor/CodeMirror"
