@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from "react"
 
-import { cpp } from "@codemirror/lang-cpp"
+import { cpp } from "@/lib/codemirror/cpp"
 import { EditorView } from "@codemirror/view"
 import { vim } from "@replit/codemirror-vim"
 

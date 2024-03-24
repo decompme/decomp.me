@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo, useReducer } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { cpp } from "@codemirror/lang-cpp"
+import { cpp } from "@/lib/codemirror/cpp"
 
 import AsyncButton from "@/components/AsyncButton"
 import { useCompilersForPlatform } from "@/components/compiler/compilers"

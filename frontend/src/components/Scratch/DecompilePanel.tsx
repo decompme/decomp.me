@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { cpp } from "@codemirror/lang-cpp"
+import { cpp } from "@/lib/codemirror/cpp"
 import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
