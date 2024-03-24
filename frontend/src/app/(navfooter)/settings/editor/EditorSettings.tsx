@@ -69,7 +69,7 @@ export default function EditorSettings() {
                 </div>
             </Checkbox>
         </Section>
-        <Section title="Three-way diffing mode">
+        <Section title="Three-way diffing target">
             <RadioList
                 value={threeWayDiffBase}
                 onChange={(value: string) => {
