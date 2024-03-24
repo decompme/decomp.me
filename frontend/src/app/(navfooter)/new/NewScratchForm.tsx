@@ -158,7 +158,7 @@ export default function NewScratchForm({ serverCompilers }: {
         } else {
             localStorage["new_scratch_presetId"] = presetId
         }
-    }, [ready.current, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
+    }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
     // Use first available platform if no platform was selected or is unavailable
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
@@ -188,7 +188,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 }
             }
         }
-    }, [ready.current, presetId, compilerId, platformCompilers, serverCompilers, platform])
+    }, [ready, presetId, compilerId, platformCompilers, serverCompilers, platform])
 
     const compilersTranslation = useTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
