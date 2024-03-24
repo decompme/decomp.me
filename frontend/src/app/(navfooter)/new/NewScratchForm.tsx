@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, useReducer } from "react"
+import { useEffect, useState, useMemo, useReducer, useRef } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -68,8 +68,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [libraries, setLibraries] = useState<Library[]>([])
     const [presetId, setPresetId] = useState<number | undefined>()
 
-    // FIXME: what is the React way to handle this
-    const [ready, setReady] = useState(false)
+    const ready = useRef(false)
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -82,12 +81,27 @@ export default function NewScratchForm({ serverCompilers }: {
     const [label, setLabel] = useState<string>("")
 
     const setPreset = (preset: api.Preset) => {
-        setPresetId(preset.id)
-        setPlatform(preset.platform)
-        setCompilerId(preset.compiler)
-        setCompilerFlags(preset.compiler_flags)
-        setDiffFlags(preset.diff_flags)
-        setLibraries(preset.libraries)
+        if (preset) {
+            setPresetId(preset.id)
+            setPlatform(preset.platform)
+            setCompilerId(preset.compiler)
+            setCompilerFlags(preset.compiler_flags)
+            setDiffFlags(preset.diff_flags)
+            setLibraries(preset.libraries)
+        } else {
+            // User selected "Custom", don't change platform or compiler
+            setPresetId(undefined)
+            setCompilerFlags("")
+            setDiffFlags([])
+            setLibraries([])
+        }
+    }
+    const setCompiler = (compiler?: string) => {
+        setCompilerId(compiler)
+        setCompilerFlags("")
+        setDiffFlags([])
+        setLibraries([])
+        setPresetId(undefined)
     }
 
     const presets = useMemo(() => {
@@ -116,19 +130,19 @@ export default function NewScratchForm({ serverCompilers }: {
                 setPlatform(localStorage["new_scratch_platform"] ?? "")
                 setCompilerId(localStorage["new_scratch_compilerId"] ?? undefined)
                 setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"]) ?? [])
-                setLibraries(JSON.parse(localStorage["new_scratch_libraries"]) ?? [])
+                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"] ?? "[]"))
+                setLibraries(JSON.parse(localStorage["new_scratch_libraries"] ?? "[]"))
             }
             incrementValueVersion()
         } catch (error) {
             console.warn("bad localStorage", error)
         }
-        setReady(true)
+        ready.current = true
     }, [presets])
 
     // Update localStorage
     useEffect(() => {
-        if (!ready)
+        if (!ready.current)
             return
 
         localStorage["new_scratch_label"] = label
@@ -144,16 +158,16 @@ export default function NewScratchForm({ serverCompilers }: {
         } else {
             localStorage["new_scratch_presetId"] = presetId
         }
-    }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
+    }, [ready.current, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
-    // wtf
+    // Use first available platform if no platform was selected or is unavailable
     if (!platform || Object.keys(serverCompilers.platforms).indexOf(platform) === -1) {
         setPlatform(Object.keys(serverCompilers.platforms)[0])
     }
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     useEffect(() => {
-        if (!ready)
+        if (!ready.current)
             return
 
         if (presetId != undefined || compilerId != undefined) {
@@ -162,16 +176,11 @@ export default function NewScratchForm({ serverCompilers }: {
         }
 
         if (Object.keys(platformCompilers).length === 0) {
-            console.warn("No compilers supported for platform", platform)
+            console.warn("This platform has no supported compilers", platform)
         } else {
-            // Fall back to the first supported compiler and no flags
-            const c = Object.keys(platformCompilers)[0]
-            setCompilerId(c)
-            setCompilerFlags("")
-            setDiffFlags([])
-            setPresetId(undefined)
-
-            // If there is a preset for this platform, use it
+            // Fall back to the first supported compiler and no flags...
+            setCompiler(Object.keys(platformCompilers)[0])
+            // However, if there is a preset for this platform, use it
             for (const v of Object.values(serverCompilers.compilers)) {
                 if (v.platform === platform && serverCompilers.platforms[platform].presets.length > 0) {
                     setPreset(serverCompilers.platforms[platform].presets[0])
@@ -179,7 +188,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 }
             }
         }
-    }, [ready, presetId, compilerId, platformCompilers, serverCompilers, platform])
+    }, [ready.current, presetId, compilerId, platformCompilers, serverCompilers, platform])
 
     const compilersTranslation = useTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
@@ -227,11 +236,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 value={platform}
                 onChange={p => {
                     setPlatform(p)
-                    setCompilerId(undefined)
-                    setCompilerFlags("")
-                    setDiffFlags([])
-                    setPresetId(undefined)
-                    setLibraries([])
+                    setCompiler()
                 }}
             />
         </div>
@@ -247,13 +252,7 @@ export default function NewScratchForm({ serverCompilers }: {
                         className={styles.compilerChoiceSelect}
                         options={compilerChoiceOptions}
                         value={compilerId}
-                        onChange={c => {
-                            setCompilerId(c)
-                            setCompilerFlags("")
-                            setDiffFlags([])
-                            setPresetId(undefined)
-                            setLibraries([])
-                        }}
+                        onChange={setCompiler}
                     />
                 </div>
                 <div className={styles.compilerChoiceOr}>or</div>
