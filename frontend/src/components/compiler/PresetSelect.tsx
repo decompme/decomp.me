@@ -21,23 +21,31 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
     setPreset: (preset: api.Preset) => void
     serverPresets?: api.Preset[]
 }) {
-    if (!serverPresets)
+    if (typeof serverPresets === "undefined")
         serverPresets = api.usePresets(platform)
 
-    const selectedPreset = serverPresets.find(p => p.id === presetId)
+    const sortedPresets = typeof serverPresets === "undefined" ? null : serverPresets.slice().sort((a, b) => a.name.localeCompare(b.name))
 
-    if (serverPresets.length > 0 && typeof presetId === "number" && !selectedPreset)
+    if (sortedPresets === null) {
+        return <Select
+            className={className}
+            options={{ "Loading": "Loading..." }}
+            value={"Loading"}
+            onChange={null}
+        />
+    }
+
+    const selectedPreset = sortedPresets.find((p: api.Preset) => p.id === presetId)
+
+    if (sortedPresets.length > 0 && typeof presetId === "number" && !selectedPreset)
         console.warn(`Scratch.preset == '${presetId}' but no preset with that id was found.`)
 
     return <Select
         className={className}
-        options={presetsToOptions(serverPresets)}
+        options={presetsToOptions(sortedPresets)}
         value={selectedPreset?.name || "Custom"}
         onChange={name => {
-            const p = serverPresets.find(p => p.name === name)
-            if (p) {
-                setPreset(p)
-            }
+            setPreset(name === "Custom" ? null : sortedPresets.find((p: api.Preset) => p.name === name))
         }}
     />
 }
