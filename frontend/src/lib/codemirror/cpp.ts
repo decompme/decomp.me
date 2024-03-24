@@ -14,7 +14,7 @@ export const cppLanguage = LRLanguage.define({
                 TryStatement: continuedIndent({except: /^\s*({|catch\b)/}),
                 ForStatement: continuedIndent({except: /^\s*({)/}),
                 WhileStatement: continuedIndent({except: /^\s*({)/}),
-                DoStatement: continuedIndent({except: /^\s*({)/}),
+                DoStatement: continuedIndent({except: /^\s*({|while\b)/}),
                 SwitchStatement: continuedIndent({except: /^\s*({)/}),
                 LabeledStatement: flatIndent,
                 CaseStatement: context => context.baseIndent + context.unit,
@@ -30,7 +30,7 @@ export const cppLanguage = LRLanguage.define({
     }),
     languageData: {
         commentTokens: {line: "//", block: {open: "/*", close: "*/"}},
-        indentOnInput: /^\s*(?:case |default:|\{|\})$/,
+        indentOnInput: /^\s*(?:case |default:|\{|\}|else |else\{|catch |catch\(|while |while\()$/,
         closeBrackets: {stringPrefixes: ["L", "u", "U", "u8", "LR", "UR", "uR", "u8R", "R"]}
     }
 })
