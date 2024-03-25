@@ -27,6 +27,7 @@ export default function SearchBox({ onSearch, placeholder, isLoading, className,
             type="text"
             value={value}
             placeholder={placeholder}
+            spellCheck={false}
             onChange={e => {
                 setValue(e.target.value)
 

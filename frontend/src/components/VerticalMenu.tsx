@@ -122,6 +122,6 @@ export function LinkItem({ children, href, disabled, shortcutKeys }: { children:
 export function SearchItem() {
     return <MenuItem className={styles.searchItem}>
         <SearchIcon />
-        <input type="text" placeholder="Search..." />
+        <input type="text" placeholder="Search..." spellCheck={false} />
     </MenuItem>
 }

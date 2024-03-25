@@ -281,7 +281,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 className={styles.textInput}
                 autoCorrect="off"
                 autoCapitalize="off"
-                spellCheck="false"
+                spellCheck={false}
             />
         </div>
         <div className={styles.editorContainer}>

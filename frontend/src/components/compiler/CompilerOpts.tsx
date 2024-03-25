@@ -341,6 +341,7 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
                 className={styles.textbox}
                 value={opts}
                 placeholder="No arguments"
+                spellCheck={false}
                 onChange={e => setOpts((e.target as HTMLInputElement).value)}
             />
         </div>
@@ -368,6 +369,7 @@ export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDi
                 className={styles.textbox}
                 value={diffLabel}
                 placeholder="Top of file"
+                spellCheck={false}
                 onChange={e => onDiffLabelChange(e.target.value)}
             />
         </div>
