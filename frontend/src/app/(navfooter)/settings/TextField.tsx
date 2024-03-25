@@ -34,6 +34,7 @@ export default function TextField({ value, onChange, disabled, label, descriptio
             onChange={evt => onChange(evt.target.value)}
             disabled={disabled}
             placeholder={placeholder}
+            spellCheck={false}
             className="mt-1 block w-full rounded border border-gray-6 bg-transparent px-2.5 py-1.5 text-sm text-gray-11 outline-none focus:text-gray-12 focus:placeholder:text-gray-10"
             style={inputStyle}
         />
