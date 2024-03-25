@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 MAX_M2C_ASM_LINES = 15000
 
-DECOMP_WITH_CONTEXT_FAILED_PREAMBLE = "/* Decompilation with context failed; here's the decompilation without context: */\n\n"
+DECOMP_WITH_CONTEXT_FAILED_PREAMBLE = "/* Decompilation with context failed; here's the decompilation without context: */\n"
 
 
 class DecompilerWrapper:
@@ -35,7 +35,7 @@ class DecompilerWrapper:
                 # Attempt to decompile the source without context as a last-ditch effort
                 try:
                     ret = M2CWrapper.decompile(asm, "", compiler, platform.arch)
-                    ret = DECOMP_WITH_CONTEXT_FAILED_PREAMBLE + ret
+                    ret = f"{e}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"
                 except M2CError as e:
                     ret = f"{e}\n{default_source_code}"
             except Exception:
