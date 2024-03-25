@@ -43,8 +43,8 @@ export default function EditorSettings() {
     }, [languageServerEnabled])
 
     const threeWayDiffOptions = {
-        [ThreeWayDiffBase.SAVED]: { label: "Latest save" },
-        [ThreeWayDiffBase.PREV]: { label: "Previous compile" },
+        [ThreeWayDiffBase.SAVED]: { label: <div>Latest save ( <span className="font-mono text-gray-11">diff.py -b</span> )</div> },
+        [ThreeWayDiffBase.PREV]: { label: <div>Previous result ( <span className="font-mono text-gray-11">diff.py -3</span> )</div> },
     }
 
     return <>
