@@ -134,7 +134,16 @@ COMMON_DIFF_FLAGS: Flags = [
 ]
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [
-    FlagSet(id="mips_mreg_names", flags=["", "-Mreg-names=32", "-Mreg-names=n32", "-Mreg-names=64", "-Mreg-names=numeric"]),
+    FlagSet(
+        id="mips_mreg_names",
+        flags=[
+            "",
+            "-Mreg-names=32",
+            "-Mreg-names=n32",
+            "-Mreg-names=64",
+            "-Mreg-names=numeric",
+        ],
+    ),
     Checkbox("mno_aliases", "-Mno-aliases"),
     Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
 ]
