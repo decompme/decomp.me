@@ -196,7 +196,7 @@ COMMON_MWCC_FLAGS: Flags = [
     ),
     FlagSet(id="mwcc_char_signedness", flags=["-char signed", "-char unsigned"]),
     Checkbox(id="mwcc_cpp_exceptions_off", flag="-Cpp_exceptions off"),
-    Checkbox(id="mwcc_enum_int", flag="-enum int"),
+    FlagSet(id="mwcc_enum_size", flags=["-enum int", "-enum min"]),
     Checkbox(id="mwcc_rtti_off", flag="-RTTI off"),
     Checkbox(id="mwcc_line_numbers_on", flag="-sym on"),
 ]
