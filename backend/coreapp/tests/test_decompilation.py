@@ -71,8 +71,9 @@ class DecompilationTests(BaseTestCase):
         )
         self.assertEqual(
             response.json()["decompilation"],
-            DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
-            + "s32 return_2(void) {\n    return 2;\n}\n",
+            "/*\nDecompilation failure:\n\nSyntax error when parsing C context.\nbefore: jeff at line 1, column 10\n\ntypedeff jeff;\n*/\n\n"
+            + DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
+            + "\ns32 return_2(void) {\n    return 2;\n}\n",
         )
 
 
