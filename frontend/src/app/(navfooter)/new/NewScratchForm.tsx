@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, useReducer, useRef } from "react"
+import { useEffect, useState, useMemo, useReducer } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -67,7 +67,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [libraries, setLibraries] = useState<Library[]>([])
     const [presetId, setPresetId] = useState<number | undefined>()
 
-    const ready = useRef(false)
+    const [ready, setReady] = useState(false)
 
     const [valueVersion, incrementValueVersion] = useReducer(x => x + 1, 0)
 
@@ -136,12 +136,12 @@ export default function NewScratchForm({ serverCompilers }: {
         } catch (error) {
             console.warn("bad localStorage", error)
         }
-        ready.current = true
+        setReady(true)
     }, [presets])
 
     // Update localStorage
     useEffect(() => {
-        if (!ready.current)
+        if (!ready)
             return
 
         localStorage["new_scratch_label"] = label
@@ -166,7 +166,7 @@ export default function NewScratchForm({ serverCompilers }: {
 
     const platformCompilers = useCompilersForPlatform(platform, serverCompilers.compilers)
     useEffect(() => {
-        if (!ready.current)
+        if (!ready)
             return
 
         if (presetId != undefined || compilerId != undefined) {
