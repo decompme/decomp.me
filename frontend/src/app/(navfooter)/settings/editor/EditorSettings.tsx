@@ -2,18 +2,21 @@
 import { useEffect, useRef, useState } from "react"
 
 import LoadingSpinner from "@/components/loading.svg"
-import * as settings from "@/lib/settings"
+import { ThreeWayDiffBase, useAutoRecompileSetting, useAutoRecompileDelaySetting, useMatchProgressBarEnabled,
+    useLanguageServerEnabled, useVimModeEnabled, useThreeWayDiffBase } from "@/lib/settings"
 
 import Checkbox from "../Checkbox"
+import RadioList from "../RadioList"
 import Section from "../Section"
 import SliderField from "../SliderField"
 
 export default function EditorSettings() {
-    const [autoRecompile, setAutoRecompile] = settings.useAutoRecompileSetting()
-    const [autoRecompileDelay, setAutoRecompileDelay] = settings.useAutoRecompileDelaySetting()
-    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = settings.useMatchProgressBarEnabled()
-    const [languageServerEnabled, setLanguageServerEnabled] = settings.useLanguageServerEnabled()
-    const [vimModeEnabled, setVimModeEnabled] = settings.useVimModeEnabled()
+    const [autoRecompile, setAutoRecompile] = useAutoRecompileSetting()
+    const [autoRecompileDelay, setAutoRecompileDelay] = useAutoRecompileDelaySetting()
+    const [matchProgressBarEnabled, setMatchProgressBarEnabled] = useMatchProgressBarEnabled()
+    const [languageServerEnabled, setLanguageServerEnabled] = useLanguageServerEnabled()
+    const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled()
+    const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -39,6 +42,11 @@ export default function EditorSettings() {
         }
     }, [languageServerEnabled])
 
+    const threeWayDiffOptions = {
+        [ThreeWayDiffBase.SAVED]: { label: <div>Latest save ( <span className="font-mono text-gray-11">diff.py -b</span> )</div> },
+        [ThreeWayDiffBase.PREV]: { label: <div>Previous result ( <span className="font-mono text-gray-11">diff.py -3</span> )</div> },
+    }
+
     return <>
         <Section title="Automatic compilation">
             <Checkbox
@@ -60,6 +68,18 @@ export default function EditorSettings() {
                     />
                 </div>
             </Checkbox>
+        </Section>
+        <Section title="Three-way diffing target">
+            <div className="text-gray-11">
+                When enabling three-way diffing for a scratch, let the third column show a diff against:
+            </div>
+            <RadioList
+                value={threeWayDiffBase}
+                onChange={(value: string) => {
+                    setThreeWayDiffBase(value as ThreeWayDiffBase)
+                }}
+                options={threeWayDiffOptions}
+            />
         </Section>
         <Section title="Match progress bar">
             <Checkbox

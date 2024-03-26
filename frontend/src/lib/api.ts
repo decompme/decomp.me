@@ -92,7 +92,7 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             libraries: undefinedIfUnchanged(savedScratch, localScratch, "libraries"),
         })
 
-        await mutate(scratchUrl(localScratch), updatedScratch, false)
+        await mutate(scratchUrl(localScratch), updatedScratch, { revalidate: false })
 
         return updatedScratch
     }, [localScratch, savedScratch, userIsYou])

@@ -147,6 +147,10 @@ export default function Scratch({
         onChange(scratch)
         setIsModified(true)
     }
+    const [perSaveObj, setPerSaveObj] = useState({})
+    const saveCallback = () => {
+        setPerSaveObj({})
+    }
 
     const shouldCompare = !isModified
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
@@ -274,6 +278,7 @@ export default function Scratch({
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
                     selectedSourceLine={selectedSourceLine}
+                    perSaveObj={perSaveObj}
                 />}
             </Tab>
         case TabId.DECOMPILATION:
@@ -308,7 +313,7 @@ export default function Scratch({
     const offlineOverlay = (
         offline ? <>
             <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
-                <p className="text-sm">The scratch editor is in offline mode. We're attempting to reconnect to the backend - as long as this tab is open, your work is safe.</p>
+                <p className="text-sm">The scratch editor is in offline mode. We're attempting to reconnect to the backend – as long as this tab is open, your work is safe.</p>
             </div>
         </>
             : <></>
@@ -326,6 +331,7 @@ export default function Scratch({
                 isCompiling={isCompiling}
                 scratch={scratch}
                 setScratch={setScratch}
+                saveCallback={saveCallback}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
             {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent}/></div>}

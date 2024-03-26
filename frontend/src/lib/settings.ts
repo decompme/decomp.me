@@ -14,6 +14,12 @@ const codeColorScheme = createPersistedState<ColorScheme>("codeColorScheme")
 const languageServerEnabled = createPersistedState<boolean>("languageServerEnabled")
 const matchProgressBarEnabled = createPersistedState<boolean>("matchProgressBarEnabled")
 const vimModeEnabled = createPersistedState<boolean>("vimModeEnabled")
+const threeWayDiffBase = createPersistedState<ThreeWayDiffBase>("threeWayDiffBase")
+
+export enum ThreeWayDiffBase {
+    SAVED = "saved",
+    PREV = "prev",
+}
 
 export const useTheme = () => theme("auto")
 export const useAutoRecompileSetting = () => autoRecompile(true)
@@ -25,6 +31,7 @@ export const useCodeColorScheme = () => codeColorScheme("Frog Dark")
 export const useLanguageServerEnabled = () => languageServerEnabled(false)
 export const useMatchProgressBarEnabled = () => matchProgressBarEnabled(true)
 export const useVimModeEnabled = () => vimModeEnabled(false)
+export const useThreeWayDiffBase = () => threeWayDiffBase(ThreeWayDiffBase.SAVED)
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme()

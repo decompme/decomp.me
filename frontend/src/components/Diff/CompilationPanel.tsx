@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react"
 import { Allotment, AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
 
 import * as api from "@/lib/api"
+import { interdiff } from "@/lib/interdiff"
+import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings"
 
 import GhostButton from "../GhostButton"
 
@@ -26,23 +28,60 @@ export enum ProblemState {
     ERRORS,
 }
 
+export type PerSaveObj = {
+    diff?: api.DiffOutput
+}
+
 export type Props = {
     compilation: api.Compilation
     isCompiling?: boolean
     isCompilationOld?: boolean
     selectedSourceLine: number | null
+    perSaveObj: PerSaveObj
 }
 
-export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, selectedSourceLine }: Props) {
-    const [diff, setDiff] = useState<api.DiffOutput | null>(null)
+export default function CompilationPanel({ compilation, isCompiling, isCompilationOld, selectedSourceLine, perSaveObj }: Props) {
+    const usedCompilationRef = useRef<api.Compilation | null>(null)
     const problemState = getProblemState(compilation)
+    const [threeWayDiffBase] = useThreeWayDiffBase()
+    const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false)
+    const prevCompilation = usedCompilationRef.current
 
     // Only update the diff if it's never been set or if the compilation succeeded
-    useEffect(() => {
-        if (!diff || compilation.success) {
-            setDiff(compilation.diff_output)
+    if (!usedCompilationRef.current || compilation.success) {
+        usedCompilationRef.current = compilation
+    }
+
+    const usedDiff = usedCompilationRef.current?.diff_output ?? null
+
+    // If this is the first time we re-render after a save, store the diff
+    // as a possible three-way diff base.
+    if (!perSaveObj.diff && usedCompilationRef.current?.success && usedDiff) {
+        perSaveObj.diff = usedDiff
+    }
+
+    const prevDiffRef = useRef<api.DiffOutput | null>(null)
+
+    let usedBase
+    if (threeWayDiffBase === ThreeWayDiffBase.SAVED) {
+        usedBase = perSaveObj.diff ?? null
+        prevDiffRef.current = null
+    } else {
+        if (compilation.success && compilation !== prevCompilation) {
+            prevDiffRef.current = prevCompilation?.diff_output ?? null
         }
-    }, [compilation.diff_output, compilation.success, diff])
+        usedBase = prevDiffRef.current ?? null
+    }
+
+    const diff = useMemo(
+        () => {
+            if (threeWayDiffEnabled)
+                return interdiff(usedDiff, usedBase)
+            else
+                return usedDiff
+        },
+        [threeWayDiffEnabled, usedDiff, usedBase]
+    )
 
     const container = useRef<HTMLDivElement>(null)
     const allotment = useRef<AllotmentHandle>(null)
@@ -67,6 +106,9 @@ export default function CompilationPanel({ compilation, isCompiling, isCompilati
                     diff={diff}
                     isCompiling={isCompiling}
                     isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    threeWayDiffEnabled={threeWayDiffEnabled}
+                    setThreeWayDiffEnabled={setThreeWayDiffEnabled}
+                    threeWayDiffBase={threeWayDiffBase}
                     selectedSourceLine={selectedSourceLine}
                 />
             </Allotment.Pane>

@@ -32,6 +32,32 @@
     user-select: none;
 }
 
+.spacer {
+    flex: 1;
+}
+
+.threeWayToggle {
+    position: relative;
+    padding: 4px 4px;
+    cursor: pointer;
+
+    &:hover {
+        border-radius: 4px;
+        color: var(--g1300);
+        background: var(--g400);
+    }
+}
+
+.threeWayToggleNumber {
+    position: absolute;
+    top: 27%;
+    left: 51%;
+
+    font-size: 0.7rem;
+
+    color: var(--g1500);
+}
+
 // Columns
 .headers,
 .row {
