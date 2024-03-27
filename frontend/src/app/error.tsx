@@ -2,8 +2,6 @@
 
 import { useEffect } from "react"
 
-import { useRouter } from "next/navigation"
-
 import { SyncIcon } from "@primer/octicons-react"
 
 import Button from "@/components/Button"
