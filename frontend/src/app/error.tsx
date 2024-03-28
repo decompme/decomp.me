@@ -11,7 +11,7 @@ import { RequestFailedError } from "@/lib/api"
 
 type ErrorPageProps = {error: Error, reset: () => void };
 
-function NetworkErrorPage({ error, reset }: ErrorPageProps) {
+function NetworkErrorPage({ error, reset: _reset }: ErrorPageProps) {
     return <>
         <SetPageTitle title="Error" />
         <div className="grow" />
@@ -27,7 +27,7 @@ function NetworkErrorPage({ error, reset }: ErrorPageProps) {
             </p>
 
             <ErrorBoundary>
-                <Button onClick={reset}>
+                <Button onClick={() => window.location.reload()}>
                     <SyncIcon /> Try again
                 </Button>
             </ErrorBoundary>
