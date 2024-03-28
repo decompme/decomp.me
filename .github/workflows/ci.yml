@@ -59,6 +59,10 @@ jobs:
         run: |-
           wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
           sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump
+      - name: Install mips PS2 binutils
+        run: |-
+          wget https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.1/binutils-mips-ps2-decompals-linux-x86-64.tar.gz
+          sudo tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump
       - name: Install apt dependencies (cached)
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
