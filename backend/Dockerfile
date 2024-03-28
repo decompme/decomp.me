@@ -85,6 +85,14 @@ RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     wine; \
     fi
 
+# Patched mips binutils
+RUN if [ "${ENABLE_PS2_SUPPORT}" = "YES" ]; then \
+    wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.1/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" && \
+    tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump && \
+    rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz && \
+    chmod +x /usr/bin/mips-ps2-decompals-*; \
+    fi
+
 # msdos specific
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
     wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
