@@ -61,14 +61,6 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     )
 }
 
-export function LoadedScratchList({ className, item, scratches }: Pick<Props, "className" | "item"> & { scratches: api.TerseScratch[] }) {
-    const Item = item || ScratchItem
-
-    return <ul className={classNames(styles.list, className)}>
-        {scratches.map(scratch => <Item key={scratchUrl(scratch)} scratch={scratch} />)}
-    </ul>
-}
-
 export function getMatchPercentString(scratch: api.TerseScratch) {
     if (scratch.match_override) {
         return "100%"

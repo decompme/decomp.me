@@ -70,35 +70,10 @@ export function useWarnBeforeUnload(enabled: boolean, message = "Are you sure yo
     }, [enabledRef, messageRef])
 }
 
-export function useThemeVariable(variable: string): string {
-    const [value, setValue] = useState<string>()
-
-    useEffect(() => {
-        const style = window.getComputedStyle(document.body)
-        setValue(style.getPropertyValue(variable))
-    }, [variable])
-
-    return value
-}
-
 export function usePageTitle(...breadcrumbs: string[]) {
     const title = joinTitles(...breadcrumbs)
 
     useEffect(() => {
         document.title = title
     }, [title])
-}
-
-export function useIsMounted() {
-    const [isMounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-
-        return () => {
-            setMounted(false)
-        }
-    }, [])
-
-    return isMounted
 }

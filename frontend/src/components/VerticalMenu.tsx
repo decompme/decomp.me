@@ -3,7 +3,6 @@ import { createContext, ReactNode, useCallback, useContext, useState } from "rea
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { SearchIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
 import ErrorBoundary from "./ErrorBoundary"
@@ -117,11 +116,4 @@ export function LinkItem({ children, href, disabled, shortcutKeys }: { children:
 
         </Link>
     )
-}
-
-export function SearchItem() {
-    return <MenuItem className={styles.searchItem}>
-        <SearchIcon />
-        <input type="text" placeholder="Search..." spellCheck={false} />
-    </MenuItem>
 }

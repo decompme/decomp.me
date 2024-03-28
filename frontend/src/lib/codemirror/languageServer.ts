@@ -322,10 +322,6 @@ class LanguageServerPlugin implements PluginValue {
         }
     }
 
-    requestDiagnostics(view: EditorView) {
-        this.sendChange({ documentText: view.state.doc.toString() })
-    }
-
     async requestHoverTooltip(
         view: EditorView,
         { line, character }: { line: number, character: number }

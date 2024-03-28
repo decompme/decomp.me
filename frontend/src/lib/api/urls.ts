@@ -1,4 +1,4 @@
-import { Preset, Project, ProjectMember, TerseScratch, User } from "./types"
+import { Preset, Project, TerseScratch, User } from "./types"
 
 export function userHtmlUrl(user: User): string {
     return `/u/${user.username}`
@@ -27,10 +27,6 @@ export function projectUrl(project: Project): string {
 
 export function platformUrl(platform: string): string {
     return `/platform/${platform}`
-}
-
-export function projectMemberUrl(project: Project, projectMember: ProjectMember): string {
-    return `${projectUrl(project)}/members/${projectMember.username}`
 }
 
 export function scratchUrl(scratch: TerseScratch): string {

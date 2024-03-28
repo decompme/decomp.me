@@ -63,10 +63,6 @@ export interface Project {
     platform?: string
 }
 
-export interface ProjectMember {
-    username: string
-}
-
 export type Compilation = {
     compiler_output: string
     diff_output: DiffOutput | null
