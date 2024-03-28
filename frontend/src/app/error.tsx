@@ -11,7 +11,7 @@ import { RequestFailedError } from "@/lib/api"
 
 type ErrorPageProps = {error: Error, reset: () => void };
 
-function NetworkErrorPage({ error, reset: _reset }: ErrorPageProps) {
+function NetworkErrorPage({ error }: ErrorPageProps) {
     return <>
         <SetPageTitle title="Error" />
         <div className="grow" />
