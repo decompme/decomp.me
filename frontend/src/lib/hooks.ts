@@ -77,3 +77,17 @@ export function usePageTitle(...breadcrumbs: string[]) {
         document.title = title
     }, [title])
 }
+
+export function useIsMounted() {
+    const [isMounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+
+        return () => {
+            setMounted(false)
+        }
+    }, [])
+
+    return isMounted
+}
