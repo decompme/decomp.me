@@ -3,8 +3,8 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
-import { Scratch, Project, Preset, get, usePreset } from "@/lib/api"
-import { presetUrl, projectUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
+import { Scratch, Preset, get, usePreset } from "@/lib/api"
+import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
 import LoadingSpinner from "../loading.svg"
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
@@ -48,7 +48,6 @@ export type Props = {
 }
 
 export default function AboutScratch({ scratch, setScratch }: Props) {
-    const { data: project } = useSWR<Project>(scratch.project, get)
     const preset: Preset = usePreset(scratch.preset)
 
     return (
@@ -76,13 +75,6 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                     <Link href={presetUrl(preset)}>
                         {preset.name}
                     </Link>
-                </div>}
-                {project && <div className={styles.horizontalField}>
-                    <div className={styles.projectLinks}>
-                        <Link href={projectUrl(project)}>
-                            ({project.slug})
-                        </Link>
-                    </div>
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>

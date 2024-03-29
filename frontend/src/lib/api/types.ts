@@ -55,18 +55,6 @@ export interface ClaimableScratch extends Scratch {
     claim_token: string
 }
 
-export interface Project {
-    slug: string
-    creation_time: string
-    icon?: string
-    description: string
-    platform?: string
-}
-
-export interface ProjectMember {
-    username: string
-}
-
 export type Compilation = {
     compiler_output: string
     diff_output: DiffOutput | null
