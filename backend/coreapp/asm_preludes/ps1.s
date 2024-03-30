@@ -18,7 +18,7 @@
 .endm
 
 .macro move a, b
-	addu \\a, \\b, $zero
+	addu \a, \b, $zero
 .endm
 
 .set noat
