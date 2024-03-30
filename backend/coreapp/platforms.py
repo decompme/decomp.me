@@ -169,9 +169,9 @@ PS2 = Platform(
     name="PlayStation 2",
     description="MIPS (little-endian)",
     arch="mipsee",
-    assemble_cmd='mips-linux-gnu-as -EL -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
+    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -mabi=eabi -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="mips-ps2-decompals-objdump",
+    nm_cmd="mips-ps2-decompals-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
