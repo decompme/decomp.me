@@ -2,9 +2,9 @@ from time import sleep
 from typing import Any, Dict
 
 from coreapp import compilers, platforms
-from coreapp.compilers import GCC281PM, IDO53, IDO71
+from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81
 from coreapp.models.scratch import Assembly, CompilerConfig, Scratch
-from coreapp.platforms import N64
+from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
 from django.urls import reverse
@@ -121,6 +121,19 @@ nop
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.name, "imported_function")
+
+    @requiresCompiler(MWCC_242_81)
+    def test_mwcc_242_81(self) -> None:
+        """
+        Ensure that MWCC works
+        """
+        scratch_dict = {
+            "platform": GC_WII.id,
+            "compiler": MWCC_242_81.id,
+            "context": "",
+            "target_asm": ".fn somefunc, local\nblr\n.endfn somefunc",
+        }
+        self.create_scratch(scratch_dict)
 
 
 class ScratchModificationTests(BaseTestCase):

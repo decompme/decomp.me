@@ -6,17 +6,17 @@
 
 .macro arm_func_start name
     .arm
-    \\name:
+    \name:
 .endm
 .macro arm_func_end name
 .endm
 .macro thumb_func_start name
     .thumb
-    \\name:
+    \name:
 .endm
 .macro non_word_aligned_thumb_func_start name
     .thumb
-    \\name:
+    \name:
 .endm
 .macro thumb_func_end name
 .endm
