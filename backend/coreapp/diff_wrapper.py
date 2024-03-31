@@ -270,14 +270,16 @@ class DiffWrapper:
         objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
         config = DiffWrapper.create_config(arch, diff_flags)
-
-        basedump = DiffWrapper.get_dump(
-            bytes(target_assembly.elf_object),
-            platform,
-            diff_label,
-            config,
-            objdump_flags,
-        )
+        try:
+            basedump = DiffWrapper.get_dump(
+                bytes(target_assembly.elf_object),
+                platform,
+                diff_label,
+                config,
+                objdump_flags,
+            )
+        except Exception as e:
+            raise DiffError(f"Error dumping target assembly: {e}")
         try:
             mydump = DiffWrapper.get_dump(
                 compiled_elf, platform, diff_label, config, objdump_flags
