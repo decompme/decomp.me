@@ -2,7 +2,7 @@ from time import sleep
 from typing import Any, Dict
 
 from coreapp import compilers, platforms
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81
+from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
 from coreapp.models.scratch import Assembly, CompilerConfig, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -132,6 +132,19 @@ nop
             "compiler": MWCC_242_81.id,
             "context": "",
             "target_asm": ".fn somefunc, local\nblr\n.endfn somefunc",
+        }
+        self.create_scratch(scratch_dict)
+
+    @requiresCompiler(EE_GCC29_991111)
+    def test_ps2_platform(self) -> None:
+        """
+        Ensure that we can create scratches with the ps2 platform and compiler
+        """
+        scratch_dict = {
+            "compiler": compilers.EE_GCC29_991111,
+            "platform": platforms.PS2.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop",
         }
         self.create_scratch(scratch_dict)
 
