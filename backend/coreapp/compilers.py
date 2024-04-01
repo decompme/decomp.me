@@ -379,10 +379,13 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 PSYQ_CCPSX = (
+    "echo ${OUTPUT} && "
+    "echo pwd is $(pwd) && "
     'echo "[ccpsx]" >> SN.INI && '
     'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
-    'TMPDIR=. SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
+    'echo "tmpdir=/tmp" >> SN.INI && '
+    'SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
