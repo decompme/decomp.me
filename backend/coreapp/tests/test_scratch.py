@@ -141,8 +141,8 @@ nop
         Ensure that we can create scratches with the ps2 platform and compiler
         """
         scratch_dict = {
-            "compiler": compilers.EE_GCC29_991111,
             "platform": platforms.PS2.id,
+            "compiler": compilers.EE_GCC29_991111.id,
             "context": "",
             "target_asm": "jr $ra\nnop",
         }
