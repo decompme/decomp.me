@@ -131,6 +131,7 @@ COMMON_DIFF_FLAGS: Flags = [
         id="diff_algorithm",
         flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
     ),
+    Checkbox("diff_function_symbols", ASMDIFF_FLAG_PREFIX + "diff_function_symbols"),
 ]
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [
@@ -146,7 +147,6 @@ COMMON_MIPS_DIFF_FLAGS: Flags = [
     ),
     Checkbox("mno_aliases", "-Mno-aliases"),
     Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
-    Checkbox("diff_function_symbols", ASMDIFF_FLAG_PREFIX + "diff_function_symbols"),
 ]
 
 COMMON_MWCC_FLAGS: Flags = [
