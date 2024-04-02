@@ -384,6 +384,7 @@
     "mips_mreg_names.-Mreg-names=numeric": "Numeric registers",
     "mno_aliases": "Disable pseudo instructions",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
+    "diff_function_symbols": "Include function labels in diff",
 
     "diff_algorithm": "Diff algorithm",
     "diff_algorithm.-DIFFlevenshtein": "Levenshtein",

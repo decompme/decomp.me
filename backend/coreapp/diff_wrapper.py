@@ -58,6 +58,7 @@ class DiffWrapper:
     ) -> asm_differ.Config:
         show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
         algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
+        diff_function_symbols = "-DIFFdiff_function_symbols" in diff_flags
 
         return asm_differ.Config(
             arch=arch,
@@ -85,6 +86,7 @@ class DiffWrapper:
             algorithm=algorithm,
             reg_categories={},
             show_rodata_refs=show_rodata_refs,
+            diff_function_symbols=diff_function_symbols,
         )
 
     @staticmethod
