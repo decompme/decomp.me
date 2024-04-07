@@ -16,7 +16,7 @@ class Library:
     name: str
     version: str
 
-    def get_include_path(self, platform: str):
+    def get_include_path(self, platform: str) -> Path:
         return LIBRARY_BASE_PATH / platform / self.name / self.version
 
     def available(self, platform: str) -> bool:
