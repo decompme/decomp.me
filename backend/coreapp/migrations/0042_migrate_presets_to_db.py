@@ -799,7 +799,7 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
             compiler="msvc4.2",
             platform="win9x",
             compiler_flags="/W3 /GX /O2 /TP",
-            libraries=[Library(name="directx", version="5.0")],
+            libraries=[Library(name="directx", version="5.0", platform="win9x")],
         )
         db_preset.save(force_insert=True)
         db_preset = Preset(
