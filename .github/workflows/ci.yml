@@ -20,7 +20,7 @@ jobs:
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install backend Python dependencies
-        run: cd backend && poetry install
+        run: cd backend && poetry install --no-root
       - name: Install apt dependencies (initial)
         run: |-
           sudo dpkg --add-architecture i386
@@ -147,7 +147,7 @@ jobs:
           cache-dependency-path: backend/poetry.lock
       - name: Install Poetry
         run: pip install --user poetry
-      - run: cd backend && poetry install
+      - run: cd backend && poetry install --no-root
       - name: Run tests
         run: |-
           cd backend
@@ -194,7 +194,7 @@ jobs:
             -e TIMEOUT_SCALE_FACTOR=10 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
-              poetry install && \
+              poetry install --no-root && \
               poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               poetry run python manage.py test'
@@ -229,7 +229,7 @@ jobs:
           cache-dependency-path: backend/poetry.lock
       - run: |-
           cd backend
-          poetry install
+          poetry install --no-root
           poetry run mypy
 
   black:
