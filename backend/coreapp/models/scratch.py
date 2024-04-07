@@ -32,6 +32,13 @@ class Asm(models.Model):
     def __str__(self) -> str:
         return self.data if len(self.data) < 20 else self.data[:17] + "..."
 
+    def to_dict(self):
+        asm = dict(
+            hash=self.hash,
+            data=self.data,
+        )
+        return asm
+
 
 class Assembly(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)

@@ -10,9 +10,6 @@ poetry config virtualenvs.path /backend/virtualenvs
 
 poetry install
 
-poetry run /backend/compilers/download.py
-poetry run /backend/libraries/download.py
-
 until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   echo "Waiting for database to become available on ${DB_HOST}:${DB_PORT}..."
   sleep 1

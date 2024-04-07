@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
+import json
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -78,6 +79,25 @@ class Compiler:
         if not self.path.exists():
             print(f"Compiler {self.id} not found at {self.path}")
         return self.path.exists()
+
+    def to_dict(self) -> dict:
+        if self.base_compiler:
+            base_compiler = self.base_compiler.to_dict()
+        else:
+            base_compiler = None
+
+        compiler = dict(
+            id=self.id,
+            cc=self.cc,
+            platform=self.platform.to_dict(),
+            base_compiler=base_compiler,
+            library_include_flag=self.library_include_flag,
+            is_gcc=self.is_gcc,
+            is_ido=self.is_ido,
+            is_mwcc=self.is_mwcc,
+            file_ext=self.language.get_file_extension(),  # TODO: move this into compilers?
+        )
+        return compiler
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,33 @@
+version: '2'
+services:
+  platform:
+    build:
+      context: ./platforms
+      args:
+        WIBO_VERSION: 0.6.13
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
+      - setfcap
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    # TODO
+    # env_file:
+    #   - backend/docker.dev.env
+    volumes:
+      - ./backend/compilers:/backend/compilers
+      - ./backend/libraries:/backend/libraries
+      - ./platforms:/platforms
+    tmpfs:
+      # explicitly mount /dev/shm with exec as dosemu2 requires exec privilege
+      - /dev/shm:exec,uid=1000,gid=1000,size=64M,mode=0700
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700

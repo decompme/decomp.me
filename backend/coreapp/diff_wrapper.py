@@ -1,8 +1,7 @@
-import json
 import logging
-import subprocess
-import shlex
-from pathlib import Path
+import base64
+import requests
+
 from typing import List, Dict, Any
 from functools import lru_cache
 
@@ -10,13 +9,11 @@ import diff as asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
-from django.conf import settings
 
-from .compiler_wrapper import DiffResult, PATH
+from .compiler_wrapper import DiffResult, REMOTE_HOSTS
 
-from .error import AssemblyError, DiffError, NmError, ObjdumpError
+from .error import AssemblyError, DiffError, ObjdumpError
 from .models.scratch import Assembly
-from .sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
@@ -90,48 +87,6 @@ class DiffWrapper:
         )
 
     @staticmethod
-    def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path: Path, platform: Platform, label: str
-    ) -> List[str]:
-        if not label:
-            return ["--start-address=0"]
-
-        if platform.supports_objdump_disassemble:
-            return [f"--disassemble={label}"]
-
-        if not platform.nm_cmd:
-            raise NmError(f"No nm command for {platform.id}")
-
-        try:
-            nm_proc = sandbox.run_subprocess(
-                [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
-                shell=True,
-                env={
-                    "PATH": PATH,
-                    "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                        settings.COMPILER_BASE_PATH
-                    ),
-                },
-                timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
-            )
-        except subprocess.TimeoutExpired as e:
-            raise NmError("Timeout expired")
-        except subprocess.CalledProcessError as e:
-            raise NmError.from_process_error(e)
-
-        if nm_proc.stdout:
-            # e.g.
-            # 00000000 T osEepromRead
-            #          U osMemSize
-            for line in nm_proc.stdout.splitlines():
-                nm_line = line.split()
-                if len(nm_line) == 3 and label == nm_line[2]:
-                    start_addr = int(nm_line[0], 16)
-                    return [f"--start-address={start_addr}"]
-
-        return ["--start-address=0"]
-
-    @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
         known_objdump_flags = ["-Mno-aliases"]
         known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
@@ -166,48 +121,38 @@ class DiffWrapper:
         if platform.id != "msdos":
             flags += ["--reloc"]
 
-        with Sandbox() as sandbox:
-            target_path = sandbox.path / "out.s"
-            target_path.write_bytes(target_data)
+        remote_host = REMOTE_HOSTS.get(platform.id)
+        if remote_host is None:
+            raise ObjdumpError(
+                f"No objdump endpoint currently available for {platform.id}"
+            )
 
-            # If the flags contain `--disassemble=[symbol]`,
-            # use that instead of `--start-address`.
-            has_symbol = False
-            for flag in flags:
-                if flag.startswith("--disassemble="):
-                    has_symbol = True
-            if not has_symbol:
-                flags.append("--disassemble")
-                flags += DiffWrapper.get_objdump_target_function_flags(
-                    sandbox, target_path, platform, label
-                )
+        data = dict(
+            target_data=base64.b64encode(target_data).decode("utf"),
+            platform=platform.to_dict(),
+            arch_flags=arch_flags,
+            label=label,
+            objdump_flags=objdump_flags,
+            flags=flags,
+        )
+        try:
+            res = requests.post(f"{remote_host}/objdump", json=data, timeout=30)
+        except Exception as e:
+            raise ObjdumpError(f"Request to {remote_host} failed!")
 
-            flags += arch_flags
+        try:
+            response_json = res.json()
+        except Exception as e:
+            raise ObjdumpError(f"Invalid JSON returned {e}")
 
-            if platform.objdump_cmd:
-                try:
-                    objdump_proc = sandbox.run_subprocess(
-                        platform.objdump_cmd.split()
-                        + list(map(shlex.quote, flags))
-                        + [sandbox.rewrite_path(target_path)],
-                        shell=True,
-                        env={
-                            "PATH": PATH,
-                            "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                                settings.COMPILER_BASE_PATH
-                            ),
-                        },
-                        timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
-                    )
-                except subprocess.TimeoutExpired as e:
-                    raise ObjdumpError("Timeout expired")
-                except subprocess.CalledProcessError as e:
-                    raise ObjdumpError.from_process_error(e)
-            else:
-                raise ObjdumpError(f"No objdump command for {platform.id}")
+        if res.status_code != 200:
+            raise ObjdumpError(response_json.get("error", "No error returned!"))
 
-        out = objdump_proc.stdout
-        return out
+        objdump = response_json.get("objdump")
+        if objdump is None:
+            raise ObjdumpError("Response contained empty 'objdump'")
+
+        return objdump
 
     @staticmethod
     def get_dump(

@@ -19,6 +19,13 @@ class Library:
     def get_include_path(self, platform: str) -> Path:
         return LIBRARY_BASE_PATH / platform / self.name / self.version
 
+    def to_dict(self):
+        library = dict(
+            name=self.name,
+            version=self.version,
+        )
+        return library
+
     def available(self, platform: str) -> bool:
         include_path = self.get_include_path(platform)
         if not include_path.exists():

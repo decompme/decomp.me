@@ -1,9 +1,8 @@
 import logging
 import os
-import re
-import subprocess
 from dataclasses import dataclass
-import time
+import requests
+import base64
 
 from typing import (
     Any,
@@ -27,7 +26,6 @@ import coreapp.util as util
 from .error import AssemblyError, CompilationError
 from .libraries import Library
 from .models.scratch import Asm, Assembly
-from .sandbox import Sandbox
 
 # Thanks to Guido van Rossum for the following fix
 # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -41,15 +39,6 @@ else:
     from functools import lru_cache
 
 logger = logging.getLogger(__name__)
-
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
-
-WINE = "wine"
-WIBO = "wibo"
 
 
 @dataclass
@@ -67,6 +56,28 @@ class CompilationResult:
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
+
+
+# TODO: dynamically populate this
+# 1) reach out to expected hosts?
+# 2) receive /register with a key from any host?
+
+REMOTE_HOSTS = {
+    "gba": "http://gba:9000",
+    "gc_wii": "http://gc_wii:9000",
+    "macosx": "http://macosx:9000",
+    "msdos": "http://msdos:9000",
+    "n3ds": "http://n3ds:9000",
+    "n64": "http://n64:9000",
+    "irix": "http://n64:9000",
+    "nds_arm9": "http://nds_arm9:9000",
+    "ps1": "http://ps1:9000",
+    "ps2": "http://ps2:9000",
+    "psp": "http://psp:9000",
+    "saturn": "http://saturn:9000",
+    "switch": "http://switch:9000",
+    "win32": "http://win32:9000",
+}
 
 
 class CompilerWrapper:
@@ -105,21 +116,6 @@ class CompilerWrapper:
         return " ".join(flags)
 
     @staticmethod
-    def filter_compile_errors(input: str) -> str:
-        filter_strings = [
-            r"wine: could not load .*\.dll.*\n?",
-            r"wineserver: could not save registry .*\n?",
-            r"### .*\.exe Driver Error:.*\n?",
-            r"#   Cannot find my executable .*\n?",
-            r"### MWCPPC\.exe Driver Error:.*\n?",
-        ]
-
-        for str in filter_strings:
-            input = re.sub(str, "", input)
-
-        return input.strip()
-
-    @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
     def compile_code(
         compiler: Compiler,
@@ -132,120 +128,49 @@ class CompilerWrapper:
         if compiler == compilers.DUMMY:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
 
+        remote_host = REMOTE_HOSTS.get(compiler.platform.id)
+        if remote_host is None:
+            raise CompilationError(
+                f"No compilation endpoint currently available for {compiler.platform.id}"
+            )
+
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
-        with Sandbox() as sandbox:
-            ext = compiler.language.get_file_extension()
-            code_file = f"code.{ext}"
-            src_file = f"src.{ext}"
-            ctx_file = f"ctx.{ext}"
+        data = dict(
+            compiler=compiler.to_dict(),
+            compiler_flags=compiler_flags,
+            code=code,
+            context=context,
+            function=function,
+            libraries=[library.to_dict() for library in libraries],
+        )
+        try:
+            res = requests.post(f"{remote_host}/compile", json=data, timeout=30)
+        except Exception as e:
+            raise CompilationError(
+                f"Request to {remote_host} failed!"
+            )
 
-            code_path = sandbox.path / code_file
-            object_path = sandbox.path / "object.o"
-            with code_path.open("w") as f:
-                f.write(f'#line 1 "{ctx_file}"\n')
-                f.write(context)
-                f.write("\n")
+        try:
+            response_json = res.json()
+        except Exception as e:
+            raise CompilationError(f"Invalid JSON returned {e}")
 
-                f.write(f'#line 1 "{src_file}"\n')
-                f.write(code)
-                f.write("\n")
+        if res.status_code != 200:
+            raise CompilationError(response_json.get("error", "No error returned!"))
 
-            cc_cmd = compiler.cc
+        b64_object_bytes = response_json.get("object_bytes")
+        if b64_object_bytes is None:
+            raise CompilationError("Empty 'object_bytes'")
 
-            # MWCC requires the file to exist for DWARF line numbers,
-            # and requires the file contents for error messages
-            if compiler.is_mwcc:
-                ctx_path = sandbox.path / ctx_file
-                ctx_path.touch()
-                with ctx_path.open("w") as f:
-                    f.write(context)
-                    f.write("\n")
+        object_bytes = base64.b64decode(b64_object_bytes.encode("utf"))
+        compile_errors = response_json.get("stdout", "")
 
-                src_path = sandbox.path / src_file
-                src_path.touch()
-                with src_path.open("w") as f:
-                    f.write(code)
-                    f.write("\n")
-
-            # IDO hack to support -KPIC
-            if compiler.is_ido and "-KPIC" in compiler_flags:
-                cc_cmd = cc_cmd.replace("-non_shared", "")
-
-            if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                logging.warning("%s does not exist, creating it!", compiler.path)
-                compiler.path.mkdir(parents=True)
-
-            # Run compiler
-            try:
-                st = round(time.time() * 1000)
-                libraries_compiler_flags = " ".join(
-                    (
-                        compiler.library_include_flag
-                        + str(lib.get_include_path(compiler.platform.id))
-                        for lib in libraries
-                    )
-                )
-                compile_proc = sandbox.run_subprocess(
-                    cc_cmd,
-                    mounts=(
-                        [compiler.path] if compiler.platform != platforms.DUMMY else []
-                    ),
-                    shell=True,
-                    env={
-                        "PATH": PATH,
-                        "WINE": WINE,
-                        "WIBO": WIBO,
-                        "INPUT": sandbox.rewrite_path(code_path),
-                        "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
-                        "COMPILER_FLAGS": sandbox.quote_options(
-                            compiler_flags + " " + libraries_compiler_flags
-                        ),
-                        "FUNCTION": function,
-                        "MWCIncludes": "/tmp",
-                        "TMPDIR": "/tmp",
-                    },
-                    timeout=settings.COMPILATION_TIMEOUT_SECONDS,
-                )
-                et = round(time.time() * 1000)
-                logging.debug(f"Compilation finished in: {et - st} ms")
-            except subprocess.CalledProcessError as e:
-                # Compilation failed
-                msg = e.stdout
-
-                logging.debug("Compilation failed: %s", msg)
-                raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
-            except ValueError as e:
-                # Shlex issue?
-                logging.debug("Compilation failed: %s", e)
-                raise CompilationError(str(e))
-            except subprocess.TimeoutExpired as e:
-                raise CompilationError("Compilation failed: timeout expired")
-
-            if not object_path.exists():
-                error_msg = (
-                    "Compiler did not create an object file: %s" % compile_proc.stdout
-                )
-                logging.debug(error_msg)
-                raise CompilationError(error_msg)
-
-            object_bytes = object_path.read_bytes()
-
-            if not object_bytes:
-                raise CompilationError("Compiler created an empty object file")
-
-            compile_errors = CompilerWrapper.filter_compile_errors(compile_proc.stdout)
-
-            return CompilationResult(object_bytes, compile_errors)
+        return CompilationResult(object_bytes, compile_errors)
 
     @staticmethod
     def assemble_asm(platform: Platform, asm: Asm) -> Assembly:
-        if not platform.assemble_cmd:
-            raise AssemblyError(
-                f"Assemble command for platform {platform.id} not found"
-            )
 
         cached_assembly, hash = _check_assembly_cache(platform.id, asm.hash)
         if cached_assembly:
@@ -262,52 +187,43 @@ class CompilerWrapper:
             assembly.save()
             return assembly
 
-        with Sandbox() as sandbox:
-            asm_prelude_path = sandbox.path / "prelude.s"
-            asm_prelude_path.write_text(platform.asm_prelude)
-
-            asm_path = sandbox.path / "asm.s"
-            data = asm.data.replace(".section .late_rodata", ".late_rodata")
-            asm_path.write_text(data + "\n")
-
-            object_path = sandbox.path / "object.o"
-
-            # Run assembler
-            try:
-                assemble_proc = sandbox.run_subprocess(
-                    platform.assemble_cmd,
-                    mounts=[],
-                    shell=True,
-                    env={
-                        "PATH": PATH,
-                        "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
-                        "INPUT": sandbox.rewrite_path(asm_path),
-                        "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                            settings.COMPILER_BASE_PATH
-                        ),
-                    },
-                    timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
-                )
-            except subprocess.CalledProcessError as e:
-                raise AssemblyError.from_process_error(e)
-            except subprocess.TimeoutExpired as e:
-                raise AssemblyError("Timeout expired")
-
-            # Assembly failed
-            if assemble_proc.returncode != 0:
-                raise AssemblyError(
-                    f"Assembler failed with error code {assemble_proc.returncode}"
-                )
-
-            if not object_path.exists():
-                raise AssemblyError("Assembler did not create an object file")
-
-            assembly = Assembly(
-                hash=hash,
-                arch=platform.arch,
-                source_asm=asm,
-                elf_object=object_path.read_bytes(),
+        remote_host = REMOTE_HOSTS.get(platform.id)
+        if remote_host is None:
+            raise AssemblyError(
+                f"No assemble endpoint currently available for {platform.id}"
             )
-            assembly.save()
-            return assembly
+
+        data = dict(
+            platform=platform.to_dict(),
+            asm=asm.to_dict(),  # just send asm.data?
+        )
+        try:
+            res = requests.post(f"{remote_host}/assemble", json=data, timeout=30)
+        except Exception as e:
+            raise AssemblyError(f"Failed to send assembly to remote server: {e}")
+
+        try:
+            response_json = res.json()
+        except Exception as e:
+            raise AssemblyError(f"Invalid JSON returned {e}")
+
+        if res.status_code != 200:
+            raise AssemblyError(response_json.get("error", "No error returned!"))
+
+        assembly_bytes = response_json.get("assembly_bytes")
+        if assembly_bytes is None:
+            raise AssemblyError("Response contained empty 'assembly_bytes'")
+
+        try:
+            elf_object = base64.b64decode(assembly_bytes.encode("utf"))
+        except Exception as e:
+            raise AssemblyError(f"Invalid base64 data returned {e}")
+
+        assembly = Assembly(
+            hash=hash,
+            arch=platform.arch,
+            source_asm=asm,
+            elf_object=elf_object,
+        )
+        assembly.save()
+        return assembly

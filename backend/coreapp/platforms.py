@@ -38,6 +38,20 @@ class Platform:
     def get_num_scratches(self) -> int:
         return Scratch.objects.filter(platform=self.id).count()
 
+    def to_dict(self):
+        platform = dict(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            arch=self.arch,
+            assemble_cmd=self.assemble_cmd,
+            objdump_cmd=self.objdump_cmd,
+            nm_cmd=self.nm_cmd,
+            supports_objdump_disassemble=self.supports_objdump_disassemble,
+            has_decompiler=self.has_decompiler,
+        )
+        return platform
+
     def to_json(
         self, include_presets: bool = True, include_num_scratches: bool = False
     ) -> Dict[str, Any]:
