@@ -61,6 +61,7 @@ class ProfileField(ProfileFieldBaseClass):
 class LibrarySerializer(serializers.Serializer[Library]):
     name = serializers.CharField()
     version = serializers.CharField()
+    platform = serializers.CharField()
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):

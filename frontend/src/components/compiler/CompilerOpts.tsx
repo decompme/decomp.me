@@ -281,7 +281,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
         </OptsContext.Provider>
 
         <section className={styles.section}>
-            <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} />
+            <LibrariesEditor platform={platform} libraries={value.libraries} setLibraries={setLibraries} />
         </section>
 
         <OptsContext.Provider value={diffOptsEditorProvider}>
@@ -379,11 +379,12 @@ export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDi
     </div>
 }
 
-export function LibrariesEditor({ libraries, setLibraries }: {
+export function LibrariesEditor({ platform, libraries, setLibraries }: {
+    platform: string
     libraries: Library[]
     setLibraries: (libraries: Library[]) => void
 }) {
-    const supportedLibraries = api.useLibraries()
+    const supportedLibraries = api.useLibraries(platform)
     const librariesTranslations = useTranslation("libraries")
 
     const libraryVersions = (scratchlib: api.Library) => {
@@ -398,10 +399,10 @@ export function LibrariesEditor({ libraries, setLibraries }: {
     const addLibrary = (libName: string) => {
         const lib = supportedLibraries.find(lib => lib.name == libName)
         if (lib != null) {
-            return setLibraryVersion(libName, lib.supported_versions[0])
+            return setLibraryVersion(libName, lib.supported_versions[0], lib.platform)
         }
     }
-    const setLibraryVersion = (libName: string, ver: string) => {
+    const setLibraryVersion = (libName: string, ver: string, platform: string) => {
         // clone the libraries
         const libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Check if the library is already enabled, if so return it
@@ -411,7 +412,7 @@ export function LibrariesEditor({ libraries, setLibraries }: {
             scratchlib.version = ver
         } else {
             // If it isn't, add the library to the list
-            libs.push({ name: libName, version: ver })
+            libs.push({ name: libName, version: ver, platform: platform })
         }
         setLibraries(libs)
     }
@@ -436,7 +437,7 @@ export function LibrariesEditor({ libraries, setLibraries }: {
         <label className={styles.libraryName}>{librariesTranslations.t(lib.name)}</label>
         <Select2
             value={lib.version}
-            onChange={value => setLibraryVersion(lib.name, value)}
+            onChange={value => setLibraryVersion(lib.name, value, lib.platform)}
             options={libraryVersions(lib)} />
         <button className={styles.deleteButton} onClick={() => removeLibrary(lib.name)}><TrashIcon />Remove library</button>
     </Fragment>)

@@ -58,7 +58,11 @@ class LibrariesField(models.JSONField):
         class MyEncoder(json.JSONEncoder):
             def default(self, obj: Any) -> Any:
                 if isinstance(obj, Library):
-                    return {"name": obj.name, "version": obj.version}
+                    return {
+                        "name": obj.name,
+                        "version": obj.version,
+                        "platform": obj.platform,
+                    }
                 else:
                     return super().default(obj)
 
@@ -75,13 +79,27 @@ class LibrariesField(models.JSONField):
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
-        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+        return [
+            Library(
+                name=lib["name"],
+                version=lib["version"],
+                platform=lib.get("platform", ""),
+            )  # FIXME: remove after migration
+            for lib in res
+        ]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
         # We ignore the type error here as this is a bug in the django stubs.
         # CC: https://github.com/typeddjango/django-stubs/issues/934
         res = super().from_db_value(*args, **kwargs)  # type: ignore
-        return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+        return [
+            Library(
+                name=lib["name"],
+                version=lib["version"],
+                platform=lib.get("platform", ""),
+            )  # FIXME: remove after migration
+            for lib in res
+        ]
 
 
 class Scratch(models.Model):

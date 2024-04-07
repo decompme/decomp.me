@@ -262,13 +262,15 @@ class ScratchForkTests(BaseTestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict: Dict[str, Any] = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
             "name": "cat scratch",
-            "libraries": [{"name": "directx", "version": "8.0"}],
+            "libraries": [
+                {"name": "directx", "version": "8.0", "platform": platforms.DUMMY.id}
+            ],
         }
 
         compiler_config = CompilerConfig()
@@ -279,8 +281,8 @@ class ScratchForkTests(BaseTestCase):
         slug = scratch.slug
 
         fork_dict = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -303,6 +305,9 @@ class ScratchForkTests(BaseTestCase):
 
         # Make sure the name carried over to the fork
         self.assertEqual(scratch.name, fork.name)
+
+        # Make sure the name carried over to the fork
+        self.assertEqual(scratch.libraries, fork.libraries)
 
         # Ensure the new scratch has a (unique) claim token
         self.assertIsNotNone(new_claim_token)

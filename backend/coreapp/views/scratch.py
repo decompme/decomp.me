@@ -253,9 +253,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = [
-        Library(name=lib["name"], version=lib["version"]) for lib in data["libraries"]
-    ]
+    libraries = [Library(**lib) for lib in data["libraries"]]
 
     ser = ScratchSerializer(
         data={
@@ -376,10 +374,7 @@ class ScratchViewSet(
             if "context" in request.data:
                 scratch.context = request.data["context"]
             if "libraries" in request.data:
-                libs = [
-                    Library(name=data["name"], version=data["version"])
-                    for data in request.data["libraries"]
-                ]
+                libs = [Library(**lib) for lib in request.data["libraries"]]
                 scratch.libraries = libs
 
         compilation = compile_scratch(scratch)

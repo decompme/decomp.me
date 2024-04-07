@@ -113,11 +113,13 @@ export type Flag = {
 export type Library = {
     name: string
     version: string
+    platform: string
 }
 
 export type LibraryVersions = {
     name: string
     supported_versions: string[]
+    platform: string
 }
 
 export type Preset = {
