@@ -262,9 +262,12 @@ class CompilerWrapper:
             return assembly
 
         with Sandbox() as sandbox:
+            asm_prelude_path = sandbox.path / "prelude.s"
+            asm_prelude_path.write_text(platform.asm_prelude)
+
             asm_path = sandbox.path / "asm.s"
             data = asm.data.replace(".section .late_rodata", ".late_rodata")
-            asm_path.write_text(platform.asm_prelude + data)
+            asm_path.write_text(data + "\n")
 
             object_path = sandbox.path / "object.o"
 
@@ -276,6 +279,7 @@ class CompilerWrapper:
                     shell=True,
                     env={
                         "PATH": PATH,
+                        "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_BASE_PATH": sandbox.rewrite_path(
