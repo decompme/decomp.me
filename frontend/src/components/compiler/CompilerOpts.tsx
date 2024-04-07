@@ -281,7 +281,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
         </OptsContext.Provider>
 
         <section className={styles.section}>
-            <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} />
+            <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} platform={platform} />
         </section>
 
         <OptsContext.Provider value={diffOptsEditorProvider}>
@@ -379,11 +379,12 @@ export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDi
     </div>
 }
 
-export function LibrariesEditor({ libraries, setLibraries }: {
+export function LibrariesEditor({ libraries, setLibraries, platform }: {
     libraries: Library[]
     setLibraries: (libraries: Library[]) => void
+    platform: string
 }) {
-    const supportedLibraries = api.useLibraries()
+    const supportedLibraries = api.useLibraries(platform)
     const librariesTranslations = useTranslation("libraries")
 
     const libraryVersions = (scratchlib: api.Library) => {
