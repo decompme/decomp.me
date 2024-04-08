@@ -8,21 +8,15 @@ from typing import List
 from pathlib import Path
 
 import tornado
+from tornado.options import options as settings
 
 from ..models.platform import Platform
 from ..models.requests import ObjdumpRequest
 
-from ..settings import settings
 from ..sandbox import Sandbox
 
 
 logger = logging.getLogger(__file__)
-
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
 
 
 class ObjdumpHandler(tornado.web.RequestHandler):
@@ -41,7 +35,9 @@ class ObjdumpHandler(tornado.web.RequestHandler):
             [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
             shell=True,
             env={
-                "PATH": PATH,
+                "PATH": (
+                    "/bin:/usr/bin" if settings.USE_SANDBOX_JAIL else os.environ["PATH"]
+                ),
                 "COMPILER_BASE_PATH": sandbox.rewrite_path(settings.COMPILER_BASE_PATH),
             },
             timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
@@ -131,7 +127,11 @@ class ObjdumpHandler(tornado.web.RequestHandler):
                     + [sandbox.rewrite_path(target_path)],
                     shell=True,
                     env={
-                        "PATH": PATH,
+                        "PATH": (
+                            "/bin:/usr/bin"
+                            if settings.USE_SANDBOX_JAIL
+                            else os.environ["PATH"]
+                        ),
                         "COMPILER_BASE_PATH": sandbox.rewrite_path(
                             settings.COMPILER_BASE_PATH
                         ),

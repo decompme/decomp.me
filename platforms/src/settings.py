@@ -1,36 +1,20 @@
-from dataclasses import dataclass
-from pathlib import Path
+import os
+
+import tornado.options
 
 
-@dataclass
-class Settings:
-    DEBUG: bool
-
-    USE_SANDBOX_JAIL: bool
-    SANDBOX_CHROOT_PATH: Path
-    SANDBOX_TMP_PATH: Path
-    SANDBOX_NSJAIL_BIN_PATH: str
-    SANDBOX_DISABLE_PROC: bool
-
-    WINEPREFIX: Path
-    COMPILER_BASE_PATH: Path
-    LIBRARY_BASE_PATH: Path
-    COMPILATION_TIMEOUT_SECONDS: int
-    ASSEMBLY_TIMEOUT_SECONDS: int
-    OBJDUMP_TIMEOUT_SECONDS: int
+def truthy(x):
+    return x.lower() in ["true", "1", "yes", "on"]
 
 
-settings = Settings(
-    DEBUG=True,
-    USE_SANDBOX_JAIL=True,
-    SANDBOX_CHROOT_PATH=Path("/sandbox"),
-    SANDBOX_TMP_PATH=Path("/sandbox/tmp"),
-    SANDBOX_NSJAIL_BIN_PATH="/bin/nsjail",
-    SANDBOX_DISABLE_PROC=True,
-    WINEPREFIX=Path("/tmp/wine"),
-    COMPILER_BASE_PATH=Path("/backend/compilers"),
-    LIBRARY_BASE_PATH=Path("/backend/libraries"),
-    COMPILATION_TIMEOUT_SECONDS=30,
-    ASSEMBLY_TIMEOUT_SECONDS=30,
-    OBJDUMP_TIMEOUT_SECONDS=30,
-)
+def define(name, default=None, type=str):
+    """Allows defaulting of command-line arguments from environment variables"""
+    setting = os.environ.get(name.upper())
+    if setting is None:
+        setting = default
+    else:
+        setting = truthy(setting) if type is bool else type(setting)
+
+    tornado.options.define(name, setting, type)
+    # return value to help unittests
+    return (name, setting, type)

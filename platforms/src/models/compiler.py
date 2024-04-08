@@ -4,9 +4,10 @@ import copy
 from dataclasses import dataclass
 from typing import Optional
 
+from tornado.options import options as settings
+
 from pathlib import Path
 
-from ..settings import settings
 from .platform import Platform
 
 logger = logging.getLogger(__file__)

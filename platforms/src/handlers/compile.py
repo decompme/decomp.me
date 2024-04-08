@@ -7,20 +7,13 @@ import subprocess
 import time
 
 import tornado
+from tornado.options import options as settings
 
 from ..models.requests import CompileRequest
-
-from ..settings import settings
 from ..sandbox import Sandbox
 
 logger = logging.getLogger(__file__)
 
-
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
 
 WINE = "wine"
 WIBO = "wibo"
@@ -126,7 +119,11 @@ class CompileHandler(tornado.web.RequestHandler):
                     mounts=([compiler.path] if compiler.platform.id != "dummy" else []),
                     shell=True,
                     env={
-                        "PATH": PATH,
+                        "PATH": (
+                            "/bin:/usr/bin"
+                            if settings.USE_SANDBOX_JAIL
+                            else os.environ["PATH"]
+                        ),
                         "WINE": WINE,
                         "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),

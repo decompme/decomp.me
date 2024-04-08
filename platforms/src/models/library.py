@@ -1,14 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from typing import TYPE_CHECKING
-
-from ..settings import settings
-
-if TYPE_CHECKING:
-    LIBRARY_BASE_PATH: Path
-else:
-    LIBRARY_BASE_PATH: Path = settings.LIBRARY_BASE_PATH
+from tornado.options import options as settings
 
 
 @dataclass(frozen=True)
@@ -18,7 +11,7 @@ class Library:
 
     @property
     def path(self) -> Path:
-        return LIBRARY_BASE_PATH / self.name / self.version
+        return settings.LIBRARY_BASE_PATH / self.name / self.version
 
     @property
     def include_path(self) -> Path:

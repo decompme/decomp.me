@@ -10,16 +10,10 @@ import tornado
 from ..models.requests import AssembleRequest
 
 from ..sandbox import Sandbox
-from ..settings import settings
+from tornado.options import options as settings
+
 
 logger = logging.getLogger(__file__)
-
-
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
 
 
 class AssembleHandler(tornado.web.RequestHandler):
@@ -69,7 +63,11 @@ class AssembleHandler(tornado.web.RequestHandler):
                     mounts=[],
                     shell=True,
                     env={
-                        "PATH": PATH,
+                        "PATH": (
+                            "/bin:/usr/bin"
+                            if settings.USE_SANDBOX_JAIL
+                            else os.environ["PATH"]
+                        ),
                         "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),

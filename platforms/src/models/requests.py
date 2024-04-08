@@ -23,7 +23,9 @@ class CompileRequest:
     def from_dict(compile_request_dict):
         compile_request = copy.deepcopy(compile_request_dict)
         compile_request["compiler"] = Compiler.from_dict(compile_request["compiler"])
-        compile_request["libraries"] = [Library(**lib) for lib in compile_request["libraries"]]
+        compile_request["libraries"] = [
+            Library(**lib) for lib in compile_request["libraries"]
+        ]
 
         return CompileRequest(**compile_request)
 
@@ -55,6 +57,8 @@ class ObjdumpRequest:
     def from_dict(objdump_request_dict):
         objdump_request = copy.deepcopy(objdump_request_dict)
         objdump_request["platform"] = Platform.from_dict(objdump_request["platform"])
-        objdump_request["target_data"] = base64.b64decode(objdump_request["target_data"].encode("utf"))
+        objdump_request["target_data"] = base64.b64decode(
+            objdump_request["target_data"].encode("utf")
+        )
 
         return ObjdumpRequest(**objdump_request)

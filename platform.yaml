@@ -3,11 +3,11 @@ services:
   platform:
     build:
       context: ./platforms
-      args:
-        WIBO_VERSION: 0.6.13
+      # args:
+        # WIBO_VERSION: 0.6.13
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any # on-failure
         delay: 5s
     cap_drop:
       - all
@@ -18,9 +18,8 @@ services:
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
-    # TODO
-    # env_file:
-    #   - backend/docker.dev.env
+    env_file:
+      - ./platforms/docker/dev.env
     volumes:
       - ./backend/compilers:/backend/compilers
       - ./backend/libraries:/backend/libraries

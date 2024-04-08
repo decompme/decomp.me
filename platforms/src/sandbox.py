@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, List, Optional, Union
 
-from .settings import settings
+from tornado.options import options as settings
 
 
 logger = logging.getLogger(__name__)
