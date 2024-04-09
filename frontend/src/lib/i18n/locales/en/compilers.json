@@ -150,6 +150,8 @@
     "psyq4.4-ccpsx": "CCPSX (PSYQ4.4: gcc 2.8.1 + aspsx 2.79)",
 
     "mwccpsp_3.0.1_121": "MWCC 1.0 (3.0.1 121)",
+    "mwccpsp_3.0.1_134": "MWCC 1.0 Hotfix 2 (3.0.1 134)",
+    "mwccpsp_3.0.1_139": "MWCC 1.0 Hotfix 3 (3.0.1 139)",
     "mwccpsp_3.0.1_147": "MWCC 1.1 (3.0.1 147)",
     "mwccpsp_3.0.1_151": "MWCC 1.1 SP1 (3.0.1 151)",
     "pspsnc_1.2.7503.0": "SN 1.2.7503.0",

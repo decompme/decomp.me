@@ -615,6 +615,16 @@ MWCCPSP_3_0_1_121 = MWCCPSPCompiler(
     platform=PSP,
     cc=MWCCPSP_CC,
 )
+MWCCPSP_3_0_1_134 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_134",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_139 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_139",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
 MWCCPSP_3_0_1_147 = MWCCPSPCompiler(
     id="mwccpsp_3.0.1_147",
     platform=PSP,
@@ -1279,6 +1289,8 @@ _all_compilers: List[Compiler] = [
     # PSP
     PSPSNC_1_2_7503_0,
     MWCCPSP_3_0_1_121,
+    MWCCPSP_3_0_1_134,
+    MWCCPSP_3_0_1_139,
     MWCCPSP_3_0_1_147,
     MWCCPSP_3_0_1_151,
     # Saturn
