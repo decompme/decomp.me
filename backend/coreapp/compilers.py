@@ -1399,15 +1399,6 @@ _all_compilers: List[Compiler] = [
     WATCOM_110_CPP,
 ]
 
-# MKWII Common flags
-MKW_SHARED = "-nodefaults -align powerpc -enc SJIS -proc gekko -enum int -O4,p -inline auto -W all -fp hardware -W noimplicitconv -w notinlined -w nounwanted -DREVOKART -Cpp_exceptions off -RTTI off -nostdinc -msgstyle gcc -func_align 4 -sym dwarf-2"
-
-# SPM Common flags
-SPM_SHARED = "-enc SJIS -lang c++ -W all -fp fmadd -Cpp_exceptions off -O4 -use_lmw_stmw on -str pool -rostr -sym on -ipa file"
-
-# Rat Proto Common flags
-RAT_SHARED = '-fp_contract on -pool off -RTTI off -nodefaults -Cpp_exceptions off -schedule on -lang=c++ -char signed -str reuse,pool,readonly -fp fmadd -use_lmw_stmw on -pragma "cpp_extensions on" -sym on -enum int -inline off'
-
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
 
 logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
