@@ -16,58 +16,53 @@ class Library:
     name: str
     version: str
 
-    @property
-    def path(self) -> Path:
-        return LIBRARY_BASE_PATH / self.name / self.version
+    def get_include_path(self, platform: str) -> Path:
+        return LIBRARY_BASE_PATH / platform / self.name / self.version
 
-    @property
-    def include_path(self) -> Path:
-        return self.path / "include"
-
-    def available(self) -> bool:
-        if not self.include_path.exists():
-            print(
-                f"Library {self.name} {self.version} not found at {self.include_path}"
-            )
-        return self.include_path.exists()
+    def available(self, platform: str) -> bool:
+        include_path = self.get_include_path(platform)
+        if not include_path.exists():
+            print(f"Library {self.name} {self.version} not found at {include_path}")
+        return include_path.exists()
 
 
 @dataclass(frozen=True)
 class LibraryVersions:
     name: str
     supported_versions: list[str]
+    platform: str
 
     @property
     def path(self) -> Path:
-        return LIBRARY_BASE_PATH / self.name
+        return LIBRARY_BASE_PATH / self.platform / self.name
 
 
 @cache
 def available_libraries() -> list[LibraryVersions]:
     results = []
 
-    for lib_dir in LIBRARY_BASE_PATH.iterdir():
-        versions = []
-        if not lib_dir.is_dir():
+    for platform_dir in LIBRARY_BASE_PATH.iterdir():
+        if not platform_dir.is_dir():
             continue
-        for version_dir in lib_dir.iterdir():
-            if not version_dir.is_dir():
+        for lib_dir in platform_dir.iterdir():
+            versions = []
+            if not lib_dir.is_dir():
                 continue
-            if not (version_dir / "include").exists():
-                continue
+            for version_dir in lib_dir.iterdir():
+                if not version_dir.is_dir():
+                    continue
+                if not (version_dir / "include").exists():
+                    continue
 
-            versions.append(version_dir.name)
+                versions.append(version_dir.name)
 
-        if len(versions) > 0:
-            results.append(
-                LibraryVersions(
-                    name=lib_dir.name,
-                    supported_versions=versions,
+            if len(versions) > 0:
+                results.append(
+                    LibraryVersions(
+                        name=lib_dir.name,
+                        supported_versions=versions,
+                        platform=platform_dir.name,
+                    )
                 )
-            )
 
     return results
-
-
-DIRECTX5 = Library("directx", "5.0")
-DIRECTX8 = Library("directx", "8.0")

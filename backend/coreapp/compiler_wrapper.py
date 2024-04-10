@@ -182,7 +182,8 @@ class CompilerWrapper:
                 st = round(time.time() * 1000)
                 libraries_compiler_flags = " ".join(
                     (
-                        compiler.library_include_flag + str(lib.include_path)
+                        compiler.library_include_flag
+                        + str(lib.get_include_path(compiler.platform.id))
                         for lib in libraries
                     )
                 )

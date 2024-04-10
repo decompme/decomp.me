@@ -264,17 +264,18 @@ export function useCompilers(): Record<string, Compiler> {
     return data.compilers
 }
 
-export function useLibraries(): LibraryVersions[] {
-    const { data } = useSWR("/library", get, {
+export function useLibraries(platform: string): LibraryVersions[] {
+    const getByPlatform = ([url, platform]: [string | null, string]) => {
+        return get(url && platform && `${url}?platform=${platform}`)
+    }
+
+    const url = typeof platform === "string" ? "/library" : null
+    const { data } = useSWR([url, platform], getByPlatform, {
         refreshInterval: 0,
         onErrorRetry,
     })
 
-    if (!data) {
-        return []
-    }
-
-    return data.libraries
+    return data?.libraries || []
 }
 
 export function usePresets(platform: string): Preset[] {

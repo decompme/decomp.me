@@ -118,6 +118,7 @@ export type Library = {
 export type LibraryVersions = {
     name: string
     supported_versions: string[]
+    platform: string
 }
 
 export type Preset = {

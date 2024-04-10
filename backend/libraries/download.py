@@ -5,17 +5,13 @@ import datetime
 import functools
 import logging
 import os
-import platform
 import shutil
 import subprocess
-import sys
-import tempfile
 
 from pathlib import Path
 
 from multiprocessing import Pool
 
-import requests
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -47,15 +43,16 @@ def download_git(library_name, library_version, library_dir, git_download_info, 
 
 
 def get_library(
+    platform,
     library_name,
     library_version,
     download_info,
     libraries_dir=Path("/tmp"),
     force=False,
 ):
-    logger.info("Processing %s %s", library_name, library_version)
+    logger.info("Processing %s %s (%s)", library_name, library_version, platform)
 
-    library_dir = libraries_dir / library_name / library_version
+    library_dir = libraries_dir / platform / library_name / library_version
     library_dir.mkdir(parents=True, exist_ok=True)
 
     if "git" in download_info:
@@ -78,12 +75,52 @@ def get_library(
     return True
 
 
-def download_libraries(args, libraries_config):
-    to_download = []
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--force",
+        help="Force (re)downloading of libraries",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--libraries-dir",
+        type=Path,
+        default=None,
+        help="Directory where libraries will be stored",
+    )
+    parser.add_argument(
+        "--platforms", type=str, nargs="+", help="Only run for these platforms"
+    )
+    parser.add_argument(
+        "--threads", type=int, default=4, help="Number of download threads to use"
+    )
+    parser.add_argument("--verbose", action="store_true", help="Enable DEBUG log level")
+    args = parser.parse_args()
 
-    for libname, versions in libraries_config.items():
-        for versionname, download_info in versions.items():
-            to_download.append((libname, versionname, download_info))
+    if args.verbose:
+        logger.setLevel("DEBUG")
+
+    if args.libraries_dir == None:
+        args.libraries_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+
+    libraries_yaml = (
+        Path(os.path.dirname(os.path.realpath(__file__))) / f"libraries.yaml"
+    )
+    libraries_config = yaml.safe_load(libraries_yaml.open())
+
+    to_download = []
+    for platform_id, libraries in libraries_config.items():
+        if args.platforms is not None:
+            platform_enabled = platform_id in args.platforms
+        else:
+            platform_enabled = True
+
+        if platform_enabled:
+            for libname, versions in libraries.items():
+                for versionname, download_info in versions.items():
+                    to_download.append(
+                        (platform_id, libname, versionname, download_info)
+                    )
 
     if len(to_download) == 0:
         logger.warning("No libraries to download")
@@ -108,39 +145,6 @@ def download_libraries(args, libraries_config):
         len(to_download),
         (end - start).total_seconds(),
     )
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--force",
-        help="Force (re)downloading of libraries",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--libraries-dir",
-        type=Path,
-        default=None,
-        help="Directory where libraries will be stored",
-    )
-    parser.add_argument(
-        "--threads", type=int, default=4, help="Number of download threads to use"
-    )
-    parser.add_argument("--verbose", action="store_true", help="Enable DEBUG log level")
-    args = parser.parse_args()
-
-    if args.verbose:
-        logger.setLevel("DEBUG")
-
-    if args.libraries_dir == None:
-        args.libraries_dir = Path(os.path.dirname(os.path.realpath(__file__)))
-
-    libraries_yaml = (
-        Path(os.path.dirname(os.path.realpath(__file__))) / f"libraries.yaml"
-    )
-    libraries_config = yaml.safe_load(libraries_yaml.open())
-
-    download_libraries(args, libraries_config)
 
 
 if __name__ == "__main__":
