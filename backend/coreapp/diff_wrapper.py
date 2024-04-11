@@ -129,7 +129,7 @@ class DiffWrapper:
 
         data = dict(
             target_data=base64.b64encode(target_data).decode("utf"),
-            platform=platform.to_dict(),
+            platform=platform.id,
             arch_flags=arch_flags,
             label=label,
             objdump_flags=objdump_flags,

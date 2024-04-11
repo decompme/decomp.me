@@ -1,20 +1,18 @@
-import asyncio
-import logging
-import os
 import concurrent
+import logging
 import sys
-
-from pathlib import Path
+import json
 
 import tornado
 from tornado.options import parse_command_line, options as settings
 
+# TODO: make this less jank
+import src.settings
+
 from src.handlers.compile import CompileHandler
 from src.handlers.assemble import AssembleHandler
 from src.handlers.objdump import ObjdumpHandler
-
-from src.settings import define
-
+from src.compilers import available_platforms, available_compilers
 
 logger = logging.getLogger(__file__)
 
@@ -24,29 +22,21 @@ class MainHandler(tornado.web.RequestHandler):
         self.write("Hello, world")
 
 
+class PlatformsHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(
+            json.dumps([platform.to_json() for platform in available_platforms()])
+        )
+
+
+class CompilersHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(
+            json.dumps([compiler.to_json() for compiler in available_compilers()])
+        )
+
+
 def main():
-
-    define("PORT", default=9000, type=int)
-    define("MAX_WORKERS", default=32, type=int)
-
-    define("DEBUG", default=True, type=bool)
-
-    define("SUPPORTED_PLATFORMS", default=None, type=str)
-
-    define("USE_SANDBOX_JAIL", default=True, type=bool)
-    define("SANDBOX_CHROOT_PATH", default=Path("/sandbox"), type=Path)
-    define("SANDBOX_TMP_PATH", default=Path("/sandbox/tmp"), type=Path)
-    define("SANDBOX_NSJAIL_BIN_PATH", default=Path("/bin/nsjail"), type=Path)
-    define("SANDBOX_DISABLE_PROC", default=True, type=bool)
-
-    define("WINEPREFIX", default=Path("/tmp/wine"), type=Path)
-
-    define("COMPILER_BASE_PATH", default=Path("/backend/compilers"), type=Path)
-    define("LIBRARY_BASE_PATH", default=Path("/backend/libraries"), type=Path)
-
-    define("COMPILATION_TIMEOUT_SECONDS", default=30, type=int)
-    define("ASSEMBLY_TIMEOUT_SECONDS", default=30, type=int)
-    define("OBJDUMP_TIMEOUT_SECONDS", default=30, type=int)
 
     parse_command_line()
 
@@ -65,6 +55,8 @@ def main():
         (r"/compile", CompileHandler),
         (r"/assemble", AssembleHandler),
         (r"/objdump", ObjdumpHandler),
+        (r"/platforms", PlatformsHandler),
+        (r"/compilers", CompilersHandler),
     ]
 
     ioloop = tornado.ioloop.IOLoop.current()
@@ -74,14 +66,24 @@ def main():
 
     # start
     try:
-        webapp = tornado.web.Application([*handlers])
+        webapp = tornado.web.Application([*handlers], debug=settings.DEBUG)
         server = tornado.httpserver.HTTPServer(webapp)
-        server_port = settings.PORT
-        logger.info("Plaform Server starting on port: %i", server_port)
-        if settings.SUPPORTED_PLATFORMS:
-            logger.info("Supported platforms: %s", settings.SUPPORTED_PLATFORMS)
 
-        server.listen(server_port)
+        logger.info("Plaform Server starting on port: %i", settings.PORT)
+        if settings.SUPPORTED_PLATFORMS:
+            logger.info(
+                "Supported platform(s): %s", settings.SUPPORTED_PLATFORMS.split(",")
+            )
+        logger.info(
+            "Available platform(s): %s",
+            [platform.id for platform in available_platforms()],
+        )
+        logger.info(
+            "Available compiler(s): %s",
+            [compilers.id for compilers in available_compilers()],
+        )
+
+        server.listen(settings.PORT)
         ioloop.start()
     except KeyboardInterrupt:
         logger.info("CTRL+C detected. Exiting...")

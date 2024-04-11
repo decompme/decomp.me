@@ -10,6 +10,8 @@ from pathlib import Path
 import tornado
 from tornado.options import options as settings
 
+from .compile import PATH
+
 from ..models.platform import Platform
 from ..models.requests import ObjdumpRequest
 
@@ -35,9 +37,7 @@ class ObjdumpHandler(tornado.web.RequestHandler):
             [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
             shell=True,
             env={
-                "PATH": (
-                    "/bin:/usr/bin" if settings.USE_SANDBOX_JAIL else os.environ["PATH"]
-                ),
+                "PATH": PATH,
                 "COMPILER_BASE_PATH": sandbox.rewrite_path(settings.COMPILER_BASE_PATH),
             },
             timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
@@ -68,7 +68,7 @@ class ObjdumpHandler(tornado.web.RequestHandler):
             logger.error("Exception: %s", e)
             return self.write(str(e))
 
-        # logger.debug("objdump_request: %s", objdump_request)
+        logger.debug("objdump_request: %s", objdump_request)
 
         platform = objdump_request.platform
 

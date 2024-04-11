@@ -19,38 +19,24 @@ class Platform:
     id: str
     name: str
     description: str
-    arch: str
-    assemble_cmd: str
-    objdump_cmd: str
-    nm_cmd: str
+    arch: str  # used by asm-differ
+    # assemble_cmd: str
+    # objdump_cmd: str
+    # nm_cmd: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
-    supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
+    # supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
 
-    @property
-    @functools.lru_cache()
-    def asm_prelude(self) -> str:
-        asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
-        if asm_prelude_path.is_file():
-            return asm_prelude_path.read_text()
-        return ""
+    # @property
+    # @functools.lru_cache()
+    # def asm_prelude(self) -> str:
+    #     asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
+    #     if asm_prelude_path.is_file():
+    #         return asm_prelude_path.read_text()
+    #     return ""
 
     def get_num_scratches(self) -> int:
         return Scratch.objects.filter(platform=self.id).count()
-
-    def to_dict(self):
-        platform = dict(
-            id=self.id,
-            name=self.name,
-            description=self.description,
-            arch=self.arch,
-            assemble_cmd=self.assemble_cmd,
-            objdump_cmd=self.objdump_cmd,
-            nm_cmd=self.nm_cmd,
-            supports_objdump_disassemble=self.supports_objdump_disassemble,
-            has_decompiler=self.has_decompiler,
-        )
-        return platform
 
     def to_json(
         self, include_presets: bool = True, include_num_scratches: bool = False
@@ -83,9 +69,6 @@ DUMMY = Platform(
     name="Dummy System",
     description="DMY",
     arch="dummy",
-    assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
-    objdump_cmd="echo",
-    nm_cmd="echo",
 )
 
 MSDOS = Platform(
@@ -93,9 +76,6 @@ MSDOS = Platform(
     name="Microsoft DOS",
     description="x86",
     arch="i686",
-    assemble_cmd='jwasm -c -Fo"$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="omf-objdump",
-    nm_cmd="omf-nm",
 )
 
 WIN32 = Platform(
@@ -103,9 +83,6 @@ WIN32 = Platform(
     name="Windows (9x/NT)",
     description="x86 (32bit)",
     arch="i686",
-    assemble_cmd='i686-w64-mingw32-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="i686-w64-mingw32-objdump",
-    nm_cmd="i686-w64-mingw32-nm",
 )
 
 SWITCH = Platform(
@@ -113,10 +90,6 @@ SWITCH = Platform(
     name="Nintendo Switch",
     description="ARMv8-A",
     arch="aarch64",
-    assemble_cmd='aarch64-linux-gnu-as -mcpu=cortex-a57+fp+simd+crypto+crc -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="aarch64-linux-gnu-objdump",
-    nm_cmd="aarch64-linux-gnu-nm",
-    supports_objdump_disassemble=True,
 )
 
 N64 = Platform(
@@ -124,9 +97,6 @@ N64 = Platform(
     name="Nintendo 64",
     description="MIPS (big-endian)",
     arch="mips",
-    assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
@@ -136,9 +106,6 @@ IRIX = Platform(
     name="IRIX",
     description="MIPS (big-endian, PIC)",
     arch="mips",
-    assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
@@ -148,9 +115,6 @@ PS1 = Platform(
     name="PlayStation",
     description="MIPS (little-endian)",
     arch="mipsel",
-    assemble_cmd='mips-linux-gnu-as -EL -march=r3000 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
@@ -160,9 +124,6 @@ PSP = Platform(
     name="PlayStation Portable",
     description="MIPS (little-endian)",
     arch="mipsel:4000",
-    assemble_cmd='mips-linux-gnu-as -EL -march=r4000 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
@@ -172,9 +133,6 @@ SATURN = Platform(
     name="Saturn",
     description="SH2 (big-endian)",
     arch="sh2",
-    assemble_cmd='sh-elf-as --isa=sh2 --big -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="sh-elf-objdump",
-    nm_cmd="sh-elf-nm",
     diff_flags=COMMON_DIFF_FLAGS,
 )
 
@@ -183,9 +141,6 @@ PS2 = Platform(
     name="PlayStation 2",
     description="MIPS (little-endian)",
     arch="mipsee",
-    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -mabi=eabi -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-ps2-decompals-objdump",
-    nm_cmd="mips-ps2-decompals-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
@@ -195,9 +150,6 @@ MACOSX = Platform(
     name="Mac OS X",
     description="PowerPC",
     arch="ppc",
-    assemble_cmd='powerpc-linux-gnu-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="powerpc-linux-gnu-objdump",
-    nm_cmd="powerpc-linux-gnu-nm",
 )
 
 GC_WII = Platform(
@@ -205,9 +157,6 @@ GC_WII = Platform(
     name="GameCube / Wii",
     description="PowerPC",
     arch="ppc",
-    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="powerpc-eabi-objdump -M broadway",
-    nm_cmd="powerpc-eabi-nm",
     has_decompiler=True,
 )
 
@@ -216,9 +165,6 @@ NDS_ARM9 = Platform(
     name="Nintendo DS",
     description="ARMv5TE",
     arch="arm32",
-    assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
-    nm_cmd="arm-none-eabi-nm",
 )
 
 GBA = Platform(
@@ -226,9 +172,6 @@ GBA = Platform(
     name="Game Boy Advance",
     description="ARMv4T",
     arch="arm32",
-    assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mcpu=arm7tdmi -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
-    nm_cmd="arm-none-eabi-nm",
 )
 
 N3DS = Platform(
@@ -236,11 +179,9 @@ N3DS = Platform(
     name="Nintendo 3DS",
     description="ARMv6K",
     arch="arm32",
-    assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mfpu=vfpv2 -march=armv6k -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
-    nm_cmd="arm-none-eabi-nm",
 )
 
+# TODO: _platforms should be populated dynamically based on what platforms are available
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,

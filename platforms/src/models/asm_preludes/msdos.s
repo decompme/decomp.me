@@ -1,2 +1,0 @@
-.386P
-.model FLAT

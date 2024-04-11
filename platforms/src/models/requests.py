@@ -4,10 +4,12 @@ import copy
 from typing import Sequence
 from dataclasses import dataclass
 
-from .asm import Asm
 from .compiler import Compiler
 from .library import Library
 from .platform import Platform
+
+from ..compilers import from_id as compiler_from_id
+from ..platforms import from_id as platform_from_id
 
 
 @dataclass(frozen=True)
@@ -22,7 +24,7 @@ class CompileRequest:
     @staticmethod
     def from_dict(compile_request_dict):
         compile_request = copy.deepcopy(compile_request_dict)
-        compile_request["compiler"] = Compiler.from_dict(compile_request["compiler"])
+        compile_request["compiler"] = compiler_from_id(compile_request["compiler"])
         compile_request["libraries"] = [
             Library(**lib) for lib in compile_request["libraries"]
         ]
@@ -33,13 +35,12 @@ class CompileRequest:
 @dataclass(frozen=True)
 class AssembleRequest:
     platform: Platform
-    asm: Asm
+    asm: str
 
     @staticmethod
     def from_dict(assemble_request_dict):
         assemble_request = copy.deepcopy(assemble_request_dict)
-        assemble_request["platform"] = Platform.from_dict(assemble_request["platform"])
-        assemble_request["asm"] = Asm.from_dict(assemble_request["asm"])
+        assemble_request["platform"] = platform_from_id(assemble_request["platform"])
 
         return AssembleRequest(**assemble_request)
 
@@ -56,7 +57,7 @@ class ObjdumpRequest:
     @staticmethod
     def from_dict(objdump_request_dict):
         objdump_request = copy.deepcopy(objdump_request_dict)
-        objdump_request["platform"] = Platform.from_dict(objdump_request["platform"])
+        objdump_request["platform"] = platform_from_id(objdump_request["platform"])
         objdump_request["target_data"] = base64.b64decode(
             objdump_request["target_data"].encode("utf")
         )

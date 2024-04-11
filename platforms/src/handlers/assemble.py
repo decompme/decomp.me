@@ -7,6 +7,8 @@ import base64
 
 import tornado
 
+from .compile import PATH
+
 from ..models.requests import AssembleRequest
 
 from ..sandbox import Sandbox
@@ -19,7 +21,7 @@ logger = logging.getLogger(__file__)
 class AssembleHandler(tornado.web.RequestHandler):
     def post(self):
 
-        # TODO: check platform.id against SUPPORTED_PLATFORMS
+        # TODO: check platform.id against settings.SUPPORTED_PLATFORMS
 
         try:
             payload = json.loads(self.request.body)
@@ -38,7 +40,7 @@ class AssembleHandler(tornado.web.RequestHandler):
         platform = assemble_request.platform
         asm = assemble_request.asm
 
-        # logger.info("assemble_request: %s", assemble_request)
+        logger.debug("assemble_request: %s", assemble_request)
 
         if not platform.assemble_cmd:
             error = f"No assemble_cmd for {platform.id}"
@@ -51,7 +53,7 @@ class AssembleHandler(tornado.web.RequestHandler):
             asm_prelude_path.write_text(platform.asm_prelude)
 
             asm_path = sandbox.path / "asm.s"
-            data = asm.data.replace(".section .late_rodata", ".late_rodata")
+            data = asm.replace(".section .late_rodata", ".late_rodata")
             asm_path.write_text(data + "\n")
 
             object_path = sandbox.path / "object.o"
@@ -63,11 +65,7 @@ class AssembleHandler(tornado.web.RequestHandler):
                     mounts=[],
                     shell=True,
                     env={
-                        "PATH": (
-                            "/bin:/usr/bin"
-                            if settings.USE_SANDBOX_JAIL
-                            else os.environ["PATH"]
-                        ),
+                        "PATH": PATH,
                         "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),

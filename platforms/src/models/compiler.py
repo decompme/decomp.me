@@ -1,30 +1,15 @@
 import logging
-import copy
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, ClassVar
+from pathlib import Path
 
 from tornado.options import options as settings
 
-from pathlib import Path
-
 from .platform import Platform
+from .flags import Flags, Language
 
 logger = logging.getLogger(__file__)
-
-
-# @dataclass(frozen=True)
-# class BackendCompiler:
-#     id: str
-#     cc: str
-#     platform: Platform
-#     flags: ClassVar[list]
-#     library_include_flag: str
-#     base_compiler: Optional["Compiler"] = None
-#     is_gcc: ClassVar[bool] = False
-#     is_ido: ClassVar[bool] = False
-#     is_mwcc: ClassVar[bool] = False
-#     language: str = "c"  # FIXME
 
 
 @dataclass(frozen=True)
@@ -32,26 +17,13 @@ class Compiler:
     id: str
     cc: str
     platform: Platform
-
-    # We don't care about supported compiler flags when compiling
-
+    flags: ClassVar[Flags]
     library_include_flag: str
-
-    file_ext: str  # TODO: this should really be language...
-
     base_compiler: Optional["Compiler"] = None
-    is_gcc: Optional[bool] = False
-    is_ido: Optional[bool] = False
-    is_mwcc: Optional[bool] = False
-
-    @staticmethod
-    def from_dict(compiler_dict: dict):
-        compiler = copy.deepcopy(compiler_dict)
-        compiler["platform"] = Platform.from_dict(compiler["platform"])
-        if compiler["base_compiler"]:
-            compiler["base_compiler"] = Compiler.from_dict(compiler["base_compiler"])
-
-        return Compiler(**compiler)
+    is_gcc: ClassVar[bool] = False
+    is_ido: ClassVar[bool] = False
+    is_mwcc: ClassVar[bool] = False
+    language: Language = Language.C
 
     @property
     def path(self) -> Path:
@@ -68,3 +40,10 @@ class Compiler:
         if not self.path.exists():
             logger.warning(f"Compiler {self.id} not found at {self.path}")
         return self.path.exists()
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "platform": self.platform.id,
+            "flags": [flag.to_json() for flag in self.flags],
+        }

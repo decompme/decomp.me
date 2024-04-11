@@ -14,6 +14,7 @@ from ..sandbox import Sandbox
 
 logger = logging.getLogger(__file__)
 
+PATH = "/bin:/usr/bin" if settings.USE_SANDBOX_JAIL else os.environ["PATH"]
 
 WINE = "wine"
 WIBO = "wibo"
@@ -48,7 +49,7 @@ class CompileHandler(tornado.web.RequestHandler):
             logger.error("Exception: %s", e)
             return self.write(str(e))
 
-        # logger.debug("compile_request is: %s", compile_request)
+        logger.debug("compile_request is: %s", compile_request)
 
         compiler = compile_request.compiler
         if not compiler.available():
@@ -62,7 +63,7 @@ class CompileHandler(tornado.web.RequestHandler):
             code = compile_request.code
             compiler_flags = compile_request.compiler_flags
 
-            ext = compiler.file_ext
+            ext = compiler.language.get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"
@@ -119,11 +120,7 @@ class CompileHandler(tornado.web.RequestHandler):
                     mounts=([compiler.path] if compiler.platform.id != "dummy" else []),
                     shell=True,
                     env={
-                        "PATH": (
-                            "/bin:/usr/bin"
-                            if settings.USE_SANDBOX_JAIL
-                            else os.environ["PATH"]
-                        ),
+                        "PATH": PATH,
                         "WINE": WINE,
                         "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),

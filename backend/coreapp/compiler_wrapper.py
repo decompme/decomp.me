@@ -138,19 +138,17 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         data = dict(
-            compiler=compiler.to_dict(),
+            compiler=compiler.id,
             compiler_flags=compiler_flags,
             code=code,
             context=context,
             function=function,
-            libraries=[library.to_dict() for library in libraries],
+            libraries=[library.to_json() for library in libraries],
         )
         try:
             res = requests.post(f"{remote_host}/compile", json=data, timeout=30)
         except Exception as e:
-            raise CompilationError(
-                f"Request to {remote_host} failed!"
-            )
+            raise CompilationError(f"Request to {remote_host} failed!")
 
         try:
             response_json = res.json()
@@ -194,8 +192,8 @@ class CompilerWrapper:
             )
 
         data = dict(
-            platform=platform.to_dict(),
-            asm=asm.to_dict(),  # just send asm.data?
+            platform=platform.id,
+            asm=asm.data,
         )
         try:
             res = requests.post(f"{remote_host}/assemble", json=data, timeout=30)

@@ -9,17 +9,11 @@ class Library:
     name: str
     version: str
 
-    @property
-    def path(self) -> Path:
-        return settings.LIBRARY_BASE_PATH / self.name / self.version
+    def get_include_path(self, platform: str) -> Path:
+        return settings.LIBRARY_BASE_PATH / platform / self.name / self.version
 
-    @property
-    def include_path(self) -> Path:
-        return self.path / "include"
-
-    def available(self) -> bool:
-        if not self.include_path.exists():
-            print(
-                f"Library {self.name} {self.version} not found at {self.include_path}"
-            )
-        return self.include_path.exists()
+    def available(self, platform: str) -> bool:
+        include_path = self.get_include_path(platform)
+        if not include_path.exists():
+            print(f"Library {self.name} {self.version} not found at {include_path}")
+        return include_path.exists()

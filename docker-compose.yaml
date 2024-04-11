@@ -37,57 +37,58 @@ services:
       - ./nginx:/etc/nginx/conf.d
       - ./backend/media:/media
 
-  # platforms
-  gba:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/gba.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "gba"
-    ports:
-      - "9001:9000"
-  gc_wii:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/gc_wii.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "gc_wii"
-    ports:
-      - "9002:9000"
-  macosx:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/macosx.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "macosx"
-    ports:
-      - "9003:9000"
-  msdos:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/msdos.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "msdos"
-    ports:
-      - "9004:9000"
-  n3ds:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/n3ds.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "n3ds"
-    ports:
-      - "9005:9000"
+  # TODO: It's easier to work with 1 platform while developing
+
+  # gba:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/gba.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "gba"
+  #   ports:
+  #     - "9001:9000"
+  # gc_wii:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/gc_wii.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "gc_wii"
+  #   ports:
+  #     - "9002:9000"
+  # macosx:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/macosx.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "macosx"
+  #   ports:
+  #     - "9003:9000"
+  # msdos:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/msdos.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "msdos"
+  #   ports:
+  #     - "9004:9000"
+  # n3ds:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/n3ds.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "n3ds"
+  #   ports:
+  #     - "9005:9000"
   n64:
     extends:
       file: platform.yaml
@@ -95,76 +96,76 @@ services:
     build:
       dockerfile: ./docker/n64.Dockerfile
       args:
-        SUPPORTED_PLATFORMS: "n64,irix"
+        SUPPORTED_PLATFORMS: "irix,n64"
     ports:
       - "9006:9000"
-  nds_arm9:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/nds_arm9.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "nds_arm9"
-    ports:
-      - "9007:9000"
-  ps1:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/ps1.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "ps1"
-    ports:
-      - "9008:9000"
-  ps2:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/ps2.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "ps2"
-    ports:
-      - "9009:9000"
-  psp:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/psp.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "psp"
-    ports:
-      - "9010:9000"
-  saturn:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/saturn.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "saturn"
-    ports:
-      - "9011:9000"
-  switch:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/switch.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "switch"
-    ports:
-      - "9012:9000"
-  win32:
-    extends:
-      file: platform.yaml
-      service: platform
-    build:
-      dockerfile: ./docker/win32.Dockerfile
-      args:
-        SUPPORTED_PLATFORMS: "win32"
-    ports:
-      - "9013:9000"
+  # nds_arm9:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/nds_arm9.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "nds_arm9"
+  #   ports:
+  #     - "9007:9000"
+  # ps1:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/ps1.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "ps1"
+  #   ports:
+  #     - "9008:9000"
+  # ps2:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/ps2.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "ps2"
+  #   ports:
+  #     - "9009:9000"
+  # psp:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/psp.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "psp"
+  #   ports:
+  #     - "9010:9000"
+  # saturn:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/saturn.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "saturn"
+  #   ports:
+  #     - "9011:9000"
+  # switch:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/switch.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "switch"
+  #   ports:
+  #     - "9012:9000"
+  # win32:
+  #   extends:
+  #     file: platform.yaml
+  #     service: platform
+  #   build:
+  #     dockerfile: ./docker/win32.Dockerfile
+  #     args:
+  #       SUPPORTED_PLATFORMS: "win32"
+  #   ports:
+  #     - "9013:9000"

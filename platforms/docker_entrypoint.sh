@@ -6,15 +6,17 @@
 #            otherwise touch the temp file and continue, and delete the temp file at the end
 
 if [[ "${SUPPORTED_PLATFORMS}x" == "x" ]]; then
-    # TODO:
-    echo "Downloading all compilers..."
+    echo "Downloading all compilers/libraries..."
+    # python3 compilers/download.py
+    # python3 libraries/download.py
 
 else
-    # TODO:
-    echo "Downloading compilers for ${SUPPORTED_PLATFORMS}..."
+    echo "Downloading compilers/libraries for ${SUPPORTED_PLATFORMS}..."
+    # python3 compilers/download.py --platforms ${SUPPORTED_PLATFORMS}
+    # python3 libraries/download.py --platforms ${SUPPORTED_PLATFORMS}
 
 fi
 
-# TODO: download libraries... should we have libraries per platform instead of globally?
+# do we need to wait for anything to come up?
 
 python3 main.py

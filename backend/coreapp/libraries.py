@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from django.conf import settings
 
@@ -19,18 +19,18 @@ class Library:
     def get_include_path(self, platform: str) -> Path:
         return LIBRARY_BASE_PATH / platform / self.name / self.version
 
-    def to_dict(self):
-        library = dict(
-            name=self.name,
-            version=self.version,
-        )
-        return library
-
     def available(self, platform: str) -> bool:
         include_path = self.get_include_path(platform)
         if not include_path.exists():
             print(f"Library {self.name} {self.version} not found at {include_path}")
         return include_path.exists()
+
+    def to_json(self) -> Dict[str, str]:
+        library = {
+            "name": self.name,
+            "version": self.version,
+        }
+        return library
 
 
 @dataclass(frozen=True)
