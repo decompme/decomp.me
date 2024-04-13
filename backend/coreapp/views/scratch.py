@@ -30,6 +30,7 @@ from ..middleware import Request
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
 from ..platforms import Platform
+from ..registry import registry
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCreateSerializer,
@@ -85,7 +86,7 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
         return CompilerWrapper.compile_code(
-            compilers.from_id(scratch.compiler),
+            scratch.compiler,
             scratch.compiler_flags,
             scratch.source_code,
             scratch.context,
@@ -215,7 +216,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     data = create_ser.validated_data
 
     platform: Optional[Platform] = data.get("platform")
-    compiler = compilers.from_id(data["compiler"])
+    compiler = registry.get_compiler_by_id(data["compiler"])
     project = data.get("project")
     rom_address = data.get("rom_address")
 
@@ -405,7 +406,9 @@ class ScratchViewSet(
             return Response({"decompilation": None})
 
         context = request.data.get("context", scratch.context)
-        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        compiler = registry.get_compiler_by_id(
+            request.data.get("compiler", scratch.compiler)
+        )
 
         platform = platforms.from_id(scratch.platform)
 
@@ -489,7 +492,7 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
+            language = registry.get_compiler_by_id(scratch.compiler).language
             src_ext = Language(language).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:

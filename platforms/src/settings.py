@@ -26,6 +26,8 @@ define("MAX_WORKERS", default=32, type=int)
 
 define("DEBUG", default=True, type=bool)
 
+define("INTERNAL_API_BASE", default="http://backend:8000/api", type=str)
+
 define("SUPPORTED_PLATFORMS", default=None, type=str)
 
 define("DUMMY_COMPILER", default=False, type=bool)
@@ -38,7 +40,7 @@ define("SANDBOX_DISABLE_PROC", default=True, type=bool)
 
 define("WINEPREFIX", default=Path("/tmp/wine"), type=Path)
 
-define("COMPILER_BASE_PATH", default=Path("/backend/compilers"), type=Path)
+define("COMPILER_BASE_PATH", default=Path("/platforms/compilers"), type=Path)
 define("LIBRARY_BASE_PATH", default=Path("/backend/libraries"), type=Path)
 
 define("COMPILATION_TIMEOUT_SECONDS", default=30, type=int)

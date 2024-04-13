@@ -1,6 +1,5 @@
 import logging
 import base64
-import requests
 
 from typing import List, Dict, Any
 from functools import lru_cache
@@ -9,8 +8,9 @@ import diff as asm_differ
 
 from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
+from coreapp.registry import registry
 
-from .compiler_wrapper import DiffResult, REMOTE_HOSTS
+from .compiler_wrapper import DiffResult
 
 from .error import AssemblyError, DiffError, ObjdumpError
 from .models.scratch import Assembly
@@ -121,8 +121,8 @@ class DiffWrapper:
         if platform.id != "msdos":
             flags += ["--reloc"]
 
-        remote_host = REMOTE_HOSTS.get(platform.id)
-        if remote_host is None:
+        session = registry.get_session_for_platform(platform.id)
+        if session is None:
             raise ObjdumpError(
                 f"No objdump endpoint currently available for {platform.id}"
             )
@@ -136,9 +136,9 @@ class DiffWrapper:
             flags=flags,
         )
         try:
-            res = requests.post(f"{remote_host}/objdump", json=data, timeout=30)
+            res = session.objdump(data, timeout=30)
         except Exception as e:
-            raise ObjdumpError(f"Request to {remote_host} failed!")
+            raise ObjdumpError(f"Failed to send objdump request to remote server: {e}")
 
         try:
             response_json = res.json()

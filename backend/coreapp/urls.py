@@ -7,6 +7,7 @@ from coreapp.views import (
     preset,
     stats,
     project,
+    register,
     scratch,
     user,
 )
@@ -15,6 +16,7 @@ urlpatterns = [
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
+    path("register", register.Register.as_view(), name="register"),
     path(
         "platform/<slug:id>",
         platform.single_platform,

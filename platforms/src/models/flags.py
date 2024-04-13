@@ -33,7 +33,7 @@ class Flag:
             return Checkbox(**flag_dict)
         elif flag_type == "flagset":
             return FlagSet(**flag_dict)
-        elif flag_type == "language_flagset":  # FIXME
+        elif flag_type == "language_flagset":
             return LanguageFlagSet(**flag_dict)
         else:
             raise ValueError(f"Unknown Flag type received: {flag_type}")
@@ -68,17 +68,13 @@ class FlagSet(Flag):
 @dataclass(frozen=True)
 class LanguageFlagSet(Flag):
     flags: Dict[str, Language]
-    type: str = (
-        "flagset"  # TODO: return "language_flagset" from here so backend knows to create LanguageFlagSet
-    )
+    type: str = "language_flagset"
 
     def to_json(self) -> Dict[str, Union[str, List[str]]]:
-        # To the client, we're a regular FlagSet - the extra metadata we carry
-        # is purely for the backend to determine the scratch's language
         return {
             "type": self.type,
             "id": self.id,
-            "flags": list(self.flags.keys()),
+            "flags": {f: l.value for (f, l) in self.flags.items()},
         }
 
 

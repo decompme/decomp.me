@@ -42,8 +42,14 @@ class Compiler:
         return self.path.exists()
 
     def to_json(self):
-        return {
+        compiler_json = {
             "id": self.id,
             "platform": self.platform.id,
             "flags": [flag.to_json() for flag in self.flags],
+            "language": self.language.value,
+            "is_gcc": self.is_gcc,
+            "is_ido": self.is_ido,
+            "is_mwcc": self.is_mwcc,
         }
+
+        return compiler_json

@@ -1,8 +1,6 @@
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, OrderedDict
-from pathlib import Path
-import functools
 
 from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
 from coreapp.models.preset import Preset
@@ -20,20 +18,8 @@ class Platform:
     name: str
     description: str
     arch: str  # used by asm-differ
-    # assemble_cmd: str
-    # objdump_cmd: str
-    # nm_cmd: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
-    # supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
-
-    # @property
-    # @functools.lru_cache()
-    # def asm_prelude(self) -> str:
-    #     asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
-    #     if asm_prelude_path.is_file():
-    #         return asm_prelude_path.read_text()
-    #     return ""
 
     def get_num_scratches(self) -> int:
         return Scratch.objects.filter(platform=self.id).count()
@@ -59,9 +45,16 @@ class Platform:
 
 
 def from_id(platform_id: str) -> Platform:
-    if platform_id not in _platforms:
+    # from coreapp.registry import registry
+
+    # available = registry.available_platforms()
+    # if platform_id not in available:
+    #     raise APIException(f"Unknown platform: {platform_id}")
+    # return available[platform_id]
+    platform = _platforms.get(platform_id)
+    if platform is None:
         raise APIException(f"Unknown platform: {platform_id}")
-    return _platforms[platform_id]
+    return platform
 
 
 DUMMY = Platform(

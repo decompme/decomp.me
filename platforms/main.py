@@ -1,7 +1,12 @@
 import concurrent
+import json
 import logging
 import sys
-import json
+import time
+import platform
+import hashlib
+
+import requests
 
 import tornado
 from tornado.options import parse_command_line, options as settings
@@ -34,6 +39,30 @@ class CompilersHandler(tornado.web.RequestHandler):
         self.write(
             json.dumps([compiler.to_json() for compiler in available_compilers()])
         )
+
+
+def register_with_backend():
+    compilers = [c.to_json() for c in available_compilers()]
+    compilers_hash = hashlib.sha256(json.dumps(compilers).encode("utf")).hexdigest()
+
+    data = {
+        "key": "secret",
+        "hostname": platform.node(),
+        "port": settings.PORT,
+        "compilers": compilers,
+        "compilers_hash": compilers_hash,
+    }
+    try:
+        url = f"{settings.INTERNAL_API_BASE}/register"
+        res = requests.post(url, json=data, timeout=10)
+
+        assert res.status_code in (200, 201), "status_code should be 200 or 201"
+
+        if res.status_code == 201:
+            logger.info("Backend did not know about us...")
+
+    except Exception as e:
+        logger.warning("register_with_backend raised exception: %s", e)
 
 
 def main():
@@ -69,7 +98,25 @@ def main():
         webapp = tornado.web.Application([*handlers], debug=settings.DEBUG)
         server = tornado.httpserver.HTTPServer(webapp)
 
-        logger.info("Plaform Server starting on port: %i", settings.PORT)
+        server.listen(settings.PORT)
+
+        # TODO: ideally we only register when we start and/or we detect that backend has restarted
+        def loop_job(function, *args, **kwargs):
+            function(*args, **kwargs)
+            ioloop = tornado.ioloop.IOLoop.current()
+            ioloop.add_timeout(
+                time.time() + 60, lambda: loop_job(function, *args, **kwargs)
+            )
+
+        def init_job(function, *args, **kwargs):
+            ioloop = tornado.ioloop.IOLoop.current()
+            ioloop.add_timeout(
+                time.time() + 10, lambda: loop_job(function, *args, **kwargs)
+            )
+
+        ioloop.add_callback(init_job, register_with_backend)
+
+        logger.info("Platform Server starting on port: %i", settings.PORT)
         if settings.SUPPORTED_PLATFORMS:
             logger.info(
                 "Supported platform(s): %s", settings.SUPPORTED_PLATFORMS.split(",")
@@ -83,7 +130,6 @@ def main():
             [compilers.id for compilers in available_compilers()],
         )
 
-        server.listen(settings.PORT)
         ioloop.start()
     except KeyboardInterrupt:
         logger.info("CTRL+C detected. Exiting...")

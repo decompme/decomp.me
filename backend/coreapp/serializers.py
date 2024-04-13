@@ -11,7 +11,7 @@ from rest_framework.reverse import reverse
 
 from coreapp import platforms
 
-from . import compilers
+from .registry import registry
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
@@ -98,13 +98,13 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
     def validate_compiler(self, compiler: str) -> str:
         try:
-            compilers.from_id(compiler)
+            registry.get_compiler_by_id(compiler)
         except:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        compiler = compilers.from_id(data["compiler"])
+        compiler = registry.get_compiler_by_id(data["compiler"])
         platform = platforms.from_id(data["platform"])
 
         if compiler.platform != platform:
@@ -142,7 +142,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
     def validate_compiler(self, compiler: str) -> str:
         try:
-            compilers.from_id(compiler)
+            registry.get_compiler_by_id(compiler)
         except:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
@@ -171,7 +171,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                 )
 
             try:
-                compiler = compilers.from_id(data["compiler"])
+                compiler = registry.get_compiler_by_id(data["compiler"])
             except APIException:
                 raise serializers.ValidationError(
                     f"Unknown compiler: {data['compiler']}"
@@ -227,7 +227,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
         - Otherwise, fallback to the compiler's default language
         """
-        compiler = compilers.from_id(scratch.compiler)
+        compiler = registry.get_compiler_by_id(scratch.compiler)
         language_flag_set = next(
             iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
             None,

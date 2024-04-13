@@ -1,8 +1,6 @@
-import logging
-import os
-from dataclasses import dataclass
-import requests
 import base64
+import logging
+from dataclasses import dataclass
 
 from typing import (
     Any,
@@ -17,10 +15,11 @@ from typing import (
 
 from django.conf import settings
 
-from coreapp import compilers, platforms
-from coreapp.compilers import Compiler
-
+from coreapp import platforms
 from coreapp.platforms import Platform
+
+from coreapp.registry import registry
+
 import coreapp.util as util
 
 from .error import AssemblyError, CompilationError
@@ -56,28 +55,6 @@ class CompilationResult:
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
-
-
-# TODO: dynamically populate this
-# 1) reach out to expected hosts?
-# 2) receive /register with a key from any host?
-
-REMOTE_HOSTS = {
-    "gba": "http://gba:9000",
-    "gc_wii": "http://gc_wii:9000",
-    "macosx": "http://macosx:9000",
-    "msdos": "http://msdos:9000",
-    "n3ds": "http://n3ds:9000",
-    "n64": "http://n64:9000",
-    "irix": "http://n64:9000",
-    "nds_arm9": "http://nds_arm9:9000",
-    "ps1": "http://ps1:9000",
-    "ps2": "http://ps2:9000",
-    "psp": "http://psp:9000",
-    "saturn": "http://saturn:9000",
-    "switch": "http://switch:9000",
-    "win32": "http://win32:9000",
-}
 
 
 class CompilerWrapper:
@@ -118,27 +95,27 @@ class CompilerWrapper:
     @staticmethod
     @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
     def compile_code(
-        compiler: Compiler,
+        compiler_id: str,
         compiler_flags: str,
         code: str,
         context: str,
         function: str = "",
         libraries: Sequence[Library] = (),
     ) -> CompilationResult:
-        if compiler == compilers.DUMMY:
+        if compiler_id == "DUMMY":
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
 
-        remote_host = REMOTE_HOSTS.get(compiler.platform.id)
-        if remote_host is None:
+        session = registry.get_session_for_compiler(compiler_id)
+        if session is None:
             raise CompilationError(
-                f"No compilation endpoint currently available for {compiler.platform.id}"
+                f"No compilation endpoint currently available for {compiler_id}"
             )
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
         data = dict(
-            compiler=compiler.id,
+            compiler=compiler_id,
             compiler_flags=compiler_flags,
             code=code,
             context=context,
@@ -146,9 +123,11 @@ class CompilerWrapper:
             libraries=[library.to_json() for library in libraries],
         )
         try:
-            res = requests.post(f"{remote_host}/compile", json=data, timeout=30)
+            res = session.compile(data, timeout=30)
         except Exception as e:
-            raise CompilationError(f"Request to {remote_host} failed!")
+            raise CompilationError(
+                f"Failed to send compilation request to remote server: {e}"
+            )
 
         try:
             response_json = res.json()
@@ -185,8 +164,8 @@ class CompilerWrapper:
             assembly.save()
             return assembly
 
-        remote_host = REMOTE_HOSTS.get(platform.id)
-        if remote_host is None:
+        session = registry.get_session_for_platform(platform.id)
+        if session is None:
             raise AssemblyError(
                 f"No assemble endpoint currently available for {platform.id}"
             )
@@ -196,7 +175,7 @@ class CompilerWrapper:
             asm=asm.data,
         )
         try:
-            res = requests.post(f"{remote_host}/assemble", json=data, timeout=30)
+            res = session.assemble(data, timeout=30)
         except Exception as e:
             raise AssemblyError(f"Failed to send assembly to remote server: {e}")
 

@@ -21,7 +21,6 @@ services:
     env_file:
       - ./platforms/docker/dev.env
     volumes:
-      - ./backend/compilers:/backend/compilers
       - ./backend/libraries:/backend/libraries
       - ./platforms:/platforms
     tmpfs:

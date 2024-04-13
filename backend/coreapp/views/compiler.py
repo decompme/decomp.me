@@ -1,21 +1,18 @@
 from datetime import datetime
 from typing import Dict
 
-from coreapp import compilers
-from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from coreapp.models.preset import Preset
-
 from ..decorators.django import condition
 
-boot_time = now()
+from coreapp.models.preset import Preset
+from coreapp.registry import registry
 
 
 def endpoint_updated(request: Request) -> datetime:
-    return max(Preset.most_recent_updated(request), boot_time)
+    return max(Preset.most_recent_updated(request), registry.last_updated)
 
 
 class CompilerDetail(APIView):
@@ -27,7 +24,7 @@ class CompilerDetail(APIView):
                 "flags": [f.to_json() for f in c.flags],
                 "diff_flags": [f.to_json() for f in c.platform.diff_flags],
             }
-            for c in compilers.available_compilers()
+            for c in registry.available_compilers()
         }
 
     @staticmethod
@@ -37,7 +34,7 @@ class CompilerDetail(APIView):
     ) -> Dict[str, Dict[str, object]]:
         ret: Dict[str, Dict[str, object]] = {}
 
-        for platform in compilers.available_platforms():
+        for platform in registry.available_platforms():
             ret[platform.id] = platform.to_json(include_presets, include_num_scratches)
 
         return ret
