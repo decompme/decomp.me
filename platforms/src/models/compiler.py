@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import Optional, ClassVar
 from pathlib import Path
 
-from tornado.options import options as settings
-
 from .platform import Platform
 from .flags import Flags, Language
+
+from ..settings import settings
 
 logger = logging.getLogger(__file__)
 

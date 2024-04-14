@@ -1,7 +1,10 @@
 import os
 from pathlib import Path
 
-import tornado.options
+from tornado.options import (
+    options as settings,
+    define as tornado_define,
+)
 
 
 def truthy(x):
@@ -16,10 +19,17 @@ def define(name, default=None, type=str):
     else:
         setting = truthy(setting) if type is bool else type(setting)
 
-    tornado.options.define(name, setting, type)
-    # return value to help unittests
+    tornado_define(name, setting, type)
     return (name, setting, type)
 
+
+def is_supported_platform(platform_id):
+    if settings.SUPPORTED_PLATFORMS is None:
+        return True
+    return platform_id in settings.SUPPORTED_PLATFORMS.split(",")
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 define("PORT", default=9000, type=int)
 define("MAX_WORKERS", default=32, type=int)
@@ -40,8 +50,8 @@ define("SANDBOX_DISABLE_PROC", default=True, type=bool)
 
 define("WINEPREFIX", default=Path("/tmp/wine"), type=Path)
 
-define("COMPILER_BASE_PATH", default=Path("/platforms/compilers"), type=Path)
-define("LIBRARY_BASE_PATH", default=Path("/backend/libraries"), type=Path)
+define("COMPILER_BASE_PATH", default=BASE_DIR / "compilers", type=Path)
+define("LIBRARY_BASE_PATH", default=BASE_DIR / "libraries", type=Path)
 
 define("COMPILATION_TIMEOUT_SECONDS", default=30, type=int)
 define("ASSEMBLY_TIMEOUT_SECONDS", default=30, type=int)

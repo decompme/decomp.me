@@ -8,7 +8,6 @@ from typing import List
 from pathlib import Path
 
 import tornado
-from tornado.options import options as settings
 
 from .compile import PATH
 
@@ -16,7 +15,7 @@ from ..models.platform import Platform
 from ..models.requests import ObjdumpRequest
 
 from ..sandbox import Sandbox
-
+from ..settings import settings
 
 logger = logging.getLogger(__file__)
 

@@ -19,9 +19,9 @@ Currently Platforms are defined both in platforms/ and backend/
 
 ## Things to do
 
-- Add Libraries support back in
 - move /register 'secret' into environment variables
-- delete session if platform becomes unavailable
+- delete session if platform becomes unavailable?
+- remove DUMMY compilers from 'platforms' ? I think they are only needed for testing backend?
 
 ## Open questions
 - Should Platforms belong to both "backend" and "platforms"?

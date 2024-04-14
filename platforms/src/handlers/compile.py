@@ -7,10 +7,10 @@ import subprocess
 import time
 
 import tornado
-from tornado.options import options as settings
 
 from ..models.requests import CompileRequest
 from ..sandbox import Sandbox
+from ..settings import settings
 
 logger = logging.getLogger(__file__)
 
@@ -115,6 +115,9 @@ class CompileHandler(tornado.web.RequestHandler):
                         for lib in compile_request.libraries
                     )
                 )
+
+                logger.info("Hello")
+                logger.info("libraries_compiler_flags: %s", libraries_compiler_flags)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=([compiler.path] if compiler.platform.id != "dummy" else []),

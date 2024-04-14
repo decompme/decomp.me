@@ -18,6 +18,7 @@ from src.handlers.compile import CompileHandler
 from src.handlers.assemble import AssembleHandler
 from src.handlers.objdump import ObjdumpHandler
 from src.compilers import available_platforms, available_compilers
+from src.libraries import available_libraries
 
 logger = logging.getLogger(__file__)
 
@@ -41,9 +42,21 @@ class CompilersHandler(tornado.web.RequestHandler):
         )
 
 
+class LibrariesHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(
+            json.dumps(
+                [library_version.to_json() for library_version in available_libraries()]
+            )
+        )
+
+
 def register_with_backend():
     compilers = [c.to_json() for c in available_compilers()]
     compilers_hash = hashlib.sha256(json.dumps(compilers).encode("utf")).hexdigest()
+
+    libraries = [l.to_json() for l in available_libraries()]
+    libraries_hash = hashlib.sha256(json.dumps(libraries).encode("utf")).hexdigest()
 
     data = {
         "key": "secret",
@@ -51,6 +64,8 @@ def register_with_backend():
         "port": settings.PORT,
         "compilers": compilers,
         "compilers_hash": compilers_hash,
+        "libraries": libraries,
+        "libraries_hash": libraries_hash,
     }
     try:
         url = f"{settings.INTERNAL_API_BASE}/register"
@@ -59,7 +74,7 @@ def register_with_backend():
         assert res.status_code in (200, 201), "status_code should be 200 or 201"
 
         if res.status_code == 201:
-            logger.info("Backend did not know about us...")
+            logger.info("Successfully registered with backend")
 
     except Exception as e:
         logger.warning("register_with_backend raised exception: %s", e)
@@ -86,6 +101,7 @@ def main():
         (r"/objdump", ObjdumpHandler),
         (r"/platforms", PlatformsHandler),
         (r"/compilers", CompilersHandler),
+        (r"/libraries", LibrariesHandler),
     ]
 
     ioloop = tornado.ioloop.IOLoop.current()

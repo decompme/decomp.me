@@ -21,7 +21,6 @@ services:
     env_file:
       - ./platforms/docker/dev.env
     volumes:
-      - ./backend/libraries:/backend/libraries
       - ./platforms:/platforms
     tmpfs:
       # explicitly mount /dev/shm with exec as dosemu2 requires exec privilege

@@ -5,6 +5,8 @@
 #       e.g. if a temp file exists and is newer than e.g. 5 minutes, we assume another process is running and fast exit
 #            otherwise touch the temp file and continue, and delete the temp file at the end
 
+# TOOD: wrap this all in a if guard so we do not do it every time we start up when developing...
+
 if [[ "${SUPPORTED_PLATFORMS}x" == "x" ]]; then
     echo "Downloading all compilers/libraries..."
     # python3 compilers/download.py
@@ -17,6 +19,6 @@ else
 
 fi
 
-# do we need to wait for anything to come up?
+# should we wait for backend to become available?
 
 python3 main.py

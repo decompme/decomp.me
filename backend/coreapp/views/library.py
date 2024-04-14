@@ -1,15 +1,10 @@
-from typing import Dict
-
-from django.utils.timezone import now
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from coreapp import libraries
+from coreapp.registry import registry
 
 from ..decorators.django import condition
-
-boot_time = now()
 
 
 class LibraryDetail(APIView):
@@ -21,15 +16,15 @@ class LibraryDetail(APIView):
                 "supported_versions": l.supported_versions,
                 "platform": l.platform,
             }
-            for l in libraries.available_libraries()
+            for l in registry.available_libraries()
             if platform == "" or l.platform == platform
         ]
 
-    @condition(last_modified_func=lambda request: boot_time)
+    @condition(last_modified_func=lambda request: registry.last_updated)
     def head(self, request: Request) -> Response:
         return Response()
 
-    @condition(last_modified_func=lambda request: boot_time)
+    @condition(last_modified_func=lambda request: registry.last_updated)
     def get(self, request: Request) -> Response:
         platform = request.query_params.get("platform", "")
         return Response(

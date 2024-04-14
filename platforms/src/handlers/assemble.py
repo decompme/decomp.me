@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 import subprocess
 import base64
@@ -12,8 +11,7 @@ from .compile import PATH
 from ..models.requests import AssembleRequest
 
 from ..sandbox import Sandbox
-from tornado.options import options as settings
-
+from ..settings import settings
 
 logger = logging.getLogger(__file__)
 

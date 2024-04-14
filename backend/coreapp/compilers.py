@@ -2,7 +2,6 @@ import copy
 import logging
 import platform as platform_stdlib
 from dataclasses import dataclass
-from pathlib import Path
 from typing import ClassVar, List
 
 from coreapp import platforms
@@ -18,9 +17,6 @@ from coreapp.platforms import (
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
-
-CONFIG_PY = "config.py"
-COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 
 @dataclass(frozen=True)

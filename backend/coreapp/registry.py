@@ -7,6 +7,8 @@ from django.utils.timezone import now
 
 from rest_framework.exceptions import APIException
 
+from .libraries import LibraryVersions
+
 # FIXME: circular import!
 # from .platforms import Platform
 # from .compilers import Compiler
@@ -17,10 +19,11 @@ logger = logging.getLogger(__name__)
 class ManagedSession:
     # TODO: version? os? use_ssl?
 
-    def __init__(self, hostname, port, compilers_hash) -> None:
+    def __init__(self, hostname, port, compilers_hash, libraries_hash) -> None:
         self.hostname = hostname
         self.port = port
         self.compilers_hash = compilers_hash
+        self.libraries_hash = libraries_hash
         self.session = requests.Session()
 
     def __str__(self) -> str:
@@ -52,73 +55,101 @@ class Registry:
 
     PLATFORMS: Dict[str, List[Any]] = dict()
     COMPILERS: Dict[str, List[Any]] = dict()
+    LIBRARIES: Dict[str, List[Any]] = dict()
 
     last_updated = now()
 
-    def is_known_host(self, hostname, port):
+    def is_known_host(self, hostname: str, port: int) -> bool:
         return (hostname, port) in self.sessions
 
-    def add_host(self, hostname, port, compilers, compilers_hash):
+    def add_host(
+        self,
+        hostname: str,
+        port: int,
+        compilers: List[Any],
+        compilers_hash: str,
+        libraries: List[Any],
+        libraries_hash: str,
+    ) -> None:
         # FIXME: move to top of the file...
         from .compilers import Compiler
 
         session = self.sessions.get((hostname, port))
-        if session is None or compilers_hash != session.compilers_hash:
+        if (
+            session is None
+            or compilers_hash != session.compilers_hash
+            or libraries_hash != session.libraries_hash
+        ):
             if session is None:
-                session = ManagedSession(hostname, port, compilers_hash)
+                session = ManagedSession(hostname, port, compilers_hash, libraries_hash)
+                update_compilers = update_libraries = True
+            else:
+                update_compilers = compilers_hash != session.compilers_hash
+                update_libraries = libraries_hash != session.libraries_hash
 
-            platforms = set()
-            for compiler_dict in compilers:
-                try:
-                    compiler = Compiler.from_dict(compiler_dict)
-                except Exception as e:
-                    logger.error(
-                        "Failed to create Compiler from %s, %s", compiler_dict, e
+            if update_compilers:
+                platforms = set()
+                for compiler_dict in compilers:
+                    try:
+                        compiler = Compiler.from_dict(compiler_dict)
+                    except Exception as e:
+                        logger.error(
+                            "Failed to create Compiler from %s, %s", compiler_dict, e
+                        )
+                        return
+
+                    if compiler.id not in self.COMPILERS:
+                        self.COMPILERS[compiler.id] = compiler
+
+                    platforms.add(compiler.platform.id)
+
+                    # external lookup
+                    if compiler.platform.id not in self.PLATFORMS:
+                        self.PLATFORMS[compiler.platform.id] = compiler.platform
+
+                    # internal lookup
+                    if compiler.id not in self.compilers:
+                        self.compilers[compiler.id] = []
+                    self.compilers[compiler.id].append(
+                        (hostname, port),
                     )
-                    return
 
-                if compiler.id not in self.COMPILERS:
-                    self.COMPILERS[compiler.id] = compiler
+                for platform in platforms:
+                    if platform not in self.platforms:
+                        self.platforms[platform] = []
+                    self.platforms[platform].append(
+                        (hostname, port),
+                    )
+            if update_libraries:
+                for library in libraries:
+                    library_version = LibraryVersions(**library)
 
-                platforms.add(compiler.platform.id)
-
-                # external lookup
-                if compiler.platform.id not in self.PLATFORMS:
-                    self.PLATFORMS[compiler.platform.id] = compiler.platform
-
-                # internal lookup
-                if compiler.id not in self.compilers:
-                    self.compilers[compiler.id] = []
-                self.compilers[compiler.id].append(
-                    (hostname, port),
-                )
-
-            for platform in platforms:
-                if platform not in self.platforms:
-                    self.platforms[platform] = []
-                self.platforms[platform].append(
-                    (hostname, port),
-                )
+                    if library_version.name not in self.LIBRARIES:
+                        self.LIBRARIES[library_version.name] = library_version
 
             self.sessions[(hostname, port)] = session
 
             self.last_updated = now()
             logger.info(
-                "Successfully registered %s:%i with %i platform(s) and %i compiler(s)",
+                "Successfully registered %s:%i with %i platform(s), %i compiler(s) and %i library(s)",
                 hostname,
                 port,
                 len(platforms),
                 len(compilers),
+                len(libraries),
             )
         else:
             # logger.debug(f"Ignoring '/register' from {hostname}:{port} as compiler_hash is the same ({compilers_hash})")
             pass
 
-    def available_compilers(self):
+    def available_compilers(self) -> List[Any]:
         return list(sorted(self.COMPILERS.values(), key=lambda x: x.id))
 
-    def available_platforms(self):
+    def available_platforms(self) -> List[Any]:
         return list(sorted(self.PLATFORMS.values(), key=lambda x: x.name))
+
+    def available_libraries(self) -> List[LibraryVersions]:
+        return list(sorted(self.LIBRARIES.values(), key=lambda x: x.name))
 
     def get_compiler_by_id(self, compiler_id):
         compiler = self.COMPILERS.get(compiler_id)

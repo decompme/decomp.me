@@ -45,8 +45,13 @@ class Register(APIView):
         compilers = payload.get("compilers")
         compilers_hash = payload.get("compilers_hash")
 
+        libraries = payload.get("libraries")
+        libraries_hash = payload.get("libraries_hash")
+
         if compilers is not None and compilers_hash is not None:
-            registry.add_host(hostname, port, compilers, compilers_hash)
+            registry.add_host(
+                hostname, port, compilers, compilers_hash, libraries, libraries_hash
+            )
             return Response("Ping/Pong!", status=status.HTTP_200_OK)
 
         if registry.is_known_host(hostname, int(port)):

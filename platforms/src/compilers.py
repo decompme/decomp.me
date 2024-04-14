@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from functools import cache
 from typing import ClassVar, List
 
-from tornado.options import options as settings
+from .settings import settings, is_supported_platform
 
 from .models.compiler import Compiler
 from .models.platform import Platform
@@ -153,13 +153,10 @@ def from_id(compiler_id: str) -> Compiler:
 
 @cache
 def available_compilers() -> List[Compiler]:
-    if not settings.SUPPORTED_PLATFORMS:
-        return list(_compilers.values())
-    supported_platforms = settings.SUPPORTED_PLATFORMS.split(",")
     return [
         compiler
         for compiler in _compilers.values()
-        if compiler.platform.id in supported_platforms
+        if is_supported_platform(compiler.platform.id)
     ]
 
 
