@@ -9,9 +9,6 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
 from rest_framework.reverse import reverse
 
-from coreapp import platforms
-
-from .registry import registry
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
@@ -20,6 +17,8 @@ from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
+
+from .registry import registry
 
 
 def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
@@ -91,7 +90,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
     def validate_platform(self, platform: str) -> str:
         try:
-            platforms.from_id(platform)
+            registry.get_platform_by_id(platform)
         except:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
@@ -105,7 +104,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         compiler = registry.get_compiler_by_id(data["compiler"])
-        platform = platforms.from_id(data["platform"])
+        platform = registry.get_platform_by_id(data["platform"])
 
         if compiler.platform != platform:
             raise serializers.ValidationError(
@@ -135,7 +134,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
     def validate_platform(self, platform: str) -> str:
         try:
-            platforms.from_id(platform)
+            registry.get_platform_by_id(platform)
         except:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
@@ -151,7 +150,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         if "preset" in data:
             preset: Preset = data["preset"]
             # Preset dictates platform
-            data["platform"] = platforms.from_id(preset.platform)
+            data["platform"] = registry.get_platform_by_id(preset.platform)
 
             if "compiler" not in data or not data["compiler"]:
                 data["compiler"] = preset.compiler
@@ -181,7 +180,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                 data["platform"] = compiler.platform
             else:
                 try:
-                    platform = platforms.from_id(data["platform"])
+                    platform = registry.get_platform_by_id(data["platform"])
                 except APIException:
                     raise serializers.ValidationError(
                         f"Unknown platform: {data['platform']}"
@@ -228,6 +227,10 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         - Otherwise, fallback to the compiler's default language
         """
         compiler = registry.get_compiler_by_id(scratch.compiler)
+        if compiler is None:
+            # warning?
+            return None
+
         language_flag_set = next(
             iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
             None,

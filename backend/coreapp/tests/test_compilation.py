@@ -221,7 +221,7 @@ nop
         """
 
         result = CompilerWrapper.compile_code(
-            compilers.DUMMY, "", "sample text 123", ""
+            compilers.DUMMY_COMPILER, "", "sample text 123", ""
         )
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"

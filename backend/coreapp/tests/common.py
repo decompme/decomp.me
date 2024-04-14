@@ -27,8 +27,8 @@ class BaseTestCase(APITestCase):
 
     def create_nop_scratch(self) -> Scratch:
         scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }

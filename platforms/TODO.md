@@ -21,17 +21,11 @@ Currently Platforms are defined both in platforms/ and backend/
 
 - move /register 'secret' into environment variables
 - delete session if platform becomes unavailable?
-- remove DUMMY compilers from 'platforms' ? I think they are only needed for testing backend?
+- fix all the broken tests
+  - move compilation tests into 'platforms' codebase and sub out all compilation/assemble/objdump calls in 'backend'
+- (maybe) TCP connection between 'platforms' and 'backend' so we can see when backend is restarted rather than POSTing to /register on a timer?
+
 
 ## Open questions
-- Should Platforms belong to both "backend" and "platforms"?
-  - FOR:
-    - The frontend needs to know the following thing that the "platforms" code doesnt care about:
-      - description
-      - diff_flags
-      - has_decompiler
-  - AGAINST:
-    - Duplicated definitions of Platforms in two places
-
 - Should the 'platform' code only try to hit /register less frequently? We want everything to get up and running when something restarts, so lower time == better
-- If we had k8s, we ought to be able to update things without any downtime
+  - If we had k8s, we ought to be able to update things without any downtime

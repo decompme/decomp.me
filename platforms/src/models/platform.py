@@ -41,5 +41,6 @@ class Platform:
             "name": self.name,
             "description": self.description,
             "arch": self.arch,
+            "diff_flags": [flag.to_json() for flag in self.diff_flags],
             "has_decompiler": self.has_decompiler,
         }

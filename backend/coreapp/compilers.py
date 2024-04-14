@@ -1,22 +1,16 @@
 import copy
-import logging
 import platform as platform_stdlib
 from dataclasses import dataclass
 from typing import ClassVar, List
 
-from coreapp import platforms
+from django.conf import settings
+
+from coreapp.platforms import Platform, DUMMY_PLATFORM
 from coreapp.flags import (
     Flags,
     Flag,
     Language,
 )
-from coreapp.platforms import (
-    Platform,
-    from_id as platform_from_id,
-)
-from django.conf import settings
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -31,9 +25,14 @@ class Compiler:
 
     @staticmethod
     def from_dict(compiler_dict):
+        # FIXME: circular dependency
+        from .registry import registry
+
         compiler_dict = copy.deepcopy(compiler_dict)
 
-        compiler_dict["platform"] = platform_from_id(compiler_dict["platform"])
+        compiler_dict["platform"] = registry.get_platform_by_id(
+            compiler_dict["platform"]
+        )
         compiler_dict["flags"] = [
             Flag.from_dict(flag) for flag in compiler_dict["flags"]
         ]
@@ -57,8 +56,8 @@ class DummyLongRunningCompiler(DummyCompiler):
         return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
 
 
-DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY)
+DUMMY_COMPILER = DummyCompiler(id="dummy", platform=DUMMY_PLATFORM)
 
-DUMMY_LONGRUNNING = DummyLongRunningCompiler(
-    id="dummy_longrunning", platform=platforms.DUMMY
+DUMMY_COMPILER_LONGRUNNING = DummyLongRunningCompiler(
+    id="dummy_longrunning", platform=DUMMY_PLATFORM
 )

@@ -12,6 +12,10 @@ services:
   backend:
     build:
       context: backend
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 5s
     env_file:
       - backend/docker.dev.env
     ports:

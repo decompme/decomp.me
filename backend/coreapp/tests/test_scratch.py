@@ -84,8 +84,8 @@ nop
         Ensure that we can create scratches with the dummy platform and compiler
         """
         scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": "this is some test asm",
         }
@@ -262,8 +262,8 @@ class ScratchForkTests(BaseTestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict: Dict[str, Any] = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
@@ -279,8 +279,8 @@ class ScratchForkTests(BaseTestCase):
         slug = scratch.slug
 
         fork_dict = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -453,14 +453,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
@@ -484,14 +484,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": " ",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": compilers.DUMMY_COMPILER.id,
+            "platform": platforms.DUMMY_PLATFORM.id,
             "context": "",
             "target_asm": " ",
         }

@@ -7,7 +7,7 @@ from pathlib import Path
 from .platform import Platform
 from .flags import Flags, Language
 
-from ..settings import settings
+from ..settings import settings, is_supported_platform
 
 logger = logging.getLogger(__file__)
 
@@ -36,6 +36,8 @@ class Compiler:
         return settings.COMPILER_BASE_PATH / self.platform.id / self.id
 
     def available(self) -> bool:
+        if not is_supported_platform(self.platform.id):
+            return False
         # consider compiler binaries present if the compiler's directory is found
         if not self.path.exists():
             logger.warning(f"Compiler {self.id} not found at {self.path}")

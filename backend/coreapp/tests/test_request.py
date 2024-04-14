@@ -30,13 +30,13 @@ class RequestTests(APITestCase):
 
 
 class TimeoutTests(BaseTestCase):
-    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
+    @requiresCompiler(compilers.DUMMY_COMPILER_LONGRUNNING)
     def test_compiler_timeout(self) -> None:
         # Test that a hanging compilation will fail with a timeout error
         with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
             scratch_dict = {
-                "compiler": compilers.DUMMY_LONGRUNNING.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": compilers.DUMMY_COMPILER_LONGRUNNING.id,
+                "platform": platforms.DUMMY_PLATFORM.id,
                 "context": "",
                 "target_asm": "asm(AAAAAAAA)",
             }
@@ -45,7 +45,7 @@ class TimeoutTests(BaseTestCase):
 
             compile_dict = {
                 "slug": scratch.slug,
-                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "compiler": compilers.DUMMY_COMPILER_LONGRUNNING.id,
                 "compiler_flags": "",
                 "source_code": "source(AAAAAAAA)",
             }
@@ -58,7 +58,7 @@ class TimeoutTests(BaseTestCase):
             self.assertIn("timeout expired", response.json()["compiler_output"].lower())
 
     # if we don't have DUMMY_LONGRUNNING, it means we'll be unable to use sandbox.run_subprocess
-    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
+    @requiresCompiler(compilers.DUMMY_COMPILER_LONGRUNNING)
     def test_zero_timeout(self) -> None:
         # Tests that passing a timeout of zero to sandbox.run_subprocess will equate
         # to disabling the timeout entirely

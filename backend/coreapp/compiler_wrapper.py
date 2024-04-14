@@ -15,8 +15,8 @@ from typing import (
 
 from django.conf import settings
 
-from coreapp import platforms
-from coreapp.platforms import Platform
+from coreapp.platforms import Platform, DUMMY_PLATFORM
+from coreapp.compilers import DUMMY_COMPILER
 
 from coreapp.registry import registry
 
@@ -102,7 +102,7 @@ class CompilerWrapper:
         function: str = "",
         libraries: Sequence[Library] = (),
     ) -> CompilationResult:
-        if compiler_id == "DUMMY":
+        if compiler_id == DUMMY_COMPILER.id:
             return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
 
         session = registry.get_session_for_compiler(compiler_id)
@@ -154,7 +154,7 @@ class CompilerWrapper:
             logger.debug(f"Assembly cache hit! hash: {hash}")
             return cached_assembly
 
-        if platform == platforms.DUMMY:
+        if platform == DUMMY_PLATFORM:
             assembly = Assembly(
                 hash=hash,
                 arch=platform.arch,

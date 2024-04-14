@@ -52,6 +52,9 @@ class LibrariesHandler(tornado.web.RequestHandler):
 
 
 def register_with_backend():
+    platforms = [p.to_json() for p in available_platforms()]
+    platforms_hash = hashlib.sha256(json.dumps(platforms).encode("utf")).hexdigest()
+
     compilers = [c.to_json() for c in available_compilers()]
     compilers_hash = hashlib.sha256(json.dumps(compilers).encode("utf")).hexdigest()
 
@@ -62,6 +65,8 @@ def register_with_backend():
         "key": "secret",
         "hostname": platform.node(),
         "port": settings.PORT,
+        "platforms": platforms,
+        "platforms_hash": platforms_hash,
         "compilers": compilers,
         "compilers_hash": compilers_hash,
         "libraries": libraries,
@@ -109,7 +114,6 @@ def main():
         concurrent.futures.ThreadPoolExecutor(max_workers=settings.MAX_WORKERS)
     )
 
-    # start
     try:
         webapp = tornado.web.Application([*handlers], debug=settings.DEBUG)
         server = tornado.httpserver.HTTPServer(webapp)

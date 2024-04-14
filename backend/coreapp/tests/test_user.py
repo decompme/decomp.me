@@ -183,8 +183,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": compilers.DUMMY_COMPILER.id,
+                "platform": platforms.DUMMY_PLATFORM.id,
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
@@ -219,8 +219,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": compilers.DUMMY_COMPILER.id,
+                "platform": platforms.DUMMY_PLATFORM.id,
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },

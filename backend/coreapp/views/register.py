@@ -1,15 +1,9 @@
-import logging
-import json
-
 from rest_framework import status
-
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ..registry import registry
-
-logger = logging.getLogger(__name__)
 
 
 class Register(APIView):
@@ -42,19 +36,28 @@ class Register(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        platforms = payload.get("platforms")
+        platforms_hash = payload.get("platforms_hash")
+
         compilers = payload.get("compilers")
         compilers_hash = payload.get("compilers_hash")
 
         libraries = payload.get("libraries")
         libraries_hash = payload.get("libraries_hash")
 
-        if compilers is not None and compilers_hash is not None:
-            registry.add_host(
-                hostname, port, compilers, compilers_hash, libraries, libraries_hash
-            )
-            return Response("Ping/Pong!", status=status.HTTP_200_OK)
-
-        if registry.is_known_host(hostname, int(port)):
-            return Response("Ping/Pong!", status=status.HTTP_200_OK)
-
-        return Response("Hello new friend!", status=status.HTTP_201_CREATED)
+        res = registry.register_host(
+            hostname,
+            port,
+            platforms,
+            platforms_hash,
+            compilers,
+            compilers_hash,
+            libraries,
+            libraries_hash,
+        )
+        if res is True:
+            return Response("Registered!", status=status.HTTP_201_CREATED)
+        elif res is False:
+            return Response("Failed!", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("OK!", status=status.HTTP_200_OK)

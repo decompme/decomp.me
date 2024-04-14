@@ -1,7 +1,6 @@
 import logging
-from coreapp import compilers
 
-from coreapp.compilers import Compiler
+from coreapp.compilers import Compiler, DUMMY_COMPILER
 
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.platforms import Platform
@@ -22,7 +21,7 @@ class DecompilerWrapper:
         context: str,
         compiler: Compiler,
     ) -> str:
-        if compiler == compilers.DUMMY:
+        if compiler == DUMMY_COMPILER:
             return f"decompiled({asm})"
 
         ret = default_source_code

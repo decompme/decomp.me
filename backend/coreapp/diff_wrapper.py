@@ -6,7 +6,7 @@ from functools import lru_cache
 
 import diff as asm_differ
 
-from coreapp.platforms import DUMMY, Platform
+from coreapp.platforms import Platform, DUMMY_PLATFORM
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
 from coreapp.registry import registry
 
@@ -204,8 +204,8 @@ class DiffWrapper:
         compiled_elf: bytes,
         diff_flags: List[str],
     ) -> DiffResult:
-        if platform == DUMMY:
-            # Todo produce diff for dummy
+        if platform == DUMMY_PLATFORM:
+            # TODO: produce diff for dummy
             return DiffResult({"rows": ["a", "b"]}, "")
 
         try:

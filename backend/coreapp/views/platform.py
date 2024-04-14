@@ -8,7 +8,10 @@ from rest_framework.views import APIView
 from ..decorators.django import condition
 
 from coreapp.registry import registry
+
+# FIXME: This import is needed to avoid ImportError: cannot import name 'PresetSerializer' from partially initialized module 'coreapp.serializers' (most likely due to a circular import) (/backend/coreapp/serializers.py)
 from coreapp import platforms
+
 from coreapp.models.preset import Preset
 from coreapp.views.compiler import CompilerDetail
 
@@ -38,10 +41,7 @@ def single_platform(request: Request, id: str) -> Response:
     """
     Gets a platform's basic data
     """
-    # TODO: if platforms are managed by 'platforms'
-    # platform = registry.get_platform_by_id(id)
-
-    platform = platforms.from_id(id)
+    platform = registry.get_platform_by_id(id)
     if platform:
         return Response(
             platform.to_json(include_presets=False, include_num_scratches=True)

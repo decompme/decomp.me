@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
-from coreapp import compilers, platforms
 from django.core.files import File
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
@@ -101,7 +100,7 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
     try:
         return DiffWrapper.diff(
             scratch.target_assembly,
-            platforms.from_id(scratch.platform),
+            registry.get_platform_by_id(scratch.platform),
             scratch.diff_label,
             bytes(compilation.elf_object),
             diff_flags=scratch.diff_flags,
@@ -410,7 +409,7 @@ class ScratchViewSet(
             request.data.get("compiler", scratch.compiler)
         )
 
-        platform = platforms.from_id(scratch.platform)
+        platform = registry.get_platform_by_id(scratch.platform)
 
         decompilation = DecompilerWrapper.decompile(
             "",

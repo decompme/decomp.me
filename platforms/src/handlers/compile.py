@@ -41,22 +41,26 @@ class CompileHandler(tornado.web.RequestHandler):
             payload = json.loads(self.request.body)
         except Exception as e:
             logger.error("Exception: %s", e)
-            return self.write(str(e))
+            self.set_status(400)
+            return self.write(json.dumps(dict(error=f"Invalid JSON received: {e}")))
 
         try:
             compile_request = CompileRequest.from_dict(payload)
         except Exception as e:
             logger.error("Exception: %s", e)
-            return self.write(str(e))
+            self.set_status(400)
+            return self.write(
+                json.dumps(dict(error=f"Error processing CompileRequest: {e}"))
+            )
 
         logger.debug("compile_request is: %s", compile_request)
 
         compiler = compile_request.compiler
         if not compiler.available():
-            msg = f"Compiler '{compiler.id}' is not available!"
+            msg = f"Compiler '{compiler.id}' is not currently available!"
             logger.warning(msg)
-            self.set_status(400)
-            return self.write(msg)
+            self.set_status(500)
+            return self.write(json.dumps(dict(error=msg)))
 
         with Sandbox() as sandbox:
             context = compile_request.context
@@ -116,8 +120,6 @@ class CompileHandler(tornado.web.RequestHandler):
                     )
                 )
 
-                logger.info("Hello")
-                logger.info("libraries_compiler_flags: %s", libraries_compiler_flags)
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=([compiler.path] if compiler.platform.id != "dummy" else []),
