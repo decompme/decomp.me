@@ -5,10 +5,7 @@ import requests
 
 from django.utils.timezone import now
 
-from rest_framework.exceptions import APIException
-
 from .libraries import LibraryVersions
-
 from .platforms import Platform, DUMMY_PLATFORM
 from .compilers import Compiler, DUMMY_COMPILER
 
@@ -19,13 +16,12 @@ class ManagedSession:
     # TODO: version? os? use_ssl?
 
     def __init__(
-        self, hostname, port, platforms_hash, compilers_hash, libraries_hash
+        self,
+        hostname,
+        port,
     ) -> None:
         self.hostname = hostname
         self.port = port
-        self.platforms_hash = platforms_hash
-        self.compilers_hash = compilers_hash
-        self.libraries_hash = libraries_hash
         self.session = requests.Session()
 
     def __str__(self) -> str:
@@ -69,92 +65,73 @@ class Registry:
         hostname: str,
         port: int,
         platforms: List[Any],
-        platforms_hash: str,
         compilers: List[Any],
-        compilers_hash: str,
         libraries: List[Any],
-        libraries_hash: str,
     ) -> None:
         session = self.sessions.get((hostname, port))
-        if (
-            session is None
-            or platforms_hash != session.platforms_hash
-            or compilers_hash != session.compilers_hash
-            or libraries_hash != session.libraries_hash
-        ):
-            if session is None:
-                session = ManagedSession(
-                    hostname, port, platforms_hash, compilers_hash, libraries_hash
-                )
-                update_platforms = update_compilers = update_libraries = True
-            else:
-                update_platforms = platforms_hash != session.platforms_hash
-                update_compilers = compilers_hash != session.compilers_hash
-                update_libraries = libraries_hash != session.libraries_hash
 
-            if update_platforms:
-
-                for platform_dict in platforms:
-                    try:
-                        platform = Platform.from_dict(platform_dict)
-                    except Exception as e:
-                        logger.error(
-                            "Failed to create Platform from %s, %s", platform_dict, e
-                        )
-                        return False
-
-                    # assume new/updated data, so overwrite existing
-                    self.PLATFORMS[platform.id] = platform
-
-                    if platform.id not in self.platforms:
-                        self.platforms[platform.id] = []
-                    self.platforms[platform.id].append(
-                        (hostname, port),
-                    )
-
-            if update_compilers:
-                for compiler_dict in compilers:
-                    try:
-                        compiler = Compiler.from_dict(compiler_dict)
-                    except Exception as e:
-                        logger.error(
-                            "Failed to create Compiler from %s, %s", compiler_dict, e
-                        )
-                        return False
-
-                    # assume new/updated data, so overwrite existing
-                    self.COMPILERS[compiler.id] = compiler
-
-                    # internal lookup
-                    if compiler.id not in self.compilers:
-                        self.compilers[compiler.id] = []
-                    self.compilers[compiler.id].append(
-                        (hostname, port),
-                    )
-
-            if update_libraries:
-                for library in libraries:
-                    try:
-                        library_version = LibraryVersions(**library)
-                    except Exception as e:
-                        logger.error("Failed to create Library from %s, %s", library, e)
-                        return False
-
-                    if library_version.name not in self.LIBRARIES:
-                        self.LIBRARIES[library_version.name] = library_version
-
-            self.sessions[(hostname, port)] = session
-
-            self.last_updated = now()
-            logger.info(
-                "Successfully registered host %s:%i with %i platform(s), %i compiler(s) and %i library(s)",
+        if session is None:
+            # new session...
+            session = ManagedSession(
                 hostname,
                 port,
-                len(platforms),
-                len(compilers),
-                len(libraries),
             )
-            return True
+
+        for platform_dict in platforms:
+            try:
+                platform = Platform.from_dict(platform_dict)
+            except Exception as e:
+                logger.error("Failed to create Platform from %s, %s", platform_dict, e)
+                return False
+
+            # assume new/updated data, so overwrite existing
+            self.PLATFORMS[platform.id] = platform
+
+            if platform.id not in self.platforms:
+                self.platforms[platform.id] = []
+            self.platforms[platform.id].append(
+                (hostname, port),
+            )
+
+        for compiler_dict in compilers:
+            try:
+                compiler = Compiler.from_dict(compiler_dict)
+            except Exception as e:
+                logger.error("Failed to create Compiler from %s, %s", compiler_dict, e)
+                return False
+
+            # assume new/updated data, so overwrite existing
+            self.COMPILERS[compiler.id] = compiler
+
+            # internal lookup
+            if compiler.id not in self.compilers:
+                self.compilers[compiler.id] = []
+            self.compilers[compiler.id].append(
+                (hostname, port),
+            )
+
+        for library in libraries:
+            try:
+                library_version = LibraryVersions(**library)
+            except Exception as e:
+                logger.error("Failed to create Library from %s, %s", library, e)
+                return False
+
+            if library_version.name not in self.LIBRARIES:
+                self.LIBRARIES[library_version.name] = library_version
+
+        self.sessions[(hostname, port)] = session
+
+        self.last_updated = now()
+        logger.info(
+            "Successfully registered host %s:%i with %i platform(s), %i compiler(s) and %i library(s)",
+            hostname,
+            port,
+            len(platforms),
+            len(compilers),
+            len(libraries),
+        )
+        return True
 
     def available_compilers(self) -> List[Any]:
         return list(sorted(self.COMPILERS.values(), key=lambda x: x.id))
@@ -182,7 +159,6 @@ class Registry:
         platform = self.PLATFORMS.get(platform_id)
         if not platform:
             logger.warning("No known platform with id %s", platform_id)
-            # raise APIException(f"{platform_id} not known/available")
         return platform
 
     def get_session_for_platform(self, platform_id) -> ManagedSession:

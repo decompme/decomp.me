@@ -1,3 +1,5 @@
+from django.utils.timezone import now
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -5,6 +7,8 @@ from rest_framework.views import APIView
 from ..models.scratch import Asm, Scratch
 from ..models.github import GitHubUser
 from ..models.profile import Profile
+
+boot_time = now()
 
 
 class StatsDetail(APIView):
@@ -15,5 +19,6 @@ class StatsDetail(APIView):
                 "scratch_count": Scratch.objects.count(),
                 "github_user_count": GitHubUser.objects.count(),
                 "profile_count": Profile.objects.count(),
+                "boot_time": boot_time,
             }
         )

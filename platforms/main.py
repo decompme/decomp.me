@@ -4,7 +4,6 @@ import logging
 import sys
 import time
 import platform
-import hashlib
 
 import requests
 
@@ -51,38 +50,54 @@ class LibrariesHandler(tornado.web.RequestHandler):
         )
 
 
-def register_with_backend():
-    platforms = [p.to_json() for p in available_platforms()]
-    platforms_hash = hashlib.sha256(json.dumps(platforms).encode("utf")).hexdigest()
-
-    compilers = [c.to_json() for c in available_compilers()]
-    compilers_hash = hashlib.sha256(json.dumps(compilers).encode("utf")).hexdigest()
-
-    libraries = [l.to_json() for l in available_libraries()]
-    libraries_hash = hashlib.sha256(json.dumps(libraries).encode("utf")).hexdigest()
-
-    data = {
-        "key": "secret",
-        "hostname": platform.node(),
-        "port": settings.PORT,
-        "platforms": platforms,
-        "platforms_hash": platforms_hash,
-        "compilers": compilers,
-        "compilers_hash": compilers_hash,
-        "libraries": libraries,
-        "libraries_hash": libraries_hash,
-    }
+def check_backend(last_boot_time):
+    url = f"{settings.INTERNAL_API_BASE}/stats"
     try:
-        url = f"{settings.INTERNAL_API_BASE}/register"
-        res = requests.post(url, json=data, timeout=10)
-
-        assert res.status_code in (200, 201), "status_code should be 200 or 201"
-
-        if res.status_code == 201:
-            logger.info("Successfully registered with backend")
-
+        res = requests.get(url, timeout=10)
     except Exception as e:
-        logger.warning("register_with_backend raised exception: %s", e)
+        logger.warning("Failed to get stats from backend: %s", e)
+        return None
+
+    if res.status_code != 200:
+        logger.warning("backend returned non-200 status code: %i", res.status_code)
+        return None
+
+    try:
+        stats = res.json()
+    except Exception as e:
+        logger.warning("Failed to parse stats JSON: %s", e)
+        return None
+
+    boot_time = stats.get("boot_time")
+    if boot_time is None:
+        logger.warning("No boot_time from backend!")
+        return None
+
+    if boot_time != last_boot_time:
+        logger.info("New backend boot_time detected: %s", boot_time)
+
+        data = {
+            "key": "secret",
+            "hostname": platform.node(),
+            "port": settings.PORT,
+            "platforms": [p.to_json() for p in available_platforms()],
+            "compilers": [c.to_json() for c in available_compilers()],
+            "libraries": [l.to_json() for l in available_libraries()],
+        }
+        url = f"{settings.INTERNAL_API_BASE}/register"
+        try:
+            res = requests.post(url, json=data, timeout=10)
+        except Exception as e:
+            logger.warning("Failed to send register request to backend %s", e)
+            return None
+
+        if res.status_code != 201:
+            logger.warning("Error attempting to register with backend: %s", e)
+            return None
+
+        logger.info("Successfully registered with backend!")
+
+    return boot_time
 
 
 def main():
@@ -104,6 +119,7 @@ def main():
         (r"/compile", CompileHandler),
         (r"/assemble", AssembleHandler),
         (r"/objdump", ObjdumpHandler),
+        # these endpoints are currently only used for testing
         (r"/platforms", PlatformsHandler),
         (r"/compilers", CompilersHandler),
         (r"/libraries", LibrariesHandler),
@@ -120,23 +136,19 @@ def main():
 
         server.listen(settings.PORT)
 
-        # TODO: ideally we only register when we start and/or we detect that backend has restarted
-        def loop_job(function, *args, **kwargs):
-            function(*args, **kwargs)
+        def loop_backend_check(backend_checker, last_boot_time):
+            new_boot_time = backend_checker(last_boot_time)
+
             ioloop = tornado.ioloop.IOLoop.current()
             ioloop.add_timeout(
-                time.time() + 60, lambda: loop_job(function, *args, **kwargs)
+                time.time() + 60,
+                lambda: loop_backend_check(backend_checker, new_boot_time),
             )
 
-        def init_job(function, *args, **kwargs):
-            ioloop = tornado.ioloop.IOLoop.current()
-            ioloop.add_timeout(
-                time.time() + 10, lambda: loop_job(function, *args, **kwargs)
-            )
+        ioloop.add_callback(loop_backend_check, check_backend, None)
+        ioloop.start()
 
-        ioloop.add_callback(init_job, register_with_backend)
-
-        logger.info("Platform Server starting on port: %i", settings.PORT)
+        logger.info("Platform Served starting on port: %i", settings.PORT)
         if settings.SUPPORTED_PLATFORMS:
             logger.info(
                 "Supported platform(s): %s", settings.SUPPORTED_PLATFORMS.split(",")
@@ -150,7 +162,6 @@ def main():
             [compilers.id for compilers in available_compilers()],
         )
 
-        ioloop.start()
     except KeyboardInterrupt:
         logger.info("CTRL+C detected. Exiting...")
         sys.exit(0)

@@ -8,6 +8,9 @@ from ..registry import registry
 
 class Register(APIView):
     def post(self, request: Request):
+
+        # TODO: should we return JSON? {"msg": "..."}?
+
         if request.content_type != "application/json":
             return Response(
                 "Set 'content-type: application/json' and try again",
@@ -22,42 +25,29 @@ class Register(APIView):
         hostname = payload.get("hostname")
         if hostname is None:
             return Response(
-                "'hostname' not found in request", status=status.HTTP_400_BAD_REQUEST
+                "Error: 'hostname' not found in request",
+                status=status.HTTP_400_BAD_REQUEST,
             )
         port = payload.get("port")
         if port is None:
             return Response(
-                "'port' not found in request", status=status.HTTP_400_BAD_REQUEST
+                "Error: 'port' not found in request", status=status.HTTP_400_BAD_REQUEST
             )
 
         if not isinstance(port, int) or port < 0 or port > 65536:
             return Response(
-                "Invalid value for 'port', must be a positive integer between 1..65536",
+                "Error: Invalid value for 'port', must be a positive integer between 1..65536",
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        platforms = payload.get("platforms")
-        platforms_hash = payload.get("platforms_hash")
-
-        compilers = payload.get("compilers")
-        compilers_hash = payload.get("compilers_hash")
-
-        libraries = payload.get("libraries")
-        libraries_hash = payload.get("libraries_hash")
 
         res = registry.register_host(
             hostname,
             port,
-            platforms,
-            platforms_hash,
-            compilers,
-            compilers_hash,
-            libraries,
-            libraries_hash,
+            payload.get("platforms", []),
+            payload.get("compilers", []),
+            payload.get("libraries", []),
         )
-        if res is True:
-            return Response("Registered!", status=status.HTTP_201_CREATED)
-        elif res is False:
-            return Response("Failed!", status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("OK!", status=status.HTTP_200_OK)
+        if res:
+            return Response("Registration successful!", status=status.HTTP_201_CREATED)
+
+        return Response("Registration failed!", status=status.HTTP_400_BAD_REQUEST)
