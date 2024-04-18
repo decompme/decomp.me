@@ -1,7 +1,31 @@
+import { Metadata } from "next"
+
 import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
 import YourScratchList from "@/components/YourScratchList"
 
 import WelcomeInfo from "./WelcomeInfo"
+
+export async function generateMetadata(): Promise<Metadata> {
+    const title = "decomp.me"
+
+    const description = "A collaborative reverse-engineering platform for working on decompilation projects with others."
+
+    return {
+        openGraph: {
+            title: title,
+            description: description,
+            url: "https://decomp.me",
+            type: "website",
+            images: [
+                {
+                    url: "opengraph-image",
+                    width: 1200,
+                    height: 400,
+                },
+            ],
+        },
+    }
+}
 
 export default function Page() {
     return <main>
