@@ -114,7 +114,20 @@ let app = withPlausibleProxy({
         return config
     },
     images: {
-        domains: [mediaUrl.hostname, "avatars.githubusercontent.com"],
+        remotePatterns: [{
+            //  Expected 'http' | 'https', received 'http:' at "images.remotePatterns[0].protocol"
+            protocol: mediaUrl.protocol.replace(":", ""),
+            hostname: mediaUrl.hostname,
+            port: mediaUrl.port,
+            pathname: "/**",
+        },
+        {
+            protocol: "https",
+            hostname: "avatars.githubusercontent.com",
+            port: "",
+            pathname: "/**",
+        },
+        ],
         unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
     },
     swcMinify: true,
