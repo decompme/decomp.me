@@ -49,7 +49,6 @@ export default function Nav({ children }: Props) {
             aria-labelledby="navtoggle"
             data-open={isOpen}
             data-force-toggle={!!children}
-            onClick={evt => evt.stopPropagation()} // Don't close the nav if the user clicks inside it
         >
             <ul className={classNames(styles.header, "px-2 md:px-8 lg:px-16")}>
                 <li className={styles.headerItemMenuToggle}>
@@ -101,13 +100,13 @@ export default function Nav({ children }: Props) {
                         </Link>
                     </li>
                     <li>
-                        <Link href="/">Dashboard</Link>
+                        <Link onClick={toggleOpen} href="/">Dashboard</Link>
                     </li>
                     <li>
-                        <Link href="/new">New scratch</Link>
+                        <Link onClick={toggleOpen} href="/new">New scratch</Link>
                     </li>
                     <li>
-                        <Link href="/settings">Settings</Link>
+                        <Link onClick={toggleOpen} href="/settings">Settings</Link>
                     </li>
                 </ul>
             </div>
