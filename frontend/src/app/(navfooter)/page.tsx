@@ -8,7 +8,7 @@ import WelcomeInfo from "./WelcomeInfo"
 export async function generateMetadata(): Promise<Metadata> {
     const title = "decomp.me"
 
-    const description = "A collaborative reverse-engineering platform for working on decompilation projects with others."
+    const description = "A collaborative decompilation platform."
 
     return {
         openGraph: {

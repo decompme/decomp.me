@@ -29,7 +29,7 @@ export default async function HomeOG() {
     const textSize = {
         title: textScale,
         description: 0.6 * textScale,
-        stats: 0.3 * textScale,
+        stats: 0.45 * textScale,
     }
     return new ImageResponse(
         (
@@ -49,10 +49,10 @@ export default async function HomeOG() {
                 <span tw={`flex flex-wrap justify-center text-[${textSize.description}rem] text-center w-3/4`} style={{ fontFamily: "OpenSans-Bold" }}>Collaboratively decompile code in your browser</span>
                 <div tw="w-full h-1/8" />
                 <div tw={`flex justify-between w-full text-[${textSize.stats}rem]`} style={{ fontFamily: "OpenSans-SemiBold" }}>
-                    <a tw="ml-10">{stats.scratch_count.toLocaleString()} scratches created</a>
-                    <a>{stats.profile_count.toLocaleString()} unique visitors</a>
-                    <a>{stats.github_user_count.toLocaleString()} users signed up</a>
-                    <a tw="mr-10">{stats.asm_count.toLocaleString()} asm globs submitted</a>
+                    <a tw="ml-10">{stats.scratch_count.toLocaleString()} scratches</a>
+                    <a>{stats.profile_count.toLocaleString()} visitors</a>
+                    <a>{stats.github_user_count.toLocaleString()} users</a>
+                    <a tw="mr-10">{stats.asm_count.toLocaleString()} asm globs</a>
                 </div>
             </div>
         ),
