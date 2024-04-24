@@ -13,6 +13,13 @@ export const metadata = {
     openGraph: {
         siteName: "decomp.me",
         type: "website",
+        images: [
+            {
+                url: "/opengraph-image",
+                width: 1200,
+                height: 400,
+            },
+        ],
     },
     // set this to avoid "metadata.metadataBase is not set..." warning
     metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`),
