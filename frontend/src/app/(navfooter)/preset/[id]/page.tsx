@@ -8,7 +8,7 @@ import { get } from "@/lib/api/request"
 import { Preset } from "@/lib/api/types"
 import useTranslation from "@/lib/i18n/translate"
 
-export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { id: number } }): Promise<Metadata> {
     let preset: Preset
 
     try {
@@ -62,10 +62,11 @@ export default async function Page({ params }: { params: { id: number } }) {
         <p className="py-3 text-gray-11">{compilerName}</p>
 
         <section>
-            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches ({preset.num_scratches})</h2>
             <ScratchList
                 url={`/scratch?preset=${preset.id}&page_size=20`}
                 item={ScratchItemPresetList}
+                isSortable={true}
+                title={`Scratches (${preset.num_scratches})`}
             />
         </section>
     </main>
