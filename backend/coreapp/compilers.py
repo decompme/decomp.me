@@ -600,6 +600,12 @@ MWCPS2_30B22_020926 = MWCCPS2Compiler(
 )
 
 # PSP
+PSP_GCC_1_3_1 = GCCCompiler(
+    id="psp-gcc-1.3.1",
+    platform=PSP,
+    cc='${COMPILER_DIR}/bin/psp-gcc -B. -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
 PSPSNC_1_2_7503_0 = GCCCompiler(
     id="pspsnc_1.2.7503.0",
     platform=PSP,
@@ -1287,6 +1293,7 @@ _all_compilers: List[Compiler] = [
     GCC29166_MIPSEL,
     GCC2952_MIPSEL,
     # PSP
+    PSP_GCC_1_3_1,
     PSPSNC_1_2_7503_0,
     MWCCPSP_3_0_1_121,
     MWCCPSP_3_0_1_134,

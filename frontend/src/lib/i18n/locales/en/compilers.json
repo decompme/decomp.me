@@ -155,6 +155,7 @@
     "mwccpsp_3.0.1_147": "MWCC 1.1 (3.0.1 147)",
     "mwccpsp_3.0.1_151": "MWCC 1.1 SP1 (3.0.1 151)",
     "pspsnc_1.2.7503.0": "SN 1.2.7503.0",
+    "psp-gcc-1.3.1": "GCC 3.3.3+allegrex-2.2.1-psp-1.3.1",
 
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
