@@ -10,7 +10,7 @@ import { Library } from "@/lib/api/types"
 import useTranslation from "@/lib/i18n/translate"
 
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
-import Select from "../Select" // TODO: use Select2
+import Select from "../Select"
 
 import styles from "./CompilerOpts.module.css"
 import { useCompilersForPlatform } from "./compilers"
@@ -21,12 +21,12 @@ const NO_TRANSLATION = "NO_TRANSLATION"
 interface IOptsContext {
     checkFlag(flag: string): boolean
     setFlag(flag: string, value: boolean): void
-    setFlags(edits: {flag: string, value: boolean}[]): void
+    setFlags(edits: { flag: string, value: boolean }[]): void
 }
 
 const OptsContext = createContext<IOptsContext>(undefined)
 
-type CheckboxProps = {flag: string, description: string}
+type CheckboxProps = { flag: string, description: string }
 
 function FlagCheckbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
@@ -51,7 +51,7 @@ function DiffCheckbox({ flag, description }: CheckboxProps) {
     </div>
 }
 
-type FlagSetProps = {name: string, children: ReactElement<FlagOptionProps>[], value: string};
+type FlagSetProps = { name: string, children: ReactElement<FlagOptionProps>[], value: string };
 
 function FlagSet({ name, children, value }: FlagSetProps) {
     const { setFlag } = useContext(OptsContext)
@@ -240,7 +240,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             setOpts(opts)
         },
 
-        setFlags(edits: {flag: string, value: boolean}[]) {
+        setFlags(edits: { flag: string, value: boolean }[]) {
             edits.forEach(({ flag, value }) => optsEditorProvider.setFlag(flag, value))
         },
 
@@ -255,7 +255,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             diffOptsEditorProvider.setFlags([{ flag, value: enable }])
         },
 
-        setFlags(edits: {flag: string, value: boolean}[]) {
+        setFlags(edits: { flag: string, value: boolean }[]) {
             const positiveEdits = edits.filter(o => o.value).map(o => o.flag)
             const negativeEdits = edits.filter(o => !o.value).map(o => o.flag)
 
@@ -314,6 +314,12 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
 
     const compilers = useCompilersForPlatform(platform)
     const compiler = compilers[compilerId]
+    const compilerOptions = Object.keys(compilers).reduce((sum, id) => {
+        return {
+            ...sum,
+            [id]: compilersTranslation.t(id),
+        }
+    }, {})
 
     if (!compiler) {
         // TODO: this is a bug -- we should just render like an empty state
@@ -323,19 +329,12 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
 
     return <div>
         <div className={styles.row}>
-            <Select
+            <Select2
                 className={styles.compilerSelect}
-                onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
+                onChange={setCompiler}
                 value={compilerId}
-            >
-                {Object.keys(compilers).map(id => <option
-                    key={id}
-                    value={id}
-                >
-                    {compilersTranslation.t(id)}
-                </option>)}
-            </Select>
-
+                options={compilerOptions}
+            />
             <input
                 type="text"
                 className={styles.textbox}

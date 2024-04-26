@@ -39,11 +39,11 @@ export default function PresetSelect({ className, platform, presetId, setPreset,
 
     if (sortedPresets.length > 0 && typeof presetId === "number" && !selectedPreset)
         console.warn(`Scratch.preset == '${presetId}' but no preset with that id was found.`)
-
     return <Select
         className={className}
         options={presetsToOptions(sortedPresets)}
         value={selectedPreset?.name || "Custom"}
+        isSearchable={true}
         onChange={name => {
             setPreset(name === "Custom" ? null : sortedPresets.find((p: api.Preset) => p.name === name))
         }}

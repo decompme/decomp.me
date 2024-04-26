@@ -15,7 +15,13 @@
     user-select: none;
 }
 
-.group select {
+.group:empty {
+    display: hidden;
+}
+
+.group select,
+.group input {
+    width: 50% !important;
     flex: 1;
     border: 0;
     background: transparent;
@@ -24,11 +30,67 @@
     padding-right: 2em;
 }
 
+
+
 .group option,
 .group optgroup {
     color: var(--g1600);
     background: var(--g200);
 }
+
+.options {
+    display: none;
+    color: var(--g1600);
+    background: var(--g200);
+    position: absolute;
+    overflow-y: auto;
+    max-height: 320px;
+    z-index: 20;
+    width: max-content;
+
+
+    &.open {
+        display: block;
+    }
+
+    &.open:empty {
+        display: none;
+    }
+
+    .option {
+        color: var(--g1600);
+        background: var(--g200);
+        border-radius: 5px;
+        padding-right: 3px;
+        padding-left: 3px;
+        width: 100%;
+    }
+
+    .option:hover {
+        background: var(--g1600);
+        color: var(--g200);
+
+    }
+}
+
+.options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.options::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px var(--g200);
+    border-radius: 10px;
+}
+
+.options::-webkit-scrollbar-thumb {
+    background: var(--g1600);
+    border-radius: 10px;
+}
+
+.options::-webkit-scrollbar-thumb:hover {
+    background: gray;
+}
+
 
 .icon {
     pointer-events: none;

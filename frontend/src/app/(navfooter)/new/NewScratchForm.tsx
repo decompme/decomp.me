@@ -61,7 +61,7 @@ export default function NewScratchForm({ serverCompilers }: {
     const [asm, setAsm] = useState("")
     const [context, setContext] = useState("")
     const [platform, setPlatform] = useState("")
-    const [compilerId, setCompilerId] = useState<string>()
+    const [compilerId, setCompilerId] = useState<string>("")
     const [compilerFlags, setCompilerFlags] = useState<string>("")
     const [diffFlags, setDiffFlags] = useState<string[]>([])
     const [libraries, setLibraries] = useState<Library[]>([])
