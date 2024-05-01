@@ -20,16 +20,30 @@ export default function DragBar({ pos, onChange }: Props) {
             }
         }
 
+        const onTouchMove = (evt: TouchEvent) => {
+            if (isActive) {
+                const parent = ref.current.parentElement
+                if (parent) {
+                    const touch = evt.touches[0]
+                    onChange(touch.clientX - parent.getBoundingClientRect().x)
+                }
+            }
+        }
+
         const onMouseUp = () => {
             setIsActive(false)
         }
 
         document.addEventListener("mousemove", onMouseMove)
         document.addEventListener("mouseup", onMouseUp)
+        document.addEventListener("touchmove", onTouchMove)
+        document.addEventListener("touchend", onMouseUp)
 
         return () => {
             document.removeEventListener("mousemove", onMouseMove)
             document.removeEventListener("mouseup", onMouseUp)
+            document.removeEventListener("touchmove", onTouchMove)
+            document.removeEventListener("touchend", onMouseUp)
         }
     })
 
@@ -38,5 +52,6 @@ export default function DragBar({ pos, onChange }: Props) {
         className={styles.vertical}
         style={{ left: `${pos}px` }}
         onMouseDown={() => setIsActive(true)}
+        onTouchMove={() => setIsActive(true)}
     />
 }
