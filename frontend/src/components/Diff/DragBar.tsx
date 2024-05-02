@@ -35,7 +35,7 @@ export default function DragBar({ pos, onChange }: Props) {
 
     return <div
         ref={ref}
-        className={styles.vertical}
+        className={`${styles.vertical} ${isActive ? styles.active : ""}`}
         style={{ left: `${pos}px` }}
         onMouseDown={() => setIsActive(true)}
     />
