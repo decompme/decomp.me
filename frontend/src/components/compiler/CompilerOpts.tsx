@@ -21,12 +21,12 @@ const NO_TRANSLATION = "NO_TRANSLATION"
 interface IOptsContext {
     checkFlag(flag: string): boolean
     setFlag(flag: string, value: boolean): void
-    setFlags(edits: {flag: string, value: boolean}[]): void
+    setFlags(edits: { flag: string, value: boolean }[]): void
 }
 
 const OptsContext = createContext<IOptsContext>(undefined)
 
-type CheckboxProps = {flag: string, description: string}
+type CheckboxProps = { flag: string, description: string }
 
 function FlagCheckbox({ flag, description }: CheckboxProps) {
     const { checkFlag, setFlag } = useContext(OptsContext)
@@ -51,7 +51,7 @@ function DiffCheckbox({ flag, description }: CheckboxProps) {
     </div>
 }
 
-type FlagSetProps = {name: string, children: ReactElement<FlagOptionProps>[], value: string};
+type FlagSetProps = { name: string, children: ReactElement<FlagOptionProps>[], value: string };
 
 function FlagSet({ name, children, value }: FlagSetProps) {
     const { setFlag } = useContext(OptsContext)
@@ -122,11 +122,13 @@ function Flags({ schema }: FlagsProps) {
             if (flag.type === "checkbox") {
                 return <FlagCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
             } else if (flag.type === "flagset") {
-                const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
+                const selectedFlag = flag.flags.filter(checkFlag)[0] || "---"
+                const flagOptions = flag.flags.map(f => <FlagOption key={f} flag={f} description={
+                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                } />)
+
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
-                    {flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                        compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
-                    } />)}
+                    {[<option value="" key={"__NULL__"}>{"---"}</option>, ...flagOptions]}
                 </FlagSet>
             }
         })}
@@ -143,10 +145,12 @@ function DiffFlags({ schema }: FlagsProps) {
                 return <DiffCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
+                const flagOptions = flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
+                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                } />)
+
                 return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
-                    {flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
-                        compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
-                    } />)}
+                    {flagOptions}
                 </DiffFlagSet>
             }
         })}
@@ -240,7 +244,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             setOpts(opts)
         },
 
-        setFlags(edits: {flag: string, value: boolean}[]) {
+        setFlags(edits: { flag: string, value: boolean }[]) {
             edits.forEach(({ flag, value }) => optsEditorProvider.setFlag(flag, value))
         },
 
@@ -255,7 +259,7 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             diffOptsEditorProvider.setFlags([{ flag, value: enable }])
         },
 
-        setFlags(edits: {flag: string, value: boolean}[]) {
+        setFlags(edits: { flag: string, value: boolean }[]) {
             const positiveEdits = edits.filter(o => o.value).map(o => o.flag)
             const negativeEdits = edits.filter(o => !o.value).map(o => o.flag)
 
