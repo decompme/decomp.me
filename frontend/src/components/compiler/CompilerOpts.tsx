@@ -280,9 +280,9 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
             </section>
         </OptsContext.Provider>
 
-        <section className={styles.section}>
+        {value.libraries.length !== 0 && <section className={styles.section}>
             <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} platform={platform} />
-        </section>
+        </section> }
 
         <OptsContext.Provider value={diffOptsEditorProvider}>
             <section className={styles.section}>
