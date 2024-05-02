@@ -14,7 +14,7 @@ type Props = {
 }
 
 export default function FamilyPanel({ scratch }: Props) {
-    return <div className="h-full p-4">
+    return <div className="h-full p-4 overflow-auto">
         <SortableFamilyList scratch={scratch} />
     </div>
 }
