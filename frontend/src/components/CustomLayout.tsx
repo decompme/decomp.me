@@ -70,7 +70,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
         </Tabs>
     } else {
         const els = []
-
+        const minCollapsedHeight = 37
         for (let index = 0; index < layout.children.length; index++) {
             const child = layout.children[index]
 
@@ -82,7 +82,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
 
             els.push(<Allotment.Pane
                 key={child.key}
-                snap
+                minSize={minCollapsedHeight}
             >
                 <CustomLayout
                     renderTab={renderTab}
