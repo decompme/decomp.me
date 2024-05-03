@@ -16,7 +16,7 @@
             "purpose": "any monochrome"
         },
         {
-            "src": "purplefrog-bg-512.png",
+            "src": "frog-512-white.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
