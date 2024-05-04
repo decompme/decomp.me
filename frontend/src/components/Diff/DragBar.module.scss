@@ -22,3 +22,10 @@
         transform: translateX(-50%);
     }
 }
+
+.active {
+    &::after {
+        width: 4px;
+        background: #007fd4;
+    }
+}
