@@ -316,3 +316,6 @@ class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
     class Meta:
         model = ProjectMember
         fields = ["username"]
+
+class CommentSerializer(serializers.ModelSerializer[Comment]):
+    owner =

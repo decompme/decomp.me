@@ -9,6 +9,7 @@ from coreapp.views import (
     project,
     scratch,
     user,
+    comment,
 )
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
     *scratch.router.urls,
     *preset.router.urls,
     *project.router.urls,
+    *comment.router.urls,
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
         "user/scratches",

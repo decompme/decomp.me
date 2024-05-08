@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .models.comment import Comment
 from .models.course import Course, CourseChapter, CourseScenario
 from .models.github import GitHubUser
 from .models.preset import Preset
@@ -26,3 +27,4 @@ admin.site.register(ProjectMember)
 admin.site.register(Course)
 admin.site.register(CourseChapter)
 admin.site.register(CourseScenario)
+admin.site.register(Comment)
