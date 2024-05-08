@@ -26,6 +26,7 @@ import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchProgressBar from "./ScratchProgressBar"
 import ScratchToolbar from "./ScratchToolbar"
+import CommentsPanel from "./CommentsPanel"
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -35,6 +36,7 @@ enum TabId {
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
     FAMILY = "scratch_family",
+    COMMENTS = "scratch_comments",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -54,6 +56,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
+                    TabId.COMMENTS,
                 ],
             },
             {
@@ -295,6 +298,10 @@ export default function Scratch({
         case TabId.FAMILY:
             return <Tab key={id} tabKey={id} label="Family">
                 {() => <FamilyPanel scratch={scratch} />}
+            </Tab>
+        case TabId.COMMENTS:
+            return <Tab key={id} tabKey={id} label="Comments">
+                {() => <CommentsPanel scratch={scratch} />}
             </Tab>
         default:
             return <Tab key={id} tabKey={id} label={id} disabled />
