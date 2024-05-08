@@ -64,10 +64,11 @@ export default async function Page({ params }: { params: { username: string } })
         </header>
 
         <section>
-            <h2 className="pb-2 text-lg font-medium tracking-tight">Scratches</h2>
             <ScratchList
-                url={userUrl(user) + "/scratches?page_size=20"}
+                url={`/scratch?user=${user}&page_size=20`}
                 item={ScratchItemNoOwner}
+                isSortable={true}
+                title="Scratches"
             />
         </section>
     </main>
