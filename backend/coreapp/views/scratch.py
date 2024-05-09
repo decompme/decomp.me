@@ -300,8 +300,10 @@ class ScratchViewSet(
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
+        filters.OrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
+    ordering_fields = ["-creation_time", "creation_time", "-last_updated", "-score"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":

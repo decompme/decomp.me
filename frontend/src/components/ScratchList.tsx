@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 
 import Link from "next/link"
 
@@ -17,17 +17,21 @@ import LoadingSpinner from "./loading.svg"
 import PlatformLink from "./PlatformLink"
 import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
+import Sort, { SortMode } from "./Sort"
 import UserLink from "./user/UserLink"
 
 export interface Props {
+    title?: string
     url?: string
     className?: string
     item?: ({ scratch }: { scratch: api.TerseScratch }) => JSX.Element
     emptyButtonLabel?: ReactNode
+    isSortable?: boolean
 }
 
-export default function ScratchList({ url, className, item, emptyButtonLabel }: Props) {
-    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(url || "/scratch")
+export default function ScratchList({ title, url, className, item, emptyButtonLabel, isSortable }: Props) {
+    const [sortMode, setSortBy] = useState(SortMode.NEWEST_FIRST)
+    const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.TerseScratch>(`${url || "/scratch"}&ordering=${sortMode.toString()}`)
 
     if (results.length === 0 && isLoading) {
         return <div className={classNames(styles.loading, className)}>
@@ -39,25 +43,31 @@ export default function ScratchList({ url, className, item, emptyButtonLabel }: 
     const Item = item || ScratchItem
 
     return (
-        <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
-            {results.map(scratch => (
-                <Item key={scratchUrl(scratch)} scratch={scratch} />
-            ))}
-            {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
-                <Link href="/new">
+        <>
+            <div className="flex justify-between pb-2">
+                <h2 className="text-lg font-medium tracking-tight">{title}</h2>
+                {isSortable && <Sort sortMode={sortMode} setSortMode={setSortBy} />}
+            </div>
+            <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
+                {results.map(scratch => (
+                    <Item key={scratchUrl(scratch)} scratch={scratch} />
+                ))}
+                {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
+                    <Link href="/new">
 
-                    <Button>
-                        {emptyButtonLabel}
-                    </Button>
+                        <Button>
+                            {emptyButtonLabel}
+                        </Button>
 
-                </Link>
-            </li>}
-            {hasNext && <li className={styles.button}>
-                <AsyncButton onClick={loadNext}>
-                    Show more
-                </AsyncButton>
-            </li>}
-        </ul>
+                    </Link>
+                </li>}
+                {hasNext && <li className={styles.button}>
+                    <AsyncButton onClick={loadNext}>
+                        Show more
+                    </AsyncButton>
+                </li>}
+            </ul>
+        </>
     )
 }
 
@@ -71,7 +81,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
     return matchPercentString
 }
 
-export function ScratchItem({ scratch, children } : { scratch: api.TerseScratch, children?: ReactNode }) {
+export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const matchPercentString = getMatchPercentString(scratch)

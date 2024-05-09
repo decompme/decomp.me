@@ -5,45 +5,13 @@ import Link from "next/link"
 import classNames from "classnames"
 import useSWR from "swr"
 
-import Select from "@/components/Select2"
 import { get } from "@/lib/api/request"
 import { TerseScratch } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 
 import { getScoreAsFraction, getScoreText } from "../ScoreBadge"
+import Sort, { SortMode, compareScratchScores, produceSortFunction } from "../Sort"
 import UserLink from "../user/UserLink"
-
-enum SortMode {
-    NEWEST_FIRST = "newest_first",
-    OLDEST_FIRST = "oldest_first",
-    LAST_UPDATED = "last_updated",
-    SCORE = "score",
-}
-
-function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScratch) => number {
-    switch (sortMode) {
-    case SortMode.NEWEST_FIRST:
-        return (a, b) => new Date(b.creation_time).getTime() - new Date(a.creation_time).getTime()
-    case SortMode.OLDEST_FIRST:
-        return (a, b) => new Date(a.creation_time).getTime() - new Date(b.creation_time).getTime()
-    case SortMode.LAST_UPDATED: // most recent first
-        return (a, b) => new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
-    case SortMode.SCORE:
-        return compareScratchScores
-    }
-}
-
-function compareScratchScores(a: TerseScratch, b: TerseScratch) {
-    // If not compiling, give it a score of Infinity so it's sorted to the end
-    const aScore = a.score < 0 ? Infinity : a.score
-    const bScore = b.score < 0 ? Infinity : b.score
-
-    // Sort scratches with the same score with most recently updated first
-    if (aScore == bScore) {
-        return new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
-    }
-    return aScore - bScore
-}
 
 function useFamily(scratch: TerseScratch) {
     const { data: family } = useSWR<TerseScratch[]>(scratchUrl(scratch) + "/family", get, {
@@ -106,21 +74,7 @@ export default function SortableFamilyList({ scratch }: { scratch: TerseScratch 
                 {family.sorted.length} family members
             </div>
             <div className="grow" />
-            <div>
-                <span className="mr-2 text-sm text-gray-11">
-                    Sort by
-                </span>
-                <Select
-                    value={family.sortMode}
-                    onChange={m => family.setSortMode(m as SortMode)}
-                    options={{
-                        [SortMode.SCORE]: "Match completion",
-                        [SortMode.NEWEST_FIRST]: "Newest first",
-                        [SortMode.OLDEST_FIRST]: "Oldest first",
-                        [SortMode.LAST_UPDATED]: "Last modified",
-                    }}
-                />
-            </div>
+            <Sort sortMode={family.sortMode} setSortMode={family.setSortMode} />
         </div>
         <ol>
             {family.sorted.map(member => <li key={scratchUrl(member)} className="mb-2">
