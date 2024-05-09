@@ -1,11 +1,12 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict
+from typing import Any, Dict, OrderedDict, Optional
 from pathlib import Path
 import functools
 
 from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
 from coreapp.models.preset import Preset
+from coreapp.models.profile import Profile
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
 
@@ -39,7 +40,7 @@ class Platform:
         return Scratch.objects.filter(platform=self.id).count()
 
     def to_json(
-        self, include_presets: bool = True, include_num_scratches: bool = False
+        self, include_presets: bool = True, include_num_scratches: bool = False, profile: Optional[Profile] = None,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -48,10 +49,15 @@ class Platform:
             "arch": self.arch,
             "has_decompiler": self.has_decompiler,
         }
-        if include_presets:
+        if include_presets:       
+            # Here we are filtering the presets based on the owner
+            # if owner is None it means the preset is a system one => we keep it
+            # if owner is equal to profile it means it has been created by the user => we keep it
+            # otherwise we do not use it
             ret["presets"] = [
                 PresetSerializer(p).data
                 for p in Preset.objects.filter(platform=self.id).order_by("name")
+                if p.owner is None or p.owner == profile
             ]
         if include_num_scratches:
             ret["num_scratches"] = self.get_num_scratches()

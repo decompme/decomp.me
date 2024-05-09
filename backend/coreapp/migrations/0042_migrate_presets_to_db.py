@@ -823,6 +823,7 @@ def create_presets(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 class Migration(migrations.Migration):
     dependencies = [
         ("coreapp", "0041_remove_project_and_github_stuff"),
+        ("coreapp", "0054_presets_owner"),
     ]
 
     operations = [

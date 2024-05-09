@@ -28,7 +28,7 @@ class PlatformDetail(APIView):
         return Response(
             {
                 "platforms": CompilerDetail.platforms_json(
-                    include_presets=False, include_num_scratches=True
+                    include_presets=False, include_num_scratches=True, profile=request.profile,
                 ),
             }
         )
