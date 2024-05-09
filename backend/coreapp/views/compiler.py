@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 from coreapp import compilers
 from django.utils.timezone import now
@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from coreapp.models.preset import Preset
 
 from ..decorators.django import condition
+from ..models.profile import Profile
 
 boot_time = now()
 
@@ -34,11 +35,12 @@ class CompilerDetail(APIView):
     def platforms_json(
         include_presets: bool = True,
         include_num_scratches: bool = False,
+        profile: Optional[Profile] = None,
     ) -> Dict[str, Dict[str, object]]:
         ret: Dict[str, Dict[str, object]] = {}
 
         for platform in compilers.available_platforms():
-            ret[platform.id] = platform.to_json(include_presets, include_num_scratches)
+            ret[platform.id] = platform.to_json(include_presets, include_num_scratches, profile)
 
         return ret
 
@@ -51,6 +53,6 @@ class CompilerDetail(APIView):
         return Response(
             {
                 "compilers": CompilerDetail.compilers_json(),
-                "platforms": CompilerDetail.platforms_json(),
+                "platforms": CompilerDetail.platforms_json(profile=request.profile),
             }
         )
