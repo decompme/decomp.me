@@ -20,6 +20,7 @@ from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
+from .models.comment import Comment
 
 
 def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
@@ -317,5 +318,28 @@ class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
         model = ProjectMember
         fields = ["username"]
 
+
 class CommentSerializer(serializers.ModelSerializer[Comment]):
-    owner =
+    owner = ProfileField(read_only=True)
+    text = serializers.CharField(allow_blank=True, trim_whitespace=False)
+
+    class Meta:
+        model = Comment
+        fields = [
+            "slug",
+            "text",
+            "owner",
+            "scratch",
+            "creation_time",
+        ]
+
+    def create(self, validated_data: Any) -> Comment:
+        comment = Project.objects.create(**validated_data)
+        return comment
+
+    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        TODO: Validate that the scratch and the user are both valid to allow comment
+        creation
+        """
+        return True

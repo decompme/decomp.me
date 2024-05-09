@@ -1,18 +1,20 @@
 from typing import Any, Optional
 
 import django_filters
+
 from rest_framework.pagination import CursorPagination
 from rest_framework import mixins, filters, status
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.exceptions import APIException
+from rest_framework.routers import DefaultRouter
 # from django.http import HttpResponseForbidden
 # from ..models.scratch import Scratch
 from ..models.comment import Comment
-from django.contrib.auth.models import User
-
 from ..models.github import GitHubUser
+from ..serializers import CommentSerializer
+from django.contrib.auth.models import User
 
 
 class GithubLoginException(APIException):
@@ -42,6 +44,7 @@ class CommentViewSet(
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
     ]
+    serializer_class = CommentSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: Optional[User] = request.profile.user
@@ -51,18 +54,16 @@ class CommentViewSet(
         if not gh_user:
             raise GithubLoginException()
 
-        serializer = ProjectSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        slug = serializer.validated_data["slug"]
-        if slug == "new" or Project.objects.filter(slug=slug).exists():
-            raise ProjectExistsException()
-
-        project = serializer.save()
-
-        ProjectMember(project=project, user=request.profile.user).save()
+        comment = serializer.save()
 
         return Response(
-            ProjectSerializer(project, context={"request": request}).data,
+            CommentSerializer(comment, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+router = DefaultRouter(trailing_slash=False)
+router.register(r"comment", CommentViewSet)

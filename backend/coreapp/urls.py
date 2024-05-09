@@ -32,11 +32,21 @@ urlpatterns = [
         user.CurrentUserScratchList.as_view(),
         name="current-user-scratches",
     ),
+    path(
+        "user/comments",
+        user.CurrentUserCommentList.as_view(),
+        name="current-user-comments",
+    ),
     path("users/<slug:username>", user.user, name="user-detail"),
     path(
         "users/<slug:username>/scratches",
         user.UserScratchList.as_view(),
         name="user-scratches",
+    ),
+    path(
+        "users/<slug:username>/comments",
+        user.UserCommentList.as_view(),
+        name="user-comments",
     ),
     # TODO: remove
     path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),

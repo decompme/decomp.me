@@ -156,6 +156,13 @@ export interface Platform extends PlatformBase {
     presets: Preset[]
 }
 
+export interface Comment {
+    slug: string
+    text: string
+    owner: User | null
+    creation_time: string
+}
+
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous
 }
