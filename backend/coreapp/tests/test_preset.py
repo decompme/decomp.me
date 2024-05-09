@@ -41,14 +41,15 @@ class PresetTests(BaseTestCase):
         self.user = user
         self.client.login(username=self.username, password=self.password)
         
-    def create_user(self) -> None:
-        self.username = "dummy-user"
+    def create_user(self, username: str = "dummy-user") -> User:
+        self.username = username
         self.password = User.objects.make_random_password()
         user, created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.save()
         self.user = user
         self.client.login(username=self.username, password=self.password)
+        return user
 
     def create_preset(self, partial: Dict[str, Any]) -> Preset:
         response = self.client.post(reverse("preset-list"), partial)
@@ -75,7 +76,33 @@ class PresetTests(BaseTestCase):
         self.create_user()
         preset = self.create_preset(DUMMY_PRESET_DICT)
         assert preset.owner is not None
-        assert preset.owner.id == self.user.id
+        assert preset.owner.pk == self.user.pk
+        
+    def test_owner_can_delete_preset(self) -> None:
+        self.create_user()
+        preset = self.create_preset(DUMMY_PRESET_DICT)
+
+        url = reverse("preset-detail", kwargs={"pk": preset.pk})
+        # Delete user's preset
+        response = self.client.delete(url)
+        # Ensure the response is OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+    
+    def test_user_cannot_delete_not_own_preset(self) -> None:
+        # Create a first user and a preset
+        user_a = self.create_user('user_a')
+        preset = self.create_preset(DUMMY_PRESET_DICT)
+
+        # Create a new user
+        user_b = self.create_user('user_b')
+
+        assert user_a.pk != user_b.pk
+
+        url = reverse("preset-detail", kwargs={"pk": preset.pk})
+        # Try to delete user_a preset
+        response = self.client.delete(url)
+        # Ensure the response is FORBIDDEN
+        assert response.status_code == status.HTTP_403_FORBIDDEN
         
     def test_list_preset_by_owner(self) -> None:
         # Create a new user and make it create a preset
@@ -83,7 +110,7 @@ class PresetTests(BaseTestCase):
         self.create_preset(DUMMY_PRESET_DICT)
         
         # Let's list all the user's presets
-        response = self.client.get(f"{reverse('preset-list')}?owner={self.user.id}")
+        response = self.client.get(f"{reverse('preset-list')}?owner={self.user.pk}")
         # Ensure the response is OK
         assert response.status_code == status.HTTP_200_OK
         # Check we only get one preset owned by the user
@@ -91,7 +118,7 @@ class PresetTests(BaseTestCase):
         assert len(results) == 1
         assert results[0].get('name') == DUMMY_PRESET_DICT.get('name')
         # Ensure the user is the owner of the preset
-        assert results[0].get('owner') == self.user.id
+        assert results[0].get('owner') == self.user.pk
 
     @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_compiler(self) -> None:
