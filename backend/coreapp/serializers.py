@@ -80,7 +80,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             "decompiler_flags",
             "libraries",
             "num_scratches",
-            "owner"
+            "owner",
         ]
         read_only_fields = [
             "creation_time",

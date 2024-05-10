@@ -40,7 +40,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
     queryset = Preset.objects.all()
     pagination_class = PresetPagination
-    filterset_fields = ["platform", "compiler", "owner"]    
+    filterset_fields = ["platform", "compiler", "owner"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
@@ -49,14 +49,14 @@ class PresetViewSet(ModelViewSet):  # type: ignore
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         return PresetSerializer
-    
+
     # creation is a special case where you cannot be an owner
     # therefore we only check if the user is authenticated or not
     def perform_create(self, serializer):
         if self.request.profile.is_anonymous():
             raise AuthorizationException()
-        
-        serializer.save(owner=self.request.profile)       
+
+        serializer.save(owner=self.request.profile)
 
 
 router = DefaultRouter(trailing_slash=False)

@@ -17,7 +17,9 @@ class Preset(models.Model):
     libraries = LibrariesField(default=list, blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(Profile, null=True, blank=True, default=None, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(
+        Profile, null=True, blank=True, default=None, on_delete=models.SET_NULL
+    )
 
     class Meta:
         ordering = ["-creation_time"]
