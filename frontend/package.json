@@ -33,6 +33,7 @@
         "ansi-to-react": "^6.1.6",
         "classnames": "^2.5.1",
         "codemirror": "^6.0.1",
+        "date-fns": "^3.6.0",
         "dotenv": "^16.4.5",
         "downshift": "9.0.0",
         "fast-myers-diff": "^3.2.0",
