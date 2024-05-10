@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.exceptions import APIException
 from rest_framework.routers import DefaultRouter
-# from django.http import HttpResponseForbidden
-# from ..models.scratch import Scratch
+
 from ..models.comment import Comment
 from ..models.github import GitHubUser
+from ..models.profile import Profile
+from ..models.scratch import Scratch
 from ..serializers import CommentSerializer
 from django.contrib.auth.models import User
 
@@ -20,6 +21,11 @@ from django.contrib.auth.models import User
 class GithubLoginException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "You must be logged in to Github to perform this action."
+
+
+class ScratchSlugException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "Invalid Scratch Slug"
 
 
 class CommentPagination(CursorPagination):
@@ -48,16 +54,26 @@ class CommentViewSet(
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: Optional[User] = request.profile.user
+
         if not user:
             raise GithubLoginException()
         gh_user: Optional[GitHubUser] = user.github
         if not gh_user:
             raise GithubLoginException()
+        profile: Profile = Profile.objects.get(user=request.profile.user)
+        if not profile:
+            raise GithubLoginException()
+        scratch = Scratch.objects.get(slug=request.GET.get('scratch_id'))
+        if not scratch:
+            raise ScratchSlugException()
 
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         comment = serializer.save()
+
+        comment.owner = profile
+        comment.scratch = scratch
+        comment.save()
 
         return Response(
             CommentSerializer(comment, context={"request": request}).data,

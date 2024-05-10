@@ -310,10 +310,6 @@ export function useComments(scratch: Scratch): Comment | undefined {
     return data
 }
 
-export function claimComment(comment: Comment): {
-
-}
-
 export function usePaginated<T>(url: string, firstPage?: Page<T>): {
     results: T[]
     hasNext: boolean

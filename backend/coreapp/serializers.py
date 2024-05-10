@@ -321,7 +321,6 @@ class ProjectMemberSerializer(serializers.ModelSerializer[ProjectMember]):
 
 class CommentSerializer(serializers.ModelSerializer[Comment]):
     owner = ProfileField(read_only=True)
-    text = serializers.CharField(allow_blank=True, trim_whitespace=False)
 
     class Meta:
         model = Comment
@@ -334,12 +333,12 @@ class CommentSerializer(serializers.ModelSerializer[Comment]):
         ]
 
     def create(self, validated_data: Any) -> Comment:
-        comment = Project.objects.create(**validated_data)
+        comment = Comment.objects.create(**validated_data)
         return comment
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        TODO: Validate that the scratch and the user are both valid to allow comment
-        creation
-        """
-        return True
+    # def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    #     """
+    #     TODO: Validate that the scratch and the user are both valid to allow comment
+    #     creation
+    #     """
+    #     return True

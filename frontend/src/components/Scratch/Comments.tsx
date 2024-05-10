@@ -17,24 +17,19 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
     const [text, setText] = useState("")
     const submit = async () => {
         try {
-            const comment: api.Comment = await api.post("/comment", {
-                text: text,
-
-            })
+            await api.post(`/comment?scratch_id=${scratch.slug}`, {text: text})
         } catch (error) {
             console.error(error)
             throw error
         }
     }
 
-
-    console.log(text)
     return (
         <div>
             <section id="comment-section">
                 {results.map((comment: Comment) => {
                     return (
-                        <div>
+                        <div key={comment.slug}>
                             <h1>{comment.owner.username}:</h1>
                             <p>{comment.text}</p>
                             <br />
@@ -50,7 +45,7 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
             </section>
             <section id="input-section">
                 <div>
-                    <input onChange={(e) => { console.log(e.target.value); setText(e.target.value) }} />
+                    <input onChange={(e) => {setText(e.target.value) }} />
                     <AsyncButton onClick={submit}>Submit Comment</AsyncButton>
                 </div>
             </section>
