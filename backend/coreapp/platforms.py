@@ -40,7 +40,7 @@ class Platform:
         return Scratch.objects.filter(platform=self.id).count()
 
     def to_json(
-        self, include_presets: bool = True, include_num_scratches: bool = False, profile: Optional[Profile] = None,
+        self, include_presets: bool = True, include_num_scratches: bool = False
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -49,15 +49,10 @@ class Platform:
             "arch": self.arch,
             "has_decompiler": self.has_decompiler,
         }
-        if include_presets:       
-            # Here we are filtering the presets based on the owner
-            # if owner is None it means the preset is a system one => we keep it
-            # if owner is equal to profile it means it has been created by the user => we keep it
-            # otherwise we do not use it
+        if include_presets:
             ret["presets"] = [
                 PresetSerializer(p).data
                 for p in Preset.objects.filter(platform=self.id).order_by("name")
-                if p.owner is None or p.owner == profile
             ]
         if include_num_scratches:
             ret["num_scratches"] = self.get_num_scratches()
