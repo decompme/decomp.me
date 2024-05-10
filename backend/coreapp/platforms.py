@@ -1,12 +1,11 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict, Optional
+from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
 from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
 from coreapp.models.preset import Preset
-from coreapp.models.profile import Profile
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
 
