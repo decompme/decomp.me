@@ -47,7 +47,6 @@
         "react-contenteditable": "^3.3.7",
         "react-dom": "^18.2.0",
         "react-laag": "^2.0.5",
-        "react-timeago": "^7.2.0",
         "react-virtualized-auto-sizer": "^1.0.24",
         "react-window": "^1.8.10",
         "sass": "^1.72.0",
