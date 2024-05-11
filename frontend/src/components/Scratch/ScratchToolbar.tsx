@@ -5,7 +5,6 @@ import Link from "next/link"
 import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
-import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
@@ -19,6 +18,7 @@ import UserAvatar from "../user/UserAvatar"
 
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import styles from "./ScratchToolbar.module.scss"
+import { formatDistanceToNowStrict } from "date-fns"
 
 const ACTIVE_MS = 1000 * 60
 
@@ -57,7 +57,7 @@ function EditTimeAgo({ date }: { date: string }) {
         {isActive ? <>
             Active now
         </> : <>
-            <TimeAgo date={date} />
+            {formatDistanceToNowStrict(date)} ago
         </>}
     </span>
 }

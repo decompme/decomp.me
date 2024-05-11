@@ -1,6 +1,5 @@
 import Link from "next/link"
 
-import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
@@ -13,6 +12,7 @@ import { getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
+import { formatDistanceToNowStrict } from "date-fns"
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<Scratch>(url, get)
@@ -78,11 +78,11 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>
-                    <TimeAgo date={scratch.creation_time} />
+                    {formatDistanceToNowStrict(scratch.last_updated)} ago
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Modified</p>
-                    <TimeAgo date={scratch.last_updated} />
+                    {formatDistanceToNowStrict(scratch.last_updated)} ago
                 </div>
             </div>
 
