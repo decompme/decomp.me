@@ -52,7 +52,7 @@ export default async function Page({ params }: { params: { username: string } })
                     {user.username}
                 </h1>
 
-                <div className="flex justify-center md:justify-start flex-wrap items-center gap-2 pt-1 text-sm text-gray-11">
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-sm text-gray-11 md:justify-start">
                     <GhostButton href={userGithubHtmlUrl(user)}>
                         <div className="flex items-center gap-1">
                             {userGithubHtmlUrl(user) && <MarkGithubIcon size={16} aria-label="GitHub username" />}
@@ -65,9 +65,9 @@ export default async function Page({ params }: { params: { username: string } })
 
         <section>
             <ScratchList
-                url={`/scratch?user=${user}&page_size=20`}
+                url={userUrl(user) + "/scratches?page_size=20"}
                 item={ScratchItemNoOwner}
-                isSortable={true}
+                isSortable={false}
                 title="Scratches"
             />
         </section>
