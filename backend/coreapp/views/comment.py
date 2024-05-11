@@ -24,7 +24,7 @@ class GithubLoginException(APIException):
 
 
 class ScratchSlugException(APIException):
-    status_code = status.HTTP_403_FORBIDDEN
+    status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Invalid Scratch Slug"
 
 
@@ -44,11 +44,12 @@ class CommentViewSet(
 ):
     queryset = Comment.objects.all()
     pagination_class = CommentPagination
-    filterset_fields = ["scratch"]
+    filterset_fields = ["scratch", "slug"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
     ]
+    search_fields = ["scratch", "owner"]
     serializer_class = CommentSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
