@@ -1,3 +1,7 @@
+import Link from "next/link"
+
+import { platformUrl } from "@/lib/api/urls"
+
 import LogoDreamcast from "./dreamcast.svg"
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
@@ -48,6 +52,11 @@ export function platformIcon(platform: string) {
 
 export function PlatformIcon({ platform, className, size }: Props) {
     const Icon = platformIcon(platform)
+    const url = platformUrl(platform)
 
-    return <Icon width={size} height={size} className={className} />
+    return (
+        <Link href={url}>
+            <Icon width={size} height={size} className={className} />
+        </Link>
+    )
 }

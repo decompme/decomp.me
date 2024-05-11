@@ -5,7 +5,7 @@ import { notFound } from "next/navigation"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
-import { PlatformMetadata } from "@/lib/api/types"
+import {PlatformMetadata, Preset} from "@/lib/api/types"
 
 export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
     let platform: PlatformMetadata
@@ -37,8 +37,10 @@ export async function generateMetadata({ params }: { params: { id: number } }):P
 
 export default async function Page({ params }: { params: { id: number } }) {
     let platform: PlatformMetadata
+    let presets: Preset[]
     try {
         platform = await get(`/platform/${params.id}`)
+        presets = await get(`/presets?platform=${platform.id}`)
     } catch (error) {
         console.error(error)
     }
