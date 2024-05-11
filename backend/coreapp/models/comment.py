@@ -23,4 +23,4 @@ class Comment(models.Model):
         ordering = ["-creation_time"]
 
     def __str__(self) -> str:
-        return self.slug
+        return f'{self.creation_time} - {self.owner} - {self.scratch} -  {self.text[:50]}'

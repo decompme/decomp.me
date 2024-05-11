@@ -3,7 +3,6 @@ import dynamic from "next/dynamic"
 import { TerseScratch } from "@/lib/api"
 import Loading from "@/components/loading.svg"
 
-import { styles } from "./CommentsPanel.module.scss"
 
 type Props = {
     scratch: TerseScratch

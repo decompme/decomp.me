@@ -1,0 +1,16 @@
+.textInput {
+    width: 100%;
+    padding: 8px 10px;
+
+    color: var(--g1200);
+    background: var(--g200);
+    font: 0.8rem var(--monospace);
+    border: 1px solid var(--g500);
+    border-radius: 4px;
+
+    outline: none !important;
+
+    &::-webkit-input-placeholder {
+        color: var(--g700);
+    }
+}
