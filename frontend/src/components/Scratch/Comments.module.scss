@@ -14,3 +14,13 @@
         color: var(--g700);
     }
 }
+
+.metadata {
+    display: flex;
+    padding-left: 5px;
+    color: var(--g900);
+
+    > span {
+        flex-grow: 1;
+    }
+}

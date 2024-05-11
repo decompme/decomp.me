@@ -6,6 +6,7 @@ import * as api from "@/lib/api"
 import AsyncButton from "../AsyncButton"
 import { Comment } from "@/lib/api";
 import UserLink from "../user/UserLink";
+import { formatDistanceToNowStrict } from "date-fns"
 
 import styles from "./Comments.module.scss"
 
@@ -15,12 +16,16 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Comment>(`/comment?scratch=${scratch.slug}&page_size=10`)
     const [text, setText] = useState("")
     const bottomRef = useRef(null)
+    const inputRef = useRef(null)
 
     const submit = async () => {
         try {
-            const reponse = await api.post(`/comment?scratch_id=${scratch.slug}`, { text: text })
-            console.log(reponse)
-            setText("")
+            const response = await api.post(`/comment?scratch_id=${scratch.slug}`, { text: text })
+            if (response) {
+                inputRef.current?.reset()
+            }
+            console.log(response)
+
         } catch (error) {
             console.error(error)
             throw error
@@ -47,8 +52,11 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
             <section id="comment-section" className="flex flex-col-reverse">
                 {results.map((comment: Comment) => {
                     return (
-                        <div key={comment.slug}>
-                            <h1><UserLink user={comment.owner} /> - </h1>
+                        <div key={comment.slug} >
+                            <div className="flex">
+                                <h1><UserLink user={comment.owner} /></h1>
+                                <span className={styles.metadata}>{formatDistanceToNowStrict(comment.creation_time)} ago</span>
+                            </div>
                             <p>{comment.text}</p>
                             <br />
                         </div>
@@ -63,7 +71,9 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
             </section>
             <section ref={bottomRef} id="input-section">
                 <div className="flex">
-                    <input className={styles.textInput} onChange={(e) => { setText(e.target.value) }} />
+                    <form ref={inputRef} id="commentForm">
+                        <input className={styles.textInput} onChange={(e) => { setText(e.target.value) }} />
+                    </form>
                     <AsyncButton onClick={submit}>Submit Comment</AsyncButton>
                 </div>
             </section>
