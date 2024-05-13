@@ -87,6 +87,25 @@ function FormatDiffText({ texts, highlighter }: {
     }</>
 }
 
+function scrollToSourceFromLineNumber(cell: api.DiffCell | undefined) {
+    if (cell) {
+        // item(0) is the source tab
+        // item(1) is the context tab
+        const lineNumbersEle = document.getElementsByClassName("cm-gutter cm-lineNumbers").item(0)
+        const scrollerEle = document.getElementsByClassName("cm-scroller").item(0)
+        if (lineNumbersEle) {
+            const lineNumberEle = lineNumbersEle.children[cell.src_line]
+            if (lineNumberEle) {
+                scrollerEle.scroll({
+                    left: lineNumberEle.offsetLeft,
+                    top: lineNumberEle.offsetTop,
+                    behavior: "smooth" // smoothly scroll to the line
+                })
+            }
+        }
+    }
+}
+
 function DiffCell({ cell, className, highlighter }: {
     cell: api.DiffCell | undefined
     className?: string
@@ -103,7 +122,7 @@ function DiffCell({ cell, className, highlighter }: {
             [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
         })}
     >
-        {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
+        {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToSourceFromLineNumber(cell)}>{cell.src_line}</button></span>}
         <FormatDiffText texts={cell.text} highlighter={highlighter} />
     </div>
 }
