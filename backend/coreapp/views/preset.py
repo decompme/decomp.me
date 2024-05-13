@@ -3,6 +3,7 @@ from typing import Any
 
 import django_filters
 from rest_framework.exceptions import APIException
+from rest_framework.serializers import BaseSerializer
 
 from coreapp.models.preset import Preset
 from coreapp.serializers import PresetSerializer
@@ -52,7 +53,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
 
     # creation is a special case where you cannot be an owner
     # therefore we only check if the user is authenticated or not
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: BaseSerializer[Any]):
         if self.request.profile.is_anonymous():
             raise AuthorizationException()
 
