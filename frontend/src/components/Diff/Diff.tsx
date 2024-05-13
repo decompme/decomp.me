@@ -99,7 +99,7 @@ function scrollToSourceFromLineNumber(cell: api.DiffCell | undefined) {
                 scrollerEle.scroll({
                     left: lineNumberEle.offsetLeft,
                     top: lineNumberEle.offsetTop,
-                    behavior: "smooth" // smoothly scroll to the line
+                    behavior: "smooth", // smoothly scroll to the line
                 })
             }
         }
