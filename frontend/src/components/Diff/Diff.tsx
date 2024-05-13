@@ -94,7 +94,7 @@ function scrollToSourceFromLineNumber(cell: api.DiffCell | undefined) {
         const lineNumbersEle = document.getElementsByClassName("cm-gutter cm-lineNumbers").item(0)
         const scrollerEle = document.getElementsByClassName("cm-scroller").item(0)
         if (lineNumbersEle) {
-            const lineNumberEle = lineNumbersEle.children[cell.src_line]
+            const lineNumberEle = lineNumbersEle.children[cell.src_line] as HTMLElement
             if (lineNumberEle) {
                 scrollerEle.scroll({
                     left: lineNumberEle.offsetLeft,
