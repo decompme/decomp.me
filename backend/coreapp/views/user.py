@@ -1,7 +1,7 @@
 from django.contrib.auth import logout
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -50,6 +50,8 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
+    filter_backends = filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["score", "creation_time", "last_updated"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner=self.request.profile)
@@ -62,6 +64,8 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["score", "creation_time", "last_updated"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
