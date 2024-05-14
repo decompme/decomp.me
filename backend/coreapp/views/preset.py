@@ -53,7 +53,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
 
     # creation is a special case where you cannot be an owner
     # therefore we only check if the user is authenticated or not
-    def perform_create(self, serializer: BaseSerializer[Any]):
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
         if self.request.profile.is_anonymous():
             raise AuthorizationException()
 
