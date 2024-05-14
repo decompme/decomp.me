@@ -87,11 +87,19 @@ export default function Comments({ scratch }: { scratch: TerseScratch }) {
         }
     }, [bottomRef])
 
-    return (
-        <div >
+    if (isLoading) {
+        return (<>
             {isLoading && <div className="flex size-full items-center justify-center">
                 <Loading className="size-8 animate-pulse" />
-            </div>}
+            </div>
+            }
+        </>
+        )
+    }
+
+    return (
+        <div >
+
             <section id="comment-section" className="flex flex-col-reverse">
                 <div ref={commentListRef}>
                     <CommentList results={results} />
