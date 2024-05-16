@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, useRef, useState } from "react"
+import { ChangeEvent, useCallback, useRef, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
@@ -94,7 +94,7 @@ function CommentItem({ comment, canModify }: { comment: any, canModify?: boolean
         },
     }
 
-    const submit = async (text: string) => {
+    const submitEdits = async (text: string) => {
         if (!userIsYou(comment.owner)) {
             throw new Error("Cannot save scratch which you do not own")
         }
@@ -120,7 +120,7 @@ function CommentItem({ comment, canModify }: { comment: any, canModify?: boolean
     }
 
     if (comment.isEditing) {
-        return <EditComment comment={comment} stopEditing={stopEditing} submit={submit} />
+        return <EditComment comment={comment} stopEditing={stopEditing} submit={submitEdits} />
     }
 
     return (

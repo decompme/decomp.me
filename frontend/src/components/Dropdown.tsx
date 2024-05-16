@@ -27,7 +27,6 @@ export default function Dropdown({ options, children, className }: Props) {
             if (!ref?.current || ref.current.contains(event.target)) {
                 return
             }
-            console.log("Called")
             closeDropdown()
         }
 
