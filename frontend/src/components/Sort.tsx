@@ -5,7 +5,8 @@ export enum SortMode {
     NEWEST_FIRST = "-creation_time",
     OLDEST_FIRST = "creation_time",
     LAST_UPDATED = "-last_updated",
-    SCORE = "-score",
+    LEAST_MATCHED = "-score",
+    MOST_MATCHED = "score",
 }
 
 export function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScratch) => number {
@@ -16,8 +17,10 @@ export function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: Te
         return (a, b) => new Date(a.creation_time).getTime() - new Date(b.creation_time).getTime()
     case SortMode.LAST_UPDATED: // most recent first
         return (a, b) => new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
-    case SortMode.SCORE:
+    case SortMode.LEAST_MATCHED:
         return compareScratchScores
+    case SortMode.MOST_MATCHED:
+        return (a, b) => compareScratchScores(b, a)
     }
 }
 
@@ -51,10 +54,11 @@ export default function SortBy({ sortMode, setSortMode }: Props) {
                     setSortMode(m as SortMode)
                 }}
                 options={{
-                    [SortMode.SCORE]: "Match completion",
                     [SortMode.NEWEST_FIRST]: "Newest first",
                     [SortMode.OLDEST_FIRST]: "Oldest first",
                     [SortMode.LAST_UPDATED]: "Last modified",
+                    [SortMode.LEAST_MATCHED]: "Least matched",
+                    [SortMode.MOST_MATCHED]: "Most match",
                 }}
             />
         </div >

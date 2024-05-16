@@ -67,7 +67,7 @@ export default async function Page({ params }: { params: { username: string } })
             <ScratchList
                 url={userUrl(user) + "/scratches?page_size=20"}
                 item={ScratchItemNoOwner}
-                isSortable={false}
+                isSortable={true}
                 title="Scratches"
             />
         </section>
