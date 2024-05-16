@@ -81,7 +81,7 @@ class CurrentUserCommentList(generics.ListAPIView):  # type: ignore
     pagination_class = CommentPagination
     serializer_class = CommentSerializer
 
-    def get_queryset(self) -> QuerySet[Scratch]:
+    def get_queryset(self) -> QuerySet[Comment]:
         return Comment.objects.filter(owner=self.request.profile)
 
 
@@ -93,7 +93,7 @@ class UserCommentList(generics.ListAPIView):  # type: ignore
     pagination_class = CommentPagination
     serializer_class = CommentSerializer
 
-    def get_queryset(self) -> QuerySet[Scratch]:
+    def get_queryset(self) -> QuerySet[Comment]:
         return Comment.objects.filter(owner__user__username=self.kwargs["username"])
 
 
