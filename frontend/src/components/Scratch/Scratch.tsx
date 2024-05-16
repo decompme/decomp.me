@@ -74,7 +74,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
         size: 100,
         children: [
             {
-                key: 1,
+                key: 2,
                 kind: "pane",
                 size: 50,
                 activeTab: TabId.DIFF,
@@ -86,7 +86,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 ],
             },
             {
-                key: 2,
+                key: 1,
                 kind: "pane",
                 size: 50,
                 activeTab: TabId.SOURCE_CODE,
@@ -152,6 +152,10 @@ export default function Scratch({
         setPerSaveObj({})
     }
 
+    const pushRouterTab = (id: string) => {
+        history.replaceState(null, "", `/scratch/${scratch.slug}?tab=${id}`)
+    }
+
     const shouldCompare = !isModified
     const sourceCompareExtension = useCompareExtension(sourceEditor, shouldCompare ? parentScratch?.source_code : undefined)
     const contextCompareExtension = useCompareExtension(contextEditor, shouldCompare ? parentScratch?.context : undefined)
@@ -193,7 +197,15 @@ export default function Scratch({
     const renderTab = (id: string) => {
         switch (id as TabId) {
         case TabId.ABOUT:
-            return <Tab key={id} tabKey={id} label="About" className={styles.about}>
+            return <Tab
+                key={id}
+                tabKey={id}
+                label="About"
+                className={styles.about}
+                onSelect={() => {
+                    pushRouterTab(id)
+                }}
+            >
                 <AboutScratch
                     scratch={scratch}
                     setScratch={userIsYou(scratch.owner) ? setScratch : null}
@@ -205,6 +217,7 @@ export default function Scratch({
                 tabKey={id}
                 label="Source code"
                 onSelect={() => {
+                    pushRouterTab(id)
                     sourceEditor.current?.focus?.()
                     saveContext()
                 }}
@@ -228,6 +241,7 @@ export default function Scratch({
                 label="Context"
                 className={styles.context}
                 onSelect={() => {
+                    pushRouterTab(id)
                     contextEditor.current?.focus?.()
                     saveSource()
                 }}
@@ -244,7 +258,15 @@ export default function Scratch({
                 />
             </Tab>
         case TabId.OPTIONS:
-            return <Tab key={id} tabKey={id} label="Options" className={styles.compilerOptsTab}>
+            return <Tab
+                key={id}
+                tabKey={id}
+                label="Options"
+                className={styles.compilerOptsTab}
+                onSelect={() => {
+                    pushRouterTab(id)
+                }}
+            >
                 <div className={styles.compilerOptsContainer}>
                     <CompilerOpts
                         platform={scratch.platform}
@@ -293,7 +315,14 @@ export default function Scratch({
                 {() => <DecompilationPanel scratch={scratch} />}
             </Tab>
         case TabId.FAMILY:
-            return <Tab key={id} tabKey={id} label="Family">
+            return <Tab
+                key={id}
+                tabKey={id}
+                label="Family"
+                onSelect={() => {
+                    pushRouterTab(id)
+                }}
+            >
                 {() => <FamilyPanel scratch={scratch} />}
             </Tab>
         default:

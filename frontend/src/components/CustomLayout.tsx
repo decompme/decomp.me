@@ -1,5 +1,7 @@
 import { ReactElement } from "react"
 
+import { useSearchParams } from "next/navigation"
+
 import { Allotment } from "allotment"
 
 import Tabs, { Tab } from "./Tabs"
@@ -55,7 +57,9 @@ export interface Props {
 }
 
 export default function CustomLayout({ renderTab, layout, onChange }: Props) {
+    const searchParams = useSearchParams()
     if (layout.kind === "pane") {
+
         const els = []
 
         for (const id of layout.tabs) {
@@ -63,7 +67,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
         }
 
         return <Tabs
-            activeTab={layout.activeTab}
+            activeTab={layout.key === 1 && searchParams.has("tab") ? searchParams.get("tab") : layout.activeTab}
             onChange={activeTab => onChange({ ...layout, activeTab })}
         >
             {els}
