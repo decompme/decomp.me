@@ -1,4 +1,4 @@
-import { Preset, TerseScratch, User } from "./types"
+import { Comment, Preset, TerseScratch, User } from "./types"
 
 export function userHtmlUrl(user: User): string {
     return `/u/${user.username}`
@@ -31,4 +31,8 @@ export function scratchUrl(scratch: TerseScratch): string {
 
 export function scratchParentUrl(scratch: TerseScratch): string {
     return `/scratch/${scratch.parent}`
+}
+
+export function commentUrl(comment: Comment): string {
+    return `/comment/${comment.slug}`
 }
