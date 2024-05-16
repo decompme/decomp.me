@@ -18,7 +18,7 @@ function useFamily(scratch: TerseScratch) {
         suspense: true,
     })
 
-    const [sortMode, setSortMode] = useState(SortMode.SCORE)
+    const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST)
     const sorted = useMemo(() => [...family].sort(produceSortFunction(sortMode)), [family, sortMode])
 
     return { sorted, sortMode, setSortMode }
