@@ -19,6 +19,7 @@ import ScoreBadge, { calculateScorePercent } from "../ScoreBadge"
 import { Tab, TabCloseButton } from "../Tabs"
 
 import AboutScratch from "./AboutScratch"
+import CommentsPanel from "./CommentsPanel"
 import DecompilationPanel from "./DecompilePanel"
 import FamilyPanel from "./FamilyPanel"
 import useLanguageServer from "./hooks/useLanguageServer"
@@ -26,7 +27,6 @@ import styles from "./Scratch.module.scss"
 import ScratchMatchBanner from "./ScratchMatchBanner"
 import ScratchProgressBar from "./ScratchProgressBar"
 import ScratchToolbar from "./ScratchToolbar"
-import CommentsPanel from "./CommentsPanel"
 
 enum TabId {
     ABOUT = "scratch_about",

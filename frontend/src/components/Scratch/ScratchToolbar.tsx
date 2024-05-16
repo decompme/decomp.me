@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
+import { formatDistanceToNowStrict } from "date-fns"
 import ContentEditable from "react-contenteditable"
 
 import * as api from "@/lib/api"
@@ -18,7 +19,6 @@ import UserAvatar from "../user/UserAvatar"
 
 import useFuzzySaveCallback, { FuzzySaveAction } from "./hooks/useFuzzySaveCallback"
 import styles from "./ScratchToolbar.module.scss"
-import { formatDistanceToNowStrict } from "date-fns"
 
 const ACTIVE_MS = 1000 * 60
 

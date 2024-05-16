@@ -5,7 +5,7 @@ import { ReactNode, useState } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
-import { formatDistanceToNowStrict } from 'date-fns'
+import { formatDistanceToNowStrict } from "date-fns"
 
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"

@@ -1,9 +1,9 @@
-import dynamic from "next/dynamic"
-
-import { TerseScratch } from "@/lib/api"
-import Loading from "@/components/loading.svg"
 import { useRef } from "react"
 
+import dynamic from "next/dynamic"
+
+import Loading from "@/components/loading.svg"
+import { TerseScratch } from "@/lib/api"
 
 type Props = {
     scratch: TerseScratch
@@ -14,12 +14,10 @@ const Comments = dynamic(() => import("./Comments"), {
     </div>,
 })
 
-
-
 export default function CommentsPanel({ scratch }: Props) {
     const scrollRef = useRef<HTMLDivElement>(null)
     return (
-        <div ref={scrollRef} className="h-full pl-4 pr-4 overflow-y-auto overflow-x-hidden">
+        <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden px-4">
             <Comments scratch={scratch} scrollRef={scrollRef} />
         </div>
     )

@@ -1,24 +1,24 @@
 "use client"
 
-import { ChangeEvent, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import useSWR, { mutate } from "swr";
+import { ChangeEvent, useRef, useState } from "react"
 
-import * as api from "@/lib/api"
-import { Comment } from "@/lib/api";
-import { commentUrl } from "@/lib/api/urls";
-
-import { formatDistanceToNowStrict } from "date-fns"
+import { useRouter } from "next/navigation"
 
 import { ArrowUpIcon, KebabHorizontalIcon, CheckIcon } from "@primer/octicons-react"
+import { formatDistanceToNowStrict } from "date-fns"
+import useSWR, { mutate } from "swr"
+
 import Loading from "@/components/loading.svg"
+import * as api from "@/lib/api"
+import { Comment } from "@/lib/api"
+import { commentUrl } from "@/lib/api/urls"
 
 import AsyncButton from "../AsyncButton"
-import UserLink from "../user/UserLink";
-import Button from "../Button";
+import Button from "../Button"
+import Dropdown from "../Dropdown"
+import UserLink from "../user/UserLink"
 
 import styles from "./Comments.module.scss"
-import Dropdown from "../Dropdown";
 
 const maxTextLength = 5000
 
@@ -33,15 +33,15 @@ async function deleteComment(comment: Comment) {
 
 function EditComment({ comment, stopEditing, submit }: { comment: any, stopEditing: () => void, submit: (text: string) => Promise<unknown> }) {
     const [text, setText] = useState(comment.text)
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
         if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-            textareaRef.current.style.height = `${e.target.scrollHeight + 2}px`;
+            textareaRef.current.style.height = "auto"
+            textareaRef.current.style.height = `${e.target.scrollHeight + 2}px`
         }
         setText(e.target.value)
-    };
+    }
 
     return (
         <div>
@@ -56,7 +56,6 @@ function EditComment({ comment, stopEditing, submit }: { comment: any, stopEditi
                                 ref={textareaRef}
                                 autoComplete="off"
                                 rows={1}
-                                className={styles.textInput}
                                 onChange={handleInput}
                                 maxLength={maxTextLength}
                                 defaultValue={comment.text}
@@ -65,12 +64,12 @@ function EditComment({ comment, stopEditing, submit }: { comment: any, stopEditi
                     </form>
                     <AsyncButton
                         className={styles.submit}
-                        onClick={async () => { await submit(text)} }
+                        onClick={async () => await submit(text)}
                     ><CheckIcon /></AsyncButton>
                 </div>
-                <div className="flex flex-row-reverse gap-1 items-center">
-                    <div className={styles.counter}>{text.length} / {maxTextLength}</div>
+                <div className="flex flex-row-reverse items-center gap-1">
                     <button className="text-xs" onClick={stopEditing}>Cancel</button>
+                    <div className={styles.counter}>{text.length} / {maxTextLength}</div>
                 </div>
             </section>
             <br />
@@ -89,7 +88,7 @@ function CommentItem({ comment, canModify }: { comment: any, canModify?: boolean
         "Delete Comment🚫": (event: KeyboardEvent) => {
             if (event.shiftKey || confirm("Are you sure you want to delete this scratch? This action cannot be undone.")) {
                 deleteComment(comment)
-                comment.isDeleted = true;
+                comment.isDeleted = true
                 router.refresh()
             }
         },
@@ -139,7 +138,6 @@ function CommentItem({ comment, canModify }: { comment: any, canModify?: boolean
 }
 
 function CommentList({ results, canModify }: { results: Comment[], canModify?: boolean }) {
-
     return (
         <div className="flex flex-col-reverse">
             {results.map((comment: Comment) => {
@@ -150,50 +148,48 @@ function CommentList({ results, canModify }: { results: Comment[], canModify?: b
 }
 
 export default function Comments({ scratch, scrollRef }: { scratch: api.TerseScratch, scrollRef: any }) {
-
     const userIsYou = api.useUserIsYou()
     const canModify = (scratch.owner && userIsYou(scratch.owner)) || api.useThisUserIsAdmin()
-
 
     const router = useRouter()
 
     const [needsUpdating, setNeedsUpdating] = useState(false)
     const [text, setText] = useState("")
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { results, isLoading, hasNext, loadNext } = api.usePaginated<api.Comment>(`/comment?scratch=${scratch.slug}&page_size=20`)
     // Check for new comments
     const { error } = useSWR(`/comment?scratch=${scratch.slug}&page_size=1`, api.get, {
         refreshInterval: 30 * 1000, // 30 Seconds
-        onSuccess: (newData) => {
+        onSuccess: newData => {
             if (results[0]?.slug && newData.results[0]?.slug) {
                 setNeedsUpdating(results[0].slug !== newData.results[0]?.slug)
             }
-        }
+        },
     })
 
-    const refreshResults = async () => {
+    const submitAndRefresh = async () => {
         const response = await api.post(`/comment?scratch_id=${scratch.slug}`, { text: text })
         if (response) {
-            await api.get(`/comment?slug=${response.slug}`).then((comment) => {
+            await api.get(`/comment?slug=${response.slug}`).then(comment => {
                 results.unshift(comment.results[0])
             })
-            textareaRef.current.style.height = "33px";
-            textareaRef.current.value = "";
+            textareaRef.current.style.height = "33px"
+            textareaRef.current.value = ""
         }
         router.refresh()
     }
 
     const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
         if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-            textareaRef.current.style.height = `${e.target.scrollHeight + 2}px`;
+            textareaRef.current.style.height = "auto"
+            textareaRef.current.style.height = `${e.target.scrollHeight + 2}px`
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight
         }
         setText(e.target.value)
-    };
+    }
 
     function NeedsRefresh({ error }: { error: string }) {
         const message = error ? error : "Refresh"
@@ -211,12 +207,10 @@ export default function Comments({ scratch, scrollRef }: { scratch: api.TerseScr
     }
 
     if (isLoading) {
-        return (<>
-            {isLoading && <div className="flex size-full items-center justify-center">
+        return (
+            <div className="flex size-full items-center justify-center">
                 <Loading className="size-8 animate-pulse" />
             </div>
-            }
-        </>
         )
     }
 
@@ -243,7 +237,6 @@ export default function Comments({ scratch, scrollRef }: { scratch: api.TerseScr
                                 ref={textareaRef}
                                 autoComplete="off"
                                 rows={1}
-                                className={styles.textInput}
                                 onChange={handleInput}
                                 maxLength={maxTextLength}
                                 placeholder="Message..."
@@ -252,7 +245,7 @@ export default function Comments({ scratch, scrollRef }: { scratch: api.TerseScr
                     </form>
                     <AsyncButton
                         className={styles.submit}
-                        onClick={async () => { await refreshResults() }}
+                        onClick={async () => await submitAndRefresh()}
                     ><ArrowUpIcon /></AsyncButton>
                 </div>
                 <div className={styles.counter}>{text.length} / {maxTextLength}</div>

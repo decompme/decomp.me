@@ -1,6 +1,5 @@
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react"
 
-import { ChevronDownIcon } from "@primer/octicons-react"
 import classNames from "classnames"
 
 import styles from "./Dropdown.module.scss"
@@ -11,49 +10,46 @@ export type Props = {
     children: ReactNode
 }
 
-const useClickOutside = (ref, handler) => {
-
-};
-
 export default function Dropdown({ options, children, className }: Props) {
     const [isOpen, setIsOpen] = useState(false)
     const ref = useRef(null)
 
     const toggleDropdown = () => {
-        setIsOpen(!isOpen);
-    };
+        setIsOpen(!isOpen)
+    }
 
-    const closeDropdown = () => {
-        setIsOpen(false);
-    };
+    const closeDropdown = useCallback(() => {
+        setIsOpen(false)
+    }, [])
 
     useEffect(() => {
-        const listener = (event) => {
+        const listener = event => {
             if (!ref?.current || ref.current.contains(event.target)) {
-                return;
+                return
             }
-            closeDropdown();
-        };
+            console.log("Called")
+            closeDropdown()
+        }
 
-        document.addEventListener('mousedown', listener);
-        document.addEventListener('touchstart', listener);
+        document.addEventListener("mousedown", listener)
+        document.addEventListener("touchstart", listener)
         return () => {
-            document.removeEventListener('mousedown', listener);
-            document.addEventListener('touchstart', listener);
-        };
-    }, [closeDropdown, ref]);
+            document.removeEventListener("mousedown", listener)
+            document.addEventListener("touchstart", listener)
+        }
+    }, [closeDropdown, ref])
 
     return (
         <div ref={ref} className="inline-table">
             <button className={className} onClick={toggleDropdown}>
                 {children}
             </button>
-            <div className={classNames(styles.group, styles.options, { [styles.open]: isOpen })}>
+            <div className={classNames(styles.options, { [styles.open]: isOpen })}>
                 {Object.entries(options).map(([value, onChange]) =>
                     <button
                         className={styles.option}
-                        onClick={(event) => {
-                            options[value](event)
+                        onClick={event => {
+                            onChange(event)
                             closeDropdown()
                         }}
                         key={value}

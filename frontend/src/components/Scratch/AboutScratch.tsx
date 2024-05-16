@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { formatDistanceToNowStrict } from "date-fns"
 import useSWR from "swr"
 
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
@@ -12,7 +13,6 @@ import { getScoreText } from "../ScoreBadge"
 import UserLink from "../user/UserLink"
 
 import styles from "./AboutScratch.module.scss"
-import { formatDistanceToNowStrict } from "date-fns"
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<Scratch>(url, get)
