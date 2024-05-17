@@ -3,16 +3,15 @@ import Link from "next/link"
 import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
+import LoadingSpinner from "@/components/loading.svg"
+import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
+import PlatformName from "@/components/PlatformSelect/PlatformName"
+import { getScoreText } from "@/components/ScoreBadge"
+import UserLink from "@/components/user/UserLink"
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
-import LoadingSpinner from "../loading.svg"
-import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
-import PlatformName from "../PlatformSelect/PlatformName"
-import { getScoreText } from "../ScoreBadge"
-import UserLink from "../user/UserLink"
-
-import styles from "./AboutScratch.module.scss"
+import styles from "./AboutPanel.module.scss"
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<Scratch>(url, get)
@@ -47,7 +46,7 @@ export type Props = {
     setScratch?: (scratch: Partial<Scratch>) => void
 }
 
-export default function AboutScratch({ scratch, setScratch }: Props) {
+export default function AboutPanel({ scratch, setScratch }: Props) {
     const preset: Preset = usePreset(scratch.preset)
 
     return (
