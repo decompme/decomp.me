@@ -58,7 +58,7 @@ export default function SortBy({ sortMode, setSortMode }: Props) {
                     [SortMode.OLDEST_FIRST]: "Oldest first",
                     [SortMode.LAST_UPDATED]: "Last modified",
                     [SortMode.LEAST_MATCHED]: "Least matched",
-                    [SortMode.MOST_MATCHED]: "Most match",
+                    [SortMode.MOST_MATCHED]: "Most matched",
                 }}
             />
         </div >
