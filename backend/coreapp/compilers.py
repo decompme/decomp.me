@@ -703,6 +703,36 @@ MWCCPSP_3_0_1_151 = MWCCPSPCompiler(
     platform=PSP,
     cc=MWCCPSP_CC,
 )
+MWCCPSP_3_0_1_180 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_180",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_192 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_192",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_201 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_201",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_205 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_205",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_210 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_210",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
+MWCCPSP_3_0_1_219 = MWCCPSPCompiler(
+    id="mwccpsp_3.0.1_219",
+    platform=PSP,
+    cc=MWCCPSP_CC,
+)
 
 # N64
 IDO53 = IDOCompiler(
@@ -1404,6 +1434,12 @@ _all_compilers: List[Compiler] = [
     MWCCPSP_3_0_1_139,
     MWCCPSP_3_0_1_147,
     MWCCPSP_3_0_1_151,
+    MWCCPSP_3_0_1_180,
+    MWCCPSP_3_0_1_192,
+    MWCCPSP_3_0_1_201,
+    MWCCPSP_3_0_1_205,
+    MWCCPSP_3_0_1_210,
+    MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
     # PS2
