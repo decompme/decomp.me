@@ -1330,6 +1330,12 @@ _all_compilers: List[Compiler] = [
     MWCCPSP_3_0_1_139,
     MWCCPSP_3_0_1_147,
     MWCCPSP_3_0_1_151,
+    MWCCPSP_3_0_1_180,
+    MWCCPSP_3_0_1_192,
+    MWCCPSP_3_0_1_201,
+    MWCCPSP_3_0_1_205,
+    MWCCPSP_3_0_1_210,
+    MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
     # PS2
