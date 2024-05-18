@@ -911,6 +911,18 @@ MWCC_247_108 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_41_51213 = MWCCWiiGCCompiler(
+    id="mwcc_41_51213",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_41_60209 = MWCCWiiGCCompiler(
+    id="mwcc_41_60209",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_41_60831 = MWCCWiiGCCompiler(
     id="mwcc_41_60831",
     platform=GC_WII,
@@ -929,14 +941,44 @@ MWCC_42_127 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_42_140 = MWCCWiiGCCompiler(
+    id="mwcc_42_140",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_42_142 = MWCCWiiGCCompiler(
     id="mwcc_42_142",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
 
+MWCC_42_60308 = MWCCWiiGCCompiler(
+    id="mwcc_42_60308",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_42_60422 = MWCCWiiGCCompiler(
+    id="mwcc_42_60422",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_43_145 = MWCCWiiGCCompiler(
+    id="mwcc_43_145",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_43_151 = MWCCWiiGCCompiler(
     id="mwcc_43_151",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_43_188 = MWCCWiiGCCompiler(
+    id="mwcc_43_188",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
@@ -1354,12 +1396,19 @@ _all_compilers: List[Compiler] = [
     MWCC_247_105,
     MWCC_247_107,
     MWCC_247_108,
-    MWCC_41_60831,
+    MWCC_41_51213,
     MWCC_41_60126,
+    MWCC_41_60209,
+    MWCC_41_60831,
     MWCC_42_127,
+    MWCC_42_140,
     MWCC_42_142,
+    MWCC_42_60308,
+    MWCC_42_60422,
+    MWCC_43_145,
     MWCC_43_151,
     MWCC_43_172,
+    MWCC_43_188,
     MWCC_43_213,
     PRODG_35,
     PRODG_37,
