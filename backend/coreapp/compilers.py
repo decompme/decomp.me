@@ -575,28 +575,90 @@ MWCPS2_23_991202 = MWCCPS2Compiler(
     cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
+MWCPS2_CC = '${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"'
+
 MWCPS2_30_011126 = MWCCPS2Compiler(
     id="mwcps2-3.0-011126",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc=MWCPS2_CC,
 )
 
 MWCPS2_301_020123 = MWCCPS2Compiler(
     id="mwcps2-3.0.1-020123",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc=MWCPS2_CC,
 )
 
 MWCPS2_303_020716 = MWCCPS2Compiler(
     id="mwcps2-3.0.3-020716",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc=MWCPS2_CC,
 )
 
 MWCPS2_30B22_020926 = MWCCPS2Compiler(
     id="mwcps2-3.0b22-020926",
     platform=PS2,
-    cc='${WINE} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_30B52_030722 = MWCCPS2Compiler(
+    id="mwcps2-3.0b52-030722",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B74_030811 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b74-030811",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B87_031208 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b87-031208",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B95_040309 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b95-040309",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B119_040914 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b119-040914",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B145_050209 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b145-050209",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B151_050317 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b151-050317",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B198_051011 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b198-051011",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B205_051227 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b205-051227",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B210_060308 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b210-060308",
+    platform=PS2,
+    cc=MWCPS2_CC,
 )
 
 # PSP
@@ -1319,6 +1381,16 @@ _all_compilers: List[Compiler] = [
     MWCPS2_301_020123,
     MWCPS2_303_020716,
     MWCPS2_30B22_020926,
+    MWCPS2_30B52_030722,
+    MWCPS2_301B74_030811,
+    MWCPS2_301B87_031208,
+    MWCPS2_301B95_040309,
+    MWCPS2_301B119_040914,
+    MWCPS2_301B145_050209,
+    MWCPS2_301B151_050317,
+    MWCPS2_301B198_051011,
+    MWCPS2_301B205_051227,
+    MWCPS2_301B210_060308,
     # N64
     IDO53,
     IDO53_CXX,
