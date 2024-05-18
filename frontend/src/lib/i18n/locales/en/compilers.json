@@ -1,6 +1,8 @@
 {
     "agbcc": "agbcc",
+
     "agbccpp": "agbccpp",
+
     "armcc_40_771": "4.0 build 771",
     "armcc_40_821": "4.0 build 821",
     "armcc_41_561": "4.1 build 561",
@@ -12,11 +14,14 @@
     "armcc_41_1440": "4.1 build 1440",
     "armcc_41_1454": "4.1 build 1454",
     "armcc_504_82": "5.04 build 82",
+
     "clang-3.9.1": "Clang 3.9.1",
     "clang-4.0.1": "Clang 4.0.1",
     "clang-8.0.0": "Clang 8.0.0",
+
     "dummy": "Dummy",
     "dummy_longrunning": "Dummy (long-running)",
+
     "ee-gcc2.9-990721": "EE GCC 2.9 build 990721",
     "ee-gcc2.9-991111": "EE GCC 2.9 build 991111",
     "ee-gcc2.9-991111a": "EE GCC 2.9 build 991111a",
@@ -28,12 +33,25 @@
     "ee-gcc2.95.3-136": "EE GCC 2.95.3 (SN BUILD v1.36)",
     "ee-gcc2.96": "EE GCC 2.96 build 001003-1",
     "ee-gcc3.2-040921": "EE GCC 3.2 build 040921",
+
     "mwcps2-2.3-991202": "MWCPS 2.3 (Built 991202)",
     "mwcps2-3.0-011126": "MWCPS 3.0 (Built 011126)",
     "mwcps2-3.0.1-020123": "MWCPS 3.0.1 (Built 020123)",
     "mwcps2-3.0.3-020716": "MWCPS 3.0.3 (Built 020716)",
     "mwcps2-3.0b22-020926": "MWCPS2 3.0b22 (Built 020926)",
+    "mwcps2-3.0b52-030722": "MWCPS2 3.0b52 (Built 030722)",
+    "mwcps2-3.0.1b74-030811": "MWCPS2 3.0.1b74 (Built 030811)",
+    "mwcps2-3.0.1b87-031208": "MWCPS2 3.0.1b87 (Built 031208)",
+    "mwcps2-3.0.1b95-040309": "MWCPS2 3.0.1b95 (Built 040309)",
+    "mwcps2-3.0.1b119-040914": "MWCPS2 3.0.1b119 (Built 040914)",
+    "mwcps2-3.0.1b145-050209": "MWCPS2 3.0.1b145 (Built 050209)",
+    "mwcps2-3.0.1b151-050317": "MWCPS2 3.0.1b151 (Built 050317)",
+    "mwcps2-3.0.1b198-051011": "MWCPS2 3.0.1b198 (Built 051011)",
+    "mwcps2-3.0.1b205-051227": "MWCPS2 3.0.1b205 (Built 051227)",
+    "mwcps2-3.0.1b210-060308": "MWCPS2 3.0.1b210 (Built 060308)",
+
     "egcs_1.1.2-4": "EGCS 1.1.2-4 (gcc egcs-2.91.66)",
+
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
     "gcc2.7.2sn": "GCC 2.7.2 (SN)",
     "gcc2.7.2snew": "GCC 2.7.2 (SN, experimental)",
@@ -43,11 +61,14 @@
     "gcc2.8.1": "GCC 2.8.1",
     "gcc2.8.1pm": "GCC 2.8.1 (Paper Mario)",
     "gcc4.4.0-mips64-elf": "GCC 4.4.0 (mips64-elf)",
+
     "ido5.3_irix": "IDO 5.3",
     "ido5.3_asm_irix": "IDO 5.3 AS",
     "ido5.3_c++_irix": "IDO 5.3 C++",
     "ido6.0_irix": "IDO 6.0",
+
     "mips_pro_744_irix": "MIPS Pro 7.4.4",
+
     "ido6.0": "IDO 6.0",
     "ido7.1_irix": "IDO 7.1",
     "ido5.3": "IDO 5.3",
@@ -55,7 +76,9 @@
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
     "ido7.1Pascal": "IDO 7.1 Pascal",
+
     "mips_pro_744": "MIPS Pro 7.4.4",
+
     "msvc4.0": "Microsoft Visual C/C++ 4.0",
     "msvc4.2": "Microsoft Visual C/C++ 4.2",
     "msvc6.0": "Microsoft Visual C/C++ 6.0",
@@ -66,6 +89,7 @@
     "msvc6.6": "Microsoft Visual C/C++ 6.0 Service Pack 6",
     "msvc7.0": "Microsoft Visual C/C++ 7.0 .NET 2002",
     "msvc7.1": "Microsoft Visual C/C++ 7.1 .NET 2003",
+
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
     "mwcc_20_82": "2.0 build 82 (MW 1.2sp2p3)",
