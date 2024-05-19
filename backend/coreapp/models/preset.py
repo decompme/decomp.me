@@ -29,4 +29,8 @@ class Preset(models.Model):
 
     @staticmethod
     def most_recent_updated(request: Request) -> datetime:
-        return Preset.objects.latest("last_updated").last_updated
+        return (
+            0
+            if not Preset.objects.count()
+            else Preset.objects.latest("last_updated").last_updated
+        )
