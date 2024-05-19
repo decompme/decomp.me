@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0040_create_preset"),
+        ("coreapp", "0053_rename_mwcps2_compilers"),
     ]
 
     operations = [
