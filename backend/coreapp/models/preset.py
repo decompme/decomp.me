@@ -2,8 +2,12 @@ from datetime import datetime
 
 from coreapp.models.scratch import LibrariesField
 from django.db import models
+from django.utils.timezone import now
 from rest_framework.request import Request
+
 from .profile import Profile
+
+boot_time = now()
 
 
 class Preset(models.Model):
@@ -30,7 +34,7 @@ class Preset(models.Model):
     @staticmethod
     def most_recent_updated(request: Request) -> datetime:
         return (
-            0
+            boot_time
             if not Preset.objects.count()
             else Preset.objects.latest("last_updated").last_updated
         )
