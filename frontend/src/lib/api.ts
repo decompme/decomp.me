@@ -301,6 +301,15 @@ export function usePreset(id: number | undefined): Preset | undefined {
     return data
 }
 
+export function useComments(scratch: Scratch): Comment | undefined {
+    const url = typeof scratch.slug === "string" ? `/comment?scratch=${scratch.slug}` : null
+    const { data } = useSWR(url, get, {
+        refreshInterval: 0,
+        onErrorRetry,
+    })
+    return data
+}
+
 export function usePaginated<T>(url: string, firstPage?: Page<T>): {
     results: T[]
     hasNext: boolean

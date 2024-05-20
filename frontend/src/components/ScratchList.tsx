@@ -5,7 +5,7 @@ import { ReactNode, useState } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
-import TimeAgo from "react-timeago"
+import { formatDistanceToNowStrict } from "date-fns"
 
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"
@@ -111,7 +111,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • {formatDistanceToNowStrict(scratch.last_updated)} ago
                     </span>
                     <div className={styles.actions}>
                         {children}
@@ -148,7 +148,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • {formatDistanceToNowStrict(scratch.last_updated)} ago
                     </span>
                 </div>
             </div>
@@ -186,7 +186,7 @@ export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • {formatDistanceToNowStrict(scratch.last_updated)} ago
                     </span>
                 </div>
             </div>
@@ -206,7 +206,7 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                     </Link>
                     <div className={styles.metadata}>
                         <span>
-                            {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                            {matchPercentString} matched • {formatDistanceToNowStrict(scratch.last_updated)} ago
                         </span>
                     </div>
                     <div className={styles.owner}>

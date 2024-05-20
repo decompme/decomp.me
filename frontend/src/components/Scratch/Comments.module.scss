@@ -1,0 +1,78 @@
+.holder {
+    height: 100%;
+    position: relative;
+}
+
+.inputSection {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: contents;
+
+    form {
+        width: 100%;
+
+        textarea {
+            appearance: none;
+            width: 100%;
+            padding: 8px 10px;
+            height: 33px;
+            color: var(--g1200);
+            background: var(--g200);
+            font: 0.8rem var(--monospace);
+            border: 1px solid var(--g500);
+            border-radius: 4px;
+            bottom: 0;
+            left: 0;
+            padding-right: 2em;
+            outline: none !important;
+            overflow: hidden;
+            resize: none;
+
+            &::-webkit-input-placeholder {
+                color: var(--g700);
+            }
+        }
+    }
+
+    .submit {
+        position: absolute;
+        border: none;
+        transform: translateY(-15%);
+        right: 0;
+        bottom: 0;
+    }
+}
+
+.commentsBody {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.metadata {
+    display: flex;
+    padding-left: 5px;
+    color: var(--g900);
+
+    >span {
+        flex-grow: 1;
+    }
+}
+
+.text {
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.refresh {
+    position: fixed;
+    z-index: 2;
+}
+
+.counter {
+    float: right;
+    padding-bottom: 4px;
+    font: 0.8rem var(--monospace);
+    color: var(--g1200);
+}

@@ -4,8 +4,8 @@ import Link from "next/link"
 
 import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, TrashIcon, UploadIcon } from "@primer/octicons-react"
 import classNames from "classnames"
+import { formatDistanceToNowStrict } from "date-fns"
 import ContentEditable from "react-contenteditable"
-import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
@@ -57,7 +57,7 @@ function EditTimeAgo({ date }: { date: string }) {
         {isActive ? <>
             Active now
         </> : <>
-            <TimeAgo date={date} />
+            {formatDistanceToNowStrict(date)} ago
         </>}
     </span>
 }

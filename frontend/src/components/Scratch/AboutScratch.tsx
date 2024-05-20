@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import TimeAgo from "react-timeago"
+import { formatDistanceToNowStrict } from "date-fns"
 import useSWR from "swr"
 
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
@@ -78,11 +78,11 @@ export default function AboutScratch({ scratch, setScratch }: Props) {
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>
-                    <TimeAgo date={scratch.creation_time} />
+                    {formatDistanceToNowStrict(scratch.last_updated)} ago
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Modified</p>
-                    <TimeAgo date={scratch.last_updated} />
+                    {formatDistanceToNowStrict(scratch.last_updated)} ago
                 </div>
             </div>
 

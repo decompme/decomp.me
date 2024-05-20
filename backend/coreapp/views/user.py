@@ -10,7 +10,9 @@ from ..middleware import Request
 from ..models.github import GitHubUser
 from ..models.profile import Profile
 from ..models.scratch import Scratch
-from ..serializers import TerseScratchSerializer, serialize_profile
+from ..models.comment import Comment
+from ..serializers import TerseScratchSerializer, serialize_profile, CommentSerializer
+from .comment import CommentPagination
 from .scratch import ScratchPagination
 
 
@@ -69,6 +71,30 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
+
+
+class CurrentUserCommentList(generics.ListAPIView):  # type: ignore
+    """
+    Gets the current user's comments
+    """
+
+    pagination_class = CommentPagination
+    serializer_class = CommentSerializer
+
+    def get_queryset(self) -> QuerySet[Comment]:
+        return Comment.objects.filter(owner=self.request.profile)
+
+
+class UserCommentList(generics.ListAPIView):  # type: ignore
+    """
+    Gets a user's comments
+    """
+
+    pagination_class = CommentPagination
+    serializer_class = CommentSerializer
+
+    def get_queryset(self) -> QuerySet[Comment]:
+        return Comment.objects.filter(owner__user__username=self.kwargs["username"])
 
 
 @api_view(["GET"])  # type: ignore
