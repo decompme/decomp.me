@@ -102,6 +102,14 @@ poetry run python manage.py makemigrations
 poetry run python manage.py migrate
 ```
 
+### Running tests
+
+To ensure everything is working properly, you can run the unit tests in the backend folder.
+
+```shell
+poetry run python manage.py test
+```
+
 ### Frontend styling
 
 We use Tailwind CSS with Radix UI colors. Each color is on a scale from 1 to 12 (inclusive), each with [a well-defined meaning](https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale).
