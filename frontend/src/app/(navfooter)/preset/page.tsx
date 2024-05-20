@@ -7,7 +7,7 @@ import { PresetList } from "@/components/PresetList"
 import * as api from "@/lib/api"
 import { get } from "@/lib/api/request"
 
-export default async function PresetPage() {
+export default async function Page() {
     const compilers = await get("/compiler")
 
     return (
@@ -17,7 +17,7 @@ export default async function PresetPage() {
     )
 }
 
-export function Presets({ serverCompilers }: {
+function Presets({ serverCompilers }: {
     serverCompilers: {
         platforms: {
             [id: string]: api.Platform
