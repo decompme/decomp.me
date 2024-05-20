@@ -132,6 +132,7 @@ export type Preset = {
     decompiler_flags: string
     libraries: Library[]
     num_scratches: number
+    owner: User | null // null = default
 }
 
 export type Compiler = {

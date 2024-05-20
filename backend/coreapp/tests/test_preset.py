@@ -118,7 +118,9 @@ class PresetTests(BaseTestCase):
         assert len(results) == 1
         assert results[0].get("name") == DUMMY_PRESET_DICT.get("name")
         # Ensure the user is the owner of the preset
-        assert results[0].get("owner") == self.user.pk
+        owner = results[0].get("owner")
+        assert owner is not None
+        assert owner.get("id") == self.user.pk
 
     @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_compiler(self) -> None:
