@@ -67,7 +67,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     num_scratches = serializers.SerializerMethodField()
     owner = ProfileField(read_only=True)
-    
+
     class Meta:
         model = Preset
         fields = [

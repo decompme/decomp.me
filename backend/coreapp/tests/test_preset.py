@@ -120,7 +120,7 @@ class PresetTests(BaseTestCase):
         # Ensure the user is the owner of the preset
         owner = results[0].get("owner")
         assert owner is not None
-        assert owner.get('id') == self.user.pk
+        assert owner.get("id") == self.user.pk
 
     @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_compiler(self) -> None:
