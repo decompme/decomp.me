@@ -625,6 +625,12 @@ MWCPS2_301B44_030325 = MWCCPS2Compiler(
     cc=MWCPS2_CC,
 )
 
+MWCPS2_301B51_030512 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b51-030512",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
 MWCPS2_301B74_030811 = MWCCPS2Compiler(
     id="mwcps2-3.0.1b74-030811",
     platform=PS2,
@@ -1493,6 +1499,7 @@ _all_compilers: List[Compiler] = [
     MWCPS2_30B50_030527,
     MWCPS2_30B52_030722,
     MWCPS2_301B44_030325,
+    MWCPS2_301B51_030512,
     MWCPS2_301B74_030811,
     MWCPS2_301B75_030916,
     MWCPS2_301B87_031208,
