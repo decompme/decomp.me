@@ -577,6 +577,18 @@ MWCPS2_23_991202 = MWCCPS2Compiler(
 
 MWCPS2_CC = '${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"'
 
+MWCPS2_233_000906 = MWCCPS2Compiler(
+    id="mwcps2-2.3.3-000906",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_24_001213 = MWCCPS2Compiler(
+    id="mwcps2-2.4-001213",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
 MWCPS2_30_011126 = MWCCPS2Compiler(
     id="mwcps2-3.0-011126",
     platform=PS2,
@@ -1491,6 +1503,8 @@ _all_compilers: List[Compiler] = [
     EE_GCC296,
     EE_GCC32_040921,
     MWCPS2_23_991202,
+    MWCPS2_233_000906,
+    MWCPS2_24_001213,
     MWCPS2_30_011126,
     MWCPS2_301_020123,
     MWCPS2_303_020716,
