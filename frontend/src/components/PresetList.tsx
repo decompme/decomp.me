@@ -36,7 +36,7 @@ export function PresetList({ url, className, item, emptyButtonLabel }: Props): R
     return (
         <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
             {results.map(preset => (
-                <Item key={preset.id} preset={preset} />
+                <Item hideIcon key={preset.id} preset={preset} />
             ))}
             {results.length === 0 && emptyButtonLabel && <li className={styles.button}>
                 <Link href="/new">
@@ -56,14 +56,16 @@ export function PresetList({ url, className, item, emptyButtonLabel }: Props): R
     )
 }
 
-export function PresetItem({ preset }: { preset: api.Preset }): React.JSX.Element {
+export function PresetItem({ preset, hideIcon }: { preset: api.Preset, hideIcon?: boolean }): React.JSX.Element {
     const compilersTranslation = useTranslation("compilers")
     const compilerName = compilersTranslation.t(preset.compiler)
 
     return (
         <div className="rounded-md border border-gray-6 p-[1em] text-sm">
             <div className="flex items-center gap-2">
-                <PlatformIcon platform={preset.platform} className="w-[1.2em]"/>
+                {
+                    hideIcon ? <></>:<PlatformIcon platform={preset.platform} className="w-[1.2em]"/>
+                }
                 <a className="font-semibold hover:text-[var(--link)]" href={presetUrl(preset)}>
                     {preset.name}
                 </a>
