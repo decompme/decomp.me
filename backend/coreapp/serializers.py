@@ -66,7 +66,8 @@ class LibrarySerializer(serializers.Serializer[Library]):
 class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     num_scratches = serializers.SerializerMethodField()
-
+    owner = ProfileField(read_only=True)
+    
     class Meta:
         model = Preset
         fields = [
@@ -80,11 +81,12 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             "decompiler_flags",
             "libraries",
             "num_scratches",
-            "owner",
+            "owner"
         ]
         read_only_fields = [
             "creation_time",
             "last_updated",
+            "owner",
         ]
 
     def get_num_scratches(self, preset: Preset) -> int:
