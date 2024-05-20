@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("coreapp", "0042_migrate_presets_to_db"),
+        ("coreapp", "0041_remove_project_and_github_stuff"),
     ]
 
     operations = [
