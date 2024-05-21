@@ -577,6 +577,18 @@ MWCPS2_23_991202 = MWCCPS2Compiler(
 
 MWCPS2_CC = '${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"'
 
+MWCPS2_233_000906 = MWCCPS2Compiler(
+    id="mwcps2-2.3.3-000906",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_24_001213 = MWCCPS2Compiler(
+    id="mwcps2-2.4-001213",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
 MWCPS2_30_011126 = MWCCPS2Compiler(
     id="mwcps2-3.0-011126",
     platform=PS2,
@@ -601,14 +613,44 @@ MWCPS2_30B22_020926 = MWCCPS2Compiler(
     cc=MWCPS2_CC,
 )
 
+MWCPS2_30B38_030307 = MWCCPS2Compiler(
+    id="mwcps2-3.0b38-030307",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_30B50_030527 = MWCCPS2Compiler(
+    id="mwcps2-3.0b50-030527",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
 MWCPS2_30B52_030722 = MWCCPS2Compiler(
     id="mwcps2-3.0b52-030722",
     platform=PS2,
     cc=MWCPS2_CC,
 )
 
+MWCPS2_301B44_030325 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b44-030325",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B51_030512 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b51-030512",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
 MWCPS2_301B74_030811 = MWCCPS2Compiler(
     id="mwcps2-3.0.1b74-030811",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B75_030916 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b75-030916",
     platform=PS2,
     cc=MWCPS2_CC,
 )
@@ -621,6 +663,12 @@ MWCPS2_301B87_031208 = MWCCPS2Compiler(
 
 MWCPS2_301B95_040309 = MWCCPS2Compiler(
     id="mwcps2-3.0.1b95-040309",
+    platform=PS2,
+    cc=MWCPS2_CC,
+)
+
+MWCPS2_301B103_040528 = MWCCPS2Compiler(
+    id="mwcps2-3.0.1b103-040528",
     platform=PS2,
     cc=MWCPS2_CC,
 )
@@ -1455,14 +1503,22 @@ _all_compilers: List[Compiler] = [
     EE_GCC296,
     EE_GCC32_040921,
     MWCPS2_23_991202,
+    MWCPS2_233_000906,
+    MWCPS2_24_001213,
     MWCPS2_30_011126,
     MWCPS2_301_020123,
     MWCPS2_303_020716,
     MWCPS2_30B22_020926,
+    MWCPS2_30B38_030307,
+    MWCPS2_30B50_030527,
     MWCPS2_30B52_030722,
+    MWCPS2_301B44_030325,
+    MWCPS2_301B51_030512,
     MWCPS2_301B74_030811,
+    MWCPS2_301B75_030916,
     MWCPS2_301B87_031208,
     MWCPS2_301B95_040309,
+    MWCPS2_301B103_040528,
     MWCPS2_301B119_040914,
     MWCPS2_301B145_050209,
     MWCPS2_301B151_050317,
