@@ -3,14 +3,13 @@ import { useEffect, useRef, useState } from "react"
 import { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
+import CodeMirror from "@/components/Editor/CodeMirror"
+import Loading from "@/components/loading.svg"
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
 import { decompileSetup } from "@/lib/codemirror/basic-setup"
 import { cpp } from "@/lib/codemirror/cpp"
 import useCompareExtension from "@/lib/codemirror/useCompareExtension"
-
-import CodeMirror from "../Editor/CodeMirror"
-import Loading from "../loading.svg"
 
 import styles from "./DecompilePanel.module.scss"
 
