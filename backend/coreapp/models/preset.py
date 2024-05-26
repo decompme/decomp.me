@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from coreapp.models.scratch import LibrariesField
+from django.contrib import admin
 from django.db import models
 from django.utils.timezone import now
 from rest_framework.request import Request
@@ -38,3 +39,7 @@ class Preset(models.Model):
             if not Preset.objects.count()
             else Preset.objects.latest("last_updated").last_updated
         )
+
+
+class PresetAdmin(admin.ModelAdmin[Preset]):
+    raw_id_fields = ["owner"]
