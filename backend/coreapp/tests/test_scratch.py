@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
-from coreapp.models.scratch import Assembly, CompilerConfig, Scratch
+from coreapp.models.scratch import Assembly, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
@@ -270,10 +270,6 @@ class ScratchForkTests(BaseTestCase):
             "name": "cat scratch",
             "libraries": [{"name": "directx", "version": "8.0"}],
         }
-
-        compiler_config = CompilerConfig()
-        compiler_config.save()
-
         scratch = self.create_scratch(scratch_dict)
 
         slug = scratch.slug

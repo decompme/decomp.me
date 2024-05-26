@@ -45,14 +45,6 @@ class AssemblyAdmin(admin.ModelAdmin[Assembly]):
     raw_id_fields = ["source_asm"]
 
 
-class CompilerConfig(models.Model):
-    # TODO: validate compiler and platform
-    compiler = models.CharField(max_length=100)
-    platform = models.CharField(max_length=100)
-    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
-    diff_flags = models.JSONField(default=list, blank=True, null=True)
-
-
 class LibrariesField(models.JSONField):
     def __init__(self, **kwargs: Any):
         class MyEncoder(json.JSONEncoder):
@@ -90,16 +82,10 @@ class Scratch(models.Model):
     description = models.TextField(max_length=5000, default="", blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    compiler = models.CharField(max_length=100)  # TODO: reference a CompilerConfig
-    platform = models.CharField(
-        max_length=100, blank=True
-    )  # TODO: reference a CompilerConfig
-    compiler_flags = models.TextField(
-        max_length=1000, default="", blank=True
-    )  # TODO: reference a CompilerConfig
-    diff_flags = models.JSONField(
-        default=list, blank=True
-    )  # TODO: reference a CompilerConfig
+    compiler = models.CharField(max_length=100)
+    platform = models.CharField(max_length=100, blank=True)
+    compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+    diff_flags = models.JSONField(default=list, blank=True)
     preset = models.ForeignKey(
         "Preset", null=True, blank=True, on_delete=models.SET_NULL
     )

@@ -51,7 +51,7 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ["score", "creation_time", "last_updated"]
+    ordering_fields = ["creation_time", "score", "last_updated"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner=self.request.profile)
@@ -65,7 +65,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ["score", "creation_time", "last_updated"]
+    ordering_fields = ["creation_time", "score", "last_updated"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
         return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
