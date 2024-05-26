@@ -61,7 +61,7 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=1.6.1 POETRY_HOME=/etc/poetry python3.10 -
+    POETRY_VERSION=1.8.3 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -106,7 +106,7 @@ RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ]; then \
     curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
     bsdtar -xvf- -C /usr/bin && \
     chmod +x /usr/bin/powerpc-eabi-*; \
-  fi
+    fi
 
 RUN mkdir -p /etc/fonts
 

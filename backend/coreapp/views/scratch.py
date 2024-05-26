@@ -303,7 +303,7 @@ class ScratchViewSet(
         filters.OrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
-    ordering_fields = ["score", "creation_time", "last_updated"]
+    ordering_fields = ["creation_time", "last_updated", "score"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":
