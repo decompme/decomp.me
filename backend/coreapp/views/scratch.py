@@ -279,6 +279,20 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     return scratch
 
 
+class CustomOrderingFilter(filters.OrderingFilter):
+    retain_ordering = True
+
+    def get_ordering(self, request, queryset, view):
+        if self.retain_ordering and queryset.ordered:
+            ordering = queryset.query.order_by
+        else:
+            ordering = super().get_ordering(request, queryset, view)
+        return ordering
+
+        # No ordering was included, or all the ordering fields were invalid
+        return self.get_default_ordering(view)
+
+
 class ScratchPagination(CursorPagination):
     ordering = "-creation_time"
     page_size = 10
@@ -300,7 +314,7 @@ class ScratchViewSet(
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
-        filters.OrderingFilter,
+        CustomOrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
     ordering_fields = ["creation_time", "last_updated", "score"]
