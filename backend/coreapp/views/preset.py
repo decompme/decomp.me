@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 import django_filters
+from django import forms
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
@@ -12,6 +13,7 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +38,21 @@ class IsOwnerOrReadOnly(BasePermission):
             return obj.owner == request.profile
         return False
 
+class PresetFilterSet(django_filters.FilterSet):
+    owner = django_filters.CharFilter(
+        widget=forms.HiddenInput()
+    )
+
+    class Meta:
+        model = Preset
+        fields = ["platform", "compiler", "owner"]
+
 
 class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
     queryset = Preset.objects.all()
     pagination_class = PresetPagination
-    filterset_fields = ["platform", "compiler", "owner"]
+    filterset_class = PresetFilterSet
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
