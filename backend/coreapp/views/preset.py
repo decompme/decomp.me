@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 import django_filters
+from django import forms
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
@@ -37,11 +38,19 @@ class IsOwnerOrReadOnly(BasePermission):
         return False
 
 
+class PresetFilterSet(django_filters.FilterSet):
+    owner = django_filters.CharFilter(widget=forms.HiddenInput())
+
+    class Meta:
+        model = Preset
+        fields = ["platform", "compiler", "owner"]
+
+
 class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
     queryset = Preset.objects.all()
     pagination_class = PresetPagination
-    filterset_fields = ["platform", "compiler", "owner"]
+    filterset_class = PresetFilterSet
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
