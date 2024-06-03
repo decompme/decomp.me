@@ -14,7 +14,6 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,10 +37,9 @@ class IsOwnerOrReadOnly(BasePermission):
             return obj.owner == request.profile
         return False
 
+
 class PresetFilterSet(django_filters.FilterSet):
-    owner = django_filters.CharFilter(
-        widget=forms.HiddenInput()
-    )
+    owner = django_filters.CharFilter(widget=forms.HiddenInput())
 
     class Meta:
         model = Preset
