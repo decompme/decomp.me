@@ -146,9 +146,9 @@ PSP = Platform(
     name="PlayStation Portable",
     description="MIPS (little-endian)",
     arch="mipsel:4000",
-    assemble_cmd='mips-linux-gnu-as -EL -march=gs464 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="mips-linux-gnu-objdump",
-    nm_cmd="mips-linux-gnu-nm",
+    assemble_cmd='mips-ps2-decompals-as -EL -march=gs464 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="mips-ps2-decompals-objdump",
+    nm_cmd="mips-ps2-decompals-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
