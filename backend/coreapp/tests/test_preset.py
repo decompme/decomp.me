@@ -78,7 +78,7 @@ class PresetTests(BaseTestCase):
         assert preset.owner is not None
         assert preset.owner.pk == self.user.pk
 
-    def test_list_compiler_with_presets(self) -> None:
+    def test_list_compiler_with_custom_presets(self) -> None:
         user = self.create_user()
         self.create_preset(DUMMY_PRESET_DICT)
         response = self.client.get(reverse("compiler"))
