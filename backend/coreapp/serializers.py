@@ -22,7 +22,7 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
 
 
-def serialize_profile(request: Request, profile: Profile) -> Dict[str, Any]:
+def serialize_profile(profile: Profile) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "is_anonymous": True,
@@ -55,7 +55,7 @@ else:
 
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
-        return serialize_profile(self.context["request"], profile)
+        return serialize_profile(profile)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):

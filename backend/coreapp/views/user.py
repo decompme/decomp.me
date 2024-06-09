@@ -20,7 +20,7 @@ class CurrentUser(APIView):
     """
 
     def get(self, request: Request) -> Response:
-        user = serialize_profile(request, request.profile)
+        user = serialize_profile(request.profile)
         return Response(user)
 
     def post(self, request: Request) -> Response:
@@ -72,11 +72,11 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
 
 @api_view(["GET"])  # type: ignore
-def user(request: Request, username: str) -> Response:
+def user(username: str) -> Response:
     """
     Gets a user's basic data
     """
 
     return Response(
-        serialize_profile(request, get_object_or_404(Profile, user__username=username))
+        serialize_profile(get_object_or_404(Profile, user__username=username))
     )
