@@ -33,7 +33,7 @@ export function PresetList({ url, className, item, emptyButtonLabel }: Props): J
     const Item = item ?? PresetItem
 
     return (
-        <ul className={classNames("flex flex-col justify-center gap-[0.5em] overflow-hidden p-[1em] border-[1px] border-[solid] rounded-md border-gray-6 text-sm", className)}>
+        <ul className={classNames("flex flex-col justify-center gap-[0.5em] overflow-hidden rounded-md border-gray-6 text-sm", className)}>
             {results.map(preset => (
                 <Item hideIcon key={preset.id} preset={preset} />
             ))}
