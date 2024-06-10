@@ -108,10 +108,12 @@ class ArmccCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
     library_include_flag: str = "-J"
 
+
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_SHC_FLAGS
     library_include_flag: str = ""
+
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
@@ -510,20 +512,16 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
-    'cp -r ${COMPILER_DIR}/bin/*.* /tmp/ && '
-    'export SHC_LIB=Z:\\\\tmp && '
-    'export SHC_TMP=Z:\\\\tmp && '
-    '(${WINE} /tmp/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 \
--sjis -string=const -aggressive=2 -object=dos_src.obj) && '
+    "cp -r ${COMPILER_DIR}/bin/*.* /tmp/ && "
+    "export SHC_LIB=Z:\\\\tmp && "
+    "export SHC_TMP=Z:\\\\tmp && "
+    "(${WINE} /tmp/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 \
+-sjis -string=const -aggressive=2 -object=dos_src.obj) && "
     "(${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj dos_src.o) && "
     'cp dos_src.o "$OUTPUT"'
 )
 
-SHC_V51R11 = SHCCompiler(
-    id="shc-v5.1r11",
-    platform=DREAMCAST,
-    cc=DREAMCAST_CC
-)
+SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
 EE_GCC29_990721 = GCCPS2Compiler(
