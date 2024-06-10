@@ -116,7 +116,12 @@ COMMON_SHC_FLAGS: Flags = [
     FlagSet(
         id="shc_opt_type", flags=["-speed", "-size"]
     ),
+    FlagSet(
+        id="shc_round", flags=["-round=zero", "-round=nearest"]
+    ),
     Checkbox(id="shc_debug", flag="-debug"),
+    Checkbox(id="shc_loop", flag="-loop"),
+    Checkbox(id="shc_inline", flag="-inline"),
 ]
 
 COMMON_GCC_FLAGS: Flags = [

@@ -373,7 +373,12 @@
     "shc_opt_type": "Optimization type",
     "shc_opt_type.speed": "Optimization for speed",
     "shc_opt_type.size": "Optimization for size",
+    "shc_round": "Floating-point rounding options",
+    "shc_round.-round=zero": "Round to zero",
+    "shc_round.-round=nearest": "Round to nearest",
     "shc_debug": "Debug",
+    "shc_loop": "Loop unrolling",
+    "shc_inline": "Inline static functions",
 
     "psyq_opt_level": "Optimization level",
     "psyq_opt_level.-O0": "No optimization",
