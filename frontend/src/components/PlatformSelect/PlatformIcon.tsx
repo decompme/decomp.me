@@ -10,6 +10,7 @@ import LogoPS1 from "./ps1.svg"
 import LogoPS2 from "./ps2.svg"
 import LogoPSP from "./psp.svg"
 import LogoSaturn from "./saturn.svg"
+import LogoDreamcast from "./dreamcast.svg"
 import LogoSwitch from "./switch.svg"
 import UnknownIcon from "./unknown.svg"
 import LogoWin32 from "./win32.svg"
@@ -30,6 +31,7 @@ const ICONS = {
     "n3ds": LogoN3DS,
     "switch": LogoSwitch,
     "saturn": LogoSaturn,
+    "dreamcast": LogoDreamcast
 }
 
 export const PLATFORMS = Object.keys(ICONS)

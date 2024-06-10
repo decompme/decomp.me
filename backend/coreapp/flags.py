@@ -109,6 +109,16 @@ COMMON_CLANG_FLAGS: Flags = [
     Checkbox(id="clang_no_exceptions", flag="-fno-exceptions"),
 ]
 
+COMMON_SHC_FLAGS: Flags = [
+    FlagSet(
+        id="shc_opt_level", flags=["-optimize=0", "-optimize=1"]
+    ),
+    FlagSet(
+        id="shc_opt_type", flags=["-speed", "-size"]
+    ),
+    Checkbox(id="shc_debug", flag="-debug"),
+]
+
 COMMON_GCC_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(

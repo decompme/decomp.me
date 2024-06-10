@@ -9,6 +9,7 @@ from coreapp import platforms
 from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
+    COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
@@ -36,6 +37,7 @@ from coreapp.platforms import (
     PS2,
     PSP,
     SATURN,
+    DREAMCAST,
     SWITCH,
     WIN32,
     Platform,
@@ -106,6 +108,10 @@ class ArmccCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
     library_include_flag: str = "-J"
 
+@dataclass(frozen=True)
+class SHCCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    library_include_flag: str = ""
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
@@ -500,6 +506,27 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
     id="cygnus-2.7-96Q3",
     platform=SATURN,
     cc=SATURN_CC,
+)
+
+DREAMCAST_CC = (
+    "echo ${OUTPUT} && "
+    "echo pwd is $(pwd) && "
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    'cp -r ${COMPILER_DIR}/bin/*.* /tmp/ && '
+    'export SHC_LIB=Z:\\\\tmp && '
+    'export SHC_TMP=Z:\\\\tmp && '
+    'echo "$SHC_LIB" && '
+    '(${WINE} /tmp/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 \
+-sjis -loop -string=const -round=nearest -inline -aggressive=2 -object=dos_src.obj) && '
+    # '(WIBO_DEBUG="" ${WIBO} ${COMPILER_DIR}/bin/asmsh.exe dos_src.src -cpu=sh4 -endian=little -sjis -object=dos_src.obj) && '
+    "(${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj dos_src.o) && "
+    'cp dos_src.o "$OUTPUT"'
+)
+
+SHC_V51R11 = SHCCompiler(
+    id="shc-v5.1r11",
+    platform=DREAMCAST,
+    cc=DREAMCAST_CC
 )
 
 # PS2
@@ -1496,6 +1523,8 @@ _all_compilers: List[Compiler] = [
     MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
+    # Dreamcast
+    SHC_V51R11,
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,

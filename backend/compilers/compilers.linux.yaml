@@ -169,6 +169,9 @@ psp:
 saturn:
   - cygnus-2.7-96Q3
 
+dreamcast:
+  - shc-v5.1r11
+
 macosx:
   - gcc-5026
   - gcc-5363
