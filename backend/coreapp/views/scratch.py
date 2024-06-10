@@ -169,13 +169,13 @@ scratch_condition = condition(
 )
 
 
-def is_contentful_asm(asm: Optional[str]) -> bool:
+def is_contentful_asm(asm: Optional[Asm]) -> bool:
     if asm is None:
         return False
 
-    asm = asm.strip()
+    asm_text = asm.data.strip()
 
-    if asm == "" or asm == "nop":
+    if asm_text == "" or asm_text == "nop":
         return False
 
     return True
@@ -185,6 +185,8 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
         if is_contentful_asm(scratch.target_assembly.source_asm):
+            assert scratch.target_assembly.source_asm is not None
+
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             )
@@ -529,6 +531,8 @@ class ScratchViewSet(
         scratch: Scratch = self.get_object()
 
         if is_contentful_asm(scratch.target_assembly.source_asm):
+            assert scratch.target_assembly.source_asm is not None
+
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             ).order_by("creation_time")
