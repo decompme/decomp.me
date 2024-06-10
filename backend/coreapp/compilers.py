@@ -1129,6 +1129,12 @@ MWCC_43_172 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_43_202 = MWCCWiiGCCompiler(
+    id="mwcc_43_202",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_43_213 = MWCCWiiGCCompiler(
     id="mwcc_43_213",
     platform=GC_WII,
@@ -1573,6 +1579,7 @@ _all_compilers: List[Compiler] = [
     MWCC_43_151,
     MWCC_43_172,
     MWCC_43_188,
+    MWCC_43_202,
     MWCC_43_213,
     PRODG_35,
     PRODG_37,
