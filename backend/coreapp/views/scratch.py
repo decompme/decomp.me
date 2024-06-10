@@ -169,23 +169,36 @@ scratch_condition = condition(
 )
 
 
-def is_asm_empty(asm: str) -> bool:
-    asm = asm.strip()
+def is_contentful_asm(asm: Optional[Asm]) -> bool:
+    if asm is None:
+        return False
 
-    return asm == "" or asm == "nop"
+    asm_text = asm.data.strip()
+
+    if asm_text == "" or asm_text == "nop":
+        return False
+
+    return True
 
 
 def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
-        if scratch.target_assembly.source_asm is None or is_asm_empty(
-            scratch.target_assembly.source_asm.data
-        ):
-            family = Scratch.objects.filter(slug=scratch.slug)
-        else:
+        if is_contentful_asm(scratch.target_assembly.source_asm):
+            assert scratch.target_assembly.source_asm is not None
+
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             )
+        elif (
+            scratch.target_assembly.elf_object is not None
+            and len(scratch.target_assembly.elf_object) > 0
+        ):
+            family = Scratch.objects.filter(
+                target_assembly__hash=scratch.target_assembly.hash,
+            )
+        else:
+            family = Scratch.objects.filter(slug=scratch.slug)
 
         return str(hash((family, request.headers.get("Accept"))))
     else:
@@ -517,14 +530,21 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        if scratch.target_assembly.source_asm is None or is_asm_empty(
-            scratch.target_assembly.source_asm.data
-        ):
-            family = Scratch.objects.filter(slug=scratch.slug)
-        else:
+        if is_contentful_asm(scratch.target_assembly.source_asm):
+            assert scratch.target_assembly.source_asm is not None
+
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             ).order_by("creation_time")
+        elif (
+            scratch.target_assembly.elf_object is not None
+            and len(scratch.target_assembly.elf_object) > 0
+        ):
+            family = Scratch.objects.filter(
+                target_assembly__hash=scratch.target_assembly.hash,
+            ).order_by("creation_time")
+        else:
+            family = Scratch.objects.filter(slug=scratch.slug)
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data

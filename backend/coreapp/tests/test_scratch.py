@@ -322,7 +322,7 @@ class ScratchDetailTests(BaseTestCase):
 
         response = self.client.head(reverse("scratch-detail", args=[scratch.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assert_(response.headers.get("Last-Modified") is not None)
+        self.assertTrue(response.headers.get("Last-Modified") is not None)
 
     def test_if_modified_since(self) -> None:
         """

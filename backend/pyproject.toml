@@ -28,6 +28,7 @@ sentry-sdk = "^1.39.1"
 django-session-timeout = "^0.1.0"
 django = "^5.0"
 requests = "^2.31.0"
+setuptools = "^70.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.0"
