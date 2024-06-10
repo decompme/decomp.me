@@ -1,3 +1,4 @@
+import LogoDreamcast from "./dreamcast.svg"
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
 import LogoIRIX from "./irix.svg"
@@ -30,6 +31,7 @@ const ICONS = {
     "n3ds": LogoN3DS,
     "switch": LogoSwitch,
     "saturn": LogoSaturn,
+    "dreamcast": LogoDreamcast,
 }
 
 export const PLATFORMS = Object.keys(ICONS)

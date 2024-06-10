@@ -164,6 +164,18 @@ SATURN = Platform(
     diff_flags=COMMON_DIFF_FLAGS,
 )
 
+DREAMCAST = Platform(
+    id="dreamcast",
+    name="Dreamcast",
+    description="SH4 (little-endian)",
+    arch="sh4",
+    assemble_cmd='sh-elf-as --isa=sh4 --little --relax -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="sh-elf-objdump",
+    nm_cmd="sh-elf-nm",
+    diff_flags=COMMON_DIFF_FLAGS,
+    has_decompiler=False,
+)
+
 PS2 = Platform(
     id="ps2",
     name="PlayStation 2",
@@ -241,6 +253,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "ps2": PS2,
         "psp": PSP,
         "saturn": SATURN,
+        "dreamcast": DREAMCAST,
         "macosx": MACOSX,
         "msdos": MSDOS,
         "win32": WIN32,

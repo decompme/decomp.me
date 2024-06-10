@@ -23,6 +23,7 @@ services:
         ENABLE_MSDOS_SUPPORT: "NO"
         ENABLE_PS2_SUPPORT: "NO"
         ENABLE_WIN32_SUPPORT: "NO"
+        ENABLE_DREAMCAST_SUPPORT: "NO"
         # dont install clang by default
         ENABLE_SWITCH_SUPPORT: "NO"
         # dont install dosemu by default

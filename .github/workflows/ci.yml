@@ -169,6 +169,7 @@ jobs:
             --build-arg ENABLE_GC_WII_SUPPORT=YES \
             --build-arg ENABLE_PS2_SUPPORT=YES \
             --build-arg ENABLE_SATURN_SUPPORT=YES \
+            --build-arg ENABLE_DREAMCAST_SUPPORT=YES \
             --build-arg ENABLE_WIN32_SUPPORT=YES
       - name: Run tests
         run: |-

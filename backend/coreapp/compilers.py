@@ -9,6 +9,7 @@ from coreapp import platforms
 from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
+    COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
@@ -36,6 +37,7 @@ from coreapp.platforms import (
     PS2,
     PSP,
     SATURN,
+    DREAMCAST,
     SWITCH,
     WIN32,
     Platform,
@@ -105,6 +107,12 @@ class ClangCompiler(Compiler):
 class ArmccCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
     library_include_flag: str = "-J"
+
+
+@dataclass(frozen=True)
+class SHCCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
@@ -501,6 +509,15 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
     platform=SATURN,
     cc=SATURN_CC,
 )
+
+DREAMCAST_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    "cp -r ${COMPILER_DIR}/bin/* . && "
+    "(SHC_LIB=. SHC_TMP=. ${WINE} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+)
+
+SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
 EE_GCC29_990721 = GCCPS2Compiler(
@@ -1496,6 +1513,8 @@ _all_compilers: List[Compiler] = [
     MWCCPSP_3_0_1_219,
     # Saturn
     CYGNUS_2_7_96Q3,
+    # Dreamcast
+    SHC_V51R11,
     # PS2
     EE_GCC29_990721,
     EE_GCC29_991111,

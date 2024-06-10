@@ -177,6 +177,8 @@
     "gcc2.91.66-mipsel": "gcc 2.91.66 + maspsx",
     "gcc2.95.2-mipsel": "gcc 2.95.2 + maspsx",
 
+    "shc-v5.1r11": "SHC v5.1 (Release 11)",
+
     "psyq3.3": "PSYQ3.3 (gcc 2.6.0 + aspsx 2.21)",
     "psyq3.5": "PSYQ3.5 (gcc 2.6.0 + aspsx 2.34)",
     "psyq3.6": "PSYQ3.6 (gcc 2.7.2 + aspsx 2.34)",
@@ -364,6 +366,19 @@
     "msvc_cdecl": "__cdecl calling convention",
     "msvc_fastcall": "__fastcall calling convention",
     "msvc_stdcall": "__stdcall calling convention",
+
+    "shc_opt_level": "Optimization level",
+    "shc_opt_level.-optimize=0": "Optimization: off",
+    "shc_opt_level.-optimize=1": "Optimization: on",
+    "shc_opt_type": "Optimization type",
+    "shc_opt_type.speed": "Optimization for speed",
+    "shc_opt_type.size": "Optimization for size",
+    "shc_round": "Floating-point rounding options",
+    "shc_round.-round=zero": "Round to zero",
+    "shc_round.-round=nearest": "Round to nearest",
+    "shc_debug": "Debug",
+    "shc_loop": "Loop unrolling",
+    "shc_inline": "Inline static functions",
 
     "psyq_opt_level": "Optimization level",
     "psyq_opt_level.-O0": "No optimization",
