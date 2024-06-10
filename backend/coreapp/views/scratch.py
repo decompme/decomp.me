@@ -188,7 +188,10 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             )
-        elif scratch.target_assembly.elf_object is not None and len(scratch.target_assembly.elf_object) > 0:
+        elif (
+            scratch.target_assembly.elf_object is not None
+            and len(scratch.target_assembly.elf_object) > 0
+        ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
             )
@@ -529,7 +532,10 @@ class ScratchViewSet(
             family = Scratch.objects.filter(
                 target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
             ).order_by("creation_time")
-        elif scratch.target_assembly.elf_object is not None and len(scratch.target_assembly.elf_object) > 0:
+        elif (
+            scratch.target_assembly.elf_object is not None
+            and len(scratch.target_assembly.elf_object) > 0
+        ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
             ).order_by("creation_time")
