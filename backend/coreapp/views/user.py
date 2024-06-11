@@ -72,7 +72,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
 
 @api_view(["GET"])  # type: ignore
-def user(username: str) -> Response:
+def user(request: Request, username: str) -> Response:
     """
     Gets a user's basic data
     """
