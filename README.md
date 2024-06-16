@@ -20,3 +20,9 @@ To learn more, see [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ## License
 decomp.me uses the MIT license. All dependencies may contain their own licenses, which decomp.me respects.
+
+### Infrastructure model
+![Infrastructure main model](.infragenie/infrastructure_main_model.svg)
+- [backend component model](.infragenie/backend_component_model.svg)
+
+---
