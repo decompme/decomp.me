@@ -25,7 +25,7 @@ export default function PlatformSelect({ platforms, value, onChange, className }
             className={classNames(styles.platform, { [styles.selected]: value === key })}
             onClick={() => onChange(key)}
         >
-            <PlatformIcon platform={key} />
+            <PlatformIcon clickable={false} platform={key} />
             <div className={styles.labelContainer}>
                 <div className={styles.consoleName}>{platform.name}</div>
                 <div className={styles.platformName}>{platform.description}</div>

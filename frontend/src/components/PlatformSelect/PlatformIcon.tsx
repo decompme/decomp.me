@@ -1,3 +1,7 @@
+import Link from "next/link"
+
+import { platformUrl } from "@/lib/api/urls"
+
 import LogoDreamcast from "./dreamcast.svg"
 import LogoGBA from "./gba.svg"
 import LogoGCWii from "./gc_wii.svg"
@@ -39,6 +43,7 @@ export const PLATFORMS = Object.keys(ICONS)
 export type Props = {
     platform: string
     className?: string
+    clickable?: boolean
     size?: string | number
 }
 
@@ -46,8 +51,19 @@ export function platformIcon(platform: string) {
     return ICONS[platform as keyof typeof ICONS] || UnknownIcon
 }
 
-export function PlatformIcon({ platform, className, size }: Props) {
+export function PlatformIcon({ platform, className, clickable, size }: Props) {
     const Icon = platformIcon(platform)
+    const url = platformUrl(platform)
 
-    return <Icon width={size} height={size} className={className} />
+    if (clickable) {
+        return (
+            <Link href={url}>
+                <Icon width={size} height={size} className={className} />
+            </Link>
+        )
+    } else {
+        return (
+            <Icon width={size} height={size} className={className} />
+        )
+    }
 }
