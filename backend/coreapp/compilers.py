@@ -539,7 +539,7 @@ EE_GCC29_991111A = GCCPS2Compiler(
 )
 
 EE_GCC29_991111B_R4 = GCCPS2Compiler(
-    id="ee-gcc2.9-991111b/r4",
+    id="ee-gcc2.9-991111b-r4",
     platform=PS2,
     cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
