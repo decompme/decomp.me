@@ -538,6 +538,12 @@ EE_GCC29_991111A = GCCPS2Compiler(
     cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+EE_GCC29_99111B_R4 = GCCPS2Compiler(
+    id="ee-gcc2.9-991111b/r4",
+    platform=PS2,
+    cc='${COMPILER_DIR}/bin/ee-gcc -c $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC29_991111_01 = GCCPS2Compiler(
     id="ee-gcc2.9-991111-01",
     platform=PS2,
@@ -1519,6 +1525,7 @@ _all_compilers: List[Compiler] = [
     EE_GCC29_990721,
     EE_GCC29_991111,
     EE_GCC29_991111A,
+    EE_GCC29_99111B_R4,
     EE_GCC29_991111_01,
     EE_GCC2952_273A,
     EE_GCC2952_274,
