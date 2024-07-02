@@ -79,7 +79,7 @@ MSDOS = Platform(
     name="Microsoft DOS",
     description="x86",
     arch="i686",
-    assemble_cmd='jwasm -c -Fo"$OUTPUT" "$PRELUDE" "$INPUT"',
+    assemble_cmd='jwasm -c -Fo"$OUTPUT" -Fi"$PRELUDE" "$INPUT"',
     objdump_cmd="omf-objdump",
     nm_cmd="omf-nm",
 )
