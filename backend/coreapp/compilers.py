@@ -1032,6 +1032,12 @@ MWCC_233_163N = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
+MWCC_242_53 = MWCCWiiGCCompiler(
+    id="mwcc_242_53",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_242_81 = MWCCWiiGCCompiler(
     id="mwcc_242_81",
     platform=GC_WII,
@@ -1046,6 +1052,12 @@ MWCC_242_81R = MWCCWiiGCCompiler(
 
 MWCC_247_92 = MWCCWiiGCCompiler(
     id="mwcc_247_92",
+    platform=GC_WII,
+    cc=MWCCEPPC_CC,
+)
+
+MWCC_247_92P1 = MWCCWiiGCCompiler(
+    id="mwcc_247_92p1",
     platform=GC_WII,
     cc=MWCCEPPC_CC,
 )
@@ -1579,9 +1591,11 @@ _all_compilers: List[Compiler] = [
     MWCC_233_163,
     MWCC_233_163E,
     MWCC_233_163N,
+    MWCC_242_53,
     MWCC_242_81,
     MWCC_242_81R,
     MWCC_247_92,
+    MWCC_247_92P1,
     MWCC_247_105,
     MWCC_247_107,
     MWCC_247_108,
