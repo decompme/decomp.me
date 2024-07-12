@@ -280,7 +280,7 @@ export function useLibraries(platform: string): LibraryVersions[] {
 
 export function usePresets(platform: string): Preset[] {
     const getByPlatform = ([url, platform]: [string | null, string]) => {
-        return get(url && platform && `${url}?platform=${platform}&page_size=100`)
+        return get(url && platform && `${url}?platform=${platform}&ordering=name&page_size=100`)
     }
 
     const url = typeof platform === "string" ? "/preset" : null
