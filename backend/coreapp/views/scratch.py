@@ -59,6 +59,7 @@ def get_db_asm(request_asm: str) -> Asm:
 # 1 MB
 MAX_FILE_SIZE = 1000 * 1024
 
+
 def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     # Validate file size
     if file.size > MAX_FILE_SIZE:
