@@ -54,8 +54,10 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
+        filters.OrderingFilter,
     ]
     search_fields = ["id", "name", "platform", "compiler", "owner"]
+    ordering_fields = ["creation_time", "id", "name", "compiler"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         return PresetSerializer
