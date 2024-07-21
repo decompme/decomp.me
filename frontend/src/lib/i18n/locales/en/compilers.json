@@ -191,6 +191,8 @@
     "psyq4.5": "PSYQ4.5 (gcc 2.91.66 + aspsx 2.81)",
     "psyq4.6": "PSYQ4.6 (gcc 2.95.2 + aspsx 2.86)",
 
+    "psyq_263_221": "gcc 2.6.3 + aspsx 2.21",
+
     "psyq4.4-ccpsx": "CCPSX (PSYQ4.4: gcc 2.8.1 + aspsx 2.79)",
 
     "mwccpsp_3.0.1_121": "MWCC 1.0 (3.0.1 121)",

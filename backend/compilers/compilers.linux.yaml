@@ -102,6 +102,7 @@ ps1:
   - psyq4.4
   - psyq4.5
   - psyq4.6
+  - psyq_263_221
   - gcc2.5.7-psx
   - gcc2.6.3-psx
   - gcc2.6.0-mipsel

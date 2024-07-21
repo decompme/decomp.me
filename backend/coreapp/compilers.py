@@ -332,6 +332,12 @@ PSYQ_CC = (
     '${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
 )
 
+PSYQ_263_221 = GCCPS1Compiler(
+    id="psyq_263_221",
+    platform=PS1,
+    cc=PSYQ_MSDOS_CC,
+)
+
 PSYQ33 = GCCPS1Compiler(
     id="psyq3.3",
     platform=PS1,
@@ -1485,6 +1491,7 @@ _all_compilers: List[Compiler] = [
     CLANG_401,
     CLANG_800,
     # PS1
+    PSYQ_263_221,
     PSYQ33,
     PSYQ35,
     PSYQ36,
