@@ -198,6 +198,7 @@ jobs:
               poetry install --no-root && \
               poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              for r in wine/*.reg; do regedit $r; done && \
               poetry run python manage.py test'
 
   frontend_lint:
