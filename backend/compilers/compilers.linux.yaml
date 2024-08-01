@@ -198,3 +198,4 @@ win32:
   - msvc6.6
   - msvc7.0
   - msvc7.1
+  - msvc8.0
