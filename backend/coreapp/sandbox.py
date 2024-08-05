@@ -49,7 +49,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
         settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
 
-
         assert ":" not in str(self.path)
         assert ":" not in str(settings.WINEPREFIX)
 
