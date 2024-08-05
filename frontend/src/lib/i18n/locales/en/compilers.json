@@ -367,6 +367,7 @@
     "msvc_use_rtti": "enable C++ RTTI",
     "msvc_use_ehsc": "enable C++ EH",
     "msvc_disable_stack_checking": "disable stack checking calls",
+    "msvc_disable_buffer_security_checks": "disable buffer security checks",
     "msvc_runtime_debug_checks": "enable runtime debug checks",
     "msvc_cdecl": "__cdecl calling convention",
     "msvc_fastcall": "__fastcall calling convention",

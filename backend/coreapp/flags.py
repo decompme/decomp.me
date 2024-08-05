@@ -282,6 +282,7 @@ COMMON_MSVC_FLAGS: Flags = [
     Checkbox("msvc_use_rtti", "/GR"),
     Checkbox("msvc_use_ehsc", "/GX"),
     Checkbox("msvc_disable_stack_checking", "/Gs"),
+    Checkbox("msvc_disable_buffer_security_checks", "/GS-"),
     Checkbox("msvc_runtime_debug_checks", "/GZ"),
     Checkbox("msvc_cdecl", "/Gd"),
     Checkbox("msvc_fastcall", "/Gr"),
