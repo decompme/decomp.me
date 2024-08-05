@@ -64,7 +64,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
-            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
             "--bindmount_ro", "/dev",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
@@ -83,6 +82,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
+            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
             "--env", "WINEDEBUG=-all",
             "--env", "WINEPREFIX=/wine",
         ]
