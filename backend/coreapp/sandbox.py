@@ -1,4 +1,5 @@
 import contextlib
+import getpass
 import logging
 import os
 import shlex
@@ -6,7 +7,6 @@ import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, List, Optional, Union
-import getpass
 
 from django.conf import settings
 
@@ -47,14 +47,15 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             return []
 
         settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
+        settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
+
 
         assert ":" not in str(self.path)
         assert ":" not in str(settings.WINEPREFIX)
 
-        wine_temp_dir = (
-            settings.WINEPREFIX / "drive_c" / "users" / getpass.getuser() / "Temp"
-        )
-        wine_temp_dir.mkdir(parents=True, exist_ok=True)
+        # wine-specific hacks
+        user = getpass.getuser()
+        (self.path / "Temp").mkdir(parents=True, exist_ok=True)
 
         # fmt: off
         wrapper = [
@@ -63,7 +64,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
-            "--bindmount", f"{self.path}:{wine_temp_dir}",
+            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
             "--bindmount_ro", "/dev",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
