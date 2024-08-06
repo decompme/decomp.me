@@ -325,11 +325,12 @@ PSYQ_MSDOS_CC = (
     '(HOME="." /usr/bin/dosemu -quiet -dumb -f ${COMPILER_DIR}/dosemurc -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
     '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
 )
+
 PSYQ_CC = (
-    'cpp -P "$INPUT" | unix2dos | '
-    '${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "$OUTPUT".s && '
-    '${WIBO} ${COMPILER_DIR}/ASPSX.EXE -quiet "$OUTPUT".s -o "$OUTPUT".obj && '
-    '${COMPILER_DIR}/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT"'
+    'cpp -P "${INPUT}" | unix2dos | '
+    '${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "${OUTPUT}".s && '
+    '${WIBO} ${COMPILER_DIR}/ASPSX.EXE -quiet "${OUTPUT}".s -o "${OUTPUT}"bj && '
+    '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
 PSYQ_263_221 = GCCPS1Compiler(
@@ -362,39 +363,13 @@ PSYQ40 = GCCPS1Compiler(
     cc=PSYQ_CC,
 )
 
-PSYQ41 = GCCPS1Compiler(
-    id="psyq4.1",
-    platform=PS1,
-    cc=PSYQ_CC,
-)
-
 PSYQ43 = GCCPS1Compiler(
     id="psyq4.3",
     platform=PS1,
     cc=PSYQ_CC,
 )
 
-PSYQ44 = GCCPS1Compiler(
-    id="psyq4.4",
-    platform=PS1,
-    cc=PSYQ_CC,
-)
-
-PSYQ45 = GCCPS1Compiler(
-    id="psyq4.5",
-    platform=PS1,
-    cc=PSYQ_CC,
-)
-
-PSYQ46 = GCCPS1Compiler(
-    id="psyq4.6",
-    platform=PS1,
-    cc=PSYQ_CC,
-)
-
 PSYQ_CCPSX = (
-    "echo ${OUTPUT} && "
-    "echo pwd is $(pwd) && "
     'echo "[ccpsx]" >> SN.INI && '
     'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
@@ -403,9 +378,26 @@ PSYQ_CCPSX = (
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
-PSYQ44_CCPSX = GCCPS1Compiler(
-    id="psyq4.4-ccpsx",
-    base_compiler=PSYQ44,
+PSYQ41 = GCCPS1Compiler(
+    id="psyq4.1",
+    platform=PS1,
+    cc=PSYQ_CCPSX,
+)
+
+PSYQ44 = GCCPS1Compiler(
+    id="psyq4.4",
+    platform=PS1,
+    cc=PSYQ_CCPSX,
+)
+
+PSYQ45 = GCCPS1Compiler(
+    id="psyq4.5",
+    platform=PS1,
+    cc=PSYQ_CCPSX,
+)
+
+PSYQ46 = GCCPS1Compiler(
+    id="psyq4.6",
     platform=PS1,
     cc=PSYQ_CCPSX,
 )
@@ -1507,7 +1499,6 @@ _all_compilers: List[Compiler] = [
     PSYQ44,
     PSYQ45,
     PSYQ46,
-    PSYQ44_CCPSX,
     GCC257_PSX,
     GCC263_PSX,
     GCC260_MIPSEL,
