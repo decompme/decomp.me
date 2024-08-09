@@ -115,6 +115,7 @@ ps1:
   - gcc2.7.2.3-mipsel
   - gcc2.8.0-mipsel
   - gcc2.8.1-mipsel
+  - gcc2.8.1-psx
   - gcc2.91.66-mipsel
   - gcc2.95.2-mipsel
 

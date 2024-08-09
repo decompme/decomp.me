@@ -177,6 +177,7 @@
     "gcc2.7.2.3-mipsel": "gcc 2.7.2.3 + maspsx",
     "gcc2.8.0-mipsel": "gcc 2.8.0 + maspsx",
     "gcc2.8.1-mipsel": "gcc 2.8.1 + maspsx",
+    "gcc2.8.1-psx": "gcc 2.8.1-psx + maspsx",
     "gcc2.91.66-mipsel": "gcc 2.91.66 + maspsx",
     "gcc2.95.2-mipsel": "gcc 2.95.2 + maspsx",
 
