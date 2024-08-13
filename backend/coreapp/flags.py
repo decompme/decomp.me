@@ -278,6 +278,7 @@ COMMON_MSVC_FLAGS: Flags = [
         id="msvc_opt_level", flags=["/Od", "/O1", "/O2", "/Os", "/Ot", "/Og", "/Ox"]
     ),
     FlagSet(id="msvc_codegen", flags=["/GB", "/G3", "/G4", "/G5", "/G6"]),
+    FlagSet(id="msvc_fp", flags=["/fp:precise", "/fp:strict", "/fp:fast"]),
     Checkbox("msvc_compile_cpp", "/TP"),
     Checkbox("msvc_use_rtti", "/GR"),
     Checkbox("msvc_use_ehsc", "/GX"),
