@@ -181,7 +181,7 @@ PS2 = Platform(
     name="PlayStation 2",
     description="MIPS (little-endian)",
     arch="mipsee",
-    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -mabi=eabi -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
