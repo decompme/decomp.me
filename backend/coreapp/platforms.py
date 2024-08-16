@@ -94,7 +94,7 @@ WIN32 = Platform(
     name="Windows (9x/NT)",
     description="x86 (32bit)",
     arch="i686",
-    assemble_cmd='i686-w64-mingw32-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    assemble_cmd='nasm -g -f elf32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="i686-w64-mingw32-objdump",
     nm_cmd="i686-w64-mingw32-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_X86_DIFF_FLAGS,

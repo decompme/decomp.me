@@ -54,6 +54,7 @@ RUN apt-get -y update && apt-get install -y \
     libnl-route-3-200 \
     libprotobuf-dev \
     libtinfo5 \
+    nasm \
     netcat \
     software-properties-common \
     unzip \
