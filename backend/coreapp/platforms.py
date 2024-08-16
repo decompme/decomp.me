@@ -4,7 +4,12 @@ from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
-from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
+from coreapp.flags import (
+    COMMON_DIFF_FLAGS,
+    COMMON_MIPS_DIFF_FLAGS,
+    COMMON_X86_DIFF_FLAGS,
+    Flags,
+)
 from coreapp.models.preset import Preset
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
@@ -92,6 +97,7 @@ WIN32 = Platform(
     assemble_cmd='i686-w64-mingw32-as --32 -mmnemonic=intel -msyntax=intel -mnaked-reg -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="i686-w64-mingw32-objdump",
     nm_cmd="i686-w64-mingw32-nm",
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_X86_DIFF_FLAGS,
 )
 
 SWITCH = Platform(

@@ -133,7 +133,7 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
-        known_objdump_flags = ["-Mno-aliases"]
+        known_objdump_flags = ["-Mno-aliases", "-Mintel", "-Matt"]
         known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
         ret = []
 

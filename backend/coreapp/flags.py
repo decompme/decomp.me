@@ -323,3 +323,10 @@ COMMON_WATCOM_FLAGS: Flags = [
     Checkbox("watcom_signedchar", "-j"),
     Checkbox("watcom_fpu", "-fpi87"),
 ]
+
+COMMON_X86_DIFF_FLAGS: Flags = [
+    FlagSet(
+        id="x86_asm_syntax",
+        flags=["-Mintel", "-Matt"],
+    ),
+]

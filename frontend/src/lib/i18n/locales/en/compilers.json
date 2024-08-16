@@ -461,5 +461,8 @@
 
     "diff_algorithm": "Diff algorithm",
     "diff_algorithm.-DIFFlevenshtein": "Levenshtein",
-    "diff_algorithm.-DIFFdifflib": "difflib"
+    "diff_algorithm.-DIFFdifflib": "difflib",
+    "x86_asm_syntax": "Assembly syntax",
+    "x86_asm_syntax.-Mintel": "Intel",
+    "x86_asm_syntax.-Matt": "AT&T"
 }
