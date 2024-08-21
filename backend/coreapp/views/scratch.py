@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import io
 import json
@@ -106,7 +107,7 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
             diff_flags=scratch.diff_flags,
         )
     except DiffError as e:
-        return DiffResult({}, str(e))
+        return DiffResult(None, str(e))
 
 
 def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
@@ -114,6 +115,8 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
     Given a scratch and a diff, update the scratch's score
     """
 
+    if diff.result is None:
+        return
     score = diff.result.get("current_score", scratch.score)
     max_score = diff.result.get("max_score", scratch.max_score)
     if score != scratch.score or max_score != scratch.max_score:
@@ -374,6 +377,7 @@ class ScratchViewSet(
         scratch: Scratch = self.get_object()
 
         # Apply partial
+        omit_diff = False
         if request.method == "POST":
             # TODO: use a serializer w/ validation
             if "compiler" in request.data:
@@ -391,11 +395,16 @@ class ScratchViewSet(
             if "libraries" in request.data:
                 libs = [Library(**lib) for lib in request.data["libraries"]]
                 scratch.libraries = libs
+            if "omit_diff" in request.data:
+                omit_diff = request.data["omit_diff"]
 
         compilation = compile_scratch(scratch)
-        diff = diff_compilation(scratch, compilation)
+        if omit_diff:
+            diff = DiffResult()
+        else:
+            diff = diff_compilation(scratch, compilation)
 
-        if request.method == "GET":
+        if not omit_diff and request.method == "GET":
             update_scratch_score(scratch, diff)
 
         compiler_output = ""
@@ -404,14 +413,21 @@ class ScratchViewSet(
         if diff.errors:
             compiler_output += diff.errors + "\n"
 
-        return Response(
-            {
-                "diff_output": diff.result,
-                "compiler_output": compiler_output,
-                "success": compilation.elf_object is not None
-                and len(compilation.elf_object) > 0,
-            }
-        )
+        response = {
+            "diff_output": diff.result,
+            "compiler_output": compiler_output,
+            "success": compilation.elf_object is not None
+            and len(compilation.elf_object) > 0,
+        }
+        if omit_diff:
+
+            def to_base64(obj: bytes) -> str:
+                return base64.b64encode(obj).decode("utf-8")
+
+            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
+            response["right_object"] = to_base64(compilation.elf_object)
+
+        return Response(response)
 
     @action(detail=True, methods=["POST"])
     def decompile(self, request: Request, pk: str) -> Response:

@@ -9,6 +9,8 @@ import { ResponseError, get, post, patch } from "./api/request"
 import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Preset, ClaimableScratch } from "./api/types"
 import { scratchUrl } from "./api/urls"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
+import { runObjdiff } from "./objdiff"
+import { useObjdiffClientEnabled } from "./settings"
 
 function onErrorRetry<C>(error: ResponseError, key: string, config: C, revalidate: Revalidator, { retryCount }: RevalidatorOptions) {
     if (error.status === 404) return
@@ -150,7 +152,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
     )
 }
 
-export function useCompilation(scratch: Scratch | null, autoRecompile = true, autoRecompileDelay: number, initial: Compilation|null = null): {
+export function useCompilation(scratch: Scratch | null, autoRecompile = true, autoRecompileDelay: number, initial: Compilation | null = null): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce
@@ -161,6 +163,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
     const [compileRequestPromise, setCompileRequestPromise] = useState<Promise<void>>(null)
     const [compilation, setCompilation] = useState<Compilation>(initial)
     const [isCompilationOld, setIsCompilationOld] = useState(false)
+    const [objdiffClientEnabled] = useObjdiffClientEnabled()
     const sUrl = scratchUrl(scratch)
 
     const compile = useCallback(() => {
@@ -182,6 +185,12 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             libraries: scratch.libraries,
             source_code: scratch.source_code,
             context: savedScratch ? undefinedIfUnchanged(savedScratch, scratch, "context") : scratch.context,
+            omit_diff: objdiffClientEnabled,
+        }).then((compilation: Compilation) => {
+            if (objdiffClientEnabled && compilation.success) {
+                return runObjdiff(compilation)
+            }
+            return compilation
         }).then((compilation: Compilation) => {
             setCompilation(compilation)
         }).finally(() => {
@@ -189,7 +198,14 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
             setIsCompilationOld(false)
         }).catch(error => {
             if (error instanceof ResponseError) {
-                setCompilation({ "compiler_output": error.json?.detail, "diff_output": null, "success": false })
+                setCompilation({
+                    "compiler_output": error.json?.detail,
+                    "diff_output": null,
+                    "objdiff_output": null,
+                    "success": false,
+                    "left_object": null,
+                    "right_object": null,
+                })
             } else {
                 return Promise.reject(error)
             }
@@ -198,7 +214,7 @@ export function useCompilation(scratch: Scratch | null, autoRecompile = true, au
         setCompileRequestPromise(promise)
 
         return promise
-    }, [compileRequestPromise, savedScratch, scratch])
+    }, [compileRequestPromise, savedScratch, scratch, objdiffClientEnabled])
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl)

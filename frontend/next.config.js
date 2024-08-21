@@ -1,12 +1,12 @@
 const { execSync } = require("child_process")
-
 const { config } = require("dotenv")
+const CopyPlugin = require("copy-webpack-plugin")
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
 }
 
-const getEnvBool = (key, fallback=false) => {
+const getEnvBool = (key, fallback = false) => {
     const value = process.env[key]
     if (value === "false" || value === "0" || value === "off") {
         return false
@@ -74,7 +74,7 @@ let app = withPlausibleProxy({
                     },
                     {
                         key: "Cross-Origin-Opener-Policy",
-                        value:"same-origin",
+                        value: "same-origin",
                     },
                     {
                         key: "Cross-Origin-Embedder-Policy",

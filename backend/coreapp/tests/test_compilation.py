@@ -260,6 +260,7 @@ nop
             diff_flags=[],
         )
 
-        self.assertTrue("rows" in diff.result)
-        self.assertGreater(len(diff.result["rows"]), 0)
-        self.assertEqual("", diff.errors)
+        diff_result: dict[str, Any] = diff.result  # type: ignore
+        self.assertTrue(diff_result is not None and "rows" in diff_result)
+        self.assertGreater(len(diff_result["rows"]), 0)
+        self.assertEqual(None, diff.errors)
