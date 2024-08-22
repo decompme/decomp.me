@@ -1,6 +1,6 @@
+const { Compilation } = require("webpack")
 const { execSync } = require("child_process")
 const { config } = require("dotenv")
-const CopyPlugin = require("copy-webpack-plugin")
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` })
@@ -108,6 +108,31 @@ let app = withPlausibleProxy({
             "test": /node_modules[\\|/](vscode-.*)/,
             "use": {
                 "loader": "umd-compat-loader",
+            },
+        })
+
+        // XXX: Terser/SWC currently breaks while minifying objdiff's ESM worker in the static directory because
+        // it uses `import.meta.url`. next.js provides no way to control this behavior, of course, so we'll
+        // hook into the optimization stage and mark assets in `static/media/` as already minified.
+        // https://github.com/vercel/next.js/issues/33914
+        // https://github.com/vercel/next.js/discussions/61549
+        config.optimization.minimizer.unshift({
+            apply(compiler) {
+                const pluginName = "SkipWorkerMinify"
+                compiler.hooks.thisCompilation.tap(pluginName, compilation=>{
+                    compilation.hooks.processAssets.tap({
+                        name: pluginName,
+                        stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE,
+                    }, assets=>{
+                        for (const assetName in assets) {
+                            if (/^static\/media\//.test(assetName)) {
+                                compilation.updateAsset(assetName, assets[assetName], {
+                                    minimized: true,
+                                })
+                            }
+                        }
+                    })
+                })
             },
         })
 
