@@ -58,16 +58,6 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
         return Scratch.objects.filter(owner=self.request.profile)
 
 
-class UserScratchFilterSet(django_filters.FilterSet):
-    """
-    Add filtering via query params and interactive API filter panel
-    """
-
-    class Meta:
-        model = Scratch
-        fields = ["preset"]
-
-
 class UserScratchList(generics.ListAPIView):  # type: ignore
     """
     Gets a user's scratches
@@ -75,7 +65,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
-    filterset_class = UserScratchFilterSet
+    filterset_fields = ['preset']
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.OrderingFilter,
