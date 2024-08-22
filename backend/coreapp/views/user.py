@@ -65,7 +65,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
-    filterset_fields = ['preset']
+    filterset_fields = ["preset"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.OrderingFilter,
