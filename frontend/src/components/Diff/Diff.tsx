@@ -1,11 +1,12 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, Fragment, useContext, useRef, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, memo, useContext, useRef, useState } from "react"
 
 import { VersionsIcon } from "@primer/octicons-react"
 import classNames from "classnames"
+import memoize from "memoize-one"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { FixedSizeList } from "react-window"
+import { FixedSizeList, areEqual } from "react-window"
 
 import * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
@@ -15,6 +16,7 @@ import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
 import DragBar from "./DragBar"
+import { Highlighter, useHighlighers } from "./Highlighter"
 
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
@@ -25,29 +27,6 @@ const PADDING_BOTTOM = 8
 const RE_TOKEN = /([ \t,()[\]:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]:]+/g
 
 const SelectedSourceLineContext = createContext<number | null>(null)
-
-type Highlighter = {
-    value: string | null
-    setValue: (value: string | null) => void
-    select: (value: string) => void
-}
-
-function useHighlighter(setAll: Highlighter["setValue"]): Highlighter {
-    const [value, setValue] = useState(null)
-    return {
-        value,
-        setValue,
-        select: newValue => {
-            // When selecting the same value twice (double-clicking), select it
-            // in all diff columns
-            if (value === newValue) {
-                setAll(newValue)
-            } else {
-                setValue(newValue)
-            }
-        },
-    }
-}
 
 function FormatDiffText({ texts, highlighter }: {
     texts: api.DiffText[]
@@ -108,13 +87,8 @@ function DiffCell({ cell, className, highlighter }: {
     </div>
 }
 
-function DiffRow({ row, style, highlighter1, highlighter2, highlighter3 }: {
-    row: api.DiffRow
-    style: CSSProperties
-    highlighter1: Highlighter
-    highlighter2: Highlighter
-    highlighter3: Highlighter
-}) {
+const DiffRow = memo(function DiffRow({ data, index, style }: { data: DiffListData, index: number, style: CSSProperties }) {
+    const row = data.diff?.rows?.[index]
     return <li
         className={styles.row}
         style={{
@@ -123,11 +97,11 @@ function DiffRow({ row, style, highlighter1, highlighter2, highlighter3 }: {
             lineHeight: `${style.height.toString()}px`,
         }}
     >
-        <DiffCell cell={row.base} highlighter={highlighter1} />
-        <DiffCell cell={row.current} highlighter={highlighter2} />
-        <DiffCell cell={row.previous} highlighter={highlighter3} />
+        <DiffCell cell={row.base} highlighter={data.highlighters[0]} />
+        <DiffCell cell={row.current} highlighter={data.highlighters[1]} />
+        <DiffCell cell={row.previous} highlighter={data.highlighters[2]} />
     </li>
-}
+}, areEqual)
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
 const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(({ style, ...rest }, ref) => {
@@ -142,15 +116,21 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 })
 innerElementType.displayName = "innerElementType"
 
+interface DiffListData {
+    diff: api.DiffOutput | null
+    highlighters: Highlighter[]
+}
+
+const createDiffListData = memoize((
+    diff: api.DiffOutput | null,
+    highlighters: Highlighter[]
+): DiffListData => {
+    return { diff, highlighters }
+})
+
 function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: number | undefined }) {
-    const setHighlightAll: Highlighter["setValue"] = value => {
-        highlighter1.setValue(value)
-        highlighter2.setValue(value)
-        highlighter3.setValue(value)
-    }
-    const highlighter1 = useHighlighter(setHighlightAll)
-    const highlighter2 = useHighlighter(setHighlightAll)
-    const highlighter3 = useHighlighter(setHighlightAll)
+    const { highlighters, setHighlightAll } = useHighlighers(3)
+    const itemData = createDiffListData(diff, highlighters)
 
     return <div
         className={styles.bodyContainer}
@@ -164,22 +144,14 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: n
                 <FixedSizeList
                     className={styles.body}
                     itemCount={diff.rows.length}
-                    itemData={diff.rows}
+                    itemData={itemData}
                     itemSize={(fontSize ?? 12) * 1.33}
                     overscanCount={40}
                     width={width}
                     height={height}
                     innerElementType={innerElementType}
                 >
-                    {({ data, index, style }) =>
-                        <DiffRow
-                            row={data[index]}
-                            style={style}
-                            highlighter1={highlighter1}
-                            highlighter2={highlighter2}
-                            highlighter3={highlighter3}
-                        />
-                    }
+                    {DiffRow}
                 </FixedSizeList>
             )}
         </AutoSizer>}

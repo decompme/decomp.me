@@ -1,6 +1,6 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { CSSProperties, HTMLAttributes, createContext, forwardRef, memo, useContext, useMemo, useRef, useState } from "react"
+import { CSSProperties, HTMLAttributes, createContext, forwardRef, memo, useContext, useRef, useState } from "react"
 
 import classNames from "classnames"
 import memoize from "memoize-one"
@@ -14,61 +14,13 @@ import { useCodeFontSize } from "@/lib/settings"
 import Loading from "../loading.svg"
 
 import DragBar from "./DragBar"
+import { Highlighter, useHighlighers } from "./Highlighter"
 import styles from "./NewDiff.module.scss"
 
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 8
 
 const SelectedSourceLineContext = createContext<number | null>(null)
-
-type HighlighterContextData = {
-    highlighters: Highlighter[]
-    setHighlightAll: Highlighter["setValue"]
-}
-
-type Highlighter = {
-    value: string | null
-    setValue: (value: string | null) => void
-    select: (value: string) => void
-}
-
-function useHighlighers(count: number): HighlighterContextData {
-    const [values, setValues] = useState<string[]>(Array(count).fill(null))
-    if (values.length !== count) {
-        throw new Error("Count changed")
-    }
-    return useMemo(() => {
-        const highlighters: Highlighter[] = []
-        const setHighlightAll = (value: string | null) => {
-            for (const highlighter of highlighters) {
-                highlighter.setValue(value)
-            }
-        }
-        for (let i = 0; i < count; i++) {
-            const setValue = (newValue: string | null) => {
-                setValues(values => {
-                    const newValues = [...values]
-                    newValues[i] = newValue
-                    return newValues
-                })
-            }
-            highlighters.push({
-                value: values[i],
-                setValue: setValue,
-                select: (newValue: string) => {
-                    // When selecting the same value twice (double-clicking), select it
-                    // in all diff columns
-                    if (values[i] === newValue) {
-                        setHighlightAll(newValue)
-                    } else {
-                        setValue(newValue)
-                    }
-                },
-            })
-        }
-        return { highlighters, setHighlightAll }
-    }, [count, values])
-}
 
 function findSymbol(object: ObjectDiff | null, symbol_name: string): FunctionDiff | null {
     if (!object) {
@@ -277,13 +229,14 @@ const createDiffListData = memoize((
 })
 
 function DiffBody({ diff, diffLabel, fontSize }: { diff: DiffResult | null, diffLabel: string | null, fontSize: number | undefined }) {
-    const highlighterData = useHighlighers(3)
-    const itemData = createDiffListData(diff, diffLabel, highlighterData.highlighters)
+    const { highlighters, setHighlightAll } = useHighlighers(2)
+    const itemData = createDiffListData(diff, diffLabel, highlighters)
+
     return <div
         className={styles.bodyContainer}
         onClick={() => {
             // If clicks propagate to the container, clear all
-            highlighterData.setHighlightAll(null)
+            setHighlightAll(null)
         }}
     >
         <AutoSizer>
