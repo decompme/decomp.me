@@ -54,8 +54,8 @@ WIBO = "wibo"
 
 @dataclass
 class DiffResult:
-    result: Dict[str, Any]
-    errors: str
+    result: Optional[Dict[str, Any]] = None
+    errors: Optional[str] = None
 
 
 @dataclass

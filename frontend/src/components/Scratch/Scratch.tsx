@@ -274,6 +274,7 @@ export default function Scratch({
                 className={styles.diffTab}
             >
                 {compilation && <CompilationPanel
+                    scratch={scratch}
                     compilation={compilation}
                     isCompiling={isCompiling}
                     isCompilationOld={isCompilationOld}
@@ -334,7 +335,7 @@ export default function Scratch({
                 saveCallback={saveCallback}
                 setDecompilationTabEnabled={setDecompilationTabEnabled}
             />
-            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent}/></div>}
+            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
         </ErrorBoundary>
         <ErrorBoundary>
             {layout && <CustomLayout

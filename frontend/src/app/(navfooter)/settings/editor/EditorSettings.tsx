@@ -2,8 +2,10 @@
 import { useEffect, useRef, useState } from "react"
 
 import LoadingSpinner from "@/components/loading.svg"
-import { ThreeWayDiffBase, useAutoRecompileSetting, useAutoRecompileDelaySetting, useMatchProgressBarEnabled,
-    useLanguageServerEnabled, useVimModeEnabled, useThreeWayDiffBase } from "@/lib/settings"
+import {
+    ThreeWayDiffBase, useAutoRecompileSetting, useAutoRecompileDelaySetting, useMatchProgressBarEnabled,
+    useLanguageServerEnabled, useVimModeEnabled, useThreeWayDiffBase, useObjdiffClientEnabled,
+} from "@/lib/settings"
 
 import Checkbox from "../Checkbox"
 import RadioList from "../RadioList"
@@ -17,6 +19,7 @@ export default function EditorSettings() {
     const [languageServerEnabled, setLanguageServerEnabled] = useLanguageServerEnabled()
     const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled()
     const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase()
+    const [objdiffClientEnabled, setObjdiffClientEnabled] = useObjdiffClientEnabled()
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] = useState(false)
 
@@ -105,6 +108,14 @@ export default function EditorSettings() {
                 onChange={setVimModeEnabled}
                 label="Enable vim bindings"
                 description="Enable vim bindings in the scratch editor">
+            </Checkbox>
+        </Section>
+        <Section title="Experiments">
+            <Checkbox
+                checked={objdiffClientEnabled}
+                onChange={setObjdiffClientEnabled}
+                label="Enable objdiff in WebAssembly"
+                description="WARNING: For development use only. Runs objdiff locally for diffing. Platform support is limited, and certain features will be broken. Download size: ~3.5MB">
             </Checkbox>
         </Section>
     </>

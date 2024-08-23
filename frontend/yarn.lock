@@ -1415,6 +1415,11 @@
   resolved "https://registry.yarnpkg.com/@primer/octicons-react/-/octicons-react-19.9.0.tgz#eb90a9b47da924c0ab33055d050e6ea21104d219"
   integrity sha512-Uk4XrHyfylyfzZN9d8VFjF8FpfYHEyT4sabw+9+oP+GWAJHhPvNPTz6gXvUzJZmoblAvgcTrDslIPjz8zMh76w==
 
+"@protobuf-ts/runtime@2.9.4":
+  version "2.9.4"
+  resolved "https://registry.yarnpkg.com/@protobuf-ts/runtime/-/runtime-2.9.4.tgz#db8a78b1c409e26d258ca39464f4757d804add8f"
+  integrity sha512-vHRFWtJJB/SiogWDF0ypoKfRIZ41Kq+G9cEFj6Qm1eQaAhJ1LDFvgZ7Ja4tb3iLOQhz0PaoPnnOijF1qmEqTxg==
+
 "@radix-ui/colors@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@radix-ui/colors/-/colors-2.1.0.tgz#8aa6f233f68076a92c57db93d7235172e88fda44"
@@ -4643,7 +4648,7 @@ mdn-data@2.0.30:
   resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.30.tgz#ce4df6f80af6cfbe218ecd5c552ba13c4dfa08cc"
   integrity sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==
 
-"memoize-one@>=3.1.1 <6":
+"memoize-one@>=3.1.1 <6", memoize-one@^5.2.1:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.2.1.tgz#8337aa3c4335581839ec01c3d594090cebe8f00e"
   integrity sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==
@@ -4838,6 +4843,13 @@ nth-check@^2.0.1:
   integrity sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==
   dependencies:
     boolbase "^1.0.0"
+
+objdiff-wasm@2.0.0-beta.9:
+  version "2.0.0-beta.9"
+  resolved "https://registry.yarnpkg.com/objdiff-wasm/-/objdiff-wasm-2.0.0-beta.9.tgz#8a97d0b1562b5d427f2f643f63b7ea73cb5b0f00"
+  integrity sha512-P3DaL0cle4dp/Bpb3aVt1hbd+eX1w/4pU07aG8PyTwdMom7oja01kqzkQPoul9BjcUbRW9g2Xj/m3AWHpLBPZA==
+  dependencies:
+    "@protobuf-ts/runtime" "2.9.4"
 
 object-assign@^4.0.1, object-assign@^4.1.1:
   version "4.1.1"

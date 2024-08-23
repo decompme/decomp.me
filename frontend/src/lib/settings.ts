@@ -8,13 +8,14 @@ const theme = createPersistedState<Theme>("theme")
 const autoRecompile = createPersistedState<boolean>("autoRecompile")
 const autoRecompileDelay = createPersistedState<number>("autoRecompileDelay")
 const codeFontSize = createPersistedState<number>("codeFontSize")
-const monospaceFont = createPersistedState<string|undefined>("monospaceFont")
+const monospaceFont = createPersistedState<string | undefined>("monospaceFont")
 const codeLineHeight = createPersistedState<number>("codeLineHeight")
 const codeColorScheme = createPersistedState<ColorScheme>("codeColorScheme")
 const languageServerEnabled = createPersistedState<boolean>("languageServerEnabled")
 const matchProgressBarEnabled = createPersistedState<boolean>("matchProgressBarEnabled")
 const vimModeEnabled = createPersistedState<boolean>("vimModeEnabled")
 const threeWayDiffBase = createPersistedState<ThreeWayDiffBase>("threeWayDiffBase")
+const objdiffClientEnabled = createPersistedState<boolean>("objdiffClientEnabled")
 
 export enum ThreeWayDiffBase {
     SAVED = "saved",
@@ -32,6 +33,7 @@ export const useLanguageServerEnabled = () => languageServerEnabled(false)
 export const useMatchProgressBarEnabled = () => matchProgressBarEnabled(true)
 export const useVimModeEnabled = () => vimModeEnabled(false)
 export const useThreeWayDiffBase = () => threeWayDiffBase(ThreeWayDiffBase.SAVED)
+export const useObjdiffClientEnabled = () => objdiffClientEnabled(false)
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme()
