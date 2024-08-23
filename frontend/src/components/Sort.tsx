@@ -18,9 +18,9 @@ export function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: Te
     case SortMode.LAST_UPDATED: // most recent first
         return (a, b) => new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
     case SortMode.LEAST_MATCHED:
-        return compareScratchScores
-    case SortMode.MOST_MATCHED:
         return (a, b) => compareScratchScores(b, a)
+    case SortMode.MOST_MATCHED:
+        return compareScratchScores
     }
 }
 
