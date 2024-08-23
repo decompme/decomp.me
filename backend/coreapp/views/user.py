@@ -1,3 +1,4 @@
+import django_filters
 from django.contrib.auth import logout
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
@@ -64,7 +65,11 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
-    filter_backends = [filters.OrderingFilter]
+    filterset_fields = ["preset"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
     ordering_fields = ["creation_time", "last_updated", "score"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
