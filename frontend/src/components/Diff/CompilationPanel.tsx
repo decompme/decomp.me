@@ -11,7 +11,6 @@ import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings"
 import GhostButton from "../GhostButton"
 
 import Diff from "./Diff"
-import NewDiff from "./NewDiff"
 
 function getProblemState(compilation: api.Compilation): ProblemState {
     if (!compilation.success) {
@@ -105,25 +104,16 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
             }}
         >
             <Allotment.Pane>
-                {objdiffResult ? (
-                    <NewDiff
-                        diff={objdiffResult}
-                        diffLabel={scratch.diff_label}
-                        isCompiling={isCompiling}
-                        isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
-                        selectedSourceLine={selectedSourceLine}
-                    />
-                ) : (
-                    <Diff
-                        diff={diff}
-                        isCompiling={isCompiling}
-                        isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
-                        threeWayDiffEnabled={threeWayDiffEnabled}
-                        setThreeWayDiffEnabled={setThreeWayDiffEnabled}
-                        threeWayDiffBase={threeWayDiffBase}
-                        selectedSourceLine={selectedSourceLine}
-                    />
-                )}
+                <Diff
+                    diff={diff || objdiffResult}
+                    diffLabel={scratch.diff_label}
+                    isCompiling={isCompiling}
+                    isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    threeWayDiffEnabled={threeWayDiffEnabled}
+                    setThreeWayDiffEnabled={setThreeWayDiffEnabled}
+                    threeWayDiffBase={threeWayDiffBase}
+                    selectedSourceLine={selectedSourceLine}
+                />
             </Allotment.Pane>
             <Allotment.Pane
                 minSize={problemsCollapsedHeight}

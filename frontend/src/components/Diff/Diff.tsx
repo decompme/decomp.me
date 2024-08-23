@@ -1,12 +1,11 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, memo, useContext, useRef, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, useRef, useState } from "react"
 
 import { VersionsIcon } from "@primer/octicons-react"
-import classNames from "classnames"
-import memoize from "memoize-one"
+import { DiffResult } from "objdiff-wasm"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { FixedSizeList, areEqual } from "react-window"
+import { FixedSizeList } from "react-window"
 
 import * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
@@ -15,93 +14,10 @@ import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings"
 import Loading from "../loading.svg"
 
 import styles from "./Diff.module.scss"
+import * as AsmDiffer from "./DiffRowAsmDiffer"
+import * as Objdiff from "./DiffRowObjdiff"
 import DragBar from "./DragBar"
-import { Highlighter, useHighlighers } from "./Highlighter"
-
-const PADDING_TOP = 8
-const PADDING_BOTTOM = 8
-
-// Regex for tokenizing lines for click-to-highlight purposes.
-// Strings matched by the first regex group (spaces, punctuation)
-// are treated as non-highlightable.
-const RE_TOKEN = /([ \t,()[\]:]+|~>)|%(?:lo|hi)\([^)]+\)|[^ \t,()[\]:]+/g
-
-const SelectedSourceLineContext = createContext<number | null>(null)
-
-function FormatDiffText({ texts, highlighter }: {
-    texts: api.DiffText[]
-    highlighter: Highlighter
-}) {
-    return <> {
-        texts.map((t, index1) =>
-            Array.from(t.text.matchAll(RE_TOKEN)).map((match, index2) => {
-                const text = match[0]
-                const isToken = !match[1]
-                const key = index1 + "," + index2
-
-                let className: string
-                if (t.format == "rotation") {
-                    className = styles[`rotation${t.index % 9}`]
-                } else if (t.format) {
-                    className = styles[t.format]
-                }
-
-                return <span
-                    key={key}
-                    className={classNames(className, {
-                        [styles.highlightable]: isToken,
-                        [styles.highlighted]: (highlighter.value === text),
-                    })}
-                    onClick={e => {
-                        if (isToken) {
-                            highlighter.select(text)
-                            e.stopPropagation()
-                        }
-                    }}
-                >
-                    {text}
-                </span>
-            })
-        )
-    }</>
-}
-
-function DiffCell({ cell, className, highlighter }: {
-    cell: api.DiffCell | undefined
-    className?: string
-    highlighter: Highlighter
-}) {
-    const selectedSourceLine = useContext(SelectedSourceLineContext)
-    const hasLineNo = typeof cell?.src_line != "undefined"
-
-    if (!cell)
-        return <div className={classNames(styles.cell, className)} />
-
-    return <div
-        className={classNames(styles.cell, className, {
-            [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
-        })}
-    >
-        {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
-        <FormatDiffText texts={cell.text} highlighter={highlighter} />
-    </div>
-}
-
-const DiffRow = memo(function DiffRow({ data, index, style }: { data: DiffListData, index: number, style: CSSProperties }) {
-    const row = data.diff?.rows?.[index]
-    return <li
-        className={styles.row}
-        style={{
-            ...style,
-            top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
-            lineHeight: `${style.height.toString()}px`,
-        }}
-    >
-        <DiffCell cell={row.base} highlighter={data.highlighters[0]} />
-        <DiffCell cell={row.current} highlighter={data.highlighters[1]} />
-        <DiffCell cell={row.previous} highlighter={data.highlighters[2]} />
-    </li>
-}, areEqual)
+import { useHighlighers } from "./Highlighter"
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
 const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(({ style, ...rest }, ref) => {
@@ -116,21 +32,26 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
 })
 innerElementType.displayName = "innerElementType"
 
-interface DiffListData {
-    diff: api.DiffOutput | null
-    highlighters: Highlighter[]
+const isAsmDifferOutput = (diff: api.DiffOutput | DiffResult): diff is api.DiffOutput => {
+    return Object.prototype.hasOwnProperty.call(diff, "arch_str")
 }
 
-const createDiffListData = memoize((
-    diff: api.DiffOutput | null,
-    highlighters: Highlighter[]
-): DiffListData => {
-    return { diff, highlighters }
-})
-
-function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: number | undefined }) {
+function DiffBody({ diff, diffLabel, fontSize }: { diff: api.DiffOutput | DiffResult | null, diffLabel: string | null, fontSize: number | undefined }) {
     const { highlighters, setHighlightAll } = useHighlighers(3)
-    const itemData = createDiffListData(diff, highlighters)
+
+    if (!diff) {
+        return <div className={styles.bodyContainer} />
+    }
+
+    let itemData: AsmDiffer.DiffListData | Objdiff.DiffListData
+    let DiffRow: typeof AsmDiffer.DiffRow | typeof Objdiff.DiffRow
+    if (isAsmDifferOutput(diff)) {
+        itemData = AsmDiffer.createDiffListData(diff, diffLabel, highlighters)
+        DiffRow = AsmDiffer.DiffRow
+    } else {
+        itemData = Objdiff.createDiffListData(diff, diffLabel, highlighters)
+        DiffRow = Objdiff.DiffRow
+    }
 
     return <div
         className={styles.bodyContainer}
@@ -139,11 +60,11 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: n
             setHighlightAll(null)
         }}
     >
-        {diff?.rows && <AutoSizer>
+        <AutoSizer>
             {({ height, width }: {height: number|undefined, width:number|undefined}) => (
                 <FixedSizeList
                     className={styles.body}
-                    itemCount={diff.rows.length}
+                    itemCount={itemData.itemCount}
                     itemData={itemData}
                     itemSize={(fontSize ?? 12) * 1.33}
                     overscanCount={40}
@@ -151,10 +72,10 @@ function DiffBody({ diff, fontSize }: { diff: api.DiffOutput | null, fontSize: n
                     height={height}
                     innerElementType={innerElementType}
                 >
-                    {DiffRow}
+                    {DiffRow as any}
                 </FixedSizeList>
             )}
-        </AutoSizer>}
+        </AutoSizer>
     </div>
 }
 
@@ -173,8 +94,14 @@ function ThreeWayToggleButton({ enabled, setEnabled }: { enabled: boolean, setEn
     </button>
 }
 
+export const PADDING_TOP = 8
+export const PADDING_BOTTOM = 8
+
+export const SelectedSourceLineContext = createContext<number | null>(null)
+
 export type Props = {
-    diff: api.DiffOutput | null
+    diff: api.DiffOutput | DiffResult | null
+    diffLabel: string | null
     isCompiling: boolean
     isCurrentOutdated: boolean
     threeWayDiffEnabled: boolean
@@ -183,7 +110,7 @@ export type Props = {
     selectedSourceLine: number | null
 }
 
-export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDiffEnabled, setThreeWayDiffEnabled, threeWayDiffBase, selectedSourceLine }: Props) {
+export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, threeWayDiffEnabled, setThreeWayDiffEnabled, threeWayDiffBase, selectedSourceLine }: Props) {
     const [fontSize] = useCodeFontSize()
 
     const container = useSize<HTMLDivElement>()
@@ -245,7 +172,7 @@ export default function Diff({ diff, isCompiling, isCurrentOutdated, threeWayDif
             </div>}
         </div>
         <SelectedSourceLineContext.Provider value={selectedSourceLine}>
-            <DiffBody diff={diff} fontSize={fontSize} />
+            <DiffBody diff={diff} diffLabel={diffLabel} fontSize={fontSize} />
         </SelectedSourceLineContext.Provider>
     </div>
 }
