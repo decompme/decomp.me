@@ -104,20 +104,18 @@ ps1:
   - psyq4.6
   - psyq_263_221
   - gcc2.5.7-psx
+  - gcc2.6.0-psx
   - gcc2.6.3-psx
-  - gcc2.6.0-mipsel
-  - gcc2.6.3-mipsel
+  - gcc2.7.2-psx
+  - gcc2.8.0-psx
+  - gcc2.8.1-psx
+  - gcc2.91.66-psx
+  - gcc2.95.2-psx
   - gcc2.7.0-mipsel
   - gcc2.7.1-mipsel
-  - gcc2.7.2-mipsel
   - gcc2.7.2.1-mipsel
   - gcc2.7.2.2-mipsel
   - gcc2.7.2.3-mipsel
-  - gcc2.8.0-mipsel
-  - gcc2.8.1-mipsel
-  - gcc2.8.1-psx
-  - gcc2.91.66-mipsel
-  - gcc2.95.2-mipsel
 
 ps2:
   - ee-gcc2.9-990721

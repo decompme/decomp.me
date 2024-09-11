@@ -166,20 +166,19 @@
     "gcc3-1041": "GCC 3.1 (Mac OS 10.1.4) (C)",
 
     "gcc2.5.7-psx": "gcc 2.5.7-psx + maspsx",
+    "gcc2.6.0-psx": "gcc 2.6.0-psx + maspsx",
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
-    "gcc2.6.0-mipsel": "gcc 2.6.0 + maspsx",
-    "gcc2.6.3-mipsel": "gcc 2.6.3 + maspsx",
+    "gcc2.7.2-psx": "gcc 2.7.2-psx + maspsx",
+    "gcc2.8.0-psx": "gcc 2.8.0-psx + maspsx",
+    "gcc2.8.1-psx": "gcc 2.8.1-psx + maspsx",
+    "gcc2.91.66-psx": "gcc 2.91.66-psx + maspsx",
+    "gcc2.95.2-psx": "gcc 2.95.2-psx + maspsx",
+
     "gcc2.7.0-mipsel": "gcc 2.7.0 + maspsx",
     "gcc2.7.1-mipsel": "gcc 2.7.1 + maspsx",
-    "gcc2.7.2-mipsel": "gcc 2.7.2 + maspsx",
     "gcc2.7.2.1-mipsel": "gcc 2.7.2.1 + maspsx",
     "gcc2.7.2.2-mipsel": "gcc 2.7.2.2 + maspsx",
     "gcc2.7.2.3-mipsel": "gcc 2.7.2.3 + maspsx",
-    "gcc2.8.0-mipsel": "gcc 2.8.0 + maspsx",
-    "gcc2.8.1-mipsel": "gcc 2.8.1 + maspsx",
-    "gcc2.8.1-psx": "gcc 2.8.1-psx + maspsx",
-    "gcc2.91.66-mipsel": "gcc 2.91.66 + maspsx",
-    "gcc2.95.2-mipsel": "gcc 2.95.2 + maspsx",
 
     "shc-v5.1r11": "SHC v5.1 (Release 11)",
 
