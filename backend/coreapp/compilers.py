@@ -413,24 +413,49 @@ GCC257_PSX = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC260_PSX = GCCPS1Compiler(
+    id="gcc2.6.0-psx",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
 GCC263_PSX = GCCPS1Compiler(
     id="gcc2.6.3-psx",
     platform=PS1,
     cc=PS1_GCC,
 )
 
-GCC260_MIPSEL = GCCPS1Compiler(
-    id="gcc2.6.0-mipsel",
+GCC272_PSX = GCCPS1Compiler(
+    id="gcc2.7.2-psx",
     platform=PS1,
     cc=PS1_GCC,
 )
 
-GCC263_MIPSEL = GCCPS1Compiler(
-    id="gcc2.6.3-mipsel",
+GCC280_PSX = GCCPS1Compiler(
+    id="gcc2.8.0-psx",
     platform=PS1,
     cc=PS1_GCC,
 )
 
+GCC281_PSX = GCCPS1Compiler(
+    id="gcc2.8.1-psx",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC29166_PSX = GCCPS1Compiler(
+    id="gcc2.91.66-psx",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+GCC2952_PSX = GCCPS1Compiler(
+    id="gcc2.95.2-psx",
+    platform=PS1,
+    cc=PS1_GCC,
+)
+
+# these are "vanilla" compilers without direct PSYQ counterparts
 GCC270_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.0-mipsel",
     platform=PS1,
@@ -439,12 +464,6 @@ GCC270_MIPSEL = GCCPS1Compiler(
 
 GCC271_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.1-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC272_MIPSEL = GCCPS1Compiler(
-    id="gcc2.7.2-mipsel",
     platform=PS1,
     cc=PS1_GCC,
 )
@@ -463,36 +482,6 @@ GCC2722_MIPSEL = GCCPS1Compiler(
 
 GCC2723_MIPSEL = GCCPS1Compiler(
     id="gcc2.7.2.3-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC280_MIPSEL = GCCPS1Compiler(
-    id="gcc2.8.0-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC281_MIPSEL = GCCPS1Compiler(
-    id="gcc2.8.1-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC281_PSX = GCCPS1Compiler(
-    id="gcc2.8.1-psx",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC29166_MIPSEL = GCCPS1Compiler(
-    id="gcc2.91.66-mipsel",
-    platform=PS1,
-    cc=PS1_GCC,
-)
-
-GCC2952_MIPSEL = GCCPS1Compiler(
-    id="gcc2.95.2-mipsel",
     platform=PS1,
     cc=PS1_GCC,
 )
@@ -1506,20 +1495,18 @@ _all_compilers: List[Compiler] = [
     PSYQ45,
     PSYQ46,
     GCC257_PSX,
+    GCC260_PSX,
     GCC263_PSX,
-    GCC260_MIPSEL,
-    GCC263_MIPSEL,
+    GCC272_PSX,
+    GCC280_PSX,
+    GCC281_PSX,
+    GCC29166_PSX,
+    GCC2952_PSX,
     GCC270_MIPSEL,
     GCC271_MIPSEL,
-    GCC272_MIPSEL,
     GCC2721_MIPSEL,
     GCC2722_MIPSEL,
     GCC2723_MIPSEL,
-    GCC280_MIPSEL,
-    GCC281_MIPSEL,
-    GCC281_PSX,
-    GCC29166_MIPSEL,
-    GCC2952_MIPSEL,
     # PSP
     PSP_GCC_1_3_1,
     PSPSNC_1_2_7503_0,
