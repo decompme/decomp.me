@@ -5496,6 +5496,11 @@ react-contenteditable@^3.3.7:
     fast-deep-equal "^3.1.3"
     prop-types "^15.7.1"
 
+react-date-object@^2.1.9:
+  version "2.1.9"
+  resolved "https://registry.yarnpkg.com/react-date-object/-/react-date-object-2.1.9.tgz#9eb0f70b2b424e32bb437226fc5e435d1fd6a4f1"
+  integrity sha512-BHxD/quWOTo9fLKV/cfL/M31ePoj4a1JaJ/CnOf8Ndg3mrkh4x9wEMMkCfTrzduxDOgU8ZgR8uarhqI5G71sTg==
+
 react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"

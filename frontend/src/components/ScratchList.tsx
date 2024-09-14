@@ -5,7 +5,6 @@ import { ReactNode, useState } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
-import TimeAgo from "react-timeago"
 
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"
@@ -19,6 +18,7 @@ import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
 import Sort, { SortMode } from "./Sort"
 import UserLink from "./user/UserLink"
+import TimeAgo2 from "../components/TimeAgo2"
 
 export interface Props {
     title?: string
@@ -111,7 +111,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo2 date={scratch.last_updated} />
                     </span>
                     <div className={styles.actions}>
                         {children}
@@ -148,7 +148,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo2 date={scratch.last_updated} />
                     </span>
                 </div>
             </div>
@@ -186,7 +186,7 @@ export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch
                 </div>
                 <div className={styles.metadata}>
                     <span>
-                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                        {presetOrCompiler} • {matchPercentString} matched • <TimeAgo2 date={scratch.last_updated} />
                     </span>
                 </div>
             </div>
@@ -206,7 +206,7 @@ export function ScratchItemPresetList({ scratch }: { scratch: api.TerseScratch }
                     </Link>
                     <div className={styles.metadata}>
                         <span>
-                            {matchPercentString} matched • <TimeAgo date={scratch.last_updated} />
+                            {matchPercentString} matched • <TimeAgo2 date={scratch.last_updated} />
                         </span>
                     </div>
                     <div className={styles.owner}>

@@ -1,6 +1,5 @@
 import Link from "next/link"
 
-import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import LoadingSpinner from "@/components/loading.svg"
@@ -8,6 +7,8 @@ import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import PlatformName from "@/components/PlatformSelect/PlatformName"
 import { getScoreText } from "@/components/ScoreBadge"
 import UserLink from "@/components/user/UserLink"
+import TimeAgo2 from "@/components/TimeAgo2"
+
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
@@ -77,11 +78,11 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>
-                    <TimeAgo date={scratch.creation_time} />
+                    <TimeAgo2 date={scratch.last_updated} />
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Modified</p>
-                    <TimeAgo date={scratch.last_updated} />
+                    <TimeAgo2 date={scratch.last_updated} />
                 </div>
             </div>
 
