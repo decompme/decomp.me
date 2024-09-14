@@ -6,7 +6,7 @@ import LoadingSpinner from "@/components/loading.svg"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import PlatformName from "@/components/PlatformSelect/PlatformName"
 import { getScoreText } from "@/components/ScoreBadge"
-import TimeAgo2 from "@/components/TimeAgo2"
+import TimeAgo from "@/components/TimeAgo"
 import UserLink from "@/components/user/UserLink"
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
@@ -77,11 +77,11 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>
-                    <TimeAgo2 date={scratch.last_updated} />
+                    <TimeAgo date={scratch.last_updated} />
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Modified</p>
-                    <TimeAgo2 date={scratch.last_updated} />
+                    <TimeAgo date={scratch.last_updated} />
                 </div>
             </div>
 

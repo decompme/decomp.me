@@ -6,7 +6,7 @@ import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, Trash
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
-import TimeAgo2 from "@/components/TimeAgo2"
+import TimeAgo from "@/components/TimeAgo"
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
 import { useSize } from "@/lib/hooks"
@@ -57,7 +57,7 @@ function EditTimeAgo({ date }: { date: string }) {
         {isActive ? <>
             Active now
         </> : <>
-            <TimeAgo2 date={date} />
+            <TimeAgo date={date} />
         </>}
     </span>
 }
