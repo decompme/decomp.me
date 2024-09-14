@@ -77,7 +77,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                 </div>}
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Created</p>
-                    <TimeAgo date={scratch.last_updated} />
+                    <TimeAgo date={scratch.creation_time} />
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Modified</p>
