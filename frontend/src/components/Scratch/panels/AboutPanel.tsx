@@ -1,12 +1,12 @@
 import Link from "next/link"
 
-import TimeAgo from "react-timeago"
 import useSWR from "swr"
 
 import LoadingSpinner from "@/components/loading.svg"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import PlatformName from "@/components/PlatformSelect/PlatformName"
 import { getScoreText } from "@/components/ScoreBadge"
+import TimeAgo from "@/components/TimeAgo"
 import UserLink from "@/components/user/UserLink"
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"

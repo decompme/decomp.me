@@ -5,8 +5,8 @@ import { ReactNode, useState } from "react"
 import Link from "next/link"
 
 import classNames from "classnames"
-import TimeAgo from "react-timeago"
 
+import TimeAgo from "@/components/TimeAgo"
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"
 import useTranslation from "@/lib/i18n/translate"
