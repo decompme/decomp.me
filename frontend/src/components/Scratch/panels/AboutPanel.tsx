@@ -6,9 +6,8 @@ import LoadingSpinner from "@/components/loading.svg"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import PlatformName from "@/components/PlatformSelect/PlatformName"
 import { getScoreText } from "@/components/ScoreBadge"
-import UserLink from "@/components/user/UserLink"
 import TimeAgo2 from "@/components/TimeAgo2"
-
+import UserLink from "@/components/user/UserLink"
 import { Scratch, Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 

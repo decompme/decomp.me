@@ -6,6 +6,7 @@ import Link from "next/link"
 
 import classNames from "classnames"
 
+import TimeAgo2 from "@/components/TimeAgo2"
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"
 import useTranslation from "@/lib/i18n/translate"
@@ -18,7 +19,6 @@ import { calculateScorePercent, percentToString } from "./ScoreBadge"
 import styles from "./ScratchList.module.scss"
 import Sort, { SortMode } from "./Sort"
 import UserLink from "./user/UserLink"
-import TimeAgo2 from "../components/TimeAgo2"
 
 export interface Props {
     title?: string

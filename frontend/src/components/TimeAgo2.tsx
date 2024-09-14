@@ -8,7 +8,7 @@ function formatDateString(x: string, format="YYYY-MM-DD HH:mm:ss") {
 }
 
 export default function TimeAgo2({
-    date
+    date,
 }: {
     date: string
 }) {
@@ -17,5 +17,5 @@ export default function TimeAgo2({
     return <TimeAgo
         date={date}
         title={title}
-        />
+    />
 }

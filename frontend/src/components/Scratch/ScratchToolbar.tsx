@@ -6,11 +6,10 @@ import { DownloadIcon, FileIcon, IterationsIcon, RepoForkedIcon, SyncIcon, Trash
 import classNames from "classnames"
 import ContentEditable from "react-contenteditable"
 
+import TimeAgo2 from "@/components/TimeAgo2"
 import * as api from "@/lib/api"
 import { scratchUrl } from "@/lib/api/urls"
 import { useSize } from "@/lib/hooks"
-
-import TimeAgo2 from "@/components/TimeAgo2"
 
 import Breadcrumbs from "../Breadcrumbs"
 import Nav from "../Nav"
