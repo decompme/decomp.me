@@ -11,7 +11,8 @@ from typing import Any, Dict, Optional
 import django_filters
 from coreapp import compilers, platforms
 from django.core.files import File
-from django.db.models import ExpressionWrapper, F, FloatField, When, Case, Value
+from django.db.models import F, FloatField, When, Case, Value
+from django.db.models.functions import Cast
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -317,7 +318,7 @@ class ScratchViewSet(
         When(score__gt=F("max_score"), then=Value(0.0)),
         When(score=0, then=Value(1.0)),
         When(match_override=True, then=Value(1.0)),
-        default=1.0 - ExpressionWrapper(F("score") / F("max_score"), output_field=FloatField()),
+        default=1.0 - (F("score") / Cast("max_score", FloatField())),
     )
 
     queryset = Scratch.objects.all().annotate(match_percent=match_percent)
