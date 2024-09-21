@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 import django_filters
 from coreapp import compilers, platforms
 from django.core.files import File
+from django.db.models import F, FloatField, When, Case, Value
+from django.db.models.functions import Cast
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -310,7 +312,16 @@ class ScratchViewSet(
     mixins.ListModelMixin,
     GenericViewSet,  # type: ignore
 ):
-    queryset = Scratch.objects.all()
+    match_percent = Case(
+        When(max_score__lte=0, then=Value(0.0)),
+        When(score__lt=0, then=Value(0.0)),
+        When(score__gt=F("max_score"), then=Value(0.0)),
+        When(score=0, then=Value(1.0)),
+        When(match_override=True, then=Value(1.0)),
+        default=1.0 - (F("score") / Cast("max_score", FloatField())),
+    )
+
+    queryset = Scratch.objects.all().annotate(match_percent=match_percent)
     pagination_class = ScratchPagination
     filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
@@ -319,7 +330,7 @@ class ScratchViewSet(
         filters.OrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
-    ordering_fields = ["creation_time", "last_updated", "score"]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":

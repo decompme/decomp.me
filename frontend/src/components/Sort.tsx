@@ -5,8 +5,8 @@ export enum SortMode {
     NEWEST_FIRST = "-creation_time",
     OLDEST_FIRST = "creation_time",
     LAST_UPDATED = "-last_updated",
-    LEAST_MATCHED = "-score",
-    MOST_MATCHED = "score",
+    LEAST_MATCHED = "match_percent",
+    MOST_MATCHED = "-match_percent",
 }
 
 export function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: TerseScratch) => number {
