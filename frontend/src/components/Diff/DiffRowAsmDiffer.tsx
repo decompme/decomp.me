@@ -11,7 +11,7 @@ import * as api from "@/lib/api"
 
 import { ScrollContext } from "../ScrollContext"
 
-import { PADDING_TOP, SelectedSourceLineContext } from "./Diff"
+import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
 import { Highlighter } from "./Highlighter"
 
@@ -70,27 +70,12 @@ function DiffCell({ cell, className, highlighter }: {
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
 
-    const scrollToLineNumber = () => {
-        if (!sourceEditor) {
-            return
-        }
-        if (cell.src_line <= sourceEditor.current.state.doc.lines) {
-            // check if the source line <= number of lines
-            // which can be false if pragmas are used to force line numbers
-            const line = sourceEditor.current.state.doc.line(cell.src_line)
-            if (line) {
-                const { top } = sourceEditor.current.lineBlockAt(line.to)
-                sourceEditor.current.scrollDOM.scrollTo({ top, behavior: "smooth" })
-            }
-        }
-    }
-
     return <div
         className={classNames(styles.cell, className, {
             [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
         })}
     >
-        {hasLineNo && <span className={styles.lineNumber}><button onClick={scrollToLineNumber}>{cell.src_line}</button></span>}
+        {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.src_line)}>{cell.src_line}</button></span>}
         <FormatDiffText texts={cell.text} highlighter={highlighter} />
     </div>
 }

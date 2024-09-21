@@ -10,7 +10,7 @@ import { areEqual } from "react-window"
 
 import { ScrollContext } from "../ScrollContext"
 
-import { PADDING_TOP, SelectedSourceLineContext } from "./Diff"
+import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
 import { Highlighter } from "./Highlighter"
 
@@ -148,27 +148,12 @@ function DiffCell({ cell, baseAddress, className, highlighter }: {
         break
     }
 
-    const scrollToLineNumber = () => {
-        if (!sourceEditor) {
-            return
-        }
-        if (cell.instruction.line_number <= sourceEditor.current.state.doc.lines) {
-            // check if the source line <= number of lines
-            // which can be false if pragmas are used to force line numbers
-            const line = sourceEditor.current.state.doc.line(cell.instruction.line_number)
-            if (line) {
-                const { top } = sourceEditor.current.lineBlockAt(line.to)
-                sourceEditor.current.scrollDOM.scrollTo({ top, behavior: "smooth" })
-            }
-        }
-    }
-
     return <div
         className={classNames(styles.cell, classes, {
             [styles.highlight]: hasLineNo && cell.instruction.line_number == selectedSourceLine,
         })}
     >
-        {hasLineNo && <span className={styles.lineNumber}><button onClick={scrollToLineNumber}>{cell.instruction.line_number}</button></span>}
+        {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.instruction.line_number)}>{cell.instruction.line_number}</button></span>}
         <FormatDiffText insDiff={cell} baseAddress={baseAddress} highlighter={highlighter} />
     </div>
 }
