@@ -64,47 +64,24 @@ function DiffCell({ cell, className, highlighter }: {
     highlighter: Highlighter
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
-    const editorView = useContext<MutableRefObject<EditorView>>(ScrollContext)
+    const sourceEditor = useContext<MutableRefObject<EditorView>>(ScrollContext)
     const hasLineNo = typeof cell?.src_line != "undefined"
 
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
 
     const scrollToLineNumber = () => {
-        if (!editorView) {
+        if (!sourceEditor) {
             return
         }
-
-        const lineNumbersEl = editorView.current.dom.querySelectorAll(".cm-gutter.cm-lineNumbers").item(0)
-        if (!lineNumbersEl || lineNumbersEl.children.length === 0) {
-            return
-        }
-
-        // NOTE: Element 0 has textContent of "999" so ignore it
-        const firstLineNum = lineNumbersEl.children[1] as HTMLElement
-        const lastLineNum = lineNumbersEl.children[lineNumbersEl.children.length - 1] as HTMLElement
-
-        const minLine = parseInt(firstLineNum.textContent)
-        const maxLine = parseInt(lastLineNum.textContent)
-
-        const scrollerEl = editorView.current.dom.getElementsByClassName("cm-scroller").item(0)
-
-        if ((minLine <= cell.src_line) && (cell.src_line <= maxLine)) {
-            // smoothly scroll to the desired line number
-            const lineNumberEl = lineNumbersEl.children[cell.src_line - minLine + 1] as HTMLElement
-            scrollerEl.scroll({
-                left: lineNumberEl.offsetLeft,
-                top: lineNumberEl.offsetTop,
-                behavior: "smooth",
-            })
-        } else {
-            // instantly scroll to the start/end and recurse.
-            scrollerEl.scroll({
-                left: cell.src_line < minLine ? firstLineNum.offsetLeft : lastLineNum.offsetLeft,
-                top: cell.src_line < minLine ? firstLineNum.offsetTop : lastLineNum.offsetTop,
-                behavior: "instant",
-            })
-            window.setTimeout(scrollToLineNumber, 0)
+        if (cell.src_line <= sourceEditor.current.state.doc.lines) {
+            // check if the source line <= number of lines
+            // which can be false if pragmas are used to force line numbers
+            const line = sourceEditor.current.state.doc.line(cell.src_line)
+            if (line) {
+                const { top } = sourceEditor.current.lineBlockAt(line.to)
+                sourceEditor.current.scrollDOM.scrollTo({ top, behavior: "smooth" })
+            }
         }
     }
 
