@@ -323,30 +323,30 @@ export default function Scratch({
 
     const matchPercent = calculateScorePercent(lastGoodScore.current, lastGoodMaxScore.current)
 
-    return <ScrollContext.Provider value={sourceEditor}>
-        <div ref={container.ref} className={styles.container}>
-            <ErrorBoundary>
-                <ScratchMatchBanner scratch={scratch} />
-            </ErrorBoundary>
-            <ErrorBoundary>
-                <ScratchToolbar
-                    compile={compile}
-                    isCompiling={isCompiling}
-                    scratch={scratch}
-                    setScratch={setScratch}
-                    saveCallback={saveCallback}
-                    setDecompilationTabEnabled={setDecompilationTabEnabled}
-                />
-                {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
-            </ErrorBoundary>
-            <ErrorBoundary>
-                {layout && <CustomLayout
+    return <div ref={container.ref} className={styles.container}>
+        <ErrorBoundary>
+            <ScratchMatchBanner scratch={scratch} />
+        </ErrorBoundary>
+        <ErrorBoundary>
+            <ScratchToolbar
+                compile={compile}
+                isCompiling={isCompiling}
+                scratch={scratch}
+                setScratch={setScratch}
+                saveCallback={saveCallback}
+                setDecompilationTabEnabled={setDecompilationTabEnabled}
+            />
+            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
+        </ErrorBoundary>
+        <ErrorBoundary>
+            {layout && <ScrollContext.Provider value={sourceEditor}>
+                <CustomLayout
                     layout={layout}
                     onChange={setLayout}
                     renderTab={renderTab}
-                />}
-            </ErrorBoundary>
-            {offlineOverlay}
-        </div>
-    </ScrollContext.Provider>
+                />
+            </ScrollContext.Provider>}
+        </ErrorBoundary>
+        {offlineOverlay}
+    </div>
 }
