@@ -16,6 +16,7 @@ import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
 import ScoreBadge, { calculateScorePercent } from "../ScoreBadge"
+import { ScrollContext } from "../ScrollContext"
 import { Tab, TabCloseButton } from "../Tabs"
 
 import useLanguageServer from "./hooks/useLanguageServer"
@@ -322,28 +323,30 @@ export default function Scratch({
 
     const matchPercent = calculateScorePercent(lastGoodScore.current, lastGoodMaxScore.current)
 
-    return <div ref={container.ref} className={styles.container}>
-        <ErrorBoundary>
-            <ScratchMatchBanner scratch={scratch} />
-        </ErrorBoundary>
-        <ErrorBoundary>
-            <ScratchToolbar
-                compile={compile}
-                isCompiling={isCompiling}
-                scratch={scratch}
-                setScratch={setScratch}
-                saveCallback={saveCallback}
-                setDecompilationTabEnabled={setDecompilationTabEnabled}
-            />
-            {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
-        </ErrorBoundary>
-        <ErrorBoundary>
-            {layout && <CustomLayout
-                layout={layout}
-                onChange={setLayout}
-                renderTab={renderTab}
-            />}
-        </ErrorBoundary>
-        {offlineOverlay}
-    </div>
+    return <ScrollContext.Provider value={sourceEditor}>
+        <div ref={container.ref} className={styles.container}>
+            <ErrorBoundary>
+                <ScratchMatchBanner scratch={scratch} />
+            </ErrorBoundary>
+            <ErrorBoundary>
+                <ScratchToolbar
+                    compile={compile}
+                    isCompiling={isCompiling}
+                    scratch={scratch}
+                    setScratch={setScratch}
+                    saveCallback={saveCallback}
+                    setDecompilationTabEnabled={setDecompilationTabEnabled}
+                />
+                {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
+            </ErrorBoundary>
+            <ErrorBoundary>
+                {layout && <CustomLayout
+                    layout={layout}
+                    onChange={setLayout}
+                    renderTab={renderTab}
+                />}
+            </ErrorBoundary>
+            {offlineOverlay}
+        </div>
+    </ScrollContext.Provider>
 }
