@@ -12,7 +12,7 @@ from ..models.github import GitHubUser
 from ..models.profile import Profile
 from ..models.scratch import Scratch
 from ..serializers import TerseScratchSerializer, serialize_profile
-from .scratch import ScratchPagination
+from .scratch import ScratchPagination, ScratchViewSet
 
 
 class CurrentUser(APIView):
@@ -52,10 +52,10 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ["creation_time", "last_updated", "score"]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        return Scratch.objects.filter(owner=self.request.profile)
+        return ScratchViewSet.queryset.filter(owner=self.request.profile)
 
 
 class UserScratchList(generics.ListAPIView):  # type: ignore
@@ -70,10 +70,12 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
         django_filters.rest_framework.DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    ordering_fields = ["creation_time", "last_updated", "score"]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        return Scratch.objects.filter(owner__user__username=self.kwargs["username"])
+        return ScratchViewSet.queryset.filter(
+            owner__user__username=self.kwargs["username"]
+        )
 
 
 @api_view(["GET"])  # type: ignore
