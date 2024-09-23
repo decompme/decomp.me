@@ -1,14 +1,17 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { CSSProperties, memo, useContext } from "react"
+import { CSSProperties, MutableRefObject, memo, useContext } from "react"
 
 import classNames from "classnames"
+import { EditorView } from "codemirror"
 import memoize from "memoize-one"
 import { areEqual } from "react-window"
 
 import * as api from "@/lib/api"
 
-import { PADDING_TOP, SelectedSourceLineContext } from "./Diff"
+import { ScrollContext } from "../ScrollContext"
+
+import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
 import { Highlighter } from "./Highlighter"
 
@@ -61,6 +64,7 @@ function DiffCell({ cell, className, highlighter }: {
     highlighter: Highlighter
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
+    const sourceEditor = useContext<MutableRefObject<EditorView>>(ScrollContext)
     const hasLineNo = typeof cell?.src_line != "undefined"
 
     if (!cell)
@@ -71,7 +75,7 @@ function DiffCell({ cell, className, highlighter }: {
             [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
         })}
     >
-        {hasLineNo && <span className={styles.lineNumber}>{cell.src_line}</span>}
+        {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.src_line)}>{cell.src_line}</button></span>}
         <FormatDiffText texts={cell.text} highlighter={highlighter} />
     </div>
 }

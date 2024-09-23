@@ -1,8 +1,9 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, useRef, useState } from "react"
+import { createContext, CSSProperties, forwardRef, HTMLAttributes, MutableRefObject, useRef, useState } from "react"
 
 import { VersionsIcon } from "@primer/octicons-react"
+import { EditorView } from "codemirror"
 import { DiffResult } from "objdiff-wasm"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
@@ -92,6 +93,21 @@ function ThreeWayToggleButton({ enabled, setEnabled }: { enabled: boolean, setEn
             {enabled ? "3" : "2"}
         </div>
     </button>
+}
+
+export function scrollToLineNumber(editorView: MutableRefObject<EditorView>, lineNumber: number) {
+    if (!editorView) {
+        return
+    }
+    if (lineNumber <= editorView.current.state.doc.lines) {
+        // check if the source line <= number of lines
+        // which can be false if pragmas are used to force line numbers
+        const line = editorView.current.state.doc.line(lineNumber)
+        if (line) {
+            const { top } = editorView.current.lineBlockAt(line.to)
+            editorView.current.scrollDOM.scrollTo({ top, behavior: "smooth" })
+        }
+    }
 }
 
 export const PADDING_TOP = 8

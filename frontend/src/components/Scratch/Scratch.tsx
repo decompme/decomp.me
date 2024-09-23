@@ -16,6 +16,7 @@ import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
 import ScoreBadge, { calculateScorePercent } from "../ScoreBadge"
+import { ScrollContext } from "../ScrollContext"
 import { Tab, TabCloseButton } from "../Tabs"
 
 import useLanguageServer from "./hooks/useLanguageServer"
@@ -338,11 +339,13 @@ export default function Scratch({
             {matchProgressBarEnabledSetting && <div className={styles.progressbar}><ScratchProgressBar matchPercent={matchPercent} /></div>}
         </ErrorBoundary>
         <ErrorBoundary>
-            {layout && <CustomLayout
-                layout={layout}
-                onChange={setLayout}
-                renderTab={renderTab}
-            />}
+            {layout && <ScrollContext.Provider value={sourceEditor}>
+                <CustomLayout
+                    layout={layout}
+                    onChange={setLayout}
+                    renderTab={renderTab}
+                />
+            </ScrollContext.Provider>}
         </ErrorBoundary>
         {offlineOverlay}
     </div>
