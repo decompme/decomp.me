@@ -2,7 +2,7 @@
 
 import { createContext, CSSProperties, forwardRef, HTMLAttributes, MutableRefObject, useRef, useState } from "react"
 
-import { VersionsIcon } from "@primer/octicons-react"
+import { VersionsIcon, CopyIcon } from "@primer/octicons-react"
 import { EditorView } from "codemirror"
 import { DiffResult } from "objdiff-wasm"
 import AutoSizer from "react-virtualized-auto-sizer"
@@ -19,6 +19,43 @@ import * as AsmDiffer from "./DiffRowAsmDiffer"
 import * as Objdiff from "./DiffRowObjdiff"
 import DragBar from "./DragBar"
 import { useHighlighers } from "./Highlighter"
+
+// Utility function to copy content to clipboard
+const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard");
+    });
+};
+
+const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string => {
+    // kind is either "base", "current", or "previous"
+    const contents = diff.rows.map(row => {
+        let text = "";
+        if (kind === "base" && row.base) {
+            text = row.base.text.map(t => t.text).join("");
+        } else if (kind === "current" && row.current) {
+            text = row.current.text.map(t => t.text).join("");
+        } else if (kind === "previous" && row.previous) {
+            text = row.previous.text.map(t => t.text).join("");
+        }
+        return text;
+    });
+
+    return contents.join("\n");
+};
+
+// Small component for the copy button
+function CopyButton({ content }: { content: string }) {
+    return (
+        <button
+            className={"copyButton"} // Add a new style for the button
+            onClick={() => copyToClipboard(content)}
+            title="Copy content"
+        >
+            <CopyIcon size={16} />
+        </button>
+    );
+}
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
 const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(({ style, ...rest }, ref) => {
@@ -176,14 +213,17 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
         <div className={styles.headers}>
             <div className={styles.header}>
                 Target
+                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "base")} />
             </div>
             <div className={styles.header}>
                 Current
+                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "current")} />
                 {isCompiling && <Loading width={20} height={20} />}
                 {!threeWayDiffEnabled && threeWayButton}
             </div>
             {threeWayDiffEnabled && <div className={styles.header}>
                 {threeWayDiffBase === ThreeWayDiffBase.SAVED ? "Saved" : "Previous"}
+                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "previous")} />
                 {threeWayButton}
             </div>}
         </div>
