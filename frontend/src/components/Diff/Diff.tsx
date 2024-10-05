@@ -23,26 +23,26 @@ import { useHighlighers } from "./Highlighter"
 // Utility function to copy content to clipboard
 const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard");
-    });
-};
+        alert("Copied to clipboard")
+    })
+}
 
 const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string => {
     // kind is either "base", "current", or "previous"
     const contents = diff.rows.map(row => {
-        let text = "";
+        let text = ""
         if (kind === "base" && row.base) {
-            text = row.base.text.map(t => t.text).join("");
+            text = row.base.text.map(t => t.text).join("")
         } else if (kind === "current" && row.current) {
-            text = row.current.text.map(t => t.text).join("");
+            text = row.current.text.map(t => t.text).join("")
         } else if (kind === "previous" && row.previous) {
-            text = row.previous.text.map(t => t.text).join("");
+            text = row.previous.text.map(t => t.text).join("")
         }
         return text;
-    });
+    })
 
-    return contents.join("\n");
-};
+    return contents.join("\n")
+}
 
 // Small component for the copy button
 function CopyButton({ content }: { content: string }) {
