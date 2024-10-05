@@ -22,9 +22,7 @@ import { useHighlighers } from "./Highlighter"
 
 // Utility function to copy content to clipboard
 const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard")
-    })
+    navigator.clipboard.writeText(text)
 }
 
 const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string => {
