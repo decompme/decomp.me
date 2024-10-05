@@ -183,18 +183,19 @@
 }
 
 .copyButton {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0.5em;
     cursor: pointer;
+    border-radius: 4px;
+    width: 2em;
+    height: 2em;
 
     &:hover {
-        background: var(--g200);
+        background-color: var(--a50);
     }
 }
 
 .copyButton svg {
     width: 1em;
     height: 1em;
+    display: grid;
 }
+
