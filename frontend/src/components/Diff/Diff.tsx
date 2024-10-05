@@ -38,7 +38,7 @@ const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string =
         } else if (kind === "previous" && row.previous) {
             text = row.previous.text.map(t => t.text).join("")
         }
-        return text;
+        return text
     })
 
     return contents.join("\n")
@@ -48,13 +48,13 @@ const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string =
 function CopyButton({ content }: { content: string }) {
     return (
         <button
-            className={"copyButton"} // Add a new style for the button
+            className={styles.copyButton} // Add a new style for the button
             onClick={() => copyToClipboard(content)}
             title="Copy content"
         >
             <CopyIcon size={16} />
         </button>
-    );
+    )
 }
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list

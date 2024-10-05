@@ -181,3 +181,20 @@
 .highlightable {
     cursor: pointer;
 }
+
+.copyButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.5em;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--g200);
+    }
+}
+
+.copyButton svg {
+    width: 1em;
+    height: 1em;
+}
