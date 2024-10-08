@@ -20,12 +20,7 @@ import * as Objdiff from "./DiffRowObjdiff"
 import DragBar from "./DragBar"
 import { useHighlighers } from "./Highlighter"
 
-// Utility function to copy content to clipboard
-const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-}
-
-const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string => {
+const copyDiffContentsToClipboard = (diff: api.DiffOutput, kind: string) => {
     // kind is either "base", "current", or "previous"
     const contents = diff.rows.map(row => {
         let text = ""
@@ -39,15 +34,15 @@ const getContentsFromDiffOutput = (diff: api.DiffOutput, kind: string): string =
         return text
     })
 
-    return contents.join("\n")
+    navigator.clipboard.writeText(contents.join("\n"))
 }
 
 // Small component for the copy button
-function CopyButton({ content }: { content: string }) {
+function CopyButton({ diff, kind }: { diff: api.DiffOutput, kind: string }) {
     return (
         <button
             className={styles.copyButton} // Add a new style for the button
-            onClick={() => copyToClipboard(content)}
+            onClick={() => copyDiffContentsToClipboard(diff, kind)}
             title="Copy content"
         >
             <CopyIcon size={16} />
@@ -211,17 +206,17 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
         <div className={styles.headers}>
             <div className={styles.header}>
                 Target
-                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "base")} />
+                <CopyButton diff={diff as api.DiffOutput} kind="base" />
             </div>
             <div className={styles.header}>
                 Current
-                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "current")} />
+                <CopyButton diff={diff as api.DiffOutput} kind="current" />
                 {isCompiling && <Loading width={20} height={20} />}
                 {!threeWayDiffEnabled && threeWayButton}
             </div>
             {threeWayDiffEnabled && <div className={styles.header}>
                 {threeWayDiffBase === ThreeWayDiffBase.SAVED ? "Saved" : "Previous"}
-                <CopyButton content={getContentsFromDiffOutput(diff as api.DiffOutput, "previous")} />
+                <CopyButton diff={diff as api.DiffOutput} kind="previous" />
                 {threeWayButton}
             </div>}
         </div>
