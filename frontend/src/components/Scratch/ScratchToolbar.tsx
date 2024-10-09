@@ -115,7 +115,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
         />
     } else {
         return <div
-            className={classNames(styles.name, { [styles.editable]: !!onChange })}
+            className={classNames(styles.name, styles.scratchName, { [styles.editable]: !!onChange })}
             onClick={() => {
                 if (onChange)
                     setEditing(true)

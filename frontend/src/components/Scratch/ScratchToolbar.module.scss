@@ -176,3 +176,9 @@ $padding: 4px;
         width: 20px;
     }
 }
+
+// Allow highlighting and copying the scratch name
+.scratchName {
+    cursor: text;
+    user-select: text;
+}
