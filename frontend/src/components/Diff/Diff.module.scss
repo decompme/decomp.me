@@ -181,3 +181,20 @@
 .highlightable {
     cursor: pointer;
 }
+
+.copyButton {
+    cursor: pointer;
+    border-radius: 4px;
+    width: 2em;
+    height: 2em;
+
+    &:hover {
+        background-color: var(--a50);
+    }
+}
+
+.copyButton svg {
+    width: 1em;
+    height: 1em;
+    display: grid;
+}
