@@ -51,9 +51,8 @@ $padding: 4px;
 
     text-align: center;
 
-    &.editable {
-        cursor: text;
-    }
+    cursor: text;
+    user-select: text;
 
     &[contenteditable] {
         text-overflow: initial;
@@ -175,10 +174,4 @@ $padding: 4px;
     .owner::before {
         width: 20px;
     }
-}
-
-// Allow highlighting and copying the scratch name
-.scratchName {
-    cursor: text;
-    user-select: text;
 }
