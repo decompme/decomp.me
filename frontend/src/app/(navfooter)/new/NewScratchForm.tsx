@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState, useMemo, useReducer } from "react"
+import { useEffect, useState, useMemo, useReducer, useRef } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+
+import { driver } from "driver.js"
 
 import AsyncButton from "@/components/AsyncButton"
 import { useCompilersForPlatform } from "@/components/compiler/compilers"
@@ -19,6 +21,8 @@ import { cpp } from "@/lib/codemirror/cpp"
 import useTranslation from "@/lib/i18n/translate"
 
 import styles from "./new.module.scss"
+
+import "driver.js/dist/driver.css"
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n")
@@ -225,19 +229,53 @@ export default function NewScratchForm({ serverCompilers }: {
         }
     }
 
+    const platformSelectRef = useRef()
+    const compilerSelectRef = useRef()
+    const presetRef = useRef()
+    const targetAsmRef = useRef()
+    const contextRef = useRef()
+    const createScratchRef = useRef()
+
+    const selectPlatform = () => {
+        setPlatform("n64")
+        driverObj.moveNext()
+    }
+
+    const driverObj = driver({
+        showProgress: true,
+        steps: [
+            { popover: { title: "Creating your first Scratch", description: "Click the Next button to step through the creation of your first Scratch" } },
+            { element: platformSelectRef.current, popover: { title: "Select a platform", description: "Select your target platform", side: "left", align: "start", onNextClick: selectPlatform } },
+
+            { element: compilerSelectRef.current, popover: { title: "Pick the Compiler", description: "If you know the compiler, select it here...", side: "bottom", align: "start" } },
+            { element: presetRef.current, popover: { title: "Use a Preset", description: ".. or use one of the available presets", side: "bottom", align: "start" } },
+
+            { element: targetAsmRef.current, popover: { title: "Add the Target assembly", description: "Paste your assemble-able assembly code here that you are trying to match", side: "left", align: "start" } },
+            { element: contextRef.current, popover: { title: "Add your Context", description: "Paste your context, e.g. typedefs, struct and variable defintions", side: "left", align: "start" } },
+
+            { element: createScratchRef.current, popover: { title: "Create the Scratch", description: "Create the Scratch!", side: "left", align: "start" } },
+
+            { popover: { title: "Happy Matching", description: "And that is it - have fun creating your first Scratch!" } },
+        ],
+    })
+
     return <div>
         <div>
+            <div>Start the <span className={styles.purple}><button onClick={() => driverObj.drive()}>Tutorial</button></span>.</div>
+
             <p className={styles.label}>
                 Platform
             </p>
-            <PlatformSelect
-                platforms={serverCompilers.platforms}
-                value={platform}
-                onChange={p => {
-                    setPlatform(p)
-                    setCompiler()
-                }}
-            />
+            <div ref={platformSelectRef}>
+                <PlatformSelect
+                    platforms={serverCompilers.platforms}
+                    value={platform}
+                    onChange={p => {
+                        setPlatform(p)
+                        setCompiler()
+                    }}
+                />
+            </div>
         </div>
 
         <div>
@@ -245,7 +283,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 Compiler
             </p>
             <div className={styles.compilerContainer}>
-                <div>
+                <div ref={compilerSelectRef}>
                     <span className={styles.compilerChoiceHeading}>Select a compiler</span>
                     <Select
                         className={styles.compilerChoiceSelect}
@@ -255,7 +293,7 @@ export default function NewScratchForm({ serverCompilers }: {
                     />
                 </div>
                 <div className={styles.compilerChoiceOr}>or</div>
-                <div>
+                <div ref={presetRef}>
                     <span className={styles.compilerChoiceHeading}>Select a preset</span>
                     <PresetSelect
                         className={styles.compilerChoiceSelect}
@@ -284,7 +322,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 spellCheck={false}
             />
         </div>
-        <div className={styles.editorContainer}>
+        <div className={styles.editorContainer} ref={targetAsmRef}>
             <p className={styles.label}>Target assembly <small>(required)</small></p>
             <CodeMirror
                 className={styles.editor}
@@ -294,7 +332,7 @@ export default function NewScratchForm({ serverCompilers }: {
                 extensions={basicSetup}
             />
         </div>
-        <div className={styles.editorContainer}>
+        <div className={styles.editorContainer} ref={contextRef}>
             <p className={styles.label}>
                 Context <small>(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)</small>
             </p>
@@ -308,15 +346,17 @@ export default function NewScratchForm({ serverCompilers }: {
         </div>
 
         <div>
-            <AsyncButton
-                primary
-                disabled={asm.length == 0}
-                onClick={submit}
-                errorPlacement="right-center"
-                className="mt-2"
-            >
-                Create scratch
-            </AsyncButton>
+            <div ref={createScratchRef}>
+                <AsyncButton
+                    primary
+                    disabled={asm.length == 0}
+                    onClick={submit}
+                    errorPlacement="right-center"
+                    className="mt-2"
+                >
+                    Create scratch
+                </AsyncButton>
+            </div>
             <p className={styles.privacyNotice}>
                 decomp.me will store any data you submit and link it to your session.<br />
                 For more information, see our <Link href="/privacy">privacy policy</Link>.
