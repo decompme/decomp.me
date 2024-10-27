@@ -61,7 +61,7 @@ RUN apt-get -y update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=1.8.3 POETRY_HOME=/etc/poetry python3.10 -
+    POETRY_VERSION=1.8.4 POETRY_HOME=/etc/poetry python3.10 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
