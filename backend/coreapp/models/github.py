@@ -57,8 +57,8 @@ class GitHubUser(models.Model):
             response = requests.post(
                 "https://github.com/login/oauth/access_token",
                 json={
-                    "client_id": settings.GITHUB_CLIENT_ID,  # type: ignore
-                    "client_secret": settings.GITHUB_CLIENT_SECRET,  # type: ignore
+                    "client_id": settings.GITHUB_CLIENT_ID,
+                    "client_secret": settings.GITHUB_CLIENT_SECRET,
                     "code": oauth_code,
                 },
                 headers={"Accept": "application/json"},

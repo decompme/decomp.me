@@ -32,7 +32,7 @@ DUMMY_PRESET_DICT = {
 class PresetTests(BaseTestCase):
     def create_admin(self) -> None:
         self.username = "admin"
-        self.password = User.objects.make_random_password()
+        self.password = "testpassword"
         user, created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.is_staff = True
@@ -43,7 +43,7 @@ class PresetTests(BaseTestCase):
 
     def create_user(self, username: str = "dummy-user") -> User:
         self.username = username
-        self.password = User.objects.make_random_password()
+        self.password = "testpassword"
         user, created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.save()

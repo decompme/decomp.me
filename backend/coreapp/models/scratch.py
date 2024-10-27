@@ -70,9 +70,7 @@ class LibrariesField(models.JSONField):
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
-        # We ignore the type error here as this is a bug in the django stubs.
-        # CC: https://github.com/typeddjango/django-stubs/issues/934
-        res = super().from_db_value(*args, **kwargs)  # type: ignore
+        res = super().from_db_value(*args, **kwargs)
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
 
