@@ -131,6 +131,7 @@ function Actions({ isCompiling, compile, scratch, setScratch, saveCallback, setD
     const forkScratch = api.useForkScratchAndGo(scratch)
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch)
     const [isSaving, setIsSaving] = useState(false)
+    const [isForking, setIsForking] = useState(false)
     const canSave = scratch.owner && userIsYou(scratch.owner)
 
     const platform = api.usePlatform(scratch.platform)
@@ -174,9 +175,12 @@ function Actions({ isCompiling, compile, scratch, setScratch, saveCallback, setD
             <li>
                 <button
                     onClick={async () => {
+                        setIsForking(true)
                         await forkScratch()
+                        setIsForking(false)
                         saveCallback()
                     }}
+                    disabled={isForking}
                     title={fuzzySaveAction === FuzzySaveAction.FORK ? fuzzyShortcut : undefined}
                 >
                     <RepoForkedIcon />
