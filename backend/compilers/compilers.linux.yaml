@@ -188,6 +188,7 @@ msdos:
 
 win32:
   - msvc4.0
+  - msvc4.1
   - msvc4.2
   - msvc6.0
   - msvc6.3

@@ -1336,6 +1336,12 @@ MSVC40 = MSVCCompiler(
     cc=CL_WIN,
 )
 
+MSVC41 = MSVCCompiler(
+    id="msvc4.1",
+    platform=WIN32,
+    cc=CL_WIN,
+)
+
 MSVC42 = MSVCCompiler(
     id="msvc4.2",
     platform=WIN32,
@@ -1649,6 +1655,7 @@ _all_compilers: List[Compiler] = [
     PBX_GCC3,
     # WIN32
     MSVC40,
+    MSVC41,
     MSVC42,
     MSVC60,
     MSVC63,
