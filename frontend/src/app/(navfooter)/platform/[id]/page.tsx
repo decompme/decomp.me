@@ -7,8 +7,8 @@ import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { PlatformMetadata } from "@/lib/api/types"
 
-export async function generateMetadata(props: { params: Promise<{ id: number }> }):Promise<Metadata> {
-    const params = await props.params;
+export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
+    const params = await props.params
     let platform: PlatformMetadata
 
     try {
@@ -36,8 +36,8 @@ export async function generateMetadata(props: { params: Promise<{ id: number }> 
     }
 }
 
-export default async function Page(props: { params: Promise<{ id: number }> }) {
-    const params = await props.params;
+export default async function Page({ params }: { params: { id: number } }) {
+    const params = await props.params
     let platform: PlatformMetadata
     try {
         platform = await get(`/platform/${params.id}`)

@@ -9,15 +9,15 @@ const IMAGE_HEIGHT_PX = 400
 export const runtime = "edge"
 
 export default async function HomeOG() {
-    const OpenSansExtraBold = fetch(new URL("/public/fonts/OpenSans-ExtraBold.ttf", import.meta.url)).then(res =>
+    const OpenSansExtraBold = fetch(new URL("../../public/fonts/OpenSans-ExtraBold.ttf", import.meta.url)).then(res =>
         res.arrayBuffer()
     )
 
-    const OpenSansSemiBold = fetch(new URL("/public/fonts/OpenSans-SemiBold.ttf", import.meta.url)).then(res =>
+    const OpenSansSemiBold = fetch(new URL("../../public/fonts/OpenSans-SemiBold.ttf", import.meta.url)).then(res =>
         res.arrayBuffer()
     )
 
-    const OpenSansBold = fetch(new URL("/public/fonts/OpenSans-Bold.ttf", import.meta.url)).then(res =>
+    const OpenSansBold = fetch(new URL("../../public/fonts/OpenSans-Bold.ttf", import.meta.url)).then(res =>
         res.arrayBuffer()
     )
 
