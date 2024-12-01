@@ -1,4 +1,4 @@
-import { headers } from "next/headers"
+import { headers, type UnsafeUnwrappedHeaders } from "next/headers";
 import Link from "next/link"
 
 import { ArrowRightIcon } from "@primer/octicons-react"
@@ -12,7 +12,7 @@ import SiteStats from "./SiteStats"
 export const SITE_DESCRIPTION = "A collaborative reverse-engineering platform for working on decompilation projects with others to learn about how your favorite games work."
 
 export default function WelcomeInfo() {
-    const saveDataEnabled = headers().get("Save-Data") === "on"
+    const saveDataEnabled = (headers() as unknown as UnsafeUnwrappedHeaders).get("Save-Data") === "on"
 
     return <div className="relative overflow-x-hidden p-2">
         {!saveDataEnabled && <div className="absolute top-14 -z-10 hidden w-full opacity-80 sm:block">
