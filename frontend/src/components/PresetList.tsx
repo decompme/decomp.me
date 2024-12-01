@@ -12,7 +12,7 @@ import LoadingSpinner from "@/components/loading.svg"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { type Preset, usePaginated } from "@/lib/api"
 import { presetUrl } from "@/lib/api/urls"
-import useTranslation from "@/lib/i18n/translate"
+import getTranslation from "@/lib/i18n/translate"
 
 export interface Props {
     url?: string
@@ -56,7 +56,7 @@ export function PresetList({ url, className, item, emptyButtonLabel }: Props): J
 }
 
 export function PresetItem({ preset, hideIcon }: { preset: Preset, hideIcon?: boolean }): JSX.Element {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const compilerName = compilersTranslation.t(preset.compiler)
 
     return (

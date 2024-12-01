@@ -6,7 +6,7 @@ import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemPresetList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
 import { Preset } from "@/lib/api/types"
-import useTranslation from "@/lib/i18n/translate"
+import getTranslation from "@/lib/i18n/translate"
 
 export async function generateMetadata({ params }: { params: { id: number } }): Promise<Metadata> {
     let preset: Preset
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: { id: number } }): 
 }
 
 export default async function Page({ params }: { params: { id: number } }) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
 
     let preset: Preset
     try {
