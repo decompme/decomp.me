@@ -1,10 +1,10 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import { notFound } from "next/navigation"
 
 import Profile from "@/components/user/Profile"
 import { get } from "@/lib/api/request"
-import { User } from "@/lib/api/types"
+import type { User } from "@/lib/api/types"
 
 export async function generateMetadata({ params }: { params: { username: string } }): Promise<Metadata> {
     let user: User

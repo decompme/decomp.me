@@ -1,5 +1,5 @@
 import Select from "@/components/Select2"
-import { TerseScratch } from "@/lib/api"
+import type { TerseScratch } from "@/lib/api"
 
 export enum SortMode {
     NEWEST_FIRST = "-creation_time",

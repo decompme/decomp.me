@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { platformUrl } from "@/lib/api/urls"
 
 import { platformIcon } from "./PlatformSelect/PlatformIcon"

@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from "react"
 
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react"
-import { Allotment, AllotmentHandle } from "allotment"
+import { Allotment, type AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { interdiff } from "@/lib/interdiff"
 import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings"
 

@@ -1,4 +1,4 @@
-import { DiffResult as ObjdiffOutput } from "objdiff-wasm"
+import type { DiffResult as ObjdiffOutput } from "objdiff-wasm"
 
 export interface Page<T> {
     next: string | null

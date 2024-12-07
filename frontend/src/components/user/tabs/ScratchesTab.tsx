@@ -1,5 +1,5 @@
 import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
-import { User } from "@/lib/api"
+import type { User } from "@/lib/api"
 import { userUrl } from "@/lib/api/urls"
 
 export default function ScratchesTab({ user }: { user: User }) {

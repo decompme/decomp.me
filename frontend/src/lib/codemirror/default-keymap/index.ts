@@ -67,7 +67,7 @@ import {
     selectNextOccurrence,
     selectSelectionMatches,
 } from "@codemirror/search"
-import { KeyBinding } from "@codemirror/view"
+import type { KeyBinding } from "@codemirror/view"
 
 import { indent } from "./indent"
 import { addCursorAtEachSelectionLine, addCursorDown, addCursorUp } from "./multiCursor"

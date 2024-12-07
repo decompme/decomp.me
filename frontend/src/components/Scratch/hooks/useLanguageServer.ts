@@ -1,10 +1,10 @@
-import { MutableRefObject, useEffect, useState } from "react"
+import { type MutableRefObject, useEffect, useState } from "react"
 
 import type { ClangdStdioTransport, CompileCommands } from "@clangd-wasm/clangd-wasm"
 import { StateEffect } from "@codemirror/state"
-import { EditorView } from "codemirror"
+import type { EditorView } from "codemirror"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { LanguageServerClient, languageServerWithTransport } from "@/lib/codemirror/languageServer"
 
 export default function useLanguageServer(enabled: boolean, scratch: api.Scratch, sourceEditor: MutableRefObject<EditorView>, contextEditor: MutableRefObject<EditorView>) {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, Fragment, ReactElement } from "react"
+import { createContext, useContext, useState, Fragment, type ReactElement } from "react"
 
 import { TrashIcon } from "@primer/octicons-react"
 
@@ -6,7 +6,7 @@ import Checkbox from "@/app/(navfooter)/settings/Checkbox"
 import Button from "@/components/Button"
 import Select2 from "@/components/Select2"
 import * as api from "@/lib/api"
-import { Library } from "@/lib/api/types"
+import type { Library } from "@/lib/api/types"
 import getTranslation from "@/lib/i18n/translate"
 
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon"

@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode, createContext, Component, useState, createRef, RefObject, useLayoutEffect, useRef } from "react"
+import { type ReactElement, type ReactNode, createContext, Component, useState, createRef, type RefObject, useLayoutEffect, useRef } from "react"
 
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"

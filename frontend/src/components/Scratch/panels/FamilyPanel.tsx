@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic"
 
 import Loading from "@/components/loading.svg"
-import { TerseScratch } from "@/lib/api/types"
+import type { TerseScratch } from "@/lib/api/types"
 
 const SortableFamilyList = dynamic(() => import("@/components/Scratch/SortableFamilyList"), {
     loading: () => <div className="flex size-full items-center justify-center">

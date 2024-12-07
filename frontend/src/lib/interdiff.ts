@@ -1,6 +1,6 @@
 import { diff as myersDiff } from "fast-myers-diff"
 
-import { DiffOutput, DiffRow } from "./api"
+import type { DiffOutput, DiffRow } from "./api"
 
 type Chunk = {
     unaligned: DiffRow[]

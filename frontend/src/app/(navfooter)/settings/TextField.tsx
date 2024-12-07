@@ -1,4 +1,4 @@
-import { useId, ReactNode, CSSProperties } from "react"
+import { useId, type ReactNode, type CSSProperties } from "react"
 
 import classNames from "classnames"
 

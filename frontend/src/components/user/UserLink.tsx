@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
+import { isAnonUser, type User, type AnonymousUser } from "@/lib/api/types"
 
 import UserAvatar from "./UserAvatar"
 

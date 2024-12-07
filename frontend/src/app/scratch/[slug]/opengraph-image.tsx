@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { percentToString, calculateScorePercent } from "@/components/ScoreBadge"
 import { get } from "@/lib/api/request"
-import { Preset } from "@/lib/api/types"
+import type { Preset } from "@/lib/api/types"
 
 import CheckCircleFillIcon from "./assets/check-circle-fill.svg"
 import PurpleFrog from "./assets/purplefrog.svg"

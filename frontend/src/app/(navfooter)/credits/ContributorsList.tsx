@@ -2,9 +2,9 @@ import { LinkExternalIcon } from "@primer/octicons-react"
 
 import GhostButton from "@/components/GhostButton"
 import UserAvatar from "@/components/user/UserAvatar"
-import UserMention, { GithubUser, getUserName } from "@/components/user/UserMention"
+import UserMention, { type GithubUser, getUserName } from "@/components/user/UserMention"
 import { get } from "@/lib/api/request"
-import { User } from "@/lib/api/types"
+import type { User } from "@/lib/api/types"
 
 export type Contributor = User | GithubUser
 

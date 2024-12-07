@@ -1,11 +1,11 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
-import { PlatformMetadata } from "@/lib/api/types"
+import type { PlatformMetadata } from "@/lib/api/types"
 
 export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
     let platform: PlatformMetadata

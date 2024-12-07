@@ -22,7 +22,6 @@
         "rules": {
             "recommended": true,
             "style": {
-                "useImportType": "off",
                 "useTemplate": "off",
                 "noUselessElse": "off",
                 "noParameterAssign": "off",

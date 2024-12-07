@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import PlatformSelect from "@/components/PlatformSelect"
 import { PresetList } from "@/components/PresetList"
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 
 export function Presets({ serverCompilers }: {
     serverCompilers: {

@@ -8,15 +8,15 @@ import type {
     CompletionResult,
 } from "@codemirror/autocomplete"
 import { setDiagnostics } from "@codemirror/lint"
-import { Extension, Facet } from "@codemirror/state"
+import { type Extension, Facet } from "@codemirror/state"
 import type { Text } from "@codemirror/state"
-import { EditorView, ViewPlugin, Tooltip, hoverTooltip, keymap } from "@codemirror/view"
+import { type EditorView, ViewPlugin, type Tooltip, hoverTooltip, keymap } from "@codemirror/view"
 import type { ViewUpdate, PluginValue } from "@codemirror/view"
 import {
     RequestManager,
     Client,
 } from "@open-rpc/client-js"
-import { Transport } from "@open-rpc/client-js/build/transports/Transport"
+import type { Transport } from "@open-rpc/client-js/build/transports/Transport"
 import {
     DiagnosticSeverity,
     CompletionItemKind,

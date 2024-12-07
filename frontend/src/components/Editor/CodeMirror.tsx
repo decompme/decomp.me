@@ -1,6 +1,6 @@
-import { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from "react"
+import { type CSSProperties, type MutableRefObject, useCallback, useEffect, useRef } from "react"
 
-import { Extension, EditorState } from "@codemirror/state"
+import { type Extension, EditorState } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 import classNames from "classnames"
 import { useDebouncedCallback } from "use-debounce"

@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/navigation"
 
-import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
+import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Preset, ClaimableScratch } from "./api/types"
+import type { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Preset, ClaimableScratch } from "./api/types"
 import { scratchUrl } from "./api/urls"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 import { runObjdiff } from "./objdiff"

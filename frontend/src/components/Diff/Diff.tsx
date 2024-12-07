@@ -1,14 +1,14 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, MutableRefObject, useRef, useState } from "react"
+import { createContext, type CSSProperties, forwardRef, type HTMLAttributes, type MutableRefObject, useRef, useState } from "react"
 
 import { VersionsIcon, CopyIcon } from "@primer/octicons-react"
-import { EditorView } from "codemirror"
-import { DiffResult } from "objdiff-wasm"
+import type { EditorView } from "codemirror"
+import type { DiffResult } from "objdiff-wasm"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
 import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings"
 

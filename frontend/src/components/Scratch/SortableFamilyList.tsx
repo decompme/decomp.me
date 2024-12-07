@@ -6,7 +6,7 @@ import classNames from "classnames"
 import useSWR from "swr"
 
 import { get } from "@/lib/api/request"
-import { TerseScratch } from "@/lib/api/types"
+import type { TerseScratch } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 
 import { getScoreAsFraction, getScoreText } from "../ScoreBadge"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useLayoutEffect, useEffect, RefObject } from "react"
+import { useState, useRef, useLayoutEffect, useEffect, type RefObject } from "react"
 
 import Router from "next/router"
 

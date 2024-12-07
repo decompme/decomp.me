@@ -1,5 +1,5 @@
 import { get, bubbleNotFound, ResponseError } from "@/lib/api/request"
-import { Scratch, Compilation } from "@/lib/api/types"
+import type { Scratch, Compilation } from "@/lib/api/types"
 import { scratchParentUrl, scratchUrl } from "@/lib/api/urls"
 
 export default async function getScratchDetails(slug: string) {

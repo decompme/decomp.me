@@ -1,4 +1,4 @@
-import { ReactNode, useId } from "react"
+import { type ReactNode, useId } from "react"
 
 function RadioButton({ name, value, checked, onChange, option }: { name: string, value: string, checked: boolean, onChange: (value: string) => void, option: Option }) {
     const id = useId()

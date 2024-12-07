@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, ReactElement } from "react"
+import { useState, type ReactElement } from "react"
 
 import { MarkGithubIcon } from "@primer/octicons-react"
 
 import GhostButton from "@/components/GhostButton"
 import Tabs, { Tab } from "@/components/Tabs"
-import { User } from "@/lib/api/types"
+import type { User } from "@/lib/api/types"
 import { userGithubHtmlUrl } from "@/lib/api/urls"
 
 import ScratchesTab from "./tabs/ScratchesTab"

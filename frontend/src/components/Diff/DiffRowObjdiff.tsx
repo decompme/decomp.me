@@ -1,18 +1,18 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { CSSProperties, MutableRefObject, memo, useContext } from "react"
+import { type CSSProperties, type MutableRefObject, memo, useContext } from "react"
 
 import classNames from "classnames"
-import { EditorView } from "codemirror"
+import type { EditorView } from "codemirror"
 import memoize from "memoize-one"
-import { DiffKind, DiffResult, FunctionDiff, InstructionDiff, ObjectDiff, displayDiff, oneof } from "objdiff-wasm"
+import { DiffKind, type DiffResult, type FunctionDiff, type InstructionDiff, type ObjectDiff, displayDiff, oneof } from "objdiff-wasm"
 import { areEqual } from "react-window"
 
 import { ScrollContext } from "../ScrollContext"
 
 import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
-import { Highlighter } from "./Highlighter"
+import type { Highlighter } from "./Highlighter"
 
 function FormatDiffText({ insDiff, baseAddress, highlighter }: {
     insDiff: InstructionDiff

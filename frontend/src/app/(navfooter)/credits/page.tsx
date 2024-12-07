@@ -1,6 +1,6 @@
 import UserMention from "@/components/user/UserMention"
 import { get } from "@/lib/api/request"
-import { User } from "@/lib/api/types"
+import type { User } from "@/lib/api/types"
 
 import ContributorsList, { getContributorUsernames, usernameToContributor } from "./ContributorsList"
 import LinkList from "./LinkList"

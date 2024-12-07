@@ -1,8 +1,8 @@
-import { SVGProps } from "react"
+import type { SVGProps } from "react"
 
 import classNames from "classnames"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 
 import Frog from "../Nav/frog.svg"
 

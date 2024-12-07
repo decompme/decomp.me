@@ -1,8 +1,8 @@
-import { ReactElement } from "react"
+import type { ReactElement } from "react"
 
 import { Allotment } from "allotment"
 
-import Tabs, { Tab } from "./Tabs"
+import Tabs, { type Tab } from "./Tabs"
 
 export interface HorizontalSplit {
     key: number

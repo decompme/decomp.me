@@ -1,19 +1,19 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { CSSProperties, MutableRefObject, memo, useContext } from "react"
+import { type CSSProperties, type MutableRefObject, memo, useContext } from "react"
 
 import classNames from "classnames"
-import { EditorView } from "codemirror"
+import type { EditorView } from "codemirror"
 import memoize from "memoize-one"
 import { areEqual } from "react-window"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 
 import { ScrollContext } from "../ScrollContext"
 
 import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
-import { Highlighter } from "./Highlighter"
+import type { Highlighter } from "./Highlighter"
 
 // Regex for tokenizing lines for click-to-highlight purposes.
 // Strings matched by the first regex group (spaces, punctuation)
