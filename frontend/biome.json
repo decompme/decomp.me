@@ -47,8 +47,7 @@
                 "noImplicitAnyLet": "off"
             },
             "correctness": {
-                "useExhaustiveDependencies": "off",
-                "noUnreachable": "off"
+                "useExhaustiveDependencies": "off"
             },
             "complexity": {
                 "noForEach": "off"

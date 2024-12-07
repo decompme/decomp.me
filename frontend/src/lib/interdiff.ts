@@ -104,5 +104,4 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
         header: curr.header,
         rows: rows,
     }
-    return curr
 }
