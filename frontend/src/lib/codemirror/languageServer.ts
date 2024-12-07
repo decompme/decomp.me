@@ -652,8 +652,8 @@ function prefixMatch(options: Completion[]) {
         }
     }
 
-    const source = toSet(first) + toSet(rest) + "*$"
-    return [new RegExp("^" + source), new RegExp(source)]
+    const source = `${toSet(first) + toSet(rest)}*$`
+    return [new RegExp(`^${source}`), new RegExp(source)]
 }
 
 export { LanguageServerClient, languageServerWithTransport }

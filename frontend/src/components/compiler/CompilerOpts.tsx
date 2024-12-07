@@ -124,7 +124,7 @@ function Flags({ schema }: FlagsProps) {
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || "---"
                 const flagOptions = flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
                 } />)
 
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
@@ -146,7 +146,7 @@ function DiffFlags({ schema }: FlagsProps) {
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
                 const flagOptions = flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
                 } />)
 
                 return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
@@ -231,14 +231,14 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
 
     const optsEditorProvider = {
         checkFlag(flag: string) {
-            return (" " + opts + " ").includes(" " + flag + " ")
+            return (` ${opts} `).includes(` ${flag} `)
         },
 
         setFlag(flag: string, enable: boolean) {
             if (enable) {
-                opts = opts + " " + flag
+                opts = `${opts} ${flag}`
             } else {
-                opts = (" " + opts + " ").replace(" " + flag + " ", " ")
+                opts = (` ${opts} `).replace(` ${flag} `, " ")
             }
             opts = opts.trim()
             setOpts(opts)

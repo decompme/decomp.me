@@ -29,7 +29,7 @@ function FormatDiffText({ texts, highlighter }: {
             Array.from(t.text.matchAll(RE_TOKEN)).map((match, index2) => {
                 const text = match[0]
                 const isToken = !match[1]
-                const key = index1 + "," + index2
+                const key = `${index1},${index2}`
 
                 let className: string
                 if (t.format == "rotation") {

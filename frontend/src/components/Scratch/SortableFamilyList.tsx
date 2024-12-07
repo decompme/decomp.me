@@ -14,7 +14,7 @@ import Sort, { SortMode, compareScratchScores, produceSortFunction } from "../So
 import UserLink from "../user/UserLink"
 
 function useFamily(scratch: TerseScratch) {
-    const { data: family } = useSWR<TerseScratch[]>(scratchUrl(scratch) + "/family", get, {
+    const { data: family } = useSWR<TerseScratch[]>(`${scratchUrl(scratch)}/family`, get, {
         suspense: true,
     })
 

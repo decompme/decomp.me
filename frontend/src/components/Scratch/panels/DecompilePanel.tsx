@@ -26,7 +26,7 @@ export default function DecompilePanel({ scratch }: Props) {
     const url = scratchUrl(scratch)
 
     useEffect(() => {
-        api.post(url + "/decompile", {
+        api.post(`${url}/decompile`, {
             context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {

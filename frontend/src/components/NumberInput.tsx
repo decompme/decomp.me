@@ -36,7 +36,7 @@ export default function NumberInput({ value, onChange, stringValue, disabled }: 
         onClick={() => setIsEditing(true)}
         onBlur={evt => {
             if (Number.isNaN(+evt.currentTarget.textContent)) {
-                evt.currentTarget.textContent = ""+value // this should never happen, as the user is not allowed to type non-digits
+                evt.currentTarget.textContent = `${value}` // this should never happen, as the user is not allowed to type non-digits
             }
             onChange(+evt.currentTarget.textContent)
             setIsEditing(false)

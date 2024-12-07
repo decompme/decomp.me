@@ -31,7 +31,7 @@ function exportScratchZip(scratch: api.Scratch) {
     const url = api.normalizeUrl(`${scratchUrl(scratch)}/export`)
     const a = document.createElement("a")
     a.href = url
-    a.download = scratch.name + ".zip"
+    a.download = `${scratch.name}.zip`
     a.click()
 }
 

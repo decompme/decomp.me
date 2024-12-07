@@ -12,7 +12,7 @@ import TrophyIcon from "./assets/trophy.svg"
 import XCircleFillIcon from "./assets/x-circle-fill.svg"
 import getScratchDetails from "./getScratchDetails"
 
-const truncateText = (text: string, length: number) => text.slice(0, length) + "..." + text.slice(-length, text.length)
+const truncateText = (text: string, length: number) => `${text.slice(0, length)}...${text.slice(-length, text.length)}`
 
 const IMAGE_WIDTH_PX = 1200
 const IMAGE_HEIGHT_PX = 400

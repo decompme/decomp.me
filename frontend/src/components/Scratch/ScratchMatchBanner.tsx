@@ -9,7 +9,7 @@ import DismissableBanner from "../DismissableBanner"
 
 export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScratch }) {
     const userIsYou = api.useUserIsYou()
-    const { data, error } = useSWR<api.TerseScratch[]>(scratchUrl(scratch) + "/family", api.get, {
+    const { data, error } = useSWR<api.TerseScratch[]>(`${scratchUrl(scratch)}/family`, api.get, {
         refreshInterval: 60 * 1000, // 1 minute
     })
 
