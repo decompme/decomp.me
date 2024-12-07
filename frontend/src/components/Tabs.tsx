@@ -117,7 +117,6 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
     if (Array.isArray(children)) {
         for (const child of children) {
             if (!child) {
-                continue
             } else if (Array.isArray(child)) {
                 for (const grandchild of child) {
                     if (grandchild) {
