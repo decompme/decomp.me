@@ -93,7 +93,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                     className={styles.textArea}
                     value={scratch.description}
                     disabled={!setScratch}
-                    onChange={event => setScratch && setScratch({ description: event.target.value })}
+                    onChange={event => setScratch?.({ description: event.target.value })}
                     maxLength={5000}
                     placeholder="Add any notes about the scratch here"
                 />

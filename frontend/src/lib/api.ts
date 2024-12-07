@@ -54,7 +54,7 @@ export function useUserIsYou(): (user: User | AnonymousUser | undefined) => bool
 
     return useCallback(user => {
         return isUserEq(you, user)
-    }, [you && you.id, you && you.is_anonymous]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [you?.id, you?.is_anonymous]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {

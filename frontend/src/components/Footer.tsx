@@ -59,7 +59,7 @@ export default function Footer() {
                         href={`https://github.com/decompme/decomp.me/commit/${commitHash}`}
                         title="Commit hash">
 
-                        {(commitHash && commitHash.slice(0, 7)) || "unknown"}
+                        {(commitHash?.slice(0, 7)) || "unknown"}
                     </Link>
                 </div>
             </div>
