@@ -435,7 +435,6 @@
     "watcom_fpu_recip": "Replace fpu div with reciprocal mult",
     "watcom_fpu_result": "Force fpu intermediate result to memory",
 
-
     "gcc_char_type": "Char type",
     "gcc_char_type.-fsigned-char": "char will be signed",
     "gcc_char_type.-funsigned-char": "char will be unsigned",

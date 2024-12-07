@@ -161,7 +161,6 @@
     font-weight: 500;
 
     padding: .5em;
-
 }
 
 .librarySelect {
@@ -179,7 +178,6 @@
     color: var(--g1900);
     background: none;
     border: 0;
-
 }
 
 .deleteButton > svg {
