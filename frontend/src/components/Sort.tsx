@@ -45,7 +45,7 @@ export type Props = {
 export default function SortBy({ sortMode, setSortMode }: Props) {
     return (
         <div>
-            <span className="mr-2 text-xs text-gray-11">
+            <span className="mr-2 text-gray-11 text-xs">
                 Sort by
             </span>
             <Select

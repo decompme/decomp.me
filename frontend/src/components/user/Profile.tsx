@@ -68,11 +68,11 @@ export default function Profile({ user }: { user: User }) {
             <header className="flex flex-col items-center gap-6 pt-4 md:flex-row">
                 <UserAvatar className="size-16" user={user} />
                 <div>
-                    <h1 className="text-center text-2xl font-medium tracking-tight md:text-left">
+                    <h1 className="text-center font-medium text-2xl tracking-tight md:text-left">
                         {user.username}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-sm text-gray-11 md:justify-start">
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-gray-11 text-sm md:justify-start">
                         <GhostButton href={userGithubHtmlUrl(user)}>
                             <div className="flex items-center gap-1">
                                 {userGithubHtmlUrl(user) && <MarkGithubIcon size={16} aria-label="GitHub username" />}

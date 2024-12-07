@@ -25,7 +25,7 @@ export default function SiteStats() {
         return null
     }
 
-    return <p className="inline-flex gap-8 text-xs text-gray-11 md:gap-16">
+    return <p className="inline-flex gap-8 text-gray-11 text-xs md:gap-16">
         <Stat>{stats.scratch_count.toLocaleString()} scratches created</Stat>
         <Stat href="https://stats.decomp.me/decomp.me">{stats.profile_count.toLocaleString()} unique visitors</Stat>
         <Stat>{stats.github_user_count.toLocaleString()} users signed up</Stat>

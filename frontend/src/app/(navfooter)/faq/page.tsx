@@ -22,7 +22,7 @@ export const metadata = {
 
 export default function Page() {
     return <main className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">
+        <h1 className="font-semibold text-2xl text-gray-12 tracking-tight md:text-3xl">
             Frequently Asked Questions
         </h1>
 

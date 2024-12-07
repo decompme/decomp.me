@@ -53,7 +53,7 @@ export default async function Page({ params }: { params: { id: number } }) {
     const compilerName = compilersTranslation.t(preset.compiler)
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <div className="flex items-center gap-2 text-2xl font-medium">
+        <div className="flex items-center gap-2 font-medium text-2xl">
             <PlatformIcon platform={preset.platform} size={32} />
             <h1>
                 {preset.name}

@@ -45,7 +45,7 @@ export default function ScratchList({ title, url, className, item, emptyButtonLa
     return (
         <>
             <div className="flex justify-between pb-2">
-                <h2 className="text-lg font-medium tracking-tight">{title}</h2>
+                <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 {isSortable && <Sort sortMode={sortMode} setSortMode={setSortBy} />}
             </div>
             <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>

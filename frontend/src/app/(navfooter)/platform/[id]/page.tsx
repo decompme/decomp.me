@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: { id: number } }) {
     }
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <div className="flex items-center gap-2 text-2xl font-medium">
+        <div className="flex items-center gap-2 font-medium text-2xl">
             <PlatformIcon platform={platform.id} size={32} />
             <h1>
                 {platform.name}

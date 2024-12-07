@@ -54,6 +54,9 @@
             "performance": {
                 "noDelete": "off",
                 "noAccumulatingSpread": "off"
+            },
+            "nursery": {
+                "useSortedClasses": "error"
             }
         }
     },

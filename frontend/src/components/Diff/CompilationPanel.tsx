@@ -132,7 +132,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
                                 ])
                             }}
                         >
-                            <span className="text-sm font-medium">
+                            <span className="font-medium text-sm">
                                 {(problemState === ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
                             </span>
                             {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}

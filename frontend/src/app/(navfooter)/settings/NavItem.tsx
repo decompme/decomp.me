@@ -21,8 +21,8 @@ export default function NavItem({ segment, label, icon }: Props) {
         <GhostButton
             href={`/settings/${segment}`}
             className={classNames({
-                "!px-3 py-2 block rounded-md": true,
-                "bg-gray-5 font-medium pointer-events-none": isSelected,
+                "!px-3 block rounded-md py-2": true,
+                "pointer-events-none bg-gray-5 font-medium": isSelected,
             })}
         >
             <span className="mr-2 opacity-50">{icon}</span>
