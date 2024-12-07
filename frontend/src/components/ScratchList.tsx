@@ -76,7 +76,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
         return "100%"
     }
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = percentToString(matchPercent)
 
     return matchPercentString
 }
