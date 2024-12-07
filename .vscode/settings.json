@@ -6,19 +6,19 @@
     ],
     "eslint.format.enable": true,
     "[javascript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
     },
     "[javascriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
     },
     "[typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
     },
     "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
     },
     // stylelint
@@ -39,5 +39,6 @@
     "mypy-type-checker.args": [
         "--config-file=backend/mypy.ini"
     ],
-    "editor.formatOnSave": true
+    "json.format.enable": false,
+    "json.format.keepLines": true
 }

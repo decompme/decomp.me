@@ -38,7 +38,7 @@
         "framer-motion": "^11.12.0",
         "is-dark-color": "^1.2.0",
         "memoize-one": "^6.0.0",
-        "next": "14.2.18",
+        "next": "14.2.20",
         "next-plausible": "^3.12.4",
         "objdiff-wasm": "2.0.0-beta.9",
         "react": "^18.3.1",
@@ -58,7 +58,7 @@
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",
-        "@next/bundle-analyzer": "14.2.18",
+        "@next/bundle-analyzer": "14.2.20",
         "@svgr/webpack": "^8.1.0",
         "@types/react-dom": "^18.3.1",
         "@types/react-timeago": "^4.1.7",
