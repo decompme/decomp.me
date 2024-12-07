@@ -52,7 +52,6 @@
                 "noUnnecessaryContinue": "off"
             },
             "complexity": {
-                "useLiteralKeys": "off",
                 "useOptionalChain": "off",
                 "noForEach": "off"
             },

@@ -116,21 +116,21 @@ export default function NewScratchForm({ serverCompilers }: {
     // Load fields from localStorage
     useEffect(() => {
         try {
-            setLabel(localStorage["new_scratch_label"] ?? "")
-            setAsm(localStorage["new_scratch_asm"] ?? "")
-            setContext(localStorage["new_scratch_context"] ?? "")
-            const pid = Number.parseInt(localStorage["new_scratch_presetId"])
+            setLabel(localStorage.new_scratch_label ?? "")
+            setAsm(localStorage.new_scratch_asm ?? "")
+            setContext(localStorage.new_scratch_context ?? "")
+            const pid = Number.parseInt(localStorage.new_scratch_presetId)
             if (!Number.isNaN(pid)) {
                 const preset = presets[pid]
                 if (preset) {
                     setPreset(preset)
                 }
             } else {
-                setPlatform(localStorage["new_scratch_platform"] ?? "")
-                setCompilerId(localStorage["new_scratch_compilerId"] ?? undefined)
-                setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"] ?? "[]"))
-                setLibraries(JSON.parse(localStorage["new_scratch_libraries"] ?? "[]"))
+                setPlatform(localStorage.new_scratch_platform ?? "")
+                setCompilerId(localStorage.new_scratch_compilerId ?? undefined)
+                setCompilerFlags(localStorage.new_scratch_compilerFlags ?? "")
+                setDiffFlags(JSON.parse(localStorage.new_scratch_diffFlags ?? "[]"))
+                setLibraries(JSON.parse(localStorage.new_scratch_libraries ?? "[]"))
             }
             incrementValueVersion()
         } catch (error) {
@@ -144,18 +144,18 @@ export default function NewScratchForm({ serverCompilers }: {
         if (!ready)
             return
 
-        localStorage["new_scratch_label"] = label
-        localStorage["new_scratch_asm"] = asm
-        localStorage["new_scratch_context"] = context
-        localStorage["new_scratch_platform"] = platform
-        localStorage["new_scratch_compilerId"] = compilerId
-        localStorage["new_scratch_compilerFlags"] = compilerFlags
-        localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
-        localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
+        localStorage.new_scratch_label = label
+        localStorage.new_scratch_asm = asm
+        localStorage.new_scratch_context = context
+        localStorage.new_scratch_platform = platform
+        localStorage.new_scratch_compilerId = compilerId
+        localStorage.new_scratch_compilerFlags = compilerFlags
+        localStorage.new_scratch_diffFlags = JSON.stringify(diffFlags)
+        localStorage.new_scratch_libraries = JSON.stringify(libraries)
         if (presetId == undefined) {
             localStorage.removeItem("new_scratch_presetId")
         } else {
-            localStorage["new_scratch_presetId"] = presetId
+            localStorage.new_scratch_presetId = presetId
         }
     }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
@@ -213,8 +213,8 @@ export default function NewScratchForm({ serverCompilers }: {
                 diff_label: label || defaultLabel || "",
             })
 
-            localStorage["new_scratch_label"] = ""
-            localStorage["new_scratch_asm"] = ""
+            localStorage.new_scratch_label = ""
+            localStorage.new_scratch_asm = ""
 
             await api.claimScratch(scratch)
 
