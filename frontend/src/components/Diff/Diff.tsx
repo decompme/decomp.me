@@ -195,7 +195,7 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
         ref={container.ref}
         className={styles.diff}
         style={{
-            "--diff-font-size": typeof fontSize == "number" ? `${fontSize}px` : "",
+            "--diff-font-size": typeof fontSize === "number" ? `${fontSize}px` : "",
             "--diff-left-width": `${clampedBar1Pos}px`,
             "--diff-right-width": `${container.width - clampedBar2Pos}px`,
             "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",

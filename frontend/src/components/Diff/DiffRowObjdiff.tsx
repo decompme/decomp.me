@@ -52,7 +52,7 @@ function FormatDiffText({ insDiff, baseAddress, highlighter }: {
             text = t.mnemonic
             padTo = 8
             isToken = true
-            if (insDiff.diff_kind == DiffKind.DIFF_OP_MISMATCH) {
+            if (insDiff.diff_kind === DiffKind.DIFF_OP_MISMATCH) {
                 className = styles.diff_change
             }
             break
@@ -127,7 +127,7 @@ function DiffCell({ cell, baseAddress, className, highlighter }: {
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
     const sourceEditor = useContext<MutableRefObject<EditorView>>(ScrollContext)
-    const hasLineNo = typeof cell?.instruction?.line_number != "undefined"
+    const hasLineNo = typeof cell?.instruction?.line_number !== "undefined"
 
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
@@ -150,7 +150,7 @@ function DiffCell({ cell, baseAddress, className, highlighter }: {
 
     return <div
         className={classNames(styles.cell, classes, {
-            [styles.highlight]: hasLineNo && cell.instruction.line_number == selectedSourceLine,
+            [styles.highlight]: hasLineNo && cell.instruction.line_number === selectedSourceLine,
         })}
     >
         {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.instruction.line_number)}>{cell.instruction.line_number}</button></span>}

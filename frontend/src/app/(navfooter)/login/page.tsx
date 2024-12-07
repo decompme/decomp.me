@@ -46,7 +46,7 @@ function Login() {
             })
         }
 
-        if (githubError == "access_denied") {
+        if (githubError === "access_denied") {
             setError(new Error("Please grant access to your GitHub account to sign in!"))
         }
     }, [code, router, mutate, next, error, githubError])

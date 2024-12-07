@@ -94,7 +94,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
 
         return <Allotment
             key={layout.kind} // Force remount when layout.kind changes
-            vertical={layout.kind == "vertical"}
+            vertical={layout.kind === "vertical"}
         >
             {els}
         </Allotment>

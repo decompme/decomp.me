@@ -41,7 +41,6 @@
             "suspicious": {
                 "noExplicitAny": "off",
                 "noArrayIndexKey": "off",
-                "noDoubleEquals": "off",
                 "noAssignInExpressions": "off",
                 "noConfusingVoidType": "off",
                 "noImplicitAnyLet": "off"

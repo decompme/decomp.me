@@ -30,7 +30,7 @@ export function compareScratchScores(a: TerseScratch, b: TerseScratch) {
     const bScore = b.score < 0 ? Number.POSITIVE_INFINITY : b.score
 
     // Sort scratches with the same score with most recently updated first
-    if (aScore == bScore) {
+    if (aScore === bScore) {
         return new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
     }
     return aScore - bScore

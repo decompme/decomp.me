@@ -45,7 +45,7 @@ const diffGutter = gutter({
         }
     },
     lineMarkerChange(update) {
-        return update.docChanged || (update.state.facet(diffLineMap) != update.startState.facet(diffLineMap))
+        return update.docChanged || (update.state.facet(diffLineMap) !== update.startState.facet(diffLineMap))
     },
     initialSpacer: () => marker,
 })

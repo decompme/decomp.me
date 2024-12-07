@@ -19,7 +19,7 @@ export default function useLanguageServer(enabled: boolean, scratch: api.Scratch
     useEffect(() => {
         const loadClangdModule = async () => {
             if (!enabled) return
-            if (!(scratch.language == "C" || scratch.language == "C++")) return
+            if (!(scratch.language === "C" || scratch.language === "C++")) return
 
             const { ClangdStdioTransport } = await import("@clangd-wasm/clangd-wasm")
             setClangdStdioTransportModule(() => ClangdStdioTransport)

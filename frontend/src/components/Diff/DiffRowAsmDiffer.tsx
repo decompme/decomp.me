@@ -32,7 +32,7 @@ function FormatDiffText({ texts, highlighter }: {
                 const key = `${index1},${index2}`
 
                 let className: string
-                if (t.format == "rotation") {
+                if (t.format === "rotation") {
                     className = styles[`rotation${t.index % 9}`]
                 } else if (t.format) {
                     className = styles[t.format]
@@ -65,14 +65,14 @@ function DiffCell({ cell, className, highlighter }: {
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
     const sourceEditor = useContext<MutableRefObject<EditorView>>(ScrollContext)
-    const hasLineNo = typeof cell?.src_line != "undefined"
+    const hasLineNo = typeof cell?.src_line !== "undefined"
 
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
 
     return <div
         className={classNames(styles.cell, className, {
-            [styles.highlight]: hasLineNo && cell.src_line == selectedSourceLine,
+            [styles.highlight]: hasLineNo && cell.src_line === selectedSourceLine,
         })}
     >
         {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.src_line)}>{cell.src_line}</button></span>}

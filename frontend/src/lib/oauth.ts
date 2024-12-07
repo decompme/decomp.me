@@ -16,7 +16,7 @@ export async function requestMissingScopes<T>(makeRequest: () => Promise<T>): Pr
     try {
         return await makeRequest()
     } catch (error) {
-        if (error instanceof ResponseError && error.json.kind == "MissingOAuthScopeException") {
+        if (error instanceof ResponseError && error.json.kind === "MissingOAuthScopeException") {
             const scope = error.json.detail
 
             console.warn("Missing scopes", scope)

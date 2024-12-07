@@ -20,7 +20,7 @@ export default function Breadcrumbs({ pages, className }: Props) {
         <nav aria-label="Breadcrumb" className={classNames(styles.breadcrumbs, className)}>
             <ol>
                 {pages.map((page, index) => {
-                    const isLast = index == pages.length - 1
+                    const isLast = index === pages.length - 1
 
                     const a = <a aria-current={isLast ? "page" : undefined}>
                         {page.label}

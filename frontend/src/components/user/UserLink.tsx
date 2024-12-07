@@ -18,7 +18,7 @@ export default function UserLink({ user, showUsername }: Props) {
 
     const inner = <>
         <UserAvatar user={user} className="mr-1 size-4 align-middle" />
-        {showUsername != false && <span>
+        {showUsername !== false && <span>
             {user.username}
         </span>}
     </>

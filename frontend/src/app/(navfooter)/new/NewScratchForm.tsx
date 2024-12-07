@@ -152,7 +152,7 @@ export default function NewScratchForm({ serverCompilers }: {
         localStorage.new_scratch_compilerFlags = compilerFlags
         localStorage.new_scratch_diffFlags = JSON.stringify(diffFlags)
         localStorage.new_scratch_libraries = JSON.stringify(libraries)
-        if (presetId == undefined) {
+        if (presetId === undefined) {
             localStorage.removeItem("new_scratch_presetId")
         } else {
             localStorage.new_scratch_presetId = presetId
@@ -169,7 +169,7 @@ export default function NewScratchForm({ serverCompilers }: {
         if (!ready)
             return
 
-        if (presetId != undefined || compilerId != undefined) {
+        if (presetId !== undefined || compilerId !== undefined) {
             // User has specified a preset or compiler, don't override it
             return
         }
@@ -310,7 +310,7 @@ export default function NewScratchForm({ serverCompilers }: {
         <div>
             <AsyncButton
                 primary
-                disabled={asm.length == 0}
+                disabled={asm.length === 0}
                 onClick={submit}
                 errorPlacement="right-center"
                 className="mt-2"

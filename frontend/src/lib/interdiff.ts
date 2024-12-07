@@ -57,16 +57,16 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
             if (c0 - ci !== p0 - pi) {
                 throw new Error("bad myers-diff range")
             }
-            while (ci != c0)
+            while (ci !== c0)
                 addMatching(cs[ci++], ps[pi++])
-            while (ci != c1) {
+            while (ci !== c1) {
                 const c = cs[ci++]
                 rows.push({
                     key: c.key,
                     current: c.current,
                 })
             }
-            while (pi != p1) {
+            while (pi !== p1) {
                 const p = ps[pi++]
                 rows.push({
                     key: p.key,
@@ -77,7 +77,7 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
         if (cs.length - ci !== ps.length - pi) {
             throw new Error("bad myers-diff range")
         }
-        while (ci != cs.length)
+        while (ci !== cs.length)
             addMatching(cs[ci++], ps[pi++])
     }
 

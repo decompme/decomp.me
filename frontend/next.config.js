@@ -161,7 +161,7 @@ let app = withPlausibleProxy({
     },
 }))
 
-if (process.env.ANALYZE == "true") {
+if (process.env.ANALYZE === "true") {
     app = require("@next/bundle-analyzer")(app)
 }
 

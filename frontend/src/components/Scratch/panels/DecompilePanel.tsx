@@ -44,7 +44,7 @@ export default function DecompilePanel({ scratch }: Props) {
                 of the assembly changes.
             </p>
 
-            {typeof decompiledCode == "string" && <CodeMirror
+            {typeof decompiledCode === "string" && <CodeMirror
                     className={styles.editor}
                     value={decompiledCode}
                     valueVersion={valueVersion}

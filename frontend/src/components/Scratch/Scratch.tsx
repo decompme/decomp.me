@@ -306,7 +306,7 @@ export default function Scratch({
     if (container.width) {
         const preferredLayout = getDefaultLayout(container.width, container.height)
 
-        if (layoutName != preferredLayout) {
+        if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout)
             setLayout(DEFAULT_LAYOUTS[preferredLayout])
         }

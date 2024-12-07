@@ -42,12 +42,12 @@ export default function NumberInput({ value, onChange, stringValue, disabled }: 
             setIsEditing(false)
         }}
         onKeyPress={evt => {
-            const isValidKey = evt.key == "." || !Number.isNaN(+evt.key)
+            const isValidKey = evt.key === "." || !Number.isNaN(+evt.key)
             if (!isValidKey || disabled) {
                 evt.preventDefault()
             }
 
-            if (evt.key == "Enter") {
+            if (evt.key === "Enter") {
                 evt.currentTarget.blur() // submit
             }
         }}

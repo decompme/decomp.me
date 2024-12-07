@@ -90,7 +90,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
 
     const problemsCollapsedHeight = 37
     const problemsDefaultHeight = 320
-    const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState == ProblemState.NO_PROBLEMS)
+    const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState === ProblemState.NO_PROBLEMS)
 
     return <div ref={container} className="size-full">
         <Allotment
@@ -108,7 +108,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
                     diff={diff || objdiffResult}
                     diffLabel={scratch.diff_label}
                     isCompiling={isCompiling}
-                    isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    isCurrentOutdated={isCompilationOld || problemState === ProblemState.ERRORS}
                     threeWayDiffEnabled={threeWayDiffEnabled}
                     setThreeWayDiffEnabled={setThreeWayDiffEnabled}
                     threeWayDiffBase={threeWayDiffBase}
@@ -133,7 +133,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
                             }}
                         >
                             <span className="text-sm font-medium">
-                                {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                                {(problemState === ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
                             </span>
                             {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
                         </GhostButton>

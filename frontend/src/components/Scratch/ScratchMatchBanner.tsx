@@ -14,12 +14,12 @@ export default function ScratchMatchBanner({ scratch }: { scratch: api.TerseScra
     })
 
     // Consciously not including match_override here, since it's not really banner-worthy
-    const match = data?.find(s => s.score == 0 && s.slug != scratch.slug)
+    const match = data?.find(s => s.score === 0 && s.slug !== scratch.slug)
 
     if (error)
         throw error
 
-    if (scratch.score == 0 || !match)
+    if (scratch.score === 0 || !match)
         return null
 
     let message = "This function has been matched"

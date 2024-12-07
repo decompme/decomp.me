@@ -129,7 +129,7 @@ export default function CodeMirror({
         if (view) {
             const prevValue = view.state.doc.toString()
 
-            if (prevValue != value) {
+            if (prevValue !== value) {
                 view.dispatch(
                     view.state.update({
                         changes: {
@@ -157,7 +157,7 @@ export default function CodeMirror({
                 }
             }
 
-            if (selectedLineRef.current != newLine) {
+            if (selectedLineRef.current !== newLine) {
                 selectedLineRef.current = newLine
                 onHoveredLineChangeRef.current?.(newLine)
             }

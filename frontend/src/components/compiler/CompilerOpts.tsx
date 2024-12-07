@@ -83,7 +83,7 @@ function DiffFlagSet({ name, children, value }: FlagSetProps) {
                 const trueFlag = (event.target as HTMLSelectElement).value
 
                 const edits = children.map(child => {
-                    return { flag: child.props.flag, value: child.props.flag == trueFlag }
+                    return { flag: child.props.flag, value: child.props.flag === trueFlag }
                 })
 
                 setFlags(edits)
@@ -392,7 +392,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
     const librariesTranslations = getTranslation("libraries")
 
     const libraryVersions = (scratchlib: api.Library) => {
-        const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)
+        const lib = supportedLibraries.find(lib => lib.name === scratchlib.name)
         if (lib != null) {
             return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
         } else {
@@ -401,7 +401,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
     }
 
     const addLibrary = (libName: string) => {
-        const lib = supportedLibraries.find(lib => lib.name == libName)
+        const lib = supportedLibraries.find(lib => lib.name === libName)
         if (lib != null) {
             return setLibraryVersion(libName, lib.supported_versions[0])
         }
@@ -410,7 +410,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
         // clone the libraries
         const libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Check if the library is already enabled, if so return it
-        const scratchlib = libs.find(scratchlib => scratchlib.name == libName)
+        const scratchlib = libs.find(scratchlib => scratchlib.name === libName)
         if (scratchlib != null) {
             // If it is, set the version
             scratchlib.version = ver
@@ -424,13 +424,13 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
         // clone the libraries
         let libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Only keep the libs whose name are not libName
-        libs = libs.filter(lib => lib.name != libName)
+        libs = libs.filter(lib => lib.name !== libName)
         setLibraries(libs)
     }
 
     const librariesSelectOptions = supportedLibraries
         // Filter out libraries that are already in the scratch
-        .filter(lib => !libraries.some(scratchlib => scratchlib.name == lib.name))
+        .filter(lib => !libraries.some(scratchlib => scratchlib.name === lib.name))
         // Turn them into something the Select component accepts.
         .map(lib => [lib.name, librariesTranslations.t(lib.name)])
 
