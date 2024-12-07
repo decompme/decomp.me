@@ -54,8 +54,7 @@
             "complexity": {
                 "useLiteralKeys": "off",
                 "useOptionalChain": "off",
-                "noForEach": "off",
-                "noUselessFragments": "off"
+                "noForEach": "off"
             },
             "performance": {
                 "noDelete": "off",
