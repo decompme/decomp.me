@@ -119,7 +119,7 @@ export default function NewScratchForm({ serverCompilers }: {
             setLabel(localStorage["new_scratch_label"] ?? "")
             setAsm(localStorage["new_scratch_asm"] ?? "")
             setContext(localStorage["new_scratch_context"] ?? "")
-            const pid = parseInt(localStorage["new_scratch_presetId"])
+            const pid = Number.parseInt(localStorage["new_scratch_presetId"])
             if (!Number.isNaN(pid)) {
                 const preset = presets[pid]
                 if (preset) {

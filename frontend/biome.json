@@ -24,7 +24,6 @@
             "style": {
                 "noUselessElse": "off",
                 "noParameterAssign": "off",
-                "useNumberNamespace": "off",
                 "useDefaultParameterLast": "off",
                 "useEnumInitializers": "off",
                 "useSingleVarDeclarator": "off",

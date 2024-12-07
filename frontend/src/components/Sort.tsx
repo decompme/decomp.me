@@ -26,8 +26,8 @@ export function produceSortFunction(sortMode: SortMode): (a: TerseScratch, b: Te
 
 export function compareScratchScores(a: TerseScratch, b: TerseScratch) {
     // If not compiling, give it a score of Infinity so it's sorted to the end
-    const aScore = a.score < 0 ? Infinity : a.score
-    const bScore = b.score < 0 ? Infinity : b.score
+    const aScore = a.score < 0 ? Number.POSITIVE_INFINITY : a.score
+    const bScore = b.score < 0 ? Number.POSITIVE_INFINITY : b.score
 
     // Sort scratches with the same score with most recently updated first
     if (aScore == bScore) {

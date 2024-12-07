@@ -181,7 +181,7 @@ export const DiffRow = memo(function DiffRow({ data, index, style }: { data: Dif
         className={styles.row}
         style={{
             ...style,
-            top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
+            top: `${Number.parseFloat(style.top.toString()) + PADDING_TOP}px`,
             lineHeight: `${style.height.toString()}px`,
         }}
     >
