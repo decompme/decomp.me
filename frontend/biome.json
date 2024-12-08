@@ -26,7 +26,6 @@
                 "noParameterAssign": "off",
                 "useDefaultParameterLast": "off",
                 "useEnumInitializers": "off",
-                "useSelfClosingElements": "off",
                 "useNodejsImportProtocol": "off"
             },
             "a11y": {
