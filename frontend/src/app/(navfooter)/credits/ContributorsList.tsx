@@ -6,6 +6,11 @@ import UserMention, { type GithubUser, getUserName } from "@/components/user/Use
 import { get } from "@/lib/api/request"
 import type { User } from "@/lib/api/types"
 
+interface GitHubContributor {
+    login: string
+    contributions: number
+}
+
 export type Contributor = User | GithubUser
 
 /** Gets the list of contributor usernames for the repo from GitHub. */
@@ -19,9 +24,9 @@ export async function getContributorUsernames(): Promise<string[]> {
         return ["ethteck", "nanaian"]
     }
 
-    const contributors = await req.json()
-    contributors.sort((a: any, b: any) => b.contributions - a.contributions)
-    return contributors.map((contributor: any) => contributor.login)
+    const contributors = await req.json() as GitHubContributor[]
+    contributors.sort((a, b) => b.contributions - a.contributions)
+    return contributors.map((contributor) => contributor.login)
 }
 
 export async function usernameToContributor(username: string): Promise<Contributor> {

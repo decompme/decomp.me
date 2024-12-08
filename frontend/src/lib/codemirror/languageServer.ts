@@ -31,7 +31,7 @@ const CompletionItemKindMap = Object.fromEntries(
     Object.entries(CompletionItemKind).map(([key, value]) => [value, key])
 ) as Record<CompletionItemKind, string>
 
-const useLast = (values: readonly any[]) => values.reduce((_, v) => v, "")
+const useLast = <T>(values: readonly T[]) => values.reduce((_, v) => v, "" as T)
 
 const client = Facet.define<LanguageServerClient, LanguageServerClient>({ combine: useLast })
 const documentUri = Facet.define<string, string>({ combine: useLast })
@@ -84,7 +84,7 @@ class LanguageServerClient {
     private client: Client
 
     public ready: boolean
-    public capabilities: LSP.ServerCapabilities<any>
+    public capabilities: LSP.ServerCapabilities
 
     private plugins: LanguageServerPlugin[]
 
@@ -101,7 +101,7 @@ class LanguageServerClient {
         this.client = new Client(this.requestManager)
 
         this.client.onNotification(data => {
-            this.processNotification(data as any)
+            this.processNotification(data as Notification)
         })
 
         this.initializePromise = this.initialize()

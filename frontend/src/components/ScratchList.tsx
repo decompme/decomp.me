@@ -83,7 +83,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
 
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = getTranslation("compilers")
-    const compilerName = compilersTranslation.t(scratch.compiler as any)
+    const compilerName = compilersTranslation.t(scratch.compiler)
     const matchPercentString = getMatchPercentString(scratch)
     const preset = api.usePreset(scratch.preset)
     const presetName = preset?.name
