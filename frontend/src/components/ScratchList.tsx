@@ -9,7 +9,7 @@ import classNames from "classnames"
 import TimeAgo from "@/components/TimeAgo"
 import * as api from "@/lib/api"
 import { presetUrl, scratchUrl } from "@/lib/api/urls"
-import useTranslation from "@/lib/i18n/translate"
+import getTranslation from "@/lib/i18n/translate"
 
 import AsyncButton from "./AsyncButton"
 import Button from "./Button"
@@ -76,13 +76,13 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
         return "100%"
     }
     const matchPercent = calculateScorePercent(scratch.score, scratch.max_score)
-    const matchPercentString = isNaN(matchPercent) ? "0%" : percentToString(matchPercent)
+    const matchPercentString = percentToString(matchPercent)
 
     return matchPercentString
 }
 
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler as any)
     const matchPercentString = getMatchPercentString(scratch)
     const preset = api.usePreset(scratch.preset)
@@ -123,7 +123,7 @@ export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, 
 }
 
 export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
     const matchPercentString = getMatchPercentString(scratch)
     const preset = api.usePreset(scratch.preset)
@@ -157,7 +157,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
 }
 
 export function ScratchItemPlatformList({ scratch }: { scratch: api.TerseScratch }) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const compilerName = compilersTranslation.t(scratch.compiler)
     const matchPercentString = getMatchPercentString(scratch)
     const preset = api.usePreset(scratch.preset)

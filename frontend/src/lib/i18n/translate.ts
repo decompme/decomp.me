@@ -10,7 +10,7 @@ const translationsBySection = {
 
 export type Section = keyof typeof translationsBySection
 
-export default function useTranslation(section: Section) {
+export default function getTranslation(section: Section) {
     const translations = translationsBySection[section]
     return {
         t(key: string): string {

@@ -35,14 +35,14 @@ export default function NumberInput({ value, onChange, stringValue, disabled }: 
         suppressContentEditableWarning={true}
         onClick={() => setIsEditing(true)}
         onBlur={evt => {
-            if (isNaN(+evt.currentTarget.textContent)) {
+            if (Number.isNaN(+evt.currentTarget.textContent)) {
                 evt.currentTarget.textContent = ""+value // this should never happen, as the user is not allowed to type non-digits
             }
             onChange(+evt.currentTarget.textContent)
             setIsEditing(false)
         }}
         onKeyPress={evt => {
-            const isValidKey = evt.key == "." || !isNaN(+evt.key)
+            const isValidKey = evt.key == "." || !Number.isNaN(+evt.key)
             if (!isValidKey || disabled) {
                 evt.preventDefault()
             }

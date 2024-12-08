@@ -7,7 +7,7 @@ import Button from "@/components/Button"
 import Select2 from "@/components/Select2"
 import * as api from "@/lib/api"
 import { Library } from "@/lib/api/types"
-import useTranslation from "@/lib/i18n/translate"
+import getTranslation from "@/lib/i18n/translate"
 
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
 import Select from "../Select" // TODO: use Select2
@@ -114,7 +114,7 @@ interface FlagsProps {
 }
 
 function Flags({ schema }: FlagsProps) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const { checkFlag } = useContext(OptsContext)
 
     return <>
@@ -136,7 +136,7 @@ function Flags({ schema }: FlagsProps) {
 }
 
 function DiffFlags({ schema }: FlagsProps) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const { checkFlag } = useContext(OptsContext)
 
     return <>
@@ -314,7 +314,7 @@ export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, 
     opts: string
     setOpts: (opts: string) => void
 }) {
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
 
     const compilers = useCompilersForPlatform(platform)
     const compiler = compilers[compilerId]
@@ -389,7 +389,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
     platform: string
 }) {
     const supportedLibraries = api.useLibraries(platform)
-    const librariesTranslations = useTranslation("libraries")
+    const librariesTranslations = getTranslation("libraries")
 
     const libraryVersions = (scratchlib: api.Library) => {
         const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)

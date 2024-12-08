@@ -1,0 +1,74 @@
+{
+    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+    "vcs": {
+        "enabled": false,
+        "clientKind": "git",
+        "useIgnoreFile": false
+    },
+    "files": {
+        "ignoreUnknown": false,
+        "ignore": [".next", "cache", "node_modules"]
+    },
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4
+    },
+    "organizeImports": {
+        "enabled": false
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "style": {
+                "useImportType": "off",
+                "useTemplate": "off",
+                "noUselessElse": "off",
+                "noParameterAssign": "off",
+                "useNumberNamespace": "off",
+                "useDefaultParameterLast": "off",
+                "useEnumInitializers": "off",
+                "useSingleVarDeclarator": "off",
+                "useSelfClosingElements": "off",
+                "useNodejsImportProtocol": "off"
+            },
+            "a11y": {
+                "useValidAnchor": "off",
+                "useSemanticElements": "off",
+                "noLabelWithoutControl": "off",
+                "useButtonType": "off",
+                "useKeyWithClickEvents": "off",
+                "noNoninteractiveTabindex": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "noArrayIndexKey": "off",
+                "noDoubleEquals": "off",
+                "noAssignInExpressions": "off",
+                "noConfusingVoidType": "off",
+                "noImplicitAnyLet": "off"
+            },
+            "correctness": {
+                "useExhaustiveDependencies": "off",
+                "noUnreachable": "off",
+                "noUnnecessaryContinue": "off"
+            },
+            "complexity": {
+                "useLiteralKeys": "off",
+                "useOptionalChain": "off",
+                "noForEach": "off",
+                "noUselessFragments": "off"
+            },
+            "performance": {
+                "noDelete": "off",
+                "noAccumulatingSpread": "off"
+            }
+        }
+    },
+    "javascript": {
+        "formatter": {
+            "enabled": false
+        }
+    }
+}

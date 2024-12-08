@@ -16,7 +16,7 @@ import { Library } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import { cpp } from "@/lib/codemirror/cpp"
-import useTranslation from "@/lib/i18n/translate"
+import getTranslation from "@/lib/i18n/translate"
 
 import styles from "./new.module.scss"
 
@@ -120,7 +120,7 @@ export default function NewScratchForm({ serverCompilers }: {
             setAsm(localStorage["new_scratch_asm"] ?? "")
             setContext(localStorage["new_scratch_context"] ?? "")
             const pid = parseInt(localStorage["new_scratch_presetId"])
-            if (!isNaN(pid)) {
+            if (!Number.isNaN(pid)) {
                 const preset = presets[pid]
                 if (preset) {
                     setPreset(preset)
@@ -189,7 +189,7 @@ export default function NewScratchForm({ serverCompilers }: {
         }
     }, [ready, presetId, compilerId, platformCompilers, serverCompilers, platform])
 
-    const compilersTranslation = useTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
         return Object.keys(platformCompilers).reduce((sum, id) => {
             return {

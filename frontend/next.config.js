@@ -27,10 +27,6 @@ try {
 
 const { withPlausibleProxy } = require("next-plausible")
 
-const withPWA = require("next-pwa")({
-    dest: "public",
-    disable: !getEnvBool("FRONTEND_PWA"),
-})
 const removeImports = require("next-remove-imports")({
     //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
     //matchImports: "\\.(less|css|scss|sass|styl)$"
@@ -40,7 +36,7 @@ const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost")
 
 let app = withPlausibleProxy({
     customDomain: "https://stats.decomp.me",
-})(removeImports(withPWA({
+})(removeImports({
     async redirects() {
         return [
             {
@@ -163,7 +159,7 @@ let app = withPlausibleProxy({
         NEXT_PUBLIC_GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
         NEXT_PUBLIC_COMMIT_HASH: git_hash,
     },
-})))
+}))
 
 if (process.env.ANALYZE == "true") {
     app = require("@next/bundle-analyzer")(app)

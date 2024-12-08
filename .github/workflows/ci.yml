@@ -201,7 +201,7 @@ jobs:
               poetry run python manage.py test'
 
   frontend_lint:
-    name: eslint & stylelint
+    name: biome
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -213,7 +213,8 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
         run: cd frontend && yarn --frozen-lockfile
-      - run: cd frontend && yarn lint
+      - name: Run Biome
+        run: cd frontend && yarn lint
 
   mypy:
     name: mypy
