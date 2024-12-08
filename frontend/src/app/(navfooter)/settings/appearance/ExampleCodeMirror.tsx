@@ -4,8 +4,6 @@ import CodeMirror from "@/components/Editor/CodeMirror";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 
-import styles from "./ExampleCodeMirror.module.scss";
-
 const EXAMPLE_C_CODE = `#include "common.h"
 
 typedef struct Vec2b {
@@ -114,7 +112,7 @@ void step_game_loop(void) {
 
 export default function ExampleCodeMirror() {
     return (
-        <div className={styles.container}>
+        <div className="overflow-hidden [&_.cm-editor]:h-[200px]">
             <CodeMirror
                 value={EXAMPLE_C_CODE}
                 valueVersion={0}
