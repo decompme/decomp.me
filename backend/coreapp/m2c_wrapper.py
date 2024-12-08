@@ -18,7 +18,9 @@ class M2CError(Exception):
 class M2CWrapper:
     @staticmethod
     def get_triple(compiler: Compiler, arch: str) -> str:
-        if "mips" in arch:
+        if "mipse" in arch:
+            t_arch = "mipsel"
+        elif "mips" in arch:
             t_arch = "mips"
         elif "ppc" in arch:
             t_arch = "ppc"
