@@ -23,8 +23,7 @@
             "recommended": true,
             "style": {
                 "noUselessElse": "off",
-                "noParameterAssign": "off",
-                "useNodejsImportProtocol": "off"
+                "noParameterAssign": "off"
             },
             "a11y": {
                 "useValidAnchor": "off",

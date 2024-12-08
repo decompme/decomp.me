@@ -1,5 +1,5 @@
 const { Compilation } = require("webpack")
-const { execSync } = require("child_process")
+const { execSync } = require("node:child_process")
 const { config } = require("dotenv")
 
 for (const envFile of [".env.local", ".env"]) {
