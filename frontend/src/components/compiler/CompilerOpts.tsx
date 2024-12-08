@@ -245,7 +245,9 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
         },
 
         setFlags(edits: { flag: string, value: boolean }[]) {
-            edits.forEach(({ flag, value }) => optsEditorProvider.setFlag(flag, value))
+            for (const { flag, value } of edits) {
+                optsEditorProvider.setFlag(flag, value)
+            }
         },
 
     }

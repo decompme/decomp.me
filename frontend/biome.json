@@ -45,9 +45,6 @@
             "correctness": {
                 "useExhaustiveDependencies": "off"
             },
-            "complexity": {
-                "noForEach": "off"
-            },
             "performance": {
                 "noDelete": "off"
             },
