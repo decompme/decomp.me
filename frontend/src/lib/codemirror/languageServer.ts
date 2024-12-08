@@ -519,7 +519,10 @@ function languageServerWithTransport(options: LanguageServerOptions): [Extension
         client.of(options.client || new LanguageServerClient({ ...options, autoClose: true })),
         documentUri.of(options.documentUri),
         languageId.of(options.languageId),
-        ViewPlugin.define(view => (plugin = new LanguageServerPlugin(view))),
+        ViewPlugin.define(view => {
+            plugin = new LanguageServerPlugin(view);
+            return plugin;
+        }),
         hoverTooltip(
             (view, pos) =>
                 plugin?.requestHoverTooltip(
