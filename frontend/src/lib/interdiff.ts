@@ -48,7 +48,8 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
             return
         const ckeys = cs.map(c => c.key)
         const pkeys = ps.map(p => p.key)
-        let ci = 0, pi = 0
+        let ci = 0
+        let pi = 0
         // Array.from to silence an error about "Type 'IterableIterator<...>'
         // can only be iterated through when using the '--downlevelIteration'
         // flag or with a '--target' of 'es2015' or higher" -- changing

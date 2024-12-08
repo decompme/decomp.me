@@ -3,12 +3,12 @@ import type { Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
 import { tags } from "@lezer/highlight"
 
-const ivory = "#abb2bf",
-    highlightBackground = "var(--code-highlight)",
-    background = "var(--code-background)",
-    tooltipBackground = "#353a42",
-    selection = "var(--code-selection)",
-    cursor = "var(--code-cursor)"
+const ivory = "#abb2bf"
+const highlightBackground = "var(--code-highlight)"
+const background = "var(--code-background)"
+const tooltipBackground = "#353a42"
+const selection = "var(--code-selection)"
+const cursor = "var(--code-cursor)"
 
 export const theme = EditorView.theme(
     {

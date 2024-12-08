@@ -26,7 +26,6 @@
                 "noParameterAssign": "off",
                 "useDefaultParameterLast": "off",
                 "useEnumInitializers": "off",
-                "useSingleVarDeclarator": "off",
                 "useSelfClosingElements": "off",
                 "useNodejsImportProtocol": "off"
             },
