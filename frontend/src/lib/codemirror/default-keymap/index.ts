@@ -3,7 +3,8 @@ import {
     closeCompletion,
     moveCompletionSelection,
     startCompletion,
-    deleteBracketPair } from "@codemirror/autocomplete"
+    deleteBracketPair,
+} from "@codemirror/autocomplete";
 import {
     insertNewlineAndIndent,
     cursorCharLeft,
@@ -56,8 +57,11 @@ import {
     lineComment,
     lineUncomment,
     toggleBlockComment,
-    redo, undo, undoSelection } from "@codemirror/commands"
-import { foldCode, unfoldCode, foldAll, unfoldAll } from "@codemirror/language"
+    redo,
+    undo,
+    undoSelection,
+} from "@codemirror/commands";
+import { foldCode, unfoldCode, foldAll, unfoldAll } from "@codemirror/language";
 import {
     closeSearchPanel,
     gotoLine,
@@ -66,11 +70,15 @@ import {
     selectMatches,
     selectNextOccurrence,
     selectSelectionMatches,
-} from "@codemirror/search"
-import { KeyBinding } from "@codemirror/view"
+} from "@codemirror/search";
+import type { KeyBinding } from "@codemirror/view";
 
-import { indent } from "./indent"
-import { addCursorAtEachSelectionLine, addCursorDown, addCursorUp } from "./multiCursor"
+import { indent } from "./indent";
+import {
+    addCursorAtEachSelectionLine,
+    addCursorDown,
+    addCursorUp,
+} from "./multiCursor";
 
 const keys: readonly KeyBinding[] = [
     { key: "Ctrl-Space", run: startCompletion },
@@ -91,7 +99,11 @@ const keys: readonly KeyBinding[] = [
     { key: "Shift-Mod-l", run: selectSelectionMatches },
     // Enter and shift enter handled within the search panel plugin
 
-    { key: "Enter", run: insertNewlineAndIndent, shift: insertNewlineAndIndent },
+    {
+        key: "Enter",
+        run: insertNewlineAndIndent,
+        shift: insertNewlineAndIndent,
+    },
     {
         key: "ArrowLeft",
         run: cursorCharLeft,
@@ -218,7 +230,11 @@ const keys: readonly KeyBinding[] = [
     { key: "Shift-Mod-k", run: deleteLine },
     { key: "Alt-ArrowDown", run: moveLineDown },
     { key: "Alt-ArrowUp", run: moveLineUp },
-    { win: "Shift-Alt-ArrowDown", mac: "Shift-Alt-ArrowDown", run: copyLineDown },
+    {
+        win: "Shift-Alt-ArrowDown",
+        mac: "Shift-Alt-ArrowDown",
+        run: copyLineDown,
+    },
     { win: "Shift-Alt-ArrowUp", mac: "Shift-Alt-ArrowUp", run: copyLineUp },
 
     { key: "Mod-l", run: selectLine, preventDefault: true },
@@ -245,6 +261,6 @@ const keys: readonly KeyBinding[] = [
 
     //{ key: "Mod-Shift-m", run: openLintPanel },
     //{ key: "F8", run: nextDiagnostic }, // Shift should go back, but previousDiagnostic is not implemented
-]
+];
 
-export default keys
+export default keys;
