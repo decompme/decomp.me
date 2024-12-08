@@ -3,7 +3,7 @@ import { history } from "@codemirror/commands"
 import { bracketMatching, foldGutter, indentOnInput, indentUnit } from "@codemirror/language"
 //import { rectangularSelection, crosshairCursor } from "@codemirror/rectangular-selection"
 import { highlightSelectionMatches } from "@codemirror/search"
-import { Extension, EditorState } from "@codemirror/state"
+import { type Extension, EditorState } from "@codemirror/state"
 import { lineNumbers, highlightActiveLineGutter, keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor } from "@codemirror/view"
 import { indentationMarkers } from "@replit/codemirror-indentation-markers"
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useLayoutEffect, useEffect, RefObject } from "react"
+import { useState, useRef, useLayoutEffect, useEffect, type RefObject } from "react"
 
 import Router from "next/router"
 
@@ -56,7 +56,8 @@ export function useWarnBeforeUnload(enabled: boolean, message = "Are you sure yo
         const onUnload = (event: BeforeUnloadEvent) => {
             if (enabledRef.current) {
                 event.preventDefault()
-                return event.returnValue = messageRef.current
+                event.returnValue = messageRef.current
+                return event.returnValue
             }
         }
 

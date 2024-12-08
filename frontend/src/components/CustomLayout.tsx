@@ -1,8 +1,8 @@
-import { ReactElement } from "react"
+import type { ReactElement } from "react"
 
 import { Allotment } from "allotment"
 
-import Tabs, { Tab } from "./Tabs"
+import Tabs, { type Tab } from "./Tabs"
 
 export interface HorizontalSplit {
     key: number
@@ -94,7 +94,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
 
         return <Allotment
             key={layout.kind} // Force remount when layout.kind changes
-            vertical={layout.kind == "vertical"}
+            vertical={layout.kind === "vertical"}
         >
             {els}
         </Allotment>

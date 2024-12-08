@@ -1,4 +1,4 @@
-import { Preset, TerseScratch, User } from "./types"
+import type { Preset, TerseScratch, User } from "./types"
 
 export function userHtmlUrl(user: User): string {
     return `/u/${user.username}`

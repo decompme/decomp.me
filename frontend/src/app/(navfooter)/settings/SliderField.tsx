@@ -1,4 +1,4 @@
-import { useId, ReactNode } from "react"
+import { useId, type ReactNode } from "react"
 
 import classNames from "classnames"
 
@@ -44,7 +44,7 @@ export default function SliderField({ value, onChange, disabled, label, descript
                 {unit}
             </div>
 
-            <div className="inline-flex w-5/6 items-center gap-2 text-xs text-gray-10">
+            <div className="inline-flex w-5/6 items-center gap-2 text-gray-10 text-xs">
                 {min}{unit}
                 <input
                     id={id}
@@ -61,6 +61,6 @@ export default function SliderField({ value, onChange, disabled, label, descript
             </div>
         </div>
 
-        {description && <div className="mt-1 text-sm text-gray-11">{description}</div>}
+        {description && <div className="mt-1 text-gray-11 text-sm">{description}</div>}
     </div>
 }

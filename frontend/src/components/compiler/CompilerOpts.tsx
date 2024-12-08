@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, Fragment, ReactElement } from "react"
+import { createContext, useContext, useState, Fragment, type ReactElement } from "react"
 
 import { TrashIcon } from "@primer/octicons-react"
 
@@ -6,7 +6,7 @@ import Checkbox from "@/app/(navfooter)/settings/Checkbox"
 import Button from "@/components/Button"
 import Select2 from "@/components/Select2"
 import * as api from "@/lib/api"
-import { Library } from "@/lib/api/types"
+import type { Library } from "@/lib/api/types"
 import getTranslation from "@/lib/i18n/translate"
 
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
@@ -83,7 +83,7 @@ function DiffFlagSet({ name, children, value }: FlagSetProps) {
                 const trueFlag = (event.target as HTMLSelectElement).value
 
                 const edits = children.map(child => {
-                    return { flag: child.props.flag, value: child.props.flag == trueFlag }
+                    return { flag: child.props.flag, value: child.props.flag === trueFlag }
                 })
 
                 setFlags(edits)
@@ -124,7 +124,7 @@ function Flags({ schema }: FlagsProps) {
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || "---"
                 const flagOptions = flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
                 } />)
 
                 return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
@@ -146,7 +146,7 @@ function DiffFlags({ schema }: FlagsProps) {
             } else if (flag.type === "flagset") {
                 const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
                 const flagOptions = flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(flag.id + "." + f, NO_TRANSLATION)
+                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
                 } />)
 
                 return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
@@ -231,21 +231,23 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
 
     const optsEditorProvider = {
         checkFlag(flag: string) {
-            return (" " + opts + " ").includes(" " + flag + " ")
+            return (` ${opts} `).includes(` ${flag} `)
         },
 
         setFlag(flag: string, enable: boolean) {
             if (enable) {
-                opts = opts + " " + flag
+                opts = `${opts} ${flag}`
             } else {
-                opts = (" " + opts + " ").replace(" " + flag + " ", " ")
+                opts = (` ${opts} `).replace(` ${flag} `, " ")
             }
             opts = opts.trim()
             setOpts(opts)
         },
 
         setFlags(edits: { flag: string, value: boolean }[]) {
-            edits.forEach(({ flag, value }) => optsEditorProvider.setFlag(flag, value))
+            for (const { flag, value } of edits) {
+                optsEditorProvider.setFlag(flag, value)
+            }
         },
 
     }
@@ -392,7 +394,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
     const librariesTranslations = getTranslation("libraries")
 
     const libraryVersions = (scratchlib: api.Library) => {
-        const lib = supportedLibraries.find(lib => lib.name == scratchlib.name)
+        const lib = supportedLibraries.find(lib => lib.name === scratchlib.name)
         if (lib != null) {
             return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
         } else {
@@ -401,7 +403,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
     }
 
     const addLibrary = (libName: string) => {
-        const lib = supportedLibraries.find(lib => lib.name == libName)
+        const lib = supportedLibraries.find(lib => lib.name === libName)
         if (lib != null) {
             return setLibraryVersion(libName, lib.supported_versions[0])
         }
@@ -410,7 +412,7 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
         // clone the libraries
         const libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Check if the library is already enabled, if so return it
-        const scratchlib = libs.find(scratchlib => scratchlib.name == libName)
+        const scratchlib = libs.find(scratchlib => scratchlib.name === libName)
         if (scratchlib != null) {
             // If it is, set the version
             scratchlib.version = ver
@@ -424,13 +426,13 @@ export function LibrariesEditor({ libraries, setLibraries, platform }: {
         // clone the libraries
         let libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
         // Only keep the libs whose name are not libName
-        libs = libs.filter(lib => lib.name != libName)
+        libs = libs.filter(lib => lib.name !== libName)
         setLibraries(libs)
     }
 
     const librariesSelectOptions = supportedLibraries
         // Filter out libraries that are already in the scratch
-        .filter(lib => !libraries.some(scratchlib => scratchlib.name == lib.name))
+        .filter(lib => !libraries.some(scratchlib => scratchlib.name === lib.name))
         // Turn them into something the Select component accepts.
         .map(lib => [lib.name, librariesTranslations.t(lib.name)])
 

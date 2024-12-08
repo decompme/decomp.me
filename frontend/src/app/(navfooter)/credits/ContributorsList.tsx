@@ -2,9 +2,14 @@ import { LinkExternalIcon } from "@primer/octicons-react"
 
 import GhostButton from "@/components/GhostButton"
 import UserAvatar from "@/components/user/UserAvatar"
-import UserMention, { GithubUser, getUserName } from "@/components/user/UserMention"
+import UserMention, { type GithubUser, getUserName } from "@/components/user/UserMention"
 import { get } from "@/lib/api/request"
-import { User } from "@/lib/api/types"
+import type { User } from "@/lib/api/types"
+
+interface GitHubContributor {
+    login: string
+    contributions: number
+}
 
 export type Contributor = User | GithubUser
 
@@ -19,9 +24,9 @@ export async function getContributorUsernames(): Promise<string[]> {
         return ["ethteck", "nanaian"]
     }
 
-    const contributors = await req.json()
-    contributors.sort((a: any, b: any) => b.contributions - a.contributions)
-    return contributors.map((contributor: any) => contributor.login)
+    const contributors = await req.json() as GitHubContributor[]
+    contributors.sort((a, b) => b.contributions - a.contributions)
+    return contributors.map((contributor) => contributor.login)
 }
 
 export async function usernameToContributor(username: string): Promise<Contributor> {
@@ -49,7 +54,7 @@ export default function ContributorsList({ contributors }: { contributors: Contr
 
     return <div className="py-4">
         <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-lg font-medium tracking-tight text-gray-12 md:text-2xl">
+            <h3 className="font-medium text-gray-12 text-lg tracking-tight md:text-2xl">
                 Contributors
             </h3>
             <GhostButton href="https://github.com/decompme/decomp.me/graphs/contributors">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import useSWR, { Middleware, SWRConfig } from "swr"
+import useSWR, { type Middleware, SWRConfig } from "swr"
 
 import Scratch from "@/components/Scratch"
 import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload"

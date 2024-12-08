@@ -16,7 +16,7 @@ export default function Footer() {
     return <>
         <div className="grow" />
         <footer className="mx-auto mt-16 w-full px-4 sm:px-6 lg:px-8">
-            <div className="border-t border-gray-6 py-10">
+            <div className="border-gray-6 border-t py-10">
                 <div className="flex items-center justify-center">
                     <Link href="/" >
                         <Logotype />
@@ -54,12 +54,12 @@ export default function Footer() {
                     </GhostButton>
                 </div>
 
-                <div className="mt-2 flex items-center justify-center text-xs text-[#808080]">
+                <div className="mt-2 flex items-center justify-center text-[#808080] text-xs">
                     <Link
                         href={`https://github.com/decompme/decomp.me/commit/${commitHash}`}
                         title="Commit hash">
 
-                        {(commitHash && commitHash.slice(0, 7)) || "unknown"}
+                        {(commitHash?.slice(0, 7)) || "unknown"}
                     </Link>
                 </div>
             </div>

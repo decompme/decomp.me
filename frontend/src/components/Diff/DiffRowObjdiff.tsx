@@ -1,18 +1,18 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { CSSProperties, MutableRefObject, memo, useContext } from "react"
+import { type CSSProperties, type MutableRefObject, memo, useContext } from "react"
 
 import classNames from "classnames"
-import { EditorView } from "codemirror"
+import type { EditorView } from "codemirror"
 import memoize from "memoize-one"
-import { DiffKind, DiffResult, FunctionDiff, InstructionDiff, ObjectDiff, displayDiff, oneof } from "objdiff-wasm"
+import { DiffKind, type DiffResult, type FunctionDiff, type InstructionDiff, type ObjectDiff, displayDiff, oneof } from "objdiff-wasm"
 import { areEqual } from "react-window"
 
 import { ScrollContext } from "../ScrollContext"
 
 import { PADDING_TOP, SelectedSourceLineContext, scrollToLineNumber } from "./Diff"
 import styles from "./Diff.module.scss"
-import { Highlighter } from "./Highlighter"
+import type { Highlighter } from "./Highlighter"
 
 function FormatDiffText({ insDiff, baseAddress, highlighter }: {
     insDiff: InstructionDiff
@@ -52,7 +52,7 @@ function FormatDiffText({ insDiff, baseAddress, highlighter }: {
             text = t.mnemonic
             padTo = 8
             isToken = true
-            if (insDiff.diff_kind == DiffKind.DIFF_OP_MISMATCH) {
+            if (insDiff.diff_kind === DiffKind.DIFF_OP_MISMATCH) {
                 className = styles.diff_change
             }
             break
@@ -127,7 +127,7 @@ function DiffCell({ cell, baseAddress, className, highlighter }: {
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext)
     const sourceEditor = useContext<MutableRefObject<EditorView>>(ScrollContext)
-    const hasLineNo = typeof cell?.instruction?.line_number != "undefined"
+    const hasLineNo = typeof cell?.instruction?.line_number !== "undefined"
 
     if (!cell)
         return <div className={classNames(styles.cell, className)} />
@@ -150,7 +150,7 @@ function DiffCell({ cell, baseAddress, className, highlighter }: {
 
     return <div
         className={classNames(styles.cell, classes, {
-            [styles.highlight]: hasLineNo && cell.instruction.line_number == selectedSourceLine,
+            [styles.highlight]: hasLineNo && cell.instruction.line_number === selectedSourceLine,
         })}
     >
         {hasLineNo && <span className={styles.lineNumber}><button onClick={() => scrollToLineNumber(sourceEditor, cell.instruction.line_number)}>{cell.instruction.line_number}</button></span>}
@@ -181,7 +181,7 @@ export const DiffRow = memo(function DiffRow({ data, index, style }: { data: Dif
         className={styles.row}
         style={{
             ...style,
-            top: `${parseFloat(style.top.toString()) + PADDING_TOP}px`,
+            top: `${Number.parseFloat(style.top.toString()) + PADDING_TOP}px`,
             lineHeight: `${style.height.toString()}px`,
         }}
     >

@@ -16,7 +16,7 @@ function NetworkErrorPage({ error }: ErrorPageProps) {
         <SetPageTitle title="Error" />
         <div className="grow" />
         <main className="max-w-prose p-4 md:mx-auto">
-            <h1 className="py-4 text-3xl font-semibold">We're having some trouble reaching the backend</h1>
+            <h1 className="py-4 font-semibold text-3xl">We're having some trouble reaching the backend</h1>
 
             <div className="rounded bg-gray-2 p-4 text-gray-11">
                 <code className="font-mono text-sm">{error.toString()}</code>
@@ -41,7 +41,7 @@ function UnexpectedErrorPage({ error, reset }: ErrorPageProps) {
         <SetPageTitle title="Error" />
         <div className="grow" />
         <main className="max-w-prose p-4 md:mx-auto">
-            <h1 className="text-3xl font-semibold">Something went wrong</h1>
+            <h1 className="font-semibold text-3xl">Something went wrong</h1>
             <p className="py-4">
                 An unexpected error occurred rendering this page.
             </p>

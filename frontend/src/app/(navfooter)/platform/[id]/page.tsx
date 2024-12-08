@@ -1,11 +1,11 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
-import { PlatformMetadata } from "@/lib/api/types"
+import type { PlatformMetadata } from "@/lib/api/types"
 
 export async function generateMetadata({ params }: { params: { id: number } }):Promise<Metadata> {
     let platform: PlatformMetadata
@@ -21,9 +21,9 @@ export async function generateMetadata({ params }: { params: { id: number } }):P
     }
 
     let description = "There "
-    description += platform.num_scratches == 1 ? "is " : "are "
-    description += platform.num_scratches == 0 ? "currently no " : `${platform.num_scratches.toLocaleString("en-US")} `
-    description += platform.num_scratches == 1 ? "scratch " : "scratches "
+    description += platform.num_scratches === 1 ? "is " : "are "
+    description += platform.num_scratches === 0 ? "currently no " : `${platform.num_scratches.toLocaleString("en-US")} `
+    description += platform.num_scratches === 1 ? "scratch " : "scratches "
     description += "for this platform."
 
     return {
@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: { id: number } }) {
     }
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <div className="flex items-center gap-2 text-2xl font-medium">
+        <div className="flex items-center gap-2 font-medium text-2xl">
             <PlatformIcon platform={platform.id} size={32} />
             <h1>
                 {platform.name}
