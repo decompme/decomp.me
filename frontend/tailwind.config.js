@@ -64,7 +64,6 @@ module.exports = {
             // Subset of Tailwind default colors
             transparent: "transparent",
             current: "currentColor",
-            white: "#fff",
 
             // Make colors from Radix UI available
             ...Object.keys(COLOR_NAME_MAP).reduce((acc, unmappedColorName) => {
