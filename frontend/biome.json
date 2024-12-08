@@ -49,8 +49,7 @@
                 "noForEach": "off"
             },
             "performance": {
-                "noDelete": "off",
-                "noAccumulatingSpread": "off"
+                "noDelete": "off"
             },
             "nursery": {
                 "useSortedClasses": "error"

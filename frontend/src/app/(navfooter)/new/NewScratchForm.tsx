@@ -192,11 +192,9 @@ export default function NewScratchForm({ serverCompilers }: {
     const compilersTranslation = getTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
         return Object.keys(platformCompilers).reduce((sum, id) => {
-            return {
-                ...sum,
-                [id]: compilersTranslation.t(id),
-            }
-        }, {})
+            sum[id] = compilersTranslation.t(id)
+            return sum
+        }, {} as Record<string, string>)
     }, [platformCompilers, compilersTranslation])
 
     const submit = async () => {
