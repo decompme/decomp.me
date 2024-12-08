@@ -23,9 +23,9 @@ function getProblemState(compilation: api.Compilation): ProblemState {
 }
 
 export enum ProblemState {
-    NO_PROBLEMS,
-    WARNINGS,
-    ERRORS,
+    NO_PROBLEMS = 0,
+    WARNINGS = 1,
+    ERRORS = 2,
 }
 
 export type PerSaveObj = {

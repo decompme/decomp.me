@@ -226,8 +226,8 @@ function Actions({ isCompiling, compile, scratch, setScratch, saveCallback, setD
 }
 
 enum ActionsLocation {
-    IN_NAV,
-    BELOW_NAV,
+    IN_NAV = 0,
+    BELOW_NAV = 1,
 }
 
 function useActionsLocation(): [ActionsLocation, FC<Props>] {

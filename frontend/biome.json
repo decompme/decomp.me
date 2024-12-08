@@ -24,7 +24,6 @@
             "style": {
                 "noUselessElse": "off",
                 "noParameterAssign": "off",
-                "useEnumInitializers": "off",
                 "useNodejsImportProtocol": "off"
             },
             "a11y": {

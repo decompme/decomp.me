@@ -3,9 +3,9 @@ import { useCallback } from "react"
 import * as api from "@/lib/api"
 
 export enum FuzzySaveAction {
-    SAVE,
-    FORK,
-    NONE,
+    SAVE = 0,
+    FORK = 1,
+    NONE = 2,
 }
 
 export default function useFuzzySaveCallback(
