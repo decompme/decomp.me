@@ -40,7 +40,7 @@
                 "noExplicitAny": "off",
                 "noArrayIndexKey": "off",
                 "noAssignInExpressions": "off",
-                "noImplicitAnyLet": "off"
+                "noConfusingVoidType": "off"
             },
             "correctness": {
                 "useExhaustiveDependencies": "off"

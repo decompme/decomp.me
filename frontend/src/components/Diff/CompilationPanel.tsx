@@ -64,7 +64,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
 
     const prevDiffRef = useRef<api.DiffOutput | null>(null)
 
-    let usedBase
+    let usedBase: api.DiffOutput;
     if (threeWayDiffBase === ThreeWayDiffBase.SAVED) {
         usedBase = perSaveObj.diff ?? null
         prevDiffRef.current = null
