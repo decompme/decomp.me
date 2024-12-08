@@ -1,45 +1,45 @@
-"use client"
+"use client";
 
-import { useEffect, useReducer, type ReactNode } from "react"
+import { useEffect, useReducer, type ReactNode } from "react";
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { ThreeBarsIcon, XIcon } from "@primer/octicons-react"
-import classNames from "classnames"
+import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
+import classNames from "classnames";
 
-import GhostButton from "../GhostButton"
-import Logotype from "../Logotype"
+import GhostButton from "../GhostButton";
+import Logotype from "../Logotype";
 
-import LoginState from "./LoginState"
-import styles from "./Nav.module.scss"
-import Search from "./Search"
+import LoginState from "./LoginState";
+import styles from "./Nav.module.scss";
+import Search from "./Search";
 
 export interface Props {
-    children?: ReactNode
+    children?: ReactNode;
 }
 
 export default function Nav({ children }: Props) {
-    const [isOpen, toggleOpen] = useReducer(isOpen => !isOpen, false)
-    const toggleLabel = `${isOpen ? "Close" : "Open"} Global Navigation Menu`
-    const router = useRouter()
+    const [isOpen, toggleOpen] = useReducer((isOpen) => !isOpen, false);
+    const toggleLabel = `${isOpen ? "Close" : "Open"} Global Navigation Menu`;
+    const router = useRouter();
 
     useEffect(() => {
         if (isOpen) {
             const onkeydown = (evt: KeyboardEvent) => {
                 if (evt.key === "Escape") {
-                    toggleOpen()
-                    document.getElementById("navtoggle").focus()
-                    evt.preventDefault()
+                    toggleOpen();
+                    document.getElementById("navtoggle").focus();
+                    evt.preventDefault();
                 }
-            }
+            };
 
-            document.body.addEventListener("keydown", onkeydown)
+            document.body.addEventListener("keydown", onkeydown);
             return () => {
-                document.body.removeEventListener("keydown", onkeydown)
-            }
+                document.body.removeEventListener("keydown", onkeydown);
+            };
         }
-    }, [isOpen, router])
+    }, [isOpen, router]);
 
     return (
         <nav
@@ -59,35 +59,47 @@ export default function Nav({ children }: Props) {
                         aria-label={toggleLabel}
                         aria-expanded={isOpen}
                     >
-                        {isOpen ? <XIcon size={24} /> : <ThreeBarsIcon size={18} />}
+                        {isOpen ? (
+                            <XIcon size={24} />
+                        ) : (
+                            <ThreeBarsIcon size={18} />
+                        )}
                     </button>
                 </li>
                 <li className={styles.headerItemSiteLogo}>
-                    <Link href="/" className="transition-colors hover:text-gray-12 active:translate-y-px">
+                    <Link
+                        href="/"
+                        className="transition-colors hover:text-gray-12 active:translate-y-px"
+                    >
                         <Logotype />
                     </Link>
                 </li>
                 <li className={styles.headerItemLoginState}>
                     <LoginState />
                 </li>
-                {children
-                    ? <li className={styles.customchildren}>{children}</li>
-                    : <li className={styles.desktopLinks}>
+                {children ? (
+                    <li className={styles.customchildren}>{children}</li>
+                ) : (
+                    <li className={styles.desktopLinks}>
                         <ul className="flex w-full gap-2 text-sm">
                             <li className="ml-4">
                                 <Search />
                             </li>
                             <div className="grow" />
                             <li>
-                                <GhostButton href="/new">New scratch</GhostButton>
+                                <GhostButton href="/new">
+                                    New scratch
+                                </GhostButton>
                             </li>
                             <div className="h-4 w-px bg-gray-6" />
                             <li>
-                                <GhostButton href="/settings">Settings</GhostButton>
+                                <GhostButton href="/settings">
+                                    Settings
+                                </GhostButton>
                             </li>
                         </ul>
                     </li>
-                }
+                )}
             </ul>
             <div className={classNames(styles.menu, "bg-gray-1")}>
                 <div className={styles.searchContainer}>
@@ -100,16 +112,22 @@ export default function Nav({ children }: Props) {
                         </Link>
                     </li>
                     <li>
-                        <Link onClick={toggleOpen} href="/">Dashboard</Link>
+                        <Link onClick={toggleOpen} href="/">
+                            Dashboard
+                        </Link>
                     </li>
                     <li>
-                        <Link onClick={toggleOpen} href="/new">New scratch</Link>
+                        <Link onClick={toggleOpen} href="/new">
+                            New scratch
+                        </Link>
                     </li>
                     <li>
-                        <Link onClick={toggleOpen} href="/settings">Settings</Link>
+                        <Link onClick={toggleOpen} href="/settings">
+                            Settings
+                        </Link>
                     </li>
                 </ul>
             </div>
         </nav>
-    )
+    );
 }

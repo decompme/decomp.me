@@ -1,18 +1,21 @@
-import { diff } from "fast-myers-diff"
+import { diff } from "fast-myers-diff";
 
-const ctx: Worker = self as any
+const ctx: Worker = self as any;
 
 ctx.onmessage = ({ data }: { data: DiffRequest }) => {
     if (typeof data.target !== "string") {
-        return []
+        return [];
     }
 
     const tokenizeSource = (source: string) => {
-        return source.split("\n").map(i => i.trim())
-    }
+        return source.split("\n").map((i) => i.trim());
+    };
 
-    const diffsIterator = diff(tokenizeSource(data.target), tokenizeSource(data.current))
-    ctx.postMessage(Array.from(diffsIterator))
-}
+    const diffsIterator = diff(
+        tokenizeSource(data.target),
+        tokenizeSource(data.current),
+    );
+    ctx.postMessage(Array.from(diffsIterator));
+};
 
-export type DiffRequest = { target: string | undefined, current: string };
+export type DiffRequest = { target: string | undefined; current: string };

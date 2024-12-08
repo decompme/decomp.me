@@ -1,6 +1,3 @@
 export function joinTitles(...breadcrumbs: string[]) {
-    return [
-        ...breadcrumbs,
-        "decomp.me",
-    ].filter(Boolean).join(" | ")
+    return [...breadcrumbs, "decomp.me"].filter(Boolean).join(" | ");
 }

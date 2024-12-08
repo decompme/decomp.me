@@ -1,210 +1,299 @@
-import { createContext, useContext, useState, Fragment, type ReactElement } from "react"
+import {
+    createContext,
+    useContext,
+    useState,
+    Fragment,
+    type ReactElement,
+} from "react";
 
-import { TrashIcon } from "@primer/octicons-react"
+import { TrashIcon } from "@primer/octicons-react";
 
-import Checkbox from "@/app/(navfooter)/settings/Checkbox"
-import Button from "@/components/Button"
-import Select2 from "@/components/Select2"
-import * as api from "@/lib/api"
-import type { Library } from "@/lib/api/types"
-import getTranslation from "@/lib/i18n/translate"
+import Checkbox from "@/app/(navfooter)/settings/Checkbox";
+import Button from "@/components/Button";
+import Select2 from "@/components/Select2";
+import * as api from "@/lib/api";
+import type { Library } from "@/lib/api/types";
+import getTranslation from "@/lib/i18n/translate";
 
-import { PlatformIcon } from "../PlatformSelect/PlatformIcon"
-import Select from "../Select" // TODO: use Select2
+import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
+import Select from "../Select"; // TODO: use Select2
 
-import styles from "./CompilerOpts.module.css"
-import { useCompilersForPlatform } from "./compilers"
-import PresetSelect from "./PresetSelect"
+import styles from "./CompilerOpts.module.css";
+import { useCompilersForPlatform } from "./compilers";
+import PresetSelect from "./PresetSelect";
 
-const NO_TRANSLATION = "NO_TRANSLATION"
+const NO_TRANSLATION = "NO_TRANSLATION";
 
 interface IOptsContext {
-    checkFlag(flag: string): boolean
-    setFlag(flag: string, value: boolean): void
-    setFlags(edits: { flag: string, value: boolean }[]): void
+    checkFlag(flag: string): boolean;
+    setFlag(flag: string, value: boolean): void;
+    setFlags(edits: { flag: string; value: boolean }[]): void;
 }
 
-const OptsContext = createContext<IOptsContext>(undefined)
+const OptsContext = createContext<IOptsContext>(undefined);
 
-type CheckboxProps = { flag: string, description: string }
+type CheckboxProps = { flag: string; description: string };
 
 function FlagCheckbox({ flag, description }: CheckboxProps) {
-    const { checkFlag, setFlag } = useContext(OptsContext)
+    const { checkFlag, setFlag } = useContext(OptsContext);
 
-    const isChecked = checkFlag(flag)
+    const isChecked = checkFlag(flag);
 
-    return <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
-        <input type="checkbox" checked={isChecked} onChange={() => setFlag(flag, !isChecked)} />
-        <label>{flag}</label>
-        <span className={styles.flagDescription}>{description}</span>
-    </div>
+    return (
+        <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
+            <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => setFlag(flag, !isChecked)}
+            />
+            <label>{flag}</label>
+            <span className={styles.flagDescription}>{description}</span>
+        </div>
+    );
 }
 
 function DiffCheckbox({ flag, description }: CheckboxProps) {
-    const { checkFlag, setFlag } = useContext(OptsContext)
+    const { checkFlag, setFlag } = useContext(OptsContext);
 
-    const isChecked = checkFlag(flag)
+    const isChecked = checkFlag(flag);
 
-    return <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
-        <input type="checkbox" checked={isChecked} onChange={() => setFlag(flag, !isChecked)} />
-        <label>{description}</label>
-    </div>
+    return (
+        <div className={styles.flag} onClick={() => setFlag(flag, !isChecked)}>
+            <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => setFlag(flag, !isChecked)}
+            />
+            <label>{description}</label>
+        </div>
+    );
 }
 
-type FlagSetProps = { name: string, children: ReactElement<FlagOptionProps>[], value: string };
+type FlagSetProps = {
+    name: string;
+    children: ReactElement<FlagOptionProps>[];
+    value: string;
+};
 
 function FlagSet({ name, children, value }: FlagSetProps) {
-    const { setFlag } = useContext(OptsContext)
+    const { setFlag } = useContext(OptsContext);
 
-    return <div className={styles.flagSet}>
-        <div className={styles.flagSetName}>{name}</div>
-        <Select
-            onChange={event => {
-                for (const child of children) {
-                    setFlag(child.props.flag, false)
-                }
+    return (
+        <div className={styles.flagSet}>
+            <div className={styles.flagSetName}>{name}</div>
+            <Select
+                onChange={(event) => {
+                    for (const child of children) {
+                        setFlag(child.props.flag, false);
+                    }
 
-                setFlag((event.target as HTMLSelectElement).value, true)
-            }}
-            value={value}
-        >
-            {children}
-        </Select>
-    </div>
+                    setFlag((event.target as HTMLSelectElement).value, true);
+                }}
+                value={value}
+            >
+                {children}
+            </Select>
+        </div>
+    );
 }
 
 function DiffFlagSet({ name, children, value }: FlagSetProps) {
-    const { setFlags } = useContext(OptsContext)
+    const { setFlags } = useContext(OptsContext);
 
-    return <div className={styles.flagSet}>
-        <div className={styles.flagSetName}>{name}</div>
-        <Select
-            onChange={event => {
-                const trueFlag = (event.target as HTMLSelectElement).value
+    return (
+        <div className={styles.flagSet}>
+            <div className={styles.flagSetName}>{name}</div>
+            <Select
+                onChange={(event) => {
+                    const trueFlag = (event.target as HTMLSelectElement).value;
 
-                const edits = children.map(child => {
-                    return { flag: child.props.flag, value: child.props.flag === trueFlag }
-                })
+                    const edits = children.map((child) => {
+                        return {
+                            flag: child.props.flag,
+                            value: child.props.flag === trueFlag,
+                        };
+                    });
 
-                setFlags(edits)
-            }}
-            value={value}
-        >
-            {children}
-        </Select>
-    </div>
+                    setFlags(edits);
+                }}
+                value={value}
+            >
+                {children}
+            </Select>
+        </div>
+    );
 }
 
-type FlagOptionProps = { flag: string, description?: string };
+type FlagOptionProps = { flag: string; description?: string };
 
 function FlagOption({ flag, description }: FlagOptionProps) {
-    return <option value={flag}>
-        {flag} {description && description !== NO_TRANSLATION && `(${description})`}
-    </option>
+    return (
+        <option value={flag}>
+            {flag}{" "}
+            {description &&
+                description !== NO_TRANSLATION &&
+                `(${description})`}
+        </option>
+    );
 }
 
 function DiffFlagOption({ flag, description }: FlagOptionProps) {
-    return <option value={flag}>
-        {description || flag}
-    </option>
+    return <option value={flag}>{description || flag}</option>;
 }
 
 interface FlagsProps {
-    schema: api.Flag[]
+    schema: api.Flag[];
 }
 
 function Flags({ schema }: FlagsProps) {
-    const compilersTranslation = getTranslation("compilers")
-    const { checkFlag } = useContext(OptsContext)
+    const compilersTranslation = getTranslation("compilers");
+    const { checkFlag } = useContext(OptsContext);
 
-    return <>
-        {schema.map(flag => {
-            if (flag.type === "checkbox") {
-                return <FlagCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
-            } else if (flag.type === "flagset") {
-                const selectedFlag = flag.flags.filter(checkFlag)[0] || "---"
-                const flagOptions = flag.flags.map(f => <FlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
-                } />)
+    return (
+        <>
+            {schema.map((flag) => {
+                if (flag.type === "checkbox") {
+                    return (
+                        <FlagCheckbox
+                            key={flag.id}
+                            flag={flag.flag}
+                            description={compilersTranslation.t(flag.id)}
+                        />
+                    );
+                } else if (flag.type === "flagset") {
+                    const selectedFlag =
+                        flag.flags.filter(checkFlag)[0] || "---";
+                    const flagOptions = flag.flags.map((f) => (
+                        <FlagOption
+                            key={f}
+                            flag={f}
+                            description={compilersTranslation.tWithDefault(
+                                `${flag.id}.${f}`,
+                                NO_TRANSLATION,
+                            )}
+                        />
+                    ));
 
-                return <FlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
-                    {[<option value="" key={"__NULL__"}>{"---"}</option>, ...flagOptions]}
-                </FlagSet>
-            }
-        })}
-    </>
+                    return (
+                        <FlagSet
+                            key={flag.id}
+                            name={compilersTranslation.t(flag.id)}
+                            value={selectedFlag}
+                        >
+                            {[
+                                <option value="" key={"__NULL__"}>
+                                    {"---"}
+                                </option>,
+                                ...flagOptions,
+                            ]}
+                        </FlagSet>
+                    );
+                }
+            })}
+        </>
+    );
 }
 
 function DiffFlags({ schema }: FlagsProps) {
-    const compilersTranslation = getTranslation("compilers")
-    const { checkFlag } = useContext(OptsContext)
+    const compilersTranslation = getTranslation("compilers");
+    const { checkFlag } = useContext(OptsContext);
 
-    return <>
-        {schema.map(flag => {
-            if (flag.type === "checkbox") {
-                return <DiffCheckbox key={flag.id} flag={flag.flag} description={compilersTranslation.t(flag.id)} />
-            } else if (flag.type === "flagset") {
-                const selectedFlag = flag.flags.filter(checkFlag)[0] || flag.flags[0]
-                const flagOptions = flag.flags.map(f => <DiffFlagOption key={f} flag={f} description={
-                    compilersTranslation.tWithDefault(`${flag.id}.${f}`, NO_TRANSLATION)
-                } />)
+    return (
+        <>
+            {schema.map((flag) => {
+                if (flag.type === "checkbox") {
+                    return (
+                        <DiffCheckbox
+                            key={flag.id}
+                            flag={flag.flag}
+                            description={compilersTranslation.t(flag.id)}
+                        />
+                    );
+                } else if (flag.type === "flagset") {
+                    const selectedFlag =
+                        flag.flags.filter(checkFlag)[0] || flag.flags[0];
+                    const flagOptions = flag.flags.map((f) => (
+                        <DiffFlagOption
+                            key={f}
+                            flag={f}
+                            description={compilersTranslation.tWithDefault(
+                                `${flag.id}.${f}`,
+                                NO_TRANSLATION,
+                            )}
+                        />
+                    ));
 
-                return <DiffFlagSet key={flag.id} name={compilersTranslation.t(flag.id)} value={selectedFlag}>
-                    {flagOptions}
-                </DiffFlagSet>
-            }
-        })}
-    </>
+                    return (
+                        <DiffFlagSet
+                            key={flag.id}
+                            name={compilersTranslation.t(flag.id)}
+                            value={selectedFlag}
+                        >
+                            {flagOptions}
+                        </DiffFlagSet>
+                    );
+                }
+            })}
+        </>
+    );
 }
 
 export type CompilerOptsT = {
-    compiler?: string
-    compiler_flags?: string
-    diff_flags?: string[]
-    preset?: number
-    libraries?: Library[]
-}
+    compiler?: string;
+    compiler_flags?: string;
+    diff_flags?: string[];
+    preset?: number;
+    libraries?: Library[];
+};
 
 export type Props = {
-    platform?: string
-    value: CompilerOptsT
-    onChange: (value: CompilerOptsT) => void
+    platform?: string;
+    value: CompilerOptsT;
+    onChange: (value: CompilerOptsT) => void;
 
-    diffLabel: string
-    onDiffLabelChange: (diffLabel: string) => void
+    diffLabel: string;
+    onDiffLabelChange: (diffLabel: string) => void;
 
-    matchOverride: boolean
-    onMatchOverrideChange: (matchOverride: boolean) => void
-}
+    matchOverride: boolean;
+    onMatchOverrideChange: (matchOverride: boolean) => void;
+};
 
-export default function CompilerOpts({ platform, value, onChange, diffLabel, onDiffLabelChange, matchOverride, onMatchOverrideChange }: Props) {
-    const compiler = value.compiler
-    let opts = value.compiler_flags
-    const diff_opts = value.diff_flags || []
+export default function CompilerOpts({
+    platform,
+    value,
+    onChange,
+    diffLabel,
+    onDiffLabelChange,
+    matchOverride,
+    onMatchOverrideChange,
+}: Props) {
+    const compiler = value.compiler;
+    let opts = value.compiler_flags;
+    const diff_opts = value.diff_flags || [];
 
     const setCompiler = (compiler: string) => {
         onChange({
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-        })
-    }
+        });
+    };
 
     const setOpts = (opts: string) => {
         onChange({
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-        })
-    }
+        });
+    };
 
     const setDiffOpts = (diff_opts: string[]) => {
         onChange({
             compiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
-        })
-    }
+        });
+    };
 
     const setPreset = (preset: api.Preset) => {
         if (preset) {
@@ -214,254 +303,342 @@ export default function CompilerOpts({ platform, value, onChange, diffLabel, onD
                 diff_flags: preset.diff_flags,
                 libraries: preset.libraries,
                 preset: preset.id,
-            })
+            });
         } else {
             // "Custom" preset selected
             onChange({
                 preset: null,
-            })
+            });
         }
-    }
+    };
 
     const setLibraries = (libraries: Library[]) => {
         onChange({
             libraries,
-        })
-    }
+        });
+    };
 
     const optsEditorProvider = {
         checkFlag(flag: string) {
-            return (` ${opts} `).includes(` ${flag} `)
+            return ` ${opts} `.includes(` ${flag} `);
         },
 
         setFlag(flag: string, enable: boolean) {
             if (enable) {
-                opts = `${opts} ${flag}`
+                opts = `${opts} ${flag}`;
             } else {
-                opts = (` ${opts} `).replace(` ${flag} `, " ")
+                opts = ` ${opts} `.replace(` ${flag} `, " ");
             }
-            opts = opts.trim()
-            setOpts(opts)
+            opts = opts.trim();
+            setOpts(opts);
         },
 
-        setFlags(edits: { flag: string, value: boolean }[]) {
+        setFlags(edits: { flag: string; value: boolean }[]) {
             for (const { flag, value } of edits) {
-                optsEditorProvider.setFlag(flag, value)
+                optsEditorProvider.setFlag(flag, value);
             }
         },
-
-    }
+    };
 
     const diffOptsEditorProvider = {
         checkFlag(flag: string) {
-            return diff_opts.includes(flag)
+            return diff_opts.includes(flag);
         },
 
         setFlag(flag: string, enable: boolean) {
-            diffOptsEditorProvider.setFlags([{ flag, value: enable }])
+            diffOptsEditorProvider.setFlags([{ flag, value: enable }]);
         },
 
-        setFlags(edits: { flag: string, value: boolean }[]) {
-            const positiveEdits = edits.filter(o => o.value).map(o => o.flag)
-            const negativeEdits = edits.filter(o => !o.value).map(o => o.flag)
+        setFlags(edits: { flag: string; value: boolean }[]) {
+            const positiveEdits = edits
+                .filter((o) => o.value)
+                .map((o) => o.flag);
+            const negativeEdits = edits
+                .filter((o) => !o.value)
+                .map((o) => o.flag);
 
-            const negativeState = diff_opts.filter(o => !negativeEdits.includes(o))
+            const negativeState = diff_opts.filter(
+                (o) => !negativeEdits.includes(o),
+            );
 
-            setDiffOpts([...negativeState, ...positiveEdits])
+            setDiffOpts([...negativeState, ...positiveEdits]);
         },
-    }
+    };
 
-    return <div>
-        <section className={styles.header}>
-            <PlatformIcon platform={platform} size={32} />
-            <div className={styles.preset}>
-                Preset
-                <PresetSelect platform={platform} presetId={value.preset} setPreset={setPreset} />
-            </div>
-        </section>
-        <OptsContext.Provider value={optsEditorProvider}>
-            <section className={styles.section}>
-                <h3 className={styles.heading}>Compiler options</h3>
-                <OptsEditor platform={platform} compiler={compiler} setCompiler={setCompiler} opts={opts} setOpts={setOpts} />
+    return (
+        <div>
+            <section className={styles.header}>
+                <PlatformIcon platform={platform} size={32} />
+                <div className={styles.preset}>
+                    Preset
+                    <PresetSelect
+                        platform={platform}
+                        presetId={value.preset}
+                        setPreset={setPreset}
+                    />
+                </div>
             </section>
-        </OptsContext.Provider>
+            <OptsContext.Provider value={optsEditorProvider}>
+                <section className={styles.section}>
+                    <h3 className={styles.heading}>Compiler options</h3>
+                    <OptsEditor
+                        platform={platform}
+                        compiler={compiler}
+                        setCompiler={setCompiler}
+                        opts={opts}
+                        setOpts={setOpts}
+                    />
+                </section>
+            </OptsContext.Provider>
 
-        {value.libraries.length !== 0 && <section className={styles.section}>
-            <LibrariesEditor libraries={value.libraries} setLibraries={setLibraries} platform={platform} />
-        </section> }
+            {value.libraries.length !== 0 && (
+                <section className={styles.section}>
+                    <LibrariesEditor
+                        libraries={value.libraries}
+                        setLibraries={setLibraries}
+                        platform={platform}
+                    />
+                </section>
+            )}
 
-        <OptsContext.Provider value={diffOptsEditorProvider}>
+            <OptsContext.Provider value={diffOptsEditorProvider}>
+                <section className={styles.section}>
+                    <h3 className={styles.heading}>Diff options</h3>
+                    <DiffOptsEditor
+                        platform={platform}
+                        compiler={compiler}
+                        diffLabel={diffLabel}
+                        onDiffLabelChange={onDiffLabelChange}
+                    />
+                </section>
+            </OptsContext.Provider>
+
             <section className={styles.section}>
-                <h3 className={styles.heading}>Diff options</h3>
-                <DiffOptsEditor platform={platform} compiler={compiler} diffLabel={diffLabel} onDiffLabelChange={onDiffLabelChange} />
+                <h3 className={styles.heading}>Other options</h3>
+                <Checkbox
+                    checked={matchOverride}
+                    onChange={onMatchOverrideChange}
+                    label="Match override"
+                    description="If checked, this scratch will be considered matching (100%)"
+                />
             </section>
-        </OptsContext.Provider>
-
-        <section className={styles.section}>
-            <h3 className={styles.heading}>Other options</h3>
-            <Checkbox
-                checked={matchOverride}
-                onChange={onMatchOverrideChange}
-                label="Match override"
-                description="If checked, this scratch will be considered matching (100%)"
-            />
-        </section>
-    </div>
+        </div>
+    );
 }
 
-export function OptsEditor({ platform, compiler: compilerId, setCompiler, opts, setOpts }: {
-    platform?: string
-    compiler: string
-    setCompiler: (compiler: string) => void
-    opts: string
-    setOpts: (opts: string) => void
+export function OptsEditor({
+    platform,
+    compiler: compilerId,
+    setCompiler,
+    opts,
+    setOpts,
+}: {
+    platform?: string;
+    compiler: string;
+    setCompiler: (compiler: string) => void;
+    opts: string;
+    setOpts: (opts: string) => void;
 }) {
-    const compilersTranslation = getTranslation("compilers")
+    const compilersTranslation = getTranslation("compilers");
 
-    const compilers = useCompilersForPlatform(platform)
-    const compiler = compilers[compilerId]
+    const compilers = useCompilersForPlatform(platform);
+    const compiler = compilers[compilerId];
 
     if (!compiler) {
         // TODO: this is a bug -- we should just render like an empty state
-        console.warn("compiler not supported for platform", compilerId, platform)
-        setCompiler(Object.keys(compilers)[0]) // pick first compiler (ew)
+        console.warn(
+            "compiler not supported for platform",
+            compilerId,
+            platform,
+        );
+        setCompiler(Object.keys(compilers)[0]); // pick first compiler (ew)
     }
 
-    return <div>
-        <div className={styles.row}>
-            <Select
-                className={styles.compilerSelect}
-                onChange={e => setCompiler((e.target as HTMLSelectElement).value)}
-                value={compilerId}
-            >
-                {Object.keys(compilers).map(id => <option
-                    key={id}
-                    value={id}
+    return (
+        <div>
+            <div className={styles.row}>
+                <Select
+                    className={styles.compilerSelect}
+                    onChange={(e) =>
+                        setCompiler((e.target as HTMLSelectElement).value)
+                    }
+                    value={compilerId}
                 >
-                    {compilersTranslation.t(id)}
-                </option>)}
-            </Select>
+                    {Object.keys(compilers).map((id) => (
+                        <option key={id} value={id}>
+                            {compilersTranslation.t(id)}
+                        </option>
+                    ))}
+                </Select>
 
-            <input
-                type="text"
-                className={styles.textbox}
-                value={opts}
-                placeholder="No arguments"
-                spellCheck={false}
-                onChange={e => setOpts((e.target as HTMLInputElement).value)}
-            />
-        </div>
+                <input
+                    type="text"
+                    className={styles.textbox}
+                    value={opts}
+                    placeholder="No arguments"
+                    spellCheck={false}
+                    onChange={(e) =>
+                        setOpts((e.target as HTMLInputElement).value)
+                    }
+                />
+            </div>
 
-        <div className={styles.flags}>
-            {(compilerId && compiler) ? <Flags schema={compiler.flags} /> : <div />}
+            <div className={styles.flags}>
+                {compilerId && compiler ? (
+                    <Flags schema={compiler.flags} />
+                ) : (
+                    <div />
+                )}
+            </div>
         </div>
-    </div>
+    );
 }
 
-export function DiffOptsEditor({ platform, compiler: compilerId, diffLabel, onDiffLabelChange }: {
-    platform?: string
-    compiler: string
-    diffLabel: string
-    onDiffLabelChange: (diffLabel: string) => void
+export function DiffOptsEditor({
+    platform,
+    compiler: compilerId,
+    diffLabel,
+    onDiffLabelChange,
+}: {
+    platform?: string;
+    compiler: string;
+    diffLabel: string;
+    onDiffLabelChange: (diffLabel: string) => void;
 }) {
-    const compilers = useCompilersForPlatform(platform)
-    const compiler = compilers[compilerId]
+    const compilers = useCompilersForPlatform(platform);
+    const compiler = compilers[compilerId];
 
-    return <div>
-        <div className={styles.diffLabel}>
-            <label>Diff label</label>
-            <input
-                type="text"
-                className={styles.textbox}
-                value={diffLabel}
-                placeholder="Top of file"
-                spellCheck={false}
-                onChange={e => onDiffLabelChange(e.target.value)}
-            />
+    return (
+        <div>
+            <div className={styles.diffLabel}>
+                <label>Diff label</label>
+                <input
+                    type="text"
+                    className={styles.textbox}
+                    value={diffLabel}
+                    placeholder="Top of file"
+                    spellCheck={false}
+                    onChange={(e) => onDiffLabelChange(e.target.value)}
+                />
+            </div>
+            <div className={styles.diffFlags}>
+                {compilerId && compiler ? (
+                    <DiffFlags schema={compiler.diff_flags} />
+                ) : (
+                    <div />
+                )}
+            </div>
         </div>
-        <div className={styles.diffFlags}>
-            {(compilerId && compiler) ? <DiffFlags schema={compiler.diff_flags} /> : <div />}
-        </div>
-    </div>
+    );
 }
 
-export function LibrariesEditor({ libraries, setLibraries, platform }: {
-    libraries: Library[]
-    setLibraries: (libraries: Library[]) => void
-    platform: string
+export function LibrariesEditor({
+    libraries,
+    setLibraries,
+    platform,
+}: {
+    libraries: Library[];
+    setLibraries: (libraries: Library[]) => void;
+    platform: string;
 }) {
-    const supportedLibraries = api.useLibraries(platform)
-    const librariesTranslations = getTranslation("libraries")
+    const supportedLibraries = api.useLibraries(platform);
+    const librariesTranslations = getTranslation("libraries");
 
     const libraryVersions = (scratchlib: api.Library) => {
-        const lib = supportedLibraries.find(lib => lib.name === scratchlib.name)
+        const lib = supportedLibraries.find(
+            (lib) => lib.name === scratchlib.name,
+        );
         if (lib != null) {
-            return Object.fromEntries(lib.supported_versions.map(v => [v, v]))
+            return Object.fromEntries(
+                lib.supported_versions.map((v) => [v, v]),
+            );
         } else {
-            return { [scratchlib.version]: scratchlib.version }
+            return { [scratchlib.version]: scratchlib.version };
         }
-    }
+    };
 
     const addLibrary = (libName: string) => {
-        const lib = supportedLibraries.find(lib => lib.name === libName)
+        const lib = supportedLibraries.find((lib) => lib.name === libName);
         if (lib != null) {
-            return setLibraryVersion(libName, lib.supported_versions[0])
+            return setLibraryVersion(libName, lib.supported_versions[0]);
         }
-    }
+    };
     const setLibraryVersion = (libName: string, ver: string) => {
         // clone the libraries
-        const libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
+        const libs: api.Library[] = JSON.parse(JSON.stringify(libraries));
         // Check if the library is already enabled, if so return it
-        const scratchlib = libs.find(scratchlib => scratchlib.name === libName)
+        const scratchlib = libs.find(
+            (scratchlib) => scratchlib.name === libName,
+        );
         if (scratchlib != null) {
             // If it is, set the version
-            scratchlib.version = ver
+            scratchlib.version = ver;
         } else {
             // If it isn't, add the library to the list
-            libs.push({ name: libName, version: ver })
+            libs.push({ name: libName, version: ver });
         }
-        setLibraries(libs)
-    }
+        setLibraries(libs);
+    };
     const removeLibrary = (libName: string) => {
         // clone the libraries
-        let libs: api.Library[] = JSON.parse(JSON.stringify(libraries))
+        let libs: api.Library[] = JSON.parse(JSON.stringify(libraries));
         // Only keep the libs whose name are not libName
-        libs = libs.filter(lib => lib.name !== libName)
-        setLibraries(libs)
-    }
+        libs = libs.filter((lib) => lib.name !== libName);
+        setLibraries(libs);
+    };
 
     const librariesSelectOptions = supportedLibraries
         // Filter out libraries that are already in the scratch
-        .filter(lib => !libraries.some(scratchlib => scratchlib.name === lib.name))
+        .filter(
+            (lib) =>
+                !libraries.some((scratchlib) => scratchlib.name === lib.name),
+        )
         // Turn them into something the Select component accepts.
-        .map(lib => [lib.name, librariesTranslations.t(lib.name)])
+        .map((lib) => [lib.name, librariesTranslations.t(lib.name)]);
 
     // Prepend a null value to the selector.
-    const selectOptions = Object.fromEntries([["__NULL__", "---"], ...librariesSelectOptions])
+    const selectOptions = Object.fromEntries([
+        ["__NULL__", "---"],
+        ...librariesSelectOptions,
+    ]);
 
-    const scratchLibraryElements = libraries.map(lib => <Fragment key={lib.name}>
-        <label className={styles.libraryName}>{librariesTranslations.t(lib.name)}</label>
-        <Select2
-            value={lib.version}
-            onChange={value => setLibraryVersion(lib.name, value)}
-            options={libraryVersions(lib)} />
-        <button className={styles.deleteButton} onClick={() => removeLibrary(lib.name)}><TrashIcon />Remove library</button>
-    </Fragment>)
-
-    const [selectedLib, setSelectedLib] = useState("__NULL__")
-
-    return <>
-        <h3 className={styles.heading}>Libraries</h3>
-        <div className={styles.addLibraryRow}>
+    const scratchLibraryElements = libraries.map((lib) => (
+        <Fragment key={lib.name}>
+            <label className={styles.libraryName}>
+                {librariesTranslations.t(lib.name)}
+            </label>
             <Select2
-                value={selectedLib}
-                onChange={setSelectedLib}
-                options={selectOptions}
-                className={styles.librarySelect} />
-            <Button primary onClick={() => addLibrary(selectedLib)}>Add library</Button>
-        </div>
-        <div className={styles.librariesGrid}>
-            {scratchLibraryElements}
-        </div>
-    </>
+                value={lib.version}
+                onChange={(value) => setLibraryVersion(lib.name, value)}
+                options={libraryVersions(lib)}
+            />
+            <button
+                className={styles.deleteButton}
+                onClick={() => removeLibrary(lib.name)}
+            >
+                <TrashIcon />
+                Remove library
+            </button>
+        </Fragment>
+    ));
+
+    const [selectedLib, setSelectedLib] = useState("__NULL__");
+
+    return (
+        <>
+            <h3 className={styles.heading}>Libraries</h3>
+            <div className={styles.addLibraryRow}>
+                <Select2
+                    value={selectedLib}
+                    onChange={setSelectedLib}
+                    options={selectOptions}
+                    className={styles.librarySelect}
+                />
+                <Button primary onClick={() => addLibrary(selectedLib)}>
+                    Add library
+                </Button>
+            </div>
+            <div className={styles.librariesGrid}>{scratchLibraryElements}</div>
+        </>
+    );
 }
