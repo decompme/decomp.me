@@ -1,13 +1,13 @@
 export function isServer(): boolean {
-    return typeof window === "undefined"
+    return typeof window === "undefined";
 }
 
 export function getUserAgent(): string {
     if (isServer()) {
         // TODO - fix this
-        throw Error("getUserAgent() called on server")
+        throw Error("getUserAgent() called on server");
     } else {
-        return navigator.userAgent
+        return navigator.userAgent;
     }
 }
 
@@ -16,9 +16,9 @@ export function isMacOS(): boolean {
     // @ts-ignore
     if (!isServer() && navigator.userAgentData) {
         // @ts-ignore
-        return navigator.userAgentData.platform == "macOS"
+        return navigator.userAgentData.platform === "macOS";
     }
 
     // Fall back to user-agent sniffing
-    return getUserAgent().includes("Mac OS X")
+    return getUserAgent().includes("Mac OS X");
 }
