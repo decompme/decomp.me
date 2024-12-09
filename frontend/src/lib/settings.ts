@@ -1,8 +1,8 @@
 import createPersistedState from "use-persisted-state"
 
-import { Theme } from "@/components/ThemePicker"
+import type { Theme } from "@/components/ThemePicker"
 
-import { ColorScheme } from "./codemirror/color-scheme"
+import type { ColorScheme } from "./codemirror/color-scheme"
 
 const theme = createPersistedState<Theme>("theme")
 const autoRecompile = createPersistedState<boolean>("autoRecompile")

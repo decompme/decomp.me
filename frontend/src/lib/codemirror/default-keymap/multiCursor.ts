@@ -1,5 +1,5 @@
 import { EditorSelection } from "@codemirror/state"
-import { Command } from "@codemirror/view"
+import type { Command } from "@codemirror/view"
 
 const createAddCursor =
   (direction: "up" | "down"): Command =>

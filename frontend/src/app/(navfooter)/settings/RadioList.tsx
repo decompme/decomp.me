@@ -1,4 +1,4 @@
-import { ReactNode, useId } from "react"
+import { type ReactNode, useId } from "react"
 
 function RadioButton({ name, value, checked, onChange, option }: { name: string, value: string, checked: boolean, onChange: (value: string) => void, option: Option }) {
     const id = useId()
@@ -16,7 +16,7 @@ function RadioButton({ name, value, checked, onChange, option }: { name: string,
         </div>
         <div className="grow">
             <label htmlFor={id} className="select-none font-semibold">{option.label}</label>
-            {option.description && <div className="text-sm text-gray-11">{option.description}</div>}
+            {option.description && <div className="text-gray-11 text-sm">{option.description}</div>}
             {option.children && <div className="pt-3">
                 {option.children}
             </div>}

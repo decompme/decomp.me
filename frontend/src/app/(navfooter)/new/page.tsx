@@ -11,7 +11,7 @@ export default async function NewScratchPage() {
     const compilers = await get("/compiler")
 
     return <main>
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">Start a new scratch</h1>
+        <h1 className="font-semibold text-2xl text-gray-12 tracking-tight md:text-3xl">Start a new scratch</h1>
         <p className="max-w-prose py-3 leading-snug">{DESCRIPTION}</p>
         <NewScratchForm serverCompilers={compilers} />
     </main>

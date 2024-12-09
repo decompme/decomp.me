@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useState } from "react"
+import { type ReactNode, useState } from "react"
 
 import Link from "next/link"
 
@@ -45,7 +45,7 @@ export default function ScratchList({ title, url, className, item, emptyButtonLa
     return (
         <>
             <div className="flex justify-between pb-2">
-                <h2 className="text-lg font-medium tracking-tight">{title}</h2>
+                <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 {isSortable && <Sort sortMode={sortMode} setSortMode={setSortBy} />}
             </div>
             <ul className={classNames(styles.list, "rounded-md border-gray-6 text-sm", className)}>
@@ -83,7 +83,7 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
 
 export function ScratchItem({ scratch, children }: { scratch: api.TerseScratch, children?: ReactNode }) {
     const compilersTranslation = getTranslation("compilers")
-    const compilerName = compilersTranslation.t(scratch.compiler as any)
+    const compilerName = compilersTranslation.t(scratch.compiler)
     const matchPercentString = getMatchPercentString(scratch)
     const preset = api.usePreset(scratch.preset)
     const presetName = preset?.name

@@ -36,15 +36,14 @@ function makeCssVariables(suffix = "") {
     return Object.keys(COLOR_NAME_MAP).reduce((acc, unmappedColorName) => {
         const colorName = COLOR_NAME_MAP[unmappedColorName]
         const colors = radixColors[colorName + suffix]
-        const obj = {}
 
         for (let i = 1; i <= 12; i++) {
             const key = `${colorName}${i}`
             const color = extractHslComponents(colors[key])
-            obj[`--color-${key}`] = color
+            acc[`--color-${key}`] = color
         }
 
-        return { ...acc, ...obj }
+        return acc
     }, {})
 }
 

@@ -8,7 +8,7 @@ export default function NotFound() {
         <div>
             <div className="flex items-center justify-center gap-8">
                 <Frog className="size-16 saturate-0" />
-                <h1 className="text-xl font-medium lg:text-3xl">
+                <h1 className="font-medium text-xl lg:text-3xl">
                     <span className="pr-8 font-normal">404</span>
                     <span className="text-gray-12">frog not found</span>
                 </h1>

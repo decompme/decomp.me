@@ -63,7 +63,7 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
     }
 
     try {
-        if (response.status == 502) {
+        if (response.status === 502) {
             // We've received a "Gateway Unavailable" message from nginx.
             // The backend's down.
             throw new RequestFailedError("Backend gateway unavailable", url)
@@ -73,7 +73,7 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
             throw new ResponseError(response, await response.json())
         }
 
-        if (response.status == 204) {
+        if (response.status === 204) {
             return null
         }
 

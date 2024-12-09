@@ -2,7 +2,7 @@
 
 import { useThisUser, isAnonUser } from "@/lib/api"
 
-import ScratchList, { Props as ScratchListProps } from "./ScratchList"
+import ScratchList, { type Props as ScratchListProps } from "./ScratchList"
 
 export type Props = Omit<ScratchListProps, "url">
 
