@@ -1,40 +1,42 @@
-"use client"
+"use client";
 
-import { Component, type ReactNode } from "react"
+import { Component, type ReactNode } from "react";
 
 interface State {
-    error?: unknown
+    error?: unknown;
 }
 
 export interface Props {
-    children?: ReactNode
-    forceError?: boolean
-    fallback?: (state: State) => ReactNode
-    onError?: (error: unknown, errorInfo: any) => void
+    children?: ReactNode;
+    forceError?: boolean;
+    fallback?: (state: State) => ReactNode;
+    onError?: (error: unknown, errorInfo: any) => void;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
-        super(props)
-        this.state = { error: undefined }
+        super(props);
+        this.state = { error: undefined };
     }
 
     static getDerivedStateFromError(error: unknown) {
         // Update state so the next render will show the fallback UI.
-        return { error }
+        return { error };
     }
 
     componentDidCatch(error: unknown, errorInfo: unknown) {
-        console.error("Error boundary caught an error:", error, errorInfo)
-        this.props.onError?.(error, errorInfo)
+        console.error("Error boundary caught an error:", error, errorInfo);
+        this.props.onError?.(error, errorInfo);
     }
 
     render() {
         if (this.state.error || this.props.forceError) {
-            const fallback = this.props.fallback ? this.props.fallback(this.state) : null
-            return fallback
+            const fallback = this.props.fallback
+                ? this.props.fallback(this.state)
+                : null;
+            return fallback;
         }
 
-        return this.props.children || null
+        return this.props.children || null;
     }
 }

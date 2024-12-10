@@ -1,19 +1,20 @@
-import * as api from "@/lib/api"
+import * as api from "@/lib/api";
 
-export function useCompilersForPlatform(platform?: string, compilers?: Record<string, api.Compiler>): Record<string, api.Compiler> {
-    if (!compilers)
-        compilers = api.useCompilers()
+export function useCompilersForPlatform(
+    platform?: string,
+    compilers?: Record<string, api.Compiler>,
+): Record<string, api.Compiler> {
+    if (!compilers) compilers = api.useCompilers();
 
     if (platform) {
-        const c: Record<string, api.Compiler> = {}
+        const c: Record<string, api.Compiler> = {};
 
         for (const [k, v] of Object.entries(compilers)) {
-            if (v.platform === platform)
-                c[k] = v
+            if (v.platform === platform) c[k] = v;
         }
 
-        return c
+        return c;
     } else {
-        return compilers
+        return compilers;
     }
 }

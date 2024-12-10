@@ -1,6 +1,6 @@
-import { useMemo } from "react"
+import { useMemo } from "react";
 
-import Nav from "@/components/Nav"
+import Nav from "@/components/Nav";
 
 const CODE = `#include "common.h"
 
@@ -27,7 +27,7 @@ void step_game_loop(void) {
             return;
         }
     }
-}`
+}`;
 
 const DIFF = ` 0:    stwu    r1,-0x20(r1)
  4:    mflr    r0
@@ -61,90 +61,100 @@ const DIFF = ` 0:    stwu    r1,-0x20(r1)
 74: ~> lwz     r0,0x24(r1)
 78:    mtlr    r0
 7c:    addi    r1,r1,0x20
-80:    blr`
+80:    blr`;
 
 function TextSkeleton({ text }: { text: string }) {
-    const lines = useMemo(() => (
-        text
-            .split("\n")
-            .map(line => {
+    const lines = useMemo(
+        () =>
+            text.split("\n").map((line) => {
                 // Convert line into a sequence of [word len, space len] pairs.
                 // e.g. "xxxx  xx xxx x" -> [[4, 2], [2, 1], [3, 1], [1, 0]]
-                const pairs = []
+                const pairs = [];
 
-                let state: "word" | "space" = "word"
-                let wordLen = 0
-                let spaceLen = 0
+                let state: "word" | "space" = "word";
+                let wordLen = 0;
+                let spaceLen = 0;
                 for (const char of line) {
                     if (char === " ") {
                         if (state === "word") {
-                            pairs.push([wordLen, spaceLen])
-                            wordLen = 0
-                            spaceLen = 0
+                            pairs.push([wordLen, spaceLen]);
+                            wordLen = 0;
+                            spaceLen = 0;
                         }
 
-                        state = "space"
-                        spaceLen++
-                    } else { // non-space
+                        state = "space";
+                        spaceLen++;
+                    } else {
+                        // non-space
                         if (state === "space") {
-                            pairs.push([wordLen, spaceLen])
-                            wordLen = 0
-                            spaceLen = 0
+                            pairs.push([wordLen, spaceLen]);
+                            wordLen = 0;
+                            spaceLen = 0;
                         }
 
-                        state = "word"
-                        wordLen++
+                        state = "word";
+                        wordLen++;
                     }
                 }
-                pairs.push([wordLen, spaceLen])
+                pairs.push([wordLen, spaceLen]);
 
-                return pairs.filter(([wordLen, spaceLen]) => wordLen > 0 || spaceLen > 0)
-            })
-    ), [text])
+                return pairs.filter(
+                    ([wordLen, spaceLen]) => wordLen > 0 || spaceLen > 0,
+                );
+            }),
+        [text],
+    );
 
-    return <div className="flex flex-col gap-1">
-        {lines.map((pairs, i) =>
-            <div key={i} className="flex h-5">
-                {pairs.map(([wordLen, spaceLen], j) =>
-                    <div
-                        key={j}
-                        className="h-full bg-gray-6"
-                        style={{
-                            width: `${wordLen}ch`,
-                            marginRight: `${spaceLen}ch`,
-                        }}
-                    />
-                )}
-            </div>
-        )}
-    </div>
+    return (
+        <div className="flex flex-col gap-1">
+            {lines.map((pairs, i) => (
+                <div key={i} className="flex h-5">
+                    {pairs.map(([wordLen, spaceLen], j) => (
+                        <div
+                            key={j}
+                            className="h-full bg-gray-6"
+                            style={{
+                                width: `${wordLen}ch`,
+                                marginRight: `${spaceLen}ch`,
+                            }}
+                        />
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
 }
 
 export default function LoadingSkeleton() {
-    return <div className="relative flex size-full animate-pulse flex-col overflow-hidden">
-        <Nav>
-            <div className="ml-1 flex w-full items-center gap-1.5">
-                <div className="size-5 rounded-full bg-gray-6" />
-                <div className="h-5 w-16 bg-gray-6" />
-                <div className="h-5 w-48 bg-gray-6" />
+    return (
+        <div className="relative flex size-full animate-pulse flex-col overflow-hidden">
+            <Nav>
+                <div className="ml-1 flex w-full items-center gap-1.5">
+                    <div className="size-5 rounded-full bg-gray-6" />
+                    <div className="h-5 w-16 bg-gray-6" />
+                    <div className="h-5 w-48 bg-gray-6" />
+                </div>
+            </Nav>
+            <div className="flex grow border-gray-6 border-t">
+                <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
+                    <TextSkeleton text={CODE} />
+                </div>
+                <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
+                    <TextSkeleton text={DIFF} />
+                </div>
             </div>
-        </Nav>
-        <div className="flex grow border-gray-6 border-t">
-            <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
-                <TextSkeleton text={CODE} />
-            </div>
-            <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
-                <TextSkeleton text={DIFF} />
-            </div>
-        </div>
 
-        <noscript>
-            <div role="status" className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 font-medium">
-                JavaScript is required to edit scratches
-            </div>
-        </noscript>
-        <span role="status" className="sr-only">
-            Loading editor...
-        </span>
-    </div>
+            <noscript>
+                <div
+                    role="status"
+                    className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 font-medium"
+                >
+                    JavaScript is required to edit scratches
+                </div>
+            </noscript>
+            <span role="status" className="sr-only">
+                Loading editor...
+            </span>
+        </div>
+    );
 }

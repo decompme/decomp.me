@@ -1,6 +1,6 @@
-import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList"
-import type { User } from "@/lib/api"
-import { userUrl } from "@/lib/api/urls"
+import ScratchList, { ScratchItemNoOwner } from "@/components/ScratchList";
+import type { User } from "@/lib/api";
+import { userUrl } from "@/lib/api/urls";
 
 export default function ScratchesTab({ user }: { user: User }) {
     return (
@@ -11,5 +11,5 @@ export default function ScratchesTab({ user }: { user: User }) {
                 isSortable={true}
             />
         </section>
-    )
+    );
 }

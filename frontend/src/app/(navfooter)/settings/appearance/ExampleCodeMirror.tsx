@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import CodeMirror from "@/components/Editor/CodeMirror"
-import basicSetup from "@/lib/codemirror/basic-setup"
-import { cpp } from "@/lib/codemirror/cpp"
+import CodeMirror from "@/components/Editor/CodeMirror";
+import basicSetup from "@/lib/codemirror/basic-setup";
+import { cpp } from "@/lib/codemirror/cpp";
 
-import styles from "./ExampleCodeMirror.module.scss"
+import styles from "./ExampleCodeMirror.module.scss";
 
 const EXAMPLE_C_CODE = `#include "common.h"
 
@@ -110,14 +110,16 @@ void step_game_loop(void) {
 
     rand_int(1);
 }
-`
+`;
 
 export default function ExampleCodeMirror() {
-    return <div className={styles.container}>
-        <CodeMirror
-            value={EXAMPLE_C_CODE}
-            valueVersion={0}
-            extensions={[basicSetup, cpp()]}
-        />
-    </div>
+    return (
+        <div className={styles.container}>
+            <CodeMirror
+                value={EXAMPLE_C_CODE}
+                valueVersion={0}
+                extensions={[basicSetup, cpp()]}
+            />
+        </div>
+    );
 }
