@@ -141,7 +141,7 @@ export default function EditorSettings() {
                     onChange={setVimModeEnabled}
                     label="Enable vim bindings"
                     description="Enable vim bindings in the scratch editor"
-                ></Checkbox>
+                />
             </Section>
             <Section title="Experiments">
                 <Checkbox
@@ -149,7 +149,7 @@ export default function EditorSettings() {
                     onChange={setObjdiffClientEnabled}
                     label="Enable objdiff in WebAssembly"
                     description="WARNING: For development use only. Runs objdiff locally for diffing. Platform support is limited, and certain features will be broken. Download size: ~3.5MB"
-                ></Checkbox>
+                />
             </Section>
         </>
     );
