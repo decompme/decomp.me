@@ -1,48 +1,54 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
+import { useEffect } from "react";
 
-import { applyColorScheme } from "@/lib/codemirror/color-scheme"
-import * as settings from "@/lib/settings"
+import { applyColorScheme } from "@/lib/codemirror/color-scheme";
+import * as settings from "@/lib/settings";
 
 export default function ThemeProvider() {
-    const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme()
+    const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme();
     useEffect(() => {
-        applyColorScheme(codeColorScheme)
-    }, [codeColorScheme])
+        applyColorScheme(codeColorScheme);
+    }, [codeColorScheme]);
 
-    const isSiteThemeDark = settings.useIsSiteThemeDark()
+    const isSiteThemeDark = settings.useIsSiteThemeDark();
     useEffect(() => {
         // Apply theme
         if (isSiteThemeDark) {
-            document.documentElement.classList.add("dark")
+            document.documentElement.classList.add("dark");
         } else {
-            document.documentElement.classList.remove("dark")
+            document.documentElement.classList.remove("dark");
         }
 
         // If using the default code color scheme (Frog), pick the variant that matches the site theme
-        setCodeColorScheme(current => {
+        setCodeColorScheme((current) => {
             if (current === "Frog Dark" || current === "Frog Light") {
-                return isSiteThemeDark ? "Frog Dark" : "Frog Light"
+                return isSiteThemeDark ? "Frog Dark" : "Frog Light";
             } else {
-                return current
+                return current;
             }
-        })
-    }, [isSiteThemeDark, setCodeColorScheme])
+        });
+    }, [isSiteThemeDark, setCodeColorScheme]);
 
-    const [monospaceFont] = settings.useMonospaceFont()
+    const [monospaceFont] = settings.useMonospaceFont();
     useEffect(() => {
-        document.body.style.removeProperty("--monospace")
+        document.body.style.removeProperty("--monospace");
         if (monospaceFont) {
-            document.body.style.setProperty("--monospace", `${monospaceFont}, monospace`)
+            document.body.style.setProperty(
+                "--monospace",
+                `${monospaceFont}, monospace`,
+            );
         }
-    }, [monospaceFont])
+    }, [monospaceFont]);
 
-    const [codeLineHeight] = settings.useCodeLineHeight()
+    const [codeLineHeight] = settings.useCodeLineHeight();
     useEffect(() => {
-        document.body.style.removeProperty("--code-line-height")
-        document.body.style.setProperty("--code-line-height", `${codeLineHeight}`)
-    }, [codeLineHeight])
+        document.body.style.removeProperty("--code-line-height");
+        document.body.style.setProperty(
+            "--code-line-height",
+            `${codeLineHeight}`,
+        );
+    }, [codeLineHeight]);
 
-    return <></>
+    return <></>;
 }

@@ -48,10 +48,5 @@
                 "useSortedClasses": "error"
             }
         }
-    },
-    "javascript": {
-        "formatter": {
-            "enabled": false
-        }
     }
 }

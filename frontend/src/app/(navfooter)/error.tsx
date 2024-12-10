@@ -1,7 +1,7 @@
 // Rexport app error page to include the layout
 
-"use client"
+"use client";
 
-import ErrorPage from "../error"
+import ErrorPage from "../error";
 
-export default ErrorPage
+export default ErrorPage;

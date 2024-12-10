@@ -1,3 +1,3 @@
-import { createContext } from "react"
+import { createContext } from "react";
 
-export const ScrollContext = createContext(null)
+export const ScrollContext = createContext(null);
