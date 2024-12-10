@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from "react"
 
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react"
-import { Allotment, AllotmentHandle } from "allotment"
+import { Allotment, type AllotmentHandle } from "allotment"
 import Ansi from "ansi-to-react"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { interdiff } from "@/lib/interdiff"
 import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings"
 
@@ -23,9 +23,9 @@ function getProblemState(compilation: api.Compilation): ProblemState {
 }
 
 export enum ProblemState {
-    NO_PROBLEMS,
-    WARNINGS,
-    ERRORS,
+    NO_PROBLEMS = 0,
+    WARNINGS = 1,
+    ERRORS = 2,
 }
 
 export type PerSaveObj = {
@@ -64,7 +64,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
 
     const prevDiffRef = useRef<api.DiffOutput | null>(null)
 
-    let usedBase
+    let usedBase: api.DiffOutput;
     if (threeWayDiffBase === ThreeWayDiffBase.SAVED) {
         usedBase = perSaveObj.diff ?? null
         prevDiffRef.current = null
@@ -90,7 +90,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
 
     const problemsCollapsedHeight = 37
     const problemsDefaultHeight = 320
-    const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState == ProblemState.NO_PROBLEMS)
+    const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(problemState === ProblemState.NO_PROBLEMS)
 
     return <div ref={container} className="size-full">
         <Allotment
@@ -108,7 +108,7 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
                     diff={diff || objdiffResult}
                     diffLabel={scratch.diff_label}
                     isCompiling={isCompiling}
-                    isCurrentOutdated={isCompilationOld || problemState == ProblemState.ERRORS}
+                    isCurrentOutdated={isCompilationOld || problemState === ProblemState.ERRORS}
                     threeWayDiffEnabled={threeWayDiffEnabled}
                     setThreeWayDiffEnabled={setThreeWayDiffEnabled}
                     threeWayDiffBase={threeWayDiffBase}
@@ -132,8 +132,8 @@ export default function CompilationPanel({ scratch, compilation, isCompiling, is
                                 ])
                             }}
                         >
-                            <span className="text-sm font-medium">
-                                {(problemState == ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
+                            <span className="font-medium text-sm">
+                                {(problemState === ProblemState.NO_PROBLEMS) ? "No problems" : "Problems"}
                             </span>
                             {isProblemsCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
                         </GhostButton>

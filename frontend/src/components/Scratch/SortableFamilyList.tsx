@@ -6,7 +6,7 @@ import classNames from "classnames"
 import useSWR from "swr"
 
 import { get } from "@/lib/api/request"
-import { TerseScratch } from "@/lib/api/types"
+import type { TerseScratch } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 
 import { getScoreAsFraction, getScoreText } from "../ScoreBadge"
@@ -14,7 +14,7 @@ import Sort, { SortMode, compareScratchScores, produceSortFunction } from "../So
 import UserLink from "../user/UserLink"
 
 function useFamily(scratch: TerseScratch) {
-    const { data: family } = useSWR<TerseScratch[]>(scratchUrl(scratch) + "/family", get, {
+    const { data: family } = useSWR<TerseScratch[]>(`${scratchUrl(scratch)}/family`, get, {
         suspense: true,
     })
 

@@ -22,16 +22,8 @@
         "rules": {
             "recommended": true,
             "style": {
-                "useImportType": "off",
-                "useTemplate": "off",
                 "noUselessElse": "off",
-                "noParameterAssign": "off",
-                "useNumberNamespace": "off",
-                "useDefaultParameterLast": "off",
-                "useEnumInitializers": "off",
-                "useSingleVarDeclarator": "off",
-                "useSelfClosingElements": "off",
-                "useNodejsImportProtocol": "off"
+                "noParameterAssign": "off"
             },
             "a11y": {
                 "useValidAnchor": "off",
@@ -44,25 +36,16 @@
             "suspicious": {
                 "noExplicitAny": "off",
                 "noArrayIndexKey": "off",
-                "noDoubleEquals": "off",
-                "noAssignInExpressions": "off",
-                "noConfusingVoidType": "off",
-                "noImplicitAnyLet": "off"
+                "noConfusingVoidType": "off"
             },
             "correctness": {
-                "useExhaustiveDependencies": "off",
-                "noUnreachable": "off",
-                "noUnnecessaryContinue": "off"
-            },
-            "complexity": {
-                "useLiteralKeys": "off",
-                "useOptionalChain": "off",
-                "noForEach": "off",
-                "noUselessFragments": "off"
+                "useExhaustiveDependencies": "off"
             },
             "performance": {
-                "noDelete": "off",
-                "noAccumulatingSpread": "off"
+                "noDelete": "off"
+            },
+            "nursery": {
+                "useSortedClasses": "error"
             }
         }
     },

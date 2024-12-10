@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react"
+import { createContext, type ReactNode, useCallback, useContext, useState } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -7,7 +7,7 @@ import classNames from "classnames"
 
 import ErrorBoundary from "./ErrorBoundary"
 import LoadingSpinner from "./loading.svg"
-import Shortcut, { Key, ShortcutCallback, useShortcut } from "./Shortcut"
+import Shortcut, { type Key, type ShortcutCallback, useShortcut } from "./Shortcut"
 import styles from "./VerticalMenu.module.scss"
 
 const MenuContext = createContext({

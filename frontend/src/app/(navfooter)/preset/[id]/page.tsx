@@ -1,11 +1,11 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import { notFound } from "next/navigation"
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import ScratchList, { ScratchItemPresetList } from "@/components/ScratchList"
 import { get } from "@/lib/api/request"
-import { Preset } from "@/lib/api/types"
+import type { Preset } from "@/lib/api/types"
 import getTranslation from "@/lib/i18n/translate"
 
 export async function generateMetadata({ params }: { params: { id: number } }): Promise<Metadata> {
@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: { params: { id: number } }): 
     }
 
     let description = "There "
-    description += preset.num_scratches == 1 ? "is " : "are "
-    description += preset.num_scratches == 0 ? "currently no " : `${preset.num_scratches.toLocaleString("en-US")} `
-    description += preset.num_scratches == 1 ? "scratch " : "scratches "
+    description += preset.num_scratches === 1 ? "is " : "are "
+    description += preset.num_scratches === 0 ? "currently no " : `${preset.num_scratches.toLocaleString("en-US")} `
+    description += preset.num_scratches === 1 ? "scratch " : "scratches "
     description += "that use this preset."
 
     return {
@@ -53,7 +53,7 @@ export default async function Page({ params }: { params: { id: number } }) {
     const compilerName = compilersTranslation.t(preset.compiler)
 
     return <main className="mx-auto w-full max-w-3xl p-4">
-        <div className="flex items-center gap-2 text-2xl font-medium">
+        <div className="flex items-center gap-2 font-medium text-2xl">
             <PlatformIcon platform={preset.platform} size={32} />
             <h1>
                 {preset.name}

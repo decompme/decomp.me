@@ -5,7 +5,7 @@ import Select from "../Select2"
 function presetsToOptions(presets: api.Preset[]) {
     const options: Record<string, string> = {}
 
-    options["Custom"] = "Custom"
+    options.Custom = "Custom"
 
     for (const preset of presets) {
         options[preset.name] = preset.name

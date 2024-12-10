@@ -24,7 +24,7 @@ export interface Props {
 export function PresetList({ url, className, item, emptyButtonLabel }: Props): JSX.Element {
     const { results, isLoading, hasNext, loadNext } = usePaginated<Preset>(url || "/preset")
     if (results.length === 0 && isLoading) {
-        return <div className={classNames("flex justify-center items-center gap-[0.5em] p-[1em] opacity-50", className)}>
+        return <div className={classNames("flex items-center justify-center gap-[0.5em] p-[1em] opacity-50", className)}>
             <LoadingSpinner width="1.5em" height="1.5em" />
             Just a moment...
         </div>

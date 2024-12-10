@@ -16,9 +16,9 @@ export type ShortcutCallback = (event: KeyboardEvent | MouseEvent) => void | Pro
 
 // In sort order (besides Shift on MacOS)
 export enum SpecialKey {
-    ALT_OPTION,
-    CTRL_COMMAND,
-    SHIFT,
+    ALT_OPTION = 0,
+    CTRL_COMMAND = 1,
+    SHIFT = 2,
 }
 
 export class KeyMap extends Map<Key, boolean> {

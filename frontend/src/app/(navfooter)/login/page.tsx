@@ -46,14 +46,14 @@ function Login() {
             })
         }
 
-        if (githubError == "access_denied") {
+        if (githubError === "access_denied") {
             setError(new Error("Please grant access to your GitHub account to sign in!"))
         }
     }, [code, router, mutate, next, error, githubError])
 
     return <main className="mx-auto flex max-w-prose items-center justify-center px-4 py-6 text-base leading-normal">
         {error ? <div>
-            <h1 className="text-3xl font-semibold">Error signing in</h1>
+            <h1 className="font-semibold text-3xl">Error signing in</h1>
             <p className="py-4">
                 The following error prevented you from signing in:
             </p>
@@ -64,7 +64,7 @@ function Login() {
                 You can try again by clicking the button below.
             </p>
             <GitHubLoginButton />
-        </div> : code ? <div className="flex items-center justify-center gap-4 py-8 text-2xl font-medium text-gray-12">
+        </div> : code ? <div className="flex items-center justify-center gap-4 py-8 font-medium text-2xl text-gray-12">
             <LoadingSpinner width={32} className="animate-spin" />
             Signing in...
         </div> : <div>

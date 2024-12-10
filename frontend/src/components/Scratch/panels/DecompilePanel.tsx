@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-import { EditorView } from "@codemirror/view"
+import type { EditorView } from "@codemirror/view"
 import { useDebounce } from "use-debounce"
 
 import CodeMirror from "@/components/Editor/CodeMirror"
@@ -26,7 +26,7 @@ export default function DecompilePanel({ scratch }: Props) {
     const url = scratchUrl(scratch)
 
     useEffect(() => {
-        api.post(url + "/decompile", {
+        api.post(`${url}/decompile`, {
             context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {
@@ -44,8 +44,7 @@ export default function DecompilePanel({ scratch }: Props) {
                 of the assembly changes.
             </p>
 
-            {typeof decompiledCode == "string" && <>
-                <CodeMirror
+            {typeof decompiledCode === "string" && <CodeMirror
                     className={styles.editor}
                     value={decompiledCode}
                     valueVersion={valueVersion}
@@ -55,8 +54,7 @@ export default function DecompilePanel({ scratch }: Props) {
                         cpp(),
                         compareExtension,
                     ]}
-                />
-            </>}
+                />}
             {isLoading && <Loading className={styles.loading} />}
         </section>
     </div>

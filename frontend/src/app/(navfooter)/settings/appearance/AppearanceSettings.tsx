@@ -45,7 +45,7 @@ export default function AppearanceSettings() {
                     value={monospaceFont ?? ""}
                     onChange={setMonospaceFont}
                     placeholder="ui-monospace"
-                    inputStyle={{ fontFamily: (monospaceFont ?? "ui-monospace") + ", monospace" }}
+                    inputStyle={{ fontFamily: `${monospaceFont ?? "ui-monospace"}, monospace` }}
                 />
             </div>
 

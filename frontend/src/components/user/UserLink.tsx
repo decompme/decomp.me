@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { isAnonUser, User, AnonymousUser } from "@/lib/api/types"
+import { isAnonUser, type User, type AnonymousUser } from "@/lib/api/types"
 
 import UserAvatar from "./UserAvatar"
 
@@ -18,7 +18,7 @@ export default function UserLink({ user, showUsername }: Props) {
 
     const inner = <>
         <UserAvatar user={user} className="mr-1 size-4 align-middle" />
-        {showUsername != false && <span>
+        {showUsername !== false && <span>
             {user.username}
         </span>}
     </>

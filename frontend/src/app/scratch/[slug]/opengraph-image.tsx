@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og"
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon"
 import { percentToString, calculateScorePercent } from "@/components/ScoreBadge"
 import { get } from "@/lib/api/request"
-import { Preset } from "@/lib/api/types"
+import type { Preset } from "@/lib/api/types"
 
 import CheckCircleFillIcon from "./assets/check-circle-fill.svg"
 import PurpleFrog from "./assets/purplefrog.svg"
@@ -12,7 +12,7 @@ import TrophyIcon from "./assets/trophy.svg"
 import XCircleFillIcon from "./assets/x-circle-fill.svg"
 import getScratchDetails from "./getScratchDetails"
 
-const truncateText = (text: string, length: number) => text.slice(0, length) + "..." + text.slice(-length, text.length)
+const truncateText = (text: string, length: number) => `${text.slice(0, length)}...${text.slice(-length, text.length)}`
 
 const IMAGE_WIDTH_PX = 1200
 const IMAGE_HEIGHT_PX = 400
@@ -112,8 +112,8 @@ export default async function ScratchOG({ params }: { params: { slug: string }})
             </div>
 
             <div tw="flex">
-                <div tw={`flex h-4 bg-purple-500 w-[${doneWidth}px]`}></div>
-                <div tw={`flex h-4 bg-purple-900 w-[${todoWidth}px]`}></div>
+                <div tw={`flex h-4 bg-purple-500 w-[${doneWidth}px]`} />
+                <div tw={`flex h-4 bg-purple-900 w-[${todoWidth}px]`} />
             </div>
         </div>,
         {

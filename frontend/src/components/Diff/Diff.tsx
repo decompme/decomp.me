@@ -1,14 +1,14 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { createContext, CSSProperties, forwardRef, HTMLAttributes, MutableRefObject, useRef, useState } from "react"
+import { createContext, type CSSProperties, forwardRef, type HTMLAttributes, type MutableRefObject, useRef, useState } from "react"
 
 import { VersionsIcon, CopyIcon } from "@primer/octicons-react"
-import { EditorView } from "codemirror"
-import { DiffResult } from "objdiff-wasm"
+import type { EditorView } from "codemirror"
+import type { DiffResult } from "objdiff-wasm"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { FixedSizeList } from "react-window"
 
-import * as api from "@/lib/api"
+import type * as api from "@/lib/api"
 import { useSize } from "@/lib/hooks"
 import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings"
 
@@ -56,7 +56,7 @@ const innerElementType = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEl
         ref={ref}
         style={{
             ...style,
-            height: `${parseFloat(style.height.toString()) + PADDING_TOP + PADDING_BOTTOM}px`,
+            height: `${Number.parseFloat(style.height.toString()) + PADDING_TOP + PADDING_BOTTOM}px`,
         }}
         {...rest}
     />
@@ -161,8 +161,8 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
 
     const container = useSize<HTMLDivElement>()
 
-    const [bar1Pos, setBar1Pos] = useState(NaN)
-    const [bar2Pos, setBar2Pos] = useState(NaN)
+    const [bar1Pos, setBar1Pos] = useState(Number.NaN)
+    const [bar2Pos, setBar2Pos] = useState(Number.NaN)
 
     const columnMinWidth = 100
     const clampedBar1Pos = Math.max(columnMinWidth, Math.min(container.width - columnMinWidth - (threeWayDiffEnabled ? columnMinWidth : 0), bar1Pos))
@@ -174,7 +174,7 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
         setBar1Pos(container.width / numSections)
         setBar2Pos(container.width / numSections * 2)
     }
-    const lastContainerWidthRef = useRef(NaN)
+    const lastContainerWidthRef = useRef(Number.NaN)
     if (lastContainerWidthRef.current !== container.width && container.width) {
         lastContainerWidthRef.current = container.width
         updateBarPositions(threeWayDiffEnabled)
@@ -195,7 +195,7 @@ export default function Diff({ diff, diffLabel, isCompiling, isCurrentOutdated, 
         ref={container.ref}
         className={styles.diff}
         style={{
-            "--diff-font-size": typeof fontSize == "number" ? `${fontSize}px` : "",
+            "--diff-font-size": typeof fontSize === "number" ? `${fontSize}px` : "",
             "--diff-left-width": `${clampedBar1Pos}px`,
             "--diff-right-width": `${container.width - clampedBar2Pos}px`,
             "--diff-current-filter": isCurrentOutdated ? "grayscale(25%) brightness(70%)" : "",

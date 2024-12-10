@@ -34,7 +34,7 @@ export default function ThemeProvider() {
     useEffect(() => {
         document.body.style.removeProperty("--monospace")
         if (monospaceFont) {
-            document.body.style.setProperty("--monospace", monospaceFont + ", monospace")
+            document.body.style.setProperty("--monospace", `${monospaceFont}, monospace`)
         }
     }, [monospaceFont])
 

@@ -12,7 +12,7 @@ import CodeMirror from "@/components/Editor/CodeMirror"
 import PlatformSelect from "@/components/PlatformSelect"
 import Select from "@/components/Select2"
 import * as api from "@/lib/api"
-import { Library } from "@/lib/api/types"
+import type { Library } from "@/lib/api/types"
 import { scratchUrl } from "@/lib/api/urls"
 import basicSetup from "@/lib/codemirror/basic-setup"
 import { cpp } from "@/lib/codemirror/cpp"
@@ -116,21 +116,21 @@ export default function NewScratchForm({ serverCompilers }: {
     // Load fields from localStorage
     useEffect(() => {
         try {
-            setLabel(localStorage["new_scratch_label"] ?? "")
-            setAsm(localStorage["new_scratch_asm"] ?? "")
-            setContext(localStorage["new_scratch_context"] ?? "")
-            const pid = parseInt(localStorage["new_scratch_presetId"])
+            setLabel(localStorage.new_scratch_label ?? "")
+            setAsm(localStorage.new_scratch_asm ?? "")
+            setContext(localStorage.new_scratch_context ?? "")
+            const pid = Number.parseInt(localStorage.new_scratch_presetId)
             if (!Number.isNaN(pid)) {
                 const preset = presets[pid]
                 if (preset) {
                     setPreset(preset)
                 }
             } else {
-                setPlatform(localStorage["new_scratch_platform"] ?? "")
-                setCompilerId(localStorage["new_scratch_compilerId"] ?? undefined)
-                setCompilerFlags(localStorage["new_scratch_compilerFlags"] ?? "")
-                setDiffFlags(JSON.parse(localStorage["new_scratch_diffFlags"] ?? "[]"))
-                setLibraries(JSON.parse(localStorage["new_scratch_libraries"] ?? "[]"))
+                setPlatform(localStorage.new_scratch_platform ?? "")
+                setCompilerId(localStorage.new_scratch_compilerId ?? undefined)
+                setCompilerFlags(localStorage.new_scratch_compilerFlags ?? "")
+                setDiffFlags(JSON.parse(localStorage.new_scratch_diffFlags ?? "[]"))
+                setLibraries(JSON.parse(localStorage.new_scratch_libraries ?? "[]"))
             }
             incrementValueVersion()
         } catch (error) {
@@ -144,18 +144,18 @@ export default function NewScratchForm({ serverCompilers }: {
         if (!ready)
             return
 
-        localStorage["new_scratch_label"] = label
-        localStorage["new_scratch_asm"] = asm
-        localStorage["new_scratch_context"] = context
-        localStorage["new_scratch_platform"] = platform
-        localStorage["new_scratch_compilerId"] = compilerId
-        localStorage["new_scratch_compilerFlags"] = compilerFlags
-        localStorage["new_scratch_diffFlags"] = JSON.stringify(diffFlags)
-        localStorage["new_scratch_libraries"] = JSON.stringify(libraries)
-        if (presetId == undefined) {
+        localStorage.new_scratch_label = label
+        localStorage.new_scratch_asm = asm
+        localStorage.new_scratch_context = context
+        localStorage.new_scratch_platform = platform
+        localStorage.new_scratch_compilerId = compilerId
+        localStorage.new_scratch_compilerFlags = compilerFlags
+        localStorage.new_scratch_diffFlags = JSON.stringify(diffFlags)
+        localStorage.new_scratch_libraries = JSON.stringify(libraries)
+        if (presetId === undefined) {
             localStorage.removeItem("new_scratch_presetId")
         } else {
-            localStorage["new_scratch_presetId"] = presetId
+            localStorage.new_scratch_presetId = presetId
         }
     }, [ready, label, asm, context, platform, compilerId, compilerFlags, diffFlags, libraries, presetId])
 
@@ -169,7 +169,7 @@ export default function NewScratchForm({ serverCompilers }: {
         if (!ready)
             return
 
-        if (presetId != undefined || compilerId != undefined) {
+        if (presetId !== undefined || compilerId !== undefined) {
             // User has specified a preset or compiler, don't override it
             return
         }
@@ -192,11 +192,9 @@ export default function NewScratchForm({ serverCompilers }: {
     const compilersTranslation = getTranslation("compilers")
     const compilerChoiceOptions = useMemo(() => {
         return Object.keys(platformCompilers).reduce((sum, id) => {
-            return {
-                ...sum,
-                [id]: compilersTranslation.t(id),
-            }
-        }, {})
+            sum[id] = compilersTranslation.t(id)
+            return sum
+        }, {} as Record<string, string>)
     }, [platformCompilers, compilersTranslation])
 
     const submit = async () => {
@@ -213,8 +211,8 @@ export default function NewScratchForm({ serverCompilers }: {
                 diff_label: label || defaultLabel || "",
             })
 
-            localStorage["new_scratch_label"] = ""
-            localStorage["new_scratch_asm"] = ""
+            localStorage.new_scratch_label = ""
+            localStorage.new_scratch_asm = ""
 
             await api.claimScratch(scratch)
 
@@ -310,7 +308,7 @@ export default function NewScratchForm({ serverCompilers }: {
         <div>
             <AsyncButton
                 primary
-                disabled={asm.length == 0}
+                disabled={asm.length === 0}
                 onClick={submit}
                 errorPlacement="right-center"
                 className="mt-2"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useReducer, ReactNode } from "react"
+import { useEffect, useReducer, type ReactNode } from "react"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"

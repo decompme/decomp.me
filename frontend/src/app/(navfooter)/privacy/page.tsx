@@ -9,11 +9,11 @@ export const metadata = {
 
 export default function Page() {
     return <main className="mx-auto max-w-prose p-4 pb-2 text-justify text-base leading-normal">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-12 md:text-3xl">
+        <h1 className="font-semibold text-2xl text-gray-12 tracking-tight md:text-3xl">
             Privacy policy
         </h1>
 
-        <p className="mb-6 mt-2 text-sm text-gray-11">
+        <p className="mt-2 mb-6 text-gray-11 text-sm">
             Last updated January 13th 2022
         </p>
 
@@ -48,7 +48,7 @@ export default function Page() {
             All site measurement is carried out absolutely anonymously and in aggregate only.
             Analytics data collected is limited to:
         </p>
-        <ul className="mb-6 mt-2 px-4 text-sm text-gray-11">
+        <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
             <li className="my-1">Page URL</li>
             <li className="my-1">HTTP Referer</li>
             <li className="my-1">Browser and operating system (using User-Agent HTTP header, which is discarded)</li>

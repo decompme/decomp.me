@@ -1,6 +1,6 @@
 import { diff as myersDiff } from "fast-myers-diff"
 
-import { DiffOutput, DiffRow } from "./api"
+import type { DiffOutput, DiffRow } from "./api"
 
 type Chunk = {
     unaligned: DiffRow[]
@@ -48,7 +48,8 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
             return
         const ckeys = cs.map(c => c.key)
         const pkeys = ps.map(p => p.key)
-        let ci = 0, pi = 0
+        let ci = 0
+        let pi = 0
         // Array.from to silence an error about "Type 'IterableIterator<...>'
         // can only be iterated through when using the '--downlevelIteration'
         // flag or with a '--target' of 'es2015' or higher" -- changing
@@ -57,16 +58,16 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
             if (c0 - ci !== p0 - pi) {
                 throw new Error("bad myers-diff range")
             }
-            while (ci != c0)
+            while (ci !== c0)
                 addMatching(cs[ci++], ps[pi++])
-            while (ci != c1) {
+            while (ci !== c1) {
                 const c = cs[ci++]
                 rows.push({
                     key: c.key,
                     current: c.current,
                 })
             }
-            while (pi != p1) {
+            while (pi !== p1) {
                 const p = ps[pi++]
                 rows.push({
                     key: p.key,
@@ -77,7 +78,7 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
         if (cs.length - ci !== ps.length - pi) {
             throw new Error("bad myers-diff range")
         }
-        while (ci != cs.length)
+        while (ci !== cs.length)
             addMatching(cs[ci++], ps[pi++])
     }
 
@@ -104,5 +105,4 @@ export function interdiff(curr: DiffOutput | null, prev: DiffOutput | null): Dif
         header: curr.header,
         rows: rows,
     }
-    return curr
 }

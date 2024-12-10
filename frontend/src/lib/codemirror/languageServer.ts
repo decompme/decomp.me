@@ -8,15 +8,15 @@ import type {
     CompletionResult,
 } from "@codemirror/autocomplete"
 import { setDiagnostics } from "@codemirror/lint"
-import { Extension, Facet } from "@codemirror/state"
+import { type Extension, Facet } from "@codemirror/state"
 import type { Text } from "@codemirror/state"
-import { EditorView, ViewPlugin, Tooltip, hoverTooltip, keymap } from "@codemirror/view"
+import { type EditorView, ViewPlugin, type Tooltip, hoverTooltip, keymap } from "@codemirror/view"
 import type { ViewUpdate, PluginValue } from "@codemirror/view"
 import {
     RequestManager,
     Client,
 } from "@open-rpc/client-js"
-import { Transport } from "@open-rpc/client-js/build/transports/Transport"
+import type { Transport } from "@open-rpc/client-js/build/transports/Transport"
 import {
     DiagnosticSeverity,
     CompletionItemKind,
@@ -31,7 +31,7 @@ const CompletionItemKindMap = Object.fromEntries(
     Object.entries(CompletionItemKind).map(([key, value]) => [value, key])
 ) as Record<CompletionItemKind, string>
 
-const useLast = (values: readonly any[]) => values.reduce((_, v) => v, "")
+const useLast = <T>(values: readonly T[]) => values.reduce((_, v) => v, "" as T)
 
 const client = Facet.define<LanguageServerClient, LanguageServerClient>({ combine: useLast })
 const documentUri = Facet.define<string, string>({ combine: useLast })
@@ -84,7 +84,7 @@ class LanguageServerClient {
     private client: Client
 
     public ready: boolean
-    public capabilities: LSP.ServerCapabilities<any>
+    public capabilities: LSP.ServerCapabilities
 
     private plugins: LanguageServerPlugin[]
 
@@ -101,7 +101,7 @@ class LanguageServerClient {
         this.client = new Client(this.requestManager)
 
         this.client.onNotification(data => {
-            this.processNotification(data as any)
+            this.processNotification(data as Notification)
         })
 
         this.initializePromise = this.initialize()
@@ -519,7 +519,10 @@ function languageServerWithTransport(options: LanguageServerOptions): [Extension
         client.of(options.client || new LanguageServerClient({ ...options, autoClose: true })),
         documentUri.of(options.documentUri),
         languageId.of(options.languageId),
-        ViewPlugin.define(view => (plugin = new LanguageServerPlugin(view))),
+        ViewPlugin.define(view => {
+            plugin = new LanguageServerPlugin(view);
+            return plugin;
+        }),
         hoverTooltip(
             (view, pos) =>
                 plugin?.requestHoverTooltip(
@@ -652,8 +655,8 @@ function prefixMatch(options: Completion[]) {
         }
     }
 
-    const source = toSet(first) + toSet(rest) + "*$"
-    return [new RegExp("^" + source), new RegExp(source)]
+    const source = `${toSet(first) + toSet(rest)}*$`
+    return [new RegExp(`^${source}`), new RegExp(source)]
 }
 
 export { LanguageServerClient, languageServerWithTransport }

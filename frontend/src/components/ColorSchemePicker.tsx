@@ -1,4 +1,4 @@
-import { ColorScheme, DARK_THEMES, getColors, LIGHT_THEMES } from "@/lib/codemirror/color-scheme"
+import { type ColorScheme, DARK_THEMES, getColors, LIGHT_THEMES } from "@/lib/codemirror/color-scheme"
 import { useIsSiteThemeDark } from "@/lib/settings"
 
 import ColorSchemeEditor from "./ColorSchemeEditor"

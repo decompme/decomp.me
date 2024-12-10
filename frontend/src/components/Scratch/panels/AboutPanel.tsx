@@ -8,7 +8,7 @@ import PlatformName from "@/components/PlatformSelect/PlatformName"
 import { getScoreText } from "@/components/ScoreBadge"
 import TimeAgo from "@/components/TimeAgo"
 import UserLink from "@/components/user/UserLink"
-import { Scratch, Preset, get, usePreset } from "@/lib/api"
+import { type Scratch, type Preset, get, usePreset } from "@/lib/api"
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls"
 
 import styles from "./AboutPanel.module.scss"
@@ -93,7 +93,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                     className={styles.textArea}
                     value={scratch.description}
                     disabled={!setScratch}
-                    onChange={event => setScratch && setScratch({ description: event.target.value })}
+                    onChange={event => setScratch?.({ description: event.target.value })}
                     maxLength={5000}
                     placeholder="Add any notes about the scratch here"
                 />

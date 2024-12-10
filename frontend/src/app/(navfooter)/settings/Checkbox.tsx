@@ -1,4 +1,4 @@
-import { ReactNode, useId } from "react"
+import { type ReactNode, useId } from "react"
 
 export type Props = {
     checked: boolean
@@ -23,7 +23,7 @@ export default function Checkbox({ checked, onChange, label, description, childr
         </div>
         <div className="grow">
             <label htmlFor={id} className="select-none font-semibold">{label}</label>
-            {description && <div className="text-sm text-gray-11">{description}</div>}
+            {description && <div className="text-gray-11 text-sm">{description}</div>}
             {children && <div className="pt-3">
                 {children}
             </div>}

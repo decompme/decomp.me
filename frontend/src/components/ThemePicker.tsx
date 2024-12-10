@@ -15,19 +15,19 @@ export default function ThemePicker({ theme, onChange }: Props) {
     const autoTheme = isPrefersColorSchemeDark() ? "dark" : "light"
 
     return <div className={styles.container}>
-        <button className={styles.box} onClick={() => onChange("auto")} data-active={theme == "auto"}>
+        <button className={styles.box} onClick={() => onChange("auto")} data-active={theme === "auto"}>
             <div className={styles.boxHeader}>
                 <LightBulbIcon />
                 System ({autoTheme})
             </div>
         </button>
-        <button className={styles.box} onClick={() => onChange("light")} data-active={theme == "light"}>
+        <button className={styles.box} onClick={() => onChange("light")} data-active={theme === "light"}>
             <div className={styles.boxHeader}>
                 <SunIcon />
                 Light theme
             </div>
         </button>
-        <button className={styles.box} onClick={() => onChange("dark")} data-active={theme == "dark"}>
+        <button className={styles.box} onClick={() => onChange("dark")} data-active={theme === "dark"}>
             <div className={styles.boxHeader}>
                 <MoonIcon />
                 Dark theme

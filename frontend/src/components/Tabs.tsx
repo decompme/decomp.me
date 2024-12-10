@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode, createContext, Component, useState, createRef, RefObject, useLayoutEffect, useRef } from "react"
+import { type ReactElement, type ReactNode, createContext, Component, useState, createRef, type RefObject, useLayoutEffect, useRef } from "react"
 
 import { XIcon } from "@primer/octicons-react"
 import classNames from "classnames"
@@ -117,7 +117,6 @@ export default function Tabs({ children, activeTab, onChange, className, vertica
     if (Array.isArray(children)) {
         for (const child of children) {
             if (!child) {
-                continue
             } else if (Array.isArray(child)) {
                 for (const grandchild of child) {
                     if (grandchild) {

@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from "react"
 
-import { EditorView } from "@codemirror/view"
+import type { EditorView } from "@codemirror/view"
 import { vim } from "@replit/codemirror-vim"
 
 import * as api from "@/lib/api"
@@ -11,7 +11,7 @@ import { useSize } from "@/lib/hooks"
 import { useAutoRecompileSetting, useAutoRecompileDelaySetting, useLanguageServerEnabled, useVimModeEnabled, useMatchProgressBarEnabled } from "@/lib/settings"
 
 import CompilerOpts from "../compiler/CompilerOpts"
-import CustomLayout, { activateTabInLayout, Layout } from "../CustomLayout"
+import CustomLayout, { activateTabInLayout, type Layout } from "../CustomLayout"
 import CompilationPanel from "../Diff/CompilationPanel"
 import CodeMirror from "../Editor/CodeMirror"
 import ErrorBoundary from "../ErrorBoundary"
@@ -306,7 +306,7 @@ export default function Scratch({
     if (container.width) {
         const preferredLayout = getDefaultLayout(container.width, container.height)
 
-        if (layoutName != preferredLayout) {
+        if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout)
             setLayout(DEFAULT_LAYOUTS[preferredLayout])
         }

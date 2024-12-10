@@ -1,4 +1,4 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 import ScratchList, { SingleLineScratchItem } from "@/components/ScratchList"
 import YourScratchList from "@/components/YourScratchList"

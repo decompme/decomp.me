@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from "react"
 
 import { useRouter } from "next/navigation"
 
-import useSWR, { Revalidator, RevalidatorOptions, mutate } from "swr"
+import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr"
 import { useDebouncedCallback } from "use-debounce"
 
 import { ResponseError, get, post, patch } from "./api/request"
-import { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Preset, ClaimableScratch } from "./api/types"
+import type { AnonymousUser, User, Scratch, TerseScratch, Compilation, Page, Compiler, LibraryVersions, Platform, Preset, ClaimableScratch } from "./api/types"
 import { scratchUrl } from "./api/urls"
 import { ignoreNextWarnBeforeUnload } from "./hooks"
 import { runObjdiff } from "./objdiff"
@@ -54,7 +54,7 @@ export function useUserIsYou(): (user: User | AnonymousUser | undefined) => bool
 
     return useCallback(user => {
         return isUserEq(you, user)
-    }, [you && you.id, you && you.is_anonymous]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [you?.id, you?.is_anonymous]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useSavedScratch(scratch: Scratch): Scratch {
@@ -152,7 +152,7 @@ export function useIsScratchSaved(scratch: Scratch): boolean {
     )
 }
 
-export function useCompilation(scratch: Scratch | null, autoRecompile = true, autoRecompileDelay: number, initial: Compilation | null = null): {
+export function useCompilation(scratch: Scratch | null, autoRecompile: boolean, autoRecompileDelay: number, initial: Compilation | null = null): {
     compilation: Readonly<Compilation> | null
     compile: () => Promise<void> // no debounce
     debouncedCompile: () => Promise<void> // with debounce

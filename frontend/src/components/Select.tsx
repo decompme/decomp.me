@@ -1,4 +1,4 @@
-import { ReactNode, ChangeEventHandler } from "react"
+import type { ReactNode, ChangeEventHandler } from "react"
 
 import { ChevronDownIcon } from "@primer/octicons-react"
 

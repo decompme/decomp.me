@@ -1,13 +1,13 @@
 "use client"
 
-import { ReactNode, useState, useCallback } from "react"
+import { type ReactNode, useState, useCallback } from "react"
 
 import classNames from "classnames"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayer, Arrow } from "react-laag"
 
 import styles from "./AsyncButton.module.scss"
-import Button, { Props as ButtonProps } from "./Button"
+import Button, { type Props as ButtonProps } from "./Button"
 import LoadingSpinner from "./loading.svg"
 
 export interface Props extends ButtonProps {

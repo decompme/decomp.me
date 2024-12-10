@@ -129,17 +129,17 @@ export default function LoadingSkeleton() {
                 <div className="h-5 w-48 bg-gray-6" />
             </div>
         </Nav>
-        <div className="flex grow border-t border-gray-6">
-            <div className="w-1/2 gap-1 overflow-hidden border-r border-gray-6 p-8">
+        <div className="flex grow border-gray-6 border-t">
+            <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
                 <TextSkeleton text={CODE} />
             </div>
-            <div className="w-1/2 gap-1 overflow-hidden border-r border-gray-6 p-8">
+            <div className="w-1/2 gap-1 overflow-hidden border-gray-6 border-r p-8">
                 <TextSkeleton text={DIFF} />
             </div>
         </div>
 
         <noscript>
-            <div role="status" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-medium">
+            <div role="status" className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 font-medium">
                 JavaScript is required to edit scratches
             </div>
         </noscript>

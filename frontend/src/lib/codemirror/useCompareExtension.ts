@@ -1,10 +1,10 @@
-import { RefObject, useEffect, useState } from "react"
+import { type RefObject, useEffect, useState } from "react"
 
-import { Compartment, Extension, Facet } from "@codemirror/state"
-import { EditorView, gutter, GutterMarker, ViewPlugin, ViewUpdate } from "@codemirror/view"
+import { Compartment, type Extension, Facet } from "@codemirror/state"
+import { type EditorView, gutter, GutterMarker, ViewPlugin, type ViewUpdate } from "@codemirror/view"
 
 import styles from "./useCompareExtension.module.scss"
-import { type DiffRequest } from "./useCompareExtension.worker"
+import type { DiffRequest } from "./useCompareExtension.worker"
 
 // State for target text to diff doc against
 const targetString = Facet.define<string, string | null>({
@@ -45,7 +45,7 @@ const diffGutter = gutter({
         }
     },
     lineMarkerChange(update) {
-        return update.docChanged || (update.state.facet(diffLineMap) != update.startState.facet(diffLineMap))
+        return update.docChanged || (update.state.facet(diffLineMap) !== update.startState.facet(diffLineMap))
     },
     initialSpacer: () => marker,
 })

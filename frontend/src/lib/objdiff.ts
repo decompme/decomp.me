@@ -1,6 +1,6 @@
 import { runDiff } from "objdiff-wasm"
 
-import { Compilation } from "./api/types"
+import type { Compilation } from "./api/types"
 
 function base64ToBytes(base64: string) {
     const binString = atob(base64)

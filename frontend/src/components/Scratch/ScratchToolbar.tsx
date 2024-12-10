@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, FC } from "react"
+import { useEffect, useRef, useState, type FC } from "react"
 
 import Link from "next/link"
 
@@ -31,7 +31,7 @@ function exportScratchZip(scratch: api.Scratch) {
     const url = api.normalizeUrl(`${scratchUrl(scratch)}/export`)
     const a = document.createElement("a")
     a.href = url
-    a.download = scratch.name + ".zip"
+    a.download = `${scratch.name}.zip`
     a.click()
 }
 
@@ -88,7 +88,7 @@ function ScratchName({ name, onChange }: { name: string, onChange?: (name: strin
 
             onChange={evt => {
                 const name = evt.currentTarget.innerText as string
-                if (name.length != 0)
+                if (name.length !== 0)
                     onChange(name)
             }}
 
@@ -226,8 +226,8 @@ function Actions({ isCompiling, compile, scratch, setScratch, saveCallback, setD
 }
 
 enum ActionsLocation {
-    IN_NAV,
-    BELOW_NAV,
+    IN_NAV = 0,
+    BELOW_NAV = 1,
 }
 
 function useActionsLocation(): [ActionsLocation, FC<Props>] {
@@ -237,7 +237,7 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
 
     const el = inNavActions.ref.current
     if (el) {
-        if (el.clientWidth == el.scrollWidth) {
+        if (el.clientWidth === el.scrollWidth) {
             location = ActionsLocation.IN_NAV
         }
     }
@@ -246,7 +246,7 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
         location,
         (props: Props) => <div
             ref={inNavActions.ref}
-            aria-hidden={location != ActionsLocation.IN_NAV}
+            aria-hidden={location !== ActionsLocation.IN_NAV}
             className={styles.inNavActionsContainer}
         >
             <Actions {...props} />
@@ -296,7 +296,7 @@ export default function ScratchToolbar(props: Props) {
                 <InNavActions {...props} />
             </div>
         </Nav>
-        {actionsLocation == ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-b border-gray-6")}>
+        {actionsLocation === ActionsLocation.BELOW_NAV && <div className={classNames(styles.belowNavActionsContainer, "border-gray-6 border-b")}>
             <Actions {...props} />
         </div>}
     </>

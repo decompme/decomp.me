@@ -15,7 +15,7 @@ export default function WelcomeInfo() {
     const saveDataEnabled = headers().get("Save-Data") === "on"
 
     return <div className="relative overflow-x-hidden p-2">
-        {!saveDataEnabled && <div className="absolute top-14 -z-10 hidden w-full opacity-80 sm:block">
+        {!saveDataEnabled && <div className="-z-10 absolute top-14 hidden w-full opacity-80 sm:block">
             <ScrollingPlatformIcons />
             <div
                 className="absolute top-0 size-full"
@@ -27,7 +27,7 @@ export default function WelcomeInfo() {
         </div>}
         <div className="text-center text-lg">
             <h1
-                className="!md:leading-[0.8] mx-auto w-full max-w-lg text-4xl font-extrabold text-gray-12 md:max-w-3xl md:text-6xl"
+                className="mx-auto w-full max-w-lg font-extrabold text-4xl text-gray-12 !md:leading-[0.8] md:max-w-3xl md:text-6xl"
                 style={{
                     // Shadow to make text more readable on the background
                     textShadow: "0 1px 0.3rem hsl(var(--color-mauve10) / 0.4)",
@@ -35,7 +35,7 @@ export default function WelcomeInfo() {
             >
                 Collaboratively decompile code in your browser.
             </h1>
-            <p className="mx-auto my-6 w-full max-w-screen-sm leading-tight text-gray-11">
+            <p className="mx-auto my-6 w-full max-w-screen-sm text-gray-11 leading-tight">
                 {SITE_DESCRIPTION}
             </p>
             <div className="flex flex-col items-center justify-center gap-2 md:flex-row">

@@ -16,7 +16,7 @@ export function isMacOS(): boolean {
     // @ts-ignore
     if (!isServer() && navigator.userAgentData) {
         // @ts-ignore
-        return navigator.userAgentData.platform == "macOS"
+        return navigator.userAgentData.platform === "macOS"
     }
 
     // Fall back to user-agent sniffing
