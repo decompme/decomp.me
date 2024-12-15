@@ -444,7 +444,11 @@ class ScratchViewSet(
     def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
         if scratch.target_assembly.source_asm is None:
-            return Response({"decompilation": None})
+            return Response(
+                {
+                    "decompilation": "This scratch cannot currently be run through the decompiler because it was created via object file."
+                }
+            )
 
         context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
