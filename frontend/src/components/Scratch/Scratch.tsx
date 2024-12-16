@@ -36,8 +36,8 @@ import styles from "./Scratch.module.scss";
 import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
 import ScratchToolbar from "./ScratchToolbar";
-import {StreamLanguage} from "@codemirror/language"
-import {pascal} from "@/lib/codemirror/pascal"
+import { StreamLanguage } from "@codemirror/language";
+import { pascal } from "@/lib/codemirror/pascal";
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -105,7 +105,6 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
     },
 };
 
-
 function getDefaultLayout(
     width: number,
     _height: number,
@@ -132,10 +131,9 @@ export default function Scratch({
     initialCompilation,
     offline,
 }: Props) {
-    
     const CODEMIRROR_EXTENSIONS = [
         basicSetup,
-        scratch.language === "Pascal" ? StreamLanguage.define(pascal) : cpp()
+        scratch.language === "Pascal" ? StreamLanguage.define(pascal) : cpp(),
     ];
 
     const container = useSize<HTMLDivElement>();
