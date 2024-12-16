@@ -2,7 +2,11 @@
 /* Based on @codemirror/laegacy-modes/pascasl */
 function words(str) {
   var obj = {}, words = str.split(" ");
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  
+  for (let i = 0; i < words.length; ++i) {
+    obj[words[i]] = true;
+  } 
+
   return obj;
 }
 var keywords = words(
@@ -88,7 +92,10 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function(stream, state) {
-    var escaped = false, next, end = false;
+    var escaped = false;
+    var next;
+    var end = false;
+    
     while ((next = stream.next()) != null) {
       if (next === quote && !escaped) {
         end = true; break;
