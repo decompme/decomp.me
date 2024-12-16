@@ -16,7 +16,7 @@ const keywords = words(
 );
 
 const types = words(
-    " integer integer16 integer32 cardinal char file double pointer string text ",
+    " integer integer16 integer32 cardinal char file double pointer string text boolean",
 );
 
 const atoms = { null: true };
