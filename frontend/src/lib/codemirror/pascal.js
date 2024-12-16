@@ -24,19 +24,19 @@ var isOperatorChar = /[+\-^&%=<>!?|\/]/;
 function tokenBase(stream, state) {
   var ch = stream.next();
 
-  if (ch == "#" && state.startOfLine) {
+  if (ch === "#" && state.startOfLine) {
     stream.skipToEnd();
     return "meta";
   }
-  if (ch == '"' || ch == "'") {
+  if (ch === '"' || ch === "'") {
     state.tokenize = tokenString(ch);
     return state.tokenize(stream, state);
   }
-  if ((ch == "(" || ch == "/") && stream.eat("*")) {
+  if ((ch === "(" || ch === "/") && stream.eat("*")) {
     state.tokenize = tokenComment;
     return tokenComment(stream, state);
   }
-  if (ch == "{") {
+  if (ch === "{") {
     state.tokenize = tokenCommentBraces;
     return tokenCommentBraces(stream, state);
   }
@@ -67,7 +67,7 @@ function tokenBase(stream, state) {
 
   var cur = stream.current().toLowerCase();
 
-  if (cur == "type") {
+  if (cur === "type") {
     state.expectUserDefType = true;
   }
 
@@ -90,8 +90,10 @@ function tokenString(quote) {
   return function(stream, state) {
     var escaped = false, next, end = false;
     while ((next = stream.next()) != null) {
-      if (next == quote && !escaped) {end = true; break;}
-      escaped = !escaped && next == "\\";
+      if (next === quote && !escaped) {
+        end = true; break;
+    }
+      escaped = !escaped && next === "\\";
     }
     if (end || !escaped) state.tokenize = null;
     return "string";
@@ -101,11 +103,11 @@ function tokenString(quote) {
 function tokenComment(stream, state) {
     var maybeEnd = false, ch;
     while (ch = stream.next()) {
-      if ((ch == ")" || ch == "/") && maybeEnd) {
+      if ((ch === ")" || ch === "/") && maybeEnd) {
         state.tokenize = null;
         break;
       }
-      maybeEnd = (ch == "*");
+      maybeEnd = (ch === "*");
     }
     return "comment";
   }
@@ -113,7 +115,7 @@ function tokenComment(stream, state) {
 function tokenCommentBraces(stream, state) {
   var ch;
   while (ch = stream.next()) {
-    if (ch == "}") {
+    if (ch === "}") {
       state.tokenize = null;
       break;
     }
@@ -134,7 +136,7 @@ export const pascal = {
   token: function(stream, state) {
     if (stream.eatSpace()) return null;
     var style = (state.tokenize || tokenBase)(stream, state);
-    if (style == "comment" || style == "meta") return style;
+    if (style === "comment" || style === "meta") return style;
     return style;
   },
 
