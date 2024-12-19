@@ -1,4 +1,4 @@
-/* Based on @codemirror/laegacy-modes/pascasl */
+/* Based on @codemirror/legacy-modes/pascal */
 function words(str) {
     const obj = {};
     const words = str.split(" ");
