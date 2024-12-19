@@ -928,7 +928,7 @@ IDO71_IRIX = IDOCompiler(
 IDO71PASCAL = IDOCompiler(
     id="ido7.1Pascal",
     platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
     language=Language.PASCAL,
 )
