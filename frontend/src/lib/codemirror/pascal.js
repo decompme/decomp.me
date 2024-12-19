@@ -9,7 +9,7 @@ const keywords = words(
     " and array begin case const div do argv date clock argc return time read " +
         " internal downto else end  for function goto if  in addr reset eof chr " +
         " label mod nil not of operator or packed procedure max min rewrite readln succ pred ord " +
-        " program record repeat set lshift rshift then to type flush " +
+        " program record repeat set lshift rshift then to type flush abs volatile out " +
         " until var while with bitxor bitand bitor bitnot packed first last sizeof bitsize real " +
         " break exit continue halt otherwise true false writeln write static firstof lastof discard " +
         " assert extern external forward  hbound lbound  out define univ ",
