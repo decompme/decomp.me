@@ -201,6 +201,7 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
         ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
+                diff_label=scratch.diff_label,
             )
         else:
             family = Scratch.objects.filter(slug=scratch.slug)
@@ -573,6 +574,7 @@ class ScratchViewSet(
         ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
+                diff_label=scratch.diff_label,
             ).order_by("creation_time")
         else:
             family = Scratch.objects.filter(slug=scratch.slug)
