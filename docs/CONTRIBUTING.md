@@ -25,7 +25,7 @@ Dependencies:
 - Python >=3.10
 - Node.js >=14
 - [Yarn](https://yarnpkg.com/getting-started/install)
-- [Poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
+- [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
 
 ---
 Create a file to hold environment variables:
@@ -38,7 +38,7 @@ touch .env.local
 cd backend
 ```
 
-* Install Python dependencies with [poetry](https://python-poetry.org/docs/master/#installing-with-the-official-installer)
+* Install Python dependencies with [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
 ```shell
 poetry install
 ```
