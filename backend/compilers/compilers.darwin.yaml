@@ -3,6 +3,7 @@ n64:
   - ido7.1
   - gcc2.7.2kmc
   - gcc2.8.1pm
+  - egcs_1.1.2-4c
 switch:
   -  clang-4.0.1
   -  clang-8.0.0

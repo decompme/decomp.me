@@ -873,6 +873,12 @@ EGCS1124 = GCCCompiler(
     cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
 )
 
+EGCS1124C = GCCCompiler(
+    id="egcs_1.1.2-4c",
+    platform=N64,
+    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
 GCC440MIPS64ELF = GCCCompiler(
     id="gcc4.4.0-mips64-elf",
     platform=N64,
@@ -1579,6 +1585,7 @@ _all_compilers: List[Compiler] = [
     GCC281SN,
     GCC281SNCXX,
     EGCS1124,
+    EGCS1124C,
     GCC440MIPS64ELF,
     # IRIX
     IDO53_IRIX,
