@@ -47,6 +47,7 @@ n64:
   - ido7.1
   - mips_pro_744
   - egcs_1.1.2-4
+  - egcs_1.1.2-4c
   - gcc4.4.0-mips64-elf
 
 n3ds:

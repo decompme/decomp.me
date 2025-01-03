@@ -59,6 +59,7 @@
     "mwcps2-3.0.1b210-060308": "MWCPS2 3.0.1b210 (Built 060308)",
 
     "egcs_1.1.2-4": "EGCS 1.1.2-4 (gcc egcs-2.91.66)",
+    "egcs_1.1.2-4c": "EGCS 1.1.2-4 (gcc egcs-2.91.66, decompals)",
 
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
     "gcc2.7.2sn": "GCC 2.7.2 (SN)",
