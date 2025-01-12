@@ -23,7 +23,7 @@ mkdir -p postgres
 **Run in foreground:**
 
 ```sh
-docker-compose up --build
+docker compose up --build
 ```
 
 The processes will run in the foreground until you CTRL+C to trigger a shutdown.
@@ -34,16 +34,16 @@ Navigate to [http://localhost:80](http://localhost:80) in your browser.
 **Run daemonised:**
 
 ```sh
-docker-compose up -d && docker-compose logs -f
+docker compose up -d && docker compose logs -f
 ```
-You can CTRL+C to stop tailing logs. If you want to stop the processes then running `docker-compose down` will shut everything down.
+You can CTRL+C to stop tailing logs. If you want to stop the processes then running `docker compose down` will shut everything down.
 
 **Note:** The first time you bring up the containers can take a minute or so - Docker has to pull/build images, grab Node dependencies, apply database migrations etc. Subsequent runs will be significantly faster to spin up.
 
 
 ## Configuration
 
-By default the Docker `backend` image is built without support for all platforms (e.g. PS2, Switch, Saturn). Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker-compose up --build` command.
+By default the Docker `backend` image is built without support for all platforms (e.g. PS2, Switch, Saturn). Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker compose up --build` command.
 
 E.g. to enable `PS2` platform:
 
