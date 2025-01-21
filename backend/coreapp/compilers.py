@@ -404,7 +404,7 @@ PSYQ46 = GCCPS1Compiler(
 
 PS1_GCC = (
     'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
-    '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
+    'printf "%s" "${COMPILER_FLAGS}" | xargs -- ${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}.i"'
 )
 
 GCC257_PSX = GCCPS1Compiler(
@@ -870,13 +870,13 @@ GCC281SNCXX = GCCCompiler(
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
-    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
 )
 
 EGCS1124C = GCCCompiler(
     id="egcs_1.1.2-4c",
     platform=N64,
-    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
 )
 
 GCC440MIPS64ELF = GCCCompiler(

@@ -158,7 +158,7 @@ jobs:
 
   backend_test_docker:
     name: backend tests (docker)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Build decompme_backend image
@@ -202,7 +202,7 @@ jobs:
 
   frontend_lint:
     name: biome
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 20
@@ -218,7 +218,7 @@ jobs:
 
   mypy:
     name: mypy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -236,7 +236,7 @@ jobs:
 
   black:
     name: black
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
