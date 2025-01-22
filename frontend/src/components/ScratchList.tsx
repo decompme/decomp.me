@@ -90,6 +90,9 @@ export default function ScratchList({
 }
 
 export function getMatchPercentString(scratch: api.TerseScratch) {
+    if (scratch.score === -1) {
+        return "0%";
+    }
     if (scratch.match_override) {
         return "100%";
     }

@@ -16,6 +16,8 @@ import PlatformLink from "../PlatformLink";
 import AnonymousFrogAvatar from "../user/AnonymousFrog";
 import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
 
+import { getMatchPercentString } from "../ScratchList";
+
 import styles from "./Search.module.scss";
 
 function MountedSearch({ className }: { className?: string }) {
@@ -164,6 +166,9 @@ function MountedSearch({ className }: { className?: string }) {
                                     <PlatformLink scratch={scratch} size={16} />
                                     <span className={styles.itemName}>
                                         {scratch.name}
+                                    </span>
+                                    <span>
+                                        {getMatchPercentString(scratch)}
                                     </span>
                                     {scratch.owner &&
                                         (!api.isAnonUser(scratch.owner) ? (
