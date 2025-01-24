@@ -21,6 +21,7 @@ from django.conf import settings
 from coreapp import compilers, platforms
 from coreapp.compilers import Compiler
 
+from coreapp.flags import Language
 from coreapp.platforms import Platform
 import coreapp.util as util
 
@@ -143,12 +144,17 @@ class CompilerWrapper:
 
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
+            skip_line_directive = (
+                compiler.is_ido and compiler.language == Language.PASCAL
+            )
             with code_path.open("w") as f:
-                f.write(f'#line 1 "{ctx_file}"\n')
+                if not skip_line_directive:
+                    f.write(f'#line 1 "{ctx_file}"\n')
                 f.write(context)
                 f.write("\n")
 
-                f.write(f'#line 1 "{src_file}"\n')
+                if not skip_line_directive:
+                    f.write(f'#line 1 "{src_file}"\n')
                 f.write(code)
                 f.write("\n")
 
