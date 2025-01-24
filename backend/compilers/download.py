@@ -37,7 +37,7 @@ def get_remote_image_digest(
     tag="latest",
     session=None,
 ):
-    token = get_token(docker_registry, github_repo, docker_image)
+    token = get_token(docker_registry, github_repo, docker_image, session=session)
 
     image_url = (
         f"https://{docker_registry}/v2/{github_repo}/{docker_image}/manifests/{tag}"
@@ -83,7 +83,11 @@ def get_compiler_raw(
 
     logger.debug("Checking for %s in registry", docker_image)
     remote_image_digest = get_remote_image_digest(
-        docker_image, docker_registry=docker_registry, github_repo=github_repo, tag=tag
+        docker_image,
+        docker_registry=docker_registry,
+        github_repo=github_repo,
+        tag=tag,
+        session=session,
     )
     if remote_image_digest is None:
         host_arch = platform.system().lower()
@@ -98,6 +102,7 @@ def get_compiler_raw(
             docker_registry=docker_registry,
             github_repo=github_repo,
             tag=tag,
+            session=session,
         )
         if remote_image_digest is None:
             logger.error("%s not found in registry!", docker_image)
@@ -117,7 +122,12 @@ def get_compiler_raw(
         return None
 
     # First, get a token to do our operations with
-    token = get_token(docker_registry, github_repo, docker_image)
+    token = get_token(
+        docker_registry,
+        github_repo,
+        docker_image,
+        session=session,
+    )
 
     # Then, get the container image index. This will give us all the
     # container images associated with this tag. There may be different
