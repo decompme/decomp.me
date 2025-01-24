@@ -96,8 +96,10 @@ export default async function Page() {
                 </h1>
                 <p className="py-4">
                     decomp.me is maintained by{" "}
-                    <Contributor contributor={maintainers[0]} />{", "}
-                    <Contributor contributor={maintainers[1]} />{", and "}
+                    <Contributor contributor={maintainers[0]} />
+                    {", "}
+                    <Contributor contributor={maintainers[1]} />
+                    {", and "}
                     <Contributor contributor={maintainers[2]} />.
                 </p>
                 <div className="my-4 border-gray-6 border-y">
