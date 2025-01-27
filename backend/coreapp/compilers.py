@@ -1483,7 +1483,6 @@ BORLAND_MSDOS_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     '(HOME="." /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
-    "rm .dosemurc && "
     'cp out.o "$OUTPUT"'
 )
 
