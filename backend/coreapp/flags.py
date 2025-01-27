@@ -323,3 +323,10 @@ COMMON_WATCOM_FLAGS: Flags = [
     Checkbox("watcom_signedchar", "-j"),
     Checkbox("watcom_fpu", "-fpi87"),
 ]
+
+COMMON_MSDOS_DIFF_FLAGS: Flags = [
+    Checkbox("diff_reloc", "--reloc")
+]
+
+COMMON_BORLAND_FLAGS: Flags = [
+]
