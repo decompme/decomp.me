@@ -184,10 +184,12 @@ class WatcomCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
     library_include_flag: str = "/IZ:"
 
+
 @dataclass(frozen=True)
 class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
+
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
@@ -1479,9 +1481,9 @@ WATCOM_110_CPP = WatcomCompiler(
 
 BORLAND_MSDOS_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
-    'echo "\$_hdimage = \'+0 ${COMPILER_DIR} +1\'" > .dosemurc && '
+    "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     '(HOME="." /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
-    'rm .dosemurc && '
+    "rm .dosemurc && "
     'cp out.o "$OUTPUT"'
 )
 
