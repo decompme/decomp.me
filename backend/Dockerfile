@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM --platform=linux/amd64 ubuntu:22.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -33,7 +33,11 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
 
 FROM base AS build
 
-RUN apt-get -y update && apt-get install -y \
+RUN apt-get -y update && \
+    apt-get install -y \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
     binutils-aarch64-linux-gnu \
     binutils-arm-none-eabi \
     binutils-djgpp \
