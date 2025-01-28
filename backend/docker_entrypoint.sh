@@ -8,7 +8,6 @@ BE_PORT=${BACKEND_PORT:-8000}
 
 poetry config virtualenvs.path /backend/virtualenvs
 
-poetry lock --no-update
 poetry install
 
 poetry run /backend/compilers/download.py
