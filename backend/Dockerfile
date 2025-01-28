@@ -33,11 +33,7 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
 
 FROM base AS build
 
-RUN apt-get -y update && \
-    apt-get install -y \
-    libpq-dev \
-    libffi-dev \
-    libssl-dev \
+RUN apt-get -y update && apt-get install -y \
     binutils-aarch64-linux-gnu \
     binutils-arm-none-eabi \
     binutils-djgpp \
