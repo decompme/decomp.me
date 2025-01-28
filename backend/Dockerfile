@@ -100,8 +100,11 @@ RUN if [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || [ "${ENABLE_PSP_SUPPORT}" = "YES" 
 # msdos specific
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
     wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
-    tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump && \
-    rm omftools.tar.gz; \
+    tar xvzf omftools.tar.gz -C /usr/bin jwasm && \
+    rm omftools.tar.gz && \
+    wget "https://github.com/sillyc0n/binutils-gdb/releases/download/2.42-build7/omftools-2.42-build7-linux-x86_64.tar.gz" && \
+    tar xvzf omftools-2.42-build7-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump && \
+    rm omftools-2.42-build7-linux-x86_64.tar.gz; \
     fi
 
 # Patched PowerPC binutils

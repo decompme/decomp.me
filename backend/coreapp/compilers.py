@@ -21,6 +21,7 @@ from coreapp.flags import (
     COMMON_MWCC_PSP_FLAGS,
     COMMON_MWCC_WII_GC_FLAGS,
     COMMON_WATCOM_FLAGS,
+    COMMON_BORLAND_FLAGS,
     Flags,
     Language,
 )
@@ -182,6 +183,12 @@ class MSVCCompiler(Compiler):
 class WatcomCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
     library_include_flag: str = "/IZ:"
+
+
+@dataclass(frozen=True)
+class BorlandCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
+    library_include_flag: str = ""
 
 
 def from_id(compiler_id: str) -> Compiler:
@@ -1472,6 +1479,19 @@ WATCOM_110_CPP = WatcomCompiler(
     cc=WATCOM_CXX,
 )
 
+BORLAND_MSDOS_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+    '(HOME="." /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    'cp out.o "$OUTPUT"'
+)
+
+BORLAND_31_C = BorlandCompiler(
+    id="bcc3.1",
+    platform=MSDOS,
+    cc=BORLAND_MSDOS_CC,
+)
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
@@ -1682,6 +1702,8 @@ _all_compilers: List[Compiler] = [
     WATCOM_106_CPP,
     WATCOM_110_C,
     WATCOM_110_CPP,
+    # Borland, DOS
+    BORLAND_31_C,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})

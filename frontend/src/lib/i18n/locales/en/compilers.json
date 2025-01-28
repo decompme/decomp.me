@@ -219,6 +219,8 @@
     "wcc11.0": "Watcom Optimizing C i386 Compiler 11.0",
     "wpp11.0": "Watcom Optimizing C++ i386 Compiler 11.0",
 
+    "bcc3.1": "Borland C i386 Compiler 3.1",
+
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
     "armcc_opt_level": "Optimization level",
@@ -458,6 +460,7 @@
     "mno_aliases": "Disable pseudo instructions",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
     "diff_function_symbols": "Include function labels in diff",
+    "diff_reloc": "Diff relocation",
 
     "diff_algorithm": "Diff algorithm",
     "diff_algorithm.-DIFFlevenshtein": "Levenshtein",

@@ -4,7 +4,12 @@ from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
-from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
+from coreapp.flags import (
+    COMMON_DIFF_FLAGS,
+    COMMON_MIPS_DIFF_FLAGS,
+    COMMON_MSDOS_DIFF_FLAGS,
+    Flags,
+)
 from coreapp.models.preset import Preset
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
@@ -78,10 +83,12 @@ MSDOS = Platform(
     id="msdos",
     name="Microsoft DOS",
     description="x86",
-    arch="i686",
+    arch="x86",
     assemble_cmd='jwasm -c -Fo"$OUTPUT" -Fi"$PRELUDE" "$INPUT"',
     objdump_cmd="omf-objdump",
     nm_cmd="omf-nm",
+    supports_objdump_disassemble=True,
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MSDOS_DIFF_FLAGS,
 )
 
 WIN32 = Platform(

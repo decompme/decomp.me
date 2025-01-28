@@ -186,6 +186,7 @@ msdos:
   - wcc10.5a
   - wcc10.6
   - wcc11.0
+  - bcc3.1
 
 win32:
   - msvc4.0
