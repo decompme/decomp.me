@@ -247,15 +247,16 @@ class DownloadThread(threading.Thread):
     def run(self):
         while True:
             try:
-                try:
-                    item = self.download_queue.get_nowait()
-                except queue.Empty:
-                    break
+                item = self.download_queue.get_nowait()
+            except queue.Empty:
+                break
+
+            try:
                 self.process_item(item)
-                self.download_queue.task_done()
             except Exception as e:
                 logger.error("Exception thrown while processing item: %s", e)
-                break
+            finally:
+                self.download_queue.task_done()
 
     def process_item(self, item):
         platform_id, compiler_id = item
@@ -305,7 +306,7 @@ def main():
         help="Name of github repo that owns the packages",
     )
     parser.add_argument(
-        "--threads", type=int, default=4, help="Number of download threads to use"
+        "--threads", type=int, default=8, help="Number of download threads to use"
     )
     parser.add_argument("--verbose", action="store_true", help="Enable DEBUG log level")
     args = parser.parse_args()
