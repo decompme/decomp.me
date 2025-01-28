@@ -13,10 +13,14 @@ poetry install
 poetry run /backend/compilers/download.py
 poetry run /backend/libraries/download.py
 
-for reg in /backend/wine/*.reg; do
-  echo "Importing registry file $reg..."
-  regedit $reg
-done
+if command -v regedit &> /dev/null; then
+  for reg in /backend/wine/*.reg; do
+    echo "Importing registry file $reg..."
+    regedit $reg
+  done
+else
+  echo "regedit command not found. Skipping registry import."
+fi
 
 until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   echo "Waiting for database to become available on ${DB_HOST}:${DB_PORT}..."
