@@ -2,9 +2,9 @@
 
 There is support for running subprocesses within [`nsjail`](https://github.com/google/nsjail).
 
-This is controlled by the `SANDBOX` settings, and is disabled by default in the development `.env` but is enabled inside the `backend` Docker container.
+This is controlled by the `SANDBOX` settings, and is disabled by default in the development `.env`.
 
-To enable it locally outside of the Docker container:
+To enable it:
 
 - Build or install `nsjail` locally. Example instructions for Ubuntu:
     - `apt-get install autoconf bison flex gcc g++ git libprotobuf-dev libnl-route-3-dev libtool make pkg-config protobuf-compiler`
