@@ -327,10 +327,11 @@ CLANG_800 = ClangCompiler(
 
 # PS1
 PSYQ_MSDOS_CC = (
-    'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
-    '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    'cpp -P "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} D:\\dos_src.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
 PSYQ_CC = (
@@ -495,13 +496,12 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 
 # Saturn
 SATURN_CC = (
-    'cat "$INPUT" | unix2dos > dos_src.c && '
-    "cp -r ${COMPILER_DIR}/* . && "
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
-    "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && "
-    'cp as_out.o "$OUTPUT"'
+    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    'cat "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
 CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
@@ -1480,10 +1480,10 @@ WATCOM_110_CPP = WatcomCompiler(
 )
 
 BORLAND_MSDOS_CC = (
-    'cat "$INPUT" | unix2dos > dos_src.c && '
     "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
-    'cp out.o "$OUTPUT"'
+    'cat "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    'cp out.o "${OUTPUT}"'
 )
 
 BORLAND_31_C = BorlandCompiler(
