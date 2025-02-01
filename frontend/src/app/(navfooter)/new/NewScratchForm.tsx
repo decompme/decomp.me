@@ -367,6 +367,7 @@ export default function NewScratchForm({
                             <SingleLineScratchItem
                                 key={scratchUrl(scratch)}
                                 scratch={scratch}
+                                showOwner={true}
                             />
                         ))}
                     </div>
