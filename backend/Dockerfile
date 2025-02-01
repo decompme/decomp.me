@@ -65,7 +65,7 @@ RUN curl -sSL https://install.python-poetry.org/ | \
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.6.12 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.16 /usr/local/sbin/wibo /usr/bin/
 
 RUN add-apt-repository -y ppa:dosemu2/ppa && \
     add-apt-repository -y ppa:stsp-0/dj64 && \
