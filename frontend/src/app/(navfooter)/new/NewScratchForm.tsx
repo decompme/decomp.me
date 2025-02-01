@@ -20,7 +20,7 @@ import getTranslation from "@/lib/i18n/translate";
 import { get } from "@/lib/api/request";
 
 import styles from "./new.module.scss";
-import type TerseScratch from "@/lib/api/types";
+import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchList";
 
 function getLabels(asm: string): string[] {
