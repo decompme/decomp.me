@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { SearchIcon } from "@primer/octicons-react";
@@ -9,14 +8,13 @@ import { useCombobox } from "downshift";
 import { useLayer } from "react-laag";
 
 import * as api from "@/lib/api";
-import { scratchUrl, userAvatarUrl } from "@/lib/api/urls";
+import { scratchUrl } from "@/lib/api/urls";
 
 import LoadingSpinner from "../loading.svg";
 import PlatformLink from "../PlatformLink";
-import AnonymousFrogAvatar from "../user/AnonymousFrog";
 import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
 
-import { getMatchPercentString } from "../ScratchList";
+import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchList";
 
 import styles from "./Search.module.scss";
 
@@ -170,31 +168,7 @@ function MountedSearch({ className }: { className?: string }) {
                                     <span>
                                         {getMatchPercentString(scratch)}
                                     </span>
-                                    {scratch.owner &&
-                                        (!api.isAnonUser(scratch.owner) ? (
-                                            userAvatarUrl(scratch.owner) && (
-                                                <Image
-                                                    src={userAvatarUrl(
-                                                        scratch.owner,
-                                                    )}
-                                                    alt={scratch.owner.username}
-                                                    width={16}
-                                                    height={16}
-                                                    className={
-                                                        styles.scratchOwnerAvatar
-                                                    }
-                                                />
-                                            )
-                                        ) : (
-                                            <AnonymousFrogAvatar
-                                                user={scratch.owner}
-                                                width={16}
-                                                height={16}
-                                                className={
-                                                    styles.scratchOwnerAvatar
-                                                }
-                                            />
-                                        ))}
+                                    <ScratchOwnerAvatar scratch={scratch} />
                                 </a>
                             </li>
                         );

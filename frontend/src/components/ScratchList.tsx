@@ -2,15 +2,18 @@
 
 import { type ReactNode, useState } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import classNames from "classnames";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
-import { presetUrl, scratchUrl } from "@/lib/api/urls";
+import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
+
 import getTranslation from "@/lib/i18n/translate";
 
+import AnonymousFrogAvatar from "./user/AnonymousFrog";
 import AsyncButton from "./AsyncButton";
 import Button from "./Button";
 import LoadingSpinner from "./loading.svg";
@@ -281,9 +284,34 @@ export function ScratchItemPresetList({
     );
 }
 
+export function ScratchOwnerAvatar({ scratch }: { scratch: api.TerseScratch }) {
+    return (
+        scratch.owner &&
+        (!api.isAnonUser(scratch.owner) ? (
+            userAvatarUrl(scratch.owner) && (
+                <Image
+                    src={userAvatarUrl(scratch.owner)}
+                    alt={scratch.owner.username}
+                    width={16}
+                    height={16}
+                    className={styles.scratchOwnerAvatar}
+                />
+            )
+        ) : (
+            <AnonymousFrogAvatar
+                user={scratch.owner}
+                width={16}
+                height={16}
+                className={styles.scratchOwnerAvatar}
+            />
+        ))
+    );
+}
+
 export function SingleLineScratchItem({
     scratch,
-}: { scratch: api.TerseScratch }) {
+    showOwner = false,
+}: { scratch: api.TerseScratch; showOwner?: boolean }) {
     const matchPercentString = getMatchPercentString(scratch);
 
     return (
@@ -296,6 +324,7 @@ export function SingleLineScratchItem({
                 {scratch.name}
             </Link>
             <div className={styles.metadata}>{matchPercentString}</div>
+            {showOwner && <ScratchOwnerAvatar scratch={scratch} />}
         </li>
     );
 }
