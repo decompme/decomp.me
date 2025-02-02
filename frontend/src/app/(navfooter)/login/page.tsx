@@ -18,7 +18,6 @@ function Login() {
     const { mutate } = useSWRConfig();
     const code = searchParams.get("code");
     const next = searchParams.get("next");
-    const redirect = searchParams.get("redirect");
     const githubError = searchParams.get("error");
 
     useEffect(() => {
@@ -45,7 +44,7 @@ function Login() {
                         );
                         window.close();
                     } else {
-                        window.location.href = redirect ?? "/";
+                        window.location.href = "/";
                     }
                 })
                 .catch((error) => {
