@@ -18,7 +18,7 @@ function Login() {
     const { mutate } = useSWRConfig();
     const code = searchParams.get("code");
     const next = searchParams.get("next");
-    const redirect = searchParams.get("redirect")
+    const redirect = searchParams.get("redirect");
     const githubError = searchParams.get("error");
 
     useEffect(() => {
