@@ -21,6 +21,7 @@ from coreapp.flags import (
     COMMON_MWCC_PSP_FLAGS,
     COMMON_MWCC_WII_GC_FLAGS,
     COMMON_WATCOM_FLAGS,
+    COMMON_BORLAND_FLAGS,
     Flags,
     Language,
 )
@@ -184,6 +185,12 @@ class WatcomCompiler(Compiler):
     library_include_flag: str = "/IZ:"
 
 
+@dataclass(frozen=True)
+class BorlandCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
+    library_include_flag: str = ""
+
+
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
         raise APIException(
@@ -320,10 +327,11 @@ CLANG_800 = ClangCompiler(
 
 # PS1
 PSYQ_MSDOS_CC = (
-    'cpp -P "$INPUT" | unix2dos > object.oc && cp ${COMPILER_DIR}/* . && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o object.os object.oc") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "ASPSX.EXE -quiet object.os -o object.oo") && '
-    '${COMPILER_DIR}/psyq-obj-parser object.oo -o "$OUTPUT"'
+    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    'cpp -P "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} D:\\dos_src.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
 PSYQ_CC = (
@@ -404,7 +412,7 @@ PSYQ46 = GCCPS1Compiler(
 
 PS1_GCC = (
     'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
-    '${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}.i"'
+    'printf "%s" "${COMPILER_FLAGS}" | xargs -- ${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}.i"'
 )
 
 GCC257_PSX = GCCPS1Compiler(
@@ -488,13 +496,12 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 
 # Saturn
 SATURN_CC = (
-    'cat "$INPUT" | unix2dos > dos_src.c && '
-    "cp -r ${COMPILER_DIR}/* . && "
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CPP.EXE dos_src.c -o src_proc.c") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "CC1.EXE -quiet ${COMPILER_FLAGS} src_proc.c -o cc1_out.asm") && '
-    '(HOME="." /usr/bin/dosemu -quiet -dumb -K . -E "AS.EXE cc1_out.asm -o as_out.o") && '
-    "sh-elf-objcopy -Icoff-sh -Oelf32-sh as_out.o && "
-    'cp as_out.o "$OUTPUT"'
+    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    'cat "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
 CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
@@ -870,7 +877,13 @@ GCC281SNCXX = GCCCompiler(
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
-    cc='COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
+)
+
+EGCS1124C = GCCCompiler(
+    id="egcs_1.1.2-4c",
+    platform=N64,
+    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
 )
 
 GCC440MIPS64ELF = GCCCompiler(
@@ -928,7 +941,7 @@ IDO71_IRIX = IDOCompiler(
 IDO71PASCAL = IDOCompiler(
     id="ido7.1Pascal",
     platform=IRIX,
-    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
     language=Language.PASCAL,
 )
@@ -1466,6 +1479,19 @@ WATCOM_110_CPP = WatcomCompiler(
     cc=WATCOM_CXX,
 )
 
+BORLAND_MSDOS_CC = (
+    "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+    'cat "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    'cp out.o "${OUTPUT}"'
+)
+
+BORLAND_31_C = BorlandCompiler(
+    id="bcc3.1",
+    platform=MSDOS,
+    cc=BORLAND_MSDOS_CC,
+)
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
@@ -1579,6 +1605,7 @@ _all_compilers: List[Compiler] = [
     GCC281SN,
     GCC281SNCXX,
     EGCS1124,
+    EGCS1124C,
     GCC440MIPS64ELF,
     # IRIX
     IDO53_IRIX,
@@ -1675,6 +1702,8 @@ _all_compilers: List[Compiler] = [
     WATCOM_106_CPP,
     WATCOM_110_C,
     WATCOM_110_CPP,
+    # Borland, DOS
+    BORLAND_31_C,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})

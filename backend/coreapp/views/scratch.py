@@ -201,6 +201,7 @@ def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
         ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
+                diff_label=scratch.diff_label,
             )
         else:
             family = Scratch.objects.filter(slug=scratch.slug)
@@ -444,7 +445,11 @@ class ScratchViewSet(
     def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
         if scratch.target_assembly.source_asm is None:
-            return Response({"decompilation": None})
+            return Response(
+                {
+                    "decompilation": "This scratch cannot currently be run through the decompiler because it was created via object file."
+                }
+            )
 
         context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
@@ -569,6 +574,7 @@ class ScratchViewSet(
         ):
             family = Scratch.objects.filter(
                 target_assembly__hash=scratch.target_assembly.hash,
+                diff_label=scratch.diff_label,
             ).order_by("creation_time")
         else:
             family = Scratch.objects.filter(slug=scratch.slug)

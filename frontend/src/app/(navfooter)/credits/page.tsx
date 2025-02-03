@@ -8,7 +8,7 @@ import ContributorsList, {
 } from "./ContributorsList";
 import LinkList from "./LinkList";
 
-const MAINTAINER_USERNAMES = ["ethteck", "bates64"];
+const MAINTAINER_USERNAMES = ["ethteck", "bates64", "mkst"];
 const OTHER_PROJECTS = {
     "asm-differ": "https://github.com/simonlindholm/asm-differ",
     m2c: "https://github.com/matt-kempster/m2c",
@@ -96,8 +96,11 @@ export default async function Page() {
                 </h1>
                 <p className="py-4">
                     decomp.me is maintained by{" "}
-                    <Contributor contributor={maintainers[0]} /> and{" "}
-                    <Contributor contributor={maintainers[1]} />.
+                    <Contributor contributor={maintainers[0]} />
+                    {", "}
+                    <Contributor contributor={maintainers[1]} />
+                    {", and "}
+                    <Contributor contributor={maintainers[2]} />.
                 </p>
                 <div className="my-4 border-gray-6 border-y">
                     <ContributorsList contributors={contributors} />

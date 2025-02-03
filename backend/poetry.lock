@@ -51,7 +51,7 @@ watchdog = "^4.0.1"
 type = "git"
 url = "https://github.com/simonlindholm/asm-differ.git"
 reference = "HEAD"
-resolved_reference = "89e9c7044039ed18117ea45b6e1f551da49172cc"
+resolved_reference = "eba951ece61461ce03d1b49a6f065532a87b52f6"
 
 [[package]]
 name = "attrs"

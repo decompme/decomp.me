@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM --platform=linux/amd64 ubuntu:22.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -65,7 +65,7 @@ RUN curl -sSL https://install.python-poetry.org/ | \
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:0.6.12 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:0.6.16 /usr/local/sbin/wibo /usr/bin/
 
 RUN add-apt-repository -y ppa:dosemu2/ppa && \
     add-apt-repository -y ppa:stsp-0/dj64 && \
@@ -100,8 +100,11 @@ RUN if [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || [ "${ENABLE_PSP_SUPPORT}" = "YES" 
 # msdos specific
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
     wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
-    tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump && \
-    rm omftools.tar.gz; \
+    tar xvzf omftools.tar.gz -C /usr/bin jwasm && \
+    rm omftools.tar.gz && \
+    wget "https://github.com/sillyc0n/binutils-gdb/releases/download/2.42-build7/omftools-2.42-build7-linux-x86_64.tar.gz" && \
+    tar xvzf omftools-2.42-build7-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump && \
+    rm omftools-2.42-build7-linux-x86_64.tar.gz; \
     fi
 
 # Patched PowerPC binutils

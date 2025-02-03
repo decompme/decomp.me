@@ -59,6 +59,7 @@
     "mwcps2-3.0.1b210-060308": "MWCPS2 3.0.1b210 (Built 060308)",
 
     "egcs_1.1.2-4": "EGCS 1.1.2-4 (gcc egcs-2.91.66)",
+    "egcs_1.1.2-4c": "EGCS 1.1.2-4 (gcc egcs-2.91.66, decompals)",
 
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
     "gcc2.7.2sn": "GCC 2.7.2 (SN)",
@@ -217,6 +218,8 @@
     "wpp10.6": "Watcom Optimizing C++ i386 Compiler 10.6",
     "wcc11.0": "Watcom Optimizing C i386 Compiler 11.0",
     "wpp11.0": "Watcom Optimizing C++ i386 Compiler 11.0",
+
+    "bcc3.1": "Borland C i386 Compiler 3.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
@@ -457,6 +460,7 @@
     "mno_aliases": "Disable pseudo instructions",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
     "diff_function_symbols": "Include function labels in diff",
+    "diff_reloc": "Diff relocation",
 
     "diff_algorithm": "Diff algorithm",
     "diff_algorithm.-DIFFlevenshtein": "Levenshtein",

@@ -47,6 +47,7 @@ n64:
   - ido7.1
   - mips_pro_744
   - egcs_1.1.2-4
+  - egcs_1.1.2-4c
   - gcc4.4.0-mips64-elf
 
 n3ds:
@@ -185,6 +186,7 @@ msdos:
   - wcc10.5a
   - wcc10.6
   - wcc11.0
+  - bcc3.1
 
 win32:
   - msvc4.0

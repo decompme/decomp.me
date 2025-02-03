@@ -17,6 +17,10 @@ import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
+import { get } from "@/lib/api/request";
+import type { TerseScratch } from "@/lib/api/types";
+import { SingleLineScratchItem } from "@/components/ScratchList";
+import { useDebounce } from "use-debounce";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -90,6 +94,8 @@ export default function NewScratchForm({
     const [libraries, setLibraries] = useState<Library[]>([]);
     const [presetId, setPresetId] = useState<number | undefined>();
 
+    const [duplicates, setDuplicates] = useState([]);
+
     const [ready, setReady] = useState(false);
 
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
@@ -101,6 +107,10 @@ export default function NewScratchForm({
         return labels.length > 0 ? labels[0] : null;
     }, [asm]);
     const [label, setLabel] = useState<string>("");
+    const [debouncedLabel] = useDebounce(label, 1000, {
+        leading: false,
+        trailing: true,
+    });
 
     const setPreset = (preset: api.Preset) => {
         if (preset) {
@@ -278,6 +288,34 @@ export default function NewScratchForm({
         }
     };
 
+    useEffect(() => {
+        if (!debouncedLabel) {
+            // reset potential duplicates if no diff label
+            setDuplicates([]);
+            return;
+        }
+
+        const filterCandidates = (scratches: TerseScratch[]) => {
+            return scratches.filter((scratch: TerseScratch) => {
+                // search endpoint is greedy, so only match whole-name
+                if (scratch.name !== debouncedLabel) {
+                    return false;
+                }
+                // filter on preset if we have it
+                if (typeof presetId !== "undefined") {
+                    return scratch.preset === presetId;
+                }
+                // otherwise filter on platform
+                return scratch.platform === platform;
+            });
+        };
+
+        get(`/scratch?search=${debouncedLabel}`)
+            .then((x) => x.results)
+            .then(filterCandidates)
+            .then(setDuplicates);
+    }, [debouncedLabel, platform, presetId]);
+
     return (
         <div>
             <div>
@@ -348,6 +386,24 @@ export default function NewScratchForm({
                     spellCheck={false}
                 />
             </div>
+
+            {duplicates.length > 0 && (
+                <div className="-1 px-2.5 py-2 text-sm">
+                    <p>
+                        The following scratches have been found that share this
+                        name:
+                    </p>
+                    <div className="pl-2.5">
+                        {duplicates.map((scratch) => (
+                            <SingleLineScratchItem
+                                key={scratchUrl(scratch)}
+                                scratch={scratch}
+                                showOwner={true}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
             <div className="flex h-[200px] flex-col">
                 <FormLabel small="(required)">Target assembly</FormLabel>
                 <CodeMirror
