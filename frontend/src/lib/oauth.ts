@@ -8,7 +8,8 @@ export function isGitHubLoginSupported(): boolean {
 
 // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
 export function showGitHubLoginWindow(scope: string) {
-    const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${encodeURIComponent(scope)}`;
+    const redirect_uri = `${window.location.origin}/login?next=${window.location.pathname}`;
+    const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
     window.location.href = url;
 }
 
