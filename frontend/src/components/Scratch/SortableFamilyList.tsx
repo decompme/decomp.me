@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 import classNames from "classnames";
-import useSWRImmutable from "swr/immutable";
+import useSWR from "swr";
 
 import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
@@ -18,12 +18,11 @@ import Sort, {
 import UserLink from "../user/UserLink";
 
 function useFamily(scratch: TerseScratch) {
-    const { data: family } = useSWRImmutable<TerseScratch[]>(
+    const { data: family } = useSWR<TerseScratch[]>(
         `${scratchUrl(scratch)}/family`,
         get,
         {
             suspense: true,
-            refreshInterval: 1000 * 60 * 5, // 5 minutes
         },
     );
 

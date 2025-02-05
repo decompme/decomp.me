@@ -357,7 +357,6 @@ export function useCompilation(
 export function usePlatform(id: string | undefined): Platform | undefined {
     const url = typeof id === "string" ? `/platform/${id}` : null;
     const { data } = useSWRImmutable(url, get, {
-        refreshInterval: 1000 * 60 * 60, // 1 hour
         onErrorRetry,
     });
     return data;
@@ -365,7 +364,6 @@ export function usePlatform(id: string | undefined): Platform | undefined {
 
 export function useCompilers(): Record<string, Compiler> {
     const { data } = useSWRImmutable("/compiler", get, {
-        refreshInterval: 1000 * 60 * 60, // 1 hour
         suspense: true, // TODO: remove
         onErrorRetry,
     });
@@ -380,7 +378,6 @@ export function useLibraries(platform: string): LibraryVersions[] {
 
     const url = typeof platform === "string" ? "/library" : null;
     const { data } = useSWRImmutable([url, platform], getByPlatform, {
-        refreshInterval: 1000 * 60 * 60, // 1 hour
         onErrorRetry,
     });
 
@@ -398,7 +395,7 @@ export function usePresets(platform: string): Preset[] {
 
     const url = typeof platform === "string" ? "/preset" : null;
     const { data } = useSWRImmutable([url, platform], getByPlatform, {
-        refreshInterval: 1000 * 60 * 60, // 1 hour
+        refreshInterval: 1000 * 60 * 1, // 1 minute
         onErrorRetry,
     });
 
@@ -408,7 +405,7 @@ export function usePresets(platform: string): Preset[] {
 export function usePreset(id: number | undefined): Preset | undefined {
     const url = typeof id === "number" ? `/preset/${id}` : null;
     const { data } = useSWRImmutable(url, get, {
-        refreshInterval: 1000 * 60 * 60, // 1 hour
+        refreshInterval: 1000 * 60 * 1, // 1 minute
         onErrorRetry,
     });
     return data;
@@ -489,7 +486,7 @@ export interface Stats {
 
 export function useStats(): Stats | undefined {
     const { data, error } = useSWR<Stats>("/stats", get, {
-        refreshInterval: 5000,
+        refreshInterval: 1000 * 5, // 5 seconds
     });
 
     if (error) {
