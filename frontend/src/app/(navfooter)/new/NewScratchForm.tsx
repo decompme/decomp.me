@@ -18,11 +18,32 @@ import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
 import { get } from "@/lib/api/request";
-
-import styles from "./new.module.scss";
 import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchList";
 import { useDebounce } from "use-debounce";
+
+interface FormLabelProps {
+    children: React.ReactNode;
+    htmlEl?: string;
+    small?: string;
+}
+
+function FormLabel({ children, htmlEl, small }: FormLabelProps) {
+    const Tag = htmlEl ? "label" : "p";
+    return (
+        <Tag
+            className="m-0 block p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
+            {...(htmlEl && { htmlEl })}
+        >
+            {children}
+            {small && (
+                <small className="pl-2 font-normal text-[0.8em] text-[color:var(--g800)]">
+                    {small}
+                </small>
+            )}
+        </Tag>
+    );
+}
 
 function getLabels(asm: string): string[] {
     const lines = asm.split("\n");
@@ -298,7 +319,7 @@ export default function NewScratchForm({
     return (
         <div>
             <div>
-                <p className={styles.label}>Platform</p>
+                <FormLabel>Platform</FormLabel>
                 <PlatformSelect
                     platforms={serverCompilers.platforms}
                     value={platform}
@@ -310,26 +331,28 @@ export default function NewScratchForm({
             </div>
 
             <div>
-                <p className={styles.label}>Compiler</p>
-                <div className={styles.compilerContainer}>
-                    <div>
-                        <span className={styles.compilerChoiceHeading}>
+                <FormLabel>Compiler</FormLabel>
+                <div className="flex cursor-default select-none items-center justify-between max-[400px]:flex-col">
+                    <div className="flex w-full flex-1 flex-col">
+                        <span className="px-2.5 py-0.5 text-[0.8rem] text-[color:var(--g800)]">
                             Select a compiler
                         </span>
                         <Select
-                            className={styles.compilerChoiceSelect}
+                            className="w-full"
                             options={compilerChoiceOptions}
                             value={compilerId}
                             onChange={setCompiler}
                         />
                     </div>
-                    <div className={styles.compilerChoiceOr}>or</div>
-                    <div>
-                        <span className={styles.compilerChoiceHeading}>
+                    <div className="flex-0 px-2 py-2 text-center text-[0.8rem] text-[color:var(--g500)] min-[400px]:px-4">
+                        or
+                    </div>
+                    <div className="flex w-full flex-1 flex-col">
+                        <span className="px-2.5 py-0.5 text-[0.8rem] text-[color:var(--g800)]">
                             Select a preset
                         </span>
                         <PresetSelect
-                            className={styles.compilerChoiceSelect}
+                            className="w-full"
                             platform={platform}
                             presetId={presetId}
                             setPreset={setPreset}
@@ -343,10 +366,12 @@ export default function NewScratchForm({
             </div>
 
             <div>
-                <label className={styles.label} htmlFor="label">
-                    Diff label{" "}
-                    <small>(asm label from which the diff will begin)</small>
-                </label>
+                <FormLabel
+                    htmlEl="label"
+                    small="(asm label from which the diff will begin)"
+                >
+                    Diff label
+                </FormLabel>
                 <input
                     name="label"
                     type="text"
@@ -355,19 +380,20 @@ export default function NewScratchForm({
                     onChange={(e) =>
                         setLabel((e.target as HTMLInputElement).value)
                     }
-                    className={styles.textInput}
+                    className="w-full rounded border border-[color:var(--g500)] bg-[color:var(--g200)] px-2.5 py-2 font-mono text-[0.8rem] text-[color:var(--g1200)] placeholder-[color:var(--g700)] outline-none"
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
                 />
             </div>
+
             {duplicates.length > 0 && (
-                <div className={styles.duplicatesContainer}>
+                <div className="-1 px-2.5 py-2 text-sm">
                     <p>
                         The following scratches have been found that share this
                         name:
                     </p>
-                    <div className={styles.duplicatesList}>
+                    <div className="pl-2.5">
                         {duplicates.map((scratch) => (
                             <SingleLineScratchItem
                                 key={scratchUrl(scratch)}
@@ -378,28 +404,22 @@ export default function NewScratchForm({
                     </div>
                 </div>
             )}
-            <div className={styles.editorContainer}>
-                <p className={styles.label}>
-                    Target assembly <small>(required)</small>
-                </p>
+            <div className="flex h-[200px] flex-col">
+                <FormLabel small="(required)">Target assembly</FormLabel>
                 <CodeMirror
-                    className={styles.editor}
+                    className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
                     value={asm}
                     valueVersion={valueVersion}
                     onChange={setAsm}
                     extensions={basicSetup}
                 />
             </div>
-            <div className={styles.editorContainer}>
-                <p className={styles.label}>
-                    Context{" "}
-                    <small>
-                        (any typedefs, structs, and declarations you would like
-                        to include go here; typically generated with m2ctx.py)
-                    </small>
-                </p>
+            <div className="flex h-[200px] flex-col">
+                <FormLabel small="(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)">
+                    Context
+                </FormLabel>
                 <CodeMirror
-                    className={styles.editor}
+                    className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
                     value={context}
                     valueVersion={valueVersion}
                     onChange={setContext}
@@ -417,12 +437,18 @@ export default function NewScratchForm({
                 >
                     Create scratch
                 </AsyncButton>
-                <p className={styles.privacyNotice}>
+                <p className="pt-4 text-[0.9rem] text-[color:var(--g1200)]">
                     decomp.me will store any data you submit and link it to your
                     session.
                     <br />
                     For more information, see our{" "}
-                    <Link href="/privacy">privacy policy</Link>.
+                    <Link
+                        href="/privacy"
+                        className="text-[color:var(--link)] hover:underline"
+                    >
+                        privacy policy
+                    </Link>
+                    .
                 </p>
             </div>
         </div>
