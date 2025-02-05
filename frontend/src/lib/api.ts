@@ -53,10 +53,7 @@ export * from "./api/request";
 export * from "./api/types";
 
 export function useThisUser(): User | AnonymousUser | undefined {
-    const { data: user, error } = useSWRImmutable<AnonymousUser | User>(
-        "/user",
-        get,
-    );
+    const { data: user, error } = useSWR<AnonymousUser | User>("/user", get);
 
     if (error) {
         throw error;
