@@ -51,6 +51,7 @@ def set_user_profile(
             "node" in request.headers["User-Agent"]
             or "undici" in request.headers["User-Agent"]
             or "Next.js Middleware" in request.headers["User-Agent"]
+            or "python-requests" in request.headers["User-Agent"]
         ):
             request.profile = Profile()
             return get_response(request)
