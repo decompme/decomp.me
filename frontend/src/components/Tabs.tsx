@@ -28,16 +28,13 @@ const TABS_CTX = createContext<Context>(null);
 
 export function TabCloseButton({ onClick }: { onClick: () => void }) {
     return (
-        <button
+        <div
             aria-label="Close"
             className={styles.closeButton}
-            onClick={(evt) => {
-                evt.stopPropagation(); // Don't activate the tab
-                onClick();
-            }}
+            onClick={onClick}
         >
             <XIcon />
-        </button>
+        </div>
     );
 }
 
