@@ -59,8 +59,8 @@ jobs:
         run: |-
           wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
           sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm
-          wget https://github.com/sillyc0n/binutils-gdb/releases/download/2.42-build7/omftools-2.42-build7-linux-x86_64.tar.gz
-          sudo tar xvzf omftools-2.42-build7-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump
+          wget https://github.com/decompals/binutils-omf/releases/download/v0.1/omftools-linux-x86_64.tar.gz
+          sudo tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump
       - name: Install mips PS2 binutils
         run: |-
           wget https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz
