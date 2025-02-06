@@ -53,7 +53,10 @@ export * from "./api/request";
 export * from "./api/types";
 
 export function useThisUser(): User | AnonymousUser | undefined {
-    const { data: user, error } = useSWR<AnonymousUser | User>("/user", get);
+    const { data: user, error } = useSWRImmutable<AnonymousUser | User>(
+        "/user",
+        get,
+    );
 
     if (error) {
         throw error;
@@ -361,11 +364,14 @@ export function usePlatform(id: string | undefined): Platform | undefined {
 }
 
 export function useCompilers(): Record<string, Compiler> {
-    const { data } = useSWRImmutable("/compiler", get, {
+    const { data, isLoading } = useSWRImmutable("/compiler", get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
-        suspense: true, // TODO: remove
         onErrorRetry,
     });
+
+    if (isLoading) return {};
+
+    console.log("Returning compilers...", data);
 
     return data.compilers;
 }
