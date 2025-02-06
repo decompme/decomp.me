@@ -371,8 +371,6 @@ export function useCompilers(): Record<string, Compiler> {
 
     if (isLoading) return {};
 
-    console.log("Returning compilers...", data);
-
     return data.compilers;
 }
 
