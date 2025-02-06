@@ -366,10 +366,9 @@ export function usePlatform(id: string | undefined): Platform | undefined {
 export function useCompilers(): Record<string, Compiler> {
     const { data, isLoading } = useSWRImmutable("/compiler", get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
+        suspense: true, // TODO: remove
         onErrorRetry,
     });
-
-    if (isLoading) return {};
 
     return data.compilers;
 }
