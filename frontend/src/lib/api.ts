@@ -354,6 +354,7 @@ export function useCompilation(
 export function usePlatform(id: string | undefined): Platform | undefined {
     const url = typeof id === "string" ? `/platform/${id}` : null;
     const { data } = useSWRImmutable(url, get, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
     return data;
@@ -361,6 +362,7 @@ export function usePlatform(id: string | undefined): Platform | undefined {
 
 export function useCompilers(): Record<string, Compiler> {
     const { data } = useSWRImmutable("/compiler", get, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         suspense: true, // TODO: remove
         onErrorRetry,
     });
@@ -375,6 +377,7 @@ export function useLibraries(platform: string): LibraryVersions[] {
 
     const url = typeof platform === "string" ? "/library" : null;
     const { data } = useSWRImmutable([url, platform], getByPlatform, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
 
