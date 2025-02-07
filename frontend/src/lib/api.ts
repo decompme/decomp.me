@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr";
+import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
 
 import { ResponseError, get, post, patch } from "./api/request";
@@ -52,7 +53,10 @@ export * from "./api/request";
 export * from "./api/types";
 
 export function useThisUser(): User | AnonymousUser | undefined {
-    const { data: user, error } = useSWR<AnonymousUser | User>("/user", get);
+    const { data: user, error } = useSWRImmutable<AnonymousUser | User>(
+        "/user",
+        get,
+    );
 
     if (error) {
         throw error;
@@ -352,16 +356,16 @@ export function useCompilation(
 
 export function usePlatform(id: string | undefined): Platform | undefined {
     const url = typeof id === "string" ? `/platform/${id}` : null;
-    const { data } = useSWR(url, get, {
-        refreshInterval: 0,
+    const { data } = useSWRImmutable(url, get, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
     return data;
 }
 
 export function useCompilers(): Record<string, Compiler> {
-    const { data } = useSWR("/compiler", get, {
-        refreshInterval: 0,
+    const { data, isLoading } = useSWRImmutable("/compiler", get, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         suspense: true, // TODO: remove
         onErrorRetry,
     });
@@ -375,8 +379,8 @@ export function useLibraries(platform: string): LibraryVersions[] {
     };
 
     const url = typeof platform === "string" ? "/library" : null;
-    const { data } = useSWR([url, platform], getByPlatform, {
-        refreshInterval: 0,
+    const { data } = useSWRImmutable([url, platform], getByPlatform, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
 
@@ -393,8 +397,8 @@ export function usePresets(platform: string): Preset[] {
     };
 
     const url = typeof platform === "string" ? "/preset" : null;
-    const { data } = useSWR([url, platform], getByPlatform, {
-        refreshInterval: 0,
+    const { data } = useSWRImmutable([url, platform], getByPlatform, {
+        refreshInterval: 1000 * 60 * 1, // 1 minute
         onErrorRetry,
     });
 
@@ -403,8 +407,8 @@ export function usePresets(platform: string): Preset[] {
 
 export function usePreset(id: number | undefined): Preset | undefined {
     const url = typeof id === "number" ? `/preset/${id}` : null;
-    const { data } = useSWR(url, get, {
-        refreshInterval: 0,
+    const { data } = useSWRImmutable(url, get, {
+        refreshInterval: 1000 * 60 * 1, // 1 minute
         onErrorRetry,
     });
     return data;
@@ -485,7 +489,7 @@ export interface Stats {
 
 export function useStats(): Stats | undefined {
     const { data, error } = useSWR<Stats>("/stats", get, {
-        refreshInterval: 5000,
+        refreshInterval: 1000 * 5, // 5 seconds
     });
 
     if (error) {
