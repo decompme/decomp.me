@@ -568,7 +568,10 @@ class ScratchViewSet(
             assert scratch.target_assembly.source_asm is not None
 
             family = Scratch.objects.filter(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
+                Q(
+                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
+                )
+                | Q(slug__in=parent_slugs)
             ).order_by("creation_time")
         elif (
             scratch.target_assembly.elf_object is not None
