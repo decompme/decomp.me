@@ -569,8 +569,7 @@ class ScratchViewSet(
 
             family = Scratch.objects.filter(
                 Q(
-                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-                    diff_label=scratch.diff_label,
+                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
                 )
                 | Q(slug__in=parent_slugs)
             ).order_by("creation_time")
