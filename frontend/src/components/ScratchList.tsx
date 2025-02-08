@@ -16,12 +16,13 @@ import getTranslation from "@/lib/i18n/translate";
 import AnonymousFrogAvatar from "./user/AnonymousFrog";
 import AsyncButton from "./AsyncButton";
 import Button from "./Button";
-import LoadingSpinner from "./loading.svg";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchList.module.scss";
 import Sort, { SortMode } from "./Sort";
 import UserLink from "./user/UserLink";
+
+import { TextSkeleton, SCRATCH_LIST } from "./TextSkeleton";
 
 export interface Props {
     title?: string;
@@ -40,20 +41,11 @@ export default function ScratchList({
     emptyButtonLabel,
     isSortable,
 }: Props) {
-    const [sortMode, setSortBy] = useState(SortMode.NEWEST_FIRST);
+    const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
     const { results, isLoading, hasNext, loadNext } =
         api.usePaginated<api.TerseScratch>(
             `${url || "/scratch"}&ordering=${sortMode.toString()}`,
         );
-
-    if (results.length === 0 && isLoading) {
-        return (
-            <div className={classNames(styles.loading, className)}>
-                <LoadingSpinner width="1.5em" height="1.5em" />
-                Just a moment...
-            </div>
-        );
-    }
 
     const Item = item || ScratchItem;
 
@@ -62,32 +54,38 @@ export default function ScratchList({
             <div className="flex justify-between pb-2">
                 <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 {isSortable && (
-                    <Sort sortMode={sortMode} setSortMode={setSortBy} />
+                    <Sort sortMode={sortMode} setSortMode={setSortMode} />
                 )}
             </div>
-            <ul
-                className={classNames(
-                    styles.list,
-                    "rounded-md border-gray-6 text-sm",
-                    className,
-                )}
-            >
-                {results.map((scratch) => (
-                    <Item key={scratchUrl(scratch)} scratch={scratch} />
-                ))}
-                {results.length === 0 && emptyButtonLabel && (
-                    <li className={styles.button}>
-                        <Link href="/new">
-                            <Button>{emptyButtonLabel}</Button>
-                        </Link>
-                    </li>
-                )}
-                {hasNext && (
-                    <li className={styles.button}>
-                        <AsyncButton onClick={loadNext}>Show more</AsyncButton>
-                    </li>
-                )}
-            </ul>
+            {results.length === 0 && isLoading ? (
+                <TextSkeleton text={SCRATCH_LIST} />
+            ) : (
+                <ul
+                    className={classNames(
+                        styles.list,
+                        "rounded-md border-gray-6 text-sm",
+                        className,
+                    )}
+                >
+                    {results.map((scratch) => (
+                        <Item key={scratchUrl(scratch)} scratch={scratch} />
+                    ))}
+                    {results.length === 0 && emptyButtonLabel && (
+                        <li className={styles.button}>
+                            <Link href="/new">
+                                <Button>{emptyButtonLabel}</Button>
+                            </Link>
+                        </li>
+                    )}
+                    {hasNext && (
+                        <li className={styles.button}>
+                            <AsyncButton onClick={loadNext}>
+                                Show more
+                            </AsyncButton>
+                        </li>
+                    )}
+                </ul>
+            )}
         </>
     );
 }
