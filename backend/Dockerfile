@@ -3,28 +3,30 @@ FROM --platform=linux/amd64 ubuntu:22.04 as base
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3 \
-    python-is-python3 \
-    python3.10-venv \
-    python3.10-dev
+        ca-certificates \
+        python-is-python3 \
+        python3 \
+        python3-pip \
+        python3.10-dev \
+        python3.10-venv \
+        software-properties-common
 
 
 FROM base AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
-    autoconf \
-    bison \
-    flex \
-    gcc \
-    g++ \
-    git \
-    libprotobuf-dev \
-    libnl-route-3-dev \
-    libtool \
-    make \
-    pkg-config \
-    protobuf-compiler
+        autoconf \
+        bison \
+        flex \
+        g++ \
+        gcc \
+        git \
+        libnl-route-3-dev \
+        libprotobuf-dev \
+        libtool \
+        make \
+        pkg-config \
+        protobuf-compiler
 
 RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjail \
     && cd /nsjail \
@@ -33,31 +35,36 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
 
 FROM base AS build
 
-RUN apt-get -y update && apt-get install -y \
-    binutils-aarch64-linux-gnu \
-    binutils-arm-none-eabi \
-    binutils-djgpp \
-    binutils-mips-linux-gnu \
-    binutils-powerpc-linux-gnu \
-    binutils-sh-elf \
-    binutils-mingw-w64-i686 \
-    ca-certificates \
-    curl \
-    dos2unix \
-    gcc-mips-linux-gnu \
-    git \
-    iptables \
-    libarchive-tools \
-    libc6-dev-i386 \
-    libdevmapper1.02.1 \
-    libgpgme11 \
-    libnl-route-3-200 \
-    libprotobuf-dev \
-    libtinfo5 \
-    netcat \
-    software-properties-common \
-    unzip \
-    wget \
+RUN dpkg --add-architecture i386 \
+    && add-apt-repository -y ppa:dosemu2/ppa \
+    && add-apt-repository -y ppa:stsp-0/dj64 \
+    && apt-get update \
+    && apt-get install -y -o APT::Immediate-Configure=false \
+        binutils-aarch64-linux-gnu \
+        binutils-arm-none-eabi \
+        binutils-djgpp \
+        binutils-mingw-w64-i686 \
+        binutils-mips-linux-gnu \
+        binutils-powerpc-linux-gnu \
+        binutils-sh-elf \
+        curl \
+        dj64 \
+        dos2unix \
+        dosemu2 \
+        gcc-mips-linux-gnu \
+        git \
+        iptables \
+        libarchive-tools \
+        libc6-dev-i386 \
+        libdevmapper1.02.1 \
+        libgpgme11 \
+        libnl-route-3-200 \
+        libprotobuf-dev \
+        libtinfo5 \
+        netcat \
+        unzip \
+        wget \
+        wine \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
@@ -67,53 +74,24 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY --from=ghcr.io/decompals/wibo:0.6.16 /usr/local/sbin/wibo /usr/bin/
 
-RUN add-apt-repository -y ppa:dosemu2/ppa && \
-    add-apt-repository -y ppa:stsp-0/dj64 && \
-    apt-get update && \
-    apt-get install -y dosemu2 dj64
-
-# windows compilers need i386 wine
-
-ARG ENABLE_MSDOS_SUPPORT
-ARG ENABLE_PS2_SUPPORT
-ARG ENABLE_WIN32_SUPPORT
-ARG ENABLE_DREAMCAST_SUPPORT
-RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_DREAMCAST_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
-    dpkg --add-architecture i386 && apt-get update && \
-    apt-get install -y -o APT::Immediate-Configure=false \
-    wine; \
-    fi
-
-ARG ENABLE_PSP_SUPPORT
-
 # Patched mips binutils
-RUN if [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || [ "${ENABLE_PSP_SUPPORT}" = "YES" ]; then \
-    wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" && \
-    tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump && \
-    rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz && \
-    chmod +x /usr/bin/mips-ps2-decompals-*; \
-    fi
-
-# msdos specific
-RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ]; then \
-    wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" && \
-    tar xvzf omftools.tar.gz -C /usr/bin jwasm && \
-    rm omftools.tar.gz && \
-    wget "https://github.com/decompals/binutils-omf/releases/download/v0.1/omftools-linux-x86_64.tar.gz" && \
-    tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump && \
-    rm omftools-linux-x86_64.tar.gz; \
-    fi
+RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
+    && tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump \
+    && rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz \
+    && chmod +x /usr/bin/mips-ps2-decompals-*
 
 # Patched PowerPC binutils
-ARG ENABLE_GC_WII_SUPPORT
-RUN if [ "${ENABLE_GC_WII_SUPPORT}" = "YES" ]; then \
-    curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
-    bsdtar -xvf- -C /usr/bin && \
-    chmod +x /usr/bin/powerpc-eabi-*; \
-    fi
+RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-x86_64.zip" | \
+    bsdtar -xvf- -C /usr/bin \
+    && chmod +x /usr/bin/powerpc-eabi-*
+
+# MSDOS specific
+RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
+    && tar xvzf omftools.tar.gz -C /usr/bin jwasm \
+    && rm omftools.tar.gz \
+    && wget "https://github.com/decompals/binutils-omf/releases/download/v0.1/omftools-linux-x86_64.tar.gz" \
+    && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
+    && rm omftools-linux-x86_64.tar.gz
 
 RUN mkdir -p /etc/fonts
 
@@ -121,43 +99,42 @@ WORKDIR /backend
 
 ENV WINEPREFIX=/tmp/wine
 
-# create a non-root user & /sandbox with correct ownership
+# Create a non-root user & /sandbox with correct ownership
 RUN useradd --create-home user \
     && mkdir -p /sandbox \
     && chown -R user:user /sandbox \
     && mkdir -p "${WINEPREFIX}" \
     && chown user:user "${WINEPREFIX}"
 
-# switch to non-root user
+# Switch to non-root user
 USER user
 
-# initialize wine files to /home/user/.wine
-RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_DREAMCAST_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
-    wineboot --init; \
-    fi
+# Initialize wine files to /home/user/.wine
+RUN wineboot --init
 
 ENV PATH="$PATH:/etc/poetry/bin"
 
-# no special dependencies required for these platforms
+ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT
+ARG ENABLE_GC_WII_SUPPORT
 ARG ENABLE_MACOSX_SUPPORT
+ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_N3DS_SUPPORT
 ARG ENABLE_N64_SUPPORT
 ARG ENABLE_NDS_ARM9_SUPPORT
 ARG ENABLE_PS1_SUPPORT
+ARG ENABLE_PS2_SUPPORT
+ARG ENABLE_PSP_SUPPORT
 ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
+ARG ENABLE_WIN32_SUPPORT
 
+ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT}
 ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
 ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
 ENV ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT}
 ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
 ENV ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT}
-ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT}
 ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
 ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
 ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
