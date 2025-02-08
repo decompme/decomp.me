@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 import django_filters
 from coreapp import compilers, platforms
 from django.core.files import File
-from django.db.models import F, FloatField, When, Case, Value
+from django.db.models import F, FloatField, When, Case, Value, Q
 from django.db.models.functions import Cast
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
@@ -562,22 +562,32 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
+        parent_slugs = [p.slug for p in scratch.all_parents()]
+
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None
 
             family = Scratch.objects.filter(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
+                Q(
+                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
+                )
+                | Q(slug__in=parent_slugs)
             ).order_by("creation_time")
         elif (
             scratch.target_assembly.elf_object is not None
             and len(scratch.target_assembly.elf_object) > 0
         ):
             family = Scratch.objects.filter(
-                target_assembly__hash=scratch.target_assembly.hash,
-                diff_label=scratch.diff_label,
+                Q(
+                    target_assembly__hash=scratch.target_assembly.hash,
+                    diff_label=scratch.diff_label,
+                )
+                | Q(slug__in=parent_slugs)
             ).order_by("creation_time")
         else:
-            family = Scratch.objects.filter(slug=scratch.slug)
+            family = Scratch.objects.filter(
+                Q(slug=scratch.slug) | Q(slug__in=parent_slugs)
+            )
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
