@@ -46,12 +46,15 @@ def set_user_profile(
     """
 
     def middleware(request: Request) -> Response:
+        user_agent = request.headers.get("User-Agent")
+
         # Skip if the request is from SSR
-        if "User-Agent" in request.headers and (
-            "node" in request.headers["User-Agent"]
-            or "undici" in request.headers["User-Agent"]
-            or "Next.js Middleware" in request.headers["User-Agent"]
-            or "python-requests" in request.headers["User-Agent"]
+        if user_agent and (
+            "node" in user_agent
+            or "undici" in user_agent
+            or "Next.js Middleware" in user_agent
+            or "python-requests" in user_agent
+            or "YandexRenderResourcesBot" in user_agent
         ):
             request.profile = Profile()
             return get_response(request)
