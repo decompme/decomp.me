@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04 as base
+FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y \
         python-is-python3 \
         python3 \
         python3-pip \
-        python3.10-dev \
-        python3.10-venv \
+        python3.12-dev \
+        python3.12-venv \
         software-properties-common
 
 
@@ -28,7 +28,7 @@ RUN apt-get -y update && apt-get install -y \
         pkg-config \
         protobuf-compiler
 
-RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjail \
+RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.4 /nsjail \
     && cd /nsjail \
     && make
 
@@ -60,15 +60,15 @@ RUN dpkg --add-architecture i386 \
         libgpgme11 \
         libnl-route-3-200 \
         libprotobuf-dev \
-        libtinfo5 \
-        netcat \
+        libtinfo6 \
+        netcat-traditional \
         unzip \
         wget \
         wine \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=1.8.4 POETRY_HOME=/etc/poetry python3.10 -
+    POETRY_VERSION=1.8.4 POETRY_HOME=/etc/poetry python3.12 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -99,17 +99,16 @@ WORKDIR /backend
 
 ENV WINEPREFIX=/tmp/wine
 
-# Create a non-root user & /sandbox with correct ownership
-RUN useradd --create-home user \
-    && mkdir -p /sandbox \
-    && chown -R user:user /sandbox \
+# Ensure /sandbox and wine dirs have correct ownership
+RUN mkdir -p /sandbox \
+    && chown -R ubuntu:ubuntu /sandbox \
     && mkdir -p "${WINEPREFIX}" \
-    && chown user:user "${WINEPREFIX}"
+    && chown ubuntu:ubuntu "${WINEPREFIX}"
 
 # Switch to non-root user
-USER user
+USER ubuntu
 
-# Initialize wine files to /home/user/.wine
+# Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
 ENV PATH="$PATH:/etc/poetry/bin"

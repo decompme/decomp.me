@@ -7,90 +7,110 @@ on:
 jobs:
   full_test_and_build:
     name: full test and build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: poetry
-          cache-dependency-path: backend/poetry.lock
-      - name: Install backend Python dependencies
-        run: cd backend && poetry install --no-root
       - name: Install apt dependencies (initial)
         run: |-
-          sudo dpkg --add-architecture i386
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-get update -qq
-          sudo apt-get install -yqq --allow-downgrades libc6:i386 libgcc-s1:i386 libstdc++6:i386 wine
-
-          sudo apt-get install \
+          sudo apt-get update
+          sudo apt-get install -y \
             ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          sudo apt-get update -qq
-          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-          sudo apt-get install \
+            python-is-python3 \
+            python3 \
+            python3-pip \
+            python3.12-dev \
+            python3.12-venv \
+            software-properties-common
+      - name: Install apt dependencies (nsjail)
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            bison \
+            flex \
+            g++ \
+            gcc \
+            git \
+            libnl-route-3-dev \
+            libprotobuf-dev \
+            libtool \
+            make \
+            pkg-config \
+            protobuf-compiler
+      - name: Install apt dependencies (decomp.me)
+        run: |-
+          sudo dpkg --add-architecture i386
+          sudo add-apt-repository -y ppa:stsp-0/dj64
+          sudo add-apt-repository -y ppa:dosemu2/ppa
+          sudo apt-get update
+          sudo apt-get install -y -o APT::Immediate-Configure=false \
             binutils-aarch64-linux-gnu \
             binutils-arm-none-eabi \
             binutils-djgpp \
+            binutils-mingw-w64-i686 \
             binutils-mips-linux-gnu \
             binutils-powerpc-linux-gnu \
             binutils-sh-elf \
-            binutils-mingw-w64-i686 \
+            curl \
+            dj64 \
             dos2unix \
+            dosemu2 \
+            gcc-mips-linux-gnu \
+            git \
+            iptables \
             libarchive-tools \
+            libc6-dev-i386 \
+            libdevmapper1.02.1 \
+            libgpgme11 \
+            libnl-route-3-200 \
             libprotobuf-dev \
-            libnl-route-3-dev \
-            libncurses5 \
-            protobuf-compiler
-      - name: Install msdos assembler
+            libtinfo6 \
+            netcat-traditional \
+            unzip \
+            wget \
+            wine
+
+      - name: Install nsjail
         run: |-
-          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
-          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm
-          wget https://github.com/decompals/binutils-omf/releases/download/v0.1/omftools-linux-x86_64.tar.gz
-          sudo tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump
+          git clone --recursive --branch=3.4 https://github.com/google/nsjail
+          make -C nsjail
+          sudo cp nsjail/nsjail /usr/bin/
+
       - name: Install mips PS2 binutils
         run: |-
           wget https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz
           sudo tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump
-      - name: Install apt dependencies (cached)
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu binutils-sh-elf dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine software-properties-common
-          version: 1.0
-      - name: Install DOSEMU
-        run: |-
-          sudo add-apt-repository -y ppa:stsp-0/dj64
-          sudo add-apt-repository -y ppa:dosemu2/ppa
-          sudo apt-get update
-          sudo apt-get install -y dj64 dosemu2
-      - name: Install nsjail
-        run: |-
-          git clone --recursive --branch=3.1 https://github.com/google/nsjail
-          make -C nsjail
-          sudo cp nsjail/nsjail /usr/bin/
+
       - name: Install GC/Wii binutils
         run: |-
           curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
             sudo bsdtar -xvf- -C /usr/bin
           sudo chmod +x /usr/bin/powerpc-eabi-*
-      - name: Cache compilers
-        uses: actions/cache@v4
+
+      - name: Install MSDOS binutils
+        run: |-
+          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
+          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm
+          wget https://github.com/decompals/binutils-omf/releases/download/v0.1/omftools-linux-x86_64.tar.gz
+          sudo tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump
+
+      - name: Install wibo
+        run: |-
+          wget https://github.com/decompals/wibo/releases/download/0.6.16/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
         with:
-          path: backend/compilers/download_cache
-          key: ${{ runner.os }}-compilers-${{ hashFiles('backend/compilers/compilers.*.yaml') }}
+          python-version: "3.12"
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+      - name: Install backend Python dependencies
+        run: cd backend && poetry install --no-root
+
       - name: Download compilers
         run: |-
           cd backend
@@ -99,9 +119,6 @@ jobs:
         run: |-
           cd backend
           poetry run python3 libraries/download.py
-      - name: Install wibo
-        run: |-
-          wget https://github.com/decompals/wibo/releases/download/0.6.16/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
 
       - name: Run backend tests
         run: |-
@@ -141,10 +158,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - name: Setup Python 3.10
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - name: Install Poetry
@@ -160,19 +177,12 @@ jobs:
 
   backend_test_docker:
     name: backend tests (docker)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Build decompme_backend image
         run: |-
-          docker build backend \
-            -t decompme_backend \
-            --build-arg ENABLE_MSDOS_SUPPORT=YES \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES \
-            --build-arg ENABLE_PS2_SUPPORT=YES \
-            --build-arg ENABLE_SATURN_SUPPORT=YES \
-            --build-arg ENABLE_DREAMCAST_SUPPORT=YES \
-            --build-arg ENABLE_WIN32_SUPPORT=YES
+          docker build backend -t decompme_backend
       - name: Run tests
         run: |-
           mkdir -p sandbox && chmod 777 sandbox
@@ -204,7 +214,7 @@ jobs:
 
   frontend_lint:
     name: biome
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 20
@@ -220,15 +230,15 @@ jobs:
 
   mypy:
     name: mypy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - name: Setup Python 3.10
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: poetry
           cache-dependency-path: backend/poetry.lock
       - run: |-
@@ -238,7 +248,7 @@ jobs:
 
   black:
     name: black
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
