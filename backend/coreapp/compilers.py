@@ -1176,22 +1176,26 @@ MWCC_43_213 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
-PRODG_CC = (
-    'cpp -E "${INPUT}" -o "${INPUT}".i && '
-    "${WINE} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
-    "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
+PRODG_NGC_CC = (
+    "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
 )
 
 PRODG_35 = GCCCompiler(
     id="prodg_35",
     platform=GC_WII,
-    cc=PRODG_CC,
+    cc=PRODG_NGC_CC,
 )
 
 PRODG_37 = GCCCompiler(
     id="prodg_37",
     platform=GC_WII,
-    cc=PRODG_CC,
+    cc=PRODG_NGC_CC,
+)
+
+PRODG_CC = (
+    'cpp -E "${INPUT}" -o "${INPUT}".i && '
+    "${WINE} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
+    "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
 )
 
 PRODG_393 = GCCCompiler(
