@@ -1,4 +1,3 @@
-import json
 import logging
 import subprocess
 import shlex
@@ -236,9 +235,10 @@ class DiffWrapper:
                 None, elf_object, basedump, config
             )
         except AssertionError as e:
-            logger.exception("Error preprocessing dump")
+            logger.exception("Error preprocessing dump: %s", e)
             raise DiffError(f"Error preprocessing dump: {e}")
         except Exception as e:
+            logger.exception("Error preprocessing dump: %s", e)
             raise DiffError(f"Error preprocessing dump: {e}")
 
         return basedump
@@ -281,6 +281,7 @@ class DiffWrapper:
                 objdump_flags,
             )
         except Exception as e:
+            logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
         try:
             mydump = DiffWrapper.get_dump(
@@ -292,6 +293,7 @@ class DiffWrapper:
         try:
             result = DiffWrapper.run_diff(basedump, mydump, config)
         except Exception as e:
+            logger.exception("Error running asm-differ: %s", e)
             raise DiffError(f"Error running asm-differ: {e}")
 
         return DiffResult(result)
