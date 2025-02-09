@@ -1176,9 +1176,7 @@ MWCC_43_213 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
-PRODG_NGC_CC = (
-    "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
-)
+PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
 
 PRODG_35 = GCCCompiler(
     id="prodg_35",
