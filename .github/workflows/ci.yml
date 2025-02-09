@@ -69,6 +69,12 @@ jobs:
             wget \
             wine
 
+      # FIXME: clang needs libtinfo5 which is not available on Ubuntu 24.04
+      - name: Install libtinfo5 for clang
+        run: |-
+          wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+          sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+
       - name: Install nsjail
         run: |-
           git clone --recursive --branch=3.4 https://github.com/google/nsjail
