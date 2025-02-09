@@ -191,7 +191,7 @@ jobs:
             -e LIBRARY_BASE_PATH=/libraries \
             -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
-            -e USE_SANDBOX_JAIL=on \
+            -e USE_SANDBOX_JAIL=off \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
             decompme_backend \
