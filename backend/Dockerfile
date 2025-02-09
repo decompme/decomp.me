@@ -67,6 +67,10 @@ RUN dpkg --add-architecture i386 \
         wine \
     && rm -rf /var/lib/apt/lists/*
 
+RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
+    && apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb \
+    && rm libtinfo5_6.3-2ubuntu0.1_amd64.deb
+
 RUN curl -sSL https://install.python-poetry.org/ | \
     POETRY_VERSION=1.8.4 POETRY_HOME=/etc/poetry python3.12 -
 

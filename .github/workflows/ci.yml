@@ -202,6 +202,11 @@ jobs:
             -v $(pwd)/libraries:/libraries \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e LIBRARY_BASE_PATH=/libraries \

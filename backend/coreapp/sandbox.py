@@ -86,13 +86,14 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
             "--env", "WINEDEBUG=-all",
             "--env", "WINEPREFIX=/wine",
+            "--verbose",
         ]
         # fmt: on
         if settings.SANDBOX_DISABLE_PROC:
             wrapper.append("--disable_proc")  # needed for running inside Docker
 
-        if not settings.DEBUG:
-            wrapper.append("--really_quiet")
+        # if not settings.DEBUG:
+        #     wrapper.append("--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
         for key in env:
