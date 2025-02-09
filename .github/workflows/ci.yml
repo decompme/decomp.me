@@ -191,6 +191,8 @@ jobs:
           docker build backend -t decompme_backend
       - name: Run tests
         run: |-
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
           mkdir -p compilers && chmod 777 compilers
