@@ -326,16 +326,25 @@ CLANG_800 = ClangCompiler(
 )
 
 # PS1
+PSYQ_COMPILE_BAT = "\r\n".join(
+    [
+        "@echo off",
+        "SET TMPDIR=D:\\Temp",
+        "CC1PSX.EXE -quiet ${COMPILER_FLAGS} D:\\dos_src.c -o D:\\output.s",
+        "EXIT /B",
+    ]
+)
 PSYQ_MSDOS_CC = (
-    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
-    'cpp -P "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1PSX.EXE -quiet ${COMPILER_FLAGS} D:\\dos_src.c -o D:\\output.s") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
+    '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME=. /usr/bin/dosemu -f .dosemurc -quiet -dumb -K ${COMPILER_DIR} -E "D:\\COMPILE.BAT") && '
+    '(HOME=. /usr/bin/dosemu -f .dosemurc -quiet -dumb -K ${COMPILER_DIR} -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
 PSYQ_CC = (
-    'cpp -P "${INPUT}" | unix2dos | '
+    '/usr/bin/cpp -P "${INPUT}" | unix2dos | '
     '${WIBO} ${COMPILER_DIR}/CC1PSX.EXE -quiet ${COMPILER_FLAGS} -o "${OUTPUT}".s && '
     '${WIBO} ${COMPILER_DIR}/ASPSX.EXE -quiet "${OUTPUT}".s -o "${OUTPUT}"bj && '
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
@@ -411,7 +420,7 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 PS1_GCC = (
-    'cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
+    '/usr/bin/cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
     'printf "%s" "${COMPILER_FLAGS}" | xargs -- ${COMPILER_DIR}/gcc -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}.i"'
 )
 
@@ -496,7 +505,7 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 
 # Saturn
 SATURN_CC = (
-    "echo \"\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
+    "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
     '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
     '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
@@ -870,7 +879,7 @@ GCC281PM = GCCCompiler(
 GCC272SN = GCCCompiler(
     id="gcc2.7.2sn",
     platform=N64,
-    cc='cpp -P "$INPUT" | ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+    cc='/usr/bin/cpp -P "$INPUT" | ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
 GCC272SNEW = GCCCompiler(
@@ -882,7 +891,7 @@ GCC272SNEW = GCCCompiler(
 GCC281SN = GCCCompiler(
     id="gcc2.8.1sn",
     platform=N64,
-    cc='cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
+    cc='/usr/bin/cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
     '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
@@ -892,7 +901,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_compiler=GCC281SN,
     platform=N64,
-    cc='cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    cc='/usr/bin/cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
     '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
@@ -1215,7 +1224,7 @@ PRODG_37 = GCCCompiler(
 )
 
 PRODG_CC = (
-    'cpp -E "${INPUT}" -o "${INPUT}".i && '
+    '/usr/bin/cpp -E "${INPUT}" -o "${INPUT}".i && '
     "${WINE} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
     "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
 )
@@ -1506,7 +1515,7 @@ WATCOM_110_CPP = WatcomCompiler(
 )
 
 BORLAND_MSDOS_CC = (
-    "echo \"\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+    "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
     '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'

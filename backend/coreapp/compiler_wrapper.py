@@ -113,6 +113,7 @@ class CompilerWrapper:
             r"### .*\.exe Driver Error:.*\n?",
             r"#   Cannot find my executable .*\n?",
             r"### MWCPPC\.exe Driver Error:.*\n?",
+            r"Fontconfig error:.*\n?",
         ]
 
         for str in filter_strings:
