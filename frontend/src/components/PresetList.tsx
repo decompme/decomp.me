@@ -16,6 +16,7 @@ import getTranslation from "@/lib/i18n/translate";
 import Sort, { SortMode } from "./SortPreset";
 
 export interface Props {
+    title?: string;
     url?: string;
     className?: string;
     item?: ({ preset }: { preset: Preset }) => JSX.Element;
@@ -23,6 +24,7 @@ export interface Props {
 }
 
 export function PresetList({
+    title,
     url,
     className,
     item,
@@ -37,7 +39,8 @@ export function PresetList({
 
     return (
         <>
-            <div className="flex-1 text-right pb-2">
+            <div className="flex justify-between pb-2">
+                <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 <Sort sortMode={sortMode} setSortMode={setSortMode} />
             </div>
             {results.length === 0 && isLoading ? (
