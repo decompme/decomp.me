@@ -60,6 +60,8 @@ class Profile(models.Model):
         return (hue, satuation, lightness)
 
     def is_online(self) -> bool:
+        if self.last_request_date is None:
+            return False  # type:ignore[unreachable]
         delta = timezone.now() - self.last_request_date
 
         # 2 mins
