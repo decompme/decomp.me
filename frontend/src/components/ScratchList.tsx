@@ -19,7 +19,7 @@ import Button from "./Button";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchList.module.scss";
-import Sort, { SortMode } from "./Sort";
+import Sort, { SortMode } from "./SortScratch";
 import UserLink from "./user/UserLink";
 
 import { TextSkeleton, SCRATCH_LIST } from "./TextSkeleton";
