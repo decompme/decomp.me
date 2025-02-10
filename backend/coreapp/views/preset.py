@@ -3,6 +3,8 @@ from typing import Any
 
 import django_filters
 from django import forms
+from django.db.models import Count
+
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
@@ -48,7 +50,7 @@ class PresetFilterSet(django_filters.FilterSet):
 
 class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
-    queryset = Preset.objects.all()
+    queryset = Preset.objects.all().annotate(num_scratches=Count("scratch"))
     pagination_class = PresetPagination
     filterset_class = PresetFilterSet
     filter_backends = [
@@ -57,7 +59,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         filters.OrderingFilter,
     ]
     search_fields = ["id", "name", "platform", "compiler", "owner"]
-    ordering_fields = ["creation_time", "id", "name", "compiler"]
+    ordering_fields = ["creation_time", "id", "name", "compiler", "num_scratches"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         return PresetSerializer
