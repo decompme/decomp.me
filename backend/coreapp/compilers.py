@@ -529,6 +529,18 @@ DREAMCAST_CC = (
 SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
+IOP_GCC281 = GCCPS2Compiler(
+    id="iop-gcc2.8.1",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/iop-gcc -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.8.1/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+IOP_GCC2952_102 = GCCPS2Compiler(
+    id="iop-gcc2.95.2-102",
+    platform=PS2,
+    cc='${WINE} "${COMPILER_DIR}"/bin/iop-gcc.exe -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
 EE_GCC29_990721 = GCCPS2Compiler(
     id="ee-gcc2.9-990721",
     platform=PS2,
@@ -585,6 +597,18 @@ EE_GCC2953_136 = GCCPS2Compiler(
 
 EE_GCC296 = GCCPS2Compiler(
     id="ee-gcc2.96",
+    platform=PS2,
+    cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC32_030210_BETA2 = GCCPS2Compiler(
+    id="ee-gcc3.2-030210-beta2",
+    platform=PS2,
+    cc='WINEPATH="${COMPILER_DIR}"/dll/ ${WINE} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+)
+
+EE_GCC32_030926 = GCCPS2Compiler(
+    id="ee-gcc3.2-030926",
     platform=PS2,
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
@@ -1569,6 +1593,8 @@ _all_compilers: List[Compiler] = [
     # Dreamcast
     SHC_V51R11,
     # PS2
+    IOP_GCC281,
+    IOP_GCC2952_102,
     EE_GCC29_990721,
     EE_GCC29_991111,
     EE_GCC29_991111A,
@@ -1579,6 +1605,8 @@ _all_compilers: List[Compiler] = [
     EE_GCC2953_114,
     EE_GCC2953_136,
     EE_GCC296,
+    EE_GCC32_030210_BETA2,
+    EE_GCC32_030926,
     EE_GCC32_040921,
     MWCPS2_23_991202,
     MWCPS2_233_000906,
