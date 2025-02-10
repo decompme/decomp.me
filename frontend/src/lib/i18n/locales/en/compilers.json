@@ -22,6 +22,8 @@
     "dummy": "Dummy",
     "dummy_longrunning": "Dummy (long-running)",
 
+    "iop-gcc2.8.1": "IOP GCC 2.8.1",
+    "iop-gcc2.95.2-102": "IOP GCC 2.95.2 (SN BUILD v1.02)",
     "ee-gcc2.9-990721": "EE GCC 2.9 build 990721",
     "ee-gcc2.9-991111": "EE GCC 2.9 build 991111",
     "ee-gcc2.9-991111a": "EE GCC 2.9 build 991111a",
@@ -32,6 +34,8 @@
     "ee-gcc2.95.3-114": "EE GCC 2.95.3 (SN BUILD v1.14)",
     "ee-gcc2.95.3-136": "EE GCC 2.95.3 (SN BUILD v1.36)",
     "ee-gcc2.96": "EE GCC 2.96 build 001003-1",
+    "ee-gcc3.2-030210-beta2": "EE GCC 3.2 build 030210 Beta 2",
+    "ee-gcc3.2-030926": "EE GCC 3.2 build 030926",
     "ee-gcc3.2-040921": "EE GCC 3.2 build 040921",
 
     "mwcps2-2.3-991202": "MWCPS2 2.3 (Built 991202)",
