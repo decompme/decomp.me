@@ -117,10 +117,10 @@ export function PresetItem({
                 </div>
                 <div className="flex-1 text-right">
                     {preset.num_scratches > 1
-                        ? `${preset.num_scratches} Scratches`
+                        ? `${preset.num_scratches} scratches`
                         : preset.num_scratches > 0
-                          ? `${preset.num_scratches} Scratch`
-                          : "No Scratches"}
+                          ? `${preset.num_scratches} scratch`
+                          : "No scratches"}
                 </div>
             </div>
             <p className="text-gray-11">{compilerName}</p>
