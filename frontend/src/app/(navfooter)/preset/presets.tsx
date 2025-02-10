@@ -34,8 +34,11 @@ export function Presets({
                 value={platform}
                 onChange={setPlatform}
             />
-            <div className="pb-1"></div>
-            <PresetList title={"Presets"} url={`/preset?platform=${platform}`} />
+            <div className="pb-1" />
+            <PresetList
+                title={"Presets"}
+                url={`/preset?platform=${platform}`}
+            />
         </section>
     );
 }
