@@ -19,7 +19,7 @@ import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
 import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
-import { SingleLineScratchItem } from "@/components/ScratchList";
+import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
 
 interface FormLabelProps {
