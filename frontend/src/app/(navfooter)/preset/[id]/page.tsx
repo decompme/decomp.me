@@ -70,7 +70,7 @@ export default async function Page({ params }: { params: { id: number } }) {
                     url={`/scratch?preset=${preset.id}&page_size=20`}
                     item={ScratchItemPresetList}
                     isSortable={true}
-                    title={`Scratches (${preset.num_scratches})`}
+                    title={`Scratches (${preset.num_scratches.toLocaleString("en-US")})`}
                 />
             </section>
         </main>
