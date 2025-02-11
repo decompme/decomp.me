@@ -34,8 +34,11 @@ export function Presets({
                 value={platform}
                 onChange={setPlatform}
             />
-            <h2 className="py-2 font-medium text-lg tracking-tight">Presets</h2>
-            <PresetList url={`/preset?platform=${platform}`} />
+            <div className="pb-1" />
+            <PresetList
+                title={"Presets"}
+                url={`/preset?platform=${platform}`}
+            />
         </section>
     );
 }

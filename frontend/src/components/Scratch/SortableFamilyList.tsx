@@ -14,7 +14,7 @@ import Sort, {
     SortMode,
     compareScratchScores,
     produceSortFunction,
-} from "../Sort";
+} from "../SortScratch";
 import UserLink from "../user/UserLink";
 
 function useFamily(scratch: TerseScratch) {
