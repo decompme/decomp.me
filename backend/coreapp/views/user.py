@@ -55,7 +55,9 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        return ScratchViewSet.queryset.filter(owner=self.request.profile)
+        if self.request.profile.id is None:
+            return Scratch.objects.none()
+        return ScratchViewSet.queryset.filter(owner__id=self.request.profile.id)
 
 
 class UserScratchList(generics.ListAPIView):  # type: ignore
