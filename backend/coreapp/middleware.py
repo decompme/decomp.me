@@ -50,8 +50,8 @@ def set_user_profile(
     def middleware(request: Request) -> Response:
         user_agent = request.headers.get("User-Agent")
 
-        # Skip if the request is from SSR
-        if user_agent and (
+        # Avoid creating profiles for SSR or bots
+        if user_agent is None or (
             "node" in user_agent
             or "undici" in user_agent
             or "Next.js Middleware" in user_agent
