@@ -94,7 +94,12 @@ def set_user_profile(
 
             # More info to help identify why we are creating so many profiles...
             x_forwarded_for = request.headers.get("X-Forwarded-For") or "n/a"
-            logger.debug(f"Made new profile: %s, User-Agent: %s, IP: %s", profile, user_agent, x_forwarded_for)
+            logger.debug(
+                f"Made new profile: %s, User-Agent: %s, IP: %s",
+                profile,
+                user_agent,
+                x_forwarded_for,
+            )
 
         if profile.user is None and not request.user.is_anonymous:
             profile.user = request.user
