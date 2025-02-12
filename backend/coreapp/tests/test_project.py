@@ -52,7 +52,7 @@ class ProjectTests(BaseTestCase):
         response = self.client.post(
             reverse("project-list"),
             data,
-            content_type="application/json",
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -62,7 +62,7 @@ class ProjectTests(BaseTestCase):
         response = self.client.post(
             reverse("project-list"),
             data,
-            content_type="application/json",
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Project.objects.count(), 1)
@@ -78,7 +78,7 @@ class ProjectTests(BaseTestCase):
                     {
                         "description": "new description",
                     },
-                    content_type="application/json",
+                    format="json",
                 )
                 self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -100,7 +100,7 @@ class ProjectTests(BaseTestCase):
                     {
                         "description": "new description",
                     },
-                    content_type="application/json",
+                    format="json",
                 )
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
 
