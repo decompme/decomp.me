@@ -93,7 +93,7 @@ def set_user_profile(
             request.session["profile_id"] = profile.id
 
             # More info to help identify why we are creating so many profiles...
-            x_forwarded_for = request.headers.get("X-Forwarded-For") or "n/a"
+            x_forwarded_for = request.headers.get("X-Forwarded-For", "n/a")
             logger.debug(
                 f"Made new profile: %s, User-Agent: %s, IP: %s",
                 profile,
