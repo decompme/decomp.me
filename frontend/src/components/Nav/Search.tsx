@@ -14,7 +14,7 @@ import LoadingSpinner from "../loading.svg";
 import PlatformLink from "../PlatformLink";
 import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
 
-import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchList";
+import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchItem";
 
 import styles from "./Search.module.scss";
 

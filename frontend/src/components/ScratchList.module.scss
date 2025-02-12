@@ -1,34 +1,9 @@
-.loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5em;
-
-    padding: 1em;
-
-    opacity: 0.5;
-}
-
 .list {
     list-style: none;
 
     display: grid;
     grid-template-columns: repeat(var(--num-columns, 1), 1fr);
     gap: 0.5em;
-}
-
-.item {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.5em;
-
-    overflow: hidden;
-
-    padding: 1em;
-
-    border: 1px solid inherit;
-    border-radius: inherit;
 }
 
 .button {
@@ -41,87 +16,4 @@
     opacity: 0.7;
 
     grid-column: span var(--num-columns, 1);
-}
-
-.link {
-    font-weight: 600;
-
-    &:hover {
-        color: var(--link);
-    }
-}
-
-.scratch {
-    line-height: 1.5;
-
-    .header {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 0.5em;
-
-        .name {
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-        /* If two children, align them to the left and right */
-        &:has(> :last-child:nth-child(2)) {
-            grid-template-columns: 1fr auto;
-        }
-    }
-
-    .icon {
-        width: 1.2em;
-        height: 1.2em;
-    }
-
-    .owner {
-        color: var(--g1200);
-    }
-
-    .metadata {
-        display: flex;
-        align-items: flex-end;
-
-        color: var(--g900);
-
-        > span {
-            flex-grow: 1;
-        }
-
-        .actions {
-            padding-top: 0.25em;
-        }
-    }
-}
-
-.singleLine {
-    white-space: nowrap;
-    overflow: hidden;
-
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-
-    padding: 0.4em 0;
-
-    .icon {
-        flex-shrink: 0;
-        width: 1.2em;
-        height: 1.2em;
-    }
-
-    .name {
-        flex-grow: 1;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .metadata {
-        color: var(--g1200);
-    }
 }

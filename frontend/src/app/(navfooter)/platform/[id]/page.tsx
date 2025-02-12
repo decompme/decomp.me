@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
-import ScratchList, { ScratchItemPlatformList } from "@/components/ScratchList";
+import ScratchList from "@/components/ScratchList";
+import { ScratchItemPlatformList } from "@/components/ScratchItem";
 import { get } from "@/lib/api/request";
 import type { PlatformMetadata } from "@/lib/api/types";
 
