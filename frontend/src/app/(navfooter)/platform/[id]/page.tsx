@@ -66,7 +66,7 @@ export default async function Page({ params }: { params: { id: number } }) {
                     url={`/scratch?platform=${platform.id}&page_size=20`}
                     item={ScratchItemPlatformList}
                     isSortable={true}
-                    title={`Scratches (${platform.num_scratches})`}
+                    title={`Scratches (${platform.num_scratches.toLocaleString("en-US")})`}
                 />
             </section>
         </main>
