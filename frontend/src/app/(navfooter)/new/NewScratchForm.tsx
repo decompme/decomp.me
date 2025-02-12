@@ -231,16 +231,6 @@ export default function NewScratchForm({
         } else {
             // Fall back to the first supported compiler and no flags...
             setCompiler(Object.keys(platformCompilers)[0]);
-            // However, if there is a preset for this platform, use it
-            for (const v of Object.values(serverCompilers.compilers)) {
-                if (
-                    v.platform === platform &&
-                    serverCompilers.platforms[platform].presets.length > 0
-                ) {
-                    setPreset(serverCompilers.platforms[platform].presets[0]);
-                    break;
-                }
-            }
         }
     }, [
         ready,
@@ -332,7 +322,7 @@ export default function NewScratchForm({
 
             <div>
                 <FormLabel>Compiler</FormLabel>
-                <div className="flex cursor-default select-none items-center justify-between max-[400px]:flex-col">
+                <div className="flex cursor-default select-none items-end justify-between max-[400px]:flex-col">
                     <div className="flex w-full flex-1 flex-col">
                         <span className="px-2.5 py-0.5 text-[0.8rem] text-[color:var(--g800)]">
                             Select a compiler
