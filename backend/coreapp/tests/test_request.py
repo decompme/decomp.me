@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-class RequestTests(APITestCase):
+class RequestTests(BaseTestCase):
     def test_create_profile(self) -> None:
         """
         Ensure that we create a profile for a normal request
