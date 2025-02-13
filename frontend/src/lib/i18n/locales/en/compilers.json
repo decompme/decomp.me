@@ -158,8 +158,8 @@
     "mwcc_43_213": "4.3 build 213 (Wii MW 1.7)",
     "mwcppc_23": "MWCPPC 2.3 (CodeWarrior Pro 5)",
     "mwcppc_24": "MWCPPC 2.4 (CodeWarrior Pro 6)",
-    "prodg_35": "ProDG 3.5 (gcc 2.95.2) [ngccc]",
-    "prodg_37": "ProDG 3.7 (gcc 2.95.2) [ngccc]",
+    "prodg_35": "ProDG 3.5 (gcc 2.95.2)",
+    "prodg_37": "ProDG 3.7 (gcc 2.95.2)",
     "prodg_393": "ProDG 3.9.3 (gcc 2.95.3)",
 
     "old_agbcc": "old_agbcc",
