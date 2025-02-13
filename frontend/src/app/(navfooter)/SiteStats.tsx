@@ -30,9 +30,6 @@ export default function SiteStats() {
             <Stat>
                 {stats.scratch_count.toLocaleString()} scratches created
             </Stat>
-            <Stat href="https://stats.decomp.me/decomp.me">
-                {stats.profile_count.toLocaleString()} unique visitors
-            </Stat>
             <Stat>
                 {stats.github_user_count.toLocaleString()} users signed up
             </Stat>

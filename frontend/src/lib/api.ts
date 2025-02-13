@@ -484,7 +484,6 @@ export interface Stats {
     asm_count: number;
     scratch_count: number;
     github_user_count: number;
-    profile_count: number;
 }
 
 export function useStats(): Stats | undefined {
