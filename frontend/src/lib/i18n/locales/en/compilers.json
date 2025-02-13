@@ -159,7 +159,9 @@
     "mwcppc_23": "MWCPPC 2.3 (CodeWarrior Pro 5)",
     "mwcppc_24": "MWCPPC 2.4 (CodeWarrior Pro 6)",
     "prodg_35": "ProDG 3.5 (gcc 2.95.2)",
+    "prodg_35_b140": "ProDG 3.5 (gcc 2.95.2 b140)",
     "prodg_37": "ProDG 3.7 (gcc 2.95.2)",
+    "prodg_381": "ProDG 3.8.1 (gcc 2.95.2)",
     "prodg_393": "ProDG 3.9.3 (gcc 2.95.3)",
 
     "old_agbcc": "old_agbcc",

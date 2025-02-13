@@ -1217,8 +1217,20 @@ PRODG_35 = GCCCompiler(
     cc=PRODG_NGC_CC,
 )
 
+PRODG_35_B140 = GCCCompiler(
+    id="prodg_35_b140",
+    platform=GC_WII,
+    cc=PRODG_NGC_CC,
+)
+
 PRODG_37 = GCCCompiler(
     id="prodg_37",
+    platform=GC_WII,
+    cc=PRODG_NGC_CC,
+)
+
+PRODG_381 = GCCCompiler(
+    id="prodg_381",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
@@ -1679,7 +1691,9 @@ _all_compilers: List[Compiler] = [
     MWCC_43_202,
     MWCC_43_213,
     PRODG_35,
+    PRODG_35_B140,
     PRODG_37,
+    PRODG_381,
     PRODG_393,
     # NDS
     MWCC_20_72,
