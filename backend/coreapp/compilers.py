@@ -1223,16 +1223,10 @@ PRODG_37 = GCCCompiler(
     cc=PRODG_NGC_CC,
 )
 
-PRODG_CC = (
-    '/usr/bin/cpp -E "${INPUT}" -o "${INPUT}".i && '
-    "${WINE} ${COMPILER_DIR}/cc1.exe -quiet ${COMPILER_FLAGS} -o ${OUTPUT}.s ${INPUT}.i && "
-    "${WIBO} ${COMPILER_DIR}/NgcAs.exe ${OUTPUT}.s -o ${OUTPUT}"
-)
-
 PRODG_393 = GCCCompiler(
     id="prodg_393",
     platform=GC_WII,
-    cc=PRODG_CC,
+    cc=PRODG_NGC_CC,
 )
 
 # NDS_ARM9
