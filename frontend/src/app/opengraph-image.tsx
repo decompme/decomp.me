@@ -76,7 +76,6 @@ export default async function HomeOG() {
                 <a tw="ml-10">
                     {stats.scratch_count.toLocaleString()} scratches
                 </a>
-                <a>{stats.profile_count.toLocaleString()} visitors</a>
                 <a>{stats.github_user_count.toLocaleString()} users</a>
                 <a tw="mr-10">{stats.asm_count.toLocaleString()} asm globs</a>
             </div>
