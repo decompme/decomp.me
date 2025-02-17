@@ -1,4 +1,9 @@
-import { useId, type ReactNode, type CSSProperties } from "react";
+import {
+    useId,
+    type ReactNode,
+    type CSSProperties,
+    type HTMLInputTypeAttribute,
+} from "react";
 
 import classNames from "classnames";
 
@@ -13,6 +18,8 @@ export type Props = {
     placeholder?: string;
 
     inputStyle?: CSSProperties;
+
+    type?: HTMLInputTypeAttribute;
 };
 
 export default function TextField({
@@ -23,6 +30,7 @@ export default function TextField({
     description,
     placeholder,
     inputStyle,
+    type = "text",
 }: Props) {
     const id = useId();
 
@@ -40,7 +48,7 @@ export default function TextField({
             )}
             <input
                 id={id}
-                type="text"
+                type={type}
                 value={value}
                 onChange={(evt) => onChange(evt.target.value)}
                 disabled={disabled}

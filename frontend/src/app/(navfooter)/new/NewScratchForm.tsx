@@ -21,6 +21,10 @@ import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
+import Checkbox from "@/app/(navfooter)/settings/Checkbox";
+import { useAIAPIKey } from "@/lib/settings";
+import { defaultPromptTemplate, fillPromptPlaceholders } from "@/lib/ai/prompt";
+import getScratchDetails from "@/app/scratch/[slug]/getScratchDetails";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -111,6 +115,61 @@ export default function NewScratchForm({
         leading: false,
         trailing: true,
     });
+
+    const [useAIEnabled, setUseAIEnabled] = useState(false);
+    const [similarScratchLink, setSimilarScratchLink] = useState("");
+    const [similarScratch, setSimilarScratch] = useState<api.Scratch>(null);
+    const [rawPrompt, setRawPrompt] = useState(defaultPromptTemplate);
+    const [aiAPIKey] = useAIAPIKey();
+
+    const loadSimilarScratch = async () => {
+        const exampleScratchSlug = similarScratchLink.split("/").pop();
+        const { scratch } = await getScratchDetails(exampleScratchSlug);
+        setSimilarScratch(scratch);
+    };
+
+    const getFinalPrompt = ({
+        includeSourceAsm = true,
+    }: { includeSourceAsm?: boolean } = {}) => {
+        return fillPromptPlaceholders(rawPrompt, {
+            platformAsm: serverCompilers.platforms[platform]?.description,
+            platformName: platform,
+            targetLanguage: "C", // TODO: do not use a hardcoded value
+            exampleAsm: similarScratch?.target_assembly_source_asm,
+            exampleSource: similarScratch?.source_code,
+            sourceAsm: includeSourceAsm ? asm : "",
+            compilerId,
+        });
+    };
+
+    const finalPrompt = getFinalPrompt();
+
+    const getPromptSuggestions = () => {
+        const suggestions = new Set<string>();
+
+        if (!useAIEnabled) {
+            return suggestions;
+        }
+
+        // we need a final prompt without the source assembly to check for missing definitions
+        const finalPromptWithoutAsm = getFinalPrompt({
+            includeSourceAsm: false,
+        });
+
+        for (const [, func] of asm.matchAll(/bl\s+([\w\d]+)/g)) {
+            if (finalPromptWithoutAsm.includes(func)) {
+                continue;
+            }
+
+            suggestions.add(
+                `The target assembly calls "${func}" but it's missing a definition or example in the prompt`,
+            );
+        }
+
+        return suggestions;
+    };
+
+    const promptSuggestions = getPromptSuggestions();
 
     const setPreset = (preset: api.Preset) => {
         if (preset) {
@@ -254,6 +313,11 @@ export default function NewScratchForm({
 
     const submit = async () => {
         try {
+            if (useAIEnabled) {
+                localStorage.new_scratch_use_ai_enabled = true;
+                localStorage.new_scratch_quickstart_prompt = finalPrompt;
+            }
+
             const scratch: api.ClaimableScratch = await api.post("/scratch", {
                 target_asm: asm,
                 context: context || "",
@@ -416,6 +480,87 @@ export default function NewScratchForm({
                     extensions={[basicSetup, cpp()]}
                 />
             </div>
+
+            <Checkbox
+                checked={useAIEnabled}
+                onChange={setUseAIEnabled}
+                label="Quickstart with AI"
+                description="Use AI to generate a decompiled code to start with."
+            />
+
+            {useAIEnabled ? (
+                aiAPIKey ? (
+                    <div>
+                        <FormLabel small="(optional; link for a fully matched scratch with similar assembly and context)">
+                            Similar scratch link
+                        </FormLabel>
+
+                        <input
+                            type="url"
+                            value={similarScratchLink}
+                            onChange={(e) =>
+                                setSimilarScratchLink(
+                                    (e.target as HTMLInputElement).value,
+                                )
+                            }
+                            onBlur={loadSimilarScratch}
+                            className="w-full rounded border border-[color:var(--g500)] bg-[color:var(--g200)] px-2.5 py-2 font-mono text-[0.8rem] text-[color:var(--g1200)] placeholder-[color:var(--g700)] outline-none"
+                        />
+
+                        <div className="flex h-[200px] flex-col">
+                            <FormLabel small="(tip: add at the end of the prompt useful information for AI, such as typedefs)">
+                                Prompt Template
+                            </FormLabel>
+
+                            <CodeMirror
+                                className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
+                                value={rawPrompt}
+                                valueVersion={valueVersion}
+                                onChange={(value) => {
+                                    setRawPrompt(value);
+                                }}
+                                extensions={[basicSetup]}
+                            />
+                        </div>
+
+                        <div className="mt-2 text-[0.8rem] text-[color:var(--g800)]">
+                            <p>Suggestions:</p>
+
+                            {promptSuggestions.size === 0 && <p>- None</p>}
+
+                            {Array.from(promptSuggestions).map(
+                                (suggestion, i) => (
+                                    <p key={i} className="pl-2">
+                                        - {suggestion}
+                                    </p>
+                                ),
+                            )}
+                        </div>
+
+                        <div className="flex h-[200px] flex-col">
+                            <FormLabel small="(readonly)">
+                                Final Prompt
+                            </FormLabel>
+
+                            {/* TODO: Make it be readonly */}
+                            <CodeMirror
+                                className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
+                                value={finalPrompt}
+                                valueVersion={finalPrompt as any}
+                                extensions={[basicSetup]}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <p>
+                        No AI API key defined in settings.{" "}
+                        <Link href="/settings/ai" className="underline">
+                            Go to the AI settings
+                        </Link>{" "}
+                        and set an API key to use this feature.
+                    </p>
+                )
+            ) : null}
 
             <div>
                 <AsyncButton

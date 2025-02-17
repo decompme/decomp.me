@@ -1,4 +1,9 @@
-import { FileIcon, PaintbrushIcon, GearIcon } from "@primer/octicons-react";
+import {
+    FileIcon,
+    PaintbrushIcon,
+    GearIcon,
+    SparklesFillIcon,
+} from "@primer/octicons-react";
 
 import NavItem from "./NavItem";
 
@@ -26,6 +31,11 @@ export default function Layout({
                             segment="editor"
                             label="Editor"
                             icon={<FileIcon />}
+                        />
+                        <NavItem
+                            segment="ai"
+                            label="AI"
+                            icon={<SparklesFillIcon />}
                         />
                     </ul>
                 </nav>

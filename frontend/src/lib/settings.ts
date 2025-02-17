@@ -23,10 +23,25 @@ const threeWayDiffBase =
 const objdiffClientEnabled = createPersistedState<boolean>(
     "objdiffClientEnabled",
 );
+const aiProvider = createPersistedState<AIProvider>("aiProvider");
+const aiModel = createPersistedState<AIModel>("aiModel");
+const aiAPIKey = createPersistedState<string>("");
 
 export enum ThreeWayDiffBase {
     SAVED = "saved",
     PREV = "prev",
+}
+
+export enum AIProvider {
+    OPEN_AI = "openai",
+    DEEP_SEEK = "deepseek",
+}
+
+export enum AIModel {
+    O1_PREVIEW = "o1-preview",
+    GPT_3_5_TURBO = "gpt-3.5-turbo",
+    DEEPSEEK_REASONER = "deepseek-reasoner",
+    DEEPSEEK_CHAT = "deepseek-chat",
 }
 
 export const useTheme = () => theme("auto");
@@ -42,6 +57,9 @@ export const useVimModeEnabled = () => vimModeEnabled(false);
 export const useThreeWayDiffBase = () =>
     threeWayDiffBase(ThreeWayDiffBase.SAVED);
 export const useObjdiffClientEnabled = () => objdiffClientEnabled(false);
+export const useAIProvider = () => aiProvider(AIProvider.OPEN_AI);
+export const useAIModel = () => aiModel(AIModel.GPT_3_5_TURBO);
+export const useAIAPIKey = () => aiAPIKey("");
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();
