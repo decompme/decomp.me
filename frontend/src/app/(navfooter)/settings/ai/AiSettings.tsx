@@ -42,6 +42,10 @@ export default function AiSettings() {
     const modelOptions =
         aiProvider === AiProvider.OPENAI ? openAiModels : deepSeekAiModels;
 
+    const providerPricingPageUrl = aiProvider === AiProvider.OPENAI
+        ? "https://openai.com/api/pricing"
+        : "https://api-docs.deepseek.com/quick_start/pricing";
+
     return (
         <>
             <Section title="Provider">
@@ -62,9 +66,8 @@ export default function AiSettings() {
 
             <Section title="Model">
                 <div className="mt-1 text-gray-11 text-sm">
-                    It's recommended to use a reasoning model. It's pricey, but
-                    they are the only ones that fulfill well on decompilation
-                    tasks.
+                    We recommend reasoning models because they are best suited for decompilation.
+                    However, be mindful of <a href={providerPricingPageUrl} target="_blank" className="underline">pricing</a>.
                 </div>
 
                 <RadioList
