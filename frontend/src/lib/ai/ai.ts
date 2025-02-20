@@ -4,9 +4,9 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import {
     AIProvider,
-    useAIAPIKey,
-    useAIModel,
-    useAIProvider,
+    useAiApiKey,
+    useAiModel,
+    useAiProvider,
 } from "@/lib/settings";
 
 function createProvider(provider: AIProvider, apiKey: string) {
@@ -30,12 +30,12 @@ export type Message = {
 };
 
 export function useAI() {
-    const [aiProvider] = useAIProvider();
-    const [aiModel] = useAIModel();
-    const [aiAPIKey] = useAIAPIKey();
+    const [aiProvider] = useAiProvider();
+    const [aiModel] = useAiModel();
+    const [aiApiKey] = useAiApiKey();
     const [chatHistory, setChatHistory] = useState<Message[]>([]);
 
-    const provider = createProvider(aiProvider, aiAPIKey);
+    const provider = createProvider(aiProvider, aiApiKey);
     const model = provider(aiModel);
 
     const chatSubmit = async (prompt: string) => {

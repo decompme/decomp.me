@@ -1,4 +1,4 @@
-import AISettings from "./AISettings";
+import AiSettings from "./AiSettings";
 
 export const metadata = {
     title: "AI settings",
@@ -7,7 +7,7 @@ export const metadata = {
 export default function Page() {
     return (
         <>
-            <AISettings />
+            <AiSettings />
         </>
     );
 }

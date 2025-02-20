@@ -22,7 +22,7 @@ import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
 import Checkbox from "@/app/(navfooter)/settings/Checkbox";
-import { useAIAPIKey } from "@/lib/settings";
+import { useAiApiKey } from "@/lib/settings";
 import { defaultPromptTemplate, fillPromptPlaceholders } from "@/lib/ai/prompt";
 import getScratchDetails from "@/app/scratch/[slug]/getScratchDetails";
 
@@ -116,11 +116,11 @@ export default function NewScratchForm({
         trailing: true,
     });
 
-    const [useAIEnabled, setUseAIEnabled] = useState(false);
+    const [useAiEnabled, setUseAiEnabled] = useState(false);
     const [similarScratchLink, setSimilarScratchLink] = useState("");
     const [similarScratch, setSimilarScratch] = useState<api.Scratch>(null);
     const [rawPrompt, setRawPrompt] = useState(defaultPromptTemplate);
-    const [aiAPIKey] = useAIAPIKey();
+    const [aiApiKey] = useAiApiKey();
 
     const loadSimilarScratch = async () => {
         const exampleScratchSlug = similarScratchLink.split("/").pop();
@@ -147,7 +147,7 @@ export default function NewScratchForm({
     const getPromptSuggestions = () => {
         const suggestions = new Set<string>();
 
-        if (!useAIEnabled) {
+        if (!useAiEnabled) {
             return suggestions;
         }
 
@@ -313,7 +313,7 @@ export default function NewScratchForm({
 
     const submit = async () => {
         try {
-            if (useAIEnabled) {
+            if (useAiEnabled) {
                 localStorage.new_scratch_use_ai_enabled = true;
                 localStorage.new_scratch_quickstart_prompt = finalPrompt;
             }
@@ -482,14 +482,14 @@ export default function NewScratchForm({
             </div>
 
             <Checkbox
-                checked={useAIEnabled}
-                onChange={setUseAIEnabled}
+                checked={useAiEnabled}
+                onChange={setUseAiEnabled}
                 label="Quickstart with AI"
                 description="Use AI to generate a decompiled code to start with."
             />
 
-            {useAIEnabled ? (
-                aiAPIKey ? (
+            {useAiEnabled ? (
+                aiApiKey ? (
                     <div>
                         <FormLabel small="(optional; link for a fully matched scratch with similar assembly and context)">
                             Similar scratch link

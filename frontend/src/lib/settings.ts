@@ -25,7 +25,7 @@ const objdiffClientEnabled = createPersistedState<boolean>(
 );
 const aiProvider = createPersistedState<AIProvider>("aiProvider");
 const aiModel = createPersistedState<AIModel>("aiModel");
-const aiAPIKey = createPersistedState<string>("");
+const aiApiKey = createPersistedState<string>("");
 
 export enum ThreeWayDiffBase {
     SAVED = "saved",
@@ -57,9 +57,9 @@ export const useVimModeEnabled = () => vimModeEnabled(false);
 export const useThreeWayDiffBase = () =>
     threeWayDiffBase(ThreeWayDiffBase.SAVED);
 export const useObjdiffClientEnabled = () => objdiffClientEnabled(false);
-export const useAIProvider = () => aiProvider(AIProvider.OPEN_AI);
-export const useAIModel = () => aiModel(AIModel.GPT_3_5_TURBO);
-export const useAIAPIKey = () => aiAPIKey("");
+export const useAiProvider = () => aiProvider(AIProvider.OPEN_AI);
+export const useAiModel = () => aiModel(AIModel.GPT_3_5_TURBO);
+export const useAiApiKey = () => aiApiKey("");
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();
