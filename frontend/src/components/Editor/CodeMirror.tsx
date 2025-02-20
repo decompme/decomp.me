@@ -48,6 +48,7 @@ export interface Props {
     onSelectedLineChange?: (value: number) => void;
     className?: string;
     viewRef?: MutableRefObject<EditorView | null>;
+    readOnly?: boolean;
     extensions: Extension; // const
 }
 
@@ -59,6 +60,7 @@ export default function CodeMirror({
     onSelectedLineChange,
     className,
     viewRef: viewRefProp,
+    readOnly,
     extensions,
 }: Props) {
     const { ref: el, width } = useSize<HTMLDivElement>();
@@ -118,6 +120,8 @@ export default function CodeMirror({
                             return null;
                         },
                     ),
+
+                    readOnly ? EditorState.readOnly.of(true) : [],
 
                     extensionsRef.current,
                 ],

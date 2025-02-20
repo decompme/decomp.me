@@ -542,10 +542,10 @@ export default function NewScratchForm({
                                 Final Prompt
                             </FormLabel>
 
-                            {/* TODO: Make it be readonly */}
                             <CodeMirror
                                 className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
                                 value={finalPrompt}
+                                readOnly
                                 valueVersion={finalPrompt as any}
                                 extensions={[basicSetup]}
                             />
