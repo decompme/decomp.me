@@ -2,12 +2,7 @@ import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createDeepSeek } from "@ai-sdk/deepseek";
-import {
-    AIProvider,
-    useAiApiKey,
-    useAiModel,
-    useAiProvider,
-} from "@/lib/settings";
+import { AIProvider, useAiSettings } from "@/lib/settings";
 
 function createProvider(provider: AIProvider, apiKey: string) {
     switch (provider) {
@@ -30,9 +25,7 @@ export type Message = {
 };
 
 export function useAI() {
-    const [aiProvider] = useAiProvider();
-    const [aiModel] = useAiModel();
-    const [aiApiKey] = useAiApiKey();
+    const { aiProvider, aiModel, aiApiKey } = useAiSettings();
     const [chatHistory, setChatHistory] = useState<Message[]>([]);
 
     const provider = createProvider(aiProvider, aiApiKey);

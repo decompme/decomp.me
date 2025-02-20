@@ -23,9 +23,11 @@ const threeWayDiffBase =
 const objdiffClientEnabled = createPersistedState<boolean>(
     "objdiffClientEnabled",
 );
-const aiProvider = createPersistedState<AIProvider>("aiProvider");
-const aiModel = createPersistedState<AIModel>("aiModel");
-const aiApiKey = createPersistedState<string>("");
+const aiSettings = createPersistedState<{
+    aiProvider: AIProvider;
+    aiModel: AIModel;
+    aiApiKey: string;
+}>("aiSettings");
 
 export enum ThreeWayDiffBase {
     SAVED = "saved",
@@ -57,9 +59,35 @@ export const useVimModeEnabled = () => vimModeEnabled(false);
 export const useThreeWayDiffBase = () =>
     threeWayDiffBase(ThreeWayDiffBase.SAVED);
 export const useObjdiffClientEnabled = () => objdiffClientEnabled(false);
-export const useAiProvider = () => aiProvider(AIProvider.OPENAI);
-export const useAiModel = () => aiModel(AIModel.GPT_3_5_TURBO);
-export const useAiApiKey = () => aiApiKey("");
+export const useAiSettings = () => {
+    const [settings, setSettings] = aiSettings({
+        aiProvider: AIProvider.OPENAI,
+        aiModel: AIModel.O1_PREVIEW,
+        aiApiKey: "",
+    });
+
+    const setAiProvider = (newAiProvider: AIProvider) => {
+        const newAiModel = newAiProvider === AIProvider.OPENAI
+            ? AIModel.O1_PREVIEW
+            : AIModel.DEEPSEEK_REASONER;
+
+        setSettings({
+            ...settings,
+            aiProvider: newAiProvider,
+            aiModel: newAiModel,
+        });
+    }
+
+    const setAiModel = (newAiModel: AIModel) => {
+        setSettings({ ...settings, aiModel: newAiModel });
+    }
+
+    const setAiApiKey = (newAiApiKey: string) => {
+        setSettings({ ...settings, aiApiKey: newAiApiKey });
+    }
+
+    return { ...settings, setAiProvider, setAiModel, setAiApiKey }
+};
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();

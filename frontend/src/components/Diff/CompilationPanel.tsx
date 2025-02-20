@@ -8,7 +8,7 @@ import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";
 import {
     ThreeWayDiffBase,
-    useAiApiKey,
+    useAiSettings,
     useThreeWayDiffBase,
 } from "@/lib/settings";
 
@@ -59,7 +59,7 @@ export default function CompilationPanel({
     const [threeWayDiffBase] = useThreeWayDiffBase();
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false);
     const prevCompilation = usedCompilationRef.current;
-    const [aiApiKey] = useAiApiKey();
+    const { aiApiKey } = useAiSettings();
 
     // Only update the diff if it's never been set or if the compilation succeeded
     if (!usedCompilationRef.current || compilation.success) {

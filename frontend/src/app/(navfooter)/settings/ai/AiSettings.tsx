@@ -3,9 +3,7 @@
 import {
     AIProvider,
     AIModel,
-    useAiProvider,
-    useAiModel,
-    useAiApiKey,
+    useAiSettings,
 } from "@/lib/settings";
 import RadioList from "@/app/(navfooter)/settings/RadioList";
 import Section from "@/app/(navfooter)/settings/Section";
@@ -28,7 +26,6 @@ const openAIModels = {
         label: <div>GPT 3.5 Turbo</div>,
     },
 };
-const openAIRecommendedModel = AIModel.O1_PREVIEW;
 
 const deepSeekAIModels = {
     [AIModel.DEEPSEEK_REASONER]: {
@@ -38,12 +35,9 @@ const deepSeekAIModels = {
         label: <div>deepseek-chat</div>,
     },
 };
-const deepSeekRecommendedModel = AIModel.DEEPSEEK_REASONER;
 
 export default function AiSettings() {
-    const [aiProvider, setAiProvider] = useAiProvider();
-    const [aiModel, setAiModel] = useAiModel();
-    const [aiApiKey, setAiApiKey] = useAiApiKey();
+    const { aiProvider, aiModel, aiApiKey, setAiProvider, setAiModel, setAiApiKey } = useAiSettings();
 
     const modelOptions =
         aiProvider === AIProvider.OPENAI ? openAIModels : deepSeekAIModels;
@@ -53,14 +47,7 @@ export default function AiSettings() {
             <Section title="Provider">
                 <RadioList
                     value={aiProvider}
-                    onChange={(value) => {
-                        setAiProvider(value as AIProvider);
-                        setAiModel(
-                            value === AIProvider.OPENAI
-                                ? openAIRecommendedModel
-                                : deepSeekRecommendedModel,
-                        );
-                    }}
+                    onChange={(value) => setAiProvider(value as AIProvider)}
                     options={providerOptions}
                 />
 

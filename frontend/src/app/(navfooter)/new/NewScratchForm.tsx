@@ -22,7 +22,7 @@ import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
 import Checkbox from "@/app/(navfooter)/settings/Checkbox";
-import { useAiApiKey } from "@/lib/settings";
+import { useAiSettings } from "@/lib/settings";
 import { defaultPromptTemplate, fillPromptPlaceholders } from "@/lib/ai/prompt";
 import getScratchDetails from "@/app/scratch/[slug]/getScratchDetails";
 
@@ -120,7 +120,7 @@ export default function NewScratchForm({
     const [similarScratchLink, setSimilarScratchLink] = useState("");
     const [similarScratch, setSimilarScratch] = useState<api.Scratch>(null);
     const [rawPrompt, setRawPrompt] = useState(defaultPromptTemplate);
-    const [aiApiKey] = useAiApiKey();
+    const { aiApiKey } = useAiSettings();
 
     const loadSimilarScratch = async () => {
         const exampleScratchSlug = similarScratchLink.split("/").pop();
