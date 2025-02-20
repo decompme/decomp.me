@@ -1,8 +1,8 @@
 "use client";
 
 import {
-    AIProvider,
-    AIModel,
+    AiProvider,
+    AiModel,
     useAiSettings,
 } from "@/lib/settings";
 import RadioList from "@/app/(navfooter)/settings/RadioList";
@@ -10,28 +10,28 @@ import Section from "@/app/(navfooter)/settings/Section";
 import TextField from "@/app/(navfooter)/settings/TextField";
 
 const providerOptions = {
-    [AIProvider.OPENAI]: {
+    [AiProvider.OPENAI]: {
         label: <div>OpenAI</div>,
     },
-    [AIProvider.DEEPSEEK]: {
+    [AiProvider.DEEPSEEK]: {
         label: <div>DeepSeek</div>,
     },
 };
 
-const openAIModels = {
-    [AIModel.O1_PREVIEW]: {
+const openAiModels = {
+    [AiModel.O1_PREVIEW]: {
         label: <div>o1-preview (recommended)</div>,
     },
-    [AIModel.GPT_3_5_TURBO]: {
+    [AiModel.GPT_3_5_TURBO]: {
         label: <div>GPT 3.5 Turbo</div>,
     },
 };
 
-const deepSeekAIModels = {
-    [AIModel.DEEPSEEK_REASONER]: {
+const deepSeekAiModels = {
+    [AiModel.DEEPSEEK_REASONER]: {
         label: <div>deepseek-reasoner (recommended)</div>,
     },
-    [AIModel.DEEPSEEK_CHAT]: {
+    [AiModel.DEEPSEEK_CHAT]: {
         label: <div>deepseek-chat</div>,
     },
 };
@@ -40,14 +40,14 @@ export default function AiSettings() {
     const { aiProvider, aiModel, aiApiKey, setAiProvider, setAiModel, setAiApiKey } = useAiSettings();
 
     const modelOptions =
-        aiProvider === AIProvider.OPENAI ? openAIModels : deepSeekAIModels;
+        aiProvider === AiProvider.OPENAI ? openAiModels : deepSeekAiModels;
 
     return (
         <>
             <Section title="Provider">
                 <RadioList
                     value={aiProvider}
-                    onChange={(value) => setAiProvider(value as AIProvider)}
+                    onChange={(value) => setAiProvider(value as AiProvider)}
                     options={providerOptions}
                 />
 
@@ -69,7 +69,7 @@ export default function AiSettings() {
 
                 <RadioList
                     value={aiModel}
-                    onChange={(value) => setAiModel(value as AIModel)}
+                    onChange={(value) => setAiModel(value as AiModel)}
                     options={modelOptions}
                 />
             </Section>

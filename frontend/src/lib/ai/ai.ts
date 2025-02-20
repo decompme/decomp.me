@@ -2,14 +2,14 @@ import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createDeepSeek } from "@ai-sdk/deepseek";
-import { AIProvider, useAiSettings } from "@/lib/settings";
+import { AiProvider, useAiSettings } from "@/lib/settings";
 
-function createProvider(provider: AIProvider, apiKey: string) {
+function createProvider(provider: AiProvider, apiKey: string) {
     switch (provider) {
-        case AIProvider.OPENAI:
+        case AiProvider.OPENAI:
             return createOpenAI({ apiKey, compatibility: "strict" });
 
-        case AIProvider.DEEPSEEK:
+        case AiProvider.DEEPSEEK:
             return createDeepSeek({ apiKey });
 
         default: {

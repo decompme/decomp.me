@@ -24,8 +24,8 @@ const objdiffClientEnabled = createPersistedState<boolean>(
     "objdiffClientEnabled",
 );
 const aiSettings = createPersistedState<{
-    aiProvider: AIProvider;
-    aiModel: AIModel;
+    aiProvider: AiProvider;
+    aiModel: AiModel;
     aiApiKey: string;
 }>("aiSettings");
 
@@ -34,12 +34,12 @@ export enum ThreeWayDiffBase {
     PREV = "prev",
 }
 
-export enum AIProvider {
+export enum AiProvider {
     OPENAI = "openai",
     DEEPSEEK = "deepseek",
 }
 
-export enum AIModel {
+export enum AiModel {
     O1_PREVIEW = "o1-preview",
     GPT_3_5_TURBO = "gpt-3.5-turbo",
     DEEPSEEK_REASONER = "deepseek-reasoner",
@@ -61,15 +61,15 @@ export const useThreeWayDiffBase = () =>
 export const useObjdiffClientEnabled = () => objdiffClientEnabled(false);
 export const useAiSettings = () => {
     const [settings, setSettings] = aiSettings({
-        aiProvider: AIProvider.OPENAI,
-        aiModel: AIModel.O1_PREVIEW,
+        aiProvider: AiProvider.OPENAI,
+        aiModel: AiModel.O1_PREVIEW,
         aiApiKey: "",
     });
 
-    const setAiProvider = (newAiProvider: AIProvider) => {
-        const newAiModel = newAiProvider === AIProvider.OPENAI
-            ? AIModel.O1_PREVIEW
-            : AIModel.DEEPSEEK_REASONER;
+    const setAiProvider = (newAiProvider: AiProvider) => {
+        const newAiModel = newAiProvider === AiProvider.OPENAI
+            ? AiModel.O1_PREVIEW
+            : AiModel.DEEPSEEK_REASONER;
 
         setSettings({
             ...settings,
@@ -78,7 +78,7 @@ export const useAiSettings = () => {
         });
     }
 
-    const setAiModel = (newAiModel: AIModel) => {
+    const setAiModel = (newAiModel: AiModel) => {
         setSettings({ ...settings, aiModel: newAiModel });
     }
 
