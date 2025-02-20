@@ -1,11 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-    AiProvider,
-    AiModel,
-    useAiSettings,
-} from "@/lib/settings";
+import { AiProvider, AiModel, useAiSettings } from "@/lib/settings";
 import RadioList from "@/app/(navfooter)/settings/RadioList";
 import Section from "@/app/(navfooter)/settings/Section";
 import TextField from "@/app/(navfooter)/settings/TextField";
@@ -50,7 +46,14 @@ const providerPricingPageUrls: Record<AiProvider, string> = {
 };
 
 export default function AiSettings() {
-    const { aiProvider, aiModel, aiApiKey, setAiProvider, setAiModel, setAiApiKey } = useAiSettings();
+    const {
+        aiProvider,
+        aiModel,
+        aiApiKey,
+        setAiProvider,
+        setAiModel,
+        setAiApiKey,
+    } = useAiSettings();
 
     return (
         <>
@@ -72,8 +75,17 @@ export default function AiSettings() {
 
             <Section title="Model">
                 <div className="mt-1 text-gray-11 text-sm">
-                    We recommend reasoning models because they are best suited for decompilation.
-                    However, be mindful of <a href={providerPricingPageUrls[aiProvider]} target="_blank" className="underline">pricing</a>.
+                    We recommend reasoning models because they are best suited
+                    for decompilation. However, be mindful of{" "}
+                    <a
+                        href={providerPricingPageUrls[aiProvider]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                    >
+                        pricing
+                    </a>
+                    .
                 </div>
 
                 <RadioList

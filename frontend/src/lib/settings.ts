@@ -77,17 +77,17 @@ export const useAiSettings = () => {
             aiProvider: newAiProvider,
             aiModel: recommendedAiModels[newAiProvider],
         });
-    }
+    };
 
     const setAiModel = (newAiModel: AiModel) => {
         setSettings({ ...settings, aiModel: newAiModel });
-    }
+    };
 
     const setAiApiKey = (newAiApiKey: string) => {
         setSettings({ ...settings, aiApiKey: newAiApiKey });
-    }
+    };
 
-    return { ...settings, setAiProvider, setAiModel, setAiApiKey }
+    return { ...settings, setAiProvider, setAiModel, setAiApiKey };
 };
 
 export function useIsSiteThemeDark() {

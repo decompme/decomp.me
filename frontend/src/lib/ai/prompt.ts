@@ -21,7 +21,7 @@ Do NOT declare variables in the middle of a block.`;
 const compilerNotes: Record<string, string> = {
     agbcc: ansiCCompilerNotes,
     old_agbcc: ansiCCompilerNotes,
-    'gcc2.8.1pm': ansiCCompilerNotes,
+    "gcc2.8.1pm": ansiCCompilerNotes,
 };
 
 export function fillPromptPlaceholders(
