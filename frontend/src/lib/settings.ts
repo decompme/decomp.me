@@ -46,6 +46,11 @@ export enum AiModel {
     DEEPSEEK_CHAT = "deepseek-chat",
 }
 
+const recommendedAiModels: Record<AiProvider, AiModel> = {
+    [AiProvider.OPENAI]: AiModel.O1_PREVIEW,
+    [AiProvider.DEEPSEEK]: AiModel.DEEPSEEK_REASONER,
+};
+
 export const useTheme = () => theme("auto");
 export const useAutoRecompileSetting = () => autoRecompile(true);
 export const useAutoRecompileDelaySetting = () => autoRecompileDelay(500);
@@ -67,14 +72,10 @@ export const useAiSettings = () => {
     });
 
     const setAiProvider = (newAiProvider: AiProvider) => {
-        const newAiModel = newAiProvider === AiProvider.OPENAI
-            ? AiModel.O1_PREVIEW
-            : AiModel.DEEPSEEK_REASONER;
-
         setSettings({
             ...settings,
             aiProvider: newAiProvider,
-            aiModel: newAiModel,
+            aiModel: recommendedAiModels[newAiProvider],
         });
     }
 
