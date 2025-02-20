@@ -12,10 +12,10 @@ import Section from "@/app/(navfooter)/settings/Section";
 import TextField from "@/app/(navfooter)/settings/TextField";
 
 const providerOptions = {
-    [AIProvider.OPEN_AI]: {
+    [AIProvider.OPENAI]: {
         label: <div>OpenAI</div>,
     },
-    [AIProvider.DEEP_SEEK]: {
+    [AIProvider.DEEPSEEK]: {
         label: <div>DeepSeek</div>,
     },
 };
@@ -46,7 +46,7 @@ export default function AiSettings() {
     const [aiApiKey, setAiApiKey] = useAiApiKey();
 
     const modelOptions =
-        aiProvider === AIProvider.OPEN_AI ? openAIModels : deepSeekAIModels;
+        aiProvider === AIProvider.OPENAI ? openAIModels : deepSeekAIModels;
 
     return (
         <>
@@ -56,7 +56,7 @@ export default function AiSettings() {
                     onChange={(value) => {
                         setAiProvider(value as AIProvider);
                         setAiModel(
-                            value === AIProvider.OPEN_AI
+                            value === AIProvider.OPENAI
                                 ? openAIRecommendedModel
                                 : deepSeekRecommendedModel,
                         );

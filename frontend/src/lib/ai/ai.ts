@@ -11,10 +11,10 @@ import {
 
 function createProvider(provider: AIProvider, apiKey: string) {
     switch (provider) {
-        case AIProvider.OPEN_AI:
+        case AIProvider.OPENAI:
             return createOpenAI({ apiKey, compatibility: "strict" });
 
-        case AIProvider.DEEP_SEEK:
+        case AIProvider.DEEPSEEK:
             return createDeepSeek({ apiKey });
 
         default: {

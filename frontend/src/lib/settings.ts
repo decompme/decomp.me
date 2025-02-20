@@ -33,8 +33,8 @@ export enum ThreeWayDiffBase {
 }
 
 export enum AIProvider {
-    OPEN_AI = "openai",
-    DEEP_SEEK = "deepseek",
+    OPENAI = "openai",
+    DEEPSEEK = "deepseek",
 }
 
 export enum AIModel {
@@ -57,7 +57,7 @@ export const useVimModeEnabled = () => vimModeEnabled(false);
 export const useThreeWayDiffBase = () =>
     threeWayDiffBase(ThreeWayDiffBase.SAVED);
 export const useObjdiffClientEnabled = () => objdiffClientEnabled(false);
-export const useAiProvider = () => aiProvider(AIProvider.OPEN_AI);
+export const useAiProvider = () => aiProvider(AIProvider.OPENAI);
 export const useAiModel = () => aiModel(AIModel.GPT_3_5_TURBO);
 export const useAiApiKey = () => aiApiKey("");
 
