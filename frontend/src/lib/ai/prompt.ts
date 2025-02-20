@@ -14,13 +14,14 @@ export type PromptTemplateTags =
     | "decompileRequestSection"
     | "compilerNotes";
 
-const agbccCompilerNotes = `The code should be written in ANSI C.
+const ansiCCompilerNotes = `The code should be written in ANSI C.
 Thus, you should declare variables only at the beginning of a block.
 Do NOT declare variables in the middle of a block.`;
 
 const compilerNotes: Record<string, string> = {
-    agbcc: agbccCompilerNotes,
-    old_agbcc: agbccCompilerNotes,
+    agbcc: ansiCCompilerNotes,
+    old_agbcc: ansiCCompilerNotes,
+    'gcc2.8.1pm': ansiCCompilerNotes,
 };
 
 export function fillPromptPlaceholders(
