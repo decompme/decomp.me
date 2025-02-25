@@ -6,16 +6,11 @@ import Ansi from "ansi-to-react";
 
 import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";
-import {
-    ThreeWayDiffBase,
-    useAiSettings,
-    useThreeWayDiffBase,
-} from "@/lib/settings";
+import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings";
 
 import GhostButton from "../GhostButton";
 
 import Diff from "./Diff";
-import Chat from "../Chat/Chat";
 
 function getProblemState(compilation: api.Compilation): ProblemState {
     if (!compilation.success) {
@@ -59,7 +54,6 @@ export default function CompilationPanel({
     const [threeWayDiffBase] = useThreeWayDiffBase();
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false);
     const prevCompilation = usedCompilationRef.current;
-    const { aiApiKey } = useAiSettings();
 
     // Only update the diff if it's never been set or if the compilation succeeded
     if (!usedCompilationRef.current || compilation.success) {
@@ -93,69 +87,25 @@ export default function CompilationPanel({
         else return usedDiff;
     }, [threeWayDiffEnabled, usedDiff, usedBase]);
 
-    const hasAIPanel = Boolean(aiApiKey);
-
     const container = useRef<HTMLDivElement>(null);
     const allotment = useRef<AllotmentHandle>(null);
 
-    const collapsedHeight = 37;
-
-    const problemsDefaultHeight = 290;
+    const problemsCollapsedHeight = 37;
+    const problemsDefaultHeight = 320;
     const [isProblemsCollapsed, setIsProblemsCollapsed] = useState(
         problemState === ProblemState.NO_PROBLEMS,
     );
-    const problemsHeight = useRef(
-        isProblemsCollapsed ? collapsedHeight : problemsDefaultHeight,
-    );
-
-    const aiDefaultHeightRef = 250;
-    const [isAICollapsed, setIsAICollapsed] = useState(false);
-    const aiHeight = useRef(aiDefaultHeightRef);
-
-    const togglePanelCollapsed = (panelName: "problems" | "ai") => {
-        if (panelName === "problems") {
-            setIsProblemsCollapsed(!isProblemsCollapsed);
-            problemsHeight.current = isProblemsCollapsed
-                ? problemsDefaultHeight
-                : collapsedHeight;
-        } else {
-            setIsAICollapsed(!isAICollapsed);
-            aiHeight.current = isAICollapsed
-                ? aiDefaultHeightRef
-                : collapsedHeight;
-        }
-
-        const containerHeight = container.current?.clientHeight ?? 0;
-
-        if (hasAIPanel) {
-            allotment.current?.resize([
-                containerHeight - problemsHeight.current - aiHeight.current,
-                problemsHeight.current,
-                aiHeight.current,
-            ]);
-        } else {
-            allotment.current?.resize([
-                containerHeight - problemsHeight.current,
-                problemsHeight.current,
-            ]);
-        }
-    };
 
     return (
         <div ref={container} className="size-full">
             <Allotment
                 ref={allotment}
                 vertical
-                onChange={([diff, problems, ai]) => {
-                    if (diff === undefined || problems === undefined) {
+                onChange={([_top, bottom]) => {
+                    if (_top === undefined || bottom === undefined) {
                         return;
                     }
-
-                    setIsProblemsCollapsed(problems <= collapsedHeight);
-                    setIsAICollapsed(ai <= collapsedHeight);
-
-                    problemsHeight.current = problems;
-                    aiHeight.current = ai;
+                    setIsProblemsCollapsed(bottom <= problemsCollapsedHeight);
                 }}
             >
                 <Allotment.Pane>
@@ -173,16 +123,30 @@ export default function CompilationPanel({
                         selectedSourceLine={selectedSourceLine}
                     />
                 </Allotment.Pane>
-
                 <Allotment.Pane
-                    minSize={collapsedHeight}
-                    preferredSize={problemsHeight.current}
+                    minSize={problemsCollapsedHeight}
+                    preferredSize={
+                        isProblemsCollapsed
+                            ? problemsCollapsedHeight
+                            : problemsDefaultHeight
+                    }
                 >
                     <div className="flex size-full flex-col">
                         <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
                             <GhostButton
                                 className="flex w-max grow justify-between text-gray-11"
-                                onClick={() => togglePanelCollapsed("problems")}
+                                onClick={() => {
+                                    const containerHeight =
+                                        container.current?.clientHeight ?? 0;
+                                    const newProblemsHeight =
+                                        isProblemsCollapsed
+                                            ? problemsDefaultHeight
+                                            : problemsCollapsedHeight;
+                                    allotment.current?.resize([
+                                        containerHeight - newProblemsHeight,
+                                        newProblemsHeight,
+                                    ]);
+                                }}
                             >
                                 <span className="font-medium text-sm">
                                     {problemState === ProblemState.NO_PROBLEMS
@@ -202,30 +166,6 @@ export default function CompilationPanel({
                         </div>
                     </div>
                 </Allotment.Pane>
-
-                {hasAIPanel && (
-                    <Allotment.Pane
-                        minSize={collapsedHeight}
-                        preferredSize={aiHeight.current}
-                    >
-                        <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
-                            <GhostButton
-                                className="flex w-max grow justify-between text-gray-11"
-                                onClick={() => togglePanelCollapsed("ai")}
-                            >
-                                <span className="font-medium text-sm">AI</span>
-
-                                {isAICollapsed ? (
-                                    <ChevronUpIcon />
-                                ) : (
-                                    <ChevronDownIcon />
-                                )}
-                            </GhostButton>
-                        </h2>
-
-                        <Chat />
-                    </Allotment.Pane>
-                )}
             </Allotment>
         </div>
     );

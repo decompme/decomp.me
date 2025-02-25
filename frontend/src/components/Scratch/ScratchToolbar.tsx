@@ -6,6 +6,7 @@ import {
     DownloadIcon,
     FileIcon,
     IterationsIcon,
+    SparklesFillIcon,
     RepoForkedIcon,
     SyncIcon,
     TrashIcon,
@@ -150,6 +151,7 @@ function Actions({
     setScratch,
     saveCallback,
     setDecompilationTabEnabled,
+    setAiTabEnabled,
 }: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
@@ -256,6 +258,12 @@ function Actions({
                     Compile
                 </button>
             </li>
+            <li>
+                <button onClick={() => setAiTabEnabled(true)}>
+                    <SparklesFillIcon />
+                    AI
+                </button>
+            </li>
             {platform?.has_decompiler && (
                 <li>
                     <button onClick={() => setDecompilationTabEnabled(true)}>
@@ -306,6 +314,7 @@ export type Props = {
     setScratch: (scratch: Partial<api.Scratch>) => void;
     saveCallback: () => void;
     setDecompilationTabEnabled: (enabled: boolean) => void;
+    setAiTabEnabled: (enabled: boolean) => void;
 };
 
 export default function ScratchToolbar(props: Props) {

@@ -1,12 +1,23 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowUpIcon } from "@primer/octicons-react";
-import { useAI } from "@/lib/ai/ai";
+import { useEffect, useRef } from "react";
+import { useAi } from "@/providers/AiProvider";
 import ChatMessage from "@/components/Chat/ChatMessage";
-import GhostButton from "@/components/GhostButton";
+import Link from "next/link";
+import ChatInput from "./ChatInput";
+
+function ChatEmptyState() {
+    return (
+        <div className="flex flex-col items-center justify-center h-full">
+            <p className="w-[75%]">
+                Start a conversation with the AI by typing a message in the
+                input box below. Check the prompt builder for some ideas on what
+                to say.
+            </p>
+        </div>
+    );
+}
 
 export default function Chat() {
-    const { chatHistory, chatSubmit } = useAI();
-    const [newMessage, setNewMessage] = useState("");
+    const { canUseAi, chatHistory } = useAi();
     const chatHistoryRef = useRef<HTMLDivElement>();
 
     useEffect(() => {
@@ -17,28 +28,25 @@ export default function Chat() {
         chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }, [chatHistory.length]);
 
-    useEffect(() => {
-        const runInitialPrompt = async () => {
-            if (
-                localStorage.new_scratch_use_ai_enabled &&
-                localStorage.new_scratch_quickstart_prompt
-            ) {
-                await chatSubmit(localStorage.new_scratch_quickstart_prompt);
-
-                delete localStorage.new_scratch_use_ai_enabled;
-                delete localStorage.new_scratch_quickstart_prompt;
-            }
-        };
-
-        runInitialPrompt();
-    }, []);
+    if (!canUseAi) {
+        return (
+            <div className="h-full overflow-auto p-4">
+                <p>
+                    No AI API key defined in settings.{" "}
+                    <Link href="/settings/ai" className="underline">
+                        Go to the AI settings
+                    </Link>{" "}
+                    and set an API key to use the built-in chat.
+                </p>
+            </div>
+        );
+    }
 
     return (
-        <div className="flex h-[100%] flex-col gap-2">
-            <div
-                ref={chatHistoryRef}
-                className="h-[calc(100%-100px)] overflow-scroll"
-            >
+        <div className="h-full">
+            {chatHistory.length === 0 && <ChatEmptyState />}
+
+            <div ref={chatHistoryRef} className="h-auto">
                 {chatHistory.map((message, i) => (
                     <div key={i}>
                         <ChatMessage
@@ -49,30 +57,8 @@ export default function Chat() {
                 ))}
             </div>
 
-            <div className="relative h-[100px]">
-                <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            chatSubmit(newMessage);
-                            setNewMessage("");
-                        }
-                    }}
-                    className="w-full resize-none p-[8px] pr-[20px]"
-                    spellCheck={false}
-                />
-
-                <GhostButton
-                    className="absolute right-[10px] bottom-[55%]"
-                    onClick={() => {
-                        chatSubmit(newMessage);
-                        setNewMessage("");
-                    }}
-                >
-                    <ArrowUpIcon />
-                </GhostButton>
+            <div className="sticky bottom-0">
+                <ChatInput />
             </div>
         </div>
     );

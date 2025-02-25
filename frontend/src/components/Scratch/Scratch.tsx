@@ -32,6 +32,7 @@ import useLanguageServer from "./hooks/useLanguageServer";
 import AboutPanel from "./panels/AboutPanel";
 import DecompilationPanel from "./panels/DecompilePanel";
 import FamilyPanel from "./panels/FamilyPanel";
+import AiPanel from "./panels/AiPanel";
 import styles from "./Scratch.module.scss";
 import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
@@ -46,6 +47,7 @@ enum TabId {
     OPTIONS = "scratch_options",
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
+    AI = "ai",
     FAMILY = "scratch_family",
 }
 
@@ -73,7 +75,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 kind: "pane",
                 size: 50,
                 activeTab: TabId.DIFF,
-                tabs: [TabId.DIFF, TabId.DECOMPILATION],
+                tabs: [TabId.DIFF, TabId.AI, TabId.DECOMPILATION],
             },
         ],
     },
@@ -91,6 +93,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.ABOUT,
                     TabId.FAMILY,
                     TabId.DIFF,
+                    TabId.AI,
                     TabId.DECOMPILATION,
                 ],
             },
@@ -197,6 +200,8 @@ export default function Scratch({
     // TODO: CustomLayout should handle adding/removing tabs
     const [decompilationTabEnabled, setDecompilationTabEnabled] =
         useState(false);
+    const [aiTabEnabled, setAiTabEnabled] = useState(false);
+
     useEffect(() => {
         if (decompilationTabEnabled) {
             setLayout((layout) => {
@@ -206,6 +211,16 @@ export default function Scratch({
             });
         }
     }, [decompilationTabEnabled]);
+
+    useEffect(() => {
+        if (aiTabEnabled) {
+            setLayout((layout) => {
+                const clone = { ...layout };
+                activateTabInLayout(clone, TabId.AI);
+                return clone;
+            });
+        }
+    }, [aiTabEnabled]);
 
     // If the version of the scratch changes, refresh code editors
     useEffect(() => {
@@ -357,6 +372,25 @@ export default function Scratch({
                         )}
                     </Tab>
                 );
+            case TabId.AI:
+                return (
+                    aiTabEnabled && (
+                        <Tab
+                            key={id}
+                            tabKey={id}
+                            label={
+                                <>
+                                    AI
+                                    <TabCloseButton
+                                        onClick={() => setAiTabEnabled(false)}
+                                    />
+                                </>
+                            }
+                        >
+                            {() => <AiPanel scratch={scratch} />}
+                        </Tab>
+                    )
+                );
             case TabId.DECOMPILATION:
                 return (
                     decompilationTabEnabled && (
@@ -433,6 +467,7 @@ export default function Scratch({
                     setScratch={setScratch}
                     saveCallback={saveCallback}
                     setDecompilationTabEnabled={setDecompilationTabEnabled}
+                    setAiTabEnabled={setAiTabEnabled}
                 />
                 {matchProgressBarEnabledSetting && (
                     <div className={styles.progressbar}>
