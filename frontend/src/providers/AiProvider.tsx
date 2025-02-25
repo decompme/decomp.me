@@ -1,6 +1,11 @@
 import { useAiSettings } from "@/lib/settings";
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { AiProvider as SettingsAiProvider, AiModel } from "@/lib/settings";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    type ReactNode,
+} from "react";
+import { AiProvider as SettingsAiProvider } from "@/lib/settings";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createDeepSeek } from "@ai-sdk/deepseek";

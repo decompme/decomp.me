@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CodeMirror from "@/components/Editor/CodeMirror";
-import * as api from "@/lib/api";
+import type * as api from "@/lib/api";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { defaultPromptTemplate, fillPromptPlaceholders } from "@/lib/ai/prompt";
 import getScratchDetails from "@/app/scratch/[slug]/getScratchDetails";

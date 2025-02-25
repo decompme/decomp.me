@@ -17,7 +17,7 @@ export default function ChatInput() {
                         setNewMessage("");
                     }
                 }}
-                className="w-full h-full p-[8px] pr-[40px] rounded bg-gray-6 border border-gray-8 !outline-none"
+                className="!outline-none h-full w-full rounded border border-gray-8 bg-gray-6 p-[8px] pr-[40px]"
                 spellCheck={false}
             />
 

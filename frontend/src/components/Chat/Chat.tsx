@@ -6,7 +6,7 @@ import ChatInput from "./ChatInput";
 
 function ChatEmptyState() {
     return (
-        <div className="flex flex-col items-center justify-center h-full">
+        <div className="flex h-full flex-col items-center justify-center">
             <p className="w-[75%]">
                 Start a conversation with the AI by typing a message in the
                 input box below. Check the prompt builder for some ideas on what

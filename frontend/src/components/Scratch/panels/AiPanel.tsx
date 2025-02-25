@@ -14,7 +14,7 @@ export default function AiPanel({ scratch }: Props) {
     const [tab, setTab] = useState<Tab>("promptBuilder");
 
     return (
-        <div className="h-full flex flex-col overflow-scroll">
+        <div className="flex h-full flex-col overflow-scroll">
             <div className="flex justify-center gap-2 p-4">
                 <Button onClick={() => setTab("promptBuilder")}>
                     Prompt Builder
@@ -26,7 +26,7 @@ export default function AiPanel({ scratch }: Props) {
                 {tab === "chat" ? (
                     <Chat />
                 ) : (
-                    <div className="pr-4 pl-4 pb-4">
+                    <div className="pr-4 pb-4 pl-4">
                         <PromptBuilder
                             scratch={scratch}
                             goToChatTab={() => setTab("chat")}

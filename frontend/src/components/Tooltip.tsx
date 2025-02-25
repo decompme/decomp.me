@@ -6,7 +6,7 @@ import {
     Arrow,
     TooltipProvider,
 } from "@radix-ui/react-tooltip";
-import { type ReactElement } from "react";
+import type { ReactElement } from "react";
 
 type Props = {
     children: ReactElement;
@@ -27,7 +27,7 @@ function Tooltip({ message, children, position = "top" }: Props) {
                 <Portal>
                     <Content
                         side={position}
-                        className="z-[2000] bg-gray-3 p-1.5 rounded"
+                        className="z-[2000] rounded bg-gray-3 p-1.5"
                         sideOffset={5}
                     >
                         <div className="break-words">{message}</div>
