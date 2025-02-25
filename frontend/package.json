@@ -28,6 +28,7 @@
         "@primer/octicons-react": "^19.13.0",
         "@radix-ui/colors": "^2.1.0",
         "@radix-ui/react-progress": "^1.1.0",
+        "@radix-ui/react-tooltip": "^1.1.8",
         "@react-hook/resize-observer": "^1.2.6",
         "@replit/codemirror-indentation-markers": "^6.5.3",
         "@replit/codemirror-vim": "^6.2.1",
