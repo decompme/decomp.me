@@ -47,13 +47,12 @@ export default function Chat() {
             {chatHistory.length === 0 && <ChatEmptyState />}
 
             <div ref={chatHistoryRef} className="h-auto">
-                {chatHistory.map((message, i) => (
-                    <div key={i}>
-                        <ChatMessage
-                            role={message.role}
-                            text={message.content}
-                        />
-                    </div>
+                {chatHistory.map((message) => (
+                    <ChatMessage
+                        key={message.id}
+                        role={message.role}
+                        text={message.content}
+                    />
                 ))}
             </div>
 

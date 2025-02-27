@@ -36,6 +36,7 @@ interface AiContextProps {
 const AiContext = createContext<AiContextProps>(null);
 
 export type Message = {
+    id: string;
     role: "user" | "assistant";
     content: string;
 };
@@ -57,8 +58,8 @@ export function AiProvider({ children }: Props) {
     const chatSubmit = async (prompt: string) => {
         setChatHistory([
             ...chatHistory,
-            { role: "user", content: prompt },
-            { role: "assistant", content: "Loading..." },
+            { id: `user-${chatHistory.length}`, role: "user", content: prompt },
+            { id: `assistant-loading-${chatHistory.length}`, role: "assistant", content: "Loading..." },
         ]);
 
         const { text } = await generateText({
@@ -68,8 +69,8 @@ export function AiProvider({ children }: Props) {
 
         setChatHistory([
             ...chatHistory,
-            { role: "user", content: prompt },
-            { role: "assistant", content: text },
+            { id: `user-${chatHistory.length}`, role: "user", content: prompt },
+            { id: `assistant-response-${chatHistory.length}`, role: "assistant", content: text },
         ]);
     };
 
