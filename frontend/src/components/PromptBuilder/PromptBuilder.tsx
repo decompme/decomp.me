@@ -113,8 +113,8 @@ export default function PromptBuilder({ scratch, goToChatTab }: Props) {
 
                     {promptSuggestions.size === 0 && <p>- None</p>}
 
-                    {Array.from(promptSuggestions).map((suggestion, i) => (
-                        <p key={i} className="pl-2">
+                    {Array.from(promptSuggestions).map((suggestion) => (
+                        <p key={suggestion} className="pl-2">
                             - {suggestion}
                         </p>
                     ))}
