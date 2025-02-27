@@ -108,17 +108,17 @@ export default function PromptBuilder({ scratch, goToChatTab }: Props) {
                     extensions={[basicSetup]}
                 />
 
-                <div className="mt-2 text-[0.8rem] text-[color:var(--g800)]">
-                    <p>Suggestions:</p>
+                {promptSuggestions.size > 0 && (
+                    <div className="mt-2 text-[0.8rem] text-[color:var(--g800)]">
+                        <p>Suggestions:</p>
 
-                    {promptSuggestions.size === 0 && <p>- None</p>}
-
-                    {Array.from(promptSuggestions).map((suggestion) => (
-                        <p key={suggestion} className="pl-2">
-                            - {suggestion}
-                        </p>
-                    ))}
-                </div>
+                        {Array.from(promptSuggestions).map((suggestion) => (
+                            <p key={suggestion} className="pl-2">
+                                - {suggestion}
+                            </p>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="flex h-[200px] flex-col">
