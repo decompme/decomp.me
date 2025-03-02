@@ -104,6 +104,7 @@
     "msvc7.0": "Microsoft Visual C/C++ 7.0 .NET 2002",
     "msvc7.1": "Microsoft Visual C/C++ 7.1 .NET 2003",
     "msvc8.0": "Microsoft Visual C/C++ 8.0",
+    "msvc8.0p": "Microsoft Visual C/C++ 8.0 (Patched)",
 
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",

@@ -207,3 +207,4 @@ win32:
   - msvc7.0
   - msvc7.1
   - msvc8.0
+  - msvc8.0p
