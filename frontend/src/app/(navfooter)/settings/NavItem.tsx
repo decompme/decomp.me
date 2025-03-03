@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { useSelectedLayoutSegment } from "next/navigation";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import GhostButton from "@/components/GhostButton";
 
@@ -21,7 +21,7 @@ export default function NavItem({ segment, label, icon }: Props) {
         <li className="grow text-center lg:text-left">
             <GhostButton
                 href={`/settings/${segment}`}
-                className={classNames({
+                className={clsx({
                     "!px-3 block rounded-md py-2": true,
                     "pointer-events-none bg-gray-5 font-medium": isSelected,
                 })}

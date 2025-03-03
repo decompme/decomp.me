@@ -7,7 +7,7 @@ import {
     useContext,
 } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 import type { EditorView } from "codemirror";
 import memoize from "memoize-one";
 import {
@@ -116,7 +116,7 @@ function FormatDiffText({
         out.push(
             <span
                 key={index}
-                className={classNames(className, {
+                className={clsx(className, {
                     [styles.highlightable]: isToken,
                     [styles.highlighted]: highlighter?.value === text,
                 })}
@@ -160,7 +160,7 @@ function DiffCell({
         useContext<MutableRefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.instruction?.line_number !== "undefined";
 
-    if (!cell) return <div className={classNames(styles.cell, className)} />;
+    if (!cell) return <div className={clsx(styles.cell, className)} />;
 
     const classes = [];
     if (cell?.diff_kind) {
@@ -180,7 +180,7 @@ function DiffCell({
 
     return (
         <div
-            className={classNames(styles.cell, classes, {
+            className={clsx(styles.cell, classes, {
                 [styles.highlight]:
                     hasLineNo &&
                     cell.instruction.line_number === selectedSourceLine,

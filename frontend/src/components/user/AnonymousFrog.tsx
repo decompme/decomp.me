@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import type * as api from "@/lib/api";
 
@@ -26,14 +26,14 @@ export default function AnonymousFrogAvatar({
 
     return (
         <div
-            className={classNames(
+            className={clsx(
                 className,
                 "flex aspect-square items-center justify-center rounded-full bg-gray-3",
             )}
         >
             <Frog
                 style={accentStyle}
-                className={classNames(styles.anonymousFrog, "h-4/6 w-4/6")}
+                className={clsx(styles.anonymousFrog, "h-4/6 w-4/6")}
                 {...props}
             />
         </div>

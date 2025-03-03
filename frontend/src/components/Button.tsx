@@ -4,7 +4,7 @@ import { type ForwardedRef, forwardRef } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import styles from "./Button.module.scss";
 
@@ -21,7 +21,7 @@ const Button = forwardRef(function Button(
     }: Props,
     ref: ForwardedRef<HTMLButtonElement>,
 ) {
-    const cn = classNames(
+    const cn = clsx(
         className,
         styles.btn,
         "px-2.5 py-1.5 rounded text-sm active:translate-y-px",

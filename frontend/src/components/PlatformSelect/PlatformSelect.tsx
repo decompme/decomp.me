@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import clsx from "clsx";
 
 import { PlatformIcon } from "./PlatformIcon";
 import styles from "./PlatformSelect.module.scss";
@@ -24,11 +24,11 @@ export default function PlatformSelect({
     if (!value) onChange("n64");
 
     return (
-        <ul className={classNames(styles.container, className)}>
+        <ul className={clsx(styles.container, className)}>
             {Object.entries(platforms).map(([key, platform]) => (
                 <li
                     key={key}
-                    className={classNames(styles.platform, {
+                    className={clsx(styles.platform, {
                         [styles.selected]: value === key,
                     })}
                     onClick={() => onChange(key)}

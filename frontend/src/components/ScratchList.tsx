@@ -4,7 +4,7 @@ import { type ReactNode, useState } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import AsyncButton from "./AsyncButton";
 import Button from "./Button";
@@ -52,7 +52,7 @@ export default function ScratchList({
                 <TextSkeleton text={SCRATCH_LIST} />
             ) : (
                 <ul
-                    className={classNames(
+                    className={clsx(
                         styles.list,
                         "rounded-md border-gray-6 text-sm",
                         className,

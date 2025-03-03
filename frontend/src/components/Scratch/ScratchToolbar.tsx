@@ -11,7 +11,7 @@ import {
     TrashIcon,
     UploadIcon,
 } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
 
 import TimeAgo from "@/components/TimeAgo";
@@ -130,7 +130,7 @@ function ScratchName({
     } else {
         return (
             <div
-                className={classNames(styles.name, {
+                className={clsx(styles.name, {
                     [styles.editable]: !!onChange,
                 })}
                 onClick={() => {
@@ -364,7 +364,7 @@ export default function ScratchToolbar(props: Props) {
             </Nav>
             {actionsLocation === ActionsLocation.BELOW_NAV && (
                 <div
-                    className={classNames(
+                    className={clsx(
                         styles.belowNavActionsContainer,
                         "border-gray-6 border-b",
                     )}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import styles from "./NumberInput.module.scss";
 
@@ -35,7 +35,7 @@ export default function NumberInput({
     return (
         <span
             ref={editableRef}
-            className={classNames(styles.numberInput, {
+            className={clsx(styles.numberInput, {
                 [styles.disabled]: disabled,
             })}
             tabIndex={0}

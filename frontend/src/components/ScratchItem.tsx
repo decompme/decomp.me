@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
@@ -64,7 +64,7 @@ export function ScratchItem({
                     />
                     <Link
                         href={scratchUrl(scratch)}
-                        className={classNames(styles.link, styles.name)}
+                        className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
                     </Link>
@@ -114,7 +114,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     />
                     <Link
                         href={scratchUrl(scratch)}
-                        className={classNames(styles.link, styles.name)}
+                        className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
                     </Link>
@@ -154,7 +154,7 @@ export function ScratchItemPlatformList({
                 <div className={styles.header}>
                     <Link
                         href={scratchUrl(scratch)}
-                        className={classNames(styles.link, styles.name)}
+                        className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
                     </Link>
@@ -188,7 +188,7 @@ export function ScratchItemPresetList({
                 <div className={styles.header}>
                     <Link
                         href={scratchUrl(scratch)}
-                        className={classNames(styles.link, styles.name)}
+                        className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
                     </Link>
@@ -246,7 +246,7 @@ export function SingleLineScratchItem({
             <PlatformLink size={16} scratch={scratch} className={styles.icon} />
             <Link
                 href={scratchUrl(scratch)}
-                className={classNames(styles.link, styles.name)}
+                className={clsx(styles.link, styles.name)}
             >
                 {scratch.name}
             </Link>

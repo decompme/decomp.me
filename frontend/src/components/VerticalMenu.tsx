@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import ErrorBoundary from "./ErrorBoundary";
 import LoadingSpinner from "./loading.svg";
@@ -58,7 +58,7 @@ export function MenuItem({
     className,
     children,
 }: { className?: string; children: ReactNode }) {
-    return <li className={classNames(styles.item, className)}>{children}</li>;
+    return <li className={clsx(styles.item, className)}>{children}</li>;
 }
 
 export function ButtonItem({
@@ -90,7 +90,7 @@ export function ButtonItem({
 
     return (
         <a
-            className={classNames(styles.item, {
+            className={clsx(styles.item, {
                 [styles.disabled]: disabled,
             })}
             onClick={trigger}
@@ -139,7 +139,7 @@ export function LinkItem({
     return (
         <Link
             href={href}
-            className={classNames(styles.item, {
+            className={clsx(styles.item, {
                 [styles.disabled]: disabled,
             })}
             onClick={() => {

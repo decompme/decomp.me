@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import Image from "next/image";
 
-import classNames from "classnames";
+import clsx from "clsx";
 import { useLayer } from "react-laag";
 
 import * as api from "@/lib/api";
@@ -38,7 +38,7 @@ export default function LoginState({ className }: { className?: string }) {
 
     return (
         <button
-            className={classNames(styles.user, className)}
+            className={clsx(styles.user, className)}
             onClick={() => setUserMenuOpen(!isUserMenuOpen)}
             {...triggerProps}
         >

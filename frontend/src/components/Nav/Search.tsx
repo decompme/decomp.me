@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { SearchIcon } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 import { useCombobox } from "downshift";
 import { useLayer } from "react-laag";
 
@@ -99,7 +99,7 @@ function MountedSearch({ className }: { className?: string }) {
 
     return (
         <div
-            className={classNames(styles.container, className)}
+            className={clsx(styles.container, className)}
             onKeyDown={(evt) => {
                 if (evt.key === "Enter") {
                     evt.stopPropagation();
@@ -116,7 +116,7 @@ function MountedSearch({ className }: { className?: string }) {
             <SearchIcon className={styles.icon} />
             <input
                 {...getInputProps(triggerProps)}
-                className={classNames(styles.input, {
+                className={clsx(styles.input, {
                     [styles.isOpen]: isOpen,
                     "rounded-md bg-transparent text-sm placeholder-current transition-colors hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11": true,
                 })}
@@ -132,13 +132,9 @@ function MountedSearch({ className }: { className?: string }) {
             {renderLayer(
                 <ul
                     {...getMenuProps(layerProps)}
-                    className={classNames(
-                        verticalMenuStyles.menu,
-                        styles.results,
-                        {
-                            [styles.isOpen]: isOpen,
-                        },
-                    )}
+                    className={clsx(verticalMenuStyles.menu, styles.results, {
+                        [styles.isOpen]: isOpen,
+                    })}
                     style={{
                         width: lastWidthRef.current,
                         ...layerProps.style,
@@ -156,7 +152,7 @@ function MountedSearch({ className }: { className?: string }) {
                             <li key={scratchUrl(scratch)} {...props}>
                                 <a
                                     href={scratchUrl(scratch)}
-                                    className={classNames(
+                                    className={clsx(
                                         verticalMenuStyles.item,
                                         styles.item,
                                     )}
@@ -176,7 +172,7 @@ function MountedSearch({ className }: { className?: string }) {
                     {items.length === 0 && (
                         <li>
                             <div
-                                className={classNames(
+                                className={clsx(
                                     verticalMenuStyles.item,
                                     styles.noResults,
                                 )}
