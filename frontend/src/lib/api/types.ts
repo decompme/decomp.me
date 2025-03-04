@@ -42,6 +42,7 @@ export interface TerseScratch {
     match_override: boolean;
     project: string;
     libraries: Library[];
+    target_assembly_source_asm: string;
 }
 
 export interface Scratch extends TerseScratch {
