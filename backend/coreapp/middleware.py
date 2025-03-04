@@ -31,7 +31,7 @@ else:
 
 
 def disable_csrf(
-    get_response: Callable[[HttpRequest], Response]
+    get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[HttpRequest], Response]:
     def middleware(request: HttpRequest) -> Response:
         setattr(request, "_dont_enforce_csrf_checks", True)
@@ -41,7 +41,7 @@ def disable_csrf(
 
 
 def set_user_profile(
-    get_response: Callable[[HttpRequest], Response]
+    get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[Request], Response]:
     """
     Makes sure that `request.profile` is always available, even for anonymous users.
