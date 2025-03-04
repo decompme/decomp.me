@@ -8,7 +8,7 @@ import {
 
 import { type Extension, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import classNames from "classnames";
+import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
 import { useSize } from "@/lib/hooks";
@@ -182,7 +182,7 @@ export default function CodeMirror({
         <div
             ref={el}
             onMouseMove={debouncedOnMouseMove}
-            className={classNames(styles.container, className)}
+            className={clsx(styles.container, className)}
             style={
                 {
                     "--cm-font-size": `${fontSize}px`,

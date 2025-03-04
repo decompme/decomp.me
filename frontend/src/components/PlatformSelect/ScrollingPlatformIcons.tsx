@@ -1,11 +1,11 @@
-import classNames from "classnames";
+import clsx from "clsx";
 
 import { PlatformIcon, PLATFORMS } from "./PlatformIcon";
 import styles from "./ScrollingPlatformIcons.module.scss";
 
 function SingleSet() {
     return (
-        <div className={classNames("flex gap-2", styles.scrolling)}>
+        <div className={clsx("flex gap-2", styles.scrolling)}>
             {PLATFORMS.map((platform) => (
                 <PlatformIcon
                     key={platform}

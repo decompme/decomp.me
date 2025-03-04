@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState, useCallback } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLayer, Arrow } from "react-laag";
 
@@ -58,7 +58,7 @@ export default function AsyncButton(props: Props) {
     return (
         <Button
             {...props}
-            className={classNames(styles.asyncBtn, props.className, {
+            className={clsx(styles.asyncBtn, props.className, {
                 [styles.isLoading]: isLoading,
             })}
             onClick={onClick}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Image from "next/image";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import * as api from "@/lib/api";
 import { userAvatarUrl } from "@/lib/api/urls";
@@ -27,14 +27,14 @@ export default function UserAvatar({ user, className }: Props) {
     if (!user) {
         // Skeleton loading state
         return (
-            <span className={classNames(styles.avatar, className)}>
+            <span className={clsx(styles.avatar, className)}>
                 <div className="size-full animate-pulse rounded-full bg-gray-6" />
             </span>
         );
     }
 
     return (
-        <span className={classNames(styles.avatar, className)}>
+        <span className={clsx(styles.avatar, className)}>
             {api.isAnonUser(user) ? (
                 <AnonymousFrogAvatar user={user} />
             ) : (

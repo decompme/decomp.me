@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 import useSWR from "swr";
 
 import { get } from "@/lib/api/request";
@@ -58,7 +58,7 @@ function FamilyMember({
             <div className="grow" />
             <div
                 title={getScoreAsFraction(scratch.score, scratch.max_score)}
-                className={classNames({ "text-gray-11": !isBetter })}
+                className={clsx({ "text-gray-11": !isBetter })}
             >
                 {getScoreText(
                     scratch.score,

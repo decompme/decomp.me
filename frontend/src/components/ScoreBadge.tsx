@@ -1,5 +1,5 @@
 import { AlertIcon, CheckIcon } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 
 import styles from "./ScoreBadge.module.scss";
 
@@ -69,7 +69,7 @@ export default function ScoreBadge({
     if (!compiledSuccessfully || score === -1) {
         return (
             <div
-                className={classNames(styles.badge, { [styles.error]: true })}
+                className={clsx(styles.badge, { [styles.error]: true })}
                 title="Does not compile"
             >
                 <AlertIcon className={styles.icon} />
@@ -78,7 +78,7 @@ export default function ScoreBadge({
     } else if (score === 0) {
         return (
             <div
-                className={classNames(styles.badge, { [styles.match]: true })}
+                className={clsx(styles.badge, { [styles.match]: true })}
                 title="Match"
             >
                 <CheckIcon className={styles.icon} />

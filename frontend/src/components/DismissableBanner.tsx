@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from "react";
 
 import { XIcon } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 
 import styles from "./DismissableBanner.module.scss";
 
@@ -14,7 +14,7 @@ export default function DismissableBanner({
     if (!isOpen) return null;
 
     return (
-        <div className={classNames(styles.container, className)}>
+        <div className={clsx(styles.container, className)}>
             <div className={styles.content}>{children}</div>
             <button
                 title="Dismiss"

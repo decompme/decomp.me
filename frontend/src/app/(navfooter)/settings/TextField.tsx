@@ -1,6 +1,6 @@
 import { useId, type ReactNode, type CSSProperties } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 export type Props = {
     value: string;
@@ -28,7 +28,7 @@ export default function TextField({
 
     return (
         <div
-            className={classNames({
+            className={clsx({
                 "cursor-not-allowed opacity-50": disabled,
             })}
         >

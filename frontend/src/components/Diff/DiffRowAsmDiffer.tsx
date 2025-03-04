@@ -7,7 +7,7 @@ import {
     useContext,
 } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 import type { EditorView } from "codemirror";
 import memoize from "memoize-one";
 import { areEqual } from "react-window";
@@ -55,7 +55,7 @@ function FormatDiffText({
                     return (
                         <span
                             key={key}
-                            className={classNames(className, {
+                            className={clsx(className, {
                                 [styles.highlightable]: isToken,
                                 [styles.highlighted]:
                                     highlighter.value === text,
@@ -90,11 +90,11 @@ function DiffCell({
         useContext<MutableRefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
 
-    if (!cell) return <div className={classNames(styles.cell, className)} />;
+    if (!cell) return <div className={clsx(styles.cell, className)} />;
 
     return (
         <div
-            className={classNames(styles.cell, className, {
+            className={clsx(styles.cell, className, {
                 [styles.highlight]:
                     hasLineNo && cell.src_line === selectedSourceLine,
             })}

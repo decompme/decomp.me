@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import NumberInput from "@/components/NumberInput";
 
@@ -37,7 +37,7 @@ export default function SliderField({
 
     return (
         <div
-            className={classNames({
+            className={clsx({
                 "cursor-not-allowed opacity-50": disabled,
             })}
         >

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 
 import GhostButton from "../GhostButton";
 import Logotype from "../Logotype";
@@ -43,14 +43,14 @@ export default function Nav({ children }: Props) {
 
     return (
         <nav
-            className={classNames("border-gray-7", {
+            className={clsx("border-gray-7", {
                 [styles.container]: true,
             })}
             aria-labelledby="navtoggle"
             data-open={isOpen}
             data-force-toggle={!!children}
         >
-            <ul className={classNames(styles.header, "px-2 md:px-8 lg:px-16")}>
+            <ul className={clsx(styles.header, "px-2 md:px-8 lg:px-16")}>
                 <li className={styles.headerItemMenuToggle}>
                     <button
                         id="navtoggle"
@@ -101,7 +101,7 @@ export default function Nav({ children }: Props) {
                     </li>
                 )}
             </ul>
-            <div className={classNames(styles.menu, "bg-gray-1")}>
+            <div className={clsx(styles.menu, "bg-gray-1")}>
                 <div className={styles.searchContainer}>
                     <Search className={styles.search} />
                 </div>

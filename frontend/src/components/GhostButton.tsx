@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 export type Props = {
     href?: string;
@@ -18,7 +18,7 @@ export default function GhostButton({
     className,
 }: Props) {
     const isClickable = !!(href || onClick);
-    const cn = classNames(className, {
+    const cn = clsx(className, {
         "rounded bg-transparent px-2 py-1 text-sm whitespace-nowrap inline-block": true,
         "transition-colors hover:bg-gray-3 cursor-pointer active:translate-y-px hover:text-gray-12":
             isClickable,

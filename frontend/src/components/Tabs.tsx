@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import { XIcon } from "@primer/octicons-react";
-import classNames from "classnames";
+import clsx from "clsx";
 
 import ErrorBoundary from "./ErrorBoundary";
 import styles from "./Tabs.module.scss";
@@ -208,7 +208,7 @@ export default function Tabs({
             }}
         >
             <div
-                className={classNames(
+                className={clsx(
                     styles.container,
                     {
                         [styles.border]:
@@ -245,13 +245,13 @@ export default function Tabs({
                     return (
                         <div
                             role="tabpanel"
-                            className={classNames(styles.tabPanel, {
+                            className={clsx(styles.tabPanel, {
                                 [styles.active]: isActive,
                             })}
                             key={key}
                         >
                             <div
-                                className={classNames(
+                                className={clsx(
                                     styles.tabPanelContent,
                                     props.className,
                                 )}

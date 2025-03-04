@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import styles from "./Breadcrumbs.module.scss";
 
@@ -19,7 +19,7 @@ export default function Breadcrumbs({ pages, className }: Props) {
     return (
         <nav
             aria-label="Breadcrumb"
-            className={classNames(styles.breadcrumbs, className)}
+            className={clsx(styles.breadcrumbs, className)}
         >
             <ol>
                 {pages.map((page, index) => {

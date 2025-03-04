@@ -4,7 +4,7 @@ import { type ReactNode, type JSX, useState } from "react";
 
 import Link from "next/link";
 
-import classNames from "classnames";
+import clsx from "clsx";
 
 import AsyncButton from "@/components/AsyncButton";
 import Button from "@/components/Button";
@@ -45,7 +45,7 @@ export function PresetList({
             </div>
             {results.length === 0 && isLoading ? (
                 <div
-                    className={classNames(
+                    className={clsx(
                         "flex items-center justify-center gap-[0.5em] p-[1em] opacity-50",
                         className,
                     )}
@@ -55,7 +55,7 @@ export function PresetList({
                 </div>
             ) : (
                 <ul
-                    className={classNames(
+                    className={clsx(
                         "flex flex-col justify-center gap-[0.5em] overflow-hidden rounded-md border-gray-6 text-sm",
                         className,
                     )}
