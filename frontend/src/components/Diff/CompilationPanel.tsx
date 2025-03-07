@@ -61,7 +61,6 @@ export default function CompilationPanel({
     }
 
     const usedDiff = usedCompilationRef.current?.diff_output ?? null;
-    const objdiffResult = usedCompilationRef.current?.objdiff_output ?? null;
 
     // If this is the first time we re-render after a save, store the diff
     // as a possible three-way diff base.
@@ -110,7 +109,7 @@ export default function CompilationPanel({
             >
                 <Allotment.Pane>
                     <Diff
-                        diff={diff || objdiffResult}
+                        diff={diff}
                         diffLabel={scratch.diff_label}
                         isCompiling={isCompiling}
                         isCurrentOutdated={

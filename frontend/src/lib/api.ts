@@ -22,7 +22,6 @@ import type {
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
 import { ignoreNextWarnBeforeUnload } from "./hooks";
-import { runObjdiff } from "./objdiff";
 import { useObjdiffClientEnabled } from "./settings";
 
 function onErrorRetry<C>(
@@ -267,12 +266,9 @@ export function useCompilation(
             context: savedScratch
                 ? undefinedIfUnchanged(savedScratch, scratch, "context")
                 : scratch.context,
-            omit_diff: objdiffClientEnabled,
+            include_objects: objdiffClientEnabled,
         })
             .then((compilation: Compilation) => {
-                if (objdiffClientEnabled && compilation.success) {
-                    return runObjdiff(compilation);
-                }
                 return compilation;
             })
             .then((compilation: Compilation) => {
@@ -287,7 +283,6 @@ export function useCompilation(
                     setCompilation({
                         compiler_output: error.json?.detail,
                         diff_output: null,
-                        objdiff_output: null,
                         success: false,
                         left_object: null,
                         right_object: null,
