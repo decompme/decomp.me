@@ -130,7 +130,7 @@ export default function Page() {
                 features such as user profile pages and the scratch editor. We
                 also reserve the right to use any and all voluntarily-submited
                 information for improving existing decompilation tools and
-                developing new ones. We may also provide perioic public exports
+                developing new ones. We may also provide periodic public exports
                 of the site database for research in the field of decompilation.
                 These dumps will not contain any information that is not otherwise
                 publicly available on the site.
