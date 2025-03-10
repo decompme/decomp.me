@@ -130,10 +130,10 @@ export default function Page() {
                 features such as user profile pages and the scratch editor. We
                 also reserve the right to use any and all voluntarily-submited
                 information for improving existing decompilation tools and
-                developing new ones. In the future, we may provide open-source
-                dumps of the scratch database for research purposes. These dumps
-                will not contain any information that is not otherwise publicly
-                available on the site.
+                developing new ones. We may also provide perioic public exports
+                of the site database for research in the field of decompilation.
+                These dumps will not contain any information that is not otherwise
+                publicly available on the site.
             </p>
             <p className="my-4">
                 We make every effort to keep your data secure. In the case of a
