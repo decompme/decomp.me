@@ -209,6 +209,9 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )
+    target_assembly_source_asm = serializers.CharField(
+        source="target_assembly.source_asm.data", read_only=True
+    )
 
     class Meta:
         model = Scratch

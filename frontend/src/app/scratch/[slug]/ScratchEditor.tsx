@@ -9,6 +9,7 @@ import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBefore
 import SetPageTitle from "@/components/SetPageTitle";
 import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
+import { AiProvider } from "@/providers/AiProvider";
 
 function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     const isSaved = api.useIsScratchSaved(scratch);
@@ -74,17 +75,19 @@ function ScratchEditorInner({
         <>
             <ScratchPageTitle scratch={scratch} />
             <main className="grow">
-                <Scratch
-                    scratch={scratch}
-                    parentScratch={parentScratch}
-                    initialCompilation={initialCompilation}
-                    onChange={(partial) => {
-                        setScratch((scratch) => {
-                            return { ...scratch, ...partial };
-                        });
-                    }}
-                    offline={offline}
-                />
+                <AiProvider>
+                    <Scratch
+                        scratch={scratch}
+                        parentScratch={parentScratch}
+                        initialCompilation={initialCompilation}
+                        onChange={(partial) => {
+                            setScratch((scratch) => {
+                                return { ...scratch, ...partial };
+                            });
+                        }}
+                        offline={offline}
+                    />
+                </AiProvider>
             </main>
         </>
     );

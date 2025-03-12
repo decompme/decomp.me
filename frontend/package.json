@@ -11,6 +11,8 @@
         "clean": "rm -rf .next node_modules"
     },
     "dependencies": {
+        "@ai-sdk/deepseek": "^0.1.10",
+        "@ai-sdk/openai": "^1.1.12",
         "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
         "@codemirror/autocomplete": "^6.18.3",
         "@codemirror/commands": "^6.7.1",
@@ -26,9 +28,11 @@
         "@primer/octicons-react": "^19.13.0",
         "@radix-ui/colors": "^2.1.0",
         "@radix-ui/react-progress": "^1.1.0",
+        "@radix-ui/react-tooltip": "^1.1.8",
         "@react-hook/resize-observer": "^1.2.6",
         "@replit/codemirror-indentation-markers": "^6.5.3",
         "@replit/codemirror-vim": "^6.2.1",
+        "ai": "^4.1.41",
         "allotment": "^1.20.2",
         "ansi-to-react": "^6.1.6",
         "clsx": "^2.1.1",
@@ -55,7 +59,8 @@
         "swr": "^2.2.5",
         "use-debounce": "^10.0.4",
         "use-persisted-state": "^0.3.3",
-        "vscode-languageserver-protocol": "^3.17.5"
+        "vscode-languageserver-protocol": "^3.17.5",
+        "zod": "^3.24.2"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",
