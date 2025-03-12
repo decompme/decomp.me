@@ -15,7 +15,19 @@ export default function Page() {
             </h1>
 
             <p className="mt-2 mb-6 text-gray-11 text-sm">
-                Last updated January 13th 2022
+                Last updated March 11th 2025
+            </p>
+
+            <p className="mt-2 mb-6 text-gray-11 text-sm">
+                Changelog:
+                <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
+                    <li className="my-1">2022/1/13: Initial version</li>
+                </ul>
+                <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
+                    <li className="my-1">
+                        2025/3/11: Update to clarify public data usage
+                    </li>
+                </ul>
             </p>
 
             <p className="my-4">
@@ -118,8 +130,10 @@ export default function Page() {
                 features such as user profile pages and the scratch editor. We
                 also reserve the right to use any and all voluntarily-submited
                 information for improving existing decompilation tools and
-                developing new ones. This will not involve sharing information
-                with third parties.
+                developing new ones. We may also provide periodic public exports
+                of the site database for research in the field of decompilation.
+                These dumps will not contain any information that is not
+                otherwise publicly available on the site.
             </p>
             <p className="my-4">
                 We make every effort to keep your data secure. In the case of a
