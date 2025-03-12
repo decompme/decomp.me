@@ -52,6 +52,7 @@ type = "git"
 url = "https://github.com/simonlindholm/asm-differ.git"
 reference = "HEAD"
 resolved_reference = "f24945ceb2baa77dcc2bbef4390aa90b58f26d7f"
+resolved_reference = "50d160e4407ec57d48f6c45a60c3b17d9af81353"
 
 [[package]]
 name = "attrs"
