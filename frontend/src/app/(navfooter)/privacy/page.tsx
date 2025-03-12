@@ -132,8 +132,8 @@ export default function Page() {
                 information for improving existing decompilation tools and
                 developing new ones. We may also provide periodic public exports
                 of the site database for research in the field of decompilation.
-                These dumps will not contain any information that is not otherwise
-                publicly available on the site.
+                These dumps will not contain any information that is not
+                otherwise publicly available on the site.
             </p>
             <p className="my-4">
                 We make every effort to keep your data secure. In the case of a
