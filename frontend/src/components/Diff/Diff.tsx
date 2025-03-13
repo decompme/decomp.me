@@ -12,7 +12,6 @@ import {
 
 import { VersionsIcon, CopyIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
-import type { DiffResult } from "objdiff-wasm";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 
@@ -24,7 +23,6 @@ import Loading from "../loading.svg";
 
 import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
-import * as Objdiff from "./DiffRowObjdiff";
 import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
 
@@ -76,18 +74,12 @@ const innerElementType = forwardRef<
 });
 innerElementType.displayName = "innerElementType";
 
-const isAsmDifferOutput = (
-    diff: api.DiffOutput | DiffResult,
-): diff is api.DiffOutput => {
-    return Object.prototype.hasOwnProperty.call(diff, "arch_str");
-};
-
 function DiffBody({
     diff,
     diffLabel,
     fontSize,
 }: {
-    diff: api.DiffOutput | DiffResult | null;
+    diff: api.DiffOutput | null;
     diffLabel: string | null;
     fontSize: number | undefined;
 }) {
@@ -97,15 +89,11 @@ function DiffBody({
         return <div className={styles.bodyContainer} />;
     }
 
-    let itemData: AsmDiffer.DiffListData | Objdiff.DiffListData;
-    let DiffRow: typeof AsmDiffer.DiffRow | typeof Objdiff.DiffRow;
-    if (isAsmDifferOutput(diff)) {
-        itemData = AsmDiffer.createDiffListData(diff, diffLabel, highlighters);
-        DiffRow = AsmDiffer.DiffRow;
-    } else {
-        itemData = Objdiff.createDiffListData(diff, diffLabel, highlighters);
-        DiffRow = Objdiff.DiffRow;
-    }
+    const itemData = AsmDiffer.createDiffListData(
+        diff,
+        diffLabel,
+        highlighters,
+    );
 
     return (
         <div
@@ -133,7 +121,7 @@ function DiffBody({
                         height={height}
                         innerElementType={innerElementType}
                     >
-                        {DiffRow as any}
+                        {AsmDiffer.DiffRow}
                     </FixedSizeList>
                 )}
             </AutoSizer>
@@ -189,7 +177,7 @@ export const PADDING_BOTTOM = 8;
 export const SelectedSourceLineContext = createContext<number | null>(null);
 
 export type Props = {
-    diff: api.DiffOutput | DiffResult | null;
+    diff: api.DiffOutput | null;
     diffLabel: string | null;
     isCompiling: boolean;
     isCurrentOutdated: boolean;

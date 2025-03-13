@@ -389,7 +389,7 @@ class ScratchViewSet(
         scratch: Scratch = self.get_object()
 
         # Apply partial
-        omit_diff = False
+        include_objects = False
         if request.method == "POST":
             # TODO: use a serializer w/ validation
             if "compiler" in request.data:
@@ -407,16 +407,13 @@ class ScratchViewSet(
             if "libraries" in request.data:
                 libs = [Library(**lib) for lib in request.data["libraries"]]
                 scratch.libraries = libs
-            if "omit_diff" in request.data:
-                omit_diff = request.data["omit_diff"]
+            if "include_objects" in request.data:
+                include_objects = request.data["include_objects"]
 
         compilation = compile_scratch(scratch)
-        if omit_diff:
-            diff = DiffResult()
-        else:
-            diff = diff_compilation(scratch, compilation)
+        diff = diff_compilation(scratch, compilation)
 
-        if not omit_diff and request.method == "GET":
+        if request.method == "GET":
             update_scratch_score(scratch, diff)
 
         compiler_output = ""
@@ -431,7 +428,8 @@ class ScratchViewSet(
             "success": compilation.elf_object is not None
             and len(compilation.elf_object) > 0,
         }
-        if omit_diff:
+
+        if include_objects:
 
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")

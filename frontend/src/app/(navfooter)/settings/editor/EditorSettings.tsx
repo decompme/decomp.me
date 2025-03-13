@@ -147,8 +147,8 @@ export default function EditorSettings() {
                 <Checkbox
                     checked={objdiffClientEnabled}
                     onChange={setObjdiffClientEnabled}
-                    label="Enable objdiff in WebAssembly"
-                    description="WARNING: For development use only. Runs objdiff locally for diffing. Platform support is limited, and certain features will be broken. Download size: ~3.5MB"
+                    label="Enable objdiff integration [alpha]"
+                    description="Enable objdiff tab in the scratch editor. Still under development."
                 />
             </Section>
         </>

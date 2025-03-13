@@ -1,5 +1,3 @@
-import type { DiffResult as ObjdiffOutput } from "objdiff-wasm";
-
 export interface Page<T> {
     next: string | null;
     previous: string | null;
@@ -60,7 +58,6 @@ export interface ClaimableScratch extends Scratch {
 export type Compilation = {
     compiler_output: string;
     diff_output: DiffOutput | null;
-    objdiff_output: ObjdiffOutput | null;
     left_object: string | null; // base64 encoded
     right_object: string | null; // base64 encoded
     success: boolean;

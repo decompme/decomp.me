@@ -14,6 +14,7 @@ import {
     useLanguageServerEnabled,
     useVimModeEnabled,
     useMatchProgressBarEnabled,
+    useObjdiffClientEnabled,
 } from "@/lib/settings";
 
 import CompilerOpts from "../compiler/CompilerOpts";
@@ -38,6 +39,7 @@ import ScratchProgressBar from "./ScratchProgressBar";
 import ScratchToolbar from "./ScratchToolbar";
 import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
+import ObjdiffPanel from "../Diff/ObjdiffPanel";
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -47,6 +49,7 @@ enum TabId {
     DIFF = "scratch_diff",
     DECOMPILATION = "scratch_decompilation",
     FAMILY = "scratch_family",
+    OBJDIFF = "scratch_objdiff",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -73,7 +76,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 kind: "pane",
                 size: 50,
                 activeTab: TabId.DIFF,
-                tabs: [TabId.DIFF, TabId.DECOMPILATION],
+                tabs: [TabId.DIFF, TabId.OBJDIFF, TabId.DECOMPILATION],
             },
         ],
     },
@@ -91,6 +94,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.ABOUT,
                     TabId.FAMILY,
                     TabId.DIFF,
+                    TabId.OBJDIFF,
                     TabId.DECOMPILATION,
                 ],
             },
@@ -206,6 +210,8 @@ export default function Scratch({
             });
         }
     }, [decompilationTabEnabled]);
+
+    const [objdiffClientEnabled] = useObjdiffClientEnabled();
 
     // If the version of the scratch changes, refresh code editors
     useEffect(() => {
@@ -356,6 +362,21 @@ export default function Scratch({
                             />
                         )}
                     </Tab>
+                );
+            case TabId.OBJDIFF:
+                return (
+                    objdiffClientEnabled && (
+                        <Tab
+                            key={id}
+                            tabKey={id}
+                            label="objdiff [alpha]"
+                            className={styles.diffTab}
+                        >
+                            {compilation && (
+                                <ObjdiffPanel compilation={compilation} />
+                            )}
+                        </Tab>
+                    )
                 );
             case TabId.DECOMPILATION:
                 return (

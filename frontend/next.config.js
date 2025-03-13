@@ -110,43 +110,6 @@ let app = withPlausibleProxy({
                 },
             });
 
-            // XXX: Terser/SWC currently breaks while minifying objdiff's ESM worker in the static directory because
-            // it uses `import.meta.url`. next.js provides no way to control this behavior, of course, so we'll
-            // hook into the optimization stage and mark assets in `static/media/` as already minified.
-            // https://github.com/vercel/next.js/issues/33914
-            // https://github.com/vercel/next.js/discussions/61549
-            config.optimization.minimizer.unshift({
-                apply(compiler) {
-                    const pluginName = "SkipWorkerMinify";
-                    compiler.hooks.thisCompilation.tap(
-                        pluginName,
-                        (compilation) => {
-                            compilation.hooks.processAssets.tap(
-                                {
-                                    name: pluginName,
-                                    stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE,
-                                },
-                                (assets) => {
-                                    for (const assetName in assets) {
-                                        if (
-                                            /^static\/media\//.test(assetName)
-                                        ) {
-                                            compilation.updateAsset(
-                                                assetName,
-                                                assets[assetName],
-                                                {
-                                                    minimized: true,
-                                                },
-                                            );
-                                        }
-                                    }
-                                },
-                            );
-                        },
-                    );
-                },
-            });
-
             return config;
         },
         images: {
@@ -174,6 +137,7 @@ let app = withPlausibleProxy({
             NEXT_PUBLIC_API_BASE: process.env.API_BASE,
             NEXT_PUBLIC_GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
             NEXT_PUBLIC_COMMIT_HASH: git_hash,
+            OBJDIFF_BASE: process.env.OBJDIFF_BASE,
         },
     }),
 );

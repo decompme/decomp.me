@@ -8,7 +8,7 @@ export function calculateScorePercent(score: number, maxScore: number): number {
         return 0;
     }
 
-    if (maxScore === 0) {
+    if (!maxScore) {
         return 0;
     }
 
