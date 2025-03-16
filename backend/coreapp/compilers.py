@@ -876,10 +876,48 @@ GCC281PM = GCCCompiler(
     cc='"${COMPILER_DIR}"/gcc -G0 -c -B "${COMPILER_DIR}"/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
-GCC272SN = GCCCompiler(
-    id="gcc2.7.2sn",
+GCC272SN0001 = GCCCompiler(
+    id="gcc2.7.2sn0001",
+    platform=N64,
+    cc='/usr/bin/cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
+)
+
+GCC272SN0001CXX = GCCCompiler(
+    id="gcc2.7.2sn0001-cxx",
+    base_compiler=GCC272SN0001,
+    platform=N64,
+    cc='/usr/bin/cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
+)
+
+GCC272SN0004 = GCCCompiler(
+    id="gcc2.7.2sn0004",
     platform=N64,
     cc='/usr/bin/cpp -P "$INPUT" | ${WIBO} "${COMPILER_DIR}"/cc1n64.exe -quiet -G0 -mcpu=vr4300 -mips3 -mhard-float -meb ${COMPILER_FLAGS} -o "$OUTPUT".s && ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj && "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
+)
+
+GCC272SN0006 = GCCCompiler(
+    id="gcc2.7.2sn0006",
+    platform=N64,
+    cc='/usr/bin/cpp -E -lang-c -undef -D__GNUC__=2 -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ "$INPUT" '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1n64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
+)
+
+GCC272SN0006CXX = GCCCompiler(
+    id="gcc2.7.2sn0006-cxx",
+    base_compiler=GCC272SN0006,
+    platform=N64,
+    cc='/usr/bin/cpp -E -lang-c++ -undef -D__GNUC__=2 -D__cplusplus -Dmips -D__mips__ -D__mips -Dn64 -D__n64__ -D__n64 -D_PSYQ -D__EXTENSIONS__ -D_MIPSEB -D__CHAR_UNSIGNED__ -D_LANGUAGE_C_PLUS_PLUS "$INPUT" '
+    '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
+    '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n -s',
 )
 
 GCC272SNEW = GCCCompiler(
@@ -1650,7 +1688,11 @@ _all_compilers: List[Compiler] = [
     IDO71,
     MIPS_PRO_744,
     GCC272KMC,
-    GCC272SN,
+    GCC272SN0001,
+    GCC272SN0001CXX,
+    GCC272SN0004,
+    GCC272SN0006,
+    GCC272SN0006CXX,
     GCC272SNEW,
     GCC281PM,
     GCC281SN,

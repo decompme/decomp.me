@@ -39,7 +39,11 @@ gc_wii:
 
 n64:
   - gcc2.7.2kmc
-  - gcc2.7.2sn
+  - gcc2.7.2sn0001
+  - gcc2.7.2sn0001-cxx
+  - gcc2.7.2sn0004
+  - gcc2.7.2sn0006
+  - gcc2.7.2sn0006-cxx
   - gcc2.7.2snew
   - gcc2.8.1pm
   - gcc2.8.1sn
