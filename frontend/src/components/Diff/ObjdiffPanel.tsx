@@ -92,6 +92,7 @@ export default function ObjdiffPanel({
                 src={url}
                 title="objdiff"
                 style={{ width: "100%", height: "100%" }}
+                allow="clipboard-write"
             />
         </div>
     );
