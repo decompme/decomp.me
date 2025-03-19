@@ -66,7 +66,11 @@
     "egcs_1.1.2-4c": "EGCS 1.1.2-4 (gcc egcs-2.91.66, decompals)",
 
     "gcc2.7.2kmc": "GCC 2.7.2 (KMC)",
-    "gcc2.7.2sn": "GCC 2.7.2 (SN)",
+    "gcc2.7.2sn0001": "GCC 2.7.2 (SN) (Build 0001)",
+    "gcc2.7.2sn0001-cxx": "GCC 2.7.2 (SN) (Build 0001) (C++)",
+    "gcc2.7.2sn0004": "GCC 2.7.2 (SN) (Build 0004-cygnus)",
+    "gcc2.7.2sn0006": "GCC 2.7.2 (SN) (Build 0006-cygnus)",
+    "gcc2.7.2sn0006-cxx": "GCC 2.7.2 (SN) (Build 0006-cygnus) (C++)",
     "gcc2.7.2snew": "GCC 2.7.2 (SN, experimental)",
     "gcc2.8.1sn": "GCC 2.8.1 (SN)",
     "gcc2.8.1sn-cxx": "GCC 2.8.1 (SN) (C++)",
