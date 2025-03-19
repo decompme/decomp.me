@@ -112,7 +112,7 @@ void step_game_loop(void) {
 
 export default function ExampleCodeMirror() {
     return (
-        <div className="overflow-hidden [&_.cm-editor]:h-[200px]">
+        <div className="overflow-hidden [&_.cm-editor]:h-[400px]">
             <CodeMirror
                 value={EXAMPLE_C_CODE}
                 valueVersion={0}

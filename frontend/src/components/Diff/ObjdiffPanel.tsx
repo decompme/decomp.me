@@ -3,6 +3,7 @@ import { getColors } from "@/lib/codemirror/color-scheme";
 import {
     useCodeColorScheme,
     useCodeFontSize,
+    useFontLigatures,
     useIsSiteThemeDark,
     useMonospaceFont,
 } from "@/lib/settings";
@@ -17,6 +18,7 @@ export default function ObjdiffPanel({
     const colors = getColors(useCodeColorScheme()[0]);
     const [codeFont] = useMonospaceFont();
     const [codeFontSize] = useCodeFontSize();
+    const [fontLigatures] = useFontLigatures();
 
     const objdiffFrame = useRef<HTMLIFrameElement>(null);
     const latestCompilation = useRef<api.Compilation | null>(compilation);
@@ -24,6 +26,7 @@ export default function ObjdiffPanel({
     const latestColors = useRef(colors);
     const latestCodeFont = useRef(codeFont);
     const latestCodeFontSize = useRef(codeFontSize);
+    const latestFontLigatures = useRef(fontLigatures);
 
     useEffect(() => {
         const iframeWindow = objdiffFrame.current?.contentWindow;
@@ -43,6 +46,7 @@ export default function ObjdiffPanel({
                         colors: latestColors.current,
                         codeFont: latestCodeFont.current,
                         codeFontSize: latestCodeFontSize.current,
+                        fontLigatures: latestFontLigatures.current,
                     } as InboundMessage,
                     "*",
                 );
@@ -74,6 +78,7 @@ export default function ObjdiffPanel({
                 colors,
                 codeFont,
                 codeFontSize,
+                fontLigatures,
             } as InboundMessage,
             "*",
         );

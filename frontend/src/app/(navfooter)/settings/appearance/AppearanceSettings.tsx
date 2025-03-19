@@ -10,12 +10,13 @@ import * as settings from "@/lib/settings";
 import Section from "../Section";
 import SliderField from "../SliderField";
 import TextField from "../TextField";
+import Checkbox from "../Checkbox";
 
 const DynamicExampleCodeMirror = dynamic(() => import("./ExampleCodeMirror"), {
     loading: () => (
         <div
             className="flex animate-pulse items-center justify-center"
-            style={{ height: "200px" }}
+            style={{ height: "400px" }}
         >
             <LoadingSpinner className="size-16 opacity-50" />
         </div>
@@ -26,6 +27,7 @@ export default function AppearanceSettings() {
     const [theme, setTheme] = settings.useTheme();
     const [fontSize, setFontSize] = settings.useCodeFontSize();
     const [monospaceFont, setMonospaceFont] = settings.useMonospaceFont();
+    const [fontLigatures, setFontLigatures] = settings.useFontLigatures();
     const [codeLineHeight, setCodeLineHeight] = settings.useCodeLineHeight();
     const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme();
 
@@ -66,10 +68,25 @@ export default function AppearanceSettings() {
                         description="The font family to use for code. The first valid comma-separated value will be used."
                         value={monospaceFont ?? ""}
                         onChange={setMonospaceFont}
-                        placeholder="ui-monospace"
+                        placeholder="JetBrains Mono"
                         inputStyle={{
-                            fontFamily: `${monospaceFont ?? "ui-monospace"}, monospace`,
+                            fontFamily: `${monospaceFont ?? "JetBrains Mono"}, monospace`,
                         }}
+                    />
+                </div>
+
+                <div className="mb-6 max-w-xl">
+                    <Checkbox
+                        label="Enable ligatures"
+                        description={
+                            <>
+                                Use typographic ligatures (e.g.,{" "}
+                                <kbd>{"->"}</kbd>, <kbd>{"=="}</kbd>) if
+                                supported by the current font.
+                            </>
+                        }
+                        checked={fontLigatures}
+                        onChange={setFontLigatures}
                     />
                 </div>
 
