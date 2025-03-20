@@ -82,7 +82,7 @@ export default function AppearanceSettings() {
                             <>
                                 Use typographic ligatures (e.g.,{" "}
                                 <kbd>{"->"}</kbd>, <kbd>{"=="}</kbd>) if
-                                supported by the current font.
+                                supported by the current font and browser.
                             </>
                         }
                         checked={fontLigatures}
