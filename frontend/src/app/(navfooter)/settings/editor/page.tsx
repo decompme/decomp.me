@@ -1,4 +1,8 @@
-import EditorSettings from "./EditorSettings";
+import dynamic from "next/dynamic";
+
+const EditorSettings = dynamic(() => import("./EditorSettings"), {
+    ssr: false,
+});
 
 export const metadata = {
     title: "Editor settings",

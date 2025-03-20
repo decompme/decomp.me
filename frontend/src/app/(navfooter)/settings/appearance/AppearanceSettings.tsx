@@ -1,9 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
 import ColorSchemePicker from "@/components/ColorSchemePicker";
-import LoadingSpinner from "@/components/loading.svg";
 import ThemePicker from "@/components/ThemePicker";
 import * as settings from "@/lib/settings";
 
@@ -12,16 +9,7 @@ import SliderField from "../SliderField";
 import TextField from "../TextField";
 import Checkbox from "../Checkbox";
 
-const DynamicExampleCodeMirror = dynamic(() => import("./ExampleCodeMirror"), {
-    loading: () => (
-        <div
-            className="flex animate-pulse items-center justify-center"
-            style={{ height: "400px" }}
-        >
-            <LoadingSpinner className="size-16 opacity-50" />
-        </div>
-    ),
-});
+import ExampleCodeMirror from "./ExampleCodeMirror";
 
 export default function AppearanceSettings() {
     const [theme, setTheme] = settings.useTheme();
@@ -93,7 +81,7 @@ export default function AppearanceSettings() {
                 <div className="mb-6">
                     <div className="font-semibold">Color scheme</div>
                     <div className="my-2 overflow-hidden rounded border border-gray-6">
-                        <DynamicExampleCodeMirror />
+                        <ExampleCodeMirror />
                     </div>
                     <ColorSchemePicker
                         scheme={codeColorScheme}
