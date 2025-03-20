@@ -14,12 +14,14 @@ const OTHER_PROJECTS = {
     m2c: "https://github.com/matt-kempster/m2c",
     "psyq-obj-parser":
         "https://github.com/grumpycoders/pcsx-redux/tree/main/tools/psyq-obj-parser",
+    objdiff: "https://github.com/encounter/objdiff-web",
     Django: "https://www.djangoproject.com/",
     "Django REST Framework": "https://www.django-rest-framework.org/",
     "Next.js": "https://nextjs.org/",
     React: "https://reactjs.org/",
     "Tailwind CSS": "https://tailwindcss.com/",
     SWR: "https://swr.vercel.app/",
+    "JetBrains Mono": "https://www.jetbrains.com/lp/mono/",
 };
 const ICON_SOURCES = {
     Octicons: "https://primer.style/octicons/",
