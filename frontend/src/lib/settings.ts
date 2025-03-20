@@ -9,6 +9,7 @@ const autoRecompile = createPersistedState<boolean>("autoRecompile");
 const autoRecompileDelay = createPersistedState<number>("autoRecompileDelay");
 const codeFontSize = createPersistedState<number>("codeFontSize");
 const monospaceFont = createPersistedState<string | undefined>("monospaceFont");
+const fontLigatures = createPersistedState<boolean>("fontLigatures");
 const codeLineHeight = createPersistedState<number>("codeLineHeight");
 const codeColorScheme = createPersistedState<ColorScheme>("codeColorScheme");
 const languageServerEnabled = createPersistedState<boolean>(
@@ -32,8 +33,9 @@ export enum ThreeWayDiffBase {
 export const useTheme = () => theme("auto");
 export const useAutoRecompileSetting = () => autoRecompile(true);
 export const useAutoRecompileDelaySetting = () => autoRecompileDelay(500);
-export const useCodeFontSize = () => codeFontSize(11);
+export const useCodeFontSize = () => codeFontSize(13);
 export const useMonospaceFont = () => monospaceFont(undefined);
+export const useFontLigatures = () => fontLigatures(false);
 export const useCodeLineHeight = () => codeLineHeight(1.5);
 export const useCodeColorScheme = () => codeColorScheme("Frog Dark");
 export const useLanguageServerEnabled = () => languageServerEnabled(false);

@@ -41,6 +41,15 @@ export default function ThemeProvider() {
         }
     }, [monospaceFont]);
 
+    const [fontLigatures] = settings.useFontLigatures();
+    useEffect(() => {
+        if (fontLigatures) {
+            document.body.style.setProperty("font-variant-ligatures", "normal");
+        } else {
+            document.body.style.setProperty("font-variant-ligatures", "none");
+        }
+    }, [fontLigatures]);
+
     const [codeLineHeight] = settings.useCodeLineHeight();
     useEffect(() => {
         document.body.style.removeProperty("--code-line-height");
