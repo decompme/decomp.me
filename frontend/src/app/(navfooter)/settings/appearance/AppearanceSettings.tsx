@@ -74,13 +74,7 @@ export default function AppearanceSettings() {
                             </>
                         }
                         checked={fontLigatures}
-                        onChange={(v) => {
-                            // FIXME: Bug in use-persisted-state
-                            // If the initial value is `false` and the stored value is `true`,
-                            // setting the value to `false` will not trigger a re-render.
-                            setFontLigatures(!v);
-                            setFontLigatures(v);
-                        }}
+                        onChange={setFontLigatures}
                     />
                 </div>
 
