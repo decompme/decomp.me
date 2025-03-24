@@ -163,6 +163,8 @@ COMMON_MWCC_FLAGS: Flags = [
         id="mwcc_opt_level",
         flags=[
             "-O0",
+            "-O0,p",
+            "-O0,s",
             "-O1",
             "-O1,p",
             "-O1,s",

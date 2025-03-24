@@ -313,6 +313,8 @@
 
     "mwcc_opt_level": "Optimization level",
     "mwcc_opt_level.-O0": "No optimization",
+    "mwcc_opt_level.-O0,p": "No optimization + speed",
+    "mwcc_opt_level.-O0,s": "No optimization + space",
     "mwcc_opt_level.-O1": "Some optimization",
     "mwcc_opt_level.-O1,p": "Some optimization + speed",
     "mwcc_opt_level.-O1,s": "Some optimization + space",
