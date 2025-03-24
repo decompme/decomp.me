@@ -1,3 +1,4 @@
+import enum
 import logging
 import platform as platform_stdlib
 from dataclasses import dataclass
@@ -53,6 +54,13 @@ CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 
+class CompilerType(enum.Enum):
+    GCC = "gcc"
+    IDO = "ido"
+    MWCC = "mwcc"
+    OTHER = "other"
+
+
 @dataclass(frozen=True)
 class Compiler:
     id: str
@@ -61,9 +69,7 @@ class Compiler:
     flags: ClassVar[Flags]
     library_include_flag: str
     base_compiler: Optional["Compiler"] = None
-    is_gcc: ClassVar[bool] = False
-    is_ido: ClassVar[bool] = False
-    is_mwcc: ClassVar[bool] = False
+    type: ClassVar[CompilerType] = CompilerType.OTHER
     language: Language = Language.C
 
     @property
@@ -118,7 +124,7 @@ class SHCCompiler(Compiler):
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
-    is_gcc: ClassVar[bool] = True
+    type: ClassVar[CompilerType] = CompilerType.GCC
     flags: ClassVar[Flags] = COMMON_GCC_FLAGS
     library_include_flag: str = "-isystem"
 
@@ -140,35 +146,36 @@ class GCCSaturnCompiler(GCCCompiler):
 
 @dataclass(frozen=True)
 class IDOCompiler(Compiler):
-    is_ido: ClassVar[bool] = True
+    type: ClassVar[CompilerType] = CompilerType.IDO
     flags: ClassVar[Flags] = COMMON_IDO_FLAGS
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
-class MWCCNDSArm9Compiler(Compiler):
-    is_mwcc: ClassVar[bool] = True
+class MWCCCompiler(Compiler):
+    type: ClassVar[CompilerType] = CompilerType.MWCC
+
+
+@dataclass(frozen=True)
+class MWCCNDSArm9Compiler(MWCCCompiler):
     flags: ClassVar[Flags] = COMMON_MWCC_NDS_ARM9_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
-class MWCCPS2Compiler(Compiler):
-    is_mwcc: ClassVar[bool] = True
+class MWCCPS2Compiler(MWCCCompiler):
     flags: ClassVar[Flags] = COMMON_MWCC_PS2_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
-class MWCCPSPCompiler(Compiler):
-    is_mwcc: ClassVar[bool] = True
+class MWCCPSPCompiler(MWCCCompiler):
     flags: ClassVar[Flags] = COMMON_MWCC_PSP_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
-class MWCCWiiGCCompiler(Compiler):
-    is_mwcc: ClassVar[bool] = True
+class MWCCWiiGCCompiler(MWCCCompiler):
     flags: ClassVar[Flags] = COMMON_MWCC_WII_GC_FLAGS
     library_include_flag: str = "-IZ:"
 

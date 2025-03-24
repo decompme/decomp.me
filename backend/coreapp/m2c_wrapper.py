@@ -4,7 +4,7 @@ import logging
 
 from m2c.main import parse_flags, run
 
-from coreapp.compilers import Compiler
+from coreapp.compilers import Compiler, CompilerType
 
 from coreapp.sandbox import Sandbox
 
@@ -27,12 +27,8 @@ class M2CWrapper:
         else:
             raise M2CError(f"Unsupported arch '{arch}'")
 
-        if compiler.is_ido:
-            t_compiler = "ido"
-        elif compiler.is_gcc:
-            t_compiler = "gcc"
-        elif compiler.is_mwcc:
-            t_compiler = "mwcc"
+        if compiler.type != CompilerType.OTHER:
+            t_compiler = compiler.type.value
         else:
             raise M2CError(f"Unsupported compiler '{compiler}'")
 
