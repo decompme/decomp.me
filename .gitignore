@@ -19,5 +19,4 @@ sandbox/
 /frontend/cache
 /frontend/public/sw.*
 /frontend/public/workbox-*
-.vscode/launch.json
 .vercel

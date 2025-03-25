@@ -24,6 +24,7 @@ services:
       - backend/docker.dev.env
     ports:
       - "8000:8000"
+      - "5678:5678"
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
