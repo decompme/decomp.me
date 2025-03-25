@@ -19,7 +19,7 @@ from typing import (
 from django.conf import settings
 
 from coreapp import compilers, platforms
-from coreapp.compilers import Compiler
+from coreapp.compilers import Compiler, CompilerType
 
 from coreapp.flags import Language
 from coreapp.platforms import Platform
@@ -146,7 +146,8 @@ class CompilerWrapper:
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
             skip_line_directive = (
-                compiler.is_ido and compiler.language == Language.PASCAL
+                compiler.type == CompilerType.IDO
+                and compiler.language == Language.PASCAL
             )
             with code_path.open("w") as f:
                 if not skip_line_directive:
@@ -163,7 +164,7 @@ class CompilerWrapper:
 
             # MWCC requires the file to exist for DWARF line numbers,
             # and requires the file contents for error messages
-            if compiler.is_mwcc:
+            if compiler.type == CompilerType.MWCC:
                 ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
                 with ctx_path.open("w") as f:
@@ -177,7 +178,7 @@ class CompilerWrapper:
                     f.write("\n")
 
             # IDO hack to support -KPIC
-            if compiler.is_ido and "-KPIC" in compiler_flags:
+            if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
