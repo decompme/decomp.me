@@ -17,7 +17,7 @@ import {
     useObjdiffClientEnabled,
 } from "@/lib/settings";
 
-import CompilerOpts from "../compiler/CompilerOpts";
+import OptionsPanel from "./panels/OptionsPanel";
 import CustomLayout, {
     activateTabInLayout,
     type Layout,
@@ -304,10 +304,10 @@ export default function Scratch({
                         key={id}
                         tabKey={id}
                         label="Options"
-                        className={styles.compilerOptsTab}
+                        className={styles.optionsTab}
                     >
-                        <div className={styles.compilerOptsContainer}>
-                            <CompilerOpts
+                        <div className={styles.optionsContainer}>
+                            <OptionsPanel
                                 platform={scratch.platform}
                                 value={scratch}
                                 onChange={setScratch}

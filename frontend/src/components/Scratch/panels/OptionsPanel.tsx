@@ -15,12 +15,12 @@ import * as api from "@/lib/api";
 import type { Library } from "@/lib/api/types";
 import getTranslation from "@/lib/i18n/translate";
 
-import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
-import Select from "../Select"; // TODO: use Select2
+import { PlatformIcon } from "../../PlatformSelect/PlatformIcon";
+import Select from "../../Select"; // TODO: use Select2
 
-import styles from "./CompilerOpts.module.css";
-import { useCompilersForPlatform } from "./compilers";
-import PresetSelect from "./PresetSelect";
+import styles from "./OptionsPanel.module.css";
+import { useCompilersForPlatform } from "../../compiler/compilers";
+import PresetSelect from "../../compiler/PresetSelect";
 
 const NO_TRANSLATION = "NO_TRANSLATION";
 
@@ -238,7 +238,7 @@ function DiffFlags({ schema }: FlagsProps) {
     );
 }
 
-export type CompilerOptsT = {
+export type OptionsPanelT = {
     compiler?: string;
     compiler_flags?: string;
     diff_flags?: string[];
@@ -248,8 +248,8 @@ export type CompilerOptsT = {
 
 export type Props = {
     platform?: string;
-    value: CompilerOptsT;
-    onChange: (value: CompilerOptsT) => void;
+    value: OptionsPanelT;
+    onChange: (value: OptionsPanelT) => void;
 
     diffLabel: string;
     onDiffLabelChange: (diffLabel: string) => void;
@@ -258,7 +258,7 @@ export type Props = {
     onMatchOverrideChange: (matchOverride: boolean) => void;
 };
 
-export default function CompilerOpts({
+export default function OptionsPanel({
     platform,
     value,
     onChange,
