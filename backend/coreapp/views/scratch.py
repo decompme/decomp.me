@@ -534,8 +534,7 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
-            src_ext = Language(language).get_file_extension()
+            src_ext = Language(metadata.get("language")).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)
