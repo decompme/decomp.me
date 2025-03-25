@@ -232,24 +232,29 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         """
         compiler = compilers.from_id(scratch.compiler)
         language_flag_set = next(
-            iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
+            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
             None,
         )
 
+        # We sort by match length to avoid having a partial match
         if language_flag_set:
             language = next(
                 iter(
-                    [
-                        language
-                        for (flag, language) in language_flag_set.flags.items()
-                        if flag in scratch.compiler_flags
-                    ]
+                    sorted(
+                        (
+                            (flag, language)
+                            for flag, language in language_flag_set.flags.items()
+                            if flag in scratch.compiler_flags
+                        ),
+                        key=lambda l: len(l[0]),
+                        reverse=True,
+                    )
                 ),
                 None,
             )
 
             if language:
-                return language.value
+                return language[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.
