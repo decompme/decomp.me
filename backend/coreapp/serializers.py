@@ -224,7 +224,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Optional[str]:
+    def get_language(self, scratch: Scratch) -> str:
         """
         Strategy for extracting a scratch's language:
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
