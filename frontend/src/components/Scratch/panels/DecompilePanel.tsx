@@ -32,11 +32,12 @@ export default function DecompilePanel({ scratch }: Props) {
         api.post(`${url}/decompile`, {
             context: debouncedContext,
             compiler: scratch.compiler,
+            language: scratch.language,
         }).then(({ decompilation }: { decompilation: string }) => {
             setDecompiledCode(decompilation);
             setValueVersion((v) => v + 1);
         });
-    }, [scratch.compiler, debouncedContext, url]);
+    }, [debouncedContext, scratch.compiler, scratch.language, url]);
 
     const isLoading =
         decompiledCode === null || scratch.context !== debouncedContext;

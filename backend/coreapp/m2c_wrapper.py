@@ -4,6 +4,7 @@ import logging
 
 from m2c.main import parse_flags, run
 
+from coreapp.flags import Language
 from coreapp.compilers import Compiler, CompilerType
 
 from coreapp.sandbox import Sandbox
@@ -17,7 +18,7 @@ class M2CError(Exception):
 
 class M2CWrapper:
     @staticmethod
-    def get_triple(compiler: Compiler, arch: str) -> str:
+    def get_triple(compiler: Compiler, arch: str, language: Language) -> str:
         if "mipse" in arch:
             t_arch = "mipsel"
         elif "mips" in arch:
@@ -32,14 +33,23 @@ class M2CWrapper:
         else:
             raise M2CError(f"Unsupported compiler '{compiler}'")
 
-        return f"{t_arch}-{t_compiler}"
+        if language == Language.C:
+            t_language = "c"
+        elif language == Language.CXX:
+            t_language = "c++"
+        else:
+            raise M2CError(f"Unsupported language `{language}`")
+
+        return f"{t_arch}-{t_compiler}-{t_language}"
 
     @staticmethod
-    def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
+    def decompile(
+        asm: str, context: str, compiler: Compiler, arch: str, language: Language
+    ) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
-            flags.append(f"--target={M2CWrapper.get_triple(compiler, arch)}")
+            flags.append(f"--target={M2CWrapper.get_triple(compiler, arch, language)}")
 
             # Create temp asm file
             asm_path = sandbox.path / "asm.s"

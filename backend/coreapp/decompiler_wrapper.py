@@ -1,6 +1,7 @@
 import logging
 from coreapp import compilers
 
+from coreapp.flags import Language
 from coreapp.compilers import Compiler
 
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
@@ -21,6 +22,7 @@ class DecompilerWrapper:
         asm: str,
         context: str,
         compiler: Compiler,
+        language: Language,
     ) -> str:
         if compiler == compilers.DUMMY:
             return f"decompiled({asm})"
@@ -30,11 +32,15 @@ class DecompilerWrapper:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
                 return "/* Too many lines to decompile; please run m2c manually */"
             try:
-                ret = M2CWrapper.decompile(asm, context, compiler, platform.arch)
+                ret = M2CWrapper.decompile(
+                    asm, context, compiler, platform.arch, language
+                )
             except M2CError as e:
                 # Attempt to decompile the source without context as a last-ditch effort
                 try:
-                    ret = M2CWrapper.decompile(asm, "", compiler, platform.arch)
+                    ret = M2CWrapper.decompile(
+                        asm, "", compiler, platform.arch, language
+                    )
                     ret = f"{e}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"
                 except M2CError as e:
                     ret = f"{e}\n{default_source_code}"

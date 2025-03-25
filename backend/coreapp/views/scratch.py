@@ -257,7 +257,12 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         source_code = DecompilerWrapper.decompile(
-            default_source_code, platform, asm.data, context, compiler
+            default_source_code,
+            platform,
+            asm.data,
+            context,
+            compiler,
+            compiler.language,
         )
 
     compiler_flags = data.get("compiler_flags", "")
@@ -451,6 +456,7 @@ class ScratchViewSet(
 
         context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        language = Language(request.data.get("language", compiler.language))
 
         platform = platforms.from_id(scratch.platform)
 
@@ -460,6 +466,7 @@ class ScratchViewSet(
             scratch.target_assembly.source_asm.data,
             context,
             compiler,
+            language,
         )
 
         return Response({"decompilation": decompilation})

@@ -1,4 +1,5 @@
 from coreapp.compilers import GCC281PM, IDO53, MWCC_247_92
+from coreapp.flags import Language
 from coreapp.decompiler_wrapper import DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
@@ -93,6 +94,7 @@ class M2CTests(TestCase):
             "",
             IDO53,
             "mips",
+            Language.C,
         )
 
         self.assertTrue(
@@ -117,6 +119,7 @@ class M2CTests(TestCase):
             "",
             MWCC_247_92,
             "ppc",
+            Language.C,
         )
 
         self.assertEqual(
