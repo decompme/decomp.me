@@ -12,15 +12,19 @@ const translationsBySection = {
 
 export type Section = keyof typeof translationsBySection;
 
-export default function getTranslation(section: Section) {
-    const translations = translationsBySection[section];
+export default function getTranslation(...sections: Section[]) {
+    // Merge translations from all sections
+    const translations = Object.assign(
+        {},
+        ...sections.map((section) => translationsBySection[section])
+    );
     return {
         t(key: string): string {
             if (key in translations) {
                 return translations[key as keyof typeof translations];
             }
 
-            console.warn(`Missing '${section}' translation for key: ${key}`);
+            console.warn(`Missing translation for key: ${key}`);
             return key;
         },
 

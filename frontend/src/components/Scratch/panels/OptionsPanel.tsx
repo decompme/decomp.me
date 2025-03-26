@@ -146,7 +146,7 @@ interface FlagsProps {
 }
 
 function Flags({ schema }: FlagsProps) {
-    const compilersTranslation = getTranslation("compilers");
+    const translation = getTranslation("compilers", "decompilers");
     const { checkFlag } = useContext(OptsContext);
 
     return (
@@ -157,7 +157,7 @@ function Flags({ schema }: FlagsProps) {
                         <FlagCheckbox
                             key={flag.id}
                             flag={flag.flag}
-                            description={compilersTranslation.t(flag.id)}
+                            description={translation.t(flag.id)}
                         />
                     );
                 } else if (flag.type === "flagset") {
@@ -167,7 +167,7 @@ function Flags({ schema }: FlagsProps) {
                         <FlagOption
                             key={f}
                             flag={f}
-                            description={compilersTranslation.tWithDefault(
+                            description={translation.tWithDefault(
                                 `${flag.id}.${f}`,
                                 NO_TRANSLATION,
                             )}
@@ -177,7 +177,7 @@ function Flags({ schema }: FlagsProps) {
                     return (
                         <FlagSet
                             key={flag.id}
-                            name={compilersTranslation.t(flag.id)}
+                            name={translation.t(flag.id)}
                             value={selectedFlag}
                         >
                             {[
