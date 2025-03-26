@@ -5,6 +5,14 @@ from typing import Dict, List, Union
 ASMDIFF_FLAG_PREFIX = "-DIFF"
 
 
+# Moved here to avoid circular import
+class CompilerType(enum.Enum):
+    GCC = "gcc"
+    IDO = "ido"
+    MWCC = "mwcc"
+    OTHER = "other"
+
+
 class Language(enum.Enum):
     C = "C"
     OLD_CXX = "C++"

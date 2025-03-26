@@ -240,14 +240,17 @@ function DiffFlags({ schema }: FlagsProps) {
 
 export type OptionsPanelT = {
     compiler?: string;
+    decompiler?: string;
     compiler_flags?: string;
     diff_flags?: string[];
+    decompiler_flags?: string;
     preset?: number;
     libraries?: Library[];
 };
 
 export type Props = {
     platform?: string;
+    language: string;
     value: OptionsPanelT;
     onChange: (value: OptionsPanelT) => void;
 
@@ -260,6 +263,7 @@ export type Props = {
 
 export default function OptionsPanel({
     platform,
+    language,
     value,
     onChange,
     diffLabel,
@@ -268,20 +272,26 @@ export default function OptionsPanel({
     onMatchOverrideChange,
 }: Props) {
     const compiler = value.compiler;
+    // const decompiler = value.decompiler; // TODO
+    const decompiler = "m2c";
     let opts = value.compiler_flags;
     const diff_opts = value.diff_flags || [];
+    let decomp_opts = value.decompiler_flags;
 
     const setCompiler = (compiler: string) => {
         onChange({
             compiler,
+            decompiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
+            decompiler_flags: decomp_opts,
         });
     };
 
     const setOpts = (opts: string) => {
         onChange({
             compiler,
+            decompiler,
             compiler_flags: opts,
             diff_flags: diff_opts,
         });
@@ -299,8 +309,10 @@ export default function OptionsPanel({
         if (preset) {
             onChange({
                 compiler: preset.compiler,
+                decompiler: preset.decompiler,
                 compiler_flags: preset.compiler_flags,
                 diff_flags: preset.diff_flags,
+                decompiler_flags: preset.decompiler_flags,
                 libraries: preset.libraries,
                 preset: preset.id,
             });
@@ -315,6 +327,19 @@ export default function OptionsPanel({
     const setLibraries = (libraries: Library[]) => {
         onChange({
             libraries,
+        });
+    };
+
+    const setDecompiler = (decompiler: string) => {
+        onChange({
+            decompiler,
+            decompiler_flags: decomp_opts,
+        });
+    };
+
+    const setDecompOpts = (decomp_opts: string) => {
+        onChange({
+            decompiler_flags: decomp_opts,
         });
     };
 
@@ -364,6 +389,28 @@ export default function OptionsPanel({
             setDiffOpts([...negativeState, ...positiveEdits]);
         },
     };
+    // TODO understand this code
+    const decompOptsEditorProvider = {
+        checkFlag(flag: string) {
+            return ` ${decomp_opts} `.includes(` ${flag} `);
+        },
+
+        setFlag(flag: string, enable: boolean) {
+            if (enable) {
+                decomp_opts = `${decomp_opts} ${flag}`;
+            } else {
+                decomp_opts = ` ${decomp_opts} `.replace(` ${flag} `, " ");
+            }
+            decomp_opts = decomp_opts.trim();
+            setDecompOpts(decomp_opts);
+        },
+
+        setFlags(edits: { flag: string; value: boolean }[]) {
+            for (const { flag, value } of edits) {
+                decompOptsEditorProvider.setFlag(flag, value);
+            }
+        },
+    };
 
     return (
         <div>
@@ -409,6 +456,21 @@ export default function OptionsPanel({
                         compiler={compiler}
                         diffLabel={diffLabel}
                         onDiffLabelChange={onDiffLabelChange}
+                    />
+                </section>
+            </OptsContext.Provider>
+
+            <OptsContext.Provider value={decompOptsEditorProvider}>
+                <section className={styles.section}>
+                    <h3 className={styles.heading}>Decompiler options</h3>
+                    <DecompOptsEditor
+                        platform={platform}
+                        compiler={compiler}
+                        language={language}
+                        decompiler={decompiler}
+                        setDecompiler={setDecompiler}
+                        opts={decomp_opts}
+                        setOpts={setDecompOpts}
                     />
                 </section>
             </OptsContext.Provider>
@@ -524,6 +586,76 @@ export function DiffOptsEditor({
             <div className={styles.diffFlags}>
                 {compilerId && compiler ? (
                     <DiffFlags schema={compiler.diff_flags} />
+                ) : (
+                    <div />
+                )}
+            </div>
+        </div>
+    );
+}
+
+export function DecompOptsEditor({
+    platform,
+    compiler: compilerId,
+    language,
+    decompiler: decompilerId,
+    setDecompiler,
+    opts,
+    setOpts,
+}: {
+    platform: string;
+    compiler: string;
+    language: string;
+    decompiler?: string;
+    setDecompiler: (decompiler: string) => void;
+    opts: string;
+    setOpts: (opts: string) => void;
+}) {
+    const decompilersTranslation = getTranslation("decompilers");
+
+    const platformObj = api.usePlatform(platform);
+    const compilers = useCompilersForPlatform(platform);
+    const compiler = compilers[compilerId];
+
+    const decompilers = api.useDecompilers(
+        platformObj.arch,
+        compiler.type,
+        language,
+    );
+    const decompiler = decompilers[decompilerId];
+
+    return (
+        <div>
+            <div className={styles.row}>
+                <Select
+                    className={styles.compilerSelect}
+                    onChange={(e) =>
+                        setDecompiler((e.target as HTMLSelectElement).value)
+                    }
+                    value={decompilerId}
+                >
+                    {Object.keys(decompilers).map((id) => (
+                        <option key={id} value={id}>
+                            {decompilersTranslation.t(id)}
+                        </option>
+                    ))}
+                </Select>
+
+                <input
+                    type="text"
+                    className={styles.textbox}
+                    value={opts}
+                    placeholder="No arguments"
+                    spellCheck={false}
+                    onChange={(e) =>
+                        setOpts((e.target as HTMLInputElement).value)
+                    }
+                />
+            </div>
+
+            <div className={styles.flags}>
+                {decompilerId && decompiler ? (
+                    <Flags schema={decompiler.flags} />
                 ) : (
                     <div />
                 )}

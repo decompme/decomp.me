@@ -2,10 +2,12 @@
 
 import compilersTranslations from "./locales/en/compilers.json";
 import librariesTranslations from "./locales/en/libraries.json";
+import decompilersTranslations from "./locales/en/decompilers.json";
 
 const translationsBySection = {
     compilers: compilersTranslations,
     libraries: librariesTranslations,
+    decompilers: decompilersTranslations,
 };
 
 export type Section = keyof typeof translationsBySection;

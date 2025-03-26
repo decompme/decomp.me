@@ -4,6 +4,7 @@ from coreapp.views import (
     compiler,
     library,
     platform,
+    decompiler,
     preset,
     stats,
     project,
@@ -15,6 +16,7 @@ urlpatterns = [
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
+    path("decompiler", decompiler.DecompilerDetail.as_view(), name="decompiler"),
     path(
         "platform/<slug:id>",
         platform.single_platform,

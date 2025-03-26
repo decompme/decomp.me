@@ -309,6 +309,7 @@ export default function Scratch({
                         <div className={styles.optionsContainer}>
                             <OptionsPanel
                                 platform={scratch.platform}
+                                language={scratch.language}
                                 value={scratch}
                                 onChange={setScratch}
                                 diffLabel={scratch.diff_label}

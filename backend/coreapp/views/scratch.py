@@ -262,6 +262,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             asm.data,
             context,
             compiler,
+            "", # TODO
             compiler.language,
         )
 
@@ -269,6 +270,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     diff_flags = data.get("diff_flags", [])
+    decompiler_flags = data.get("decompiler_flags", [])
 
     preset_id: Optional[str] = None
     if data.get("preset"):
@@ -285,6 +287,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "diff_flags": diff_flags,
+            "decompiler_flags": decompiler_flags,
             "preset": preset_id,
             "context": context,
             "diff_label": diff_label,
@@ -403,6 +406,8 @@ class ScratchViewSet(
                 scratch.compiler_flags = request.data["compiler_flags"]
             if "diff_flags" in request.data:
                 scratch.diff_flags = request.data["diff_flags"]
+            if "decompiler_flags" in request.data:
+                scratch.decompiler_flags = request.data["decompiler_flags"]
             if "diff_label" in request.data:
                 scratch.diff_label = request.data["diff_label"]
             if "source_code" in request.data:
@@ -466,6 +471,7 @@ class ScratchViewSet(
             scratch.target_assembly.source_asm.data,
             context,
             compiler,
+            "", # TODO
             language,
         )
 

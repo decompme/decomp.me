@@ -44,7 +44,7 @@ class M2CWrapper:
 
     @staticmethod
     def decompile(
-        asm: str, context: str, compiler: Compiler, arch: str, language: Language
+        asm: str, context: str, compiler: Compiler, arch: str, decompiler_flags: str, language: Language
     ) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
