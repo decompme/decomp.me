@@ -6,6 +6,7 @@ from typing import List, OrderedDict, Dict
 from coreapp.flags import (
     CompilerType,
     Checkbox,
+    FlagSet,
     Flags,
     Language,
 )
@@ -87,7 +88,120 @@ M2C = Decompiler(
         DecompilerSpec("ppc", CompilerType.MWCC, Language.C),
         DecompilerSpec("mips", CompilerType.MWCC, Language.CXX),
     ],
-    flags=[Checkbox(id="test", flag="--test")],
+    flags=[
+        FlagSet(
+            id="m2c_comment_style",
+            flags=[
+                "--comment-style=multiline",
+                "--comment-style=oneline",
+                "--comment-style=none",
+            ],
+        ),
+                Checkbox(
+            id="m2c_allman",
+            flag="--allman",
+        ),
+        Checkbox(
+            id="m2c_knr",
+            flag="--knr",
+        ),
+        FlagSet(
+            id="m2c_comment_alignment",
+            flags=[
+                "--comment-column=0",
+                "--comment-column=52",
+            ],
+        ),
+        Checkbox(
+            id="m2c_indent_switch_contents",
+            flag="--indent-switch-contents",
+        ),
+        Checkbox(
+            id="m2c_leftptr",
+            flag="--pointer-style left",
+        ),
+        Checkbox(
+            id="m2c_zfill_constants",
+            flag="--zfill-constants",
+        ),
+        Checkbox(
+            id="m2c_unk_underscore",
+            flag="--unk-underscore",
+        ),
+        Checkbox(
+            id="m2c_hex_case",
+            flag="--hex-case",
+        ),
+        Checkbox(
+            id="m2c_force_decimal",
+            flag="--force-decimal",
+        ),
+        FlagSet(
+            id="m2c_global_decl",
+            flags=[
+                "--globals used",
+                "--globals all",
+                "--globals none",
+            ],
+        ),
+        Checkbox(
+            id="m2c_sanitize_tracebacks",
+            flag="--sanitize-tracebacks",
+        ),
+        Checkbox(
+            id="m2c_valid_syntax",
+            flag="--valid-syntax",
+        ),
+        FlagSet(
+            id="m2c_reg_vars",
+            flags=[
+                "--reg-vars saved",
+                "--reg-vars most",
+                "--reg-vars all",
+                "--reg-vars r29,r30,r31",
+            ],
+        ),
+        Checkbox(
+            id="m2c_void",
+            flag="--void",
+        ),
+        Checkbox(
+            id="m2c_debug",
+            flag="--debug",
+        ),
+        Checkbox(
+            id="m2c_no_andor",
+            flag="--no-andor",
+        ),
+        Checkbox(
+            id="m2c_no_casts",
+            flag="--no-casts",
+        ),
+        Checkbox(
+            id="m2c_no_ifs",
+            flag="--no-ifs",
+        ),
+        Checkbox(
+            id="m2c_no_switches",
+            flag="--no-switches",
+        ),
+        Checkbox(
+            id="m2c_no_unk_inference",
+            flag="--no-unk-inference",
+        ),
+        Checkbox(
+            id="m2c_heuristic_strings",
+            flag="--heuristic-strings",
+        ),
+        Checkbox(
+            id="m2c_stack_structs",
+            flag="--stack-structs",
+        ),
+        Checkbox(
+            id="m2c_deterministic_vars",
+            flag="--deterministic-vars",
+        ),
+    ],
 )
 
 _all_decompilers: List[Decompiler] = [M2C]
