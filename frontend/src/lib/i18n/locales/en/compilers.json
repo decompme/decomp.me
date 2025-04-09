@@ -28,6 +28,7 @@
     "ee-gcc2.9-991111": "EE GCC 2.9 build 991111",
     "ee-gcc2.9-991111a": "EE GCC 2.9 build 991111a",
     "ee-gcc2.9-991111-01": "EE GCC 2.9 build 991111-01",
+    "ee-gcc2.9-991111-01-dtls13010": "EE GCC 2.9 build 991111-01 (DTL-S13010)",
     "ee-gcc2.95.2-273a": "EE GCC 2.95.2 (SN BUILD v2.73a)",
     "ee-gcc2.95.2-274": "EE GCC 2.95.2 (SN BUILD v2.74)",
     "ee-gcc2.95.3-107": "EE GCC 2.95.3 (SN BUILD v1.07)",
