@@ -58,7 +58,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    search_fields = ["id", "name", "platform", "compiler", "owner"]
+    search_fields = ["id", "name", "platform", "compiler", "owner__user__username"]
     ordering_fields = ["creation_time", "id", "name", "compiler", "num_scratches"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
