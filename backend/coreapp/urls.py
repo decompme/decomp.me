@@ -9,6 +9,7 @@ from coreapp.views import (
     project,
     scratch,
     user,
+    search,
 )
 
 urlpatterns = [
@@ -36,6 +37,7 @@ urlpatterns = [
         user.UserScratchList.as_view(),
         name="user-scratches",
     ),
+    path("search", search.SearchViewSet.as_view(), name="search"),
     # TODO: remove
     path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
     path("libraries", library.LibraryDetail.as_view(), name="libraries"),

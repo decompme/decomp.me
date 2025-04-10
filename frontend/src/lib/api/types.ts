@@ -161,6 +161,23 @@ export interface Platform extends PlatformBase {
     presets: Preset[];
 }
 
+export interface ScratchResult {
+    type: "scratch";
+    item: TerseScratch;
+}
+
+export interface PresetResult {
+    type: "preset";
+    item: Preset;
+}
+
+export interface UserResult {
+    type: "user";
+    item: User;
+}
+
+export type SearchResult = ScratchResult | PresetResult | UserResult;
+
 export function isAnonUser(user: User | AnonymousUser): user is AnonymousUser {
     return user.is_anonymous;
 }

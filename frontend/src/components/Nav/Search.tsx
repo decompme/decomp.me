@@ -8,7 +8,7 @@ import { useCombobox } from "downshift";
 import { useLayer } from "react-laag";
 
 import * as api from "@/lib/api";
-import { scratchUrl } from "@/lib/api/urls";
+import { scratchUrl, userHtmlUrl, presetUrl } from "@/lib/api/urls";
 
 import LoadingSpinner from "../loading.svg";
 import PlatformLink from "../PlatformLink";
@@ -17,13 +17,15 @@ import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-
 import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchItem";
 
 import styles from "./Search.module.scss";
+import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
+import UserAvatar from "../user/UserAvatar";
 
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [debouncedTimeout, setDebouncedTimeout] = useState<any>();
-    const [searchItems, setSearchItems] = useState<api.TerseScratch[]>([]);
+    const [searchItems, setSearchItems] = useState<api.SearchResult[]>([]);
 
     const items = query.length > 0 ? searchItems : [];
 
@@ -42,7 +44,16 @@ function MountedSearch({ className }: { className?: string }) {
                 query.length > 0 &&
                 !(isLoading && items.length === 0),
             itemToString(item) {
-                return item.name;
+                switch (item.type) {
+                    case "scratch":
+                        return item.item.name;
+                    case "preset":
+                        return item.item.name;
+                    case "user":
+                        return item.item.username;
+                    default:
+                        return "";
+                }
             },
             onInputValueChange({ inputValue }) {
                 clearTimeout(debouncedTimeout);
@@ -59,9 +70,9 @@ function MountedSearch({ className }: { className?: string }) {
                 setDebouncedTimeout(
                     setTimeout(async () => {
                         const resp = await api.get(
-                            `/scratch?search=${inputValue}&page_size=5`,
+                            `/search?search=${inputValue}&page_size=5`,
                         );
-                        setSearchItems(resp.results);
+                        setSearchItems(resp);
                         setIsLoading(false);
                     }, 200),
                 );
@@ -70,7 +81,17 @@ function MountedSearch({ className }: { className?: string }) {
                 if (selectedItem) {
                     console.info("<Search> onSelectedItemChange");
                     close();
-                    router.push(scratchUrl(selectedItem));
+                    switch (selectedItem.type) {
+                        case "scratch":
+                            router.push(scratchUrl(selectedItem.item));
+                            break;
+                        case "user":
+                            router.push(userHtmlUrl(selectedItem.item));
+                            break;
+                        case "preset":
+                            router.push(presetUrl(selectedItem.item));
+                            break;
+                    }
                 }
             },
         });
@@ -108,7 +129,17 @@ function MountedSearch({ className }: { className?: string }) {
                     if (searchItems.length > 0) {
                         console.info("<Search> Enter pressed");
                         close();
-                        router.push(scratchUrl(searchItems[0]));
+                        switch (searchItems[0].type) {
+                            case "scratch":
+                                router.push(scratchUrl(searchItems[0].item));
+                                break;
+                            case "user":
+                                router.push(userHtmlUrl(searchItems[0].item));
+                                break;
+                            case "preset":
+                                router.push(presetUrl(searchItems[0].item));
+                                break;
+                        }
                     }
                 }
             }}
@@ -121,7 +152,7 @@ function MountedSearch({ className }: { className?: string }) {
                     "rounded-md bg-transparent text-sm placeholder-current transition-colors hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11": true,
                 })}
                 type="text"
-                placeholder="Search scratches"
+                placeholder="Search decomp.me"
                 spellCheck={false}
                 onFocus={() => setIsFocused(true)}
                 onClick={() => setIsFocused(true)}
@@ -140,34 +171,86 @@ function MountedSearch({ className }: { className?: string }) {
                         ...layerProps.style,
                     }}
                 >
-                    {items.map((scratch, index) => {
-                        const props = getItemProps({ item: scratch, index });
+                    {items.map((item, index) => {
+                        const props = getItemProps({ item, index });
                         const oldOnClick = props.onClick;
                         props.onClick = (evt) => {
                             evt.preventDefault(); // Don't visit the link
                             return oldOnClick(evt);
                         };
 
-                        return (
-                            <li key={scratchUrl(scratch)} {...props}>
-                                <a
-                                    href={scratchUrl(scratch)}
-                                    className={clsx(
-                                        verticalMenuStyles.item,
-                                        styles.item,
-                                    )}
-                                >
-                                    <PlatformLink scratch={scratch} size={16} />
-                                    <span className={styles.itemName}>
-                                        {scratch.name}
-                                    </span>
-                                    <span>
-                                        {getMatchPercentString(scratch)}
-                                    </span>
-                                    <ScratchOwnerAvatar scratch={scratch} />
-                                </a>
-                            </li>
-                        );
+                        if (item.type === "scratch") {
+                            const scratch = item.item;
+                            return (
+                                <li key={scratchUrl(scratch)} {...props}>
+                                    <a
+                                        href={scratchUrl(scratch)}
+                                        className={clsx(
+                                            verticalMenuStyles.item,
+                                            styles.item,
+                                        )}
+                                    >
+                                        <PlatformLink
+                                            scratch={scratch}
+                                            size={16}
+                                        />
+                                        <span className={styles.itemName}>
+                                            {scratch.name}
+                                        </span>
+                                        <span>
+                                            {getMatchPercentString(scratch)}
+                                        </span>
+                                        <ScratchOwnerAvatar scratch={scratch} />
+                                    </a>
+                                </li>
+                            );
+                        }
+                        if (item.type === "user") {
+                            const user = item.item;
+                            return (
+                                <li key={userHtmlUrl(user)} {...props}>
+                                    <a
+                                        href={userHtmlUrl(user)}
+                                        className={clsx(
+                                            verticalMenuStyles.item,
+                                            styles.item,
+                                        )}
+                                    >
+                                        <UserAvatar user={user} />
+                                        <span className={styles.itemName}>
+                                            {user.username}
+                                        </span>
+                                    </a>
+                                </li>
+                            );
+                        }
+                        if (item.type === "preset") {
+                            const preset = item.item;
+                            return (
+                                <li key={presetUrl(preset)} {...props}>
+                                    <a
+                                        href={presetUrl(preset)}
+                                        className={clsx(
+                                            verticalMenuStyles.item,
+                                            styles.item,
+                                        )}
+                                    >
+                                        <PlatformIcon
+                                            platform={preset.platform}
+                                            className="w-[1.2em]"
+                                        />
+                                        <span className={styles.itemName}>
+                                            {preset.name}
+                                        </span>
+                                        {preset.num_scratches > 1
+                                            ? `${preset.num_scratches.toLocaleString("en-US")} scratches`
+                                            : preset.num_scratches > 0
+                                              ? `${preset.num_scratches} scratch`
+                                              : "No scratches"}
+                                    </a>
+                                </li>
+                            );
+                        }
                     })}
                     {items.length === 0 && (
                         <li>
