@@ -84,6 +84,7 @@ class Scratch(models.Model):
     platform = models.CharField(max_length=100, blank=True)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
     diff_flags = models.JSONField(default=list, blank=True)
+    decompiler_flags = models.TextField(max_length=1000, default="", blank=True)
     preset = models.ForeignKey(
         "Preset", null=True, blank=True, on_delete=models.SET_NULL
     )

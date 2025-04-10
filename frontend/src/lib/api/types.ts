@@ -46,6 +46,7 @@ export interface Scratch extends TerseScratch {
     description: string;
     compiler_flags: string;
     diff_flags: string[];
+    decompiler_flags: string;
     source_code: string;
     context: string;
     diff_label: string;
@@ -130,6 +131,7 @@ export type Preset = {
     name: string;
     platform: string;
     compiler: string;
+    decompiler: string;
     assembler_flags: string;
     compiler_flags: string;
     diff_flags: string[];
@@ -141,8 +143,13 @@ export type Preset = {
 
 export type Compiler = {
     platform: string;
+    type: string;
     flags: Flag[];
     diff_flags: Flag[];
+};
+
+export type Decompiler = {
+    flags: Flag[];
 };
 
 export interface PlatformBase {

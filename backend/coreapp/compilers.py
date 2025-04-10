@@ -23,6 +23,7 @@ from coreapp.flags import (
     COMMON_MWCC_WII_GC_FLAGS,
     COMMON_WATCOM_FLAGS,
     COMMON_BORLAND_FLAGS,
+    CompilerType,
     Flags,
     Language,
 )
@@ -52,13 +53,6 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
 COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
-
-
-class CompilerType(enum.Enum):
-    GCC = "gcc"
-    IDO = "ido"
-    MWCC = "mwcc"
-    OTHER = "other"
 
 
 @dataclass(frozen=True)
