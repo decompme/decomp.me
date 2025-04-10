@@ -11,7 +11,6 @@ import * as api from "@/lib/api";
 import { scratchUrl, userHtmlUrl, presetUrl } from "@/lib/api/urls";
 
 import LoadingSpinner from "../loading.svg";
-import PlatformLink from "../PlatformLink";
 import verticalMenuStyles from "../VerticalMenu.module.scss"; // eslint-disable-line css-modules/no-unused-class
 
 import { getMatchPercentString, ScratchOwnerAvatar } from "../ScratchItem";
@@ -36,6 +35,22 @@ function MountedSearch({ className }: { className?: string }) {
         setIsFocused(false);
     };
 
+    const router = useRouter();
+
+    const pushRoute = (item: api.SearchResult) => {
+        switch (item.type) {
+            case "scratch":
+                router.push(scratchUrl(item.item));
+                break;
+            case "user":
+                router.push(userHtmlUrl(item.item));
+                break;
+            case "preset":
+                router.push(presetUrl(item.item));
+                break;
+        }
+    };
+
     const { isOpen, getMenuProps, getInputProps, getItemProps, setInputValue } =
         useCombobox({
             items,
@@ -46,7 +61,6 @@ function MountedSearch({ className }: { className?: string }) {
             itemToString(item) {
                 switch (item.type) {
                     case "scratch":
-                        return item.item.name;
                     case "preset":
                         return item.item.name;
                     case "user":
@@ -81,17 +95,7 @@ function MountedSearch({ className }: { className?: string }) {
                 if (selectedItem) {
                     console.info("<Search> onSelectedItemChange");
                     close();
-                    switch (selectedItem.type) {
-                        case "scratch":
-                            router.push(scratchUrl(selectedItem.item));
-                            break;
-                        case "user":
-                            router.push(userHtmlUrl(selectedItem.item));
-                            break;
-                        case "preset":
-                            router.push(presetUrl(selectedItem.item));
-                            break;
-                    }
+                    pushRoute(selectedItem);
                 }
             },
         });
@@ -111,8 +115,6 @@ function MountedSearch({ className }: { className?: string }) {
         },
     });
 
-    const router = useRouter();
-
     const lastWidthRef = useRef(0);
     if (triggerBounds) {
         lastWidthRef.current = triggerBounds.width;
@@ -129,17 +131,7 @@ function MountedSearch({ className }: { className?: string }) {
                     if (searchItems.length > 0) {
                         console.info("<Search> Enter pressed");
                         close();
-                        switch (searchItems[0].type) {
-                            case "scratch":
-                                router.push(scratchUrl(searchItems[0].item));
-                                break;
-                            case "user":
-                                router.push(userHtmlUrl(searchItems[0].item));
-                                break;
-                            case "preset":
-                                router.push(presetUrl(searchItems[0].item));
-                                break;
-                        }
+                        pushRoute(searchItems[0]);
                     }
                 }
             }}
@@ -179,77 +171,78 @@ function MountedSearch({ className }: { className?: string }) {
                             return oldOnClick(evt);
                         };
 
-                        if (item.type === "scratch") {
-                            const scratch = item.item;
-                            return (
-                                <li key={scratchUrl(scratch)} {...props}>
-                                    <a
-                                        href={scratchUrl(scratch)}
-                                        className={clsx(
-                                            verticalMenuStyles.item,
-                                            styles.item,
-                                        )}
-                                    >
-                                        <PlatformLink
-                                            scratch={scratch}
-                                            size={16}
-                                        />
-                                        <span className={styles.itemName}>
-                                            {scratch.name}
-                                        </span>
-                                        <span>
-                                            {getMatchPercentString(scratch)}
-                                        </span>
-                                        <ScratchOwnerAvatar scratch={scratch} />
-                                    </a>
-                                </li>
-                            );
-                        }
-                        if (item.type === "user") {
-                            const user = item.item;
-                            return (
-                                <li key={userHtmlUrl(user)} {...props}>
-                                    <a
-                                        href={userHtmlUrl(user)}
-                                        className={clsx(
-                                            verticalMenuStyles.item,
-                                            styles.item,
-                                        )}
-                                    >
-                                        <UserAvatar user={user} />
-                                        <span className={styles.itemName}>
-                                            {user.username}
-                                        </span>
-                                    </a>
-                                </li>
-                            );
-                        }
-                        if (item.type === "preset") {
-                            const preset = item.item;
-                            return (
-                                <li key={presetUrl(preset)} {...props}>
-                                    <a
-                                        href={presetUrl(preset)}
-                                        className={clsx(
-                                            verticalMenuStyles.item,
-                                            styles.item,
-                                        )}
-                                    >
-                                        <PlatformIcon
-                                            platform={preset.platform}
-                                            className="w-[1.2em]"
-                                        />
-                                        <span className={styles.itemName}>
-                                            {preset.name}
-                                        </span>
-                                        {preset.num_scratches > 1
-                                            ? `${preset.num_scratches.toLocaleString("en-US")} scratches`
-                                            : preset.num_scratches > 0
-                                              ? `${preset.num_scratches} scratch`
-                                              : "No scratches"}
-                                    </a>
-                                </li>
-                            );
+                        switch (item.type) {
+                            case "scratch":
+                                const scratch = item.item;
+                                return (
+                                    <li key={scratchUrl(scratch)} {...props}>
+                                        <a
+                                            href={scratchUrl(scratch)}
+                                            className={clsx(
+                                                verticalMenuStyles.item,
+                                                styles.item,
+                                            )}
+                                        >
+                                            <PlatformIcon
+                                                platform={scratch.platform}
+                                                className="w-[1.2em]"
+                                            />
+                                            <span className={styles.itemName}>
+                                                {scratch.name}
+                                            </span>
+                                            <span>
+                                                {getMatchPercentString(scratch)}
+                                            </span>
+                                            <ScratchOwnerAvatar
+                                                scratch={scratch}
+                                            />
+                                        </a>
+                                    </li>
+                                );
+                            case "user":
+                                const user = item.item;
+                                return (
+                                    <li key={userHtmlUrl(user)} {...props}>
+                                        <a
+                                            href={userHtmlUrl(user)}
+                                            className={clsx(
+                                                verticalMenuStyles.item,
+                                                styles.item,
+                                            )}
+                                        >
+                                            <UserAvatar user={user} />
+                                            <span className={styles.itemName}>
+                                                {user.username}
+                                            </span>
+                                        </a>
+                                    </li>
+                                );
+                            case "preset":
+                                const preset = item.item;
+                                return (
+                                    <li key={presetUrl(preset)} {...props}>
+                                        <a
+                                            href={presetUrl(preset)}
+                                            className={clsx(
+                                                verticalMenuStyles.item,
+                                                styles.item,
+                                            )}
+                                        >
+                                            <PlatformIcon
+                                                platform={preset.platform}
+                                                className="w-[1.2em]"
+                                            />
+                                            <span className={styles.itemName}>
+                                                {preset.name}
+                                            </span>
+                                            {preset.num_scratches > 1
+                                                ? `${preset.num_scratches.toLocaleString("en-US")} scratches`
+                                                : preset.num_scratches > 0
+                                                  ? `${preset.num_scratches} scratch`
+                                                  : "No scratches"}
+                                        </a>
+                                    </li>
+                                );
                         }
                     })}
                     {items.length === 0 && (
