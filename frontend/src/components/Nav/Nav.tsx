@@ -82,7 +82,7 @@ export default function Nav({ children }: Props) {
                 ) : (
                     <li className={styles.desktopLinks}>
                         <ul className="flex w-full gap-2 text-sm">
-                            <li className="ml-4">
+                            <li className="ml-4 grow">
                                 <Search />
                             </li>
                             <div className="grow" />
