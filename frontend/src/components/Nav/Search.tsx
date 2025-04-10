@@ -172,7 +172,7 @@ function MountedSearch({ className }: { className?: string }) {
                         };
 
                         switch (item.type) {
-                            case "scratch":
+                            case "scratch": {
                                 const scratch = item.item;
                                 return (
                                     <li key={scratchUrl(scratch)} {...props}>
@@ -199,7 +199,8 @@ function MountedSearch({ className }: { className?: string }) {
                                         </a>
                                     </li>
                                 );
-                            case "user":
+                            }
+                            case "user": {
                                 const user = item.item;
                                 return (
                                     <li key={userHtmlUrl(user)} {...props}>
@@ -217,7 +218,8 @@ function MountedSearch({ className }: { className?: string }) {
                                         </a>
                                     </li>
                                 );
-                            case "preset":
+                            }
+                            case "preset": {
                                 const preset = item.item;
                                 return (
                                     <li key={presetUrl(preset)} {...props}>
@@ -243,6 +245,7 @@ function MountedSearch({ className }: { className?: string }) {
                                         </a>
                                     </li>
                                 );
+                            }
                         }
                     })}
                     {items.length === 0 && (
