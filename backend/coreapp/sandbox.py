@@ -26,7 +26,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             settings.SANDBOX_TMP_PATH.mkdir(parents=True, exist_ok=True)
             tmpdir = str(settings.SANDBOX_TMP_PATH)
 
-        self.temp_dir = TemporaryDirectory(dir=tmpdir)
+        self.temp_dir = TemporaryDirectory(dir=tmpdir, ignore_cleanup_errors=True)
         self.path = Path(self.temp_dir.name)
         return self
 
