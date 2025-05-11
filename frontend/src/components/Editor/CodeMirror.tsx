@@ -21,7 +21,7 @@ function useLeadingTrailingDebounceCallback(
     callback: () => void,
     delay: number,
 ) {
-    const timeout = useRef<any>();
+    const timeout = useRef<any>(null);
 
     return useCallback(() => {
         if (timeout.current) {
@@ -69,13 +69,13 @@ export default function CodeMirror({
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
 
-    const viewRef = useRef<EditorView>();
+    const viewRef = useRef<EditorView>(null);
 
     const extensionsRef = useRef(extensions);
     extensionsRef.current = extensions;
 
-    const selectedLineRef = useRef<number>();
-    const hoveredLineRef = useRef<number>();
+    const selectedLineRef = useRef<number>(-1);
+    const hoveredLineRef = useRef<number>(-1);
 
     const onHoveredLineChangeRef = useRef(onHoveredLineChange);
     onHoveredLineChangeRef.current = onHoveredLineChange;

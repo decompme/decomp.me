@@ -128,7 +128,7 @@ export default function Tabs({
     background,
 }: Props) {
     const [hover, _setHover] = useState<string>();
-    const bgRef = useRef<HTMLDivElement>();
+    const bgRef = useRef<HTMLDivElement>(null);
     const isMovingBetweenButtons = useRef(false);
 
     const tabs: {

@@ -130,7 +130,6 @@ let app = withPlausibleProxy({
             ],
             unoptimized: !getEnvBool("FRONTEND_USE_IMAGE_PROXY"),
         },
-        swcMinify: true,
         env: {
             // XXX: don't need 'NEXT_PUBLIC_' prefix here; we could just use 'API_BASE' and 'GITHUB_CLIENT_ID'
             // See note at top of https://nextjs.org/docs/api-reference/next.config.js/environment-variables for more information

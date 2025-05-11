@@ -13,15 +13,15 @@ export const runtime = "edge";
 
 export default async function HomeOG() {
     const OpenSansExtraBold = fetch(
-        new URL("/public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
+        new URL("public/fonts/OpenSans-ExtraBold.ttf"),
     ).then((res) => res.arrayBuffer());
 
     const OpenSansSemiBold = fetch(
-        new URL("/public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
+        new URL("public/fonts/OpenSans-SemiBold.ttf"),
     ).then((res) => res.arrayBuffer());
 
     const OpenSansBold = fetch(
-        new URL("/public/fonts/OpenSans-Bold.ttf", import.meta.url),
+        new URL("public/fonts/OpenSans-Bold.ttf"),
     ).then((res) => res.arrayBuffer());
 
     const statsRes = await fetch("http://decomp.me/api/stats");
