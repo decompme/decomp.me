@@ -12,17 +12,17 @@ const IMAGE_HEIGHT_PX = 400;
 export const runtime = "edge";
 
 export default async function HomeOG() {
+    console.log("import.meta.url", import.meta.url);
+
     const OpenSansExtraBold = fetch(
-        new URL("public/fonts/OpenSans-ExtraBold.ttf"),
+        new URL("/public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
-
     const OpenSansSemiBold = fetch(
-        new URL("public/fonts/OpenSans-SemiBold.ttf"),
+        new URL("/public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
-
-    const OpenSansBold = fetch(new URL("public/fonts/OpenSans-Bold.ttf")).then(
-        (res) => res.arrayBuffer(),
-    );
+    const OpenSansBold = fetch(
+        new URL("/public/fonts/OpenSans-Bold.ttf", import.meta.url),
+    ).then((res) => res.arrayBuffer());
 
     const statsRes = await fetch("http://decomp.me/api/stats");
     const stats = await statsRes.json();

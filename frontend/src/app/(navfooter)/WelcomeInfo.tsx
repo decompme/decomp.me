@@ -1,4 +1,4 @@
-import { headers, type UnsafeUnwrappedHeaders } from "next/headers";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import { ArrowRightIcon } from "@primer/octicons-react";
