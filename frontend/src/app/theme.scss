@@ -5,7 +5,7 @@
     $accent-light: color.scale($accent, $lightness: 50%, $saturation: 30%);
     $accent-dark: color.scale($accent, $lightness: -40%, $saturation: -20%);
 
-    @if color.saturation($accent) == 0% {
+    @if color.channel($accent, "saturation", $space: hsl) == 0% {
         $accent-light: color.change($accent-light, $saturation: 0%);
     }
 
@@ -19,18 +19,18 @@
     @for $i from 1 through 40 {
         $multiplier: 2.5%;
 
-        @if color.blackness($bg) > 50% {
+        @if color.channel($bg, "blackness", $space: hwb) > 50% {
             // Dark
-            --g#{$i * 50}: #{hsl(color.hue($bg), 0, ($i - 1) * $multiplier)};
+            --g#{$i * 50}: #{hsl(color.channel($bg, "hue", $space: hsl), 0 * 1%, ($i - 1) * $multiplier)};
         } @else {
             // Light
-            --g#{$i * 50}: #{hsl(color.hue($bg), 0, 100% - ($i - 1) * $multiplier)};
+            --g#{$i * 50}: #{hsl(color.channel($bg, "hue", $space: hsl), 0 * 1%, 100% - ($i - 1) * $multiplier)};
         }
     }
 
     $peak: 0;
 
-    @if color.blackness($bg) > 50% {
+    @if color.channel($bg, "blackness", $space: hwb) > 50% {
         $peak: 255;
     }
 
