@@ -6,7 +6,9 @@ import Profile from "@/components/user/Profile";
 import { get } from "@/lib/api/request";
 import type { User } from "@/lib/api/types";
 
-export async function generateMetadata(props: { params: Promise<{ username: string }> }): Promise<Metadata> {
+export async function generateMetadata(props: {
+    params: Promise<{ username: string }>;
+}): Promise<Metadata> {
     const params = await props.params;
     let user: User;
 
@@ -28,7 +30,9 @@ export async function generateMetadata(props: { params: Promise<{ username: stri
     };
 }
 
-export default async function Page(props: { params: Promise<{ username: string }> }) {
+export default async function Page(props: {
+    params: Promise<{ username: string }>;
+}) {
     const params = await props.params;
     let user: User;
     try {

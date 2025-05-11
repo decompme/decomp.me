@@ -7,12 +7,10 @@ import { useRouter } from "next/navigation";
 import LoadingSkeleton from "@/app/scratch/[slug]/loading";
 import { post } from "@/lib/api/request";
 
-export default function Page(
-    props: {
-        params: Promise<{ slug: string }>;
-        searchParams: Promise<{ token: string }>;
-    }
-) {
+export default function Page(props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ token: string }>;
+}) {
     const searchParams = use(props.searchParams);
     const params = use(props.params);
     const router = useRouter();

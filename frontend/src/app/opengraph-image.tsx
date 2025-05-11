@@ -20,9 +20,9 @@ export default async function HomeOG() {
         new URL("public/fonts/OpenSans-SemiBold.ttf"),
     ).then((res) => res.arrayBuffer());
 
-    const OpenSansBold = fetch(
-        new URL("public/fonts/OpenSans-Bold.ttf"),
-    ).then((res) => res.arrayBuffer());
+    const OpenSansBold = fetch(new URL("public/fonts/OpenSans-Bold.ttf")).then(
+        (res) => res.arrayBuffer(),
+    );
 
     const statsRes = await fetch("http://decomp.me/api/stats");
     const stats = await statsRes.json();

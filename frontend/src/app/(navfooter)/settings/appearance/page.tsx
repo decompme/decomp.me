@@ -1,6 +1,6 @@
 "use client";
 
-import AppearanceSettings from './AppearanceSettings'
+import AppearanceSettings from "./AppearanceSettings";
 // import dynamic from "next/dynamic";
 
 // const AppearanceSettings = dynamic(() => import("./AppearanceSettings"), {
