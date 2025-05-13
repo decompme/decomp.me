@@ -257,13 +257,20 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         source_code = DecompilerWrapper.decompile(
-            default_source_code, platform, asm.data, context, compiler
+            default_source_code,
+            platform,
+            asm.data,
+            context,
+            compiler,
+            "", # TODO
+            compiler.language,
         )
 
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
 
     diff_flags = data.get("diff_flags", [])
+    decompiler_flags = data.get("decompiler_flags", [])
 
     preset_id: Optional[str] = None
     if data.get("preset"):
@@ -280,6 +287,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             "compiler": compiler.id,
             "compiler_flags": compiler_flags,
             "diff_flags": diff_flags,
+            "decompiler_flags": decompiler_flags,
             "preset": preset_id,
             "context": context,
             "diff_label": diff_label,
@@ -398,6 +406,8 @@ class ScratchViewSet(
                 scratch.compiler_flags = request.data["compiler_flags"]
             if "diff_flags" in request.data:
                 scratch.diff_flags = request.data["diff_flags"]
+            if "decompiler_flags" in request.data:
+                scratch.decompiler_flags = request.data["decompiler_flags"]
             if "diff_label" in request.data:
                 scratch.diff_label = request.data["diff_label"]
             if "source_code" in request.data:
@@ -451,6 +461,7 @@ class ScratchViewSet(
 
         context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        language = Language(request.data.get("language", compiler.language))
 
         platform = platforms.from_id(scratch.platform)
 
@@ -460,6 +471,8 @@ class ScratchViewSet(
             scratch.target_assembly.source_asm.data,
             context,
             compiler,
+            "", # TODO
+            language,
         )
 
         return Response({"decompilation": decompilation})
@@ -534,8 +547,7 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
-            src_ext = Language(language).get_file_extension()
+            src_ext = Language(metadata.get("language")).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)

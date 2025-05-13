@@ -15,6 +15,7 @@ import type {
     Compilation,
     Page,
     Compiler,
+    Decompiler,
     LibraryVersions,
     Platform,
     Preset,
@@ -380,6 +381,35 @@ export function useLibraries(platform: string): LibraryVersions[] {
     });
 
     return data?.libraries || [];
+}
+
+export function useDecompilers(
+    arch: string,
+    compilerType: string,
+    language: string,
+): Record<string, Decompiler> {
+    const getBySpec = ([url, arch, compilerType, language]: [
+        string,
+        string,
+        string,
+        string,
+    ]) => {
+        return get(url && arch && compilerType && language && `${url}?arch=${arch}&compilerType=${compilerType}&language=${language}`);
+    };
+
+    const url =
+        typeof arch === "string" &&
+        typeof compilerType === "string" &&
+        typeof language === "string"
+            ? "/decompiler"
+            : null;
+    const { data, isLoading } = useSWRImmutable([url, arch, compilerType, language], getBySpec, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
+        suspense: true, // TODO: remove
+        onErrorRetry,
+    });
+
+    return data.decompilers;
 }
 
 export function usePresets(platform: string): Preset[] {

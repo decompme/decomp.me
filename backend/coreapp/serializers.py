@@ -11,7 +11,7 @@ from rest_framework.reverse import reverse
 
 from coreapp import platforms
 
-from . import compilers
+from . import compilers, decompilers
 from .flags import LanguageFlagSet
 from .libraries import Library
 from .middleware import Request
@@ -75,6 +75,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             "name",
             "platform",
             "compiler",
+            "decompiler",
             "assembler_flags",
             "compiler_flags",
             "diff_flags",
@@ -106,10 +107,19 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
+    def validate_decompiler(self, decompiler: str) -> str:
+        try:
+            decompilers.from_id(decompiler)
+        except:
+            raise serializers.ValidationError(f"Unknown decompiler: {decompiler}")
+        return decompiler
+
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         compiler = compilers.from_id(data["compiler"])
+        decompiler = decompilers.from_id(data["decompiler"])
         platform = platforms.from_id(data["platform"])
 
+        # TODO check if decompiler supports platform and compiler
         if compiler.platform != platform:
             raise serializers.ValidationError(
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"
@@ -123,6 +133,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
     diff_flags = serializers.JSONField(required=False)
+    decompiler_flags = serializers.CharField(allow_blank=True, required=False)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Preset.objects.all()
     )
@@ -164,6 +175,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 
             if "diff_flags" not in data or not data["diff_flags"]:
                 data["diff_flags"] = preset.diff_flags
+
+            if "decompiler_flags" not in data or not data["decompiler_flags"]:
+                data["decompiler_flags"] = preset.decompiler_flags
 
             if "libraries" not in data or not data["libraries"]:
                 data["libraries"] = preset.libraries
@@ -224,7 +238,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Optional[str]:
+    def get_language(self, scratch: Scratch) -> str:
         """
         Strategy for extracting a scratch's language:
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
@@ -232,24 +246,29 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         """
         compiler = compilers.from_id(scratch.compiler)
         language_flag_set = next(
-            iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
+            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
             None,
         )
 
+        # We sort by match length to avoid having a partial match
         if language_flag_set:
             language = next(
                 iter(
-                    [
-                        language
-                        for (flag, language) in language_flag_set.flags.items()
-                        if flag in scratch.compiler_flags
-                    ]
+                    sorted(
+                        (
+                            (flag, language)
+                            for flag, language in language_flag_set.flags.items()
+                            if flag in scratch.compiler_flags
+                        ),
+                        key=lambda l: len(l[0]),
+                        reverse=True,
+                    )
                 ),
                 None,
             )
 
             if language:
-                return language.value
+                return language[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.

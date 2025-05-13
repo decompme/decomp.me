@@ -26,6 +26,7 @@ class CompilerDetail(APIView):
                 "platform": c.platform.id,
                 "flags": [f.to_json() for f in c.flags],
                 "diff_flags": [f.to_json() for f in c.platform.diff_flags],
+                "type": c.type.value,
             }
             for c in compilers.available_compilers()
         }
