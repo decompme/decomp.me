@@ -4,6 +4,7 @@ import {
     useState,
     Fragment,
     type ReactElement,
+    Suspense,
 } from "react";
 
 import { TrashIcon } from "@primer/octicons-react";
@@ -381,13 +382,15 @@ export default function CompilerOpts({
             <OptsContext.Provider value={optsEditorProvider}>
                 <section className={styles.section}>
                     <h3 className={styles.heading}>Compiler options</h3>
-                    <OptsEditor
-                        platform={platform}
-                        compiler={compiler}
-                        setCompiler={setCompiler}
-                        opts={opts}
-                        setOpts={setOpts}
-                    />
+                    <Suspense fallback={<div>Loading OptsEditor...</div>}>
+                        <OptsEditor
+                            platform={platform}
+                            compiler={compiler}
+                            setCompiler={setCompiler}
+                            opts={opts}
+                            setOpts={setOpts}
+                        />
+                    </Suspense>
                 </section>
             </OptsContext.Provider>
 
@@ -404,12 +407,14 @@ export default function CompilerOpts({
             <OptsContext.Provider value={diffOptsEditorProvider}>
                 <section className={styles.section}>
                     <h3 className={styles.heading}>Diff options</h3>
-                    <DiffOptsEditor
-                        platform={platform}
-                        compiler={compiler}
-                        diffLabel={diffLabel}
-                        onDiffLabelChange={onDiffLabelChange}
-                    />
+                    <Suspense fallback={<div>Loading DiffOptsEditor...</div>}>
+                        <DiffOptsEditor
+                            platform={platform}
+                            compiler={compiler}
+                            diffLabel={diffLabel}
+                            onDiffLabelChange={onDiffLabelChange}
+                        />
+                    </Suspense>
                 </section>
             </OptsContext.Provider>
 
