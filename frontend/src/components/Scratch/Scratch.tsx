@@ -160,8 +160,8 @@ export default function Scratch({
     const [selectedSourceLine, setSelectedSourceLine] = useState<
         number | null
     >();
-    const sourceEditor = useRef<EditorView>();
-    const contextEditor = useRef<EditorView>();
+    const sourceEditor = useRef<EditorView>(null);
+    const contextEditor = useRef<EditorView>(null);
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
 
     const [isModified, setIsModified] = useState(false);

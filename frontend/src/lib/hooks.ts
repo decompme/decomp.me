@@ -21,7 +21,7 @@ export function useSize<T extends HTMLElement>(): {
     height: number | undefined;
     ref: RefObject<T>;
 } {
-    const ref = useRef<T>();
+    const ref = useRef<T>(null);
     const [size, setSize] = useState({ width: undefined, height: undefined });
 
     useLayoutEffect(() => {

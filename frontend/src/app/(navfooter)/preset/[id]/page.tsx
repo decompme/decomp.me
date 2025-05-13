@@ -9,9 +9,10 @@ import { get } from "@/lib/api/request";
 import type { Preset } from "@/lib/api/types";
 import getTranslation from "@/lib/i18n/translate";
 
-export async function generateMetadata({
-    params,
-}: { params: { id: number } }): Promise<Metadata> {
+export async function generateMetadata(props: {
+    params: Promise<{ id: number }>;
+}): Promise<Metadata> {
+    const params = await props.params;
     let preset: Preset;
 
     try {
@@ -42,7 +43,8 @@ export async function generateMetadata({
     };
 }
 
-export default async function Page({ params }: { params: { id: number } }) {
+export default async function Page(props: { params: Promise<{ id: number }> }) {
+    const params = await props.params;
     const compilersTranslation = getTranslation("compilers");
 
     let preset: Preset;

@@ -4,9 +4,10 @@ import getScratchDetails from "./getScratchDetails";
 import ScratchEditor from "./ScratchEditor";
 
 export async function generateMetadata(
-    { params }: { params: { slug: string } },
+    props: { params: Promise<{ slug: string }> },
     parent: ResolvingMetadata,
 ): Promise<Metadata> {
+    const params = await props.params;
     const { scratch } = await getScratchDetails(params.slug);
     const parentData = await parent;
 
@@ -26,7 +27,10 @@ export async function generateMetadata(
     };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
+export default async function Page(props: {
+    params: Promise<{ slug: string }>;
+}) {
+    const params = await props.params;
     const { scratch, parentScratch, compilation } = await getScratchDetails(
         params.slug,
     );

@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import {
+    useEffect,
+    useRef,
+    useState,
+    type FC,
+    type ClipboardEvent,
+    type KeyboardEvent,
+} from "react";
 
 import Link from "next/link";
 
@@ -81,7 +88,7 @@ function ScratchName({
     onChange,
 }: { name: string; onChange?: (name: string) => void }) {
     const [isEditing, setEditing] = useState(false);
-    const editableRef = useRef<HTMLDivElement>();
+    const editableRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const el = editableRef.current;
@@ -107,7 +114,7 @@ function ScratchName({
                     const name = evt.currentTarget.innerText as string;
                     if (name.length !== 0) onChange(name);
                 }}
-                onPaste={(evt) => {
+                onPaste={(evt: ClipboardEvent) => {
                     // Only allow pasting text, rather than any HTML. This is redundant due
                     // to htmlTextOnly but it's nice not to show "<img>" when you paste an image.
 
@@ -119,7 +126,7 @@ function ScratchName({
                     document.execCommand("insertText", false, text);
                 }}
                 onBlur={() => setEditing(false)}
-                onKeyDown={(evt) => {
+                onKeyDown={(evt: KeyboardEvent) => {
                     if (evt.key === "Enter") {
                         evt.preventDefault();
                         setEditing(false);

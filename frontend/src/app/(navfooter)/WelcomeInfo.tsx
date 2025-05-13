@@ -12,8 +12,9 @@ import SiteStats from "./SiteStats";
 export const SITE_DESCRIPTION =
     "A collaborative reverse-engineering platform for working on decompilation projects with others to learn about how your favorite games work.";
 
-export default function WelcomeInfo() {
-    const saveDataEnabled = headers().get("Save-Data") === "on";
+export default async function WelcomeInfo() {
+    const headersResult = await headers();
+    const saveDataEnabled = headersResult.get("Save-Data") === "on";
 
     return (
         <div className="relative overflow-x-hidden p-2">

@@ -1,12 +1,6 @@
-import dynamic from "next/dynamic";
+"use client";
 
-const EditorSettings = dynamic(() => import("./EditorSettings"), {
-    ssr: false,
-});
-
-export const metadata = {
-    title: "Editor settings",
-};
+import EditorSettings from "./EditorSettings";
 
 export default function Page() {
     return (

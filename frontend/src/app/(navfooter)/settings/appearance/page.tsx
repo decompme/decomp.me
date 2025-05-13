@@ -1,12 +1,6 @@
-import dynamic from "next/dynamic";
+"use client";
 
-const AppearanceSettings = dynamic(() => import("./AppearanceSettings"), {
-    ssr: false,
-});
-
-export const metadata = {
-    title: "Appearance settings",
-};
+import AppearanceSettings from "./AppearanceSettings";
 
 export default function Page() {
     return (

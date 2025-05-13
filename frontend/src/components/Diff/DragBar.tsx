@@ -9,7 +9,7 @@ export interface Props {
 
 export default function DragBar({ pos, onChange }: Props) {
     const [isActive, setIsActive] = useState(false);
-    const ref = useRef<HTMLDivElement>();
+    const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const onMouseMove = (evt: MouseEvent) => {

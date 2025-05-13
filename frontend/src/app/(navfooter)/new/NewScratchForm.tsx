@@ -24,16 +24,16 @@ import { useDebounce } from "use-debounce";
 
 interface FormLabelProps {
     children: React.ReactNode;
-    htmlEl?: string;
+    htmlel?: string;
     small?: string;
 }
 
-function FormLabel({ children, htmlEl, small }: FormLabelProps) {
-    const Tag = htmlEl ? "label" : "p";
+function FormLabel({ children, htmlel, small }: FormLabelProps) {
+    const Tag = htmlel ? "label" : "p";
     return (
         <Tag
             className="m-0 block p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
-            {...(htmlEl && { htmlEl })}
+            {...(htmlel && { htmlel })}
         >
             {children}
             {small && (
@@ -357,7 +357,7 @@ export default function NewScratchForm({
 
             <div>
                 <FormLabel
-                    htmlEl="label"
+                    htmlel="label"
                     small="(asm label from which the diff will begin)"
                 >
                     Diff label

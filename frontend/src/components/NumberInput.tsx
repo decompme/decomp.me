@@ -18,7 +18,7 @@ export default function NumberInput({
     disabled,
 }: Props) {
     const [isEditing, setIsEditing] = useState(false);
-    const editableRef = useRef<HTMLSpanElement>();
+    const editableRef = useRef<HTMLSpanElement>(null);
 
     useEffect(() => {
         const el = editableRef.current;
