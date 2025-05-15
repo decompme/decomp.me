@@ -23,7 +23,7 @@ function ScratchLink({ url }: { url: string }) {
     if (!scratch) {
         return (
             <span className={styles.scratchLinkContainer}>
-                <LoadingSpinner height={18} />
+                <LoadingSpinner className="size-8 animate-pulse" />
             </span>
         );
     }

@@ -274,7 +274,7 @@ export default function Diff({
                 <div className={styles.header}>
                     Current
                     <CopyButton diff={diff as api.DiffOutput} kind="current" />
-                    {isCompiling && <LoadingSpinner width={20} height={20} />}
+                    {isCompiling && <LoadingSpinner className="size-6" />}
                     {!threeWayDiffEnabled && threeWayButton}
                 </div>
                 {threeWayDiffEnabled && (

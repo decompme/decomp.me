@@ -67,7 +67,7 @@ export default function AsyncButton(props: Props) {
             <div className={styles.label}>{props.children}</div>
 
             <div className={styles.loading}>
-                <LoadingSpinner width="24px" />
+                <LoadingSpinner className="size-6" />
             </div>
 
             {renderLayer(
