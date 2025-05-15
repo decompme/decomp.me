@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 
-import Loading from "@/components/loading.svg";
+import LoadingSpinner from "@/components/loading.svg";
 import type { TerseScratch } from "@/lib/api/types";
 
 const SortableFamilyList = dynamic(
@@ -8,7 +8,7 @@ const SortableFamilyList = dynamic(
     {
         loading: () => (
             <div className="flex size-full items-center justify-center">
-                <Loading className="size-8 animate-pulse" />
+                <LoadingSpinner className="size-8 animate-pulse" />
             </div>
         ),
     },

@@ -313,19 +313,21 @@ export default function Scratch({
                         className={styles.compilerOptsTab}
                     >
                         {() => (
-                            <CompilerOpts
-                                platform={scratch.platform}
-                                value={scratch}
-                                onChange={setScratch}
-                                diffLabel={scratch.diff_label}
-                                onDiffLabelChange={(d) =>
-                                    setScratch({ diff_label: d })
-                                }
-                                matchOverride={scratch.match_override}
-                                onMatchOverrideChange={(m) =>
-                                    setScratch({ match_override: m })
-                                }
-                            />
+                            <div className={styles.compilerOptsContainer}>
+                                <CompilerOpts
+                                    platform={scratch.platform}
+                                    value={scratch}
+                                    onChange={setScratch}
+                                    diffLabel={scratch.diff_label}
+                                    onDiffLabelChange={(d) =>
+                                        setScratch({ diff_label: d })
+                                    }
+                                    matchOverride={scratch.match_override}
+                                    onMatchOverrideChange={(m) =>
+                                        setScratch({ match_override: m })
+                                    }
+                                />
+                            </div>
                         )}
                     </Tab>
                 );

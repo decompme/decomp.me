@@ -4,7 +4,7 @@ import type { EditorView } from "@codemirror/view";
 import { useDebounce } from "use-debounce";
 
 import CodeMirror from "@/components/Editor/CodeMirror";
-import Loading from "@/components/loading.svg";
+import LoadingSpinner from "@/components/loading.svg";
 import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
 import { decompileSetup } from "@/lib/codemirror/basic-setup";
@@ -58,7 +58,7 @@ export default function DecompilePanel({ scratch }: Props) {
                         extensions={[decompileSetup, cpp(), compareExtension]}
                     />
                 )}
-                {isLoading && <Loading className={styles.loading} />}
+                {isLoading && <LoadingSpinner className={styles.loading} />}
             </section>
         </div>
     );

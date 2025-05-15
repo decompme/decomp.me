@@ -19,7 +19,7 @@ import type * as api from "@/lib/api";
 import { useSize } from "@/lib/hooks";
 import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings";
 
-import Loading from "../loading.svg";
+import LoadingSpinner from "../loading.svg";
 
 import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
@@ -274,7 +274,7 @@ export default function Diff({
                 <div className={styles.header}>
                     Current
                     <CopyButton diff={diff as api.DiffOutput} kind="current" />
-                    {isCompiling && <Loading width={20} height={20} />}
+                    {isCompiling && <LoadingSpinner width={20} height={20} />}
                     {!threeWayDiffEnabled && threeWayButton}
                 </div>
                 {threeWayDiffEnabled && (
