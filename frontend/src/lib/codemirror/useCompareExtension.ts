@@ -139,6 +139,8 @@ export default function useCompareExtension(
 ): Extension {
     const [compartment] = useState(new Compartment());
 
+    if (typeof compareTo === "undefined") return [];
+
     // Update targetString facet when compareTo changes
     useEffect(() => {
         if (viewRef.current) {
