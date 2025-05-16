@@ -82,7 +82,7 @@ function Login() {
                 </div>
             ) : code ? (
                 <div className="flex items-center justify-center gap-4 py-8 font-medium text-2xl text-gray-12">
-                    <LoadingSpinner width={32} className="animate-spin" />
+                    <LoadingSpinner className="size-8" />
                     Signing in...
                 </div>
             ) : (

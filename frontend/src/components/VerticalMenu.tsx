@@ -109,7 +109,7 @@ export function ButtonItem({
                 className={styles.right}
                 style={isLoading ? {} : { display: "none" }}
             >
-                <LoadingSpinner width={16} height={16} />
+                <LoadingSpinner className="size-4" />
             </div>
         </a>
     );

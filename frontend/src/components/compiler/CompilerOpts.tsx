@@ -4,6 +4,7 @@ import {
     useState,
     Fragment,
     type ReactElement,
+    Suspense,
 } from "react";
 
 import { TrashIcon } from "@primer/octicons-react";
@@ -11,6 +12,7 @@ import { TrashIcon } from "@primer/octicons-react";
 import Checkbox from "@/app/(navfooter)/settings/Checkbox";
 import Button from "@/components/Button";
 import Select2 from "@/components/Select2";
+import LoadingSpinner from "@/components/loading.svg";
 import * as api from "@/lib/api";
 import type { Library } from "@/lib/api/types";
 import getTranslation from "@/lib/i18n/translate";
@@ -366,7 +368,15 @@ export default function CompilerOpts({
     };
 
     return (
-        <div>
+        <Suspense
+            fallback={
+                <LoadingSpinner
+                    className={
+                        "-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 size-8"
+                    }
+                />
+            }
+        >
             <section className={styles.header}>
                 <PlatformIcon platform={platform} size={32} />
                 <div className={styles.preset}>
@@ -422,7 +432,7 @@ export default function CompilerOpts({
                     description="If checked, this scratch will be considered matching (100%)"
                 />
             </section>
-        </div>
+        </Suspense>
     );
 }
 

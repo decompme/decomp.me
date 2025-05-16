@@ -130,7 +130,7 @@ export default function EditorSettings() {
                 >
                     {downloadingLanguageServer && (
                         <div className="flex gap-2 p-4">
-                            <LoadingSpinner width="24px" /> Downloading...
+                            <LoadingSpinner className="size-6" /> Downloading...
                         </div>
                     )}
                 </Checkbox>

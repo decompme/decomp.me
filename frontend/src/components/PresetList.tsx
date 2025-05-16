@@ -50,7 +50,7 @@ export function PresetList({
                         className,
                     )}
                 >
-                    <LoadingSpinner width="1.5em" height="1.5em" />
+                    <LoadingSpinner className="size-6" />
                     Just a moment...
                 </div>
             ) : (
