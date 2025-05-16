@@ -403,7 +403,7 @@ export default function Scratch({
                                 </>
                             }
                         >
-                            {() => <DecompilationPanel scratch={scratch} />}
+                            <DecompilationPanel scratch={scratch} />
                         </Tab>
                     )
                 );
