@@ -281,15 +281,16 @@ COMMON_MSVC_FLAGS: Flags = [
     ),
     FlagSet(id="msvc_codegen", flags=["/GB", "/G3", "/G4", "/G5", "/G6"]),
     FlagSet(id="msvc_fp", flags=["/fp:precise", "/fp:strict", "/fp:fast"]),
+    FlagSet(id="msvc_rtlib", flags=["/ML", "/MT", "/MD", "/MLd", "/MTd", "/MDd"]),
+    FlagSet(id="msvc_inline", flags=["/Ob0", "/Ob1", "/Ob2"]),
+    FlagSet(id="msvc_alignment", flags=["/Zp1", "/Zp2", "/Zp4", "/Zp8", "/Zp16"]),
+    FlagSet(id="msvc_callconv", flags=["/Gd", "/Gr", "/Gz"]),
     Checkbox("msvc_compile_cpp", "/TP"),
     Checkbox("msvc_use_rtti", "/GR"),
     Checkbox("msvc_use_ehsc", "/GX"),
     Checkbox("msvc_disable_stack_checking", "/Gs"),
     Checkbox("msvc_disable_buffer_security_checks", "/GS-"),
     Checkbox("msvc_runtime_debug_checks", "/GZ"),
-    Checkbox("msvc_cdecl", "/Gd"),
-    Checkbox("msvc_fastcall", "/Gr"),
-    Checkbox("msvc_stdcall", "/Gz"),
 ]
 
 COMMON_WATCOM_FLAGS: Flags = [
