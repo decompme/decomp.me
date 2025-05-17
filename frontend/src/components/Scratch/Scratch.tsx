@@ -40,6 +40,7 @@ import ScratchToolbar from "./ScratchToolbar";
 import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
+import ScrollRestorer from "../ScrollRestorer";
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -163,6 +164,8 @@ export default function Scratch({
     const sourceEditor = useRef<EditorView>(null);
     const contextEditor = useRef<EditorView>(null);
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
+
+    const compilerOptsScrollPosition = useRef(0);
 
     const [isModified, setIsModified] = useState(false);
     const setScratch = (scratch: Partial<api.Scratch>) => {
@@ -309,7 +312,10 @@ export default function Scratch({
                         className={styles.compilerOptsTab}
                     >
                         {() => (
-                            <div className={styles.compilerOptsContainer}>
+                            <ScrollRestorer
+                                className={styles.compilerOptsContainer}
+                                scrollPositionRef={compilerOptsScrollPosition}
+                            >
                                 <CompilerOpts
                                     platform={scratch.platform}
                                     value={scratch}
@@ -323,7 +329,7 @@ export default function Scratch({
                                         setScratch({ match_override: m })
                                     }
                                 />
-                            </div>
+                            </ScrollRestorer>
                         )}
                     </Tab>
                 );
