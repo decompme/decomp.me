@@ -40,6 +40,7 @@ import ScratchToolbar from "./ScratchToolbar";
 import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
+import ScrollRestorer from "../ScrollRestorer";
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -164,6 +165,8 @@ export default function Scratch({
     const contextEditor = useRef<EditorView>(null);
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
 
+    const compilerOptsScrollPosition = useRef(0);
+
     const [isModified, setIsModified] = useState(false);
     const setScratch = (scratch: Partial<api.Scratch>) => {
         onChange(scratch);
@@ -263,19 +266,17 @@ export default function Scratch({
                             saveContext();
                         }}
                     >
-                        {() => (
-                            <CodeMirror
-                                viewRef={sourceEditor}
-                                className={styles.editor}
-                                value={scratch.source_code}
-                                valueVersion={valueVersion}
-                                onChange={(value) => {
-                                    setScratch({ source_code: value });
-                                }}
-                                onSelectedLineChange={setSelectedSourceLine}
-                                extensions={cmExtensionsSource}
-                            />
-                        )}
+                        <CodeMirror
+                            viewRef={sourceEditor}
+                            className={styles.editor}
+                            value={scratch.source_code}
+                            valueVersion={valueVersion}
+                            onChange={(value) => {
+                                setScratch({ source_code: value });
+                            }}
+                            onSelectedLineChange={setSelectedSourceLine}
+                            extensions={cmExtensionsSource}
+                        />
                     </Tab>
                 );
             case TabId.CONTEXT:
@@ -290,18 +291,16 @@ export default function Scratch({
                             saveSource();
                         }}
                     >
-                        {() => (
-                            <CodeMirror
-                                viewRef={contextEditor}
-                                className={styles.editor}
-                                value={scratch.context}
-                                valueVersion={valueVersion}
-                                onChange={(value) => {
-                                    setScratch({ context: value });
-                                }}
-                                extensions={cmExtensionsContext}
-                            />
-                        )}
+                        <CodeMirror
+                            viewRef={contextEditor}
+                            className={styles.editor}
+                            value={scratch.context}
+                            valueVersion={valueVersion}
+                            onChange={(value) => {
+                                setScratch({ context: value });
+                            }}
+                            extensions={cmExtensionsContext}
+                        />
                     </Tab>
                 );
             case TabId.OPTIONS:
@@ -313,7 +312,10 @@ export default function Scratch({
                         className={styles.compilerOptsTab}
                     >
                         {() => (
-                            <div className={styles.compilerOptsContainer}>
+                            <ScrollRestorer
+                                className={styles.compilerOptsContainer}
+                                scrollPositionRef={compilerOptsScrollPosition}
+                            >
                                 <CompilerOpts
                                     platform={scratch.platform}
                                     value={scratch}
@@ -327,7 +329,7 @@ export default function Scratch({
                                         setScratch({ match_override: m })
                                     }
                                 />
-                            </div>
+                            </ScrollRestorer>
                         )}
                     </Tab>
                 );
