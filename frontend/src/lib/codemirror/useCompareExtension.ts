@@ -148,6 +148,8 @@ export default function useCompareExtension(
         }
     }, [compartment, compareTo, viewRef]);
 
+    if (typeof compareTo === "undefined") return [];
+
     return [
         diffGutter,
         compartment.of(targetString.of(compareTo)),
