@@ -2,7 +2,7 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 
 interface ScrollRestorerProps {
-    scrollPositionRef: React.MutableRefObject<number>;
+    scrollPositionRef: React.RefObject<number>;
     children: React.ReactNode;
     className?: string;
 }
@@ -14,19 +14,14 @@ const ScrollRestorer: React.FC<ScrollRestorerProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Restore scroll on mount
-    useEffect(() => {
-        const el = containerRef.current;
-        if (el) {
-            el.scrollTop = scrollPositionRef.current;
-        }
-    }, []);
-
-    // Track scroll without causing re-renders
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
 
+        // Restore scroll position on initial mount
+        el.scrollTop = scrollPositionRef.current;
+
+        // Save scroll position on scroll
         const handleScroll = () => {
             scrollPositionRef.current = el.scrollTop;
         };
@@ -38,11 +33,7 @@ const ScrollRestorer: React.FC<ScrollRestorerProps> = ({
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            className={className}
-            style={{ overflowY: "auto", height: "100%" }}
-        >
+        <div ref={containerRef} className={className}>
             {children}
         </div>
     );
