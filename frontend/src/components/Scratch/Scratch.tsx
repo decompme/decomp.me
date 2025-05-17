@@ -263,19 +263,17 @@ export default function Scratch({
                             saveContext();
                         }}
                     >
-                        {() => (
-                            <CodeMirror
-                                viewRef={sourceEditor}
-                                className={styles.editor}
-                                value={scratch.source_code}
-                                valueVersion={valueVersion}
-                                onChange={(value) => {
-                                    setScratch({ source_code: value });
-                                }}
-                                onSelectedLineChange={setSelectedSourceLine}
-                                extensions={cmExtensionsSource}
-                            />
-                        )}
+                        <CodeMirror
+                            viewRef={sourceEditor}
+                            className={styles.editor}
+                            value={scratch.source_code}
+                            valueVersion={valueVersion}
+                            onChange={(value) => {
+                                setScratch({ source_code: value });
+                            }}
+                            onSelectedLineChange={setSelectedSourceLine}
+                            extensions={cmExtensionsSource}
+                        />
                     </Tab>
                 );
             case TabId.CONTEXT:
@@ -290,18 +288,16 @@ export default function Scratch({
                             saveSource();
                         }}
                     >
-                        {() => (
-                            <CodeMirror
-                                viewRef={contextEditor}
-                                className={styles.editor}
-                                value={scratch.context}
-                                valueVersion={valueVersion}
-                                onChange={(value) => {
-                                    setScratch({ context: value });
-                                }}
-                                extensions={cmExtensionsContext}
-                            />
-                        )}
+                        <CodeMirror
+                            viewRef={contextEditor}
+                            className={styles.editor}
+                            value={scratch.context}
+                            valueVersion={valueVersion}
+                            onChange={(value) => {
+                                setScratch({ context: value });
+                            }}
+                            extensions={cmExtensionsContext}
+                        />
                     </Tab>
                 );
             case TabId.OPTIONS:
