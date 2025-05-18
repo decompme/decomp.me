@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import django_filters
 from django import forms
@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework import filters, serializers, status
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
@@ -83,7 +84,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         url_path="name",
         serializer_class=PresetNameSerializer,
     )
-    def name_only(self, request, pk=None):
+    def name_only(self, request: Request, pk: str) -> Response:
         preset = self.get_object()
         serializer = self.get_serializer(preset)
         return Response(serializer.data)

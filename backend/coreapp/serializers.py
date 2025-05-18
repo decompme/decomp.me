@@ -63,13 +63,13 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
-class PresetNameSerializer(serializers.ModelSerializer):
+class PresetNameSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
         fields = ["id", "name"]
 
 
-class TersePresetSerializer(serializers.ModelSerializer):
+class TersePresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     owner = ProfileField(read_only=True)
 

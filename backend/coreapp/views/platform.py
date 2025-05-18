@@ -44,7 +44,7 @@ def single_platform(request: Request, id: str) -> Response:
             return Response(
                 platform.to_json(
                     include_compilers=True,
-                    include_presets=False,
+                    include_presets=True,
                     include_num_scratches=True,
                 )
             )

@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Dict
+import typing
+from typing import Dict, Optional
 
 from coreapp import compilers
 from django.utils.timezone import now
@@ -15,13 +16,18 @@ from ..decorators.django import condition
 boot_time = now()
 
 
-def endpoint_updated(request: Request, **kwargs) -> datetime:
+def endpoint_updated(request: Request, **_: typing.Any) -> datetime:
     return max(Preset.most_recent_updated(request), boot_time)
 
 
 class SingleCompilerDetail(APIView):
     @condition(last_modified_func=endpoint_updated)
-    def get(self, request: Request, platform=None, compiler=None) -> Response:
+    def get(
+        self,
+        request: Request,
+        platform: Optional[str] = "",
+        compiler: Optional[str] = "",
+    ) -> Response:
 
         filtered = [
             c for c in compilers.available_compilers() if c.platform.id == platform
