@@ -1,8 +1,8 @@
-import * as api from "@/lib/api";
+import type { Preset } from "@/lib/api/types";
 
 import Select from "../Select2";
 
-function presetsToOptions(presets: api.Preset[]) {
+function presetsToOptions(presets: Preset[]) {
     const options: Record<string, string> = {};
 
     options.Custom = "Custom";
@@ -15,22 +15,17 @@ function presetsToOptions(presets: api.Preset[]) {
 }
 
 export default function PresetSelect({
+    availablePresets,
     className,
-    platform,
     presetId,
     setPreset,
-    serverPresets,
 }: {
+    availablePresets: Preset[];
     className?: string;
-    platform: string;
     presetId?: number;
-    setPreset: (preset: api.Preset) => void;
-    serverPresets?: api.Preset[];
+    setPreset: (preset: Preset) => void;
 }) {
-    if (typeof serverPresets === "undefined")
-        serverPresets = api.usePresets(platform);
-
-    if (typeof serverPresets === "undefined") {
+    if (typeof availablePresets === "undefined") {
         return (
             <Select
                 className={className}
@@ -41,12 +36,12 @@ export default function PresetSelect({
         );
     }
 
-    const selectedPreset = serverPresets.find(
-        (p: api.Preset) => p.id === presetId,
+    const selectedPreset = availablePresets.find(
+        (p: Preset) => p.id === presetId,
     );
 
     if (
-        serverPresets.length > 0 &&
+        availablePresets.length > 0 &&
         typeof presetId === "number" &&
         !selectedPreset
     )
@@ -57,15 +52,13 @@ export default function PresetSelect({
     return (
         <Select
             className={className}
-            options={presetsToOptions(serverPresets)}
+            options={presetsToOptions(availablePresets)}
             value={selectedPreset?.name || "Custom"}
             onChange={(name) => {
                 setPreset(
                     name === "Custom"
                         ? null
-                        : serverPresets.find(
-                              (p: api.Preset) => p.name === name,
-                          ),
+                        : availablePresets.find((p: Preset) => p.name === name),
                 );
             }}
         />

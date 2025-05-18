@@ -26,25 +26,27 @@ class PlatformDetail(APIView):
     @condition(last_modified_func=endpoint_updated)
     def get(self, request: Request) -> Response:
         return Response(
-            {
-                "platforms": CompilerDetail.platforms_json(
-                    include_presets=False, include_num_scratches=True
-                ),
-            }
+            CompilerDetail.platforms_json(
+                include_presets=False, include_num_scratches=False
+            )
         )
 
 
 @api_view(["GET"])
 def single_platform(request: Request, id: str) -> Response:
     """
-    Gets a platform's basic data
+    Gets a platform's basic details including available compilers
     """
     platforms = compilers.available_platforms()
 
     for platform in platforms:
         if platform.id == id:
             return Response(
-                platform.to_json(include_presets=False, include_num_scratches=True)
+                platform.to_json(
+                    include_compilers=True,
+                    include_presets=False,
+                    include_num_scratches=True,
+                )
             )
 
     return Response(status=404)

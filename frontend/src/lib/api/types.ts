@@ -125,21 +125,31 @@ export type LibraryVersions = {
     platform: string;
 };
 
-export type Preset = {
+export type PresetBase = {
     id: number;
     name: string;
+};
+
+export type TersePreset = PresetBase & {
     platform: string;
     compiler: string;
-    assembler_flags: string;
     compiler_flags: string;
     diff_flags: string[];
-    decompiler_flags: string;
     libraries: Library[];
-    num_scratches: number;
     owner: User | null; // null = default
 };
 
-export type Compiler = {
+export type Preset = TersePreset & {
+    assembler_flags: string;
+    decompiler_flags: string;
+    num_scratches: number;
+};
+
+export type CompilerBase = {
+    id: string;
+};
+
+export type Compiler = CompilerBase & {
     platform: string;
     flags: Flag[];
     diff_flags: Flag[];
@@ -158,6 +168,7 @@ export interface PlatformMetadata extends PlatformBase {
 }
 
 export interface Platform extends PlatformBase {
+    compilers: string[];
     presets: Preset[];
 }
 

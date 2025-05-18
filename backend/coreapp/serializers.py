@@ -63,6 +63,30 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
+class PresetNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preset
+        fields = ["id", "name"]
+
+
+class TersePresetSerializer(serializers.ModelSerializer):
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    owner = ProfileField(read_only=True)
+
+    class Meta:
+        model = Preset
+        fields = [
+            "id",
+            "name",
+            "owner",
+            "platform",
+            "compiler",
+            "compiler_flags",
+            "diff_flags",
+            "libraries",
+        ]
+
+
 class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     num_scratches = serializers.SerializerMethodField()

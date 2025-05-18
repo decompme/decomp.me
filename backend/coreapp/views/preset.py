@@ -9,10 +9,12 @@ from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
 from coreapp.models.preset import Preset
-from coreapp.serializers import PresetSerializer
+from coreapp.serializers import PresetNameSerializer, PresetSerializer
+from rest_framework.decorators import action
 from rest_framework import filters, serializers, status
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
+from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 
@@ -49,6 +51,7 @@ class PresetFilterSet(django_filters.FilterSet):
 
 
 class PresetViewSet(ModelViewSet):  # type: ignore
+
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
     queryset = Preset.objects.all().annotate(num_scratches=Count("scratch__preset__id"))
     pagination_class = PresetPagination
@@ -62,6 +65,8 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     ordering_fields = ["creation_time", "id", "name", "compiler", "num_scratches"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
+        if self.action == "name_only":
+            return PresetNameSerializer
         return PresetSerializer
 
     # creation is a special case where you cannot be an owner
@@ -71,6 +76,17 @@ class PresetViewSet(ModelViewSet):  # type: ignore
             raise AuthorizationException()
 
         serializer.save(owner=self.request.profile)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="name",
+        serializer_class=PresetNameSerializer,
+    )
+    def name_only(self, request, pk=None):
+        preset = self.get_object()
+        serializer = self.get_serializer(preset)
+        return Response(serializer.data)
 
 
 router = DefaultRouter(trailing_slash=False)

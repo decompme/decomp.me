@@ -6,13 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import AsyncButton from "@/components/AsyncButton";
-import { useCompilersForPlatform } from "@/components/compiler/compilers";
 import PresetSelect from "@/components/compiler/PresetSelect";
 import CodeMirror from "@/components/Editor/CodeMirror";
 import PlatformSelect from "@/components/PlatformSelect";
 import Select from "@/components/Select2";
 import * as api from "@/lib/api";
-import type { Library } from "@/lib/api/types";
 import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
@@ -21,6 +19,7 @@ import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
+import { usePlatform } from "@/lib/api";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -74,15 +73,10 @@ function getLabels(asm: string): string[] {
 }
 
 export default function NewScratchForm({
-    serverCompilers,
+    availablePlatforms,
 }: {
-    serverCompilers: {
-        platforms: {
-            [id: string]: api.Platform;
-        };
-        compilers: {
-            [id: string]: api.Compiler;
-        };
+    availablePlatforms: {
+        [id: string]: api.PlatformBase;
     };
 }) {
     const [asm, setAsm] = useState("");
@@ -91,8 +85,11 @@ export default function NewScratchForm({
     const [compilerId, setCompilerId] = useState<string>();
     const [compilerFlags, setCompilerFlags] = useState<string>("");
     const [diffFlags, setDiffFlags] = useState<string[]>([]);
-    const [libraries, setLibraries] = useState<Library[]>([]);
+    const [libraries, setLibraries] = useState<api.Library[]>([]);
     const [presetId, setPresetId] = useState<number | undefined>();
+
+    const [availableCompilers, setAvailableCompilers] = useState<string[]>([]);
+    const [availablePresets, setAvailablePresets] = useState<api.Preset[]>([]);
 
     const [duplicates, setDuplicates] = useState([]);
 
@@ -136,16 +133,6 @@ export default function NewScratchForm({
         setPresetId(undefined);
     };
 
-    const presets = useMemo(() => {
-        const dict: Record<string, any> = {};
-        for (const v of Object.values(serverCompilers.platforms)) {
-            for (const p of v.presets) {
-                dict[p.id] = p;
-            }
-        }
-        return dict;
-    }, [serverCompilers]);
-
     // Load fields from localStorage
     useEffect(() => {
         try {
@@ -154,7 +141,7 @@ export default function NewScratchForm({
             setContext(localStorage.new_scratch_context ?? "");
             const pid = Number.parseInt(localStorage.new_scratch_presetId);
             if (!Number.isNaN(pid)) {
-                const preset = presets[pid];
+                const preset = availablePresets[pid];
                 if (preset) {
                     setPreset(preset);
                 }
@@ -174,7 +161,7 @@ export default function NewScratchForm({
             console.warn("bad localStorage", error);
         }
         setReady(true);
-    }, [presets]);
+    }, [availablePresets]);
 
     // Update localStorage
     useEffect(() => {
@@ -207,17 +194,19 @@ export default function NewScratchForm({
     ]);
 
     // Use first available platform if no platform was selected or is unavailable
-    if (
-        !platform ||
-        Object.keys(serverCompilers.platforms).indexOf(platform) === -1
-    ) {
-        setPlatform(Object.keys(serverCompilers.platforms)[0]);
+    if (!platform || Object.keys(availablePlatforms).indexOf(platform) === -1) {
+        setPlatform(Object.keys(availablePlatforms)[0]);
     }
 
-    const platformCompilers = useCompilersForPlatform(
-        platform,
-        serverCompilers.compilers,
-    );
+    const platformDetails = usePlatform(platform);
+
+    useEffect(() => {
+        if (!platformDetails) return;
+
+        setAvailableCompilers(platformDetails.compilers);
+        setAvailablePresets(platformDetails.presets);
+    }, [platformDetails]);
+
     useEffect(() => {
         if (!ready) return;
 
@@ -226,31 +215,22 @@ export default function NewScratchForm({
             return;
         }
 
-        if (Object.keys(platformCompilers).length === 0) {
-            console.warn("This platform has no supported compilers", platform);
-        } else {
+        if (availableCompilers.length > 0) {
             // Fall back to the first supported compiler and no flags...
-            setCompiler(Object.keys(platformCompilers)[0]);
+            setCompiler(availableCompilers[0]);
         }
-    }, [
-        ready,
-        presetId,
-        compilerId,
-        platformCompilers,
-        serverCompilers,
-        platform,
-    ]);
+    }, [ready, presetId, compilerId, availableCompilers]);
 
     const compilersTranslation = getTranslation("compilers");
     const compilerChoiceOptions = useMemo(() => {
-        return Object.keys(platformCompilers).reduce(
+        return availableCompilers.reduce(
             (sum, id) => {
                 sum[id] = compilersTranslation.t(id);
                 return sum;
             },
             {} as Record<string, string>,
         );
-    }, [platformCompilers, compilersTranslation]);
+    }, [availableCompilers, compilersTranslation]);
 
     const submit = async () => {
         try {
@@ -311,7 +291,7 @@ export default function NewScratchForm({
             <div>
                 <FormLabel>Platform</FormLabel>
                 <PlatformSelect
-                    platforms={serverCompilers.platforms}
+                    platforms={availablePlatforms}
                     value={platform}
                     onChange={(p) => {
                         setPlatform(p);
@@ -343,13 +323,9 @@ export default function NewScratchForm({
                         </span>
                         <PresetSelect
                             className="w-full"
-                            platform={platform}
                             presetId={presetId}
                             setPreset={setPreset}
-                            serverPresets={
-                                platform &&
-                                serverCompilers.platforms[platform].presets
-                            }
+                            availablePresets={availablePresets}
                         />
                     </div>
                 </div>

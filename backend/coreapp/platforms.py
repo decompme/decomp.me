@@ -4,6 +4,7 @@ from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
+from coreapp import compilers
 from coreapp.flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
@@ -14,7 +15,7 @@ from coreapp.models.preset import Preset
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
 
-from coreapp.serializers import PresetSerializer
+from coreapp.serializers import TersePresetSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,10 @@ class Platform:
         return Scratch.objects.filter(platform=self.id).count()
 
     def to_json(
-        self, include_presets: bool = True, include_num_scratches: bool = False
+        self,
+        include_compilers: bool = False,
+        include_presets: bool = False,
+        include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -53,9 +57,15 @@ class Platform:
             "arch": self.arch,
             "has_decompiler": self.has_decompiler,
         }
+        if include_compilers:
+            ret["compilers"] = [
+                x.id
+                for x in compilers.available_compilers()
+                if x.platform.id == self.id
+            ]
         if include_presets:
             ret["presets"] = [
-                PresetSerializer(p).data
+                TersePresetSerializer(p).data
                 for p in Preset.objects.filter(platform=self.id).order_by("name")
             ]
         if include_num_scratches:

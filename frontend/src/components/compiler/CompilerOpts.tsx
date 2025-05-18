@@ -4,7 +4,6 @@ import {
     useState,
     Fragment,
     type ReactElement,
-    Suspense,
 } from "react";
 
 import { TrashIcon } from "@primer/octicons-react";
@@ -21,7 +20,6 @@ import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 import Select from "../Select"; // TODO: use Select2
 
 import styles from "./CompilerOpts.module.css";
-import { useCompilersForPlatform } from "./compilers";
 import PresetSelect from "./PresetSelect";
 
 const NO_TRANSLATION = "NO_TRANSLATION";
@@ -269,6 +267,9 @@ export default function CompilerOpts({
     matchOverride,
     onMatchOverrideChange,
 }: Props) {
+    const availablePresets = api.usePresets(platform);
+    const availableCompilers = api.useCompilers(platform);
+
     const compiler = value.compiler;
     let opts = value.compiler_flags;
     const diff_opts = value.diff_flags || [];
@@ -368,21 +369,13 @@ export default function CompilerOpts({
     };
 
     return (
-        <Suspense
-            fallback={
-                <LoadingSpinner
-                    className={
-                        "-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 size-8"
-                    }
-                />
-            }
-        >
+        <>
             <section className={styles.header}>
                 <PlatformIcon platform={platform} size={32} />
                 <div className={styles.preset}>
                     Preset
                     <PresetSelect
-                        platform={platform}
+                        availablePresets={availablePresets}
                         presetId={value.preset}
                         setPreset={setPreset}
                     />
@@ -392,7 +385,7 @@ export default function CompilerOpts({
                 <section className={styles.section}>
                     <h3 className={styles.heading}>Compiler options</h3>
                     <OptsEditor
-                        platform={platform}
+                        availableCompilers={availableCompilers}
                         compiler={compiler}
                         setCompiler={setCompiler}
                         opts={opts}
@@ -432,37 +425,25 @@ export default function CompilerOpts({
                     description="If checked, this scratch will be considered matching (100%)"
                 />
             </section>
-        </Suspense>
+        </>
     );
 }
 
 export function OptsEditor({
-    platform,
+    availableCompilers,
     compiler: compilerId,
     setCompiler,
     opts,
     setOpts,
 }: {
-    platform?: string;
+    availableCompilers: Record<string, api.Compiler>;
     compiler: string;
     setCompiler: (compiler: string) => void;
     opts: string;
     setOpts: (opts: string) => void;
 }) {
     const compilersTranslation = getTranslation("compilers");
-
-    const compilers = useCompilersForPlatform(platform);
-    const compiler = compilers[compilerId];
-
-    if (!compiler) {
-        // TODO: this is a bug -- we should just render like an empty state
-        console.warn(
-            "compiler not supported for platform",
-            compilerId,
-            platform,
-        );
-        setCompiler(Object.keys(compilers)[0]); // pick first compiler (ew)
-    }
+    const compiler = availableCompilers?.[compilerId];
 
     return (
         <div>
@@ -474,7 +455,7 @@ export function OptsEditor({
                     }
                     value={compilerId}
                 >
-                    {Object.keys(compilers).map((id) => (
+                    {Object.keys(availableCompilers).map((id) => (
                         <option key={id} value={id}>
                             {compilersTranslation.t(id)}
                         </option>
@@ -515,8 +496,7 @@ export function DiffOptsEditor({
     diffLabel: string;
     onDiffLabelChange: (diffLabel: string) => void;
 }) {
-    const compilers = useCompilersForPlatform(platform);
-    const compiler = compilers[compilerId];
+    const compiler = api.useCompiler(platform, compilerId);
 
     return (
         <div>

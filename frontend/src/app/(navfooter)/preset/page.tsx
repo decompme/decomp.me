@@ -2,11 +2,11 @@ import { Presets } from "@/app/(navfooter)/preset/presets";
 import { get } from "@/lib/api/request";
 
 export default async function Page() {
-    const compilers = await get("/compiler");
+    const availablePlatforms = await get("/platform");
 
     return (
         <main className="mx-auto w-full max-w-3xl p-4">
-            <Presets serverCompilers={compilers} />
+            <Presets availablePlatforms={availablePlatforms} />
         </main>
     );
 }

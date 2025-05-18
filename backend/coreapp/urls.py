@@ -14,6 +14,16 @@ from coreapp.views import (
 
 urlpatterns = [
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
+    path(
+        "compiler/<str:platform>/<str:compiler>",
+        compiler.SingleCompilerDetail.as_view(),
+        name="compiler-detail",
+    ),
+    path(
+        "compiler/<str:platform>",
+        compiler.SingleCompilerDetail.as_view(),
+        name="compiler-detail",
+    ),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
     path(
@@ -38,7 +48,7 @@ urlpatterns = [
         name="user-scratches",
     ),
     path("search", search.SearchViewSet.as_view(), name="search"),
-    # TODO: remove
+    # TODO: remove (decomp-permuter still uses /compilers)
     path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
     path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]
