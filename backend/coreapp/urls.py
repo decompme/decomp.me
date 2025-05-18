@@ -17,12 +17,12 @@ urlpatterns = [
     path(
         "compiler/<str:platform>/<str:compiler>",
         compiler.SingleCompilerDetail.as_view(),
-        name="compiler-detail",
+        name="available-compiler",
     ),
     path(
         "compiler/<str:platform>",
         compiler.SingleCompilerDetail.as_view(),
-        name="compiler-detail",
+        name="available-compilers",
     ),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
