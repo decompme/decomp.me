@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import django_filters
 from django import forms
@@ -16,7 +16,6 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import ModelViewSet
 
 logger = logging.getLogger(__name__)
@@ -89,6 +88,3 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         serializer = self.get_serializer(preset)
         return Response(serializer.data)
 
-
-router = DefaultRouter(trailing_slash=False)
-router.register(r"preset", PresetViewSet)

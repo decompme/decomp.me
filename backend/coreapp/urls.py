@@ -1,5 +1,7 @@
 from django.urls import path
 
+from rest_framework.routers import DefaultRouter
+
 from coreapp.views import (
     compiler,
     library,
@@ -12,7 +14,13 @@ from coreapp.views import (
     search,
 )
 
+router = DefaultRouter(trailing_slash=False)
+router.register(r"scratch", scratch.ScratchViewSet)
+router.register(r"preset", preset.PresetViewSet)
+router.register(r"project", project.ProjectViewSet)
+
 urlpatterns = [
+    *router.urls,
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
     path(
         "compiler/<str:platform>/<str:compiler>",
@@ -32,9 +40,6 @@ urlpatterns = [
         name="platform-detail",
     ),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
-    *scratch.router.urls,
-    *preset.router.urls,
-    *project.router.urls,
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
         "user/scratches",
