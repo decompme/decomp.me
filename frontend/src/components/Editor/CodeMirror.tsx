@@ -1,6 +1,6 @@
 import {
     type CSSProperties,
-    type MutableRefObject,
+    type RefObject,
     useCallback,
     useEffect,
     useRef,
@@ -47,7 +47,7 @@ export interface Props {
     onHoveredLineChange?: (value: number | null) => void;
     onSelectedLineChange?: (value: number) => void;
     className?: string;
-    viewRef?: MutableRefObject<EditorView | null>;
+    viewRef?: RefObject<EditorView | null>;
     extensions: Extension; // const
 }
 

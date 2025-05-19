@@ -5,7 +5,7 @@ import {
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
-    type MutableRefObject,
+    type RefObject,
     useRef,
     useState,
 } from "react";
@@ -154,7 +154,7 @@ function ThreeWayToggleButton({
 }
 
 export function scrollToLineNumber(
-    editorView: MutableRefObject<EditorView>,
+    editorView: RefObject<EditorView>,
     lineNumber: number,
 ) {
     if (!editorView) {
