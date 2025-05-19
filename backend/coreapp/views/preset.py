@@ -87,4 +87,3 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         preset = self.get_object()
         serializer = self.get_serializer(preset)
         return Response(serializer.data)
-
