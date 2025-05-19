@@ -1,4 +1,4 @@
-import { type MutableRefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useState } from "react";
 
 import type {
     ClangdStdioTransport,
@@ -16,8 +16,8 @@ import {
 export default function useLanguageServer(
     enabled: boolean,
     scratch: api.Scratch,
-    sourceEditor: MutableRefObject<EditorView>,
-    contextEditor: MutableRefObject<EditorView>,
+    sourceEditor: RefObject<EditorView>,
+    contextEditor: RefObject<EditorView>,
 ) {
     const [initialScratchState, setInitialScratchState] =
         useState<api.Scratch>(undefined);

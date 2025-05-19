@@ -1,11 +1,6 @@
 /* eslint css-modules/no-unused-class: off */
 
-import {
-    type CSSProperties,
-    type MutableRefObject,
-    memo,
-    useContext,
-} from "react";
+import { type CSSProperties, type RefObject, memo, useContext } from "react";
 
 import clsx from "clsx";
 import type { EditorView } from "codemirror";
@@ -86,8 +81,7 @@ function DiffCell({
     highlighter: Highlighter;
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext);
-    const sourceEditor =
-        useContext<MutableRefObject<EditorView>>(ScrollContext);
+    const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
 
     if (!cell) return <div className={clsx(styles.cell, className)} />;
