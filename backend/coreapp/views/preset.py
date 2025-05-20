@@ -9,7 +9,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
 from coreapp.models.preset import Preset
-from coreapp.serializers import PresetNameSerializer, PresetSerializer
+from coreapp.serializers import TinyPresetSerializer, PresetSerializer
 from rest_framework.decorators import action
 from rest_framework import filters, serializers, status
 from rest_framework.pagination import CursorPagination
@@ -66,7 +66,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Preset]]:
         if self.action == "name_only":
-            return PresetNameSerializer
+            return TinyPresetSerializer
         return PresetSerializer
 
     # creation is a special case where you cannot be an owner
@@ -81,7 +81,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
         detail=True,
         methods=["get"],
         url_path="name",
-        serializer_class=PresetNameSerializer,
+        serializer_class=TinyPresetSerializer,
     )
     def name_only(self, request: Request, pk: str) -> Response:
         preset = self.get_object()

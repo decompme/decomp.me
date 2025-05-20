@@ -63,7 +63,7 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
-class PresetNameSerializer(serializers.ModelSerializer[Preset]):
+class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
         fields = ["id", "name"]

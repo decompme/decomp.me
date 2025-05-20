@@ -21,7 +21,7 @@ def endpoint_updated(request: Request, **_: typing.Any) -> datetime:
 
 
 class SingleCompilerDetail(APIView):
-    @condition(last_modified_func=endpoint_updated)
+    @condition(last_modified_func=lambda r, **_: boot_time)
     def get(
         self,
         request: Request,
