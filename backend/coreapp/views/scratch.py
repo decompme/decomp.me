@@ -559,8 +559,6 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        parent_slugs = [p.slug for p in scratch.all_parents()]
-
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None
 
@@ -568,7 +566,8 @@ class ScratchViewSet(
                 Q(
                     target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
                 )
-                | Q(slug__in=parent_slugs)
+                | Q(family_id=scratch.family_id)
+                | Q(parent_id=scratch.parent_id)
             ).order_by("creation_time")
         elif (
             scratch.target_assembly.elf_object is not None
@@ -579,11 +578,14 @@ class ScratchViewSet(
                     target_assembly__hash=scratch.target_assembly.hash,
                     diff_label=scratch.diff_label,
                 )
-                | Q(slug__in=parent_slugs)
+                | Q(family_id=scratch.family_id)
+                | Q(parent_id=scratch.parent_id)
             ).order_by("creation_time")
         else:
             family = Scratch.objects.filter(
-                Q(slug=scratch.slug) | Q(slug__in=parent_slugs)
+                Q(slug=scratch.slug)
+                | Q(family_id=scratch.family_id)
+                | Q(parent_id=scratch.parent_id)
             )
 
         return Response(
