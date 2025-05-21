@@ -19,7 +19,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
-from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
@@ -590,7 +589,3 @@ class ScratchViewSet(
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
         )
-
-
-router = DefaultRouter(trailing_slash=False)
-router.register(r"scratch", ScratchViewSet)

@@ -18,6 +18,7 @@ import type {
     LibraryVersions,
     Platform,
     Preset,
+    PresetBase,
     ClaimableScratch,
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
@@ -358,14 +359,30 @@ export function usePlatform(id: string | undefined): Platform | undefined {
     return data;
 }
 
-export function useCompilers(): Record<string, Compiler> {
-    const { data, isLoading } = useSWRImmutable("/compiler", get, {
+export function useCompiler(
+    platform: string,
+    compiler: string,
+): Compiler | undefined {
+    const url =
+        typeof platform === "string" && typeof compiler === "string"
+            ? `/compiler/${platform}/${compiler}`
+            : null;
+    const { data } = useSWRImmutable(url, get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
-        suspense: true, // TODO: remove
         onErrorRetry,
     });
 
-    return data.compilers;
+    return data?.[compiler];
+}
+
+export function useCompilers(platform: string): Record<string, Compiler> {
+    const url = typeof platform === "string" ? `/compiler/${platform}` : null;
+    const { data } = useSWRImmutable(url, get, {
+        refreshInterval: 1000 * 60 * 15, // 15 minutes
+        onErrorRetry,
+    });
+
+    return data || {};
 }
 
 export function useLibraries(platform: string): LibraryVersions[] {
@@ -400,8 +417,8 @@ export function usePresets(platform: string): Preset[] {
     return data?.results;
 }
 
-export function usePreset(id: number | undefined): Preset | undefined {
-    const url = typeof id === "number" ? `/preset/${id}` : null;
+export function usePreset(id: number | undefined): PresetBase | undefined {
+    const url = typeof id === "number" ? `/preset/${id}/name` : null;
     const { data } = useSWRImmutable(url, get, {
         refreshInterval: 1000 * 60 * 1, // 1 minute
         onErrorRetry,

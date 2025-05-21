@@ -1,5 +1,7 @@
 from django.urls import path
 
+from rest_framework.routers import DefaultRouter
+
 from coreapp.views import (
     compiler,
     library,
@@ -12,8 +14,24 @@ from coreapp.views import (
     search,
 )
 
+router = DefaultRouter(trailing_slash=False)
+router.register(r"scratch", scratch.ScratchViewSet)
+router.register(r"preset", preset.PresetViewSet)
+router.register(r"project", project.ProjectViewSet)
+
 urlpatterns = [
+    *router.urls,
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
+    path(
+        "compiler/<str:platform>/<str:compiler>",
+        compiler.SingleCompilerDetail.as_view(),
+        name="available-compiler",
+    ),
+    path(
+        "compiler/<str:platform>",
+        compiler.SingleCompilerDetail.as_view(),
+        name="available-compilers",
+    ),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
     path(
@@ -22,9 +40,6 @@ urlpatterns = [
         name="platform-detail",
     ),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
-    *scratch.router.urls,
-    *preset.router.urls,
-    *project.router.urls,
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
         "user/scratches",
@@ -38,7 +53,7 @@ urlpatterns = [
         name="user-scratches",
     ),
     path("search", search.SearchViewSet.as_view(), name="search"),
-    # TODO: remove
+    # TODO: remove (decomp-permuter still uses /compilers)
     path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
     path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]

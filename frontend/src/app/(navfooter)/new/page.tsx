@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function NewScratchPage() {
-    const compilers = await get("/compiler");
+    const availablePlatforms = await get("/platform");
 
     return (
         <main>
@@ -16,7 +16,7 @@ export default async function NewScratchPage() {
                 Start a new scratch
             </h1>
             <p className="max-w-prose py-3 leading-snug">{DESCRIPTION}</p>
-            <NewScratchForm serverCompilers={compilers} />
+            <NewScratchForm availablePlatforms={availablePlatforms} />
         </main>
     );
 }

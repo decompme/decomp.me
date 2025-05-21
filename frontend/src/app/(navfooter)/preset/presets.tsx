@@ -7,21 +7,16 @@ import { PresetList } from "@/components/PresetList";
 import type * as api from "@/lib/api";
 
 export function Presets({
-    serverCompilers,
+    availablePlatforms,
 }: {
-    serverCompilers: {
-        platforms: {
-            [id: string]: api.Platform;
-        };
-        compilers: {
-            [id: string]: api.Compiler;
-        };
+    availablePlatforms: {
+        [id: string]: api.PlatformBase;
     };
 }) {
-    const platforms = Object.keys(serverCompilers.platforms);
-
     const [platform, setPlatform] = useState<string>(
-        platforms.length > 0 ? platforms[0] : "",
+        Object.keys(availablePlatforms).length > 0
+            ? Object.keys(availablePlatforms)[0]
+            : "",
     );
 
     return (
@@ -30,7 +25,7 @@ export function Presets({
                 Platforms
             </h2>
             <PlatformSelect
-                platforms={serverCompilers.platforms}
+                platforms={availablePlatforms}
                 value={platform}
                 onChange={setPlatform}
             />
