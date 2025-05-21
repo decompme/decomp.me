@@ -210,8 +210,8 @@ export default function NewScratchForm({
     useEffect(() => {
         if (!ready) return;
 
-        if (presetId !== undefined || compilerId !== undefined) {
-            // User has specified a preset or compiler, don't override it
+        if (presetId !== undefined || availableCompilers.includes(compilerId)) {
+            // User has specified a preset or valid compiler, don't override it
             return;
         }
 
