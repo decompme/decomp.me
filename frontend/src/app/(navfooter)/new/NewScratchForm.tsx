@@ -146,14 +146,7 @@ export default function NewScratchForm({
         } else {
             localStorage.new_scratch_presetId = presetId;
         }
-    }, [
-        label,
-        asm,
-        context,
-        platform,
-        compilerId,
-        presetId,
-    ]);
+    }, [ready, label, asm, context, platform, compilerId, presetId]);
 
     // 1. Load platform from local storage on initial mount
     useEffect(() => {
