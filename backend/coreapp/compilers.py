@@ -1039,6 +1039,12 @@ MWCC_233_159 = MWCCWiiGCCompiler(
     id="mwcc_233_159",
     cc=MWCCEPPC_CC,
 )
+
+MWCC_233_159P1 = MWCCWiiGCCompiler(
+    id="mwcc_233_159p1",
+    cc=MWCCEPPC_CC,
+)
+
 MWCC_233_163 = MWCCWiiGCCompiler(
     id="mwcc_233_163",
     cc=MWCCEPPC_CC,
@@ -1612,6 +1618,7 @@ _all_compilers: List[Compiler] = [
     # GC_WII
     MWCC_233_144,
     MWCC_233_159,
+    MWCC_233_159P1,
     MWCC_233_163,
     MWCC_233_163E,
     MWCC_233_163N,
