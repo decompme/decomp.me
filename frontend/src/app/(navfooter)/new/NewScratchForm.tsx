@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useReducer } from "react";
+import { useEffect, useState, useMemo, useReducer, useCallback } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -81,8 +81,8 @@ export default function NewScratchForm({
 }) {
     const [asm, setAsm] = useState("");
     const [context, setContext] = useState("");
-    const [platform, setPlatform] = useState("");
-    const [compilerId, setCompilerId] = useState<string>();
+    const [platform, setPlatform] = useState<string>();
+    const [compilerId, setCompilerId] = useState<string>("");
     const [compilerFlags, setCompilerFlags] = useState<string>("");
     const [diffFlags, setDiffFlags] = useState<string[]>([]);
     const [libraries, setLibraries] = useState<api.Library[]>([]);
@@ -109,10 +109,9 @@ export default function NewScratchForm({
         trailing: true,
     });
 
-    const setPreset = (preset: api.Preset) => {
+    const setPreset = useCallback((preset: api.Preset) => {
         if (preset) {
             setPresetId(preset.id);
-            setPlatform(preset.platform);
             setCompilerId(preset.compiler);
             setCompilerFlags(preset.compiler_flags);
             setDiffFlags(preset.diff_flags);
@@ -124,46 +123,15 @@ export default function NewScratchForm({
             setDiffFlags([]);
             setLibraries([]);
         }
-    };
-    const setCompiler = (compiler?: string) => {
+    }, []);
+    const setCompiler = useCallback((compiler?: string) => {
         setCompilerId(compiler);
         setCompilerFlags("");
         setDiffFlags([]);
         setLibraries([]);
         setPresetId(undefined);
-    };
+    }, []);
 
-    // Load fields from localStorage
-    useEffect(() => {
-        try {
-            setLabel(localStorage.new_scratch_label ?? "");
-            setAsm(localStorage.new_scratch_asm ?? "");
-            setContext(localStorage.new_scratch_context ?? "");
-            const pid = Number.parseInt(localStorage.new_scratch_presetId);
-            if (!Number.isNaN(pid)) {
-                const preset = availablePresets[pid];
-                if (preset) {
-                    setPreset(preset);
-                }
-            } else {
-                setPlatform(localStorage.new_scratch_platform ?? "");
-                setCompilerId(localStorage.new_scratch_compilerId ?? undefined);
-                setCompilerFlags(localStorage.new_scratch_compilerFlags ?? "");
-                setDiffFlags(
-                    JSON.parse(localStorage.new_scratch_diffFlags ?? "[]"),
-                );
-                setLibraries(
-                    JSON.parse(localStorage.new_scratch_libraries ?? "[]"),
-                );
-            }
-            incrementValueVersion();
-        } catch (error) {
-            console.warn("bad localStorage", error);
-        }
-        setReady(true);
-    }, [availablePresets]);
-
-    // Update localStorage
     useEffect(() => {
         if (!ready) return;
 
@@ -172,34 +140,45 @@ export default function NewScratchForm({
         localStorage.new_scratch_context = context;
         localStorage.new_scratch_platform = platform;
         localStorage.new_scratch_compilerId = compilerId;
-        localStorage.new_scratch_compilerFlags = compilerFlags;
-        localStorage.new_scratch_diffFlags = JSON.stringify(diffFlags);
-        localStorage.new_scratch_libraries = JSON.stringify(libraries);
+
         if (presetId === undefined) {
             localStorage.removeItem("new_scratch_presetId");
         } else {
             localStorage.new_scratch_presetId = presetId;
         }
     }, [
-        ready,
         label,
         asm,
         context,
         platform,
         compilerId,
-        compilerFlags,
-        diffFlags,
-        libraries,
         presetId,
     ]);
 
-    // Use first available platform if no platform was selected or is unavailable
-    if (!platform || Object.keys(availablePlatforms).indexOf(platform) === -1) {
-        setPlatform(Object.keys(availablePlatforms)[0]);
-    }
+    // 1. Load platform from local storage on initial mount
+    useEffect(() => {
+        try {
+            const storedPlatform = localStorage.getItem("new_scratch_platform");
+            const platforms = Object.keys(availablePlatforms);
+            if (platforms.includes(storedPlatform)) {
+                setPlatform(storedPlatform);
+            } else {
+                // no local storage, or invalid value, remove it and set first platform
+                localStorage.removeItem("new_scratch_platform");
+                setPlatform(platforms[0]);
+            }
 
+            setLabel(localStorage.new_scratch_label ?? "");
+            setAsm(localStorage.new_scratch_asm ?? "");
+            setContext(localStorage.new_scratch_context ?? "");
+            incrementValueVersion();
+        } catch (error) {
+            console.warn("bad localStorage", error);
+        }
+    }, []);
+
+    // 2. Fetch compilers and presets for selected platform
     const platformDetails = usePlatform(platform);
-
     useEffect(() => {
         if (!platformDetails) return;
 
@@ -207,19 +186,38 @@ export default function NewScratchForm({
         setAvailablePresets(platformDetails.presets);
     }, [platformDetails]);
 
+    // 3. Select compiler based on local storage
     useEffect(() => {
-        if (!ready) return;
+        if (!platform) return;
 
-        if (presetId !== undefined || availableCompilers.includes(compilerId)) {
-            // User has specified a preset or valid compiler, don't override it
-            return;
+        // A platform will always have at least 1 available compiler
+        if (!availableCompilers) return;
+
+        setReady(true);
+
+        const pid = Number.parseInt(localStorage.new_scratch_presetId);
+        if (!Number.isNaN(pid)) {
+            const preset = availablePresets.filter((x) => x.id === pid)[0];
+            if (preset) {
+                setPreset(preset);
+                return;
+            }
         }
 
-        if (availableCompilers.length > 0) {
-            // Fall back to the first supported compiler and no flags...
+        // Remove invalid or missing presetId
+        localStorage.removeItem("new_scratch_presetId");
+
+        // Use compilerId from local storage if present and valid
+        const cid = localStorage.new_scratch_compilerId ?? "";
+        if (availableCompilers.includes(cid)) {
+            setCompiler(cid);
+        } else {
+            console.log(
+                `Falling back to first available compiler for ${platform}`,
+            );
             setCompiler(availableCompilers[0]);
         }
-    }, [ready, presetId, compilerId, availableCompilers]);
+    }, [availableCompilers, availablePresets]);
 
     const compilersTranslation = getTranslation("compilers");
     const compilerChoiceOptions = useMemo(() => {
@@ -295,7 +293,7 @@ export default function NewScratchForm({
                     value={platform}
                     onChange={(p) => {
                         setPlatform(p);
-                        setCompiler();
+                        setCompiler("");
                     }}
                 />
             </div>

@@ -351,7 +351,7 @@ export function useCompilation(
 }
 
 export function usePlatform(id: string | undefined): Platform | undefined {
-    const url = typeof id === "string" ? `/platform/${id}` : null;
+    const url = typeof id === "string" && id ? `/platform/${id}` : null;
     const { data } = useSWRImmutable(url, get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
