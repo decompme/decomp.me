@@ -5,6 +5,7 @@ gba:
 gc_wii:
   - mwcc_233_144
   - mwcc_233_159
+  - mwcc_233_159p1
   - mwcc_233_163
   - mwcc_233_163e
   - mwcc_233_163n
