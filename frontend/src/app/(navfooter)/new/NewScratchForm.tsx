@@ -89,7 +89,7 @@ export default function NewScratchForm({
     const [presetId, setPresetId] = useState<number | undefined>();
 
     const [availableCompilers, setAvailableCompilers] = useState<string[]>([]);
-    const [availablePresets, setAvailablePresets] = useState<api.Preset[]>([]);
+    const [availablePresets, setAvailablePresets] = useState<api.Preset[]>();
 
     const [duplicates, setDuplicates] = useState([]);
 
@@ -178,7 +178,7 @@ export default function NewScratchForm({
             setAvailablePresets(platformDetails.presets);
         } else {
             setAvailableCompilers([]);
-            setAvailablePresets([]);
+            setAvailablePresets(undefined);
         }
     }, [platformDetails]);
 
