@@ -4,7 +4,7 @@ from typing import Any
 
 from django.apps.registry import Apps
 
-from django.db import migrations
+from django.db import migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
@@ -22,7 +22,12 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
             return cache[scratch.slug]
         visited = []
         current = scratch
+        seen = set()
         while current.parent is not None:
+            if current.slug in seen:
+                logger.warning(f"Cycle detected starting at {scratch.slug}")
+                break
+            seen.add(current.slug)
             visited.append(current)
             current = current.parent
             if current.slug in cache:
@@ -33,14 +38,19 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
             cache[s.slug] = root
         return root
 
+    def commit_updates(updates: list[Any]) -> None:
+        if updates:
+            with transaction.atomic():
+                Scratch.objects.bulk_update(updates, ["family"])
+            updates.clear()
+
+    chunk_size = 1000
     updates = []
+    processed = 0
 
-    scratches = Scratch.objects.select_related("parent").all()
-
-    for i, scratch in enumerate(scratches, 1):
-        if i % 1000 == 0:
-            logger.info(f"Processed {i} scratches...")
-
+    qs = Scratch.objects.select_related("parent").only("slug", "parent_id", "family_id")
+    for scratch in qs.iterator(chunk_size=chunk_size):
+        processed += 1
         if scratch.parent is None:
             if scratch.family_id != scratch.slug:
                 scratch.family = scratch
@@ -51,7 +61,14 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
                 scratch.family = top
                 updates.append(scratch)
 
-    Scratch.objects.bulk_update(updates, ["family"])
+        if processed % chunk_size == 0:
+            commit_updates(updates)
+            logger.info(f"Processed {processed:,} scratches...")
+
+    # final batch
+    commit_updates(updates)
+
+    logger.info(f"Finished processing {processed:,} scratches")
 
 
 class Migration(migrations.Migration):
