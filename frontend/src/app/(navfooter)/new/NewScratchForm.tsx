@@ -173,10 +173,13 @@ export default function NewScratchForm({
     // 2. Fetch compilers and presets for selected platform
     const platformDetails = usePlatform(platform);
     useEffect(() => {
-        if (!platformDetails) return;
-
-        setAvailableCompilers(platformDetails.compilers);
-        setAvailablePresets(platformDetails.presets);
+        if (platformDetails) {
+            setAvailableCompilers(platformDetails.compilers);
+            setAvailablePresets(platformDetails.presets);
+        } else {
+            setAvailableCompilers([]);
+            setAvailablePresets([]);
+        }
     }, [platformDetails]);
 
     // 3. Select compiler based on local storage
