@@ -184,10 +184,8 @@ export default function NewScratchForm({
 
     // 3. Select compiler based on local storage
     useEffect(() => {
-        if (!platform) return;
-
         // A platform will always have at least 1 available compiler
-        if (!availableCompilers) return;
+        if (availableCompilers.length === 0) return;
 
         setReady(true);
 
@@ -213,7 +211,7 @@ export default function NewScratchForm({
             );
             setCompiler(availableCompilers[0]);
         }
-    }, [availableCompilers, availablePresets]);
+    }, [platform, availableCompilers, availablePresets]);
 
     const compilersTranslation = getTranslation("compilers");
     const compilerChoiceOptions = useMemo(() => {
