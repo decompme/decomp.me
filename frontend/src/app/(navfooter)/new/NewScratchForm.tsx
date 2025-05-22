@@ -214,6 +214,9 @@ export default function NewScratchForm({
 
     const compilersTranslation = getTranslation("compilers");
     const compilerChoiceOptions = useMemo(() => {
+        if (availableCompilers.length === 0) {
+            return { loading: "Loading..." };
+        }
         return availableCompilers.reduce(
             (sum, id) => {
                 sum[id] = compilersTranslation.t(id);
