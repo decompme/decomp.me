@@ -71,6 +71,8 @@ class LibrariesField(models.JSONField):
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
         res = super().from_db_value(*args, **kwargs)
+        if res is None:
+            return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
 
@@ -97,7 +99,20 @@ class Scratch(models.Model):
     max_score = models.IntegerField(default=-1)
     match_override = models.BooleanField(default=False)
     libraries = LibrariesField(default=list, blank=True, null=True)
-    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
+    family = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="family_members",
+    )
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="children",
+    )
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
     claim_token = models.CharField(
         max_length=64, blank=True, null=True, default=gen_claim_token
@@ -114,13 +129,16 @@ class Scratch(models.Model):
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self.family:
+            if self.parent and self.parent.family:
+                self.family = self.parent.family
+            else:
+                self.family = self
+        super().save(*args, **kwargs)
+
     def is_claimable(self) -> bool:
         return self.owner is None
-
-    def all_parents(self) -> "List[Scratch]":
-        if self.parent is None:
-            return []
-        return [self.parent] + self.parent.all_parents()
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
