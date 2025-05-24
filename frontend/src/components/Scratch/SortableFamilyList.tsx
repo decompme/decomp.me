@@ -9,7 +9,7 @@ import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
 import { scratchUrl } from "@/lib/api/urls";
 
-import { getScoreAsFraction, getScoreText } from "../ScoreBadge";
+import { getScoreText } from "../ScoreBadge";
 import Sort, {
     SortMode,
     compareScratchScores,
@@ -57,7 +57,6 @@ function FamilyMember({
             )}
             <div className="grow" />
             <div
-                title={getScoreAsFraction(scratch.score, scratch.max_score)}
                 className={clsx({ "text-gray-11": !isBetter })}
             >
                 {getScoreText(
