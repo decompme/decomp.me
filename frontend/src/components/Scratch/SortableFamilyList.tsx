@@ -56,9 +56,7 @@ function FamilyMember({
                 </Link>
             )}
             <div className="grow" />
-            <div
-                className={clsx({ "text-gray-11": !isBetter })}
-            >
+            <div className={clsx({ "text-gray-11": !isBetter })}>
                 {getScoreText(
                     scratch.score,
                     scratch.max_score,
