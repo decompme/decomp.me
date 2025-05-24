@@ -500,7 +500,7 @@ export interface Stats {
 
 export function useStats(): Stats | undefined {
     const { data, error } = useSWR<Stats>("/stats", get, {
-        refreshInterval: 1000 * 5, // 5 seconds
+        refreshInterval: 1000 * 60, // 60 seconds
     });
 
     if (error) {
