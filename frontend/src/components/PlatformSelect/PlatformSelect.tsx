@@ -21,8 +21,6 @@ export default function PlatformSelect({
     onChange,
     className,
 }: Props) {
-    if (!value) onChange("n64");
-
     return (
         <ul className={clsx(styles.container, className)}>
             {Object.entries(platforms).map(([key, platform]) => (
