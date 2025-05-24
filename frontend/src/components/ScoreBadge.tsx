@@ -45,14 +45,6 @@ export function getScoreText(
     }
 }
 
-export function getScoreAsFraction(score: number, maxScore: number): string {
-    if (score === -1) {
-        return `???/${maxScore}`;
-    } else {
-        return `${maxScore - score}/${maxScore}`;
-    }
-}
-
 export type Props = {
     score: number;
     maxScore: number;
@@ -86,10 +78,9 @@ export default function ScoreBadge({
         );
     } else {
         const text = getScoreText(score, maxScore, matchOverride);
-        const title = getScoreAsFraction(score, maxScore);
 
         return (
-            <div className={styles.badge} aria-label="Score" title={title}>
+            <div className={styles.badge} aria-label="Score">
                 {text}
             </div>
         );
