@@ -575,7 +575,9 @@ class ScratchViewSet(
         else:
             scratch_filter = Q(slug=scratch.slug)
 
-        scratch_filter |= Q(family_id=scratch.family_id)
+        if scratch.family:
+            scratch_filter |= Q(family_id=scratch.family_id)
+
         if scratch.parent is not None:
             scratch_filter |= Q(parent_id=scratch.parent_id)
 
