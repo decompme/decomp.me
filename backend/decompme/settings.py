@@ -45,6 +45,7 @@ env = environ.Env(
     SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
     SESSION_EXPIRE_AFTER_LAST_ACTIVITY=(bool, True),
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
+    NUM_WORKER_PROCESSES=(int, 4),
 )
 
 for stem in [".env.local", ".env"]:
@@ -216,6 +217,8 @@ GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
 COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)
 
 WINEPREFIX = Path(env("WINEPREFIX"))
+
+NUM_WORKER_PROCESSES = max(1, env("NUM_WORKER_PROCESSES", int))
 
 TIMEOUT_SCALE_FACTOR = env("TIMEOUT_SCALE_FACTOR", int)
 COMPILATION_TIMEOUT_SECONDS = (

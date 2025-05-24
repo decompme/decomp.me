@@ -1,4 +1,5 @@
 import logging
+from typing import NamedTuple
 from coreapp import compilers
 
 from coreapp.compilers import Compiler
@@ -11,6 +12,14 @@ logger = logging.getLogger(__name__)
 MAX_M2C_ASM_LINES = 15000
 
 DECOMP_WITH_CONTEXT_FAILED_PREAMBLE = "/* Decompilation with context failed; here's the decompilation without context: */\n"
+
+
+class DecompileRequest(NamedTuple):
+    default_source_code: str
+    platform: Platform
+    asm: str
+    context: str
+    compiler: Compiler
 
 
 class DecompilerWrapper:

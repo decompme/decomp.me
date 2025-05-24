@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
-from ..decompiler_wrapper import DecompilerWrapper
+from ..decompiler_wrapper import DecompileRequest
 from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
@@ -38,6 +38,8 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
+from ..worker import WORKER_POOL
+
 
 logger = logging.getLogger(__name__)
 
@@ -84,20 +86,6 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     return assembly
 
 
-def compile_scratch(scratch: Scratch) -> CompilationResult:
-    try:
-        return CompilerWrapper.compile_code(
-            compilers.from_id(scratch.compiler),
-            scratch.compiler_flags,
-            scratch.source_code,
-            scratch.context,
-            scratch.diff_label,
-            tuple(scratch.libraries),
-        )
-    except (CompilationError, APIException) as e:
-        return CompilationResult(b"", str(e))
-
-
 def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     try:
         return DiffWrapper.diff(
@@ -132,7 +120,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     """
 
     try:
-        compilation = compile_scratch(scratch)
+        compilation = WORKER_POOL.submit_compile(scratch)
     except CompilationError:
         compilation = CompilationResult(b"", "")
 
@@ -255,9 +243,10 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     source_code = data.get("source_code")
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-        source_code = DecompilerWrapper.decompile(
+        decompile_request = DecompileRequest(
             default_source_code, platform, asm.data, context, compiler
         )
+        source_code = WORKER_POOL.submit_decompile(decompile_request)
 
     compiler_flags = data.get("compiler_flags", "")
     compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
@@ -409,7 +398,7 @@ class ScratchViewSet(
             if "include_objects" in request.data:
                 include_objects = request.data["include_objects"]
 
-        compilation = compile_scratch(scratch)
+        compilation = WORKER_POOL.submit_compile(scratch)
         diff = diff_compilation(scratch, compilation)
 
         if request.method == "GET":
@@ -453,13 +442,14 @@ class ScratchViewSet(
 
         platform = platforms.from_id(scratch.platform)
 
-        decompilation = DecompilerWrapper.decompile(
+        decompile_request = DecompileRequest(
             "",
             platform,
             scratch.target_assembly.source_asm.data,
             context,
             compiler,
         )
+        decompilation = WORKER_POOL.submit_decompile(decompile_request)
 
         return Response({"decompilation": decompilation})
 
@@ -539,7 +529,7 @@ class ScratchViewSet(
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)
 
-            compilation = compile_scratch(scratch)
+            compilation = WORKER_POOL.submit_compile(scratch)
             if compilation.elf_object:
                 zip_f.writestr("current.o", compilation.elf_object)
 
