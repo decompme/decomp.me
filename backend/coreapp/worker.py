@@ -1,8 +1,11 @@
+import threading
+import time
 import datetime
 import logging
 import multiprocessing
+
 from enum import Enum
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar, Union
 from multiprocessing.queues import Queue
 
 from rest_framework.exceptions import APIException
@@ -35,19 +38,18 @@ def worker_loop(worker_id: int, job_queue: Queue["Job"]) -> None:
     while True:
         job: Job = job_queue.get()
 
-        start_time = datetime.datetime.now(datetime.timezone.utc)
+        logger.debug(
+            f"Worker %i: Received a '%s' request",
+            worker_id,
+            job.action,
+        )
 
+        start_time = datetime.datetime.now(datetime.timezone.utc)
         queue_duration_seconds = (start_time - job.creation_time).total_seconds()
         if queue_duration_seconds > 1:
             logger.warning(
                 "Work item was queued for %f seconds", queue_duration_seconds
             )
-
-        logger.info(
-            f"Worker %i received a '%s' request",
-            worker_id,
-            job.action,
-        )
 
         result: CompilationResult | str
 
@@ -82,61 +84,104 @@ def worker_loop(worker_id: int, job_queue: Queue["Job"]) -> None:
                     decompile_request.compiler,
                 )
             except Exception as e:
-                result = "Unexpected decompile error"  # You might want a better error class here
+                result = "/* Unexpected decompile error */"
 
         else:
             raise ValueError(f"Unknown job action {job.action}")
 
-        job.result_pipe.send(result)
-        job.result_pipe.close()
+        try:
+            job.result_pipe.send(result)
+        except BrokenPipeError:
+            logger.warning(
+                "Worker %i: Pipe closed before worker could respond", worker_id
+            )
+        finally:
+            job.result_pipe.close()
+
+
+T = TypeVar("T", CompilationResult, str)
 
 
 class WorkerPool:
     def __init__(self, num_workers: int):
-        self.job_queue: multiprocessing.Queue[Job] = multiprocessing.Queue()
-        self.workers = []
-        for i in range(num_workers):
-            p = multiprocessing.Process(
-                target=worker_loop, args=(i + 1, self.job_queue), daemon=True
-            )
-            p.start()
-            self.workers.append(p)
+        self.num_workers = num_workers
+        self.job_queue: Queue["Job"] = multiprocessing.Queue()
+        self.workers: dict[int, multiprocessing.Process] = {}
+        self._lock = threading.Lock()
+
+        for i in range(self.num_workers):
+            self._start_worker(i)
+
+        self.monitor_interval_seconds = 5
+        self.monitor_thread = threading.Thread(
+            target=self._monitor_workers, daemon=True
+        )
+        self.monitor_thread.start()
+
+    def _start_worker(self, worker_id: int) -> None:
+        process = multiprocessing.Process(
+            target=worker_loop,
+            args=(worker_id, self.job_queue),
+            daemon=True,
+        )
+        process.start()
+        self.workers[worker_id] = process
+
+    def _monitor_workers(self) -> None:
+        while True:
+            time.sleep(self.monitor_interval_seconds)
+            with self._lock:
+                for worker_id, process in self.workers.items():
+                    if not process.is_alive():
+                        logger.warning("Worker %i died. Restarting...", worker_id)
+                        process.join(timeout=1)
+                        self._start_worker(worker_id)
+
+    def _submit_job(
+        self,
+        action: JobAction,
+        payload: Union[Scratch, DecompileRequest],
+        timeout: float,
+        default_result: T,
+    ) -> T:
+        parent_conn, child_conn = multiprocessing.Pipe()
+        job = Job(
+            action=action,
+            payload=payload,
+            creation_time=datetime.datetime.now(datetime.timezone.utc),
+            result_pipe=child_conn,
+        )
+        self.job_queue.put(job)
+
+        try:
+            if parent_conn.poll(timeout=timeout):
+                result = parent_conn.recv()
+            else:
+                result = default_result
+        except EOFError:
+            logger.warning("Worker closed connection before sending result.")
+            result = default_result
+
+        parent_conn.close()
+        return result
 
     def submit_compile(self, scratch: Scratch) -> CompilationResult:
-        parent_conn, child_conn = multiprocessing.Pipe()
-        job = Job(
-            action="compile",
-            payload=scratch,
-            creation_time=datetime.datetime.now(datetime.timezone.utc),
-            result_pipe=child_conn,
+        timeout = settings.COMPILATION_TIMEOUT_SECONDS * 1.2
+        return self._submit_job(
+            JobAction.COMPILE,
+            scratch,
+            timeout,
+            CompilationResult(b"", "Compilation timeout expired"),
         )
-        self.job_queue.put(job)
-
-        timeout = settings.COMPILATION_TIMEOUT_SECONDS * 1.1
-        if not parent_conn.poll(timeout=timeout):
-            raise TimeoutError("Compilation timed out")
-
-        result = parent_conn.recv()
-        parent_conn.close()
-        return result
 
     def submit_decompile(self, decompile_request: DecompileRequest) -> str:
-        parent_conn, child_conn = multiprocessing.Pipe()
-        job = Job(
-            action="decompile",
-            payload=decompile_request,
-            creation_time=datetime.datetime.now(datetime.timezone.utc),
-            result_pipe=child_conn,
+        timeout = settings.DECOMPILATION_TIMEOUT_SECONDS * 1.2
+        return self._submit_job(
+            JobAction.DECOMPILE,
+            decompile_request,
+            timeout,
+            "/* Error: decompilation timed out */",
         )
-        self.job_queue.put(job)
-
-        timeout = settings.COMPILATION_TIMEOUT_SECONDS * 1.1
-        if not parent_conn.poll(timeout=timeout):
-            raise TimeoutError("Decompilation timed out")
-
-        result = parent_conn.recv()
-        parent_conn.close()
-        return result
 
 
 WORKER_POOL = WorkerPool(settings.NUM_WORKER_PROCESSES)

@@ -398,7 +398,11 @@ class ScratchViewSet(
             if "include_objects" in request.data:
                 include_objects = request.data["include_objects"]
 
-        compilation = WORKER_POOL.submit_compile(scratch)
+        try:
+            compilation = WORKER_POOL.submit_compile(scratch)
+        except CompilationError:
+            compilation = CompilationResult(b"", "")
+
         diff = diff_compilation(scratch, compilation)
 
         if request.method == "GET":
