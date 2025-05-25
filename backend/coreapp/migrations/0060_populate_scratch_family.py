@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Scratch = apps.get_model("coreapp", "Scratch")
 
-    cache: dict[str, Any] = {}
+    cache: dict[str, str] = {}
 
-    def find_root(scratch: Any) -> Any:
+    def find_root(scratch: Any) -> str:
         """Returns the top-most ancestor and caches results."""
         if scratch.slug in cache:
             return cache[scratch.slug]
@@ -28,15 +28,17 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
                 logger.warning(f"Cycle detected starting at {scratch.slug}")
                 break
             seen.add(current.slug)
-            visited.append(current)
+            visited.append(current.slug)
             current = current.parent
             if current.slug in cache:
-                current = cache[current.slug]
+                root_slug = cache[current.slug]
                 break
-        root = current
-        for s in visited:
-            cache[s.slug] = root
-        return root
+        else:
+            root_slug = current.slug
+
+        for slug in visited:
+            cache[slug] = root_slug
+        return root_slug
 
     def commit_updates(updates: list[Any]) -> None:
         if updates:
@@ -56,9 +58,10 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
                 scratch.family = scratch
                 updates.append(scratch)
         else:
-            top = find_root(scratch)
-            if scratch.family_id != top.slug:
-                scratch.family = top
+            root_slug = find_root(scratch)
+            if scratch.family_id != root_slug:
+                root = Scratch.objects.only("slug").get(slug=root_slug)
+                scratch.family = root
                 updates.append(scratch)
 
         if processed % chunk_size == 0:
