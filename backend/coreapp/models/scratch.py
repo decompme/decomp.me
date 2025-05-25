@@ -142,5 +142,5 @@ class Scratch(models.Model):
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
-    raw_id_fields = ["owner", "parent"]
+    raw_id_fields = ["owner", "parent", "family"]
     readonly_fields = ["target_assembly"]
