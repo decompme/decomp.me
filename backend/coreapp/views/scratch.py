@@ -575,10 +575,10 @@ class ScratchViewSet(
         else:
             scratch_filter = Q(slug=scratch.slug)
 
-        if scratch.family:
+        if scratch.family_id is not None:
             scratch_filter |= Q(family_id=scratch.family_id)
 
-        if scratch.parent is not None:
+        if scratch.parent_id is not None:
             scratch_filter |= Q(parent_id=scratch.parent_id)
 
         family = Scratch.objects.filter(scratch_filter).order_by("creation_time")
