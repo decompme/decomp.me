@@ -182,7 +182,7 @@ jobs:
           TIMEOUT_SCALE_FACTOR: 10
 
   backend_test_docker:
-    name: backend tests (docker)
+    name: backend tests (docker dev)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -221,6 +221,50 @@ jobs:
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               poetry install --no-root && \
+              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              for r in wine/*.reg; do regedit $r; done && \
+              poetry run python manage.py test'
+
+
+  backend_test_docker_new:
+    name: backend tests (docker prod)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build decompme_backend image
+        run: |-
+          docker build -f backend/Dockerfile.prod -t decompme_backend
+      - name: Run tests
+        run: |-
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          mkdir -p local_files && chmod 777 local_files
+          mkdir -p compilers && chmod 777 compilers
+          mkdir -p libraries && chmod 777 libraries
+          docker run \
+            -v $(pwd):/decomp.me \
+            -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/compilers:/compilers \
+            -v $(pwd)/libraries:/libraries \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
+            --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
+            -e LOCAL_FILE_DIR=/local_files \
+            -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
+            -e TIMEOUT_SCALE_FACTOR=10 \
+            -e DATABASE_URL=sqlite:///:memory: \
+            -e DUMMY_COMPILER=1 \
+            decompme_backend \
+              -c 'cd /decomp.me/backend && \
               poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \

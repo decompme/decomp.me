@@ -1,0 +1,78 @@
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile.prod
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
+      - setfcap
+    env_file:
+      - docker.prod.env
+    ports:
+      # explicitly publish so frontend can reach the backend during building
+      - "8000:8000"
+    restart: on-failure
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    volumes:
+      # persist compilers + libraries
+      - ./backend/compilers:/backend/compilers
+      - ./backend/libraries:/backend/libraries
+    tmpfs:
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+    networks:
+      - decompme
+    # uncommment for local testing
+    # entrypoint: tail -f /dev/null
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile.prod
+      extra_hosts:
+        - "backend=172.17.0.1"  # docker br0
+    env_file:
+      - docker.prod.env
+    environment:
+      API_BASE: /api
+      INTERNAL_API_BASE: http://backend:8000/api
+    ports:
+      - "8080:8080"
+    restart: on-failure
+
+    networks:
+      - decompme
+
+  nginx:
+    image: nginx:1.28-alpine
+    ports:
+      - "80:80"
+    restart: on-failure
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./backend/media:/media
+    networks:
+      - decompme
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: decompme
+      POSTGRES_PASSWORD: decompme
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    volumes:
+      - ./postgres2:/var/lib/postgresql/data
+    networks:
+      - decompme
+
+networks:
+  decompme:
+    driver: bridge

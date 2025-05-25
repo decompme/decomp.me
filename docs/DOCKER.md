@@ -1,24 +1,45 @@
 # Docker
 
-There is a `docker-compose.yaml` file to help you spin up an instance quickly.
-
 ## Prerequisites:
 
 ### Docker
 
 You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/). Follow the instructions for your distro.
 
-### Directories
 
-You will need to create a directory for the `postgres` data in the base of the repo:
+## Production
 
-```sh
-mkdir -p postgres
+
+1. Bring up postgres container
+
+```
+docker compose -f docker-compose.prod.yaml up -d postgres
 ```
 
-**Note:** This directory will get owned by `postgres` user when postgres first starts up!
+2. Build and bring up backend
 
-## Quickstart
+```
+docker compose -f docker-compose.prod.yaml build backend
+docker compose -f docker-compose.prod.yaml up -d backend
+```
+
+3. Build and bring up frontend (relies on backend for SSR)
+
+```
+docker compose -f docker-compose.prod.yaml build frontend
+docker compose -f docker-compose.prod.yaml up -d frontend
+```
+
+4. Bring up nginx
+
+```
+docker compose -f docker-compose.prod.yaml up -d nginx
+```
+
+
+## Development
+
+There is a `docker-compose.yaml` file to help you spin up a dev instance quickly.
 
 **Run in foreground:**
 
@@ -43,23 +64,24 @@ You can CTRL+C to stop tailing logs. If you want to stop the processes then runn
 
 ## Configuration
 
-By default the Docker `backend` image is built without support for all platforms (e.g. PS2, Switch, Saturn). Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `"YES"` in the `docker-compose.yaml` and re-running the `docker compose up --build` command.
+By default, the Docker `backend` container is configured with the Switch platform disabled (due to the size of the Clang compilers).
 
-E.g. to enable `PS2` platform:
+Platforms can be enabled by changing the `ENABLE_<PLATFORM>_SUPPORT` variables to `YES` in the `docker-compose.yaml` and re-running the `docker compose up` command.
+
+E.g. to enable `SWITCH` platform:
 
 ```yaml
   backend:
     build:
       context: backend
-      args:
-        #... <snip>
-        ENABLE_PS2_SUPPORT: "YES"
+    environment:
+      - ENABLE_SWITCH_SUPPORT=YES
 ```
 
 
 ## Connecting from a different host
 
-If you wish to run decomp.me on one machine but connect from a different one (e.g. to test the site on your phone) please edit `./backend/docker.dev.env` to add the `hostname` to the `ALLOWED_HOSTS` environment variable.
+If you wish to run decomp.me on one machine and connect from a *different* one (e.g. to test the site on your phone) please edit `./backend/docker.dev.env` to add your `hostname` to the `ALLOWED_HOSTS` environment variable.
 
 E.g. if your hostname is `mylaptop`:
 

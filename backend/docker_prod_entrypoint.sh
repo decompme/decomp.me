@@ -6,10 +6,9 @@ DB_PORT=${DATABASE_PORT:-5432}
 BE_HOST=${BACKEND_HOST:-0.0.0.0}
 BE_PORT=${BACKEND_PORT:-8000}
 
-POETRY_VIRTUALENVS_PATH=/backend/virtualenvs
+WORKERS=${BACKEND_WORKERS:-4}
 
-poetry install
-
+# TODO: pull these out of the entrypoint?
 poetry run /backend/compilers/download.py
 poetry run /backend/libraries/download.py
 
@@ -29,5 +28,6 @@ done
 
 poetry run /backend/manage.py migrate
 
-poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
+# poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
 
+poetry run gunicorn -w ${WORKERS} decompme.wsgi --bind ${BE_HOST}:${BE_PORT}
