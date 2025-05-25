@@ -155,10 +155,14 @@ class WorkerPool:
 
         try:
             if parent_conn.poll(timeout=timeout):
-                result = parent_conn.recv()
+                if parent_conn.poll(timeout=0.1):
+                    result = parent_conn.recv()
+                else:
+                    logger.warning("Pipe became readable but no data received.")
+                    result = default_result
             else:
                 result = default_result
-        except EOFError:
+        except (EOFError, OSError):
             logger.warning("Worker closed connection before sending result.")
             result = default_result
 
