@@ -425,24 +425,6 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
 
-    def test_family_etag(self) -> None:
-        root = self.create_nop_scratch()
-
-        # get etag of only the root
-        response = self.client.get(reverse("scratch-family", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        etag = response.headers.get("Etag")
-        self.assertIsNotNone(etag)
-
-        # fork the root
-        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # verify etag has changed
-        response = self.client.get(reverse("scratch-family", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertNotEqual(etag, response.headers.get("Etag"))
-
     def test_family_checks_hash_only(self) -> None:
         """
         Ensure that scratches with the same target_asm hash belong to the same family, even if their Assembly instances differ somehow

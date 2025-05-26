@@ -134,11 +134,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     Initialize the scratch's score and ignore errors should they occur
     """
 
-    try:
-        compilation = compile_scratch(scratch)
-    except CompilationError:
-        compilation = CompilationResult(b"", "")
-
+    compilation = compile_scratch(scratch)
     try:
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
@@ -156,24 +152,7 @@ def scratch_last_modified(
         return None
 
 
-def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
-    if scratch:
-        # We hash the Accept header too to avoid the following situation:
-        # - DEBUG is enabled
-        # - Developer visits /api/scratch/:slug manually, seeing the DRF HTML page
-        # - **Browsers caches the page**
-        # - Developer visits /scratch/:slug
-        # - The frontend JS fetches /api/scratch/:slug
-        # - The fetch mistakenly returns the cached HTML instead of returning JSON (oops!)
-        return str(hash((scratch, request.headers.get("Accept"))))
-    else:
-        return None
-
-
-scratch_condition = condition(
-    last_modified_func=scratch_last_modified, etag_func=scratch_etag
-)
+scratch_condition = condition(last_modified_func=scratch_last_modified)
 
 
 def is_contentful_asm(asm: Optional[Asm]) -> bool:
@@ -186,31 +165,6 @@ def is_contentful_asm(asm: Optional[Asm]) -> bool:
         return False
 
     return True
-
-
-def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
-    if scratch:
-        if is_contentful_asm(scratch.target_assembly.source_asm):
-            assert scratch.target_assembly.source_asm is not None
-
-            family = Scratch.objects.filter(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-            )
-        elif (
-            scratch.target_assembly.elf_object is not None
-            and len(scratch.target_assembly.elf_object) > 0
-        ):
-            family = Scratch.objects.filter(
-                target_assembly__hash=scratch.target_assembly.hash,
-                diff_label=scratch.diff_label,
-            )
-        else:
-            family = Scratch.objects.filter(slug=scratch.slug)
-
-        return str(hash((family, request.headers.get("Accept"))))
-    else:
-        return None
 
 
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
@@ -558,7 +512,6 @@ class ScratchViewSet(
         )
 
     @action(detail=True)
-    @condition(etag_func=family_etag)
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
