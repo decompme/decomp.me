@@ -8,6 +8,8 @@ from django.db.models import Count
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
 
+from ..filters.search import NonEmptySearchFilter
+
 from coreapp.models.preset import Preset
 from coreapp.serializers import TinyPresetSerializer, PresetSerializer
 from rest_framework.decorators import action
@@ -58,7 +60,7 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     filterset_class = PresetFilterSet
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
-        filters.SearchFilter,
+        NonEmptySearchFilter,
         filters.OrderingFilter,
     ]
     search_fields = ["id", "name", "platform", "compiler", "owner__user__username"]
