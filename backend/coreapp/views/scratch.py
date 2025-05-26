@@ -569,7 +569,7 @@ class ScratchViewSet(
             subqueries.append(
                 Scratch.objects.filter(
                     target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
-                ).order_by()
+                )
             )
         elif (
             scratch.target_assembly.elf_object is not None
@@ -579,16 +579,19 @@ class ScratchViewSet(
                 Scratch.objects.filter(
                     target_assembly__hash=scratch.target_assembly.hash,
                     diff_label=scratch.diff_label,
-                ).order_by()
+                )
             )
         else:
-            subqueries.append(Scratch.objects.filter(slug=scratch.slug).order_by())
+            subqueries.append(Scratch.objects.filter(slug=scratch.slug))
 
         if scratch.family_id is not None:
             subqueries.append(Scratch.objects.filter(family_id=scratch.family_id))
 
         if scratch.parent_id is not None:
             subqueries.append(Scratch.objects.filter(parent_id=scratch.parent_id))
+
+        # Avoid 'ORDER BY not allowed in subqueries of compound statements.'
+        subqueries = [sq.order_by() for sq in subqueries]
 
         if len(subqueries) == 1:
             family = subqueries[0]
