@@ -13,6 +13,8 @@ from coreapp import compilers, platforms
 from django.core.files import File
 from django.db.models import F, FloatField, When, Case, Value, Q
 from django.db.models.functions import Cast
+from django.db.models.query import QuerySet
+
 from django.http import HttpResponse, QueryDict
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
@@ -559,29 +561,40 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
+        subqueries: list[QuerySet["Scratch"]] = []
+
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None
-            scratch_filter = Q(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
+            subqueries.append(
+                Scratch.objects.filter(
+                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
+                )
             )
         elif (
             scratch.target_assembly.elf_object is not None
             and len(scratch.target_assembly.elf_object) > 0
         ):
-            scratch_filter = Q(
-                target_assembly__hash=scratch.target_assembly.hash,
-                diff_label=scratch.diff_label,
+            subqueries.append(
+                Scratch.objects.filter(
+                    target_assembly__hash=scratch.target_assembly.hash,
+                    diff_label=scratch.diff_label,
+                )
             )
         else:
-            scratch_filter = Q(slug=scratch.slug)
+            subqueries.append(Scratch.objects.filter(slug=scratch.slug))
 
         if scratch.family_id is not None:
-            scratch_filter |= Q(family_id=scratch.family_id)
+            subqueries.append(Scratch.objects.filter(family_id=scratch.family_id))
 
         if scratch.parent_id is not None:
-            scratch_filter |= Q(parent_id=scratch.parent_id)
+            subqueries.append(Scratch.objects.filter(parent_id=scratch.parent_id))
 
-        family = Scratch.objects.filter(scratch_filter).order_by("creation_time")
+        if len(subqueries) == 1:
+            family = subqueries[0]
+        else:
+            family = subqueries[0].union(*subqueries[1:])
+
+        family = family.order_by("creation_time")
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
