@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 import django_filters
 from coreapp import compilers, platforms
 from django.core.files import File
-from django.db.models import F, FloatField, When, Case, Value, Q
+from django.db.models import F, FloatField, When, Case, Value
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 
@@ -28,6 +28,7 @@ from ..decompiler_wrapper import DecompilerWrapper
 from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..filters.search import NonEmptySearchFilter
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
@@ -328,7 +329,7 @@ class ScratchViewSet(
     filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
-        filters.SearchFilter,
+        NonEmptySearchFilter,
         filters.OrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
