@@ -217,6 +217,7 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
+            -e POETRY_VIRTUALENVS_PATH=/backend/virtualenvs \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               poetry install --no-root && \
