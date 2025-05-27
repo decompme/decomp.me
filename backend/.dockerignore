@@ -1,2 +1,16 @@
+# python files
 virtualenvs/
 __pycache__/
+.mypy_cache/
+
+# avoid cache-busting when testing Docker
+Dockerfile*
+docker.*.env
+
+# compilers
+compilers/*/**
+!compilers/download.py
+
+# libraries
+libraries/*/**
+!libraries/download.py

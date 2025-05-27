@@ -6,7 +6,7 @@ DB_PORT=${DATABASE_PORT:-5432}
 BE_HOST=${BACKEND_HOST:-0.0.0.0}
 BE_PORT=${BACKEND_PORT:-8000}
 
-poetry config virtualenvs.path /backend/virtualenvs
+POETRY_VIRTUALENVS_PATH=/backend/virtualenvs
 
 poetry install
 

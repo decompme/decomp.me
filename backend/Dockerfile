@@ -2,14 +2,27 @@ FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
+        git \
         python-is-python3 \
         python3 \
         python3-pip \
         python3.12-dev \
         python3.12-venv \
-        software-properties-common
+        software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSL https://install.python-poetry.org/ | \
+    POETRY_VERSION=1.8.4 \
+    POETRY_HOME=/etc/poetry \
+    python3.12 -
+
+ENV POETRY_VIRTUALENVS_PATH=/virtualenvs
+
+ENV PATH="${PATH}:/etc/poetry/bin"
 
 
 FROM base AS nsjail
@@ -20,7 +33,6 @@ RUN apt-get -y update && apt-get install -y \
         flex \
         g++ \
         gcc \
-        git \
         libnl-route-3-dev \
         libprotobuf-dev \
         libtool \
@@ -33,13 +45,13 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.4 /nsjai
     && make
 
 
-FROM base AS build
+FROM base AS developer
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && apt-get update \
-    && apt-get install -y -o APT::Immediate-Configure=false \
+    && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
         binutils-aarch64-linux-gnu \
         binutils-arm-none-eabi \
         binutils-djgpp \
@@ -47,12 +59,11 @@ RUN dpkg --add-architecture i386 \
         binutils-mips-linux-gnu \
         binutils-powerpc-linux-gnu \
         binutils-sh-elf \
-        curl \
+        cpp \
         dj64 \
         dos2unix \
         dosemu2 \
         gcc-mips-linux-gnu \
-        git \
         iptables \
         libarchive-tools \
         libc6-dev-i386 \
@@ -65,14 +76,12 @@ RUN dpkg --add-architecture i386 \
         unzip \
         wget \
         wine \
+        wine32:i386 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
     && apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb \
     && rm libtinfo5_6.3-2ubuntu0.1_amd64.deb
-
-RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=1.8.4 POETRY_HOME=/etc/poetry python3.12 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -99,8 +108,6 @@ RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/
 
 RUN mkdir -p /etc/fonts
 
-WORKDIR /backend
-
 ENV WINEPREFIX=/tmp/wine
 
 # Ensure /sandbox and wine dirs have correct ownership
@@ -115,7 +122,7 @@ USER ubuntu
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
-ENV PATH="$PATH:/etc/poetry/bin"
+WORKDIR /backend
 
 ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT

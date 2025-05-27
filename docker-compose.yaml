@@ -11,20 +11,19 @@ services:
   backend:
     build:
       context: backend
-      args:
-        # dont install clang by default
-        ENABLE_SWITCH_SUPPORT: "NO"
     cap_drop:
       - all
     cap_add:
       - setuid
       - setgid
       - setfcap
+    environment:
+      - ENABLE_SWITCH_SUPPORT=NO
     env_file:
       - backend/docker.dev.env
     ports:
       - "8000:8000"
-      - "5678:5678"
+      - "5678:5678"  # vscode debugger
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
@@ -45,7 +44,7 @@ services:
       - ./frontend:/frontend
       - .env:/.env
   nginx:
-    image: nginx:1.26-alpine
+    image: nginx:1.28-alpine
     ports:
       - "80:80"
     volumes:
