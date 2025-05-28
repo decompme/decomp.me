@@ -102,7 +102,7 @@ RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.
 RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
     && tar xvzf omftools.tar.gz -C /usr/bin jwasm \
     && rm omftools.tar.gz \
-    && wget "https://github.com/decompals/binutils-omf/releases/download/v0.3/omftools-linux-x86_64.tar.gz" \
+    && wget "https://github.com/decompals/binutils-omf/releases/download/v0.4/omftools-linux-x86_64.tar.gz" \
     && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
     && rm omftools-linux-x86_64.tar.gz
 
