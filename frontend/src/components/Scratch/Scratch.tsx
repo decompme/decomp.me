@@ -383,7 +383,11 @@ export default function Scratch({
                             className={styles.diffTab}
                         >
                             {compilation && (
-                                <ObjdiffPanel compilation={compilation} />
+                                <ObjdiffPanel
+                                    scratch={scratch}
+                                    compilation={compilation}
+                                    buildRunning={isCompiling}
+                                />
                             )}
                         </Tab>
                     )

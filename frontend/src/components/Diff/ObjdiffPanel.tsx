@@ -10,9 +10,13 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 
 export default function ObjdiffPanel({
+    scratch,
     compilation,
+    buildRunning,
 }: {
+    scratch: Readonly<api.Scratch>;
     compilation: api.Compilation | null;
+    buildRunning: boolean;
 }) {
     const isDark = useIsSiteThemeDark();
     const colors = getColors(useCodeColorScheme()[0]);
@@ -21,7 +25,9 @@ export default function ObjdiffPanel({
     const [fontLigatures] = useFontLigatures();
 
     const objdiffFrame = useRef<HTMLIFrameElement>(null);
+    const latestScratch = useRef<api.Scratch>(scratch);
     const latestCompilation = useRef<api.Compilation | null>(compilation);
+    const latestBuildRunning = useRef(buildRunning);
     const latestIsDark = useRef(isDark);
     const latestColors = useRef(colors);
     const latestCodeFont = useRef(codeFont);
@@ -50,7 +56,12 @@ export default function ObjdiffPanel({
                     } as InboundMessage,
                     "*",
                 );
-                postState(iframeWindow, latestCompilation.current);
+                postState(
+                    iframeWindow,
+                    latestCompilation.current,
+                    latestBuildRunning.current,
+                    latestScratch.current,
+                );
             }
         };
         window.addEventListener("message", listener);
@@ -61,8 +72,23 @@ export default function ObjdiffPanel({
 
     useEffect(() => {
         latestCompilation.current = compilation;
-        postState(objdiffFrame.current?.contentWindow, compilation);
+        postState(
+            objdiffFrame.current?.contentWindow,
+            compilation,
+            latestBuildRunning.current,
+            latestScratch.current,
+        );
     }, [compilation]);
+
+    useEffect(() => {
+        latestBuildRunning.current = buildRunning;
+        postBuildRunning(objdiffFrame.current?.contentWindow, buildRunning);
+    }, [buildRunning]);
+
+    useEffect(() => {
+        latestScratch.current = scratch;
+        postScratchInfo(objdiffFrame.current?.contentWindow, scratch);
+    }, [scratch]);
 
     useEffect(() => {
         latestIsDark.current = isDark;
@@ -103,33 +129,79 @@ export default function ObjdiffPanel({
     );
 }
 
-const postState = (
-    iframeWindow: Window | undefined,
-    compilation: api.Compilation | null,
+const postBuildRunning = (
+    iframeWindow: Window | null | undefined,
+    buildRunning: boolean,
 ) => {
-    if (
-        !iframeWindow ||
-        !compilation.left_object ||
-        !compilation.right_object
-    ) {
+    if (!iframeWindow) {
+        return;
+    }
+    const message: InboundMessage = {
+        type: "state",
+        buildRunning,
+    };
+    iframeWindow.postMessage(message, "*");
+};
+
+const postScratchInfo = (
+    iframeWindow: Window | null | undefined,
+    scratch: Readonly<api.Scratch>,
+) => {
+    if (!iframeWindow) {
+        return;
+    }
+    const message: InboundMessage = {
+        type: "state",
+        diffLabel: scratch.diff_label || null,
+    };
+    iframeWindow.postMessage(message, "*");
+};
+
+const postState = (
+    iframeWindow: Window | null | undefined,
+    compilation: api.Compilation | null,
+    buildRunning: boolean,
+    scratch: Readonly<api.Scratch>,
+) => {
+    if (!iframeWindow || !compilation) {
         return;
     }
     const leftObject = base64ToBytes(compilation.left_object);
     const rightObject = base64ToBytes(compilation.right_object);
+    const message: InboundMessage = {
+        type: "state",
+        buildRunning,
+        leftStatus: {
+            success: true,
+            cmdline: null,
+            stdout: null,
+            stderr: null,
+        },
+        rightStatus: {
+            success: compilation.success,
+            cmdline: null,
+            stdout: compilation.compiler_output,
+            stderr: null,
+        },
+        leftObject: leftObject?.buffer,
+        rightObject: rightObject?.buffer,
+        diffLabel: scratch.diff_label || null,
+    };
     iframeWindow.postMessage(
-        {
-            type: "state",
-            leftObject: leftObject.buffer,
-            rightObject: rightObject.buffer,
-        } as InboundMessage,
+        message,
         "*",
-        [leftObject.buffer, rightObject.buffer],
+        [leftObject?.buffer, rightObject?.buffer].filter(
+            (b) => b != null,
+        ) as ArrayBuffer[],
     );
 };
 
 function base64ToBytes(base64: string) {
+    if (!base64) {
+        return null;
+    }
     const binString = atob(base64);
-    return Uint8Array.from(binString, (m) => m.codePointAt(0));
+    return Uint8Array.from(binString, (m) => m.codePointAt(0) as number);
 }
 
 type ConfigPropertyValue = boolean | string;
@@ -151,6 +223,7 @@ type StateMessage = {
     rightStatus?: BuildStatus | null;
     leftObject?: ArrayBuffer | null;
     rightObject?: ArrayBuffer | null;
+    diffLabel?: string | null;
 };
 
 type Colors = {
