@@ -57,9 +57,7 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     def get_queryset(self) -> QuerySet[Scratch]:
         if self.request.profile.id is None:
             return Scratch.objects.none()
-        return ScratchViewSet.queryset.filter(
-            owner__id=self.request.profile.id
-        ).select_related("owner__user__github")
+        return ScratchViewSet.queryset.filter(owner__id=self.request.profile.id)
 
 
 class UserScratchList(generics.ListAPIView):  # type: ignore
@@ -79,7 +77,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
     def get_queryset(self) -> QuerySet[Scratch]:
         return ScratchViewSet.queryset.filter(
             owner__user__username=self.kwargs["username"]
-        ).select_related("owner__user__github")
+        )
 
 
 @api_view(["GET"])  # type: ignore
