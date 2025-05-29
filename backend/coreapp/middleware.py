@@ -48,46 +48,43 @@ def set_user_profile(
     """
 
     def middleware(request: Request) -> Response:
-        user_agent = request.headers.get("User-Agent")
+        user_agent = request.headers.get("User-Agent", "")
+        bot_signatures = [
+            "node",
+            "undici",
+            "Next.js Middleware",
+            "python-requests",
+            "curl",
+            "YandexRenderResourcesBot",
+        ]
 
         # Avoid creating profiles for SSR or bots
-        if user_agent is None or (
-            "node" in user_agent
-            or "undici" in user_agent
-            or "Next.js Middleware" in user_agent
-            or "python-requests" in user_agent
-            or "curl" in user_agent
-            or "YandexRenderResourcesBot" in user_agent
-        ):
+        if not user_agent or any(bot in user_agent for bot in bot_signatures):
             request.profile = Profile()
             return get_response(request)
 
-        profile: Optional[Profile] = None
+        profile = None
 
-        # Use the user's profile if they're logged in
-        if not request.user.is_anonymous:
-            profile = Profile.objects.filter(user=request.user).first()
+        # Try user-linked profile
+        if request.user.is_authenticated:
+            profile = getattr(request.user, "profile", None)
 
-        # Otherwise, use their session profile
+        # Try session-based profile
         if not profile:
-            id = request.session.get("profile_id")
+            profile_id = request.session.get("profile_id")
+            if isinstance(profile_id, int):
+                profile = (
+                    Profile.objects.select_related("user").filter(id=profile_id).first()
+                )
 
-            if isinstance(id, int):
-                profile = Profile.objects.filter(id=id).first()
-                if profile is not None:
-                    profile_user = User.objects.filter(profile=profile).first()
+                if profile and profile.user and request.user.is_anonymous:
+                    request.user = profile.user
 
-                    if profile_user and request.user.is_anonymous:
-                        request.user = profile_user
-
-        # If we still don't have a profile, create a new one
+        # Create new profile if none found
         if not profile:
-            profile = Profile()
-
-            # And attach it to the logged-in user, if there is one
-            if not request.user.is_anonymous:
-                assert Profile.objects.filter(user=request.user).first() is None
-                profile.user = request.user
+            profile = Profile(
+                user=request.user if request.user.is_authenticated else None
+            )
 
             profile.save()
             request.session["profile_id"] = profile.id
@@ -102,11 +99,9 @@ def set_user_profile(
                 request.path,
             )
 
-        if profile.user is None and not request.user.is_anonymous:
-            profile.user = request.user
-
+        # Update last seen timestamp
         profile.last_request_date = now()
-        profile.save()
+        profile.save(update_fields=["last_request_date"])
 
         request.profile = profile
 
