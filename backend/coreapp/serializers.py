@@ -35,7 +35,11 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
     else:
         user = profile.user
 
-        gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        gh_user: Optional[GitHubUser] = getattr(user, "github", None)
+        if not gh_user:
+            # NOTE: All models with an "owner" should fetch related "owner__user__github"
+            # in order to avoid N+1 queries when a Profile is serialized for each object.
+            gh_user = GitHubUser.objects.filter(user=user).first()
 
         return {
             "is_anonymous": False,
