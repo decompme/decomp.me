@@ -529,13 +529,13 @@ export function LibrariesSection({
     platform: string;
     className?: string;
 }) {
-    const supportedLibraries = api.useLibraries(platform);
-    if (supportedLibraries.length === 0) return;
+    const availableLibraries = api.useLibraries(platform);
+    if (availableLibraries.length === 0) return;
 
     return (
         <section className={className}>
             <LibrariesEditor
-                supportedLibraries={supportedLibraries}
+                availableLibraries={availableLibraries}
                 libraries={libraries}
                 setLibraries={setLibraries}
             />
@@ -544,18 +544,18 @@ export function LibrariesSection({
 }
 
 export function LibrariesEditor({
-    supportedLibraries,
+    availableLibraries,
     libraries,
     setLibraries,
 }: {
-    supportedLibraries: api.LibraryVersions[];
+    availableLibraries: api.LibraryVersions[];
     libraries: Library[];
     setLibraries: (libraries: Library[]) => void;
 }) {
     const librariesTranslations = getTranslation("libraries");
 
     const libraryVersions = (scratchlib: api.Library) => {
-        const lib = supportedLibraries.find(
+        const lib = availableLibraries.find(
             (lib) => lib.name === scratchlib.name,
         );
         if (lib != null) {
@@ -568,7 +568,7 @@ export function LibrariesEditor({
     };
 
     const addLibrary = (libName: string) => {
-        const lib = supportedLibraries.find((lib) => lib.name === libName);
+        const lib = availableLibraries.find((lib) => lib.name === libName);
         if (lib != null) {
             return setLibraryVersion(libName, lib.supported_versions[0]);
         }
@@ -597,7 +597,7 @@ export function LibrariesEditor({
         setLibraries(libs);
     };
 
-    const librariesSelectOptions = supportedLibraries
+    const librariesSelectOptions = availableLibraries
         // Filter out libraries that are already in the scratch
         .filter(
             (lib) =>
