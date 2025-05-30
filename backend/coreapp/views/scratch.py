@@ -278,7 +278,11 @@ class ScratchViewSet(
         default=1.0 - (F("score") / Cast("max_score", FloatField())),
     )
 
-    queryset = Scratch.objects.all().annotate(match_percent=match_percent)
+    queryset = (
+        Scratch.objects.all()
+        .select_related("owner__user__github")
+        .annotate(match_percent=match_percent)
+    )
     pagination_class = ScratchPagination
     filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
