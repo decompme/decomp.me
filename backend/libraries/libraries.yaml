@@ -8,3 +8,7 @@ win32:
       git:
         url: https://github.com/roblabla/directx-headers
         branch: main
+    '9.0':
+      git:
+        url: https://github.com/ifarbod/dxsdk9
+        branch: master
