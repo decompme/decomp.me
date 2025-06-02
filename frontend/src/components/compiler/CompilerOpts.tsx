@@ -393,15 +393,12 @@ export default function CompilerOpts({
                 </section>
             </OptsContext.Provider>
 
-            {value.libraries.length !== 0 && (
-                <section className={styles.section}>
-                    <LibrariesEditor
-                        libraries={value.libraries}
-                        setLibraries={setLibraries}
-                        platform={platform}
-                    />
-                </section>
-            )}
+            <LibrariesSection
+                className={styles.section}
+                libraries={value.libraries}
+                setLibraries={setLibraries}
+                platform={platform}
+            />
 
             <OptsContext.Provider value={diffOptsEditorProvider}>
                 <section className={styles.section}>
@@ -521,20 +518,44 @@ export function DiffOptsEditor({
     );
 }
 
-export function LibrariesEditor({
+export function LibrariesSection({
     libraries,
     setLibraries,
     platform,
+    className,
 }: {
     libraries: Library[];
     setLibraries: (libraries: Library[]) => void;
     platform: string;
+    className?: string;
 }) {
-    const supportedLibraries = api.useLibraries(platform);
+    const availableLibraries = api.useLibraries(platform);
+    if (availableLibraries.length === 0) return;
+
+    return (
+        <section className={className}>
+            <LibrariesEditor
+                availableLibraries={availableLibraries}
+                libraries={libraries}
+                setLibraries={setLibraries}
+            />
+        </section>
+    );
+}
+
+export function LibrariesEditor({
+    availableLibraries,
+    libraries,
+    setLibraries,
+}: {
+    availableLibraries: api.LibraryVersions[];
+    libraries: Library[];
+    setLibraries: (libraries: Library[]) => void;
+}) {
     const librariesTranslations = getTranslation("libraries");
 
     const libraryVersions = (scratchlib: api.Library) => {
-        const lib = supportedLibraries.find(
+        const lib = availableLibraries.find(
             (lib) => lib.name === scratchlib.name,
         );
         if (lib != null) {
@@ -547,7 +568,7 @@ export function LibrariesEditor({
     };
 
     const addLibrary = (libName: string) => {
-        const lib = supportedLibraries.find((lib) => lib.name === libName);
+        const lib = availableLibraries.find((lib) => lib.name === libName);
         if (lib != null) {
             return setLibraryVersion(libName, lib.supported_versions[0]);
         }
@@ -576,7 +597,7 @@ export function LibrariesEditor({
         setLibraries(libs);
     };
 
-    const librariesSelectOptions = supportedLibraries
+    const librariesSelectOptions = availableLibraries
         // Filter out libraries that are already in the scratch
         .filter(
             (lib) =>
