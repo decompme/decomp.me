@@ -23,7 +23,7 @@ def generate_pseudonym() -> str:
 
 class Profile(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
-    last_request_date = models.DateTimeField(auto_now_add=True)
+    last_request_date = models.DateTimeField(default=timezone.now)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -60,8 +60,6 @@ class Profile(models.Model):
         return (hue, satuation, lightness)
 
     def is_online(self) -> bool:
-        if self.last_request_date is None:
-            return False  # type:ignore[unreachable]
         delta = timezone.now() - self.last_request_date
 
         # 2 mins
