@@ -100,7 +100,7 @@ def set_user_profile(
             )
 
         # Update last seen timestamp if more than a minute since last updated
-        last_request_date = profile.last_request_date or now()
+        last_request_date = profile.last_request_date
         profile.last_request_date = now()
         if (profile.last_request_date - last_request_date).total_seconds() > 60:
             profile.save(update_fields=["last_request_date"])
