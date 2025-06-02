@@ -41,7 +41,6 @@ class GitHubUser(models.Model):
         related_name="github",
     )
     github_id = models.PositiveIntegerField(unique=True, editable=False)
-    access_token = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "GitHub user"
@@ -96,7 +95,7 @@ class GitHubUser(models.Model):
             if (
                 user.is_anonymous
                 or isinstance(user, User)
-                and GitHubUser.objects.filter(user=user).get() is not None
+                and GitHubUser.objects.filter(user=user).exists()
             ):
                 user = User.objects.create_user(
                     username=details.login,
@@ -114,7 +113,6 @@ class GitHubUser(models.Model):
             gh_user.user.username = details.login
             gh_user.user.save(update_fields=["username"])
 
-        gh_user.access_token = access_token
         gh_user.save()
 
         profile: Profile = (

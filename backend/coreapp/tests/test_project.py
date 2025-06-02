@@ -35,9 +35,7 @@ class ProjectTests(BaseTestCase):
         profile.user = User(username="test")
         profile.user.save()
         profile.save()
-        GitHubUser.objects.create(
-            user=profile.user, github_id=1234, access_token="__mock__"
-        )
+        GitHubUser.objects.create(user=profile.user, github_id=1234)
 
         data = {
             "slug": "example-project",
