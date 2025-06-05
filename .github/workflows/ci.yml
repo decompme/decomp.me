@@ -243,7 +243,6 @@ jobs:
           mkdir -p compilers && chmod 777 compilers
           mkdir -p libraries && chmod 777 libraries
           docker run \
-            -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
@@ -264,7 +263,7 @@ jobs:
             -e DATABASE_URL=sqlite:///:memory: \
             -e DUMMY_COMPILER=1 \
             decompme_backend \
-              -c 'cd /decomp.me/backend && \
+              -c 'poetry run python3 -m pip freeze && \
               poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \
