@@ -139,8 +139,6 @@ RUN wineboot --init
 
 COPY wine /wine
 
-RUN for reg in /wine/*.reg; do regedit $reg; done
-
 
 FROM dependencies AS deployment
 
@@ -151,6 +149,7 @@ COPY pyproject.toml poetry.lock /backend/
 
 COPY manage.py /backend
 
+COPY wine /backend/wine
 COPY decompme /backend/decompme
 COPY libraries /backend/libraries
 COPY compilers /backend/compilers

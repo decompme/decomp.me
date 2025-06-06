@@ -15,4 +15,13 @@ done
 
 poetry run /backend/manage.py migrate
 
+if command -v regedit &> /dev/null; then
+  for reg in /backend/wine/*.reg; do
+    echo "Importing registry file $reg..."
+    regedit $reg
+  done
+else
+  echo "regedit command not found. Skipping registry import."
+fi
+
 poetry run gunicorn -w ${WORKERS} decompme.wsgi --bind ${BE_HOST}:${BE_PORT}

@@ -193,8 +193,15 @@ jobs:
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          mkdir -p sandbox && chmod 777 sandbox
+          mkdir -p local_files && chmod 777 local_files
+          mkdir -p compilers && chmod 777 compilers
+          mkdir -p libraries && chmod 777 libraries
           docker run \
             -v $(pwd):/decomp.me \
+            -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/compilers:/compilers \
+            -v $(pwd)/libraries:/libraries \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
@@ -203,7 +210,10 @@ jobs:
             --cap-add setfcap \
             --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
             -e WINEPREFIX=/tmp/wine \
+            -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
@@ -211,8 +221,8 @@ jobs:
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               poetry install --no-root && \
-              poetry run compilers/download.py && \
-              poetry run libraries/download.py && \
+              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \
               poetry run python manage.py test'
 
@@ -228,17 +238,19 @@ jobs:
       - name: Fetch compilers and libraries
         run: |-
           python3 -m pip install requests
-          python3 compilers/download.py
-          python3 libraries/download.py
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          sudo chown -R runneradmin:runneradmin backend/compilers
+          sudo chown -R runneradmin:runneradmin backend/libraries
       - name: Run tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          mkdir -p local_files && chmod 777 local_files
+          mkdir -p local_files && sudo chown runneradmin:runneradmin local_files
           docker run \
             -v $(pwd)/local_files:/local_files \
-            -v $(pwd)/backend/compilers:/backend/compilers \
-            -v $(pwd)/backend/libraries:/backend/libraries \
+            -v $(pwd)/backend/compilers:/compilers \
+            -v $(pwd)/backend/libraries:/libraries \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
@@ -247,9 +259,9 @@ jobs:
             --cap-add setfcap \
             --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
+            -e LOCAL_FILE_DIR=/local_files \
             -e COMPILER_BASE_PATH=/compilers \
             -e LIBRARY_BASE_PATH=/libraries \
-            -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
@@ -257,31 +269,52 @@ jobs:
             -e DUMMY_COMPILER=1 \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
-              -c 'poetry run python manage.py test'
+              -c '\
+              for r in wine/*.reg; do regedit $r; done && \
+              poetry run python manage.py test'
 
   docker_compose_test:
     name: test docker compose
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch compilers and libraries
+        run: |-
+          python3 -m pip install requests
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          sudo chown -R runneradmin:runneradmin backend/compilers
+          sudo chown -R runneradmin:runneradmin backend/libraries
+
       - name: Setup dummy docker.prod.dev
         run: |-
-          echo "SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key" >> docker.prod.env
-      - name: Bring up postgres & nginx containers
+          echo 'SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key' >> docker.prod.env
+          echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
+          echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
+          echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+
+      - name: Bring up postgres and nginx containers
         run: |
           docker compose -f docker-compose.prod.yaml up -d postgres nginx
-      - name: Build and bring up backend
-        run: |-
+
+      - name: Build and bring up up backend container
+        run: |
           docker compose -f docker-compose.prod.yaml build backend
           docker compose -f docker-compose.prod.yaml up -d backend
-      - name: Build and bring up frontend (relies on backend for SSR)
-        run: |-
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Build and bring up up frontend container
+        run: |
           docker compose -f docker-compose.prod.yaml build frontend
           docker compose -f docker-compose.prod.yaml up -d frontend
-      - name: Shut everything down again after 30 seconds
-        run: |-
-          docker compose -f docker-compose.prod.yaml logs -f &
-          sleep 30
+
+      - name: Shut everything down after 30 seconds
+        run: |
+          timeout 30s docker compose -f docker-compose.prod.yaml logs -f || true
           docker compose -f docker-compose.prod.yaml down
 
   frontend_lint:
