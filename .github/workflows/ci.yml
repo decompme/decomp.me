@@ -262,6 +262,7 @@ jobs:
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e DATABASE_URL=sqlite:///:memory: \
             -e DUMMY_COMPILER=1 \
+            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
               -c 'poetry run python3 -m pip freeze && \
               poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
