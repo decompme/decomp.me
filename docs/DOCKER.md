@@ -11,27 +11,28 @@ You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose]
 
 0. Create a `docker.prod.env` and set the necessary configuration options (see .env for inspiration).
 
-```
+```bash
 nano docker.prod.env
 ```
 
 1. Bring up postgres & nginx containers
 
-```
+```bash
 docker compose -f docker-compose.prod.yaml up -d postgres nginx
 ```
 
 2. Build and bring up backend
 
-```
+```bash
 docker compose -f docker-compose.prod.yaml build backend
 docker compose -f docker-compose.prod.yaml up -d backend
 ```
 
 3. Build and bring up frontend (relies on backend for SSR)
 
-```
-docker compose -f docker-compose.prod.yaml build frontend --build-arg INTERNAL_API_BASE=https://decomp.me/api
+```bash
+# NOTE: this can be overridden if needed, i.e. --build-arg INTERNAL_API_BASE=https://decomp.me/api
+docker compose -f docker-compose.prod.yaml build frontend
 docker compose -f docker-compose.prod.yaml up -d frontend
 ```
 
