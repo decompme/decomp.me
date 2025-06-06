@@ -72,6 +72,8 @@ services:
     restart: on-failure
     volumes:
       - ./postgres:/var/lib/postgresql/data
+      # BOOTSTRAP: for restoring db
+      - ./pgdump:/pgdump
     networks:
       - decompme
 
