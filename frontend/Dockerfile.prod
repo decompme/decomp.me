@@ -18,15 +18,16 @@ COPY tsconfig.json /frontend/
 COPY public /frontend/public
 COPY src /frontend/src
 
-# TODO: do we need some cache-busting here?
+# TODO: do we need some cache-busting here if only backend changes (SSR)?
 
+# NOTE: 'backend' will point to bare-metal host via br0 adapter
 ARG INTERNAL_API_BASE=http://backend:8000/api
 ENV INTERNAL_API_BASE=${INTERNAL_API_BASE}
 
 ARG API_BASE=/api
 ENV API_BASE=${API_BASE}
 
-RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/1.1" > /dev/null; do \
+RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
         sleep 1; \
     done
 

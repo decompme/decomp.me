@@ -30,4 +30,3 @@ done
 poetry run /backend/manage.py migrate
 
 poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
-

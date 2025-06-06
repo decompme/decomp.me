@@ -123,7 +123,7 @@ RUN mkdir -p /etc/fonts
 
 ENV WINEPREFIX=/tmp/wine
 
-# Ensure /sandbox and wine dirs have correct ownership
+# Ensure /sandbox, wine, and virtualenv dirs have correct ownership
 RUN mkdir -p /sandbox \
     && chown -R ubuntu:ubuntu /sandbox \
     && mkdir -p "${WINEPREFIX}" \
@@ -137,6 +137,11 @@ USER ubuntu
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
+COPY wine /wine
+
+RUN for reg in /wine/*.reg; do regedit $reg; done
+
+
 FROM dependencies AS deployment
 
 WORKDIR /backend
@@ -146,7 +151,6 @@ COPY pyproject.toml poetry.lock /backend/
 
 COPY manage.py /backend
 
-COPY wine /backend/wine
 COPY decompme /backend/decompme
 COPY libraries /backend/libraries
 COPY compilers /backend/compilers
