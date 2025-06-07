@@ -181,8 +181,8 @@ jobs:
           SYSTEM_ENV: GITHUB_WORKFLOW
           TIMEOUT_SCALE_FACTOR: 10
 
-  backend_test_docker:
-    name: backend tests (docker)
+  backend_test_docker_dev:
+    name: backend tests (docker dev)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -225,6 +225,102 @@ jobs:
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \
               poetry run python manage.py test'
+
+
+  backend_test_docker_prod:
+    name: backend tests (docker prod)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build decompme_backend image
+        run: |-
+          docker build backend -f backend/Dockerfile.prod -t decompme_backend
+      - name: Fetch compilers and libraries
+        run: |-
+          python3 -m pip install requests
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          sudo chown -R runneradmin:runneradmin backend/compilers
+          sudo chown -R runneradmin:runneradmin backend/libraries
+      - name: Run tests
+        run: |-
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          mkdir -p local_files && sudo chown runneradmin:runneradmin local_files
+          docker run \
+            -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/backend/compilers:/compilers \
+            -v $(pwd)/backend/libraries:/libraries \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
+            --entrypoint /bin/bash \
+            -e LOCAL_FILE_DIR=/local_files \
+            -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
+            -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
+            -e TIMEOUT_SCALE_FACTOR=10 \
+            -e DATABASE_URL=sqlite:///:memory: \
+            -e DUMMY_COMPILER=1 \
+            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
+            decompme_backend \
+              -c '\
+              for r in wine/*.reg; do regedit $r; done && \
+              poetry run python manage.py test'
+
+  docker_compose_test:
+    name: test docker compose
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch compilers and libraries
+        run: |
+          python3 -m pip install requests
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          sudo chown -R runneradmin:runneradmin backend/compilers
+          sudo chown -R runneradmin:runneradmin backend/libraries
+
+      - name: Setup dummy docker.prod.dev
+        run: |
+          echo 'SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key' >> docker.prod.env
+          echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
+          echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
+          echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+
+      - name: Comment out SSL server configuration from nginx
+        run: |
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+
+      - name: Bring up postgres and nginx containers
+        run: |
+          docker compose -f docker-compose.prod.yaml up -d postgres nginx
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Build and bring up up backend container
+        run: |
+          docker compose -f docker-compose.prod.yaml build backend
+          docker compose -f docker-compose.prod.yaml up -d backend
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Build and bring up up frontend container
+        run: |
+          docker compose -f docker-compose.prod.yaml build frontend
+          docker compose -f docker-compose.prod.yaml up -d frontend
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Shut everything down
+        run: |
+          docker compose -f docker-compose.prod.yaml down
 
   frontend_lint:
     name: biome
