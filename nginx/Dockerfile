@@ -1,4 +1,4 @@
-FROM nginx:1.28-alpine
+FROM nginx:1.26-alpine
 
 RUN apk add brotli nginx-mod-http-brotli
 
