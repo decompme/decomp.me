@@ -37,6 +37,37 @@ docker compose -f docker-compose.prod.yaml up -d frontend
 ```
 
 
+### SSL Certificates Bootstrap
+
+In order to bring up nginx we need to have SSL certificates. In order to do that we need to get nginx to run only on port 80, then run certbot to fetch the certs.
+
+1. Modify the `nginx/production.conf` to comment out the *whole* `server { listen 443 ssl http2; ... }` block.
+
+2. Bring up nginx
+
+```
+docker compose -f docker-compose.prod.yaml up -d nginx
+```
+
+3. Run certbot:
+
+```bash
+docker compose run --rm certbot certonly \
+  --webroot -w /var/www/certbot \
+  -d decomp.me -d www.decomp.me \
+  --email you@your-email.com \
+  --agree-tos \
+  --no-eff-email
+```
+
+4. Uncomment the 443 block and then send a reload trigger to nginx
+
+```
+docker compose exec nginx nginx -t # sanity check configuration OK
+docker compose exec nginx nginx -s reload
+```
+
+
 ## Development
 
 There is a `docker-compose.yaml` file to help you spin up a dev instance quickly.

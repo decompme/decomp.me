@@ -7,11 +7,13 @@ backend/local_files/
 backend/media/
 backend/virtualenvs/
 backend/docker.dev.env
+pgdump/
 postgres/
 sandbox/
 *.db
 .DS_Store
 .env.*
+docker.prod.env
 *.log
 /frontend/*.tsbuildinfo
 /frontend/.next

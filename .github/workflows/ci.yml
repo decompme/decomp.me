@@ -282,7 +282,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Fetch compilers and libraries
-        run: |-
+        run: |
           python3 -m pip install requests
           python3 backend/compilers/download.py
           python3 backend/libraries/download.py
@@ -290,16 +290,21 @@ jobs:
           sudo chown -R runneradmin:runneradmin backend/libraries
 
       - name: Setup dummy docker.prod.dev
-        run: |-
+        run: |
           echo 'SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key' >> docker.prod.env
           echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
 
+      - name: Comment out SSL server configuration from nginx
+        run: |
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+
       - name: Bring up postgres and nginx containers
         run: |
           docker compose -f docker-compose.prod.yaml up -d postgres nginx
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Build and bring up up backend container
         run: |
@@ -311,10 +316,10 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yaml build frontend
           docker compose -f docker-compose.prod.yaml up -d frontend
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
-      - name: Shut everything down after 30 seconds
+      - name: Shut everything down
         run: |
-          timeout 30s docker compose -f docker-compose.prod.yaml logs -f || true
           docker compose -f docker-compose.prod.yaml down
 
   frontend_lint:
