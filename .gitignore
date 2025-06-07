@@ -22,3 +22,5 @@ docker.prod.env
 /frontend/public/sw.*
 /frontend/public/workbox-*
 .vercel
+send_update.py
+update.sh
