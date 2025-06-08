@@ -148,6 +148,7 @@ COPY --from=poetry /virtualenvs /virtualenvs
 COPY pyproject.toml poetry.lock /backend/
 
 COPY manage.py /backend
+COPY housekeeping.py /backend
 
 COPY wine /backend/wine
 COPY decompme /backend/decompme
