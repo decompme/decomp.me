@@ -17,16 +17,6 @@ const getEnvBool = (key, fallback = false) => {
     return fallback;
 };
 
-let git_hash;
-try {
-    git_hash = execSync("git rev-parse HEAD", { stdio: "pipe" })
-        .toString()
-        .trim();
-} catch (error) {
-    console.log("Unable to get git hash, assume running inside Docker");
-    git_hash = "abc123";
-}
-
 const { withPlausibleProxy } = require("next-plausible");
 
 const removeImports = require("next-remove-imports")({
@@ -135,7 +125,7 @@ let app = withPlausibleProxy({
             // See note at top of https://nextjs.org/docs/api-reference/next.config.js/environment-variables for more information
             NEXT_PUBLIC_API_BASE: process.env.API_BASE,
             NEXT_PUBLIC_GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
-            NEXT_PUBLIC_COMMIT_HASH: git_hash,
+            NEXT_PUBLIC_COMMIT_HASH: process.env.GIT_HASH ?? "abc123",
             OBJDIFF_BASE: process.env.OBJDIFF_BASE,
         },
     }),
