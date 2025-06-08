@@ -32,8 +32,7 @@ ARG OBJDIFF_BASE=https://diff.decomp.dev/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
 # allows for cache busting even if only backend changed
-ARG GIT_HASH=abc123
-ENV GIT_HASH=${GIT_HASH}
+ARG GIT_HASH
 
 RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
         sleep 1; \
@@ -53,5 +52,8 @@ COPY --from=builder /frontend/public ./public
 COPY --from=builder /frontend/.next ./.next
 COPY --from=builder /frontend/node_modules ./node_modules
 COPY --from=builder /frontend/package.json ./package.json
+
+ARG GIT_HASH=abc123
+ENV GIT_HASH=${GIT_HASH}
 
 CMD ["yarn", "start"]
