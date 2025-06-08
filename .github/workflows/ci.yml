@@ -143,10 +143,10 @@ jobs:
       - name: Start backend
         run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
@@ -225,7 +225,6 @@ jobs:
               poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \
               poetry run python manage.py test'
-
 
   backend_test_docker_prod:
     name: backend tests (docker prod)
@@ -327,10 +326,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
