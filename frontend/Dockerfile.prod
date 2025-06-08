@@ -30,6 +30,9 @@ ENV API_BASE=${API_BASE}
 ARG GITHUB_CLIENT_ID=9c5d3c7ca624a23b7c1c
 ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 
+ARG OBJDIFF_BASE=https://diff.decomp.dev/
+ENV OBJDIFF_BASE=${OBJDIFF_BASE}
+
 RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
         sleep 1; \
     done
