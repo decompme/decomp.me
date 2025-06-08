@@ -40,9 +40,6 @@ services:
         - "backend=172.17.0.1"  # docker br0
     env_file:
       - docker.prod.env
-    environment:
-      API_BASE: /api
-      INTERNAL_API_BASE: http://backend:8000/api
     ports:
       - "8080:8080"
     restart: on-failure
