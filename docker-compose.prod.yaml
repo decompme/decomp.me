@@ -37,7 +37,7 @@ services:
       context: frontend
       dockerfile: Dockerfile.prod
       extra_hosts:
-        - "backend=172.17.0.1"  # docker br0
+        - "backend=172.17.0.1"  # docker0 bridge
     env_file:
       - docker.prod.env
     ports:
@@ -67,8 +67,8 @@ services:
       # TODO: mount static + public files from frontend
     # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
     extra_hosts:
-      - "backend=172.17.0.1"   # docker br0
-      - "frontend=172.17.0.1"  # docker br0
+      - "backend=172.17.0.1"   # docker0 bridge
+      - "frontend=172.17.0.1"  # docker0 bridge
     networks:
       - decompme
 
@@ -85,11 +85,10 @@ services:
 
   postgres:
     image: postgres:17
-    environment:
-      POSTGRES_USER: decompme
-      POSTGRES_PASSWORD: decompme
-    ports:
-      - "5432:5432"
+    env_file:
+      - docker.prod.env
+    # ports:
+    #   - "5432:5432"
     restart: on-failure
     volumes:
       - ./postgres:/var/lib/postgresql/data
