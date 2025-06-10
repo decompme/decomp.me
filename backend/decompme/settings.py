@@ -45,6 +45,8 @@ env = environ.Env(
     SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
     SESSION_EXPIRE_AFTER_LAST_ACTIVITY=(bool, True),
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
+    CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
+    CONN_HEALTH_CHECKS=(bool, False),
 )
 
 for stem in [".env.local", ".env"]:
@@ -115,7 +117,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "decompme.wsgi.application"
 
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": {
+        **env.db(),
+        "CONN_MAX_AGE": env("CONN_MAX_AGE"),
+        "CONN_HEALTH_CHECKS": env("CONN_HEALTH_CHECKS"),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

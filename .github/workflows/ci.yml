@@ -294,6 +294,8 @@ jobs:
           echo 'POSTGRES_PASSWORD=decompme' >> docker.prod.env
           echo 'SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key' >> docker.prod.env
           echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
+          echo 'CONN_MAX_AGE=60' >> docker.prod.env
+          echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
