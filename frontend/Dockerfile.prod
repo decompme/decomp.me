@@ -7,7 +7,11 @@ COPY yarn.lock /frontend/
 
 WORKDIR /frontend
 
-RUN yarn install --immutable --immutable-cache
+RUN corepack enable
+
+RUN yarn config set nodeLinker node-modules
+
+RUN yarn install --immutable
 
 COPY next-env.d.ts /frontend/
 COPY next.config.js /frontend/

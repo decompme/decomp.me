@@ -1,5 +1,7 @@
 #!/bin/sh
 
-yarn install --immutable --immutable-cache
+corepack enable
 
-yarn dev
+yarn config set nodeLinker node-modules
+
+yarn install --immutable && yarn dev

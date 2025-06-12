@@ -162,9 +162,15 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
-        run: cd frontend && yarn install --immutable --immutable-cache
+        run: |
+          cd frontend
+          corepack enable
+          yarn config set nodeLinker node-modules
+          yarn install --immutable
       - name: Run Biome
-        run: cd frontend && yarn lint
+        run:
+          cd frontend
+          yarn lint
 
   mypy:
     name: mypy
