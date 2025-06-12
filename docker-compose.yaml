@@ -49,4 +49,5 @@ services:
       - "80:80"
     volumes:
       - ./nginx/development.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
