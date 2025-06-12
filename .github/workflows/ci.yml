@@ -162,7 +162,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
-        run: cd frontend && yarn --frozen-lockfile
+        run: cd frontend && yarn install --immutable --immutable-cache
       - name: Run Biome
         run: cd frontend && yarn lint
 

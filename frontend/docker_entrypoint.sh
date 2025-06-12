@@ -1,5 +1,5 @@
 #!/bin/sh
 
-yarn install --frozen-lockfile
+yarn install --immutable --immutable-cache
 
 yarn dev
