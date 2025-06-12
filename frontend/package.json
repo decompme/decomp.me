@@ -81,5 +81,6 @@
     },
     "browserslist": [
         "last 2 versions and not dead and >= 1% and supports async-functions"
-    ]
+    ],
+    "packageManager": "yarn@4.9.2"
 }
