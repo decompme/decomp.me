@@ -503,9 +503,10 @@ class ScratchViewSet(
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)
 
-            compilation = compile_scratch(scratch)
-            if compilation.elf_object:
-                zip_f.writestr("current.o", compilation.elf_object)
+            if request.GET.get("target_only") != "1":
+                compilation = compile_scratch(scratch)
+                if compilation.elf_object:
+                    zip_f.writestr("current.o", compilation.elf_object)
 
         # Prevent possible header injection attacks
         safe_name = re.sub(r"[^a-zA-Z0-9_:]", "_", scratch.name)[:64]

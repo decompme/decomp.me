@@ -1,5 +1,7 @@
 from time import sleep
 from typing import Any, Dict
+import io
+import zipfile
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
@@ -479,3 +481,56 @@ class ScratchDetailTests(BaseTestCase):
 
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 1)
+
+
+class ScratchExportTests(BaseTestCase):
+    @requiresCompiler(IDO71)
+    def test_export_asm_scratch(self) -> None:
+        """
+        Ensure that a scratch can be exported as a zip
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "typedef signed int s32;",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "s32 func() { return 2; }",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        response = self.client.post(f"/api/scratch/{scratch.slug}/export")
+
+        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        file_names = zip_file.namelist()
+
+        self.assertIn("metadata.json", file_names)
+        self.assertIn("target.s", file_names)
+        self.assertIn("target.o", file_names)
+        self.assertIn("code.c", file_names)
+        self.assertIn("context.c", file_names)
+        self.assertIn("current.o", file_names)
+
+    @requiresCompiler(IDO71)
+    def test_export_asm_scratch_target_only(self) -> None:
+        """
+        Ensure that a scratch can be exported as a zip
+        without performing the actual compilation step
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "typedef signed int s32;",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "s32 func() { return 2; }",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        response = self.client.post(f"/api/scratch/{scratch.slug}/export?target_only=1")
+
+        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        file_names = zip_file.namelist()
+
+        self.assertIn("metadata.json", file_names)
+        self.assertIn("target.s", file_names)
+        self.assertIn("target.o", file_names)
+        self.assertIn("code.c", file_names)
+        self.assertIn("context.c", file_names)
+        self.assertNotIn("current.o", file_names)
