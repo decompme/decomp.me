@@ -29,6 +29,7 @@
         "@react-hook/resize-observer": "^1.2.6",
         "@replit/codemirror-indentation-markers": "^6.5.3",
         "@replit/codemirror-vim": "^6.2.1",
+        "@sentry/nextjs": "^9.28.1",
         "allotment": "^1.20.3",
         "ansi-to-react": "^6.1.6",
         "clsx": "^2.1.1",

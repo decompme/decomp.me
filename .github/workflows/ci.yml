@@ -133,6 +133,7 @@ jobs:
           docker compose -f docker-compose.prod.yaml up -d postgres nginx
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
           docker compose logs nginx | grep "ready for start up"
+          ! docker compose logs nginx | grep -q "nginx-1 exited with code"
 
       - name: Build and bring up up backend container
         run: |

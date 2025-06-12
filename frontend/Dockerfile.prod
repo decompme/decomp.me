@@ -14,6 +14,7 @@ COPY next.config.js /frontend/
 COPY postcss.config.js /frontend/
 COPY tailwind.config.js /frontend/
 COPY tsconfig.json /frontend/
+COPY sentry.server.config.ts /frontend/
 
 COPY public /frontend/public
 COPY src /frontend/src
@@ -24,6 +25,9 @@ ENV INTERNAL_API_BASE=${INTERNAL_API_BASE}
 
 ARG API_BASE=/api
 ENV API_BASE=${API_BASE}
+
+ARG NEXT_PUBLIC_SENTRY_DSN=https://206c1a30d26affa7a77beb00550733c8@o4504592968581120.ingest.us.sentry.io/4509486010400768
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 
 ARG GITHUB_CLIENT_ID=9c5d3c7ca624a23b7c1c
 ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -52,6 +56,9 @@ COPY --from=builder /frontend/public ./public
 COPY --from=builder /frontend/.next ./.next
 COPY --from=builder /frontend/node_modules ./node_modules
 COPY --from=builder /frontend/package.json ./package.json
+
+ARG NEXT_PUBLIC_SENTRY_DSN=https://206c1a30d26affa7a77beb00550733c8@o4504592968581120.ingest.us.sentry.io/4509486010400768
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 
 ARG GIT_HASH=abc123
 ENV GIT_HASH=${GIT_HASH}
