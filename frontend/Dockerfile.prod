@@ -9,7 +9,7 @@ WORKDIR /frontend
 
 RUN corepack enable
 
-RUN yarn config set nodeLinker node-modules
+COPY .yarnrc.yml /frontend/
 
 RUN yarn install --immutable
 
@@ -56,8 +56,11 @@ COPY --from=builder /frontend/public ./public
 COPY --from=builder /frontend/.next ./.next
 COPY --from=builder /frontend/node_modules ./node_modules
 COPY --from=builder /frontend/package.json ./package.json
+COPY --from=builder /frontend/yarnrc.yml ./yarnrc.yml
 
 ARG GIT_HASH=abc123
 ENV GIT_HASH=${GIT_HASH}
+
+RUN corepack enable
 
 CMD ["yarn", "start"]
