@@ -87,8 +87,8 @@ services:
     image: postgres:17
     env_file:
       - docker.prod.env
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     restart: on-failure
     volumes:
       - ./postgres:/var/lib/postgresql/data
