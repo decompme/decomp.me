@@ -497,7 +497,7 @@ class ScratchExportTests(BaseTestCase):
             "source_code": "s32 func() { return 2; }",
         }
         scratch = self.create_scratch(scratch_dict)
-        response = self.client.post(f"/api/scratch/{scratch.slug}/export")
+        response = self.client.get(f"/api/scratch/{scratch.slug}/export")
 
         zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         file_names = zip_file.namelist()
@@ -506,7 +506,7 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("target.s", file_names)
         self.assertIn("target.o", file_names)
         self.assertIn("code.c", file_names)
-        self.assertIn("context.c", file_names)
+        self.assertIn("ctx.c", file_names)
         self.assertIn("current.o", file_names)
 
     @requiresCompiler(IDO71)
@@ -523,7 +523,7 @@ class ScratchExportTests(BaseTestCase):
             "source_code": "s32 func() { return 2; }",
         }
         scratch = self.create_scratch(scratch_dict)
-        response = self.client.post(f"/api/scratch/{scratch.slug}/export?target_only=1")
+        response = self.client.get(f"/api/scratch/{scratch.slug}/export?target_only=1")
 
         zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         file_names = zip_file.namelist()
@@ -532,5 +532,5 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("target.s", file_names)
         self.assertIn("target.o", file_names)
         self.assertIn("code.c", file_names)
-        self.assertIn("context.c", file_names)
+        self.assertIn("ctx.c", file_names)
         self.assertNotIn("current.o", file_names)
