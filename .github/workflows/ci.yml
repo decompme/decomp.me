@@ -155,7 +155,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -168,7 +167,7 @@ jobs:
           yarn config set nodeLinker node-modules
           yarn install --immutable
       - name: Run Biome
-        run:
+        run: |
           cd frontend
           yarn lint
 
