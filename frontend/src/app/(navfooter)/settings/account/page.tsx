@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import Section from "../Section";
 
 import ProfileSection from "./ProfileSection";

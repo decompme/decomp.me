@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import UserMention from "@/components/user/UserMention";
 import { get } from "@/lib/api/request";
 import type { User } from "@/lib/api/types";

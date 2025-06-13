@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { Presets } from "@/app/(navfooter)/preset/presets";
 import { get } from "@/lib/api/request";
 

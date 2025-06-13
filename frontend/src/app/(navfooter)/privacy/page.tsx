@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import Link from "next/link";
 
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11";

@@ -3,3 +3,9 @@ compatibility_date = "2025-06-01"
 compatibility_flags = ["nodejs_compat"]
 
 pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+INTERNAL_API_BASE = "https://decomp.me/api"
+API_BASE = "https://decomp.me/api"
+GITHUB_CLIENT_ID = "9c5d3c7ca624a23b7c1c"
+OBJDIFF_BASE = "https://diff.decomp.dev/"

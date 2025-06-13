@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import type { ReactNode } from "react";
 
 import Link from "next/link";

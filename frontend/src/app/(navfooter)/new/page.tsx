@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { get } from "@/lib/api/request";
 
 import DESCRIPTION from "./description";

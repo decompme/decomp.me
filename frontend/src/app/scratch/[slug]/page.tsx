@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import type { Metadata, ResolvingMetadata } from "next";
 
 import getScratchDetails from "./getScratchDetails";
