@@ -100,12 +100,6 @@ let app = withPlausibleProxy({
                 },
             });
 
-            config.optimization.splitChunks = {
-                chunks: 'all',
-                maxSize: 5 * 1024 * 1024, // 5 MB
-                name: "chunky",
-              };
-
             return config;
         },
         images: {
