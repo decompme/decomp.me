@@ -8,7 +8,9 @@
         "format": "biome format . --write",
         "postinstall": "next telemetry disable",
         "analyze": "ANALYZE=true next build",
-        "clean": "rm -rf .next node_modules"
+        "clean": "rm -rf .next node_modules",
+        "pages:build": "next build && next-on-pages",
+        "pages:deploy": "wrangler pages deploy --project-name=decomp-me .vercel/output/static"
     },
     "dependencies": {
         "@clangd-wasm/clangd-wasm": "15.0.7-dev5",
@@ -57,6 +59,7 @@
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",
+        "@cloudflare/next-on-pages": "^1.13.12",
         "@next/bundle-analyzer": "15.3.2",
         "@svgr/webpack": "^8.1.0",
         "@types/react": "^19.1.3",
