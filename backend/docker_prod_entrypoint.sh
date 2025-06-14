@@ -13,7 +13,11 @@ until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   sleep 1
 done
 
-poetry run /backend/housekeeping.py
+if [ -z "$CI" ]; then
+  poetry run /backend/housekeeping.py
+else
+  echo "Skipping housekeeping: running in CI environment"
+fi
 
 poetry run /backend/manage.py migrate
 

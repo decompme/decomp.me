@@ -135,4 +135,17 @@ if (process.env.ANALYZE === "true") {
     app = require("@next/bundle-analyzer")(app);
 }
 
-module.exports = app;
+const isVercel = !!process.env.VERCEL;
+if (!isVercel) {
+    const { withSentryConfig } = require("@sentry/nextjs");
+    const sentryConfig = {
+        org: "decompme",
+        project: "frontend",
+        silent: !process.env.CI,
+        tunnelRoute: "/monitoring",
+        disableLogger: true,
+    };
+    module.exports = withSentryConfig(app, sentryConfig);
+} else {
+    module.exports = app;
+}
