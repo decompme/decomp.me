@@ -150,6 +150,10 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yaml down
 
+      - name: Print out image sizes
+        run: |
+          docker image ls
+
   frontend_lint:
     name: biome
     runs-on: ubuntu-24.04
