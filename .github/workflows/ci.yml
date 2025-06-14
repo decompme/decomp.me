@@ -150,8 +150,8 @@ jobs:
 
       - name: Sanity check the endpoints
         run: |
-          curl --silent http://localhost:8000/ | head -c 256
-          curl --silent http://localhost:8080/api/ | jq
+          curl --silent http://localhost:8080/ | head -c 256
+          curl --silent http://localhost:8000/api/ | jq
 
       - name: Shut everything down
         run: |
