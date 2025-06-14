@@ -38,7 +38,7 @@ RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
         sleep 1; \
     done
 
-RUN yarn build --no-lint
+RUN yarn build --no-lint && rm -rf .next/cache
 
 
 FROM node:22-alpine AS runner
