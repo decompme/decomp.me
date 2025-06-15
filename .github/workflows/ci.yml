@@ -123,6 +123,7 @@ jobs:
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+          echo 'CI=true' >> docker.prod.env
 
       - name: Comment out SSL server configuration from nginx
         run: |

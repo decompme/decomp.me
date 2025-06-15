@@ -18,7 +18,6 @@ if (isSentryEnabled) {
     console.log("Sentry is disabled on the client.");
 }
 
-// If Sentry is not initialized, this function will be a no-op
 export const onRouterTransitionStart = isSentryEnabled
     ? captureRouterTransitionStart
     : () => {};
