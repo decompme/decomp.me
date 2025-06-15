@@ -24,18 +24,14 @@ export default function Breadcrumbs({ pages, className }: Props) {
             <ol>
                 {pages.map((page, index) => {
                     const isLast = index === pages.length - 1;
-
-                    const a = (
-                        <a aria-current={isLast ? "page" : undefined}>
-                            {page.label}
-                        </a>
-                    );
-
                     return (
                         <li key={page.href || index}>
                             {page.href ? (
-                                <Link href={page.href} legacyBehavior>
-                                    {a}
+                                <Link
+                                    href={page.href}
+                                    aria-current={isLast ? "page" : undefined}
+                                >
+                                    {page.label}
                                 </Link>
                             ) : (
                                 page.label
