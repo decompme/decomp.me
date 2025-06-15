@@ -244,9 +244,9 @@ class DiffWrapper:
         return basedump
 
     @staticmethod
-    def run_diff(basedump: str, mydump: str, config: Any) -> Dict[str, Any]:
-        base_lines = asm_differ.process(basedump, config)
-        my_lines = asm_differ.process(mydump, config)
+    def run_diff(
+        base_lines: list[str], my_lines: list[str], config: Any
+    ) -> Dict[str, Any]:
         diff_output = asm_differ.do_diff(base_lines, my_lines, config)
         table_data = asm_differ.align_diffs(diff_output, diff_output, config)
         return config.formatter.raw(table_data)
@@ -291,9 +291,17 @@ class DiffWrapper:
             mydump = ""
 
         try:
-            result = DiffWrapper.run_diff(basedump, mydump, config)
+            base_lines = asm_differ.process(basedump, config)
+            my_lines = asm_differ.process(mydump, config)
+            result = DiffWrapper.run_diff(base_lines, my_lines, config)
+            diff_result = DiffResult(result)
+            if any(x.startswith("--disassemble=") for x in objdump_flags):
+                if len(base_lines) and len(my_lines) == 0:
+                    diff_result.errors = (
+                        "Warning: No diff rows. Is your function signature correct?"
+                    )
         except Exception as e:
             logger.exception("Error running asm-differ: %s", e)
             raise DiffError(f"Error running asm-differ: {e}")
 
-        return DiffResult(result)
+        return diff_result
