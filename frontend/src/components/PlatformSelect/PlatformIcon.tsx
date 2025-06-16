@@ -57,7 +57,7 @@ export function PlatformIcon({ platform, className, clickable, size }: Props) {
 
     if (clickable) {
         return (
-            <Link href={url}>
+            <Link href={url} prefetch={false}>
                 <Icon width={size} height={size} className={className} />
             </Link>
         );
