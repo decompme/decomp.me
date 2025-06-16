@@ -46,7 +46,7 @@ export function ScratchItem({
     const presetName = preset?.name;
 
     const presetOrCompiler = presetName ? (
-        <Link href={presetUrl(preset)} className={styles.link}>
+        <Link href={presetUrl(preset)} className={styles.link} prefetch={false}>
             {presetName}
         </Link>
     ) : (
@@ -65,6 +65,7 @@ export function ScratchItem({
                     <Link
                         href={scratchUrl(scratch)}
                         className={clsx(styles.link, styles.name)}
+                        prefetch={false}
                     >
                         {scratch.name}
                     </Link>
