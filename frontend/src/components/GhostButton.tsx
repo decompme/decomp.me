@@ -26,7 +26,7 @@ export default function GhostButton({
 
     if (href) {
         return (
-            <Link href={href} className={cn} onClick={onClick}>
+            <Link href={href} prefetch={false} className={cn} onClick={onClick}>
                 {children}
             </Link>
         );
