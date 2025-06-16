@@ -46,7 +46,7 @@ export function ScratchItem({
     const presetName = preset?.name;
 
     const presetOrCompiler = presetName ? (
-        <Link href={presetUrl(preset)} className={styles.link} prefetch={false}>
+        <Link href={presetUrl(preset)} prefetch={false} className={styles.link}>
             {presetName}
         </Link>
     ) : (
@@ -64,8 +64,8 @@ export function ScratchItem({
                     />
                     <Link
                         href={scratchUrl(scratch)}
-                        className={clsx(styles.link, styles.name)}
                         prefetch={false}
+                        className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
                     </Link>
@@ -97,7 +97,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
     const presetName = preset?.name;
 
     const presetOrCompiler = presetName ? (
-        <Link href={presetUrl(preset)} className={styles.link}>
+        <Link href={presetUrl(preset)} prefetch={false} className={styles.link}>
             {presetName}
         </Link>
     ) : (
@@ -115,6 +115,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                     />
                     <Link
                         href={scratchUrl(scratch)}
+                        prefetch={false}
                         className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
@@ -142,7 +143,7 @@ export function ScratchItemPlatformList({
     const presetName = preset?.name;
 
     const presetOrCompiler = presetName ? (
-        <Link href={presetUrl(preset)} className={styles.link}>
+        <Link href={presetUrl(preset)} prefetch={false} className={styles.link}>
             {presetName}
         </Link>
     ) : (
@@ -155,6 +156,7 @@ export function ScratchItemPlatformList({
                 <div className={styles.header}>
                     <Link
                         href={scratchUrl(scratch)}
+                        prefetch={false}
                         className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
@@ -189,6 +191,7 @@ export function ScratchItemPresetList({
                 <div className={styles.header}>
                     <Link
                         href={scratchUrl(scratch)}
+                        prefetch={false}
                         className={clsx(styles.link, styles.name)}
                     >
                         {scratch.name}
@@ -247,6 +250,7 @@ export function SingleLineScratchItem({
             <PlatformLink size={16} scratch={scratch} className={styles.icon} />
             <Link
                 href={scratchUrl(scratch)}
+                prefetch={false}
                 className={clsx(styles.link, styles.name)}
             >
                 {scratch.name}
