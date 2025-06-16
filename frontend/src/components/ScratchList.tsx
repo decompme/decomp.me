@@ -63,7 +63,7 @@ export default function ScratchList({
                     ))}
                     {results.length === 0 && emptyButtonLabel && (
                         <li className={styles.button}>
-                            <Link href="/new" prefetch={false}>
+                            <Link href="/new">
                                 <Button>{emptyButtonLabel}</Button>
                             </Link>
                         </li>
