@@ -28,7 +28,11 @@ export default function UserLink({ user, showUsername }: Props) {
     }
 
     return (
-        <Link href={url} className="hover:underline active:translate-y-px">
+        <Link
+            href={url}
+            prefetch={false}
+            className="hover:underline active:translate-y-px"
+        >
             {inner}
         </Link>
     );

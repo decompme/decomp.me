@@ -15,7 +15,7 @@ export default function PlatformLink(props: Props) {
     const Icon = platformIcon(props.scratch.platform);
 
     return (
-        <Link href={platformUrl(props.scratch.platform)}>
+        <Link href={platformUrl(props.scratch.platform)} prefetch={false}>
             <Icon
                 width={props.size}
                 height={props.size}
