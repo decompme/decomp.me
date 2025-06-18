@@ -35,7 +35,7 @@
         "clsx": "^2.1.1",
         "codemirror": "^6.0.1",
         "dotenv": "^16.4.5",
-        "downshift": "9.0.8",
+        "downshift": "9.0.9",
         "fast-myers-diff": "^3.2.0",
         "framer-motion": "12.0.0-alpha.1",
         "is-dark-color": "^1.2.0",
