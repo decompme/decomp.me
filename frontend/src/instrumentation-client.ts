@@ -17,6 +17,7 @@ if (isSentryEnabled) {
         ignoreErrors: [
             /* clangd language server */
             "Aborted(). Build with -sASSERTIONS for more info.",
+            "Aborted(InternalError: out of memory). Build with -sASSERTIONS for more info.",
         ],
     });
 } else {
