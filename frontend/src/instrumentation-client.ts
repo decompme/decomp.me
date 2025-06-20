@@ -13,6 +13,11 @@ if (isSentryEnabled) {
         ),
 
         debug: false,
+
+        ignoreErrors: [
+            /* clangd language server */
+            "Aborted(). Build with -sASSERTIONS for more info.",
+        ],
     });
 } else {
     console.log("Sentry is disabled on the client.");
