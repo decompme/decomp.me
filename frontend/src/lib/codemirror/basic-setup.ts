@@ -40,7 +40,14 @@ const basicSetup: Extension = [
     //crosshairCursor({ key: "Control" }),
     highlightActiveLine(),
     highlightSelectionMatches({ highlightWordAroundCursor: true }),
-    indentationMarkers(),
+    indentationMarkers({
+        colors: {
+            light: "var(--indent-marker-bg-color)",
+            dark: "var(--indent-marker-bg-color)",
+            activeLight: "var(--indent-marker-active-bg-color)",
+            activeDark: "var(--indent-marker-active-bg-color)",
+        },
+    }),
     keymap.of(defaultKeymap),
     indentUnit.of("    "),
     defaultTheme,
@@ -54,7 +61,14 @@ export const decompileSetup: Extension = [
     foldGutter(),
     drawSelection(),
     highlightActiveLine(),
-    indentationMarkers(),
+    indentationMarkers({
+        colors: {
+            light: "var(--indent-marker-bg-color)",
+            dark: "var(--indent-marker-bg-color)",
+            activeLight: "var(--indent-marker-active-bg-color)",
+            activeDark: "var(--indent-marker-active-bg-color)",
+        },
+    }),
     keymap.of(defaultKeymap),
     indentUnit.of("    "),
     defaultTheme,
