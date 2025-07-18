@@ -42,10 +42,10 @@ const basicSetup: Extension = [
     highlightSelectionMatches({ highlightWordAroundCursor: true }),
     indentationMarkers({
         colors: {
-            light: "var(--indent-marker-bg-color)",
-            dark: "var(--indent-marker-bg-color)",
-            activeLight: "var(--indent-marker-active-bg-color)",
-            activeDark: "var(--indent-marker-active-bg-color)",
+            light: "var(--code-indentation-marker)",
+            dark: "var(--code-indentation-marker)",
+            activeLight: "var(--code-indentation-marker-active)",
+            activeDark: "var(--code-indentation-marker-active)",
         },
     }),
     keymap.of(defaultKeymap),
@@ -63,10 +63,10 @@ export const decompileSetup: Extension = [
     highlightActiveLine(),
     indentationMarkers({
         colors: {
-            light: "var(--indent-marker-bg-color)",
-            dark: "var(--indent-marker-bg-color)",
-            activeLight: "var(--indent-marker-active-bg-color)",
-            activeDark: "var(--indent-marker-active-bg-color)",
+            light: "var(--code-indentation-marker)",
+            dark: "var(--code-indentation-marker)",
+            activeLight: "var(--code-indentation-marker-active)",
+            activeDark: "var(--code-indentation-marker-active)",
         },
     }),
     keymap.of(defaultKeymap),
