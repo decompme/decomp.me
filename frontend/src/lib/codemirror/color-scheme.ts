@@ -134,9 +134,27 @@ export function applyColorScheme(scheme: ColorScheme) {
     if (isDark) {
         document.body.style.setProperty("--code-selection", "#ffffff22");
         document.body.style.setProperty("--code-highlight", "#ffffff05");
+        // Indentation marker colors for dark theme
+        document.body.style.setProperty(
+            "--code-indentation-marker",
+            `color-mix(in srgb, ${colors.foreground}, transparent 60%)`,
+        );
+        document.body.style.setProperty(
+            "--code-indentation-marker-active",
+            `color-mix(in srgb, ${colors.foreground}, transparent 40%)`,
+        );
     } else {
         document.body.style.setProperty("--code-selection", "#00000022");
         document.body.style.setProperty("--code-highlight", "#00000005");
+        // Indentation marker colors for light theme
+        document.body.style.setProperty(
+            "--code-indentation-marker",
+            `color-mix(in srgb, ${colors.foreground}, transparent 60%)`,
+        );
+        document.body.style.setProperty(
+            "--code-indentation-marker-active",
+            `color-mix(in srgb, ${colors.foreground}, transparent 40%)`,
+        );
     }
 }
 
