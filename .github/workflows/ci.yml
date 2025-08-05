@@ -18,7 +18,6 @@ jobs:
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          mkdir -p sandbox && chmod 777 sandbox
           mkdir -p local_files && chmod 777 local_files
           mkdir -p compilers && chmod 777 compilers
           mkdir -p libraries && chmod 777 libraries
@@ -65,13 +64,15 @@ jobs:
           python3 -m pip install requests
           python3 backend/compilers/download.py
           python3 backend/libraries/download.py
-          sudo chown -R runneradmin:runneradmin backend/compilers
-          sudo chown -R runneradmin:runneradmin backend/libraries
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
       - name: Run tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          mkdir -p local_files && sudo chown runneradmin:runneradmin local_files
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
           docker run \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/backend/compilers:/compilers \
@@ -111,8 +112,9 @@ jobs:
           python3 -m pip install requests
           python3 backend/compilers/download.py
           python3 backend/libraries/download.py
-          sudo chown -R runneradmin:runneradmin backend/compilers
-          sudo chown -R runneradmin:runneradmin backend/libraries
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
 
       - name: Setup dummy docker.prod.dev
         run: |
