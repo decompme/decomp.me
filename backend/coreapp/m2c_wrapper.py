@@ -19,22 +19,24 @@ class M2CWrapper:
     @staticmethod
     def get_triple(compiler: Compiler, arch: str) -> str:
         if "mipsee" in arch:
-            t_arch = "mipsee"
+            triple = "mipsee"
         elif "mipsel" in arch:
-            t_arch = "mipsel"
+            triple = "mipsel"
         elif "mips" in arch:
-            t_arch = "mips"
+            triple = "mips"
         elif "ppc" in arch:
-            t_arch = "ppc"
+            triple = "ppc"
+        elif "arm32" in arch:
+            triple = "arm"
         else:
             raise M2CError(f"Unsupported arch '{arch}'")
 
         if compiler.type != CompilerType.OTHER:
-            t_compiler = compiler.type.value
+            triple += f"-{compiler.type.value}"
         else:
             raise M2CError(f"Unsupported compiler '{compiler}'")
 
-        return f"{t_arch}-{t_compiler}"
+        return triple
 
     @staticmethod
     def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
