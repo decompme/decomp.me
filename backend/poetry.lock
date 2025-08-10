@@ -870,7 +870,7 @@ dev-without-jupyter = ["Sphinx (>=5.1.1)", "black (==24.8.0)", "build (>=0.10.0)
 [[package]]
 name = "m2c"
 version = "0.1.0"
-description = "MIPS and PowerPC decompiler"
+description = "MIPS, ARM and PowerPC decompiler"
 optional = false
 python-versions = "^3.8"
 files = []
@@ -884,7 +884,7 @@ pycparser = "^2.21"
 type = "git"
 url = "https://github.com/matt-kempster/m2c.git"
 reference = "HEAD"
-resolved_reference = "f29e59172f4b1ab6a11edbae20d6d7a3bec503f9"
+resolved_reference = "15e27ac7952eac9ea6d1faec8dd18dce078c5358"
 
 [[package]]
 name = "moreorless"
