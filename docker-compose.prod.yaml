@@ -36,8 +36,6 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile.prod
-      extra_hosts:
-        - "backend=172.17.0.1"  # docker0 bridge
     env_file:
       - docker.prod.env
     ports:
@@ -66,9 +64,9 @@ services:
       - ./backend/static:/var/www/decomp.me/static
       # TODO: mount static + public files from frontend
     # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
-    extra_hosts:
-      - "backend=172.17.0.1"   # docker0 bridge
-      - "frontend=172.17.0.1"  # docker0 bridge
+    #extra_hosts:
+    #  - "backend=172.17.0.1"   # docker0 bridge
+    #  - "frontend=172.17.0.1"  # docker0 bridge
     networks:
       - decompme
 

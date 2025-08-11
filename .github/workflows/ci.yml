@@ -149,7 +149,7 @@ jobs:
 
       - name: Build and bring up up frontend container
         run: |
-          docker compose -f docker-compose.prod.yaml build frontend
+          docker compose -f docker-compose.prod.yaml -f docker-compose.build.yaml build frontend
           docker compose -f docker-compose.prod.yaml up -d frontend
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
