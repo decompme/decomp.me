@@ -884,7 +884,7 @@ pycparser = "^2.21"
 type = "git"
 url = "https://github.com/matt-kempster/m2c.git"
 reference = "HEAD"
-resolved_reference = "15e27ac7952eac9ea6d1faec8dd18dce078c5358"
+resolved_reference = "6983af41fd78e3e025a07ab0c2bb069be57e6ccc"
 
 [[package]]
 name = "moreorless"
