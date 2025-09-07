@@ -236,6 +236,9 @@
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
+    "16.00.11886.00": "MSVC C (16.00.11886.00)",
+    "16.00.11886.00-cpp": "MSVC C++ (16.00.11886.00)",
+
     "armcc_opt_level": "Optimization level",
     "armcc_opt_level.-O0": "No optimization",
     "armcc_opt_level.-O1": "Some optimization",

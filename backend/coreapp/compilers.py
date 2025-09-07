@@ -42,6 +42,7 @@ from coreapp.platforms import (
     DREAMCAST,
     SWITCH,
     WIN32,
+    XBOX360,
     Platform,
 )
 from django.conf import settings
@@ -202,6 +203,12 @@ class WatcomCompiler(Compiler):
 @dataclass(frozen=True)
 class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
+    library_include_flag: str = ""
+
+
+@dataclass(frozen=True)
+class XboxMSVCCompiler(Compiler):
+    flags: ClassVar[Flags] = []
     library_include_flag: str = ""
 
 
@@ -1482,6 +1489,23 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
+# Xbox 360
+
+MSVC_16_00_11886_00 = XboxMSVCCompiler(
+    platform=XBOX360,
+    id="16.00.11886.00",
+    cc='${WINE} ${COMPILER_DIR}/cl.exe /c /nologo /TC ${COMPILER_FLAGS} "Z:${INPUT}" /Fo${OUTPUT}',
+    language=Language.C,
+)
+
+MSVC_16_00_11886_00_CPP = XboxMSVCCompiler(
+    platform=XBOX360,
+    id="16.00.11886.00-cpp",
+    base_compiler=MSVC_16_00_11886_00,
+    cc='${WINE} ${COMPILER_DIR}/cl.exe /c /nologo /TP ${COMPILER_FLAGS} "Z:${INPUT}" /Fo${OUTPUT}',
+    language=Language.CXX,
+)
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
@@ -1707,6 +1731,9 @@ _all_compilers: List[Compiler] = [
     WATCOM_110_CPP,
     # Borland, DOS
     BORLAND_31_C,
+    # Xbox 360
+    MSVC_16_00_11886_00,
+    MSVC_16_00_11886_00_CPP,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})

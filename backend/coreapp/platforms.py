@@ -256,6 +256,16 @@ N3DS = Platform(
     nm_cmd="arm-none-eabi-nm",
 )
 
+XBOX360 = Platform(
+    id="xbox360",
+    name="Xbox 360",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd="",
+    objdump_cmd="false",
+    nm_cmd="",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -274,5 +284,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "macosx": MACOSX,
         "msdos": MSDOS,
         "win32": WIN32,
+        "xbox360": XBOX360,
     }
 )
