@@ -1476,6 +1476,12 @@ BORLAND_MSDOS_CC = (
     'cp out.o "${OUTPUT}"'
 )
 
+BORLAND_20_C = BorlandCompiler(
+    id="bcc2.0",
+    platform=MSDOS,
+    cc=BORLAND_MSDOS_CC,
+)
+
 BORLAND_31_C = BorlandCompiler(
     id="bcc3.1",
     platform=MSDOS,
@@ -1706,6 +1712,7 @@ _all_compilers: List[Compiler] = [
     WATCOM_110_C,
     WATCOM_110_CPP,
     # Borland, DOS
+    BORLAND_20_C,
     BORLAND_31_C,
 ]
 
