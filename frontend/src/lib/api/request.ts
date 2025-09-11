@@ -69,6 +69,11 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
             // The backend's down.
             throw new RequestFailedError("Backend gateway unavailable", url);
         }
+        if (response.headers.get("X-Backend-Down") === "true") {
+            // In order to prevent CloudFlare returning HTML when the backend
+            // is unavailable, we return 200 with a custom header.
+            throw new RequestFailedError("Backend is currently down", url);
+        }
 
         if (!response.ok) {
             throw new ResponseError(response, await response.json());
