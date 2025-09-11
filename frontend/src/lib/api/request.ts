@@ -86,10 +86,9 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
         return await response.json();
     } catch (error) {
         if (error instanceof SyntaxError) {
-            throw new ResponseError(response, {
-                code: "invalid_json",
-                detail: "The server returned invalid JSON",
-            });
+            // CloudFlare will return HTML page if the backend is completely
+            // unreachable, so handle this gracefully.
+            throw new RequestFailedError("Failed to parse JSON response", url);
         }
 
         throw error;
