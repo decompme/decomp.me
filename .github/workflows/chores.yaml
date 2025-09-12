@@ -5,8 +5,13 @@ on:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-deps:
+    if: github.repository == 'decompme/decomp.me'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +27,13 @@ jobs:
       - name: Update m2c & asm-differ
         run: cd backend && poetry update m2c asm-differ
 
+      - name: Check for changes
+        run: |
+          if git diff --quiet HEAD; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
       - name: Commit changes
         uses: peter-evans/create-pull-request@v6
         with:
@@ -29,3 +41,5 @@ jobs:
           title: "🤖 (chore): bump m2c & asm-differ to latest"
           branch: "update-m2c-asm-differ"
           delete-branch: true
+          committer: "GitHub Actions <actions@github.com>"
+          author: "GitHub Actions <actions@github.com>"
