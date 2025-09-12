@@ -36,7 +36,7 @@ watchdog = "^4.0.1"
 type = "git"
 url = "https://github.com/simonlindholm/asm-differ.git"
 reference = "HEAD"
-resolved_reference = "296a2f3ef0ad1366628bf77bb58c01aa0197517a"
+resolved_reference = "093360aa31f90e67216ed1971c4087516cc7b940"
 
 [[package]]
 name = "attrs"
@@ -884,7 +884,7 @@ pycparser = "^2.21"
 type = "git"
 url = "https://github.com/matt-kempster/m2c.git"
 reference = "HEAD"
-resolved_reference = "740806f6f4b644a1fce2eda9837f9e7bc7b37fb6"
+resolved_reference = "b5afe3a3027a07fd0608b4cb29ac1278342a97ac"
 
 [[package]]
 name = "moreorless"
