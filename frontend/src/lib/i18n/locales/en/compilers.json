@@ -232,7 +232,8 @@
     "wcc11.0": "Watcom Optimizing C i386 Compiler 11.0",
     "wpp11.0": "Watcom Optimizing C++ i386 Compiler 11.0",
 
-    "bcc3.1": "Borland C i386 Compiler 3.1",
+    "bcc2.0": "Borland C++ Compiler 2.0",
+    "bcc3.1": "Borland C++ Compiler 3.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
