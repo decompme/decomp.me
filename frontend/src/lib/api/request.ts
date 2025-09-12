@@ -69,6 +69,11 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
             // The backend's down.
             throw new RequestFailedError("Backend gateway unavailable", url);
         }
+        if (response.headers.get("X-Backend-Down") === "true") {
+            // In order to prevent Cloudflare returning HTML when the backend
+            // is unavailable, we return 200 with a custom header.
+            throw new RequestFailedError("Backend is currently down", url);
+        }
 
         if (!response.ok) {
             throw new ResponseError(response, await response.json());
@@ -81,10 +86,9 @@ export async function errorHandledFetchJson(url: string, init?: RequestInit) {
         return await response.json();
     } catch (error) {
         if (error instanceof SyntaxError) {
-            throw new ResponseError(response, {
-                code: "invalid_json",
-                detail: "The server returned invalid JSON",
-            });
+            // Cloudflare will return HTML page if the backend is completely
+            // unreachable, so handle this gracefully.
+            throw new RequestFailedError("Failed to parse JSON response", url);
         }
 
         throw error;
