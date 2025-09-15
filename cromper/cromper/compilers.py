@@ -1,13 +1,12 @@
 import enum
 import logging
-import platform as platform_stdlib
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
 
-from coreapp import platforms
-from coreapp.flags import (
+from cromper import platforms
+from cromper.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
     COMMON_SHC_FLAGS,
@@ -26,7 +25,7 @@ from coreapp.flags import (
     Flags,
     Language,
 )
-from coreapp.platforms import (
+from cromper.platforms import (
     GBA,
     GC_WII,
     IRIX,
@@ -44,14 +43,19 @@ from coreapp.platforms import (
     WIN32,
     Platform,
 )
-from django.conf import settings
-from rest_framework import status
-from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
-COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
+
+# Default compiler base path - will be overridden by config
+COMPILER_BASE_PATH: Path = Path("compilers")  # TODO blah
+
+
+def set_compiler_base_path(path: Path) -> None:
+    """Set the compiler base path."""
+    global COMPILER_BASE_PATH
+    COMPILER_BASE_PATH = path
 
 
 class CompilerType(enum.Enum):
@@ -95,13 +99,13 @@ class DummyCompiler(Compiler):
     library_include_flag: str = ""
 
     def available(self) -> bool:
-        return settings.DUMMY_COMPILER
+        return True
 
 
 @dataclass(frozen=True)
 class DummyLongRunningCompiler(DummyCompiler):
     def available(self) -> bool:
-        return settings.DUMMY_COMPILER and platform_stdlib.system() != "Windows"
+        return True
 
 
 @dataclass(frozen=True)
@@ -207,10 +211,7 @@ class BorlandCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise APIException(
-            f"Unknown compiler: {compiler_id}",
-            str(status.HTTP_400_BAD_REQUEST),
-        )
+        raise ValueError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 

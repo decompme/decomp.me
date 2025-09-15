@@ -48,6 +48,7 @@ env = environ.Env(
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
     CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
     CONN_HEALTH_CHECKS=(bool, False),
+    CROMPER_URL=(str, "http://localhost:8888"),  # cromper service URL
 )
 
 for stem in [".env.local", ".env"]:
@@ -62,6 +63,7 @@ DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL")
 DUMMY_COMPILER = env("DUMMY_COMPILER")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 LOCAL_FILE_DIR = env("LOCAL_FILE_DIR")
+CROMPER_URL = env("CROMPER_URL")
 
 # Application definition
 

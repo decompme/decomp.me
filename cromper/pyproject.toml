@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "cromper"
+version = "0.1.0"
+description = "Async compilation and assembly service for decomp.me"
+authors = ["Decomp.me team"]
+license = "MIT"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tornado = "^6.4"
+requests = "^2.32.3"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+mypy = "^1.13.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
