@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Poetry
-        run: pip install poetry
+        run: pip install poetry==2.2.0
 
       - name: Update m2c & asm-differ
         run: cd backend && poetry update m2c asm-differ
