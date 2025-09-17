@@ -895,6 +895,14 @@ GCC281SNCXX = GCCCompiler(
     '&& "${COMPILER_DIR}"/psyq-obj-parser "$OUTPUT".obj -o "$OUTPUT" -b -n',
 )
 
+GCC281SNEWCXX = GCCCompiler(
+    id="gcc2.8.1snew-cxx",
+    platform=N64,
+    cc=CCN64_CPP_CXX
+    + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
+    '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
+)
+
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
@@ -1609,6 +1617,7 @@ _all_compilers: List[Compiler] = [
     GCC281PM,
     GCC281SN,
     GCC281SNCXX,
+    GCC281SNEWCXX,
     EGCS1124,
     EGCS1124C,
     GCC440MIPS64ELF,
