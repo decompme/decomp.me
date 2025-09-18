@@ -897,6 +897,7 @@ GCC281SNCXX = GCCCompiler(
 
 GCC281SNEWCXX = GCCCompiler(
     id="gcc2.8.1snew-cxx",
+    base_compiler=GCC281SN,
     platform=N64,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
