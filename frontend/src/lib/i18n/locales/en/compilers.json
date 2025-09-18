@@ -75,6 +75,7 @@
     "gcc2.7.2snew": "GCC 2.7.2 (SN, experimental)",
     "gcc2.8.1sn": "GCC 2.8.1 (SN)",
     "gcc2.8.1sn-cxx": "GCC 2.8.1 (SN) (C++)",
+    "gcc2.8.1snew-cxx": "GCC 2.8.1 (SN, experimental) (C++)",
     "gcc2.8.0": "GCC 2.8.0",
     "gcc2.8.1": "GCC 2.8.1",
     "gcc2.8.1pm": "GCC 2.8.1 (Paper Mario)",
