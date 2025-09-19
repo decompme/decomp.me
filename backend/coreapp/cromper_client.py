@@ -104,6 +104,64 @@ class CromperClient:
         response = self._make_request("GET", "/libraries", params=params)
         return response.get("libraries", [])
 
+    def diff(
+        self,
+        platform_id: str,
+        target_elf: bytes,
+        compiled_elf: bytes,
+        diff_label: str = "",
+        diff_flags: list[str] = [],
+    ) -> Dict[str, Any]:
+        """Generate diff using the cromper service."""
+        # Encode elf object as base64
+        import base64
+
+        compiled_elf_b64 = base64.b64encode(compiled_elf).decode("ascii")
+
+        data = {
+            "platform_id": platform_id,
+            "target_elf": target_elf,
+            "compiled_elf": compiled_elf_b64,
+            "diff_label": diff_label,
+            "diff_flags": diff_flags,
+        }
+
+        response = self._make_request("POST", "/diff", json=data)
+
+        if not response.get("success"):
+            error_msg = response.get("error", "Unknown diff error")
+            raise CompilationError(error_msg)
+
+        return {
+            "result": response.get("result"),
+            "errors": response.get("errors"),
+        }
+
+    def decompile(
+        self,
+        platform_id: str,
+        compiler_id: str,
+        asm: str,
+        default_source_code: str = "",
+        context: str = "",
+    ) -> str:
+        """Decompile assembly using the cromper service."""
+        data = {
+            "platform_id": platform_id,
+            "compiler_id": compiler_id,
+            "asm": asm,
+            "default_source_code": default_source_code,
+            "context": context,
+        }
+
+        response = self._make_request("POST", "/decompile", json=data)
+
+        if not response.get("success"):
+            error_msg = response.get("error", "Unknown decompilation error")
+            raise CompilationError(error_msg)
+
+        return response.get("decompiled_code", "")
+
 
 # Global cromper client instance
 _cromper_client: Optional[CromperClient] = None

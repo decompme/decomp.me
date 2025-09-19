@@ -61,20 +61,8 @@ class DiffError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Diff"
 
 
-class ObjdumpError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "objdump"
-
-
-class NmError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "nm"
-
-
 class CompilationError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
-
-
-class SandboxError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Sandbox"
 
 
 class AssemblyError(SubprocessError):

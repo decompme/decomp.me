@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
 from django.contrib.auth.models import User

@@ -11,6 +11,8 @@ python = "^3.10"
 tornado = "^6.4"
 requests = "^2.32.3"
 python-dotenv = "^1.0.0"
+m2c = {git="https://github.com/matt-kempster/m2c.git"}
+asm-differ = {git="https://github.com/simonlindholm/asm-differ.git"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
