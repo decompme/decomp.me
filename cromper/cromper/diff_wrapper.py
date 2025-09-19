@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 import diff as asm_differ
 
-from .platforms import DUMMY, Platform
+from .platforms import Platform
 from .flags import ASMDIFF_FLAG_PREFIX
 from .error import AssemblyError, DiffError, NmError, ObjdumpError
 from .sandbox import Sandbox
@@ -272,10 +272,6 @@ class DiffWrapper:
         compiled_elf: bytes,
         diff_flags: list[str],
     ) -> DiffResult:
-        if platform == DUMMY:
-            # Todo produce diff for dummy
-            return DiffResult({"rows": ["a", "b"]})
-
         try:
             arch = asm_differ.get_arch(platform.arch or "")
         except ValueError:

@@ -4,6 +4,7 @@ from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
+from cromper.compilers import Compilers
 from cromper.flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
@@ -39,6 +40,7 @@ class Platform:
 
     def to_json(
         self,
+        compilers: Compilers,
         include_compilers: bool = False,
         include_presets: bool = False,
         include_num_scratches: bool = False,
@@ -51,13 +53,12 @@ class Platform:
             "has_decompiler": self.has_decompiler,
         }
         if include_compilers:
-            from cromper import compilers
-
             ret["compilers"] = [
                 x.id
                 for x in compilers.available_compilers()
                 if x.platform.id == self.id
             ]
+
         if include_presets:
             # Skip presets in cromper since it doesn't connect to Django DB
             ret["presets"] = []
@@ -72,16 +73,6 @@ def from_id(platform_id: str) -> Platform:
         raise ValueError(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
-
-DUMMY = Platform(
-    id="dummy",
-    name="Dummy System",
-    description="DMY",
-    arch="dummy",
-    assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
-    objdump_cmd="echo",
-    nm_cmd="echo",
-)
 
 MSDOS = Platform(
     id="msdos",
@@ -252,7 +243,6 @@ N3DS = Platform(
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
-        "dummy": DUMMY,
         "irix": IRIX,
         "n64": N64,
         "gc_wii": GC_WII,

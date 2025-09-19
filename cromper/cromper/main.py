@@ -70,7 +70,7 @@ class CromperConfig:
         self.assembly_timeout_seconds = int(os.getenv("ASSEMBLY_TIMEOUT_SECONDS", "3"))
 
         # Set up the compiler and library base paths in the shared modules
-        compilers.initialize(self.compiler_base_path)
+        self.compilers_instance = compilers.Compilers(self.compiler_base_path)
         libraries.set_library_base_path(self.library_base_path)
 
 
@@ -124,9 +124,11 @@ class PlatformsHandler(BaseHandler):
     def get(self):
         """Get all available platforms."""
         platforms_data = []
+        compilers_instance = self.application.settings["compilers_instance"]
         for platform_id, platform in platforms._platforms.items():
             platforms_data.append(
                 platform.to_json(
+                    compilers=compilers_instance,
                     include_compilers=True,
                     include_presets=False,  # Skip presets for cromper
                     include_num_scratches=False,  # Skip scratches for cromper
@@ -141,17 +143,12 @@ class CompilersHandler(BaseHandler):
 
     def get(self):
         """Get all available compilers."""
-        compilers_data = []
-        for compiler in compilers.available_compilers():
-            compilers_data.append(
-                {
-                    "id": compiler.id,
-                    "platform": compiler.platform.id,
-                    "type": compiler.type.value,
-                    "language": compiler.language.value,
-                    "available": compiler.available(),
-                }
-            )
+        compilers_data = {
+            c.id: c.to_json()
+            for c in self.application.settings[
+                "compilers_instance"
+            ].available_compilers()
+        }
 
         self.write({"compilers": compilers_data})
 
@@ -198,7 +195,9 @@ class CompileHandler(BaseHandler):
             raise tornado.web.HTTPError(400, "compiler_id is required")
 
         try:
-            compiler = compilers.from_id(compiler_id)
+            compiler = self.application.settings["compilers_instance"].from_id(
+                compiler_id
+            )
         except ValueError:
             raise tornado.web.HTTPError(400, "invalid compiler_id")
 
@@ -411,7 +410,9 @@ class DecompileHandler(BaseHandler):
 
         try:
             platform = platforms.from_id(platform_id)
-            compiler = compilers.from_id(compiler_id)
+            compiler = self.application.settings["compilers_instance"].from_id(
+                compiler_id
+            )
         except ValueError:
             raise tornado.web.HTTPError(400, "invalid platform_id or compiler_id")
 
@@ -476,6 +477,7 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
         ],
         debug=config.debug,
         config=config,
+        compilers_instance=config.compilers_instance,
     )
 
 

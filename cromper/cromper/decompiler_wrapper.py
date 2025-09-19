@@ -1,5 +1,4 @@
 import logging
-from . import compilers
 
 from .compilers import Compiler
 from .m2c_wrapper import M2CError, M2CWrapper
@@ -24,12 +23,6 @@ class DecompilerWrapper:
         context: str,
         compiler: Compiler,
     ) -> str:
-        if compiler == compilers.DUMMY:
-            return f"decompiled({asm})"
-
-        if not M2CWrapper.is_platform_supported(platform.id):
-            return f"/* No decompiler yet implemented for {platform.arch} */\n{default_source_code}"
-
         ret = default_source_code
         if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
             return "/* Too many lines to decompile; please run m2c manually */"

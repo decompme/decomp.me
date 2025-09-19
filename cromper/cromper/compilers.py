@@ -1,14 +1,12 @@
 import enum
 import logging
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import ClassVar
 
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
-from cromper import platforms
 from cromper.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_BORLAND_FLAGS,
@@ -54,23 +52,33 @@ from cromper.platforms import (
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PY = "config.py"
 
+class Compilers:
+    def __init__(self, base_path: Path) -> None:
+        self.base_path = base_path
+        self._available_compilers = OrderedDict(
+            {c.id: c for c in _all_compilers if c.available(base_path)}
+        )
 
-def initialize(path: Path) -> None:
-    """Set the compiler base path."""
-    global COMPILER_BASE_PATH
-    COMPILER_BASE_PATH = path
+        logger.info(
+            f"Enabled {len(self._available_compilers)} compiler(s): {', '.join(self._available_compilers.keys())}"
+        )
 
-    global _compilers  # FIX
-    _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
+    def all_compilers(self) -> List["Compiler"]:
+        return list(_all_compilers)
 
-    logger.info(
-        f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}"
-    )
-    logger.info(
-        f"Available platform(s): {', '.join([platform.id for platform in available_platforms()])}"
-    )
+    def available_compilers(self) -> List["Compiler"]:
+        return list(self._available_compilers.values())
+
+    def is_compiler_available(self, compiler: "Compiler") -> bool:
+        """Check if a specific compiler is available with this instance's base path."""
+        return compiler.available(self.base_path)
+
+    @staticmethod
+    def from_id(compiler_id: str) -> "Compiler":
+        if compiler_id not in _all_compilers:
+            raise ValueError(f"Unknown compiler: {compiler_id}")
+        return _all_compilers[compiler_id]
 
 
 class CompilerType(enum.Enum):
@@ -94,52 +102,28 @@ class Compiler:
     @property
     def path(self) -> Path:
         if self.base_compiler is not None:
-            return (
-                settings.COMPILER_BASE_PATH
-                / self.base_compiler.platform.id
-                / self.base_compiler.id
-            )
-        return settings.COMPILER_BASE_PATH / self.platform.id / self.id
+            return self.base_compiler.path
+        # This will be overridden by get_path method
+        raise NotImplementedError("Use get_path method instead")
 
-    def available(self) -> bool:
+    def get_path(self, base: Path) -> Path:
+        if self.base_compiler is not None:
+            return base / self.base_compiler.platform.id / self.base_compiler.id
+        return base / self.platform.id / self.id
+
+    def available(self, base: Path) -> bool:
         # consider compiler binaries present if the compiler's directory is found
-        if not self.path.exists():
-            print(f"Compiler {self.id} not found at {self.path}")
-        return self.path.exists()
+        if not self.get_path(base).exists():
+            print(f"Compiler {self.id} not found at {self.get_path(base)}")
+        return self.get_path(base).exists()
 
-    def get_language(self, compiler_flags: str = "") -> Language:
-        language_flag_set = next(
-            (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
-            None,
-        )
-        if language_flag_set is None:
-            return self.language
-
-        matches = [
-            (flag, language)
-            for flag, language in language_flag_set.flags.items()
-            if flag in compiler_flags
-        ]
-        if not matches:
-            return self.language
-
-        # Taking the longest avoids detecting C++ as C.
-        return max(matches, key=lambda match: len(match[0]))[1]
-
-
-@dataclass(frozen=True)
-class DummyCompiler(Compiler):
-    flags: ClassVar[Flags] = []
-    library_include_flag: str = ""
-
-    def available(self) -> bool:
-        return True
-
-
-@dataclass(frozen=True)
-class DummyLongRunningCompiler(DummyCompiler):
-    def available(self) -> bool:
-        return True
+    def to_json(self) -> dict:
+        """Convert compiler to JSON format compatible with decomp.me frontend."""
+        return {
+            "platform": self.platform.id,
+            "flags": [f.to_json() for f in self.flags],
+            "diff_flags": [f.to_json() for f in self.platform.diff_flags],
+        }
 
 
 @dataclass(frozen=True)
@@ -254,44 +238,6 @@ class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
-
-@dataclass(frozen=True)
-class GHSCompiler(Compiler):
-    platform: Platform = WIIU
-    flags: ClassVar[Flags] = COMMON_GHS_FLAGS
-    library_include_flag: str = "-I"
-
-
-@dataclass(frozen=True)
-class MicrosoftCCompiler(Compiler):
-    platform = MSDOS
-    flags: ClassVar[Flags] = []
-    library_include_flag: str = ""
-
-
-def from_id(compiler_id: str) -> Compiler:
-    if compiler_id not in _compilers:
-        raise ValueError(f"Unknown compiler: {compiler_id}")
-    return _compilers[compiler_id]
-
-
-@cache
-def available_compilers() -> list[Compiler]:
-    return list(_compilers.values())
-
-
-@cache
-def available_platforms() -> list[Platform]:
-    pset = set(compiler.platform for compiler in available_compilers())
-
-    return sorted(pset, key=lambda p: p.name)
-
-
-DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
-
-DUMMY_LONGRUNNING = DummyLongRunningCompiler(
-    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
-)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -1674,46 +1620,7 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
-MSC_51 = MicrosoftCCompiler(
-    id="msc5.1",
-    platform=MSDOS,
-    cc=(
-        "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
-        'cat "${INPUT}" | unix2dos > dos_src.c && '
-        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
-        'cp out.o "${OUTPUT}"'
-    ),
-)
-
-CL_XBOX = '${WIBO} "${COMPILER_DIR}/cl.exe" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
-
-MSVC_PPC_14_00_2110 = MSVCCompiler(
-    id="msvc_ppc_14.00.2110",
-    platform=XBOX360,
-    cc=CL_XBOX,
-)
-
-MSVC_PPC_16_00_11886_00 = MSVCCompiler(
-    id="msvc_ppc_16.00.11886.00",
-    platform=XBOX360,
-    cc=CL_XBOX,
-)
-
-ANDROID_R8E_443_C = GCCCompiler(
-    id="ndk-r8e-gcc-4.4.3",
-    platform=ANDROID_X86,
-    cc='"$COMPILER_DIR"/toolchains/x86-4.4.3/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
-)
-
-ANDROID_R8E_47_C = GCCCompiler(
-    id="ndk-r8e-gcc-4.7",
-    platform=ANDROID_X86,
-    cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
-)
-
-_all_compilers: list[Compiler] = [
-    DUMMY,
-    DUMMY_LONGRUNNING,
+_all_compilers: List[Compiler] = [
     # GBA
     AGBCC,
     OLD_AGBCC,
