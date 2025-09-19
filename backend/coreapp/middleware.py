@@ -117,7 +117,8 @@ def strip_cookie_vary(
 ) -> Callable[[Request], Response]:
     def middleware(request: Request) -> Response:
         response = get_response(request)
-        if getattr(response, "X-Globally-Cacheable", False):
+
+        if response.headers.get("X-Globally-Cacheable", False):
             if "Vary" in response:
                 vary_headers = [h.strip() for h in response["Vary"].split(",")]
                 vary_headers = [h for h in vary_headers if h.lower() != "cookie"]
