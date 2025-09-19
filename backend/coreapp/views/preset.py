@@ -5,8 +5,12 @@ import django_filters
 from django import forms
 from django.db.models import Count
 
+from django.utils.decorators import method_decorator
+
 from rest_framework.exceptions import APIException
 from rest_framework.serializers import BaseSerializer
+
+from ..decorators.cache import globally_cacheable
 
 from ..filters.search import NonEmptySearchFilter
 
@@ -52,6 +56,9 @@ class PresetFilterSet(django_filters.FilterSet):
         fields = ["platform", "compiler", "owner"]
 
 
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
 class PresetViewSet(ModelViewSet):  # type: ignore
 
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
