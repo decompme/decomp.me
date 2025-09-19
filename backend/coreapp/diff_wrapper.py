@@ -10,8 +10,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import diff as asm_differ
 from django.conf import settings
 
-from coreapp.flags import ASMDIFF_FLAG_PREFIX
-from coreapp.platforms import DUMMY, Platform
+from .compiler_wrapper import DiffResult
 
 from .error import AssemblyError, DiffError, NmError, ObjdumpError
 from .models.scratch import Assembly
@@ -312,16 +311,11 @@ class DiffWrapper:
         except Exception as e:
             logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
-        if compiled_elf:
-            try:
-                mydump = DiffWrapper.get_dump(
-                    compiled_elf, platform, diff_label, config, objdump_flags
-                )
-            except Exception as e:
-                logger.exception("Error dumping compiled assembly: %s", e)
-                mydump = ""
-                warnings.append(f"Warning: Error dumping compiled assembly: {e}")
-        else:
+        try:
+            mydump = DiffWrapper.get_dump(
+                compiled_elf, platform, diff_label, config, objdump_flags
+            )
+        except Exception:
             mydump = ""
 
         try:

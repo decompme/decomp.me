@@ -74,9 +74,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
             "--bindmount_ro", "/sys",
-            "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
-            "--env", f"PATH={PATH}",
+            "--bindmount", f"{self.path}:/var/tmp",
+            "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             # NOTE: "soft" resolves to a near-infinite RLIMIT_FSIZE in nsjail >=3.6,
             # which causes some of the compilers/tooling to fail with "File too large" (SIGXFSZ).

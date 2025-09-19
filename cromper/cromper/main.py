@@ -23,8 +23,9 @@ from cromper.compiler_wrapper import (
 )
 from cromper.error import CompilationError, AssemblyError
 
+from cromper import compilers, platforms, libraries
+
 load_dotenv()
-from cromper import compilers, platforms
 
 
 # Configure logging
@@ -68,8 +69,9 @@ class CromperConfig:
         )
         self.assembly_timeout_seconds = int(os.getenv("ASSEMBLY_TIMEOUT_SECONDS", "3"))
 
-        # Set up the compiler base path in the shared module
-        compilers.set_compiler_base_path(self.compiler_base_path)
+        # Set up the compiler and library base paths in the shared modules
+        compilers.initialize(self.compiler_base_path)
+        libraries.set_library_base_path(self.library_base_path)
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -154,6 +156,35 @@ class CompilersHandler(BaseHandler):
         self.write({"compilers": compilers_data})
 
 
+class LibrariesHandler(BaseHandler):
+    """Libraries information endpoint."""
+
+    def get(self):
+        """Get all available libraries, optionally filtered by platform."""
+        platform = self.get_query_argument("platform", default="")
+
+        if platform:
+            libraries_data = [
+                {
+                    "name": lib.name,
+                    "supported_versions": lib.supported_versions,
+                    "platform": lib.platform,
+                }
+                for lib in libraries.libraries_for_platform(platform)
+            ]
+        else:
+            libraries_data = [
+                {
+                    "name": lib.name,
+                    "supported_versions": lib.supported_versions,
+                    "platform": lib.platform,
+                }
+                for lib in libraries.available_libraries()
+            ]
+
+        self.write({"libraries": libraries_data})
+
+
 class CompileHandler(BaseHandler):
     """Compilation endpoint."""
 
@@ -168,13 +199,12 @@ class CompileHandler(BaseHandler):
 
         try:
             compiler = compilers.from_id(compiler_id)
-        except ValueError as e:
-            raise tornado.web.HTTPError(400, str(e))
+        except ValueError:
+            raise tornado.web.HTTPError(400, "invalid compiler_id")
 
         code = data.get("code", "")
         context = data.get("context", "")
         compiler_flags = data.get("compiler_flags", "")
-        function = data.get("function", "")
         libraries = data.get("libraries", [])  # TODO: implement library support
 
         config = self.application.settings["config"]
@@ -197,7 +227,6 @@ class CompileHandler(BaseHandler):
                 compiler_flags=compiler_flags,
                 code=code,
                 context=context,
-                function=function,
                 libraries=libraries,
             )
 
@@ -237,7 +266,7 @@ class AssembleHandler(BaseHandler):
         try:
             platform = platforms.from_id(platform_id)
         except ValueError as e:
-            raise tornado.web.HTTPError(400, str(e))
+            raise tornado.web.HTTPError(400, "invalid platform_id")
 
         asm_data = data.get("asm_data", "")
         asm_hash = data.get("asm_hash", "")
@@ -294,6 +323,7 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             (r"/health", HealthHandler),
             (r"/platforms", PlatformsHandler),
             (r"/compilers", CompilersHandler),
+            (r"/libraries", LibrariesHandler),
             (r"/compile", CompileHandler),
             (r"/assemble", AssembleHandler),
         ],

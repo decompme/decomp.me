@@ -4,13 +4,12 @@ from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.relations import PKOnlyObject, SlugRelatedField
+from rest_framework.relations import SlugRelatedField
 
 from coreapp import platforms
 
 from . import compilers
-from .libraries import Library
-from .models.best_fork import BestFork
+from .flags import LanguageFlagSet
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -68,19 +67,32 @@ class ProfileField(ProfileFieldBaseClass):
         return super().to_representation(value)
 
 
-class LibrarySerializer(serializers.Serializer[Library]):
-    name = serializers.CharField()
-    version = serializers.CharField()
-
-
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
         fields = ["id", "name"]
 
 
+class TersePresetSerializer(serializers.ModelSerializer[Preset]):
+    libraries = serializers.ListField(default=list)
+    owner = ProfileField(read_only=True)
+
+    class Meta:
+        model = Preset
+        fields = [
+            "id",
+            "name",
+            "owner",
+            "platform",
+            "compiler",
+            "compiler_flags",
+            "diff_flags",
+            "libraries",
+        ]
+
+
 class PresetSerializer(serializers.ModelSerializer[Preset]):
-    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    libraries = serializers.ListField(default=list)
     num_scratches = serializers.SerializerMethodField()
     owner = ProfileField(read_only=True)
 
@@ -171,7 +183,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         required=False,
     )  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
-    libraries = serializers.JSONField(default=list)  # type: ignore
+    libraries = serializers.ListField(default=list)
 
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
@@ -321,7 +333,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     )  # type: ignore[assignment]
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
-    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    libraries = serializers.ListField(default=list)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )

@@ -4,16 +4,21 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
-import itsdangerous
-from django.conf import settings
+from attr import dataclass
+from django.db import models
 from django.contrib import admin
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 
-from ..libraries import Library
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Library:
+    name: str
+    version: str
 
 
 def gen_scratch_id() -> str:

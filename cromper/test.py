@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script to validate cromper integration
-"""
+
 import requests
 import time
 import subprocess
@@ -11,17 +9,20 @@ from pathlib import Path
 CROMPER_URL = "http://localhost:8888"
 
 
-def test_cromper_health():
+def test_cromper_health(silent=False):
     """Test cromper health endpoint."""
-    print("Testing cromper health...")
+    if not silent:
+        print("Testing cromper health...")
     try:
         response = requests.get(f"{CROMPER_URL}/health", timeout=5)
         response.raise_for_status()
         data = response.json()
-        print(f"✓ Health check passed: {data}")
+        if not silent:
+            print(f"✓ Health check passed: {data}")
         return True
     except Exception as e:
-        print(f"✗ Health check failed: {e}")
+        if not silent:
+            print(f"✗ Health check failed: {e}")
         return False
 
 
@@ -33,9 +34,10 @@ def test_cromper_platforms():
         response.raise_for_status()
         data = response.json()
         platforms = data.get("platforms", [])
+        if len(platforms) == 0:
+            print("✗ No platforms found")
+            return False
         print(f"✓ Found {len(platforms)} platforms")
-        for platform in platforms[:3]:  # Show first 3
-            print(f"  - {platform['id']}: {platform['name']}")
         return True
     except Exception as e:
         print(f"✗ Platforms test failed: {e}")
@@ -50,12 +52,31 @@ def test_cromper_compilers():
         response.raise_for_status()
         data = response.json()
         compilers = data.get("compilers", [])
+        if len(compilers) == 0:
+            print("✗ No compilers found")
+            return False
         print(f"✓ Found {len(compilers)} compilers")
-        for compiler in compilers[:3]:  # Show first 3
-            print(f"  - {compiler['id']}: {compiler['platform']} ({compiler['type']})")
         return True
     except Exception as e:
         print(f"✗ Compilers test failed: {e}")
+        return False
+
+
+def test_cromper_libraries():
+    """Test cromper libraries endpoint."""
+    print("Testing cromper libraries...")
+    try:
+        response = requests.get(f"{CROMPER_URL}/libraries", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        libraries = data.get("libraries", [])
+        if len(libraries) == 0:
+            print("✗ No libraries found")
+            return False
+        print(f"✓ Found {len(libraries)} libraries")
+        return True
+    except Exception as e:
+        print(f"✗ Libraries test failed: {e}")
         return False
 
 
@@ -146,7 +167,7 @@ def main():
     print("=== Cromper Integration Test ===\n")
 
     # Try to connect first, if it fails, start cromper
-    if not test_cromper_health():
+    if not test_cromper_health(silent=True):
         cromper_proc = start_cromper()
         if not cromper_proc:
             print("\n✗ Could not start cromper service")
@@ -164,6 +185,7 @@ def main():
     tests = [
         test_cromper_platforms,
         test_cromper_compilers,
+        test_cromper_libraries,
         test_cromper_compile,
         test_cromper_assemble,
     ]

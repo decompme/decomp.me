@@ -31,7 +31,7 @@ from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
 from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
-from ..libraries import Library
+from ..flags import Language
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
@@ -107,9 +107,8 @@ def compile_scratch(scratch: Scratch, context: str | None = None) -> Compilation
             compilers.from_id(scratch.compiler),
             scratch.compiler_flags,
             scratch.source_code,
-            scratch_context,
-            scratch.diff_label,
-            tuple(scratch.libraries),
+            scratch.context,
+            scratch.libraries,
         )
     except (CompilationError, APIException) as e:
         return CompilationResult(b"", str(e))
@@ -217,11 +216,13 @@ def create_scratch(
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Platform | None = data.get("platform")
+    platform_id: Optional[str] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
 
-    if not platform:
-        platform = compiler.platform
+    if not platform_id:
+        platform_id = compiler.platform
+
+    platform: Platform = platforms.from_id(platform_id)
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -254,9 +255,7 @@ def create_scratch(
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = [
-        Library(**lib) if isinstance(lib, dict) else lib for lib in data["libraries"]
-    ]
+    libraries = data["libraries"]
 
     ser = ScratchSerializer(
         data={
@@ -393,11 +392,23 @@ class ScratchViewSet(
         include_objects = False
         scratch_context = None
         if request.method == "POST":
-            compile_ser = ScratchCompileSerializer(
-                data=request.data, context={"scratch": scratch}
-            )
-            compile_ser.is_valid(raise_exception=True)
-            partial = compile_ser.validated_data
+            # TODO: use a serializer w/ validation
+            if "compiler" in request.data:
+                scratch.compiler = request.data["compiler"]
+            if "compiler_flags" in request.data:
+                scratch.compiler_flags = request.data["compiler_flags"]
+            if "diff_flags" in request.data:
+                scratch.diff_flags = request.data["diff_flags"]
+            if "diff_label" in request.data:
+                scratch.diff_label = request.data["diff_label"]
+            if "source_code" in request.data:
+                scratch.source_code = request.data["source_code"]
+            if "context" in request.data:
+                scratch.context = request.data["context"]
+            if "libraries" in request.data:
+                scratch.libraries = request.data["libraries"]
+            if "include_objects" in request.data:
+                include_objects = request.data["include_objects"]
 
             if "compiler" in partial:
                 scratch.compiler = partial["compiler"]
@@ -523,7 +534,7 @@ class ScratchViewSet(
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
 
-        libraries = [Library(**lib) for lib in ser.validated_data["libraries"]]
+        libraries = ser.validated_data["libraries"]
         new_scratch = ser.save(
             parent=parent,
             owner=request.profile,

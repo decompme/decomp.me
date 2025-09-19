@@ -11,6 +11,7 @@ from cromper.error import AssemblyError, CompilationError
 from cromper.flags import Language
 from cromper.platforms import Platform
 from cromper.sandbox import Sandbox
+from cromper import util
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,6 @@ class CompilerWrapper:
         compiler_flags: str,
         code: str,
         context: str,
-        function: str = "",
         libraries: Sequence[Any] = (),  # Library type would be defined separately
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
@@ -167,6 +167,9 @@ class CompilerWrapper:
                 logging.warning("%s does not exist, creating it!", compiler.path)
                 compiler.path.mkdir(parents=True)
 
+            # Generate random filename for temporary file
+            fname = util.random_string()
+
             # Run compiler
             try:
                 st = round(time.time() * 1000)
@@ -193,7 +196,7 @@ class CompilerWrapper:
                         "COMPILER_FLAGS": sandbox.quote_options(
                             compiler_flags + " " + libraries_compiler_flags
                         ),
-                        "FUNCTION": function,
+                        "FUNCTION": fname,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                     },

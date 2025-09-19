@@ -1,14 +1,13 @@
 import base64
 import json
 import logging
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional
 
 import requests
 from django.conf import settings
 
 from coreapp.error import AssemblyError, CompilationError
 from coreapp.models.scratch import Asm
-from coreapp.libraries import Library
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,9 @@ class CromperClient:
         self.timeout = timeout
         self.session = requests.Session()
 
-    def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
+    def _make_request(
+        self, method: str, endpoint: str, **kwargs: Any
+    ) -> Dict[str, Any]:
         """Make a request to the cromper service."""
         url = f"{self.base_url}{endpoint}"
         try:
@@ -42,7 +43,7 @@ class CromperClient:
         code: str,
         context: str,
         function: str = "",
-        libraries: Sequence[Library] = (),
+        libraries: list[str] = [],
     ) -> Dict[str, Any]:
         """Compile code using the cromper service."""
         data = {
@@ -53,7 +54,7 @@ class CromperClient:
             "code": code,
             "context": context,
             "function": function,
-            "libraries": [lib.name for lib in libraries],  # Simplified for now
+            "libraries": libraries,
         }
 
         response = self._make_request("POST", "/compile", json=data)
@@ -93,6 +94,15 @@ class CromperClient:
             "arch": response.get("arch"),
             "elf_object": elf_object,
         }
+
+    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
+        """Get available libraries from the cromper service."""
+        params = {}
+        if platform:
+            params["platform"] = platform
+
+        response = self._make_request("GET", "/libraries", params=params)
+        return response.get("libraries", [])
 
 
 # Global cromper client instance

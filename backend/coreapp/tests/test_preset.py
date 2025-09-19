@@ -1,5 +1,8 @@
 from typing import Any
 
+from coreapp.compilers import GCC281PM
+from coreapp.models.preset import Preset
+from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
@@ -12,7 +15,7 @@ from coreapp.tests.common import BaseTestCase, requiresCompiler
 
 SAMPLE_PRESET_DICT = {
     "name": "Kitty's Adventure",
-    "platform": N64.id,
+    "platform": "n64",  # todo
     "compiler": GCC281PM.id,
     "assembler_flags": "-march=vr4300 -mabi=32 -mtune=vr4300",
     "compiler_flags": "-O2 -G0",
@@ -21,8 +24,8 @@ SAMPLE_PRESET_DICT = {
 
 DUMMY_PRESET_DICT = {
     "name": "Dummy preset",
-    "platform": DUMMY.id,
-    "compiler": DUMMY.id,
+    "platform": "dummy",  # todo use DUMMY.id
+    "compiler": "dummy",  # todo use DUMMY.id
     "assembler_flags": "-fun",
     "compiler_flags": "-very-fun",
     "decompiler_flags": "-potatoes",
@@ -204,21 +207,25 @@ class PresetTests(BaseTestCase):
         except AssertionError:
             pass
 
-        self.create_preset({**SAMPLE_PRESET_DICT, "platform": N64.id})
+        self.create_preset({**SAMPLE_PRESET_DICT, "platform": "n64"})  # todo use ID
 
     @requiresCompiler(GCC281PM)
     def test_create_preset_with_mismatched_compiler_and_platform(self) -> None:
         self.create_admin()
         try:
             self.create_preset(
-                {**SAMPLE_PRESET_DICT, "platform": PS1.id, "compiler": GCC281PM.id}
+                {
+                    **SAMPLE_PRESET_DICT,
+                    "platform": "ps1",  # todo use ID
+                    "compiler": GCC281PM.id,
+                }
             )
             self.fail("Expected exception")
         except AssertionError:
             pass
 
         self.create_preset(
-            {**SAMPLE_PRESET_DICT, "platform": N64.id, "compiler": GCC281PM.id}
+            {**SAMPLE_PRESET_DICT, "platform": "n64", "compiler": GCC281PM.id}  # todo
         )
 
     @requiresCompiler(GCC281PM)
