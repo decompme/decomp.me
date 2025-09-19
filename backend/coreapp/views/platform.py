@@ -23,7 +23,7 @@ def endpoint_updated(request: Request) -> datetime:
 
 
 @method_decorator(
-    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+    globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
 class PlatformDetail(APIView):
     @condition(last_modified_func=endpoint_updated)
@@ -40,7 +40,7 @@ class PlatformDetail(APIView):
 
 
 @api_view(["GET"])
-@globally_cacheable(max_age=60, stale_while_revalidate=30)
+@globally_cacheable(max_age=300, stale_while_revalidate=30)
 def single_platform(request: Request, id: str) -> Response:
     """
     Gets a platform's basic details including available compilers

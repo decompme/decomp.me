@@ -24,7 +24,7 @@ def endpoint_updated(request: Request, **_: typing.Any) -> datetime:
 
 
 @method_decorator(
-    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+    globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
 class SingleCompilerDetail(APIView):
     @condition(last_modified_func=lambda r, **_: boot_time)
@@ -59,7 +59,7 @@ class SingleCompilerDetail(APIView):
 
 
 @method_decorator(
-    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+    globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
 class CompilerDetail(APIView):
     @staticmethod

@@ -88,7 +88,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
 
 @api_view(["GET"])  # type: ignore
-@globally_cacheable(max_age=60, stale_while_revalidate=30)
+@globally_cacheable(max_age=300, stale_while_revalidate=30)
 def user(request: Request, username: str) -> Response:
     """
     Gets a user's basic data

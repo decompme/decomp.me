@@ -14,7 +14,7 @@ boot_time = now()
 
 
 @method_decorator(
-    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+    globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
 class LibraryDetail(APIView):
     @staticmethod

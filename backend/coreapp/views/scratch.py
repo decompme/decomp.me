@@ -16,7 +16,6 @@ from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 
 from django.http import HttpResponse, QueryDict
-from coreapp.decorators.cache import globally_cacheable
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -521,7 +520,6 @@ class ScratchViewSet(
         )
 
     @action(detail=True)
-    @globally_cacheable(max_age=60, stale_while_revalidate=30)
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
