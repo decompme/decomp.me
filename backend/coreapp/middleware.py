@@ -1,7 +1,5 @@
 import logging
-import re
-from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
 from django.contrib.auth.models import User

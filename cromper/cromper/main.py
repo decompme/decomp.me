@@ -265,7 +265,7 @@ class AssembleHandler(BaseHandler):
 
         try:
             platform = platforms.from_id(platform_id)
-        except ValueError as e:
+        except ValueError:
             raise tornado.web.HTTPError(400, "invalid platform_id")
 
         asm_data = data.get("asm_data", "")
@@ -316,6 +316,151 @@ class AssembleHandler(BaseHandler):
         self.write(result)
 
 
+class DiffHandler(BaseHandler):
+    """Diff generation endpoint."""
+
+    executor = ThreadPoolExecutor(max_workers=4)
+
+    @run_on_executor
+    def generate_diff_sync(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Synchronous diff generation that runs in thread pool."""
+        platform_id = data.get("platform_id")
+        if not platform_id:
+            raise tornado.web.HTTPError(400, "platform_id is required")
+
+        try:
+            platform = platforms.from_id(platform_id)
+        except ValueError:
+            raise tornado.web.HTTPError(400, "invalid platform_id")
+
+        target_elf = data.get("target_elf")
+        compiled_elf = data.get("compiled_elf")
+        diff_label = data.get("diff_label", "")
+        diff_flags = data.get("diff_flags", [])
+
+        if not target_elf or not compiled_elf:
+            raise tornado.web.HTTPError(400, "target_elf and compiled_elf are required")
+
+        # Decode base64 elf objects
+        import base64
+
+        try:
+            target_elf = base64.b64decode(target_elf)
+        except Exception as e:
+            raise tornado.web.HTTPError(400, f"Invalid base64 target_elf: {e}")
+
+        try:
+            compiled_elf = base64.b64decode(compiled_elf)
+        except Exception as e:
+            raise tornado.web.HTTPError(400, f"Invalid base64 compiled_elf: {e}")
+
+        # Create assembly data object
+        from .diff_wrapper import DiffWrapper
+
+        config = self.application.settings["config"]
+        wrapper = DiffWrapper(
+            objdump_timeout_seconds=10,  # TODO: make configurable
+            use_jail=config.use_sandbox_jail,
+            sandbox_tmp_path=config.sandbox_tmp_path,
+            sandbox_chroot_path=config.sandbox_chroot_path,
+            compiler_base_path=config.compiler_base_path,
+            library_base_path=config.library_base_path,
+            wineprefix=config.wineprefix,
+            nsjail_bin_path=config.nsjail_bin_path,
+            sandbox_disable_proc=config.sandbox_disable_proc,
+            debug=config.debug,
+        )
+
+        try:
+            result = wrapper.diff(
+                target_elf=target_elf,
+                platform=platform,
+                diff_label=diff_label,
+                compiled_elf=compiled_elf,
+                diff_flags=diff_flags,
+            )
+
+            return {
+                "success": True,
+                "result": result.result,
+                "errors": result.errors,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def post(self):
+        """Handle diff request."""
+        data = self.get_json_body()
+        result = await self.generate_diff_sync(data)
+        self.write(result)
+
+
+class DecompileHandler(BaseHandler):
+    """Decompilation endpoint."""
+
+    executor = ThreadPoolExecutor(max_workers=4)
+
+    @run_on_executor
+    def decompile_sync(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Synchronous decompilation that runs in thread pool."""
+        platform_id = data.get("platform_id")
+        compiler_id = data.get("compiler_id")
+        if not platform_id or not compiler_id:
+            raise tornado.web.HTTPError(400, "platform_id and compiler_id are required")
+
+        try:
+            platform = platforms.from_id(platform_id)
+            compiler = compilers.from_id(compiler_id)
+        except ValueError:
+            raise tornado.web.HTTPError(400, "invalid platform_id or compiler_id")
+
+        default_source_code = data.get("default_source_code", "")
+        asm = data.get("asm", "")
+        context = data.get("context", "")
+
+        if not asm:
+            raise tornado.web.HTTPError(400, "asm is required")
+
+        config = self.application.settings["config"]
+        from .decompiler_wrapper import DecompilerWrapper
+
+        wrapper = DecompilerWrapper(
+            use_jail=config.use_sandbox_jail,
+            sandbox_tmp_path=config.sandbox_tmp_path,
+            sandbox_chroot_path=config.sandbox_chroot_path,
+            compiler_base_path=config.compiler_base_path,
+            library_base_path=config.library_base_path,
+            wineprefix=config.wineprefix,
+            nsjail_bin_path=config.nsjail_bin_path,
+            sandbox_disable_proc=config.sandbox_disable_proc,
+            debug=config.debug,
+        )
+
+        try:
+            result = wrapper.decompile(
+                default_source_code=default_source_code,
+                platform=platform,
+                asm=asm,
+                context=context,
+                compiler=compiler,
+            )
+
+            return {
+                "success": True,
+                "decompiled_code": result,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def post(self):
+        """Handle decompile request."""
+        data = self.get_json_body()
+        result = await self.decompile_sync(data)
+        self.write(result)
+
+
 def make_app(config: CromperConfig) -> tornado.web.Application:
     """Create and configure the Tornado application."""
     return tornado.web.Application(
@@ -326,6 +471,8 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             (r"/libraries", LibrariesHandler),
             (r"/compile", CompileHandler),
             (r"/assemble", AssembleHandler),
+            (r"/diff", DiffHandler),
+            (r"/decompile", DecompileHandler),
         ],
         debug=config.debug,
         config=config,

@@ -9,7 +9,7 @@ from ..models.scratch import gen_scratch_id
 class Migration(migrations.Migration):
     initial = True
 
-    dependencies: list[tuple[str, str]] = []  # type: ignore
+    dependencies: List[Tuple[str, str]] = []  # type: ignore
 
     operations = [
         migrations.CreateModel(

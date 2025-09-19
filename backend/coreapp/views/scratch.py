@@ -21,13 +21,9 @@ from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from coreapp import compilers, platforms
-
-from ..compiler_wrapper import CompilerWrapper
-from ..decompiler_wrapper import DecompilerWrapper
-from ..decorators.cache import globally_cacheable
+from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from ..cromper_client import get_cromper_client
 from ..decorators.django import condition
-from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
 from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
@@ -119,14 +115,16 @@ def diff_compilation(
     compilation: CompilationResult,
 ) -> DiffResult:
     try:
-        return DiffWrapper.diff(
-            scratch.target_assembly,
-            platforms.from_id(scratch.platform),
-            scratch.diff_label,
-            bytes(compilation.elf_object),
+        cromper_client = get_cromper_client()
+        result = cromper_client.diff(
+            platform_id=scratch.platform,
+            target_elf=bytes(scratch.target_assembly.elf_object),
+            compiled_elf=bytes(compilation.elf_object),
+            diff_label=scratch.diff_label,
             diff_flags=scratch.diff_flags,
         )
-    except DiffError as e:
+        return DiffResult(result["result"], result["errors"])
+    except (CompilationError, DiffError) as e:
         return DiffResult(None, str(e))
 
 
@@ -239,8 +237,13 @@ def create_scratch(
     source_code = data.get("source_code")
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-        source_code = DecompilerWrapper.decompile(
-            default_source_code, platform, asm.data, context, compiler
+        cromper_client = get_cromper_client()
+        source_code = cromper_client.decompile(
+            platform_id=platform.id,
+            compiler_id=compiler.id,
+            asm=asm.data,
+            default_source_code=default_source_code,
+            context=context,
         )
 
     compiler_flags = data.get("compiler_flags", "")
@@ -478,12 +481,13 @@ class ScratchViewSet(
 
         platform = platforms.from_id(scratch.platform)
 
-        decompilation = DecompilerWrapper.decompile(
-            "",
-            platform,
-            scratch.target_assembly.source_asm.data,
-            context,
-            compiler,
+        cromper_client = get_cromper_client()
+        decompilation = cromper_client.decompile(
+            platform_id=platform.id,
+            compiler_id=compiler.id,
+            asm=scratch.target_assembly.source_asm.data,
+            default_source_code="",
+            context=context,
         )
 
         return Response({"decompilation": decompilation})
