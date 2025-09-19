@@ -57,7 +57,7 @@ class LanguageFlagSet:
 
     def to_json(self) -> Dict[str, Union[str, List[str]]]:
         # To the client, we're a regular FlagSet - the extra metadata we carry
-        # is purely for the backend to determine the scratch's language
+        # is purely for the django backend to determine the scratch's language
         return {
             "type": "flagset",
             "id": self.id,

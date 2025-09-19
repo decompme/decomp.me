@@ -30,7 +30,6 @@ from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
 from ..flags import Language
-from ..libraries import Library
 from ..middleware import Request
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
@@ -97,8 +96,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             scratch.compiler_flags,
             scratch.source_code,
             scratch.context,
-            scratch.diff_label,
-            tuple(scratch.libraries),
+            scratch.libraries,
         )
     except (CompilationError, APIException) as e:
         return CompilationResult(b"", str(e))
@@ -192,13 +190,13 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Optional[Platform] = data.get("platform")
+    platform_id: Optional[str] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
-    project = data.get("project")
-    rom_address = data.get("rom_address")
 
-    if not platform:
-        platform = compiler.platform
+    if not platform_id:
+        platform_id = compiler.platform
+
+    platform: Platform = platforms.from_id(platform_id)
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -231,7 +229,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = [Library(**lib) for lib in data["libraries"]]
+    libraries = data["libraries"]
 
     ser = ScratchSerializer(
         data={
@@ -368,8 +366,7 @@ class ScratchViewSet(
             if "context" in request.data:
                 scratch.context = request.data["context"]
             if "libraries" in request.data:
-                libs = [Library(**lib) for lib in request.data["libraries"]]
-                scratch.libraries = libs
+                scratch.libraries = request.data["libraries"]
             if "include_objects" in request.data:
                 include_objects = request.data["include_objects"]
 
@@ -464,7 +461,7 @@ class ScratchViewSet(
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
 
-        libraries = [Library(**lib) for lib in ser.validated_data["libraries"]]
+        libraries = ser.validated_data["libraries"]
         new_scratch = ser.save(
             parent=parent,
             target_assembly=parent.target_assembly,

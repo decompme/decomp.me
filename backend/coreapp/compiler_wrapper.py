@@ -3,36 +3,17 @@ import re
 from dataclasses import dataclass
 from typing import (
     Any,
-    Callable,
     Dict,
     Optional,
     Tuple,
-    TYPE_CHECKING,
-    TypeVar,
-    Sequence,
 )
-
-from django.conf import settings
 
 import coreapp.util as util
 
-from .error import AssemblyError
-from .libraries import Library
-from .models.scratch import Asm, Assembly
+from models.scratch import Asm, Assembly
 
-# Import cromper client for cromper usage
-from .cromper_client import get_cromper_client
+from cromper_client import get_cromper_client
 
-# Thanks to Guido van Rossum for the following fix
-# https://github.com/python/mypy/issues/5107#issuecomment-529372406
-if TYPE_CHECKING:
-    F = TypeVar("F")
-
-    def lru_cache(maxsize: int = 128, typed: bool = False) -> Callable[[F], F]:
-        pass
-
-else:
-    from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -111,8 +92,7 @@ class CompilerWrapper:
         compiler_flags: str,
         code: str,
         context: str,
-        function: str = "",
-        libraries: Sequence[Library] = (),
+        libraries: list[str] = [],
     ) -> CompilationResult:
         cromper = get_cromper_client()
         result = cromper.compile_code(
@@ -120,7 +100,6 @@ class CompilerWrapper:
             compiler_flags=compiler_flags,
             code=code,
             context=context,
-            function=function,
             libraries=libraries,
         )
         return CompilationResult(
@@ -128,13 +107,8 @@ class CompilerWrapper:
         )
 
     @staticmethod
-    def assemble_asm(platform: Dict[str, Any], asm: Asm) -> Assembly:
-        if not platform.get("assemble_cmd"):
-            raise AssemblyError(
-                f"Assemble command for platform {platform.get('id', 'unknown')} not found"
-            )
-
-        cached_assembly, hash = _check_assembly_cache(platform["id"], asm.hash)
+    def assemble_asm(platform: str, asm: Asm) -> Assembly:
+        cached_assembly, hash = _check_assembly_cache(platform, asm.hash)
         if cached_assembly:
             logger.debug(f"Assembly cache hit! hash: {hash}")
             return cached_assembly
@@ -150,3 +124,6 @@ class CompilerWrapper:
         )
         assembly.save()
         return assembly
+
+
+## TODO fix library typing

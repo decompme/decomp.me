@@ -48,14 +48,21 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
 
-# Default compiler base path - will be overridden by config
-COMPILER_BASE_PATH: Path = Path("compilers")  # TODO blah
 
-
-def set_compiler_base_path(path: Path) -> None:
+def initialize(path: Path) -> None:
     """Set the compiler base path."""
     global COMPILER_BASE_PATH
     COMPILER_BASE_PATH = path
+
+    global _compilers  # FIX
+    _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
+
+    logger.info(
+        f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}"
+    )
+    logger.info(
+        f"Available platform(s): {', '.join([platform.id for platform in available_platforms()])}"
+    )
 
 
 class CompilerType(enum.Enum):
@@ -1716,10 +1723,3 @@ _all_compilers: List[Compiler] = [
     BORLAND_20_C,
     BORLAND_31_C,
 ]
-
-_compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
-
-logger.info(f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}")
-logger.info(
-    f"Available platform(s): {', '.join([platform.id for platform in available_platforms()])}"
-)

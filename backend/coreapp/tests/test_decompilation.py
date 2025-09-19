@@ -1,7 +1,6 @@
 from coreapp.compilers import GCC281PM, IDO53, MWCC_247_92
 from coreapp.decompiler_wrapper import DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
 from coreapp.m2c_wrapper import M2CWrapper
-from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.test.testcases import TestCase
 from django.urls import reverse
@@ -15,7 +14,7 @@ class DecompilationTests(BaseTestCase):
         """
         scratch_dict = {
             "compiler": GCC281PM.id,
-            "platform": N64.id,
+            "platform": "n64",  # todo use ID
             "context": "",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
@@ -31,7 +30,7 @@ class DecompilationTests(BaseTestCase):
         """
         scratch_dict = {
             "compiler": GCC281PM.id,
-            "platform": N64.id,
+            "platform": "n64",  # todo use ID
             "context": "typedef int s32;",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }
@@ -60,7 +59,7 @@ class DecompilationTests(BaseTestCase):
         """
         scratch_dict = {
             "compiler": GCC281PM.id,
-            "platform": N64.id,
+            "platform": "n64",  # todo use ID
             "context": "typedeff jeff;",
             "target_asm": "glabel return_2\njr $ra\nli $v0,2",
         }

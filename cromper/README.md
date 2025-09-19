@@ -1,15 +1,6 @@
-# Cromper
+# cromper
 
-Cromper is an async compilation and assembly service for decomp.me. It provides a Tornado-based HTTP API for compiling code and assembling binary objects, designed to offload compilation work from the main Django backend.
-
-## Features
-
-- **Async compilation**: Non-blocking compilation using Tornado's async capabilities
-- **Multiple compilers**: Support for GCC, IDO, MWCC, Clang, and other compilers
-- **Multiple platforms**: Support for N64, PS1, PS2, GameCube, Wii, GBA, and more
-- **Sandboxed execution**: Optional sandboxed compilation using nsjail
-- **HTTP API**: RESTful endpoints for compilation and assembly operations
-- **Fallback support**: Django backend can fall back to local compilation if cromper is unavailable
+cromper is an async compilation and assembly service for decomp.me. It provides a Tornado-based HTTP API for compiling code and assembling binary objects, designed to offload compilation work from the main Django backend.
 
 ## API Endpoints
 
@@ -86,27 +77,3 @@ cd cromper
 cd cromper
 python test_integration.py
 ```
-
-## Integration with Django Backend
-
-The Django backend can be configured to use cromper by setting:
-
-```
-USE_CROMPER=true
-CROMPER_URL=http://localhost:8888
-```
-
-When enabled, the Django backend will attempt to use cromper for compilation and assembly operations, falling back to local execution if cromper is unavailable.
-
-## Architecture
-
-Cromper extracts the core compilation logic from the Django backend into a shared `cromper` package that contains:
-
-- `platforms.py`: Platform definitions and assembly commands
-- `compilers.py`: Compiler definitions and configurations
-- `flags.py`: Compiler flags and language definitions
-- `compiler_wrapper.py`: Core compilation and assembly logic
-- `sandbox.py`: Sandboxed execution environment
-- `error.py`: Exception definitions
-
-This allows both the Django backend and cromper service to share the same compilation logic without duplication.

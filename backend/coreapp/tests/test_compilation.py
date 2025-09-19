@@ -14,7 +14,6 @@ from coreapp.compilers import (
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.flags import Language
 from coreapp.models.scratch import Assembly
-from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.urls import reverse
 from parameterized import param, parameterized
@@ -36,7 +35,7 @@ class CompilationTests(BaseTestCase):
         """
         scratch_dict = {
             "compiler": GCC281PM.id,
-            "platform": N64.id,
+            "platform": "n64",  # TODO use N64.id
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
@@ -64,7 +63,7 @@ class CompilationTests(BaseTestCase):
         """
         scratch_dict = {
             "compiler": GCC281PM.id,
-            "platform": N64.id,
+            "platform": "n64",  # TODO use N64.id
             "context": "",
             "target_asm": "glabel func_80929D04\njr $ra\nnop",
         }
@@ -130,7 +129,7 @@ class CompilationTests(BaseTestCase):
         Ensure that we can view fpr reg names by passing the appropriate diff flag
         """
         scratch_dict = {
-            "platform": N64.id,
+            "platform": "n64",  # TODO use N64.id
             "compiler": IDO71.id,
             "diff_flags": ["-Mreg-names=32"],
             "context": "",

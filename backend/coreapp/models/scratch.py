@@ -2,14 +2,20 @@ import json
 import logging
 from typing import Any, List, Sequence
 
+from attr import dataclass
 from django.db import models
 from django.contrib import admin
 from django.utils.crypto import get_random_string
 
-from ..libraries import Library
 from .profile import Profile
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Library:
+    name: str
+    version: str
 
 
 def gen_scratch_id() -> str:

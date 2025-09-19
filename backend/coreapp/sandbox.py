@@ -1,5 +1,4 @@
 import contextlib
-import getpass
 import logging
 import os
 import shlex
@@ -50,11 +49,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
-        assert ":" not in str(settings.WINEPREFIX)
-
-        # wine-specific hacks
-        user = getpass.getuser()
-        (self.path / "Temp").mkdir(parents=True, exist_ok=True)
 
         # fmt: off
         wrapper = [
@@ -75,17 +69,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/proc",
             "--bindmount_ro", "/sys",
             "--bindmount", f"{self.path}:/var/tmp",
-            "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
             "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
             "--rlimit_nofile", "soft",
-            # the following are settings that can be removed once we are done with wine
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
-            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
         if settings.SANDBOX_DISABLE_PROC:

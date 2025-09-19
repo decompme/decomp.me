@@ -11,7 +11,7 @@ from coreapp.platforms import DUMMY, Platform
 from coreapp.flags import ASMDIFF_FLAG_PREFIX
 from django.conf import settings
 
-from .compiler_wrapper import DiffResult, PATH
+from .compiler_wrapper import DiffResult
 
 from .error import AssemblyError, DiffError, NmError, ObjdumpError
 from .models.scratch import Assembly
@@ -105,15 +105,9 @@ class DiffWrapper:
             nm_proc = sandbox.run_subprocess(
                 [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
                 shell=True,
-                env={
-                    "PATH": PATH,
-                    "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                        settings.COMPILER_BASE_PATH
-                    ),
-                },
                 timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             raise NmError("Timeout expired")
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
@@ -190,12 +184,6 @@ class DiffWrapper:
                         + list(map(shlex.quote, flags))
                         + [sandbox.rewrite_path(target_path)],
                         shell=True,
-                        env={
-                            "PATH": PATH,
-                            "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                                settings.COMPILER_BASE_PATH
-                            ),
-                        },
                         timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
                     )
                 except subprocess.TimeoutExpired as e:
@@ -287,7 +275,7 @@ class DiffWrapper:
             mydump = DiffWrapper.get_dump(
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
-        except Exception as e:
+        except Exception:
             mydump = ""
 
         try:
