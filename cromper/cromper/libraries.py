@@ -1,6 +1,5 @@
 import logging
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import List
 
@@ -45,7 +44,6 @@ class LibraryVersions:
         return LIBRARY_BASE_PATH / self.platform / self.name
 
 
-@cache
 def available_libraries() -> List[LibraryVersions]:
     """Get all available libraries across all platforms."""
     results = []

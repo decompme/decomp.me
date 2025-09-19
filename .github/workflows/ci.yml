@@ -93,7 +93,6 @@ jobs:
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
             -e DATABASE_URL=sqlite:///:memory: \
-            -e DUMMY_COMPILER=1 \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
               -c '\

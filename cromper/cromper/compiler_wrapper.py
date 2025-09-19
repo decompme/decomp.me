@@ -5,7 +5,6 @@ import time
 from dataclasses import dataclass
 from typing import Any, Sequence
 
-from cromper import compilers, platforms
 from cromper.compilers import Compiler, CompilerType
 from cromper.error import AssemblyError, CompilationError
 from cromper.flags import Language
@@ -113,9 +112,6 @@ class CompilerWrapper:
         context: str,
         libraries: Sequence[Any] = (),  # Library type would be defined separately
     ) -> CompilationResult:
-        if compiler == compilers.DUMMY:
-            return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
-
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
@@ -163,10 +159,6 @@ class CompilerWrapper:
             if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
-            if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                logging.warning("%s does not exist, creating it!", compiler.path)
-                compiler.path.mkdir(parents=True)
-
             # Generate random filename for temporary file
             fname = util.random_string()
 
@@ -183,7 +175,7 @@ class CompilerWrapper:
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
-                        [compiler.path] if compiler.platform != platforms.DUMMY else []
+                        [compiler.get_path(self.sandbox_kwargs["compiler_base_path"])]
                     ),
                     shell=True,
                     env={
@@ -192,7 +184,9 @@ class CompilerWrapper:
                         "WIBO": WIBO,
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
+                        "COMPILER_DIR": sandbox.rewrite_path(
+                            compiler.get_path(self.sandbox_kwargs["compiler_base_path"])
+                        ),
                         "COMPILER_FLAGS": sandbox.quote_options(
                             compiler_flags + " " + libraries_compiler_flags
                         ),
@@ -214,7 +208,7 @@ class CompilerWrapper:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
 
             if not object_path.exists():
@@ -237,13 +231,6 @@ class CompilerWrapper:
         if not platform.assemble_cmd:
             raise AssemblyError(
                 f"Assemble command for platform {platform.id} not found"
-            )
-
-        if platform == platforms.DUMMY:
-            return AssemblyResult(
-                hash=asm.hash,
-                arch=platform.arch,
-                elf_object=b"dummy_object",
             )
 
         with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
@@ -275,7 +262,7 @@ class CompilerWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise AssemblyError("Timeout expired")
 
             # Assembly failed

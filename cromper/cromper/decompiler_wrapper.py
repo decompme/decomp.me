@@ -1,5 +1,4 @@
 import logging
-from . import compilers
 
 from .compilers import Compiler
 from .m2c_wrapper import M2CError, M2CWrapper
@@ -24,9 +23,6 @@ class DecompilerWrapper:
         context: str,
         compiler: Compiler,
     ) -> str:
-        if compiler == compilers.DUMMY:
-            return f"decompiled({asm})"
-
         ret = default_source_code
         if platform.arch in ["mips", "mipsee", "mipsel", "mipsel:4000", "ppc", "arm32"]:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:

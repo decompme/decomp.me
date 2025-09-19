@@ -1,11 +1,9 @@
 import enum
 import logging
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
 
-from cromper import platforms
 from cromper.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
@@ -46,23 +44,33 @@ from cromper.platforms import (
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PY = "config.py"
 
+class Compilers:
+    def __init__(self, base_path: Path) -> None:
+        self.base_path = base_path
+        self._available_compilers = OrderedDict(
+            {c.id: c for c in _all_compilers if c.available(base_path)}
+        )
 
-def initialize(path: Path) -> None:
-    """Set the compiler base path."""
-    global COMPILER_BASE_PATH
-    COMPILER_BASE_PATH = path
+        logger.info(
+            f"Enabled {len(self._available_compilers)} compiler(s): {', '.join(self._available_compilers.keys())}"
+        )
 
-    global _compilers  # FIX
-    _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
+    def all_compilers(self) -> List["Compiler"]:
+        return list(_all_compilers)
 
-    logger.info(
-        f"Enabled {len(_compilers)} compiler(s): {', '.join(_compilers.keys())}"
-    )
-    logger.info(
-        f"Available platform(s): {', '.join([platform.id for platform in available_platforms()])}"
-    )
+    def available_compilers(self) -> List["Compiler"]:
+        return list(self._available_compilers.values())
+
+    def is_compiler_available(self, compiler: "Compiler") -> bool:
+        """Check if a specific compiler is available with this instance's base path."""
+        return compiler.available(self.base_path)
+
+    @staticmethod
+    def from_id(compiler_id: str) -> "Compiler":
+        if compiler_id not in _all_compilers:
+            raise ValueError(f"Unknown compiler: {compiler_id}")
+        return _all_compilers[compiler_id]
 
 
 class CompilerType(enum.Enum):
@@ -86,33 +94,28 @@ class Compiler:
     @property
     def path(self) -> Path:
         if self.base_compiler is not None:
-            return (
-                COMPILER_BASE_PATH
-                / self.base_compiler.platform.id
-                / self.base_compiler.id
-            )
-        return COMPILER_BASE_PATH / self.platform.id / self.id
+            return self.base_compiler.path
+        # This will be overridden by get_path method
+        raise NotImplementedError("Use get_path method instead")
 
-    def available(self) -> bool:
+    def get_path(self, base: Path) -> Path:
+        if self.base_compiler is not None:
+            return base / self.base_compiler.platform.id / self.base_compiler.id
+        return base / self.platform.id / self.id
+
+    def available(self, base: Path) -> bool:
         # consider compiler binaries present if the compiler's directory is found
-        if not self.path.exists():
-            print(f"Compiler {self.id} not found at {self.path}")
-        return self.path.exists()
+        if not self.get_path(base).exists():
+            print(f"Compiler {self.id} not found at {self.get_path(base)}")
+        return self.get_path(base).exists()
 
-
-@dataclass(frozen=True)
-class DummyCompiler(Compiler):
-    flags: ClassVar[Flags] = []
-    library_include_flag: str = ""
-
-    def available(self) -> bool:
-        return True
-
-
-@dataclass(frozen=True)
-class DummyLongRunningCompiler(DummyCompiler):
-    def available(self) -> bool:
-        return True
+    def to_json(self) -> dict:
+        """Convert compiler to JSON format compatible with decomp.me frontend."""
+        return {
+            "platform": self.platform.id,
+            "flags": [f.to_json() for f in self.flags],
+            "diff_flags": [f.to_json() for f in self.platform.diff_flags],
+        }
 
 
 @dataclass(frozen=True)
@@ -215,30 +218,6 @@ class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
-
-def from_id(compiler_id: str) -> Compiler:
-    if compiler_id not in _compilers:
-        raise ValueError(f"Unknown compiler: {compiler_id}")
-    return _compilers[compiler_id]
-
-
-@cache
-def available_compilers() -> List[Compiler]:
-    return list(_compilers.values())
-
-
-@cache
-def available_platforms() -> List[Platform]:
-    pset = set(compiler.platform for compiler in available_compilers())
-
-    return sorted(pset, key=lambda p: p.name)
-
-
-DUMMY = DummyCompiler(id="dummy", platform=platforms.DUMMY, cc="")
-
-DUMMY_LONGRUNNING = DummyLongRunningCompiler(
-    id="dummy_longrunning", platform=platforms.DUMMY, cc="sleep 3600"
-)
 
 # GBA
 AGBCC = GCCCompiler(
@@ -1497,8 +1476,6 @@ BORLAND_31_C = BorlandCompiler(
 )
 
 _all_compilers: List[Compiler] = [
-    DUMMY,
-    DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,
