@@ -1,12 +1,16 @@
 import django_filters
+
 from django.contrib.auth import logout
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+
 from rest_framework import generics, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ..decorators.cache import globally_cacheable
 from ..middleware import Request
 from ..models.github import GitHubUser
 from ..models.profile import Profile
@@ -60,6 +64,9 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
         return ScratchViewSet.queryset.filter(owner__id=self.request.profile.id)
 
 
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
 class UserScratchList(generics.ListAPIView):  # type: ignore
     """
     Gets a user's scratches
@@ -81,6 +88,7 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
 
 @api_view(["GET"])  # type: ignore
+@globally_cacheable(max_age=300, stale_while_revalidate=30)
 def user(request: Request, username: str) -> Response:
     """
     Gets a user's basic data
