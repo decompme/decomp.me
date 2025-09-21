@@ -22,8 +22,6 @@ dependencies = [
     "html-json-forms>=1.1.1",
     "django-resized>=1.0.3",
     "django-cleanup>=9.0.0",
-    "m2c @ git+https://github.com/matt-kempster/m2c.git",
-    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
     "sentry-sdk>=2.19.0",
     "django-session-timeout>=0.1.0",
     "requests>=2.32.3",

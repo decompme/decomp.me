@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict
 from unittest import skip, skipIf
 
-from coreapp.compilers import Compiler
 from coreapp.models.scratch import Scratch
 from django.urls import reverse
 from rest_framework import status

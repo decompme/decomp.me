@@ -9,7 +9,6 @@ from rest_framework.relations import SlugRelatedField
 from coreapp import platforms
 
 from . import compilers
-from .flags import LanguageFlagSet
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -113,14 +112,14 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -157,14 +156,14 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 

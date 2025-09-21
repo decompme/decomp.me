@@ -28,11 +28,9 @@ from ..cromper_client import get_cromper_client
 from ..decorators.django import condition
 from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
-from ..flags import Language
 from ..middleware import Request
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
-from ..platforms import Platform
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCreateSerializer,

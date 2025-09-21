@@ -19,6 +19,8 @@ class CromperClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
+        self._compilers_cache: Optional[Dict[str, Dict[str, Any]]] = None
+        self._platforms_cache: Optional[Dict[str, Dict[str, Any]]] = None
 
     def _make_request(
         self, method: str, endpoint: str, **kwargs: Any
@@ -35,6 +37,46 @@ class CromperClient:
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from cromper service: {e}")
             raise CompilationError("Invalid response from cromper service")
+
+    def get_compilers(self) -> Dict[str, Dict[str, Any]]:
+        """Get all compilers from cromper service, with caching."""
+        if self._compilers_cache is None:
+            logger.info("Fetching compilers from cromper service...")
+            response = self._make_request("GET", "/compilers")
+            self._compilers_cache = response.get("compilers", {})
+            logger.info(f"Cached {len(self._compilers_cache)} compilers")
+        return self._compilers_cache
+
+    def get_platforms(self) -> Dict[str, Dict[str, Any]]:
+        """Get all platforms from cromper service, with caching."""
+        if self._platforms_cache is None:
+            logger.info("Fetching platforms from cromper service...")
+            response = self._make_request("GET", "/platforms")
+            self._platforms_cache = response.get("platforms", {})
+            logger.info(f"Cached {len(self._platforms_cache)} platforms")
+        return self._platforms_cache
+
+    def get_compiler_by_id(self, compiler_id: str) -> Dict[str, Any]:
+        """Get a specific compiler by ID."""
+        compilers = self.get_compilers()
+        if compiler_id not in compilers:
+            raise ValueError(f"Unknown compiler: {compiler_id}")
+        return compilers[compiler_id]
+
+    def get_platform_by_id(self, platform_id: str) -> Dict[str, Any]:
+        """Get a specific platform by ID."""
+        platforms = self.get_platforms()
+        if platform_id not in platforms:
+            raise ValueError(f"Unknown platform: {platform_id}")
+        return platforms[platform_id]
+
+    def refresh_cache(self) -> None:
+        """Force refresh of compilers and platforms cache."""
+        self._compilers_cache = None
+        self._platforms_cache = None
+        # Trigger reload
+        self.get_compilers()
+        self.get_platforms()
 
     def compile_code(
         self,

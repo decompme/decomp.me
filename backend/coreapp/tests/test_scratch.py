@@ -3,8 +3,6 @@ from typing import Any, Dict
 import io
 import zipfile
 
-from coreapp import compilers
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
 from coreapp.models.scratch import Assembly, Scratch
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
@@ -394,7 +392,7 @@ class ScratchDetailTests(BaseTestCase):
         # fork the fork
         response = self.client.post(reverse("scratch-fork", args=[fork.slug]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        fork2: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+        Scratch.objects.get(slug=response.json()["slug"])
 
         # verify the family holds all three
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
@@ -407,7 +405,6 @@ class ScratchDetailTests(BaseTestCase):
         # fork the root
         response = self.client.post(reverse("scratch-fork", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        fork = response.json()
 
         # verify the family holds both, in creation order
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
@@ -464,7 +461,7 @@ class ScratchDetailTests(BaseTestCase):
         }
 
         scratch1 = self.create_scratch(scratch1_dict)
-        scratch2 = self.create_scratch(scratch2_dict)
+        self.create_scratch(scratch2_dict)
 
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 1)
