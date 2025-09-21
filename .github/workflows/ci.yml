@@ -65,8 +65,8 @@ jobs:
           python3 cromper/compilers/download.py
           python3 cromper/libraries/download.py
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
-          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
+          sudo chown -R ${USER_1000}:${USER_1000} cromper/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} cromper/libraries
       - name: Run tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
@@ -75,8 +75,8 @@ jobs:
           mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
           docker run \
             -v $(pwd)/local_files:/local_files \
-            -v $(pwd)/backend/compilers:/compilers \
-            -v $(pwd)/backend/libraries:/libraries \
+            -v $(pwd)/cromper/compilers:/compilers \
+            -v $(pwd)/cromper/libraries:/libraries \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
@@ -109,14 +109,12 @@ jobs:
       - name: Fetch compilers and libraries
         run: |
           python3 -m pip install requests
-          python3 backend/compilers/download.py
-          python3 backend/libraries/download.py
+          python3 cromper/compilers/download.py
+          python3 cromper/libraries/download.py
           # Copy to cromper directories
-          cp -r backend/compilers cromper/
-          cp -r backend/libraries cromper/
+          cp -r cromper/compilers cromper/
+          cp -r cromper/libraries cromper/
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
-          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
           sudo chown -R ${USER_1000}:${USER_1000} cromper/compilers
           sudo chown -R ${USER_1000}:${USER_1000} cromper/libraries
 

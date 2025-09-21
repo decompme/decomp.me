@@ -18,42 +18,27 @@ services:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
-      - ./cromper/compilers:/cromper/compilers:ro
-      - ./cromper/libraries:/cromper/libraries:ro
+      # persist compilers + libraries
+      - ./cromper/compilers:/cromper/compilers
+      - ./cromper/libraries:/cromper/libraries
     tmpfs:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
-      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
     networks:
       - decompme
   backend:
     build:
       context: backend
       dockerfile: Dockerfile.prod
-    cap_drop:
-      - all
-    cap_add:
-      - setuid
-      - setgid
-      - setfcap
     env_file:
       - docker.prod.env
     ports:
       - "8000:8000"
     restart: on-failure
-    security_opt:
-      - apparmor=unconfined
-      - seccomp=unconfined
     volumes:
-      # persist compilers + libraries
-      - ./backend/compilers:/backend/compilers
-      - ./backend/libraries:/backend/libraries
       # static files for django /admin control panel
       - ./backend/static:/backend/static
-    tmpfs:
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
     networks:
       - decompme
   # uncommment for local testing
