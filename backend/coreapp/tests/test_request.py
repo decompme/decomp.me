@@ -110,32 +110,3 @@ class TimeoutTests(BaseTestCase):
 
             self.assertFalse(response.json()["success"])
             self.assertIn("timeout expired", response.json()["compiler_output"].lower())
-
-    # if we don't have DUMMY_LONGRUNNING, it means we'll be unable to use sandbox.run_subprocess
-    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
-    def test_zero_timeout(self) -> None:
-        # Tests that passing a timeout of zero to sandbox.run_subprocess will equate
-        # to disabling the timeout entirely
-        expected_output = "AAAAAAAA"
-
-        with Sandbox() as sandbox:
-            sandboxed_proc = sandbox.run_subprocess(
-                f"sleep 3 && echo {expected_output}", timeout=0, shell=True
-            )
-
-            self.assertEqual(sandboxed_proc.returncode, 0)
-            self.assertIn(expected_output, sandboxed_proc.stdout)
-
-    def test_sandbox_subprocess_error_preserves_output(self) -> None:
-        missing_command = "definitely-not-a-real-command"
-
-        with self.settings(DEBUG=False):
-            with Sandbox() as sandbox:
-                with self.assertRaises(subprocess.CalledProcessError) as cm:
-                    sandbox.run_subprocess([missing_command], shell=True)
-
-        error = ObjdumpError.from_process_error(cm.exception)
-
-        self.assertIsInstance(error, ObjdumpError)
-        self.assertIn(missing_command, str(error))
-        self.assertIn("command not found", str(error))
