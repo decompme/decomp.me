@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
     "vcs": {
         "enabled": false,
         "clientKind": "git",
@@ -7,23 +7,29 @@
     },
     "files": {
         "ignoreUnknown": false,
-        "ignore": [".next", "cache", "node_modules"]
+        "includes": ["**", "!**/.next", "!**/cache", "!**/node_modules"]
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
         "indentWidth": 4
     },
-    "organizeImports": {
-        "enabled": false
-    },
+    "assist": { "actions": { "source": { "organizeImports": "off" } } },
     "linter": {
         "enabled": true,
         "rules": {
             "recommended": true,
             "style": {
                 "noUselessElse": "off",
-                "noParameterAssign": "off"
+                "noParameterAssign": "off",
+                "useAsConstAssertion": "error",
+                "useDefaultParameterLast": "error",
+                "useEnumInitializers": "error",
+                "useSelfClosingElements": "error",
+                "useSingleVarDeclarator": "error",
+                "noUnusedTemplateLiteral": "error",
+                "useNumberNamespace": "error",
+                "noInferrableTypes": "error"
             },
             "a11y": {
                 "useValidAnchor": "off",

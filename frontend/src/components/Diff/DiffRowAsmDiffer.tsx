@@ -204,8 +204,7 @@ export const DiffRow = memo(function DiffRow({
     index: number;
     style: CSSProperties;
 }) {
-    const row = data.rows[index];
-
+    const row = data.diff?.rows?.[index];
     return (
         <li
             className={clsx(styles.row, row.isPlaceholder && styles.collapsed)}

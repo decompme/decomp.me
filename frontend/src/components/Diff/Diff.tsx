@@ -146,6 +146,51 @@ function DiffBody({
     );
 }
 
+function ThreeWayToggleButton({
+    enabled,
+    setEnabled,
+}: {
+    enabled: boolean;
+    setEnabled: (enabled: boolean) => void;
+}) {
+    return (
+        <button
+            className={styles.threeWayToggle}
+            onClick={() => {
+                setEnabled(!enabled);
+            }}
+            title={
+                enabled
+                    ? "Disable three-way diffing"
+                    : "Enable three-way diffing"
+            }
+        >
+            <VersionsIcon size={24} />
+            <div className={styles.threeWayToggleNumber}>
+                {enabled ? "3" : "2"}
+            </div>
+        </button>
+    );
+}
+
+export function scrollToLineNumber(
+    editorView: RefObject<EditorView>,
+    lineNumber: number,
+) {
+    if (!editorView) {
+        return;
+    }
+    if (lineNumber <= editorView.current.state.doc.lines) {
+        // check if the source line <= number of lines
+        // which can be false if pragmas are used to force line numbers
+        const line = editorView.current.state.doc.line(lineNumber);
+        if (line) {
+            const { top } = editorView.current.lineBlockAt(line.to);
+            editorView.current.scrollDOM.scrollTo({ top, behavior: "smooth" });
+        }
+    }
+}
+
 export const PADDING_TOP = 8;
 export const PADDING_BOTTOM = 8;
 

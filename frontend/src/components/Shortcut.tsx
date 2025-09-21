@@ -172,7 +172,10 @@ export function useShortcut(
 export default function Shortcut({
     keys,
     className,
-}: { keys: Key[]; className?: string }) {
+}: {
+    keys: Key[];
+    className?: string;
+}) {
     const [mounted, setMounted] = useState(false);
     const keysString = useTranslateKeys(keys);
 

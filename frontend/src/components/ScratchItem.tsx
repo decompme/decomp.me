@@ -41,11 +41,18 @@ export function getMatchPercentString(source: MatchPercentSource) {
     return matchPercentString;
 }
 
-export function Improvement({
-    improvement = null,
-}: { improvement?: api.BestFork | null }) {
-    if (!improvement) return null;
-    const ownerName = improvement.owner?.username ?? "Someone";
+export function ScratchItem({
+    scratch,
+    children,
+}: {
+    scratch: api.TerseScratch;
+    children?: ReactNode;
+}) {
+    const compilersTranslation = getTranslation("compilers");
+    const compilerName = compilersTranslation.t(scratch.compiler);
+    const matchPercentString = getMatchPercentString(scratch);
+    const preset = api.usePreset(scratch.preset);
+    const presetName = preset?.name;
 
     const improvementPercentString = getMatchPercentString(improvement);
 
@@ -281,13 +288,60 @@ export function ScratchItemNoOwner({
 
 export function ScratchItemPlatformList({
     scratch,
-}: { scratch: api.TerseScratch }) {
-    return <ScratchItemRow scratch={scratch} showPlatform={false} />;
+}: {
+    scratch: api.TerseScratch;
+}) {
+    const compilersTranslation = getTranslation("compilers");
+    const compilerName = compilersTranslation.t(scratch.compiler);
+    const matchPercentString = getMatchPercentString(scratch);
+    const preset = api.usePreset(scratch.preset);
+    const presetName = preset?.name;
+
+    const presetOrCompiler = presetName ? (
+        <Link href={presetUrl(preset)} prefetch={false} className={styles.link}>
+            {presetName}
+        </Link>
+    ) : (
+        <span>{compilerName}</span>
+    );
+
+    return (
+        <li className={styles.item}>
+            <div className={styles.scratch}>
+                <div className={styles.header}>
+                    <Link
+                        href={scratchUrl(scratch)}
+                        prefetch={false}
+                        className={clsx(styles.link, styles.name)}
+                    >
+                        {scratch.name}
+                    </Link>
+                    <div className={styles.owner}>
+                        {scratch.owner ? (
+                            <UserLink user={scratch.owner} />
+                        ) : (
+                            <div>No Owner</div>
+                        )}
+                    </div>
+                </div>
+                <div className={styles.metadata}>
+                    <span>
+                        {presetOrCompiler} • {matchPercentString} matched •{" "}
+                        <TimeAgo date={scratch.last_updated} />
+                    </span>
+                </div>
+            </div>
+        </li>
+    );
 }
 
 export function ScratchItemPresetList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
+    const matchPercentString = getMatchPercentString(scratch);
+
     return (
         <ScratchItemRow
             scratch={scratch}
@@ -359,7 +413,12 @@ export function ScratchOwnerAvatar({ scratch }: { scratch: api.TerseScratch }) {
 export function SingleLineScratchItem({
     scratch,
     showOwner = false,
-}: { scratch: api.TerseScratch; showOwner?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showOwner?: boolean;
+}) {
+    const matchPercentString = getMatchPercentString(scratch);
+
     return (
         <li className={styles.singleLine}>
             <PlatformLink

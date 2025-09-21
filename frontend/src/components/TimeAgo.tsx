@@ -11,14 +11,7 @@ function formatDateString(x: string, format = "YYYY-MM-DD HH:mm:ss") {
     return dateObject.format(format);
 }
 
-export default function TimeAgo({
-    date,
-}: {
-    date: string;
-}) {
-    const [mounted, setMounted] = useState(false);
-    const dateTime = new Date(date).toISOString();
-    const fallbackTitle = dateTime.substring(0, 19).replace("T", " ");
+export default function TimeAgo({ date }: { date: string }) {
     const title = formatDateString(date);
 
     useEffect(() => {

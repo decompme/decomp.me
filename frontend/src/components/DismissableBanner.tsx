@@ -8,8 +8,10 @@ import styles from "./DismissableBanner.module.scss";
 export default function DismissableBanner({
     className,
     children,
-    color = "#4273e1",
-}: { className?: string; children?: ReactNode; color: string }) {
+}: {
+    className?: string;
+    children?: ReactNode;
+}) {
     const [isOpen, setIsOpen] = useState(true);
 
     if (!isOpen) return null;
