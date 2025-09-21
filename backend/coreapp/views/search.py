@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from ..decorators.cache import globally_cacheable
 from ..middleware import Request
 from ..models.preset import Preset
 from ..models.scratch import Scratch
@@ -9,6 +10,7 @@ from ..serializers import PresetSerializer, TerseScratchSerializer, serialize_pr
 
 
 class SearchViewSet(APIView):
+    @globally_cacheable(max_age=60, stale_while_revalidate=30)
     def get(self, request: Request) -> Response:
         query = request.query_params.get("search", "")
         page_size = int(request.query_params.get("page_size", "5"))

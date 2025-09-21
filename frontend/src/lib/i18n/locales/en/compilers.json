@@ -72,15 +72,11 @@
 	"gcc2.7.2snew": "GCC 2.7.2 (SN, experimental)",
 	"gcc2.8.1sn": "GCC 2.8.1 (SN)",
 	"gcc2.8.1sn-cxx": "GCC 2.8.1 (SN) (C++)",
+	"gcc2.8.1snew-cxx": "GCC 2.8.1 (SN, experimental) (C++)",
 	"gcc2.8.0": "GCC 2.8.0",
 	"gcc2.8.1": "GCC 2.8.1",
 	"gcc2.8.1pm": "GCC 2.8.1 (Paper Mario)",
 	"gcc4.4.0-mips64-elf": "GCC 4.4.0 (mips64-elf)",
-
-	"ido5.3_irix": "IDO 5.3",
-	"ido5.3_asm_irix": "IDO 5.3 AS",
-	"ido5.3_c++_irix": "IDO 5.3 C++",
-	"ido6.0_irix": "IDO 6.0",
 
 	"mips_pro_744_irix": "MIPS Pro 7.4.4",
 

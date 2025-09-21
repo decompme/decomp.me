@@ -110,3 +110,23 @@ def set_user_profile(
         return get_response(request)
 
     return middleware
+
+
+def strip_cookie_vary(
+    get_response: Callable[[HttpRequest], Response],
+) -> Callable[[Request], Response]:
+    def middleware(request: Request) -> Response:
+        response = get_response(request)
+
+        if response.headers.get("X-Globally-Cacheable", False):
+            if "Vary" in response:
+                vary_headers = [h.strip() for h in response["Vary"].split(",")]
+                vary_headers = [h for h in vary_headers if h.lower() != "cookie"]
+                if vary_headers:
+                    response["Vary"] = ", ".join(vary_headers)
+                else:
+                    del response["Vary"]
+            del response["X-Globally-Cacheable"]
+        return response
+
+    return middleware
