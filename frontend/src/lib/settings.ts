@@ -53,7 +53,7 @@ export const useObjdiffClientEnabled = createStorageKey<boolean>(
 );
 export const diffCellBackgroundEnabled = createStorageKey<boolean>(
     "diffCellBackgroundEnabled",
-    false,
+    true,
 );
 
 export function useIsSiteThemeDark() {
