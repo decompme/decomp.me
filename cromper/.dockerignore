@@ -6,3 +6,11 @@ __pycache__/
 # avoid cache-busting when testing Docker
 Dockerfile*
 docker.*.env
+
+# compilers
+compilers/*/**
+!compilers/download.py
+
+# libraries
+libraries/*/**
+!libraries/download.py

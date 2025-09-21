@@ -46,7 +46,7 @@ class LibraryVersions:
 
 def available_libraries() -> List[LibraryVersions]:
     """Get all available libraries across all platforms."""
-    results = []
+    results: List[LibraryVersions] = []
 
     if not LIBRARY_BASE_PATH.exists():
         logger.warning(f"Library base path does not exist: {LIBRARY_BASE_PATH}")

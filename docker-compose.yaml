@@ -8,6 +8,32 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres:/var/lib/postgresql/data
+  cromper:
+    build:
+      context: cromper
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
+      - setfcap
+    ports:
+      - "8888:8888"
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    volumes:
+      - ./cromper:/cromper
+      - ./cromper/compilers:/cromper/compilers:ro
+      - ./cromper/libraries:/cromper/libraries:ro
+    tmpfs:
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+    environment:
+      - CROMPER_PORT=8888
+      - USE_SANDBOX_JAIL=true
+      - SANDBOX_DISABLE_PROC=true
   backend:
     build:
       context: backend

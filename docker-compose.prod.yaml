@@ -1,4 +1,31 @@
 services:
+  cromper:
+    build:
+      context: cromper
+      dockerfile: Dockerfile.prod
+    cap_drop:
+      - all
+    cap_add:
+      - setuid
+      - setgid
+      - setfcap
+    env_file:
+      - docker.prod.env
+    ports:
+      - "8888:8888"
+    restart: on-failure
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+    volumes:
+      - ./cromper/compilers:/cromper/compilers:ro
+      - ./cromper/libraries:/cromper/libraries:ro
+    tmpfs:
+      # Use a separate tmpfs to prevent a rogue jailed process
+      # from filling /tmp on the parent container
+      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+    networks:
+      - decompme
   backend:
     build:
       context: backend
@@ -29,8 +56,8 @@ services:
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
     networks:
       - decompme
-    # uncommment for local testing
-    # entrypoint: tail -f /dev/null
+  # uncommment for local testing
+  # entrypoint: tail -f /dev/null
 
   frontend:
     build:
@@ -62,7 +89,7 @@ services:
       - ./backend/media:/media
       # static files for django /admin control panel
       - ./backend/static:/var/www/decomp.me/static
-      # TODO: mount static + public files from frontend
+    # TODO: mount static + public files from frontend
     # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
     #extra_hosts:
     #  - "backend=172.17.0.1"   # docker0 bridge

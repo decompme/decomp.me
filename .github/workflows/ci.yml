@@ -112,9 +112,14 @@ jobs:
           python3 -m pip install requests
           python3 backend/compilers/download.py
           python3 backend/libraries/download.py
+          # Copy to cromper directories
+          cp -r backend/compilers cromper/
+          cp -r backend/libraries cromper/
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
           sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
           sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
+          sudo chown -R ${USER_1000}:${USER_1000} cromper/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} cromper/libraries
 
       - name: Setup dummy docker.prod.dev
         run: |
@@ -127,6 +132,7 @@ jobs:
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+          echo 'CROMPER_URL=http://cromper:8888' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
 
       - name: Comment out SSL server configuration from nginx
@@ -139,6 +145,12 @@ jobs:
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
           docker compose logs nginx | grep "ready for start up"
           ! docker compose logs nginx | grep -q "nginx-1 exited with code"
+
+      - name: Build and bring up cromper container
+        run: |
+          docker compose -f docker-compose.prod.yaml build cromper
+          docker compose -f docker-compose.prod.yaml up -d cromper
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Build and bring up up backend container
         run: |
@@ -211,3 +223,36 @@ jobs:
       - uses: psf/black@stable
         with:
           src: "./backend"
+
+  cromper_test:
+    name: cromper tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.8.18"
+      - name: Setup Python 3.13
+        run: uv python install 3.13
+      - name: Install cromper dependencies
+        run: |
+          cd cromper
+          uv sync --all-extras
+      - name: Run cromper tests
+        run: |
+          cd cromper
+          uv run pytest tests/ -v
+      - name: Run cromper type checking
+        run: |
+          cd cromper
+          uv run mypy cromper/
+      - name: Check cromper formatting
+        run: |
+          cd cromper
+          uv run ruff format --check .
+      - name: Run cromper linting
+        run: |
+          cd cromper
+          uv run ruff check .

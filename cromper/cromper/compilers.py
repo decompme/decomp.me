@@ -68,9 +68,10 @@ class Compilers:
 
     @staticmethod
     def from_id(compiler_id: str) -> "Compiler":
-        if compiler_id not in _all_compilers:
-            raise ValueError(f"Unknown compiler: {compiler_id}")
-        return _all_compilers[compiler_id]
+        for compiler in _all_compilers:
+            if compiler.id == compiler_id:
+                return compiler
+        raise ValueError(f"Unknown compiler: {compiler_id}")
 
 
 class CompilerType(enum.Enum):

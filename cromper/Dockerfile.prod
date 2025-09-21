@@ -1,0 +1,189 @@
+FROM --platform=linux/amd64 ubuntu:24.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Base dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    python-is-python3 \
+    python3 \
+    python3-pip \
+    python3.12-dev \
+    python3.12-venv \
+    software-properties-common \
+    gcc \
+    libc6-dev \
+    git \
+    libnl-route-3-200 \
+    libprotobuf32t64 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+
+
+FROM base AS nsjail
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    g++ \
+    gcc \
+    git \
+    libnl-route-3-dev \
+    libprotobuf-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone "https://github.com/google/nsjail" \
+    --recursive --branch 3.4 /nsjail \
+    && cd /nsjail \
+    && make
+
+
+FROM base AS poetry
+
+COPY pyproject.toml poetry.lock /backend/
+
+WORKDIR /backend
+
+# NOTE: adding "--no-dev" results in "ModuleNotFoundError: No module named 'django_stubs_ext'" error
+RUN poetry install
+
+FROM base AS dependencies
+
+RUN dpkg --add-architecture i386 \
+    && add-apt-repository -y ppa:dosemu2/ppa \
+    && add-apt-repository -y ppa:stsp-0/dj64 \
+    && apt-get update \
+    && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
+    binutils-aarch64-linux-gnu \
+    binutils-arm-none-eabi \
+    binutils-djgpp \
+    binutils-mingw-w64-i686 \
+    binutils-mips-linux-gnu \
+    binutils-powerpc-linux-gnu \
+    binutils-sh-elf \
+    cpp \
+    dj64 \
+    dos2unix \
+    dosemu2 \
+    gcc-mips-linux-gnu \
+    iptables \
+    libarchive-tools \
+    libc6-dev-i386 \
+    libdevmapper1.02.1 \
+    libgpgme11 \
+    libnl-route-3-200 \
+    libprotobuf-dev \
+    libtinfo6 \
+    netcat-traditional \
+    unzip \
+    wget \
+    wine \
+    wine32:i386 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
+    && apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb \
+    && rm libtinfo5_6.3-2ubuntu0.1_amd64.deb
+
+COPY --from=nsjail /nsjail/nsjail /bin/nsjail
+
+COPY --from=ghcr.io/decompals/wibo:0.6.16 /usr/local/sbin/wibo /usr/bin/
+
+# Patched mips binutils
+RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
+    && tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump \
+    && rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz \
+    && chmod +x /usr/bin/mips-ps2-decompals-*
+
+# Patched PowerPC binutils
+RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-x86_64.zip" | \
+    bsdtar -xvf- -C /usr/bin \
+    && chmod +x /usr/bin/powerpc-eabi-*
+
+# MSDOS specific
+RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
+    && tar xvzf omftools.tar.gz -C /usr/bin jwasm \
+    && rm omftools.tar.gz \
+    && wget "https://github.com/decompals/binutils-omf/releases/download/v0.4/omftools-linux-x86_64.tar.gz" \
+    && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
+    && rm omftools-linux-x86_64.tar.gz
+
+RUN mkdir -p /etc/fonts
+
+ENV WINEPREFIX=/tmp/wine
+
+# Ensure /sandbox, wine, and virtualenv dirs have correct ownership
+RUN mkdir -p /sandbox \
+    && chown -R ubuntu:ubuntu /sandbox \
+    && mkdir -p "${WINEPREFIX}" \
+    && chown ubuntu:ubuntu "${WINEPREFIX}" \
+    && mkdir /virtualenvs \
+    && chown -R ubuntu:ubuntu /virtualenvs
+
+# Switch to non-root user
+USER ubuntu
+
+# Initialize wine files to /home/ubuntu/.wine
+RUN wineboot --init
+
+COPY wine /wine
+
+FROM base AS cromper
+
+# Copy nsjail binary
+COPY --from=nsjail /nsjail/nsjail /bin/nsjail
+
+# Create cromper user
+RUN useradd -m cromper
+
+# Create necessary directories
+RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
+    && chown -R cromper:cromper /cromper /tmp/sandbox /tmp/wine
+
+# Set working directory
+WORKDIR /cromper
+
+# Copy project files
+COPY --chown=cromper:cromper pyproject.toml uv.lock ./
+COPY --chown=cromper:cromper cromper/ ./cromper/
+COPY --chown=cromper:cromper docker_entrypoint.sh ./
+
+# Switch to cromper user
+USER cromper
+
+# Install dependencies (production only)
+RUN uv sync --frozen --no-dev
+
+# Copy compilers and libraries (will be mounted in production)
+COPY --chown=cromper:cromper compilers/ ./compilers/
+COPY --chown=cromper:cromper libraries/ ./libraries/
+
+# Expose port
+EXPOSE 8888
+
+# Set environment variables
+ENV PYTHONPATH=/cromper
+ENV COMPILER_BASE_PATH=/cromper/compilers
+ENV LIBRARY_BASE_PATH=/cromper/libraries
+ENV SANDBOX_TMP_PATH=/tmp/sandbox
+ENV SANDBOX_CHROOT_PATH=/tmp/sandbox/root
+ENV WINEPREFIX=/tmp/wine
+ENV CROMPER_PORT=8888
+ENV USE_SANDBOX_JAIL=true
+ENV SANDBOX_DISABLE_PROC=true
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8888/health || exit 1
+
+# Run cromper
+ENTRYPOINT ["/cromper/docker_entrypoint.sh"]
