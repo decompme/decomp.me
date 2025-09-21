@@ -80,18 +80,6 @@ nop
         }
         self.create_scratch(scratch_dict)
 
-    def test_dummy_platform(self) -> None:
-        """
-        Ensure that we can create scratches with the dummy platform and compiler
-        """
-        scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": "dummy",  # todo use id
-            "context": "",
-            "target_asm": "this is some test asm",
-        }
-        self.create_scratch(scratch_dict)
-
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """

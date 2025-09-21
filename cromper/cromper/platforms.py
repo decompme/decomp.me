@@ -1,10 +1,12 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict
+from typing import Any, Dict, OrderedDict, TYPE_CHECKING
 from pathlib import Path
 import functools
 
-from cromper.compilers import Compilers
+if TYPE_CHECKING:
+    from cromper.compilers import Compilers
+
 from cromper.flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
@@ -40,7 +42,7 @@ class Platform:
 
     def to_json(
         self,
-        compilers: Compilers,
+        compilers: "Compilers",
         include_compilers: bool = False,
         include_presets: bool = False,
         include_num_scratches: bool = False,

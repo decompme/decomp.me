@@ -15,7 +15,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     DJANGO_LOG_LEVEL=(str, "INFO"),
-    DUMMY_COMPILER=(bool, False),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SANDBOX_DISABLE_PROC=(bool, False),
@@ -58,7 +57,6 @@ for stem in [".env.local", ".env"]:
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL")
-DUMMY_COMPILER = env("DUMMY_COMPILER")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 LOCAL_FILE_DIR = env("LOCAL_FILE_DIR")
 CROMPER_URL = env("CROMPER_URL")
