@@ -9,9 +9,6 @@ BE_PORT=${BACKEND_PORT:-8000}
 
 uv sync
 
-uv run /backend/compilers/download.py
-uv run /backend/libraries/download.py
-
 until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   echo "Waiting for database to become available on ${DB_HOST}:${DB_PORT}..."
   sleep 1

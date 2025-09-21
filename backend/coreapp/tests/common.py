@@ -2,11 +2,6 @@ from collections.abc import Callable
 from typing import Any
 from unittest import skip, skipIf
 
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase
-
-from coreapp import compilers, platforms
 from coreapp.compilers import Compiler
 from coreapp.models.scratch import Scratch
 
@@ -36,8 +31,8 @@ class BaseTestCase(APITestCase):
 
     def create_nop_scratch(self) -> Scratch:
         scratch_dict = {
-            "compiler": "dummy",
-            "platform": "dummy",
+            "compiler": "gcc2.8.1pm",
+            "platform": "n64",
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }

@@ -9,7 +9,7 @@ import django
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Decomp.me database housekeeping script"
+        description="Decomp.me database database housekeeping script"
     )
     parser.add_argument(
         "--dry-run",
