@@ -22,8 +22,13 @@
 
 After signing in with GitHub, you can make your user an admin from the backend container:
 
-```sh
-docker compose exec backend uv run python manage.py shell
+```
+$ uv run python3 manage.py shell
+>>> from django.contrib.auth.models import User
+>>> user = User.objects.get(username="your_username")
+>>> user.is_staff = True
+>>> user.is_superuser = True
+>>> user.save()
 ```
 
 Then run:

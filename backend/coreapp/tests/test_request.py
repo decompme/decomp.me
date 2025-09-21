@@ -1,5 +1,6 @@
-import subprocess
-
+from coreapp import compilers, platforms
+from coreapp.models.profile import Profile
+from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase

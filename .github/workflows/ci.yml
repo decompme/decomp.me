@@ -43,12 +43,12 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            -e DUMMY_COMPILER=1 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
-              uv sync && \
+              uv sync --all-extras && \
               uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              for r in wine/*.reg; do regedit $r; done && \
               uv run python manage.py test'
 
   backend_test_docker_prod:
@@ -95,7 +95,9 @@ jobs:
             -e DATABASE_URL=sqlite:///:memory: \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
-              -c 'uv run python manage.py test'
+              -c '\
+              for r in wine/*.reg; do regedit $r; done && \
+              uv run python manage.py test'
 
   docker_compose_test:
     name: test docker compose
@@ -206,33 +208,35 @@ jobs:
           cd frontend
           yarn test
 
-  mypy:
-    name: mypy
-    runs-on: ubuntu-latest
+  backend_lint:
+    name: backend lint and type check
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-      - run: |-
+          version: "0.8.18"
+      - name: Setup Python 3.12
+        run: uv python install 3.12
+      - name: Install backend dependencies
+        run: |
           cd backend
-          uv sync
+          uv sync --all-extras
+      - name: Run type checking
+        run: |
+          cd backend
           uv run mypy
+      - name: Check formatting
+        run: |
+          cd backend
+          uv run ruff format --check .
+      - name: Run linting
+        run: |
+          cd backend
+          uv run ruff check .
 
-  ruff:
-    name: ruff
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
-        with:
-          src: "./backend"
+
 
   cromper_test:
     name: cromper tests

@@ -47,14 +47,14 @@ RUN git clone "https://github.com/google/nsjail" \
     && make
 
 
-FROM base AS poetry
+FROM base AS uv
 
-COPY pyproject.toml poetry.lock /backend/
+COPY pyproject.toml uv.lock /backend/
 
 WORKDIR /backend
 
 # NOTE: adding "--no-dev" results in "ModuleNotFoundError: No module named 'django_stubs_ext'" error
-RUN poetry install
+RUN uv sync --frozen --no-dev
 
 FROM base AS dependencies
 

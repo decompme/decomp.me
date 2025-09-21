@@ -1,9 +1,5 @@
 import tempfile
 
-from django.contrib.auth.models import User
-from django.urls import reverse
-from rest_framework import status
-
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
 from coreapp.models.project import Project, ProjectMember

@@ -42,8 +42,7 @@ touch .env.local
 cd backend
 ```
 
-* Install Python dependencies with [uv](https://docs.astral.sh/uv/getting-started/installation/)
-
+* Install Python dependencies with [uv](https://docs.astral.sh/uv/getting-started/installation/r)
 ```shell
 uv sync
 ```
@@ -135,6 +134,5 @@ yarn lint --fix
 ```shell
 cd backend
 uv run mypy
-uv run ruff check .
-uv run ruff format .
+uv run black .
 ```
