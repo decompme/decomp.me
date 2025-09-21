@@ -3,6 +3,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import ParamSpec, TypeVar
 
+from typing import Callable, Optional, TypeVar, ParamSpec
 from rest_framework.response import Response
 
 logger = logging.getLogger(__file__)

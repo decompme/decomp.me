@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Any
 from unittest import skip, skipIf
 
-from coreapp.compilers import Compiler
 from coreapp.models.scratch import Scratch
 
 

@@ -9,7 +9,6 @@ from rest_framework.relations import SlugRelatedField
 from coreapp import platforms
 
 from . import compilers
-from .flags import LanguageFlagSet
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile

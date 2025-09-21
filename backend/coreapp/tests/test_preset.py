@@ -1,6 +1,5 @@
 from typing import Any
 
-from coreapp.compilers import GCC281PM
 from coreapp.models.preset import Preset
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.contrib.auth.models import User
@@ -16,7 +15,7 @@ from coreapp.tests.common import BaseTestCase, requiresCompiler
 SAMPLE_PRESET_DICT = {
     "name": "Kitty's Adventure",
     "platform": "n64",  # todo
-    "compiler": GCC281PM.id,
+    "compiler": "gcc2.8.1pm",  # todo
     "assembler_flags": "-march=vr4300 -mabi=32 -mtune=vr4300",
     "compiler_flags": "-O2 -G0",
     "decompiler_flags": "-capy",

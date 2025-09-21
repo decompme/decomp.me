@@ -27,13 +27,10 @@ from ..decorators.django import condition
 from ..error import CompilationError, DiffError
 from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
-from ..flags import Language
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
-from ..pagination import SafeCursorPagination
-from ..platforms import Platform
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCompileSerializer,

@@ -11,8 +11,6 @@ from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp import compilers
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
 from coreapp.models.scratch import Assembly, Scratch
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
