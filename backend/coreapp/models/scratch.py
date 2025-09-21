@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List, Sequence
+from typing import Any, Sequence
 
 from attr import dataclass
 from django.db import models

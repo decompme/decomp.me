@@ -1,5 +1,4 @@
 import tempfile
-from unittest.mock import Mock, patch
 
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile

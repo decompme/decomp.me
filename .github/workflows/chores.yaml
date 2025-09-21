@@ -21,11 +21,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Poetry
-        run: pip install poetry==2.2.0
+      - name: Install uv
+        run: pip install uv==0.8.19
 
       - name: Update m2c & asm-differ
-        run: cd backend && poetry update m2c asm-differ
+        run: cd backend && uv update m2c asm-differ
 
       - name: Check for changes
         run: |

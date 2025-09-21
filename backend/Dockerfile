@@ -14,17 +14,8 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=2.2.0 \
-    POETRY_HOME=/etc/poetry \
-    python3.12 -
-
-ENV POETRY_VIRTUALENVS_PATH=/virtualenvs
-
-ENV PATH="${PATH}:/etc/poetry/bin"
+COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
 
 WORKDIR /backend
-
-ENV POETRY_VIRTUALENVS_PATH=/backend/virtualenvs
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

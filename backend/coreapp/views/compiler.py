@@ -34,7 +34,6 @@ class SingleCompilerDetail(APIView):
         platform: Optional[str] = "",
         compiler: Optional[str] = "",
     ) -> Response:
-
         filtered = [
             c for c in compilers.available_compilers() if c.platform.id == platform
         ]

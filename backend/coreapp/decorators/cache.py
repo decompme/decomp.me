@@ -26,7 +26,7 @@ def globally_cacheable(
             response: R = view_func(*args, **kwargs)
 
             # Build Cache-Control header
-            directives = [f"public", f"max-age={max_age}"]
+            directives = ["public", f"max-age={max_age}"]
             if stale_while_revalidate is not None:
                 directives.append(f"stale-while-revalidate={stale_while_revalidate}")
 

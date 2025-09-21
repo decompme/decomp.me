@@ -12,9 +12,6 @@ from .models.profile import Profile
 
 logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
-    from .models.github import GitHubUser
-
 
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile

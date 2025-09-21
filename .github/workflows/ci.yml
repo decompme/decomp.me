@@ -42,14 +42,13 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            -e POETRY_VIRTUALENVS_PATH=/backend/virtualenvs \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
-              poetry install --no-root && \
-              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
-              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              uv sync --all-extras && \
+              uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
               for r in wine/*.reg; do regedit $r; done && \
-              poetry run python manage.py test'
+              uv run python manage.py test'
 
   backend_test_docker_prod:
     name: backend tests (docker prod container)
@@ -97,7 +96,7 @@ jobs:
             decompme_backend \
               -c '\
               for r in wine/*.reg; do regedit $r; done && \
-              poetry run python manage.py test'
+              uv run python manage.py test'
 
   docker_compose_test:
     name: test docker compose
@@ -197,32 +196,35 @@ jobs:
           cd frontend
           yarn lint
 
-  mypy:
-    name: mypy
+  backend_lint:
+    name: backend lint and type check
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.8.18"
       - name: Setup Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: poetry
-          cache-dependency-path: backend/poetry.lock
-      - run: |-
+        run: uv python install 3.12
+      - name: Install backend dependencies
+        run: |
           cd backend
-          poetry install --no-root
-          poetry run mypy
+          uv sync --all-extras
+      - name: Run type checking
+        run: |
+          cd backend
+          uv run mypy
+      - name: Check formatting
+        run: |
+          cd backend
+          uv run ruff format --check .
+      - name: Run linting
+        run: |
+          cd backend
+          uv run ruff check .
 
-  black:
-    name: black
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: psf/black@stable
-        with:
-          src: "./backend"
+
 
   cromper_test:
     name: cromper tests

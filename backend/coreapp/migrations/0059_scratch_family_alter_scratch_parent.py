@@ -3,7 +3,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0058_rename_gcc272sn_to_gcc272sn0004"),
     ]
