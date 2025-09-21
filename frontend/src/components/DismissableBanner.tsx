@@ -8,7 +8,10 @@ import styles from "./DismissableBanner.module.scss";
 export default function DismissableBanner({
     className,
     children,
-}: { className?: string; children?: ReactNode }) {
+}: {
+    className?: string;
+    children?: ReactNode;
+}) {
     const [isOpen, setIsOpen] = useState(true);
 
     if (!isOpen) return null;

@@ -132,7 +132,10 @@ function DiffBody({
 function ThreeWayToggleButton({
     enabled,
     setEnabled,
-}: { enabled: boolean; setEnabled: (enabled: boolean) => void }) {
+}: {
+    enabled: boolean;
+    setEnabled: (enabled: boolean) => void;
+}) {
     return (
         <button
             className={styles.threeWayToggle}

@@ -61,7 +61,9 @@ export function ContributorItem({ contributor }: { contributor: Contributor }) {
 
 export default function ContributorsList({
     contributors,
-}: { contributors: Contributor[] }) {
+}: {
+    contributors: Contributor[];
+}) {
     if (!contributors.length) {
         return null;
     }

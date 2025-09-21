@@ -62,8 +62,8 @@ jobs:
       - name: Fetch compilers and libraries
         run: |-
           python3 -m pip install requests
-          python3 backend/compilers/download.py
-          python3 backend/libraries/download.py
+          python3 cromper/compilers/download.py
+          python3 cromper/libraries/download.py
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
           sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
           sudo chown -R ${USER_1000}:${USER_1000} backend/libraries

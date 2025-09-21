@@ -129,7 +129,11 @@ export const DiffRow = memo(function DiffRow({
     data,
     index,
     style,
-}: { data: DiffListData; index: number; style: CSSProperties }) {
+}: {
+    data: DiffListData;
+    index: number;
+    style: CSSProperties;
+}) {
     const row = data.diff?.rows?.[index];
     return (
         <li

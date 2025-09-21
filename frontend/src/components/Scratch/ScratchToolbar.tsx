@@ -86,7 +86,10 @@ function EditTimeAgo({ date }: { date: string }) {
 function ScratchName({
     name,
     onChange,
-}: { name: string; onChange?: (name: string) => void }) {
+}: {
+    name: string;
+    onChange?: (name: string) => void;
+}) {
     const [isEditing, setEditing] = useState(false);
     const editableRef = useRef<HTMLDivElement>(null);
 

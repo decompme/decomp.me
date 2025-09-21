@@ -38,7 +38,10 @@ export function getMatchPercentString(scratch: api.TerseScratch) {
 export function ScratchItem({
     scratch,
     children,
-}: { scratch: api.TerseScratch; children?: ReactNode }) {
+}: {
+    scratch: api.TerseScratch;
+    children?: ReactNode;
+}) {
     const compilersTranslation = getTranslation("compilers");
     const compilerName = compilersTranslation.t(scratch.compiler);
     const matchPercentString = getMatchPercentString(scratch);
@@ -135,7 +138,9 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
 
 export function ScratchItemPlatformList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     const compilersTranslation = getTranslation("compilers");
     const compilerName = compilersTranslation.t(scratch.compiler);
     const matchPercentString = getMatchPercentString(scratch);
@@ -182,7 +187,9 @@ export function ScratchItemPlatformList({
 
 export function ScratchItemPresetList({
     scratch,
-}: { scratch: api.TerseScratch }) {
+}: {
+    scratch: api.TerseScratch;
+}) {
     const matchPercentString = getMatchPercentString(scratch);
 
     return (
@@ -242,7 +249,10 @@ export function ScratchOwnerAvatar({ scratch }: { scratch: api.TerseScratch }) {
 export function SingleLineScratchItem({
     scratch,
     showOwner = false,
-}: { scratch: api.TerseScratch; showOwner?: boolean }) {
+}: {
+    scratch: api.TerseScratch;
+    showOwner?: boolean;
+}) {
     const matchPercentString = getMatchPercentString(scratch);
 
     return (

@@ -25,7 +25,9 @@ export const runtime = "edge";
 
 export default async function ScratchOG({
     params,
-}: { params: { slug: string } }) {
+}: {
+    params: { slug: string };
+}) {
     const { scratch, parentScratch, compilation } = await getScratchDetails(
         params.slug,
     );
