@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass
 
 from cromper.compilers import Compiler, CompilerType
-from cromper.cromper.libraries import Library
+from cromper.libraries import Library
 from cromper.error import AssemblyError, CompilationError
 from cromper.flags import Language
 from cromper.platforms import Platform
