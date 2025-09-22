@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -24,7 +25,6 @@ RUN apt-get -y update && apt-get install -y \
     flex \
     g++ \
     gcc \
-    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \

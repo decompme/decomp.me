@@ -18,15 +18,18 @@ jobs:
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          mkdir -p sandbox && chmod 777 sandbox
-          mkdir -p local_files && chmod 777 local_files
-          mkdir -p compilers && chmod 777 compilers
-          mkdir -p libraries && chmod 777 libraries
+          # NOTE: CI does not run as 'ubuntu' user
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          for dir in .venv sandbox local_files compilers libraries; do
+            mkdir -p "$dir"
+            chown "${USER_1000}:${USER_1000}" "$dir"
+          done
           docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
+            -v $(pwd)/.venv:/.venv \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
