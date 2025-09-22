@@ -3,7 +3,7 @@ name = "cromper"
 version = "0.1.0"
 description = "Async compilation and assembly service for decomp.me"
 authors = [
-    {name = "Decomp.me team"}
+    {name = "decomp.me team"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -31,12 +31,13 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.black]
-line-length = 88
-
 [tool.mypy]
-python_version = "3.10"
 ignore_missing_imports = true
 strict_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+
+exclude = [
+    "compilers/.*",
+    "libraries/.*",
+]

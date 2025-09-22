@@ -43,7 +43,6 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-resized" },
     { name = "django-session-timeout" },
-    { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "djangorestframework" },
     { name = "drf-extensions" },
     { name = "gunicorn" },
@@ -60,7 +59,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "django-stubs" },
+    { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "django-stubs-ext" },
     { name = "djangorestframework-stubs" },
     { name = "mypy" },
@@ -81,7 +80,6 @@ requires-dist = [
     { name = "django-filter", specifier = ">=24.3" },
     { name = "django-resized", specifier = ">=1.0.3" },
     { name = "django-session-timeout", specifier = ">=0.1.0" },
-    { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.2.5" },
     { name = "djangorestframework", specifier = ">=3.15.2" },
     { name = "drf-extensions", specifier = ">=0.7.1" },
     { name = "gunicorn", specifier = ">=23.0.0" },
@@ -98,7 +96,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "django-stubs", specifier = ">=5.1.1" },
+    { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.2.5" },
     { name = "django-stubs-ext", specifier = ">=5.1.1" },
     { name = "djangorestframework-stubs", specifier = ">=3.15.1" },
     { name = "mypy", specifier = ">=1.13.0" },
