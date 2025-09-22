@@ -27,8 +27,8 @@ import { useObjdiffClientEnabled } from "./settings";
 
 function onErrorRetry<C>(
     error: ResponseError,
-    key: string,
-    config: C,
+    _key: string,
+    _config: C,
     revalidate: Revalidator,
     { retryCount }: RevalidatorOptions,
 ) {

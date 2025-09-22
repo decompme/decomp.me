@@ -72,13 +72,7 @@ function EditTimeAgo({ date }: { date: string }) {
 
     return (
         <span className={styles.lastEditTime}>
-            {isActive ? (
-                <>Active now</>
-            ) : (
-                <>
-                    <TimeAgo date={date} />
-                </>
-            )}
+            {isActive ? "Active now" : <TimeAgo date={date} />}
         </span>
     );
 }

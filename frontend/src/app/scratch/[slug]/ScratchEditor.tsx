@@ -118,10 +118,8 @@ export default function ScratchEditor(props: Props) {
     };
 
     return (
-        <>
-            <SWRConfig value={{ use: [offlineMiddleware], onSuccess }}>
-                <ScratchEditorInner {...props} offline={offline} />
-            </SWRConfig>
-        </>
+        <SWRConfig value={{ use: [offlineMiddleware], onSuccess }}>
+            <ScratchEditorInner {...props} offline={offline} />
+        </SWRConfig>
     );
 }
