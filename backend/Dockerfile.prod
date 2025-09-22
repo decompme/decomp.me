@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -25,7 +26,6 @@ RUN apt-get update \
     flex \
     g++ \
     gcc \
-    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \
@@ -40,17 +40,7 @@ RUN git clone "https://github.com/google/nsjail" \
     && make
 
 
-FROM base AS uv-install
-
-COPY pyproject.toml uv.lock /backend/
-
-WORKDIR /backend
-
-# Install dependencies to /backend/.venv
-RUN uv sync --locked
-
-
-FROM base AS dependencies
+FROM base AS developer
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
@@ -115,13 +105,11 @@ RUN mkdir -p /etc/fonts
 
 ENV WINEPREFIX=/tmp/wine
 
-# Ensure /sandbox, wine, and virtualenv dirs have correct ownership
+# Ensure /sandbox and wine dirs have correct ownership
 RUN mkdir -p /sandbox \
     && chown -R ubuntu:ubuntu /sandbox \
     && mkdir -p "${WINEPREFIX}" \
-    && chown ubuntu:ubuntu "${WINEPREFIX}" \
-    && mkdir /backend/.venv \
-    && chown -R ubuntu:ubuntu /backend/.venv
+    && chown ubuntu:ubuntu "${WINEPREFIX}"
 
 # Switch to non-root user
 USER ubuntu
@@ -129,12 +117,24 @@ USER ubuntu
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
-COPY wine /wine
+WORKDIR /backend
 
 
-FROM dependencies AS deployment
+FROM base AS uv-install
 
 WORKDIR /backend
+
+RUN chown -R ubuntu:ubuntu /backend
+
+COPY pyproject.toml uv.lock /backend/
+
+USER ubuntu
+
+# Install dependencies to /backend/.venv
+RUN uv sync --locked
+
+
+FROM developer AS deployment
 
 COPY --from=uv-install /backend/.venv /backend/.venv
 COPY pyproject.toml uv.lock /backend/
