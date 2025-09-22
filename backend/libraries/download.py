@@ -179,7 +179,7 @@ def main():
     if args.verbose:
         logger.setLevel("DEBUG")
 
-    if args.libraries_dir == None:
+    if args.libraries_dir is None:
         args.libraries_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
     libraries_yaml = (
