@@ -255,16 +255,8 @@ jobs:
       - name: Run cromper tests
         run: |
           cd cromper
-          uv run pytest tests/ -v
-      - name: Run cromper type checking
-        run: |
-          cd cromper
-          uv run mypy cromper/
-      - name: Check cromper formatting
-        run: |
-          cd cromper
-          uv run ruff format --check .
-      - name: Run cromper linting
-        run: |
-          cd cromper
-          uv run ruff check .
+          uv sync
+          uv run pytest -v
+          uv run mypy .
+          uv run ruff check
+          uv run ruff format --check
