@@ -28,6 +28,7 @@ dependencies = [
     "setuptools>=75.6.0",
     "debugpy>=1.8.13",
     "gunicorn>=23.0.0",
+    "django-stubs[compatible-mypy]>=5.2.5",
 ]
 
 [project.optional-dependencies]
@@ -53,42 +54,9 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["coreapp", "decompme"]
 
-[tool.ruff]
-extend-exclude = ["local_files"]
-line-length = 88
-
-[tool.ruff.format]
-docstring-code-format = true
-
 [tool.mypy]
-python_version = "3.10"
-ignore_missing_imports = true
-strict_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = true
-implicit_reexport = false
-strict_equality = true
-no_implicit_optional = true
-warn_unused_configs = true
-warn_unreachable = true
-warn_no_return = true
-namespace_packages = true
-disallow_untyped_defs = true
-
-files = [
-    "coreapp/**/*.py",
-    "decompme/**/*.py"
-]
-exclude = ["manage.py"]
-
-plugins = [
-    "mypy_django_plugin.main",
-    "mypy_drf_plugin.main"
-]
+disable_error_code = "var-annotated, import-untyped"
+plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "decompme.settings"

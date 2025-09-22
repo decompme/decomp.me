@@ -80,7 +80,7 @@ class CromperClient:
 
     def compile_code(
         self,
-        compiler: Dict[str, Any],
+        compiler_id: str,
         compiler_flags: str,
         code: str,
         context: str,
@@ -89,9 +89,7 @@ class CromperClient:
     ) -> Dict[str, Any]:
         """Compile code using the cromper service."""
         data = {
-            "compiler_id": (
-                compiler["id"] if isinstance(compiler, dict) else compiler.id
-            ),
+            "compiler_id": compiler_id,
             "compiler_flags": compiler_flags,
             "code": code,
             "context": context,
@@ -111,12 +109,10 @@ class CromperClient:
 
         return {"elf_object": elf_object, "errors": response.get("errors", "")}
 
-    def assemble_asm(self, platform: Dict[str, Any], asm: Asm) -> Dict[str, Any]:
+    def assemble_asm(self, platform_id: str, asm: Asm) -> Dict[str, Any]:
         """Assemble assembly using the cromper service."""
         data = {
-            "platform_id": (
-                platform["id"] if isinstance(platform, dict) else platform.id
-            ),
+            "platform_id": platform_id,
             "asm_data": asm.data,
             "asm_hash": asm.hash,
         }

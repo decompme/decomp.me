@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from coreapp.models.preset import Preset
+from coreapp.views.compiler import CompilerDetail
+
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from rest_framework.decorators import api_view
