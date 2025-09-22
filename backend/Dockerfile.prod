@@ -16,6 +16,8 @@ RUN apt-get update \
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/etc/" sh
 
+ENV PATH="/etc/:${PATH}"
+
 FROM base AS nsjail
 
 RUN apt-get update \
