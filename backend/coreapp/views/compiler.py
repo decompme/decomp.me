@@ -2,7 +2,6 @@ from datetime import datetime
 import typing
 from typing import Dict, Optional
 
-from coreapp import compilers
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from rest_framework.exceptions import NotFound

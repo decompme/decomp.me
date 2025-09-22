@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from coreapp import compilers
 from coreapp.models.preset import Preset
 from coreapp.views.compiler import CompilerDetail
 

@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
-from coreapp import compilers, platforms
 from django.core.files import File
 from django.db.models import F, FloatField, When, Case, Value
 from django.db.models.functions import Cast
@@ -61,7 +60,7 @@ def get_db_asm(request_asm: str) -> Asm:
 MAX_FILE_SIZE = 1000 * 1024
 
 
-def cache_object(platform: Platform, file: File[Any]) -> Assembly:
+def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
     # Validate file size
     if file.size > MAX_FILE_SIZE:
         raise serializers.ValidationError(
@@ -79,7 +78,7 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     assembly, _ = Assembly.objects.get_or_create(
         hash=hashlib.sha256(obj_bytes).hexdigest(),
         defaults={
-            "arch": platform.arch,
+            "arch": platform_arch,
             "elf_object": obj_bytes,
         },
     )
@@ -90,7 +89,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
         cromper_client = get_cromper_client()
         result = cromper_client.compile_code(
-            compiler=compilers.from_id(scratch.compiler),
+            compiler_id=scratch.compiler,
             compiler_flags=scratch.compiler_flags,
             code=scratch.source_code,
             context=scratch.context,
@@ -191,13 +190,12 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform_id: Optional[str] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
-
-    if not platform_id:
-        platform_id = compiler.platform
+    platform_id = data.get("platform", compiler.platform)
 
     platform: Platform = platforms.from_id(platform_id)
+
+    platform_arch = platform.arch
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -206,11 +204,11 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     if target_obj:
         asm = None
-        assembly = cache_object(platform, target_obj)
+        assembly = cache_object(platform_arch, target_obj)
     else:
         asm = get_db_asm(target_asm)
         cromper_client = get_cromper_client()
-        asm_result = cromper_client.assemble_asm(platform, asm)
+        asm_result = cromper_client.assemble_asm(platform_id, asm)
 
         # Create Assembly object from cromper response
         assembly, _ = Assembly.objects.get_or_create(
@@ -426,14 +424,12 @@ class ScratchViewSet(
             )
 
         context = request.data.get("context", scratch.context)
-        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
-
-        platform = platforms.from_id(scratch.platform)
+        compiler_id = request.data.get("compiler", scratch.compiler)
 
         cromper_client = get_cromper_client()
         decompilation = cromper_client.decompile(
-            platform_id=platform.id,
-            compiler_id=compiler.id,
+            platform_id=scratch.platform,
+            compiler_id=compiler_id,
             asm=scratch.target_assembly.source_asm.data,
             default_source_code="",
             context=context,

@@ -3,9 +3,9 @@ import re
 import subprocess
 import time
 from dataclasses import dataclass
-from typing import Any, Sequence
 
 from cromper.compilers import Compiler, CompilerType
+from cromper.cromper.libraries import Library
 from cromper.error import AssemblyError, CompilationError
 from cromper.flags import Language
 from cromper.platforms import Platform
@@ -110,7 +110,7 @@ class CompilerWrapper:
         compiler_flags: str,
         code: str,
         context: str,
-        libraries: Sequence[Any] = (),  # Library type would be defined separately
+        libraries: list[Library] = [],  # Library type would be defined separately
     ) -> CompilationResult:
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")

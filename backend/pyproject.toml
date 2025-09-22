@@ -29,6 +29,7 @@ dependencies = [
     "setuptools>=75.6.0",
     "debugpy>=1.8.13",
     "gunicorn>=23.0.0",
+    "django-stubs[compatible-mypy]>=5.2.5",
 ]
 
 [dependency-groups]
@@ -53,3 +54,10 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["coreapp", "decompme"]
+
+[tool.mypy]
+disable_error_code = "var-annotated, import-untyped"
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "decompme.settings"

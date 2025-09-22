@@ -6,9 +6,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.relations import SlugRelatedField
 
-from coreapp import platforms
-
-from . import compilers
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile

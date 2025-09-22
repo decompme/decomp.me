@@ -1,4 +1,3 @@
-from coreapp import compilers, platforms
 from coreapp.models.profile import Profile
 from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
@@ -28,13 +27,14 @@ class RequestTests(APITestCase):
         self.assertEqual(Profile.objects.count(), 0)
 
 
+# MIGRATE TEST TO CROMPER
 class TimeoutTests(BaseTestCase):
     def test_compiler_timeout(self) -> None:
         # Test that a hanging compilation will fail with a timeout error
         with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
             scratch_dict = {
-                "compiler": compilers.DUMMY_LONGRUNNING.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": "dummy_longrunning",
+                "platform": "dummy",
                 "context": "",
                 "target_asm": "asm(AAAAAAAA)",
             }
@@ -43,7 +43,7 @@ class TimeoutTests(BaseTestCase):
 
             compile_dict = {
                 "slug": scratch.slug,
-                "compiler": compilers.DUMMY_LONGRUNNING.id,
+                "compiler": "dummy_longrunning",
                 "compiler_flags": "",
                 "source_code": "source(AAAAAAAA)",
             }

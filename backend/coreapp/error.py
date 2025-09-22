@@ -4,7 +4,6 @@ from typing import Any, ClassVar, Optional
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
-
 from rest_framework.views import exception_handler
 
 
