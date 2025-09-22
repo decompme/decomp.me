@@ -194,8 +194,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     platform: Optional[Platform] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
-    project = data.get("project")
-    rom_address = data.get("rom_address")
 
     if not platform:
         platform = compiler.platform

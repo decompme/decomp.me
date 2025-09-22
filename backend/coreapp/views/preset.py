@@ -60,7 +60,6 @@ class PresetFilterSet(django_filters.FilterSet):
     globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
 class PresetViewSet(ModelViewSet):  # type: ignore
-
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
     queryset = Preset.objects.all().annotate(num_scratches=Count("scratch__preset__id"))
     pagination_class = PresetPagination

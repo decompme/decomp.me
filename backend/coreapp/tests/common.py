@@ -17,7 +17,6 @@ def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
 
 
 class BaseTestCase(APITestCase):
-
     def setUp(self) -> None:
         super().setUp()
         self.client.credentials(HTTP_USER_AGENT="Firefrogz 1.0")

@@ -21,12 +21,12 @@ class LibraryDetail(APIView):
     def libraries_json(platform: str = "") -> list[dict[str, object]]:
         return [
             {
-                "name": l.name,
-                "supported_versions": l.supported_versions,
-                "platform": l.platform,
+                "name": lib.name,
+                "supported_versions": lib.supported_versions,
+                "platform": lib.platform,
             }
-            for l in libraries.available_libraries()
-            if platform == "" or l.platform == platform
+            for lib in libraries.available_libraries()
+            if platform == "" or lib.platform == platform
         ]
 
     @condition(last_modified_func=lambda request: boot_time)

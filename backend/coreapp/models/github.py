@@ -78,7 +78,6 @@ class GitHubUser(models.Model):
             )
 
         try:
-            scope_str = str(response_json["scope"])
             access_token = str(response_json["access_token"])
         except KeyError:
             raise MalformedGitHubApiResponseException()

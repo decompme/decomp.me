@@ -4,41 +4,33 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        python-is-python3 \
-        python3 \
-        python3-pip \
-        python3.12-dev \
-        python3.12-venv \
-        software-properties-common \
+    ca-certificates \
+    curl \
+    git \
+    python-is-python3 \
+    python3 \
+    python3-pip \
+    python3.12-dev \
+    python3.12-venv \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=2.2.0 \
-    POETRY_HOME=/etc/poetry \
-    python3.12 -
-
-ENV POETRY_VIRTUALENVS_PATH=/virtualenvs
-
-ENV PATH="${PATH}:/etc/poetry/bin"
-
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/bin/" sh
 
 FROM base AS nsjail
 
 RUN apt-get -y update && apt-get install -y \
-        autoconf \
-        bison \
-        flex \
-        g++ \
-        gcc \
-        git \
-        libnl-route-3-dev \
-        libprotobuf-dev \
-        libtool \
-        make \
-        pkg-config \
-        protobuf-compiler
+    autoconf \
+    bison \
+    flex \
+    g++ \
+    gcc \
+    libnl-route-3-dev \
+    libprotobuf-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler
 
 RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.4 /nsjail \
     && cd /nsjail \
@@ -52,31 +44,31 @@ RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && apt-get update \
     && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
-        binutils-aarch64-linux-gnu \
-        binutils-arm-none-eabi \
-        binutils-djgpp \
-        binutils-mingw-w64-i686 \
-        binutils-mips-linux-gnu \
-        binutils-powerpc-linux-gnu \
-        binutils-sh-elf \
-        cpp \
-        dj64 \
-        dos2unix \
-        dosemu2 \
-        gcc-mips-linux-gnu \
-        iptables \
-        libarchive-tools \
-        libc6-dev-i386 \
-        libdevmapper1.02.1 \
-        libgpgme11 \
-        libnl-route-3-200 \
-        libprotobuf-dev \
-        libtinfo6 \
-        netcat-traditional \
-        unzip \
-        wget \
-        wine \
-        wine32:i386 \
+    binutils-aarch64-linux-gnu \
+    binutils-arm-none-eabi \
+    binutils-djgpp \
+    binutils-mingw-w64-i686 \
+    binutils-mips-linux-gnu \
+    binutils-powerpc-linux-gnu \
+    binutils-sh-elf \
+    cpp \
+    dj64 \
+    dos2unix \
+    dosemu2 \
+    gcc-mips-linux-gnu \
+    iptables \
+    libarchive-tools \
+    libc6-dev-i386 \
+    libdevmapper1.02.1 \
+    libgpgme11 \
+    libnl-route-3-200 \
+    libprotobuf-dev \
+    libtinfo6 \
+    netcat-traditional \
+    unzip \
+    wget \
+    wine \
+    wine32:i386 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
@@ -124,7 +116,6 @@ RUN wineboot --init
 
 WORKDIR /backend
 
-ENV POETRY_VIRTUALENVS_PATH=/backend/virtualenvs
 
 ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT

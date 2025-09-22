@@ -229,7 +229,7 @@ class CompilerWrapper:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
 
             if not object_path.exists():
@@ -298,7 +298,7 @@ class CompilerWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise AssemblyError("Timeout expired")
 
             # Assembly failed

@@ -1,20 +1,16 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ImproperlyConfigured
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
-from rest_framework.reverse import reverse
+from rest_framework.relations import SlugRelatedField
 
 from coreapp import platforms
 
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
-from .middleware import Request
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -123,14 +119,14 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -167,14 +163,14 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
