@@ -3,9 +3,5 @@
 import EditorSettings from "./EditorSettings";
 
 export default function Page() {
-    return (
-        <>
-            <EditorSettings />
-        </>
-    );
+    return <EditorSettings />;
 }
