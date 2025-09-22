@@ -1,6 +1,8 @@
 import unittest
 
 from cromper.compilers import GCC281PM, IDO53, MWCC_247_92
+from cromper.compilers import Compiler
+from cromper.platforms import Platform
 from cromper.decompiler_wrapper import (
     DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
@@ -8,6 +10,16 @@ from cromper.decompiler_wrapper import (
 from cromper.m2c_wrapper import M2CWrapper
 
 from .common import CromperTestCase, requiresCompiler
+
+MOCK_PLATFORM = Platform(
+    id="mock",
+    name="Mock Platform",
+    description="",
+    arch="mips",
+    assemble_cmd="",
+    objdump_cmd="",
+    nm_cmd="",
+)
 
 
 class DecompilationTests(CromperTestCase):
@@ -82,18 +94,12 @@ class DecompilationTests(CromperTestCase):
         """Test decompilation with unsupported architecture."""
         wrapper = DecompilerWrapper()
 
-        # Create a mock platform with unsupported arch
-        class UnsupportedPlatform:
-            arch = "unsupported_arch"
-            id = "unsupported"
-
-        platform = UnsupportedPlatform()
         asm = "some assembly"
         default_source = "/* default source */"
 
         result = wrapper.decompile(
             default_source_code=default_source,
-            platform=platform,
+            platform=MOCK_PLATFORM,
             asm=asm,
             context="",
             compiler=GCC281PM,
@@ -197,14 +203,10 @@ class M2CTests(CromperTestCase):
     def test_unsupported_compiler(self) -> None:
         """Test M2C with unsupported compiler type."""
         from cromper.error import M2CError
-        from cromper.compilers import CompilerType
 
-        # Create a mock compiler with OTHER type
-        class MockCompiler:
-            type = CompilerType.OTHER
-            id = "mock"
-
-        compiler = MockCompiler()
+        compiler = Compiler(
+            id="mock", cc="mock", platform=MOCK_PLATFORM, library_include_flag=""
+        )
 
         with self.assertRaises(M2CError) as cm:
             M2CWrapper.get_triple(compiler, "mips")
