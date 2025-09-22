@@ -156,7 +156,6 @@ class CromperClient:
     ) -> Dict[str, Any]:
         """Generate diff using the cromper service."""
         # Encode elf object as base64
-        import base64
 
         compiled_elf_b64 = base64.b64encode(compiled_elf).decode("ascii")
 
