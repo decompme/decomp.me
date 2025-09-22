@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from django.test import Client
 
 from coreapp.compilers import GCC281PM
 from coreapp.models.preset import Preset

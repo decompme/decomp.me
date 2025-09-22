@@ -75,7 +75,6 @@ def set_family_field(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> Non
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0059_scratch_family_alter_scratch_parent"),
     ]

@@ -6,12 +6,11 @@ DB_PORT=${DATABASE_PORT:-5432}
 BE_HOST=${BACKEND_HOST:-0.0.0.0}
 BE_PORT=${BACKEND_PORT:-8000}
 
-POETRY_VIRTUALENVS_PATH=/backend/virtualenvs
 
-poetry install
+uv sync
 
-poetry run /backend/compilers/download.py
-poetry run /backend/libraries/download.py
+uv run /backend/compilers/download.py
+uv run /backend/libraries/download.py
 
 if command -v regedit &> /dev/null; then
   for reg in /backend/wine/*.reg; do
@@ -27,6 +26,6 @@ until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   sleep 1
 done
 
-poetry run /backend/manage.py migrate
+uv run /backend/manage.py migrate
 
-poetry run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}
+uv run /backend/manage.py runserver ${BE_HOST}:${BE_PORT}

@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -13,7 +13,7 @@ from .models.profile import Profile
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .models.github import GitHubUser
+    pass
 
 
 class AnonymousUser(auth.models.AnonymousUser):

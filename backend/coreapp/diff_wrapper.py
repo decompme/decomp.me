@@ -113,7 +113,7 @@ class DiffWrapper:
                 },
                 timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             raise NmError("Timeout expired")
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
@@ -198,7 +198,7 @@ class DiffWrapper:
                         },
                         timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
                     )
-                except subprocess.TimeoutExpired as e:
+                except subprocess.TimeoutExpired:
                     raise ObjdumpError("Timeout expired")
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
@@ -287,7 +287,7 @@ class DiffWrapper:
             mydump = DiffWrapper.get_dump(
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
-        except Exception as e:
+        except Exception:
             mydump = ""
 
         try:

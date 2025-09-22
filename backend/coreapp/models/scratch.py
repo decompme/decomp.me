@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List, Sequence
+from typing import Any, Sequence
 
 from django.db import models
 from django.contrib import admin

@@ -1,20 +1,16 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ImproperlyConfigured
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
-from rest_framework.reverse import reverse
+from rest_framework.relations import SlugRelatedField
 
 from coreapp import platforms
 
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
-from .middleware import Request
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile

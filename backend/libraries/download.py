@@ -183,7 +183,7 @@ def main():
         args.libraries_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
     libraries_yaml = (
-        Path(os.path.dirname(os.path.realpath(__file__))) / f"libraries.yaml"
+        Path(os.path.dirname(os.path.realpath(__file__))) / "libraries.yaml"
     )
     libraries_config = yaml.safe_load(libraries_yaml.open())
 

@@ -1,8 +1,8 @@
 ### Configuring vscode for development
 
-Poetry creates a virtualenv where packages for the site are installed. You can set your python interpreter path in vscode to use this virtualenv's interpreter, which will allow a much nicer backend development experience.
+uv creates a virtual environment where packages for the site are installed. You can set your python interpreter path in vscode to use this virtual environment's interpreter, which will allow a much nicer backend development experience.
 
-1. Inside the `backend/` directory, run `poetry debug info` and copy the "Path:" property under the "Virtualenv" category.
+1. Inside the `backend/` directory, run `uv run which python` and copy the output path.
 
 <img width="580" alt="image" src="https://user-images.githubusercontent.com/2985314/190146150-4ac8ecdd-dcfa-4e8e-a8b2-4913044aa088.png">
 

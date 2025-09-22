@@ -25,7 +25,7 @@ Dependencies:
 - Python >=3.10
 - Node.js >=14
 - [Yarn](https://yarnpkg.com/getting-started/install)
-- [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ---
 Create a file to hold environment variables:
@@ -38,29 +38,30 @@ touch .env.local
 cd backend
 ```
 
-* Install Python dependencies with [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
+* Install Python dependencies with [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
 ```shell
-poetry install
+uv sync
 ```
 
 - Install compilers
 ```shell
-poetry run python compilers/download.py
+uv run python compilers/download.py
 ```
 
 - Install libraries
 ```shell
-poetry run python libraries/download.py
+uv run python libraries/download.py
 ```
 
 - Set up the database
 ```shell
-poetry run python manage.py migrate
+uv run python manage.py migrate
 ```
 
 - Start the API server
 ```shell
-poetry run python manage.py runserver
+uv run python manage.py runserver
 ```
 
 ---
@@ -98,8 +99,8 @@ yarn dev
 
 If you modify any database models (`models.py`), you'll need to run the following to update the database:
 ```shell
-poetry run python manage.py makemigrations
-poetry run python manage.py migrate
+uv run python manage.py makemigrations
+uv run python manage.py migrate
 ```
 
 ### Running tests
@@ -107,7 +108,7 @@ poetry run python manage.py migrate
 To ensure everything is working properly, you can run the unit tests in the backend folder.
 
 ```shell
-poetry run python manage.py test
+uv run python manage.py test
 ```
 
 ### Frontend styling
@@ -131,6 +132,7 @@ yarn lint --fix
 - Check backend
 ```shell
 cd backend
-poetry run mypy
-poetry run black .
+uv run mypy
+uv run ruff check .
+uv run ruff format .
 ```

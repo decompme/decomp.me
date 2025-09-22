@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("coreapp", "0061_remove_githubuser_access_token"),
     ]

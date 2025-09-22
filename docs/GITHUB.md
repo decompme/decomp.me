@@ -15,7 +15,7 @@
 After signing in with GitHub, you can make yourself an admin with the following:
 
 ```
-$ poetry run python3 manage.py shell
+$ uv run python3 manage.py shell
 >>> from django.contrib.auth.models import User
 >>> user = User.objects.get(username="your_username")
 >>> user.is_staff = True
