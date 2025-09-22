@@ -119,9 +119,6 @@ USER ubuntu
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
-# Create cromper user
-RUN useradd -m cromper
-
 # Create necessary directories
 RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
     && chown -R cromper:cromper /cromper /tmp/sandbox /tmp/wine
@@ -130,14 +127,11 @@ RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
 WORKDIR /cromper
 
 # Copy project files
-COPY --chown=cromper:cromper pyproject.toml uv.lock* ./
-COPY --chown=cromper:cromper cromper/ ./cromper/
-COPY --chown=cromper:cromper tests/ ./tests/
-COPY --chown=cromper:cromper conftest.py ./
-COPY --chown=cromper:cromper .env* ./
-
-# Switch to cromper user
-USER cromper
+COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock* ./
+COPY --chown=ubuntu:ubuntu cromper/ ./cromper/
+COPY --chown=ubuntu:ubuntu tests/ ./tests/
+COPY --chown=ubuntu:ubuntu conftest.py ./
+COPY --chown=ubuntu:ubuntu .env* ./
 
 # Install dependencies
 RUN uv sync --frozen

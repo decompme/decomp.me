@@ -142,9 +142,6 @@ FROM base AS cromper
 # Copy nsjail binary
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-# Create cromper user
-RUN useradd -m cromper
-
 # Create necessary directories
 RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
     && chown -R cromper:cromper /cromper /tmp/sandbox /tmp/wine
@@ -153,19 +150,16 @@ RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
 WORKDIR /cromper
 
 # Copy project files
-COPY --chown=cromper:cromper pyproject.toml uv.lock ./
-COPY --chown=cromper:cromper cromper/ ./cromper/
-COPY --chown=cromper:cromper docker_entrypoint.sh ./
-
-# Switch to cromper user
-USER cromper
+COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock ./
+COPY --chown=ubuntu:ubuntu cromper/ ./cromper/
+COPY --chown=ubuntu:ubuntu docker_entrypoint.sh ./
 
 # Install dependencies (production only)
 RUN uv sync --frozen --no-dev
 
 # Copy compilers and libraries (will be mounted in production)
-COPY --chown=cromper:cromper compilers/ ./compilers/
-COPY --chown=cromper:cromper libraries/ ./libraries/
+COPY --chown=ubuntu:ubuntu compilers/ ./compilers/
+COPY --chown=ubuntu:ubuntu libraries/ ./libraries/
 
 # Expose port
 EXPOSE 8888
