@@ -41,7 +41,9 @@ class Platform:
         # All platforms from cromper are considered available
         return True
 
-    def to_json(self, include_compilers: bool = False, include_presets: bool = False) -> Dict[str, Any]:
+    def to_json(
+        self, include_compilers: bool = False, include_presets: bool = False
+    ) -> Dict[str, Any]:
         """Convert platform to JSON format for API responses."""
         result = {
             "id": self.id,
@@ -49,9 +51,10 @@ class Platform:
             "description": self.description,
             "arch": self.arch,
         }
-        
+
         if include_compilers:
             from . import compilers
+
             platform_compilers = compilers.available_compilers_for_platform(self.id)
             result["compilers"] = [
                 {
@@ -61,11 +64,11 @@ class Platform:
                 }
                 for c in platform_compilers
             ]
-        
+
         if include_presets:
             # TODO: Add preset support when needed
             result["presets"] = []
-            
+
         return result
 
     def __str__(self) -> str:

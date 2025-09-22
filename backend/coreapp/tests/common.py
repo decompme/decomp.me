@@ -1,15 +1,6 @@
-from collections.abc import Callable
-from typing import Any
-from unittest import skip, skipIf
+from typing import Any, Dict
 
 from coreapp.models.scratch import Scratch
-
-
-def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
-    for c in compilers:
-        if not c.available():
-            return skip(f"Compiler {c.id} not available")
-    return skipIf(False, "")
 
 
 class BaseTestCase(APITestCase):

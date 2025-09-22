@@ -493,7 +493,7 @@ async def main():
     app = make_app(config)
     app.listen(config.port)
 
-    logger.info("Cromper service started successfully")
+    logger.info("cromper service started successfully")
     await asyncio.Event().wait()
 
 
