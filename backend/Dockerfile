@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -14,8 +15,10 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/bin/" sh
 
 WORKDIR /backend
+
+USER ubuntu
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

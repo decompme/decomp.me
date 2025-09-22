@@ -2,6 +2,7 @@
 virtualenvs/
 __pycache__/
 .mypy_cache/
+.venv/
 
 # avoid cache-busting when testing Docker
 Dockerfile*

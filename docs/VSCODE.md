@@ -1,8 +1,12 @@
 ### Configuring vscode for development
 
-uv creates a virtualenv where packages for the site are installed. You can set your python interpreter path in vscode to use this virtualenv's interpreter, which will allow a much nicer backend development experience.
+uv creates a virtual environment where packages for the site are installed. You can set your python interpreter path in vscode to use this virtual environment's interpreter, which will allow a much nicer backend development experience.
 
-1. In vscode, open the command window (Ctrl+Shift+P on Windows, Cmd+Shift+P on MacOS) and type "Python: Select Interpreter" and choose the command as it appears.
+1. Inside the `backend/` or `cromper/` directories, run `uv run which python` and copy the output path.
+
+<img width="580" alt="image" src="https://user-images.githubusercontent.com/2985314/190146150-4ac8ecdd-dcfa-4e8e-a8b2-4913044aa088.png">
+
+2. In vscode, open the command window (Ctrl+Shift+P on Windows, Cmd+Shift+P on MacOS) and type "Python: Select Interpreter" and choose the command as it appears.
 
 <img width="454" alt="image" src="https://user-images.githubusercontent.com/2985314/190146241-9df7da65-9425-465c-9143-c7a8afeb4e53.png">
 
