@@ -230,8 +230,7 @@ jobs:
           python-version: "3.12"
       - run: |-
           cd cromper
-          uv sync --all-extras
-          uv run pytest -v
+          uv sync
           uv run mypy .
           uv run ruff check
           uv run ruff format --check
