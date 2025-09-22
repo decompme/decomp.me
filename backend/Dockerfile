@@ -14,9 +14,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/etc/" sh
-
-ENV PATH="/etc/:${PATH}"
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/bin/" sh
 
 FROM base AS nsjail
 

@@ -42,7 +42,6 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               uv sync && \
