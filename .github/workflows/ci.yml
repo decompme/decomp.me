@@ -20,7 +20,7 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           # NOTE: CI does not run as 'ubuntu' user
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          for dir in .venv sandbox local_files compilers libraries; do
+          for dir in backend/.venv sandbox local_files compilers libraries; do
             mkdir -p "$dir"
             sudo chown "${USER_1000}:${USER_1000}" "$dir"
           done
@@ -29,7 +29,6 @@ jobs:
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
-            -v $(pwd)/.venv:/backend/.venv \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
