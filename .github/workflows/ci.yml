@@ -212,7 +212,7 @@ jobs:
       - run: |-
           cd backend
           uv sync --all-extras
-          uv run mypy
+          uv run mypy .
           uv run ruff check
           uv run ruff format --check
 
@@ -232,6 +232,6 @@ jobs:
       - run: |-
           cd cromper
           uv sync --all-extras
-          uv run mypy
+          uv run mypy .
           uv run ruff check
           uv run ruff format --check
