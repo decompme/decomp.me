@@ -22,7 +22,7 @@ jobs:
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
           for dir in .venv sandbox local_files compilers libraries; do
             mkdir -p "$dir"
-            chown "${USER_1000}:${USER_1000}" "$dir"
+            sudo chown "${USER_1000}:${USER_1000}" "$dir"
           done
           docker run \
             -v $(pwd):/decomp.me \

@@ -120,7 +120,7 @@ RUN mkdir -p /sandbox \
     && chown -R ubuntu:ubuntu /sandbox \
     && mkdir -p "${WINEPREFIX}" \
     && chown ubuntu:ubuntu "${WINEPREFIX}" \
-    && mkdir /backend/.venv \
+    && mkdir -p /backend/.venv \
     && chown -R ubuntu:ubuntu /backend/.venv
 
 # Switch to non-root user
