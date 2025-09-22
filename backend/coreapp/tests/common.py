@@ -1,17 +1,9 @@
-from typing import Any, Callable, Dict
-from unittest import skip, skipIf
+from typing import Any, Dict
 
 from coreapp.models.scratch import Scratch
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-
-def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
-    for c in compilers:
-        if not c.available():
-            return skip(f"Compiler {c.id} not available")
-    return skipIf(False, "")
 
 
 class BaseTestCase(APITestCase):

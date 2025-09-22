@@ -33,7 +33,7 @@ class CromperClient:
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"Error communicating with cromper service: {e}")
-            raise CompilationError(f"Cromper service error: {e}")
+            raise CompilationError(f"cromper service error: {e}")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from cromper service: {e}")
             raise CompilationError("Invalid response from cromper service")

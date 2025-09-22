@@ -11,6 +11,7 @@ class CoreappConfig(AppConfig):
 
     def ready(self) -> None:
         """Initialize cromper client cache when Django starts."""
+
         try:
             from .cromper_client import get_cromper_client
 
@@ -19,7 +20,7 @@ class CoreappConfig(AppConfig):
             compilers = client.get_compilers()
             platforms = client.get_platforms()
             logger.info(
-                f"Cromper cache initialized: {len(compilers)} compilers, {len(platforms)} platforms"
+                f"cromper cache initialized: {len(compilers)} compilers, {len(platforms)} platforms"
             )
         except Exception as e:
             logger.warning(f"Failed to initialize cromper cache: {e}")

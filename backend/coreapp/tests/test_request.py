@@ -1,6 +1,6 @@
 from coreapp import compilers, platforms
 from coreapp.models.profile import Profile
-from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -29,7 +29,6 @@ class RequestTests(APITestCase):
 
 
 class TimeoutTests(BaseTestCase):
-    @requiresCompiler(compilers.DUMMY_LONGRUNNING)
     def test_compiler_timeout(self) -> None:
         # Test that a hanging compilation will fail with a timeout error
         with self.settings(COMPILATION_TIMEOUT_SECONDS=3):

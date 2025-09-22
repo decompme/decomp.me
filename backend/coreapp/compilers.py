@@ -27,7 +27,7 @@ class Compiler:
 
     @property
     def language(self) -> Any:
-        # Return language as string or object for compatibility  
+        # Return language as string or object for compatibility
         return self._data.get("language", "C")
 
     @property
