@@ -211,9 +211,9 @@ jobs:
           python-version: "3.12"
       - run: |-
           cd backend
-          uv sync
-          uv run ruff check .
-          uv run ruff format --check .
+          uv sync --all-extras
+          uv run ruff check
+          uv run ruff format --check
 
   cromper_lint:
     name: cromper lint and type check
@@ -230,7 +230,7 @@ jobs:
           python-version: "3.12"
       - run: |-
           cd cromper
-          uv sync
+          uv sync --all-extras
           uv run pytest -v
           uv run mypy .
           uv run ruff check
