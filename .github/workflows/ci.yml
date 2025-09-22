@@ -228,11 +228,9 @@ jobs:
       - name: Check formatting
         run: |
           cd backend
-          uv run ruff format --check .
-      - name: Run linting
-        run: |
-          cd backend
-          uv run ruff check .
+          uv sync --all-extras
+          uv run ruff check
+          uv run ruff format --check
 
 
 
@@ -255,7 +253,7 @@ jobs:
       - name: Run cromper tests
         run: |
           cd cromper
-          uv sync
+          uv sync --all-extras
           uv run pytest -v
           uv run mypy .
           uv run ruff check
