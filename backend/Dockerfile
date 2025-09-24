@@ -15,11 +15,12 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/bin/" sh
+COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
 
 FROM base AS nsjail
 
-RUN apt-get -y update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     autoconf \
     bison \
     flex \
@@ -30,14 +31,16 @@ RUN apt-get -y update && apt-get install -y \
     libtool \
     make \
     pkg-config \
-    protobuf-compiler
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.4 /nsjail \
+RUN git clone "https://github.com/google/nsjail" \
+    --recursive --branch 3.4 /nsjail \
     && cd /nsjail \
     && make
 
 
-FROM base AS developer
+FROM base AS dependencies
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
@@ -117,6 +120,8 @@ RUN wineboot --init
 WORKDIR /backend
 
 
+FROM dependencies AS dev
+
 ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT
 ARG ENABLE_GC_WII_SUPPORT
@@ -132,19 +137,53 @@ ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 ARG ENABLE_WIN32_SUPPORT
 
-ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT}
-ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
-ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
-ENV ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT}
-ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
-ENV ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT}
-ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
-ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
-ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
-ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
-ENV ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT}
-ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
-ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
-ENV ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
+ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT} \
+    ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT} \
+    ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT} \
+    ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT} \
+    ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT} \
+    ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT} \
+    ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT} \
+    ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT} \
+    ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT} \
+    ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT} \
+    ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT} \
+    ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT} \
+    ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT} \
+    ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
+
+
+FROM base AS uv-install
+
+WORKDIR /backend
+
+RUN chown -R ubuntu:ubuntu /backend
+
+COPY pyproject.toml uv.lock /backend/
+
+USER ubuntu
+
+# Install dependencies to /backend/.venv
+RUN uv sync --locked
+
+
+FROM dependencies AS prod
+
+COPY --from=uv-install /backend/.venv /backend/.venv
+COPY pyproject.toml uv.lock /backend/
+
+COPY manage.py /backend
+COPY housekeeping.py /backend
+
+COPY wine /backend/wine
+COPY decompme /backend/decompme
+COPY libraries /backend/libraries
+COPY compilers /backend/compilers
+
+COPY coreapp /backend/coreapp
+
+COPY docker_prod_entrypoint.sh /backend/docker_prod_entrypoint.sh
+
+ENTRYPOINT ["/backend/docker_prod_entrypoint.sh"]
