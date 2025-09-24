@@ -159,20 +159,16 @@ FROM base AS uv-install
 
 WORKDIR /backend
 
-RUN chown -R ubuntu:ubuntu /backend
-
-COPY pyproject.toml uv.lock /backend/
+COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock /backend/
 
 USER ubuntu
 
-# Install dependencies to /backend/.venv
 RUN uv sync --locked
 
 
 FROM dependencies AS prod
 
 COPY --from=uv-install /backend/.venv /backend/.venv
-COPY pyproject.toml uv.lock /backend/
 
 COPY manage.py /backend
 COPY housekeeping.py /backend
