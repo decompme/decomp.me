@@ -25,7 +25,7 @@ jobs:
         run: pip install uv
 
       - name: Update m2c & asm-differ
-        run: cd backend && uv pip install --upgrade m2c asm-differ
+        run: cd backend && uv lock --upgrade-package m2c --upgrade-package asm-differ
 
       - name: Check for changes
         run: |
