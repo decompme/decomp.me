@@ -157,11 +157,11 @@ ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 FROM base AS uv-install
 
+USER ubuntu
+
 WORKDIR /backend
 
-COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock /backend/
-
-USER ubuntu
+COPY pyproject.toml uv.lock /backend/
 
 RUN uv sync --locked
 
