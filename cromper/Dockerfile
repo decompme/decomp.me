@@ -2,47 +2,46 @@ FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Base dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    git \
     python-is-python3 \
     python3 \
     python3-pip \
     python3.12-dev \
     python3.12-venv \
     software-properties-common \
-    gcc \
-    libc6-dev \
-    git \
-    libnl-route-3-200 \
-    libprotobuf32t64 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+
 
 FROM base AS nsjail
 
-RUN apt-get -y update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     autoconf \
     bison \
     flex \
     g++ \
     gcc \
-    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \
     make \
     pkg-config \
-    protobuf-compiler
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.4 /nsjail \
+RUN git clone "https://github.com/google/nsjail" \
+    --recursive --branch 3.4 /nsjail \
     && cd /nsjail \
     && make
 
-FROM base AS developer
+
+FROM base AS dependencies
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
@@ -119,33 +118,11 @@ USER ubuntu
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
 
-# Create necessary directories
-RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root /tmp/wine \
-    && chown -R cromper:cromper /cromper /tmp/sandbox /tmp/wine
-
 # Set working directory
 WORKDIR /cromper
 
-# Copy project files
-COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock* ./
-COPY --chown=ubuntu:ubuntu cromper/ ./cromper/
-COPY --chown=ubuntu:ubuntu tests/ ./tests/
-COPY --chown=ubuntu:ubuntu conftest.py ./
-COPY --chown=ubuntu:ubuntu .env* ./
 
-# Install dependencies
-RUN uv sync --frozen
-
-# Expose port
-EXPOSE 8888
-
-# Set environment variables
-ENV PYTHONPATH=/cromper
-ENV COMPILER_BASE_PATH=/cromper/compilers
-ENV LIBRARY_BASE_PATH=/cromper/libraries
-ENV SANDBOX_TMP_PATH=/tmp/sandbox
-ENV SANDBOX_CHROOT_PATH=/tmp/sandbox/root
-ENV WINEPREFIX=/tmp/wine
+FROM dependencies as dev
 
 ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT
@@ -162,24 +139,73 @@ ARG ENABLE_SATURN_SUPPORT
 ARG ENABLE_SWITCH_SUPPORT
 ARG ENABLE_WIN32_SUPPORT
 
-ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT}
-ENV ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT}
-ENV ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT}
-ENV ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT}
-ENV ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT}
-ENV ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT}
-ENV ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT}
-ENV ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT}
-ENV ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT}
-ENV ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT}
-ENV ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT}
-ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
-ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
-ENV ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
+ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT} \
+    ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT} \
+    ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT} \
+    ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT} \
+    ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT} \
+    ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT} \
+    ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT} \
+    ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT} \
+    ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT} \
+    ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT} \
+    ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT} \
+    ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT} \
+    ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT} \
+    ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
+
+# ENV COMPILER_BASE_PATH=/cromper/compilers
+# ENV LIBRARY_BASE_PATH=/cromper/libraries
+
+# Run cromper
+ENTRYPOINT ["/cromper/docker_entrypoint.sh"]
+
+
+FROM base AS uv-install
+
+USER ubuntu
+
+WORKDIR /cromper
+
+COPY pyproject.toml uv.lock /cromper/
+
+RUN uv sync --locked
+
+
+FROM dependencies AS prod
+
+COPY --from=uv-install /cromper/.venv /cromper/.venv
+
+# Create necessary directories
+# RUN mkdir -p /cromper/compilers /cromper/libraries /tmp/sandbox/root \
+#     && chown -R cromper:cromper /cromper /tmp/sandbox
+
+COPY --chown=ubuntu:ubuntu compilers/ /cromper/compilers/
+COPY --chown=ubuntu:ubuntu libraries/ /cromper/libraries/
+
+# COPY --chown=ubuntu:ubuntu pyproject.toml uv.lock ./
+
+COPY --chown=ubuntu:ubuntu cromper/ /cromper/cromper/
+COPY --chown=ubuntu:ubuntu docker_entrypoint.sh /cromper/
+
+
+# Expose port
+# EXPOSE 8888
+
+# Set environment variables
+# ENV PYTHONPATH=/cromper
+# ENV COMPILER_BASE_PATH=/cromper/compilers
+# ENV LIBRARY_BASE_PATH=/cromper/libraries
+# ENV SANDBOX_TMP_PATH=/tmp/sandbox
+# ENV SANDBOX_CHROOT_PATH=/tmp/sandbox/root
+# ENV WINEPREFIX=/tmp/wine
+# ENV CROMPER_PORT=8888
+# ENV USE_SANDBOX_JAIL=true
+# ENV SANDBOX_DISABLE_PROC=true
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8888/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD curl -f http://localhost:8888/health || exit 1
 
 # Run cromper
 ENTRYPOINT ["/cromper/docker_entrypoint.sh"]

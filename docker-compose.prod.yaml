@@ -2,7 +2,7 @@ services:
   cromper:
     build:
       context: cromper
-      dockerfile: Dockerfile.prod
+      target: prod
     cap_drop:
       - all
     cap_add:
@@ -30,7 +30,7 @@ services:
   backend:
     build:
       context: backend
-      dockerfile: Dockerfile.prod
+      target: prod
     env_file:
       - docker.prod.env
     ports:

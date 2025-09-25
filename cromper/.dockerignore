@@ -8,9 +8,9 @@ Dockerfile*
 docker.*.env
 
 # compilers
-compilers/*/**
+compilers/**
 !compilers/download.py
 
 # libraries
-libraries/*/**
+libraries/**
 !libraries/download.py

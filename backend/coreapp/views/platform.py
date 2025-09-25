@@ -1,5 +1,7 @@
+import json
 from datetime import datetime
 
+from coreapp.cromper_client import get_cromper_client
 from coreapp.models.preset import Preset
 from coreapp.views.compiler import CompilerDetail
 
@@ -44,16 +46,20 @@ def single_platform(request: Request, id: str) -> Response:
     """
     Gets a platform's basic details including available compilers
     """
-    platforms = compilers.available_platforms()
+    cromper_client = get_cromper_client()
+    try:
+        platform = cromper_client.get_platform_by_id(id)
+        return Response(platform)
+    except ValueError:
+        return Response(status=404)
 
-    for platform in platforms:
-        if platform.id == id:
-            return Response(
-                platform.to_json(
-                    include_compilers=True,
-                    include_presets=True,
-                    include_num_scratches=True,
-                )
-            )
-
-    return Response(status=404)
+    # FIXME:
+    # for platform in platforms:
+    #     if platform["id"] == id:
+    #         return Response(
+    #             platform.to_json(
+    #                 include_compilers=True,
+    #                 include_presets=True,
+    #                 include_num_scratches=True,
+    #             )
+    #         )
