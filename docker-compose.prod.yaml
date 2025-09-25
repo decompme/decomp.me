@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: backend
-      dockerfile: Dockerfile.prod
+      target: prod
     cap_drop:
       - all
     cap_add:
@@ -35,7 +35,7 @@ services:
   frontend:
     build:
       context: frontend
-      dockerfile: Dockerfile.prod
+      target: prod
     env_file:
       - docker.prod.env
     ports:

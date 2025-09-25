@@ -11,6 +11,7 @@ services:
   backend:
     build:
       context: backend
+      target: dev
     cap_drop:
       - all
     cap_add:
@@ -34,7 +35,9 @@ services:
       # from filling /tmp on the parent container
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
-    build: frontend
+    build:
+      context: frontend
+      target: dev
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
