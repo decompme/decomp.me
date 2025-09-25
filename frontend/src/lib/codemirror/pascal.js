@@ -21,7 +21,7 @@ const types = words(
 
 const atoms = { null: true };
 
-const isOperatorChar = /[+\-^&%=<>!?|/]/;
+const isOperatorChar = /[+\-^&%=<>!?|\/]/;
 
 function tokenBase(stream, state) {
     const ch = stream.next();
@@ -42,7 +42,7 @@ function tokenBase(stream, state) {
         state.tokenize = tokenCommentBraces;
         return tokenCommentBraces(stream, state);
     }
-    if (/[[\](),;:.]/.test(ch)) {
+    if (/[\[\]\(\),;\:\.]/.test(ch)) {
         return null;
     }
 
@@ -65,7 +65,7 @@ function tokenBase(stream, state) {
         stream.eatWhile(isOperatorChar);
         return "operator";
     }
-    stream.eatWhile(/[\w$_]/);
+    stream.eatWhile(/[\w\$_]/);
 
     const cur = stream.current().toLowerCase();
 

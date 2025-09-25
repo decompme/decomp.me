@@ -3,5 +3,9 @@
 import AppearanceSettings from "./AppearanceSettings";
 
 export default function Page() {
-    return <AppearanceSettings />;
+    return (
+        <>
+            <AppearanceSettings />
+        </>
+    );
 }

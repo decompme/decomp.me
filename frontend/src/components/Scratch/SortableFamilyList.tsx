@@ -69,9 +69,7 @@ function FamilyMember({
 
 export default function SortableFamilyList({
     scratch,
-}: {
-    scratch: TerseScratch;
-}) {
+}: { scratch: TerseScratch }) {
     const family = useFamily(scratch);
 
     if (family.sorted.length <= 1) {

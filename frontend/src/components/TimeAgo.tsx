@@ -11,7 +11,11 @@ function formatDateString(x: string, format = "YYYY-MM-DD HH:mm:ss") {
     return dateObject.format(format);
 }
 
-export default function TimeAgo({ date }: { date: string }) {
+export default function TimeAgo({
+    date,
+}: {
+    date: string;
+}) {
     const title = formatDateString(date);
 
     useEffect(() => {

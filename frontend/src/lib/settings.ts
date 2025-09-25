@@ -68,6 +68,10 @@ export const useSwapVerticalLayout = createStorageKey<boolean>(
     "swapVerticalLayout",
     false,
 );
+export const diffCellBackgroundEnabled = createStorageKey<boolean>(
+    "diffCellBackgroundEnabled",
+    true,
+);
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();

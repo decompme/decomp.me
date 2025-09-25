@@ -15,8 +15,10 @@ export default function PlatformName({ platform }: Props) {
     );
 
     return (
-        <Link href={`/platform/${platform}`} prefetch={false}>
-            {data?.name ?? platform}
-        </Link>
+        <>
+            <Link href={`/platform/${platform}`} prefetch={false}>
+                {data?.name ?? platform}
+            </Link>
+        </>
     );
 }

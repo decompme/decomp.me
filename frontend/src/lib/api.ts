@@ -31,8 +31,8 @@ import { ignoreNextWarnBeforeUnload } from "./hooks";
 
 function onErrorRetry<C>(
     error: ResponseError,
-    _key: string,
-    _config: C,
+    key: string,
+    config: C,
     revalidate: Revalidator,
     { retryCount }: RevalidatorOptions,
 ) {

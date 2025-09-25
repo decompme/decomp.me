@@ -19,6 +19,9 @@
     "clang-4.0.1": "Clang 4.0.1",
     "clang-8.0.0": "Clang 8.0.0",
 
+    "dummy": "Dummy",
+    "dummy_longrunning": "Dummy (long-running)",
+
     "iop-gcc2.8.1": "IOP GCC 2.8.1",
     "iop-gcc2.95.2-102": "IOP GCC 2.95.2 (SN BUILD v1.02)",
     "ee-gcc2.9-990721": "EE GCC 2.9 build 990721",

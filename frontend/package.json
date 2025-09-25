@@ -57,7 +57,7 @@
         "vscode-languageserver-protocol": "^3.17.5"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.0.6",
+        "@biomejs/biome": "1.9.4",
         "@next/bundle-analyzer": "15.3.3",
         "@svgr/webpack": "^8.1.0",
         "@types/react": "^19.1.3",

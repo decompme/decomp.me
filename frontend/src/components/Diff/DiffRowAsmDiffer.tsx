@@ -13,7 +13,6 @@ import type { EditorView } from "codemirror";
 import { areEqual } from "react-window";
 
 import type * as api from "@/lib/api";
-import { scrollToLineNumber } from "@/lib/codemirror/scrollToLineNumber";
 import * as settings from "@/lib/settings";
 
 import { ScrollContext } from "../ScrollContext";
@@ -146,7 +145,7 @@ function DiffCell({
 
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
-    const bgClassName = diffCellBackgroundEnabled
+    const bgClassName = settings.diffCellBackgroundEnabled
         ? (() => {
               for (const item of cell.text) {
                   if (item.format === "diff_add") return styles.diff_add_row;
@@ -154,7 +153,6 @@ function DiffCell({
                       return styles.diff_remove_row;
                   if (item.format === "diff_change")
                       return styles.diff_change_row;
-                  if (item.format === "diff_skip") return styles.diff_skip_row;
               }
               return null;
           })()
@@ -199,11 +197,7 @@ export const DiffRow = memo(function DiffRow({
     data,
     index,
     style,
-}: {
-    data: DiffListData;
-    index: number;
-    style: CSSProperties;
-}) {
+}: { data: DiffListData; index: number; style: CSSProperties }) {
     const row = data.diff?.rows?.[index];
     return (
         <li
