@@ -2,11 +2,15 @@ FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+
+FROM base as dependencies
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     git \
+    netcat-traditional \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -16,6 +20,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+
+
+FROM dependencies as dev
 
 WORKDIR /backend
 
@@ -40,12 +47,10 @@ FROM dependencies AS prod
 COPY --from=uv-install /backend/.venv /backend/.venv
 
 COPY manage.py /backend
-COPY housekeeping.py /backend
+COPY db_housekeeping.py /backend
 
 COPY wine /backend/wine
 COPY decompme /backend/decompme
-COPY libraries /backend/libraries
-COPY compilers /backend/compilers
 
 COPY coreapp /backend/coreapp
 

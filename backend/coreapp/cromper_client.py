@@ -66,9 +66,11 @@ class CromperClient:
     def get_platform_by_id(self, platform_id: str) -> Dict[str, Any]:
         """Get a specific platform by ID."""
         platforms = self.get_platforms()
-        if platform_id not in platforms:
+        platforms_by_id = {x["id"]: x for x in platforms}
+
+        if platform_id not in platforms_by_id:
             raise ValueError(f"Unknown platform: {platform_id}")
-        return platforms[platform_id]
+        return platforms_by_id[platform_id]
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""
@@ -153,11 +155,12 @@ class CromperClient:
         """Generate diff using the cromper service."""
         # Encode elf object as base64
 
-        compiled_elf_b64 = base64.b64encode(compiled_elf).decode("ascii")
+        target_elf_b64 = base64.b64encode(target_elf).decode("utf-8")
+        compiled_elf_b64 = base64.b64encode(compiled_elf).decode("utf-8")
 
         data = {
             "platform_id": platform_id,
-            "target_elf": target_elf,
+            "target_elf": target_elf_b64,
             "compiled_elf": compiled_elf_b64,
             "diff_label": diff_label,
             "diff_flags": diff_flags,

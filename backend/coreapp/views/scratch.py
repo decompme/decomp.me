@@ -105,8 +105,8 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
         cromper_client = get_cromper_client()
         result = cromper_client.diff(
             platform_id=scratch.platform,
-            target_elf=bytes(scratch.target_assembly.elf_object),
-            compiled_elf=bytes(compilation.elf_object),
+            target_elf=scratch.target_assembly.elf_object,
+            compiled_elf=compilation.elf_object,
             diff_label=scratch.diff_label,
             diff_flags=scratch.diff_flags,
         )
@@ -190,12 +190,13 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    compiler = compilers.from_id(data["compiler"])
+    cromper_client = get_cromper_client()
+    compiler = cromper_client.get_compiler_by_id(data["compiler"])
     platform_id = data.get("platform", compiler.platform)
 
-    platform: Platform = platforms.from_id(platform_id)
+    platform = cromper_client.get_platform_by_id.from_id(platform_id)
 
-    platform_arch = platform.arch
+    platform_arch = platform["arch"]
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -224,8 +225,8 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         cromper_client = get_cromper_client()
         source_code = cromper_client.decompile(
-            platform_id=platform.id,
-            compiler_id=compiler.id,
+            platform_id=platform["id"],
+            compiler_id=compiler["id"],
             asm=asm.data,
             default_source_code=default_source_code,
             context=context,
@@ -404,12 +405,12 @@ class ScratchViewSet(
         }
 
         if include_objects:
-
-            def to_base64(obj: bytes) -> str:
-                return base64.b64encode(obj).decode("utf-8")
-
-            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
-            response["right_object"] = to_base64(compilation.elf_object)
+            response["left_object"] = base64.b64encode(
+                scratch.target_assembly.elf_object
+            ).decode("utf-8")
+            response["right_object"] = base64.b64encode(compilation.elf_object).decode(
+                "utf-8"
+            )
 
         return Response(response)
 

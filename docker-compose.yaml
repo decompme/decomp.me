@@ -11,6 +11,7 @@ services:
   cromper:
     build:
       context: cromper
+      target: dev
     cap_drop:
       - all
     cap_add:
@@ -34,32 +35,18 @@ services:
       - CROMPER_PORT=8888
       - USE_SANDBOX_JAIL=true
       - SANDBOX_DISABLE_PROC=true
+    restart: unless-stopped
   backend:
     build:
       context: backend
       target: dev
-    cap_drop:
-      - all
-    cap_add:
-      - setuid
-      - setgid
-      - setfcap
-    environment:
-      - ENABLE_SWITCH_SUPPORT=NO
     env_file:
       - backend/docker.dev.env
     ports:
       - "8000:8000"
       - "5678:5678"  # vscode debugger
-    security_opt:
-      - apparmor=unconfined
-      - seccomp=unconfined
     volumes:
       - ./backend:/backend
-    tmpfs:
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
     build:
       context: frontend
