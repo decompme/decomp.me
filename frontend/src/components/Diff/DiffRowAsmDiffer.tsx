@@ -87,7 +87,8 @@ function DiffCell({
 
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
-    const bgClassName = settings.diffCellBackgroundEnabled
+    const [diffCellBackgroundEnabled] = settings.diffCellBackgroundEnabled();
+    const bgClassName = diffCellBackgroundEnabled
         ? (() => {
               for (const item of cell.text) {
                   if (item.format === "diff_add") return styles.diff_add_row;
