@@ -47,7 +47,7 @@ services:
   frontend:
     build:
       context: frontend
-      dockerfile: Dockerfile.prod
+      target: prod
     env_file:
       - docker.prod.env
     ports:

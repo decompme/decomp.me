@@ -15,10 +15,40 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/bin/" sh
+COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
 
 WORKDIR /backend
 
 USER ubuntu
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
+
+
+FROM base AS uv-install
+
+USER ubuntu
+
+WORKDIR /backend
+
+COPY pyproject.toml uv.lock /backend/
+
+RUN uv sync --locked
+
+
+FROM dependencies AS prod
+
+COPY --from=uv-install /backend/.venv /backend/.venv
+
+COPY manage.py /backend
+COPY housekeeping.py /backend
+
+COPY wine /backend/wine
+COPY decompme /backend/decompme
+COPY libraries /backend/libraries
+COPY compilers /backend/compilers
+
+COPY coreapp /backend/coreapp
+
+COPY docker_prod_entrypoint.sh /backend/docker_prod_entrypoint.sh
+
+ENTRYPOINT ["/backend/docker_prod_entrypoint.sh"]
