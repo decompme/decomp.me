@@ -8,6 +8,7 @@ import memoize from "memoize-one";
 import { areEqual } from "react-window";
 
 import type * as api from "@/lib/api";
+import * as settings from "@/lib/settings";
 
 import { ScrollContext } from "../ScrollContext";
 
@@ -86,9 +87,22 @@ function DiffCell({
 
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
+    const bgClassName = settings.diffCellBackgroundEnabled
+        ? (() => {
+              for (const item of cell.text) {
+                  if (item.format === "diff_add") return styles.diff_add_row;
+                  if (item.format === "diff_remove")
+                      return styles.diff_remove_row;
+                  if (item.format === "diff_change")
+                      return styles.diff_change_row;
+              }
+              return null;
+          })()
+        : null;
+
     return (
         <div
-            className={clsx(styles.cell, className, {
+            className={clsx(styles.cell, className, bgClassName, {
                 [styles.highlight]:
                     hasLineNo && cell.src_line === selectedSourceLine,
             })}
@@ -129,11 +143,7 @@ export const DiffRow = memo(function DiffRow({
     data,
     index,
     style,
-}: {
-    data: DiffListData;
-    index: number;
-    style: CSSProperties;
-}) {
+}: { data: DiffListData; index: number; style: CSSProperties }) {
     const row = data.diff?.rows?.[index];
     return (
         <li

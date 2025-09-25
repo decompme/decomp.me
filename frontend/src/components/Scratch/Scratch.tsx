@@ -437,13 +437,15 @@ export default function Scratch({
     }
 
     const offlineOverlay = offline ? (
-        <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
-            <p className="text-sm">
-                The scratch editor is in offline mode. We're attempting to
-                reconnect to the backend – as long as this tab is open, your
-                work is safe.
-            </p>
-        </div>
+        <>
+            <div className="fixed top-10 self-center rounded bg-red-8 px-3 py-2">
+                <p className="text-sm">
+                    The scratch editor is in offline mode. We're attempting to
+                    reconnect to the backend – as long as this tab is open, your
+                    work is safe.
+                </p>
+            </div>
+        </>
     ) : (
         <></>
     );
