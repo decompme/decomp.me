@@ -157,10 +157,10 @@
     cursor: default;
     font-size: 0.8rem;
 
-    font-size: 1em;
+    font-size: 1.0em;
     font-weight: 500;
 
-    padding: 0.5em;
+    padding: .5em;
 }
 
 .librarySelect {

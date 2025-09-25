@@ -94,10 +94,7 @@ export function PresetList({
 export function PresetItem({
     preset,
     hideIcon,
-}: {
-    preset: Preset;
-    hideIcon?: boolean;
-}): JSX.Element {
+}: { preset: Preset; hideIcon?: boolean }): JSX.Element {
     const compilersTranslation = getTranslation("compilers");
     const compilerName = compilersTranslation.t(preset.compiler);
 

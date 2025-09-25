@@ -2,7 +2,11 @@ import { FileIcon, PaintbrushIcon, GearIcon } from "@primer/octicons-react";
 
 import NavItem from "./NavItem";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
         <div className="mx-auto flex w-full max-w-screen-lg flex-col lg:flex-row">
             <aside className="mx-auto w-full max-w-screen-md border-gray-6 border-b p-1 lg:w-1/4 lg:border-b-0 lg:p-6">

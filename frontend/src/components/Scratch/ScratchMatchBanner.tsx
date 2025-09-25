@@ -9,9 +9,7 @@ import DismissableBanner from "../DismissableBanner";
 
 export default function ScratchMatchBanner({
     scratch,
-}: {
-    scratch: api.TerseScratch;
-}) {
+}: { scratch: api.TerseScratch }) {
     const userIsYou = api.useUserIsYou();
     const { data, error } = useSWR<api.TerseScratch[]>(
         `${scratchUrl(scratch)}/family`,

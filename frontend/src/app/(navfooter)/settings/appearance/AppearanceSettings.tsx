@@ -18,6 +18,8 @@ export default function AppearanceSettings() {
     const [fontLigatures, setFontLigatures] = settings.useFontLigatures();
     const [codeLineHeight, setCodeLineHeight] = settings.useCodeLineHeight();
     const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme();
+    const [diffCellBackground, setDiffCellBackground] =
+        settings.diffCellBackgroundEnabled();
 
     return (
         <>
@@ -60,6 +62,20 @@ export default function AppearanceSettings() {
                         inputStyle={{
                             fontFamily: `${monospaceFont ?? "JetBrains Mono"}, monospace`,
                         }}
+                    />
+                </div>
+
+                <div className="mb-6 max-w-xl">
+                    <Checkbox
+                        label="Enable diff background highlighting"
+                        description={
+                            <>
+                                Enable row highlighting for added, removed or
+                                changed rows.
+                            </>
+                        }
+                        checked={diffCellBackground}
+                        onChange={setDiffCellBackground}
                     />
                 </div>
 

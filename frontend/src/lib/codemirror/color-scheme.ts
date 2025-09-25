@@ -127,7 +127,7 @@ export function applyColorScheme(scheme: ColorScheme) {
     let isDark = true;
     try {
         isDark = isDarkColor(colors.background);
-    } catch (_error) {
+    } catch (error) {
         // Ignore; color is being edited
     }
 

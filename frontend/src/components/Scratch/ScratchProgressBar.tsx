@@ -4,9 +4,7 @@ import styles from "./ScratchProgressbar.module.scss";
 
 export default function ScratchProgressBar({
     matchPercent,
-}: {
-    matchPercent: number;
-}) {
+}: { matchPercent: number }) {
     return (
         <Progress.Root className={styles.ProgressRoot} value={matchPercent}>
             <Progress.Indicator
