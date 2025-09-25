@@ -1,3 +1,4 @@
+# hadolint ignore=DL3029
 FROM --platform=linux/amd64 ubuntu:24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
