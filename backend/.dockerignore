@@ -7,3 +7,8 @@ __pycache__/
 # avoid cache-busting when testing Docker
 Dockerfile*
 docker.*.env
+
+
+# TEMPORARY: because i'm switching between main/cromper branches
+compilers/**
+libraries/**
