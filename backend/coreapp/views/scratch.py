@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import CompilationResult, DiffResult, filter_compiler_flags
-from ..cromper_client import Language, get_cromper_client
+from ..cromper_client import get_cromper_client
 from ..decorators.django import condition
 from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
