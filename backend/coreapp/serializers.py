@@ -178,7 +178,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         for library in libraries:
             for key in ["name", "version"]:
                 if key not in library:
-                    raise serializers.ValidationError(f"Library {library} is missing '{key}' key")
+                    raise serializers.ValidationError(
+                        f"Library {library} is missing '{key}' key"
+                    )
         return libraries
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
