@@ -174,6 +174,13 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
+    def validate_libraries(self, libraries: list[dict[str, str]]):
+        for library in libraries:
+            for key in ["name", "version"]:
+                if key not in library:
+                    raise serializers.ValidationError(f"Library {library} is missing '{key}' key")
+        return libraries
+
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
