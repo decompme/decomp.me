@@ -43,7 +43,7 @@ class CurrentUser(APIView):
             profile = Profile()
             profile.save()
             request.profile = profile
-            request.session["profile_id"] = request.profile.id
+            request.session["profile_id"] = request.profile.id  # type: ignore
 
             return self.get(request)
 

@@ -4,8 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from coreapp import libraries
-
+from ..cromper_client import get_cromper_client
 from ..decorators.django import condition
 from ..decorators.cache import globally_cacheable
 
@@ -19,15 +18,8 @@ boot_time = now()
 class LibraryDetail(APIView):
     @staticmethod
     def libraries_json(platform: str = "") -> list[dict[str, object]]:
-        return [
-            {
-                "name": lib.name,
-                "supported_versions": lib.supported_versions,
-                "platform": lib.platform,
-            }
-            for lib in libraries.available_libraries()
-            if platform == "" or lib.platform == platform
-        ]
+        cromper_client = get_cromper_client()
+        return cromper_client.get_libraries(platform=platform)
 
     @condition(last_modified_func=lambda request: boot_time)
     def head(self, request: Request) -> Response:

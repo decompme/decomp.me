@@ -2,13 +2,15 @@
 virtualenvs/
 __pycache__/
 .mypy_cache/
-.venv/
 
 # avoid cache-busting when testing Docker
 Dockerfile*
 docker.*.env
 
-
-# TEMPORARY: because i'm switching between main/cromper branches
+# compilers
 compilers/**
+!compilers/download.py
+
+# libraries
 libraries/**
+!libraries/download.py

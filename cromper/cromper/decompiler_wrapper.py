@@ -1,10 +1,8 @@
 import logging
-from coreapp import compilers
 
-from coreapp.compilers import Compiler
-
-from coreapp.m2c_wrapper import M2CError, M2CWrapper
-from coreapp.platforms import Platform
+from .compilers import Compiler
+from .m2c_wrapper import M2CError, M2CWrapper
+from .platforms import Platform
 
 logger = logging.getLogger(__name__)
 
@@ -14,27 +12,27 @@ DECOMP_WITH_CONTEXT_FAILED_PREAMBLE = "/* Decompilation with context failed; her
 
 
 class DecompilerWrapper:
-    @staticmethod
+    def __init__(self, **sandbox_kwargs):
+        self.m2c_wrapper = M2CWrapper(**sandbox_kwargs)
+
     def decompile(
+        self,
         default_source_code: str,
         platform: Platform,
         asm: str,
         context: str,
         compiler: Compiler,
     ) -> str:
-        if compiler == compilers.DUMMY:
-            return f"decompiled({asm})"
-
         ret = default_source_code
         if platform.arch in ["mips", "mipsee", "mipsel", "mipsel:4000", "ppc", "arm32"]:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
                 return "/* Too many lines to decompile; please run m2c manually */"
             try:
-                ret = M2CWrapper.decompile(asm, context, compiler, platform.arch)
+                ret = self.m2c_wrapper.decompile(asm, context, compiler, platform.arch)
             except M2CError as e:
                 # Attempt to decompile the source without context as a last-ditch effort
                 try:
-                    ret = M2CWrapper.decompile(asm, "", compiler, platform.arch)
+                    ret = self.m2c_wrapper.decompile(asm, "", compiler, platform.arch)
                     ret = f"{e}\n{DECOMP_WITH_CONTEXT_FAILED_PREAMBLE}\n{ret}"
                 except M2CError as e:
                     ret = f"{e}\n{default_source_code}"

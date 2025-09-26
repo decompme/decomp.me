@@ -4,7 +4,6 @@ from typing import Any, ClassVar, Optional
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
-
 from rest_framework.views import exception_handler
 
 
@@ -61,20 +60,8 @@ class DiffError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Diff"
 
 
-class ObjdumpError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "objdump"
-
-
-class NmError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "nm"
-
-
 class CompilationError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
-
-
-class SandboxError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Sandbox"
 
 
 class AssemblyError(SubprocessError):

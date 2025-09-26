@@ -136,3 +136,11 @@ uv run mypy
 uv run ruff check .
 uv run ruff format .
 ```
+
+- Check cromper
+```shell
+cd cromper
+uv run mypy
+uv run ruff check .
+uv run ruff format .
+```
