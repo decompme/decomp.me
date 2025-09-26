@@ -11,11 +11,9 @@ from coreapp.flags import (
     COMMON_MSDOS_DIFF_FLAGS,
     Flags,
 )
-from coreapp.models.preset import Preset
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
 
-from coreapp.serializers import TersePresetSerializer
 
 logger = logging.getLogger(__name__)
 
