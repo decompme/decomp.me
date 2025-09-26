@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
     library,
-    platform,
     preset,
     stats,
     project,
@@ -21,12 +20,6 @@ router.register(r"project", project.ProjectViewSet)
 urlpatterns = [
     *router.urls,
     path("library", library.LibraryDetail.as_view(), name="library"),
-    path("platform", platform.PlatformDetail.as_view(), name="platform"),
-    path(
-        "platform/<slug:id>",
-        platform.single_platform,
-        name="platform-detail",
-    ),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
