@@ -229,7 +229,9 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = [Library(**lib) for lib in data["libraries"]]
+    libraries = [
+        Library(**lib) if isinstance(lib, dict) else lib for lib in data["libraries"]
+    ]
 
     ser = ScratchSerializer(
         data={
