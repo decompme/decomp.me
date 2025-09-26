@@ -308,7 +308,8 @@ class PlatformHandler(BaseHandler):
         available_platforms = platforms._platforms
         if id is not None:
             if id in available_platforms:
-                return self.write(platforms._platforms[id].to_json(
+                return self.write(
+                    platforms._platforms[id].to_json(
                         compilers=compilers_instance,
                         include_compilers=True,
                     )
@@ -332,21 +333,26 @@ class CompilerHandler(BaseHandler):
 
     def get(self, platform_id=None):
         """Get all available compilers."""
-        available_compilers = self.application.settings["compilers_instance"].available_compilers()
+        available_compilers = self.application.settings[
+            "compilers_instance"
+        ].available_compilers()
         if platform_id is not None:
-            compilers_data = {c.id: c.to_json() for c in available_compilers if c.platform.id == platform_id}
-            if len(compilers_data) == 0:
-                # mimic django response for now
-                self.set_status(404)
-                return self.write({
-                    "detail": "No compilers found for specified platform",
-                    "kind": "NotFound",
-                })
-        else:
             compilers_data = {
                 c.id: c.to_json()
                 for c in available_compilers
+                if c.platform.id == platform_id
             }
+            if len(compilers_data) == 0:
+                # mimic django response for now
+                self.set_status(404)
+                return self.write(
+                    {
+                        "detail": "No compilers found for specified platform",
+                        "kind": "NotFound",
+                    }
+                )
+        else:
+            compilers_data = {c.id: c.to_json() for c in available_compilers}
 
         self.write({"compilers": compilers_data})
 
@@ -500,8 +506,16 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
     return tornado.web.Application(
         [
             (r"/health", HealthHandler, dict(executor=thread_executor)),
-            (r"/platform(?:/([^/]+))?", PlatformHandler, dict(executor=thread_executor)),
-            (r"/compiler(?:/([^/]+))?", CompilerHandler, dict(executor=thread_executor)),
+            (
+                r"/platform(?:/([^/]+))?",
+                PlatformHandler,
+                dict(executor=thread_executor),
+            ),
+            (
+                r"/compiler(?:/([^/]+))?",
+                CompilerHandler,
+                dict(executor=thread_executor),
+            ),
             (r"/library", LibrariesHandler, dict(executor=thread_executor)),
             # cpu-bound handlers
             (r"/compile", CompileHandler, dict(executor=process_executor)),
