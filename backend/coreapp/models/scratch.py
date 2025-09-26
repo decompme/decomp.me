@@ -1,11 +1,14 @@
 import json
 import logging
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 from attr import dataclass
 from django.db import models
 from django.contrib import admin
 from django.utils.crypto import get_random_string
+
+if TYPE_CHECKING:
+    from coreapp.cromper_client import Language
 
 from .profile import Profile
 
@@ -145,6 +148,48 @@ class Scratch(models.Model):
 
     def is_claimable(self) -> bool:
         return self.owner is None
+
+    def get_language(self) -> "Language":
+        from .cromper_client import get_cromper_client
+
+        cromper = get_cromper_client()
+        compiler = cromper.get_compiler_by_id(self.compiler)
+
+        """
+        Strategy for extracting a scratch's language:
+        - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
+        - Otherwise, fallback to the compiler's default language
+        """
+        cromper = get_cromper_client()
+        compiler = cromper.get_compiler_by_id(self.compiler)
+
+        # TODO we need a more robust way to do this
+        # language_flag_set = next(
+        #     iter(
+        #         [i for i in compiler.get("flags", []) if isinstance(i, LanguageFlagSet)]
+        #     ),
+        #     None,
+        # )
+
+        # if language_flag_set:
+        #     language = next(
+        #         iter(
+        #             [
+        #                 language
+        #                 for (flag, language) in language_flag_set.flags.items()
+        #                 if flag in self.compiler_flags
+        #             ]
+        #         ),
+        #         None,
+        #     )
+
+        #     if language:
+        #         return language.value
+
+        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
+        # have a flag within it.
+        # Either way: fall back to the compiler default.
+        return compiler.language
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):

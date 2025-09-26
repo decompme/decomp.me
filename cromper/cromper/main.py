@@ -310,8 +310,6 @@ class PlatformsHandler(BaseHandler):
                 platform.to_json(
                     compilers=compilers_instance,
                     include_compilers=True,
-                    include_presets=False,  # Skip presets for cromper
-                    include_num_scratches=False,  # Skip scratches for cromper
                 )
             )
 

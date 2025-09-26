@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import CompilationResult, DiffResult, filter_compiler_flags
-from ..cromper_client import get_cromper_client
+from ..cromper_client import Language, get_cromper_client
 from ..decorators.django import condition
 from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
@@ -194,9 +194,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     compiler = cromper_client.get_compiler_by_id(data["compiler"])
     platform_id = data.get("platform", compiler.platform)
 
-    platform = cromper_client.get_platform_by_id.from_id(platform_id)
-
-    platform_arch = platform["arch"]
+    platform = cromper_client.get_platform_by_id(platform_id)
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -205,7 +203,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     if target_obj:
         asm = None
-        assembly = cache_object(platform_arch, target_obj)
+        assembly = cache_object(platform.arch, target_obj)
     else:
         asm = get_db_asm(target_asm)
         cromper_client = get_cromper_client()
@@ -225,8 +223,8 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
         cromper_client = get_cromper_client()
         source_code = cromper_client.decompile(
-            platform_id=platform["id"],
-            compiler_id=compiler["id"],
+            platform_id=platform.id,
+            compiler_id=compiler.id,
             asm=asm.data,
             default_source_code=default_source_code,
             context=context,
@@ -508,8 +506,7 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
-            src_ext = Language(language).get_file_extension()
+            src_ext = scratch.get_language().get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)

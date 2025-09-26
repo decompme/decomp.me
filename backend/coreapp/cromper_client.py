@@ -1,4 +1,6 @@
 import base64
+from dataclasses import dataclass
+import enum
 import json
 import logging
 from typing import Any, Dict, Optional
@@ -7,9 +9,74 @@ import requests
 from django.conf import settings
 
 from coreapp.error import AssemblyError, CompilationError
+from coreapp.models.preset import Preset
 from coreapp.models.scratch import Asm
+from coreapp.serializers import TersePresetSerializer
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Platform:
+    id: str
+    name: str
+    description: str
+    arch: str
+    compilers: list[str]
+    has_decompiler: bool = False
+
+    def to_json(
+        self,
+        include_compilers: bool = False,
+        include_presets: bool = False,
+        include_num_scratches: bool = False,
+    ) -> Dict[str, Any]:
+        ret: Dict[str, Any] = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "arch": self.arch,
+            "has_decompiler": self.has_decompiler,
+        }
+        if include_compilers:
+            ret["compilers"] = self.compilers
+
+        if include_presets:
+            ret["presets"] = [
+                TersePresetSerializer(p).data
+                for p in Preset.objects.filter(platform=self.id).order_by("name")
+            ]
+        if include_num_scratches:
+            ret["num_scratches"] = self.get_num_scratches()
+        return ret
+
+
+# TODO copied from cromper, should deduplicate
+class Language(enum.Enum):
+    C = "C"
+    OLD_CXX = "C++"
+    CXX = "C++"
+    PASCAL = "Pascal"
+    ASSEMBLY = "Assembly"
+    OBJECTIVE_C = "ObjectiveC"
+
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.OLD_CXX: "c++",
+            Language.PASCAL: "p",
+            Language.ASSEMBLY: "s",
+            Language.OBJECTIVE_C: "m",
+        }[self]
+
+
+@dataclass(frozen=True)
+class Compiler:
+    id: str
+    platform: Platform
+    flags: str  # TODO
+    diff_flags: str
 
 
 class CromperClient:
@@ -19,8 +86,8 @@ class CromperClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
-        self._compilers_cache: Optional[Dict[str, Dict[str, Any]]] = None
-        self._platforms_cache: Optional[Dict[str, Dict[str, Any]]] = None
+        self._compilers_cache: Optional[Dict[str, Compiler]] = None
+        self._platforms_cache: Optional[Dict[str, Platform]] = None
 
     def _make_request(
         self, method: str, endpoint: str, **kwargs: Any
@@ -38,39 +105,45 @@ class CromperClient:
             logger.error(f"Invalid JSON response from cromper service: {e}")
             raise CompilationError("Invalid response from cromper service")
 
-    def get_compilers(self) -> Dict[str, Dict[str, Any]]:
+    def get_compilers(self) -> Dict[str, Compiler]:
         """Get all compilers from cromper service, with caching."""
         if self._compilers_cache is None:
             logger.info("Fetching compilers from cromper service...")
             response = self._make_request("GET", "/compiler")
-            self._compilers_cache = response.get("compilers", {})
+            response_json = response.get("compilers", {})
+            self._compilers_cache = {
+                key: Compiler(id=key, **response_json[key]) for key in response_json
+            }
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
 
-    def get_platforms(self) -> Dict[str, Dict[str, Any]]:
+    def get_platforms(self) -> Dict[str, Platform]:
         """Get all platforms from cromper service, with caching."""
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper service...")
             response = self._make_request("GET", "/platform")
-            self._platforms_cache = response.get("platforms", {})
+            response_json = response.get("platforms", [])
+            self._platforms_cache = {
+                comp["id"]: Platform(**comp) for comp in response_json
+            }
+
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
 
-    def get_compiler_by_id(self, compiler_id: str) -> Dict[str, Any]:
+    def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         """Get a specific compiler by ID."""
         compilers = self.get_compilers()
         if compiler_id not in compilers:
             raise ValueError(f"Unknown compiler: {compiler_id}")
         return compilers[compiler_id]
 
-    def get_platform_by_id(self, platform_id: str) -> Dict[str, Any]:
+    def get_platform_by_id(self, platform_id: str) -> Platform:
         """Get a specific platform by ID."""
         platforms = self.get_platforms()
-        platforms_by_id = {x["id"]: x for x in platforms}
-
-        if platform_id not in platforms_by_id:
-            raise ValueError(f"Unknown platform: {platform_id}")
-        return platforms_by_id[platform_id]
+        for id, platform in platforms.items():
+            if id == platform_id:
+                return platform
+        raise ValueError(f"Unknown platform: {platform_id}")
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""

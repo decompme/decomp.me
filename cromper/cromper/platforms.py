@@ -44,8 +44,6 @@ class Platform:
         self,
         compilers: "Compilers",
         include_compilers: bool = False,
-        include_presets: bool = False,
-        include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -60,13 +58,6 @@ class Platform:
                 for x in compilers.available_compilers()
                 if x.platform.id == self.id
             ]
-
-        if include_presets:
-            # Skip presets in cromper since it doesn't connect to Django DB
-            ret["presets"] = []
-        if include_num_scratches:
-            # Skip scratches count in cromper since it doesn't connect to Django DB
-            ret["num_scratches"] = 0
         return ret
 
 
