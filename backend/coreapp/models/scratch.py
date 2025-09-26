@@ -150,7 +150,7 @@ class Scratch(models.Model):
         return self.owner is None
 
     def get_language(self) -> "Language":
-        from .cromper_client import get_cromper_client
+        from coreapp.cromper_client import get_cromper_client
 
         cromper = get_cromper_client()
         compiler = cromper.get_compiler_by_id(self.compiler)
@@ -160,8 +160,6 @@ class Scratch(models.Model):
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
         - Otherwise, fallback to the compiler's default language
         """
-        cromper = get_cromper_client()
-        compiler = cromper.get_compiler_by_id(self.compiler)
 
         # TODO we need a more robust way to do this
         # language_flag_set = next(
