@@ -3,15 +3,16 @@ from dataclasses import dataclass
 import enum
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import requests
 from django.conf import settings
 
 from coreapp.error import AssemblyError, CompilationError
 from coreapp.models.preset import Preset
-from coreapp.models.scratch import Asm
-from coreapp.serializers import TersePresetSerializer
+
+if TYPE_CHECKING:
+    from coreapp.models.scratch import Asm
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +43,16 @@ class Platform:
             ret["compilers"] = self.compilers
 
         if include_presets:
+            from coreapp.serializers import TersePresetSerializer
+
             ret["presets"] = [
                 TersePresetSerializer(p).data
                 for p in Preset.objects.filter(platform=self.id).order_by("name")
             ]
         if include_num_scratches:
-            ret["num_scratches"] = self.get_num_scratches()
+            from coreapp.models.scratch import Scratch
+
+            ret["num_scratches"] = Scratch.objects.filter(platform=self.id).count()
         return ret
 
 
@@ -77,6 +82,7 @@ class Compiler:
     platform: Platform
     flags: str  # TODO
     diff_flags: str
+    language: Language = Language.C
 
 
 class CromperClient:
@@ -184,7 +190,7 @@ class CromperClient:
 
         return {"elf_object": elf_object, "errors": response.get("errors", "")}
 
-    def assemble_asm(self, platform_id: str, asm: Asm) -> Dict[str, Any]:
+    def assemble_asm(self, platform_id: str, asm: "Asm") -> Dict[str, Any]:
         """Assemble assembly using the cromper service."""
         data = {
             "platform_id": platform_id,
