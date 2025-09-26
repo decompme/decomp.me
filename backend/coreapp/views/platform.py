@@ -2,18 +2,14 @@ from datetime import datetime
 
 from coreapp.cromper_client import get_cromper_client
 from coreapp.models.preset import Preset
-from coreapp.views.compiler import CompilerDetail
 
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from coreapp import compilers
-from coreapp.models.preset import Preset
-from coreapp.views.compiler import CompilerDetail
+from ..decorators.cache import globally_cacheable
 
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
@@ -28,16 +24,6 @@ def endpoint_updated(request: Request) -> datetime:
 @method_decorator(
     globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
 )
-class PlatformDetail(APIView):
-    @condition(last_modified_func=endpoint_updated)
-    def head(self, request: Request) -> Response:
-        return Response()
-
-    @condition(last_modified_func=endpoint_updated)
-    def get(self, request: Request) -> Response:
-        return Response(CompilerDetail.platforms_json())
-
-
 @api_view(["GET"])
 @globally_cacheable(max_age=300, stale_while_revalidate=30)
 def single_platform(request: Request, id: str) -> Response:
