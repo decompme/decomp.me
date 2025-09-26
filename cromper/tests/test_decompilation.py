@@ -2,7 +2,7 @@ import unittest
 
 from cromper.compilers import GCC281PM, IDO53, MWCC_247_92
 from cromper.compilers import Compiler
-from cromper.platforms import Platform
+from cromper.platforms import N64, Platform
 from cromper.decompiler_wrapper import (
     DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
@@ -39,7 +39,7 @@ class DecompilationTests(CromperTestCase):
     def test_default_decompilation(self) -> None:
         """Test basic decompilation functionality."""
         wrapper = DecompilerWrapper()
-        platform = self.get_test_platform()
+        platform = N64
 
         # Simple MIPS assembly that should decompile to a return statement
         asm = "glabel return_2\njr $ra\nli $v0,2"
@@ -59,7 +59,7 @@ class DecompilationTests(CromperTestCase):
     def test_decompilation_with_context(self) -> None:
         """Test decompilation with context code."""
         wrapper = DecompilerWrapper()
-        platform = self.get_test_platform()
+        platform = N64
 
         asm = "glabel return_2\njr $ra\nli $v0,2"
         context = "typedef int s32;"
@@ -79,7 +79,7 @@ class DecompilationTests(CromperTestCase):
     def test_decompilation_with_broken_context(self) -> None:
         """Test decompilation with broken context code."""
         wrapper = DecompilerWrapper()
-        platform = self.get_test_platform()
+        platform = N64
 
         asm = "glabel return_2\njr $ra\nli $v0,2"
         broken_context = "typedeff jeff;"  # Intentional syntax error
@@ -122,7 +122,7 @@ class DecompilationTests(CromperTestCase):
     def test_too_many_lines(self) -> None:
         """Test decompilation with too many lines of assembly."""
         wrapper = DecompilerWrapper()
-        platform = self.get_test_platform()
+        platform = N64
 
         # Create assembly with too many lines
         asm_lines = ["nop"] * 20000  # Exceeds MAX_M2C_ASM_LINES

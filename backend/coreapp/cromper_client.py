@@ -80,7 +80,7 @@ class Language(enum.Enum):
 class Compiler:
     id: str
     platform: Platform
-    flags: str  # TODO
+    flags: str
     diff_flags: str
     language: Language = Language.C
 

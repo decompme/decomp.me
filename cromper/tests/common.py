@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 from unittest import skip, skipIf
 
-from cromper import platforms
 from cromper.compilers import Compiler, Compilers
 
 # Create global compilers instance for tests
@@ -60,29 +59,6 @@ class CromperTestCase(unittest.TestCase):
             debug=config.debug,
         )
         return wrapper
-
-    # TODO turn this into static ones or blah
-    def get_test_compiler(self) -> Compiler:
-        available = compilers.available_compilers()
-        if available:
-            return available[0]
-
-        self.skipTest("No compilers available for testing")
-
-    # TODO turn this into static ones or blah
-    def get_test_platform(self) -> platforms.Platform:
-        # Try to get N64 platform
-        try:
-            return platforms.from_id("n64")
-        except ValueError:
-            pass
-
-        # Fall back to first available platform
-        available = list(platforms._platforms.values())
-        if available:
-            return available[0]
-
-        self.skipTest("No platforms available for testing")
 
     def assertIsValidElfObject(
         self, elf_object: bytes, msg: Optional[str] = None
