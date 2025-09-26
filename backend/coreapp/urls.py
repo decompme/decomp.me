@@ -22,18 +22,6 @@ router.register(r"project", project.ProjectViewSet)
 
 urlpatterns = [
     *router.urls,
-    path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
-    path("healthz", health.HealthCheck.as_view(), name="healthz"),
-    path(
-        "compiler/<str:platform>/<str:compiler>",
-        compiler.SingleCompilerDetail.as_view(),
-        name="available-compiler",
-    ),
-    path(
-        "compiler/<str:platform>",
-        compiler.SingleCompilerDetail.as_view(),
-        name="available-compilers",
-    ),
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("platform", platform.PlatformDetail.as_view(), name="platform"),
     path(
@@ -68,7 +56,5 @@ urlpatterns = [
         name="user-scratch-stats",
     ),
     path("search", search.SearchViewSet.as_view(), name="search"),
-    # TODO: remove (decomp-permuter still uses /compilers)
-    path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
     path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]
