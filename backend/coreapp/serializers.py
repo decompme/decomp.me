@@ -174,7 +174,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
-    def validate_libraries(self, libraries: list[dict[str, str]]) -> list[dict[str, str]]:
+    def validate_libraries(
+        self, libraries: list[dict[str, str]]
+    ) -> list[dict[str, str]]:
         for library in libraries:
             for key in ["name", "version"]:
                 if key not in library:
