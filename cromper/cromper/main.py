@@ -298,35 +298,55 @@ class HealthHandler(BaseHandler):
         self.write({"status": "healthy", "service": "cromper"})
 
 
-class PlatformsHandler(BaseHandler):
+class PlatformHandler(BaseHandler):
     """Platforms information endpoint."""
 
-    def get(self):
+    def get(self, id=None):
         """Get all available platforms."""
         platforms_data = []
         compilers_instance = self.application.settings["compilers_instance"]
-        for platform_id, platform in platforms._platforms.items():
+        available_platforms = platforms._platforms
+        if id is not None:
+            if id in available_platforms:
+                return self.write(platforms._platforms[id].to_json(
+                        compilers=compilers_instance,
+                        include_compilers=True,
+                    )
+                )
+
+            self.set_status(404)
+            return self.write({"error": "Unknown platform"})
+
+        for platform in available_platforms.values():
             platforms_data.append(
                 platform.to_json(
                     compilers=compilers_instance,
                     include_compilers=True,
                 )
             )
-
         self.write({"platforms": platforms_data})
 
 
-class CompilersHandler(BaseHandler):
+class CompilerHandler(BaseHandler):
     """Compilers information endpoint."""
 
-    def get(self):
+    def get(self, platform_id=None):
         """Get all available compilers."""
-        compilers_data = {
-            c.id: c.to_json()
-            for c in self.application.settings[
-                "compilers_instance"
-            ].available_compilers()
-        }
+        available_compilers = self.application.settings["compilers_instance"].available_compilers()
+        if platform_id is not None:
+            compilers_data = {c.id: c.to_json() for c in available_compilers if c.platform.id == platform_id}
+            if len(compilers_data) == 0:
+                # mimic django response for now
+                self.set_status(404)
+                return self.write({
+                    "detail": "No compilers found for specified platform",
+                    "kind": "NotFound",
+                })
+        else:
+            compilers_data = {
+                c.id: c.to_json()
+                for c in available_compilers
+            }
 
         self.write({"compilers": compilers_data})
 
@@ -480,8 +500,8 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
     return tornado.web.Application(
         [
             (r"/health", HealthHandler, dict(executor=thread_executor)),
-            (r"/platform", PlatformsHandler, dict(executor=thread_executor)),
-            (r"/compiler", CompilersHandler, dict(executor=thread_executor)),
+            (r"/platform(?:/([^/]+))?", PlatformHandler, dict(executor=thread_executor)),
+            (r"/compiler(?:/([^/]+))?", CompilerHandler, dict(executor=thread_executor)),
             (r"/library", LibrariesHandler, dict(executor=thread_executor)),
             # cpu-bound handlers
             (r"/compile", CompileHandler, dict(executor=process_executor)),
