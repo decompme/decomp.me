@@ -19,7 +19,7 @@ import { get } from "@/lib/api/request";
 import type { TerseScratch } from "@/lib/api/types";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import { useDebounce } from "use-debounce";
-import { usePlatform } from "@/lib/api";
+import { useCompilers, usePresets } from "@/lib/api";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -171,16 +171,17 @@ export default function NewScratchForm({
     }, []);
 
     // 2. Fetch compilers and presets for selected platform
-    const platformDetails = usePlatform(platform);
+    const compilers = useCompilers(platform);
+    const presets = usePresets(platform);
     useEffect(() => {
-        if (platformDetails) {
-            setAvailableCompilers(platformDetails.compilers);
-            setAvailablePresets(platformDetails.presets);
+        if (compilers && typeof presets !== "undefined") {
+            setAvailableCompilers(Object.keys(compilers));
+            setAvailablePresets(presets);
         } else {
             setAvailableCompilers([]);
             setAvailablePresets(undefined);
         }
-    }, [platformDetails]);
+    }, [compilers, presets]);
 
     // 3. Select compiler based on local storage
     useEffect(() => {

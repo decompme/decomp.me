@@ -32,11 +32,7 @@ class PlatformDetail(APIView):
 
     @condition(last_modified_func=endpoint_updated)
     def get(self, request: Request) -> Response:
-        return Response(
-            CompilerDetail.platforms_json(
-                include_presets=False, include_num_scratches=False
-            )
-        )
+        return Response(CompilerDetail.platforms_json(include_num_scratches=False))
 
 
 @api_view(["GET"])
@@ -52,7 +48,6 @@ def single_platform(request: Request, id: str) -> Response:
             return Response(
                 platform.to_json(
                     include_compilers=True,
-                    include_presets=True,
                     include_num_scratches=True,
                 )
             )
