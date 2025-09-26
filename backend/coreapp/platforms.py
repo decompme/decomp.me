@@ -47,7 +47,6 @@ class Platform:
     def to_json(
         self,
         include_compilers: bool = False,
-        include_presets: bool = False,
         include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
@@ -62,11 +61,6 @@ class Platform:
                 x.id
                 for x in compilers.available_compilers()
                 if x.platform.id == self.id
-            ]
-        if include_presets:
-            ret["presets"] = [
-                TersePresetSerializer(p).data
-                for p in Preset.objects.filter(platform=self.id).order_by("name")
             ]
         if include_num_scratches:
             ret["num_scratches"] = self.get_num_scratches()
