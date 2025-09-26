@@ -42,7 +42,7 @@ class CromperClient:
         """Get all compilers from cromper service, with caching."""
         if self._compilers_cache is None:
             logger.info("Fetching compilers from cromper service...")
-            response = self._make_request("GET", "/compilers")
+            response = self._make_request("GET", "/compiler")
             self._compilers_cache = response.get("compilers", {})
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
@@ -51,7 +51,7 @@ class CromperClient:
         """Get all platforms from cromper service, with caching."""
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper service...")
-            response = self._make_request("GET", "/platforms")
+            response = self._make_request("GET", "/platform")
             self._platforms_cache = response.get("platforms", {})
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
@@ -141,7 +141,7 @@ class CromperClient:
         if platform:
             params["platform"] = platform
 
-        response = self._make_request("GET", "/libraries", params=params)
+        response = self._make_request("GET", "/library", params=params)
         return response.get("libraries", [])
 
     def diff(

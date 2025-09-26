@@ -21,6 +21,16 @@ MOCK_PLATFORM = Platform(
     nm_cmd="",
 )
 
+MOCK_UNSUPPORTED_PLATFORM = Platform(
+    id="mock",
+    name="Mock Platform",
+    description="",
+    arch="unsupported_arch",
+    assemble_cmd="",
+    objdump_cmd="",
+    nm_cmd="",
+)
+
 
 class DecompilationTests(CromperTestCase):
     """Test decompilation functionality."""
@@ -99,7 +109,7 @@ class DecompilationTests(CromperTestCase):
 
         result = wrapper.decompile(
             default_source_code=default_source,
-            platform=MOCK_PLATFORM,
+            platform=MOCK_UNSUPPORTED_PLATFORM,
             asm=asm,
             context="",
             compiler=GCC281PM,
