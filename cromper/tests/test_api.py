@@ -29,7 +29,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_platforms_endpoint(self):
         """Test the platforms endpoint."""
-        response = self.fetch("/platforms")
+        response = self.fetch("/platform")
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
@@ -39,7 +39,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_compilers_endpoint(self):
         """Test the compilers endpoint."""
-        response = self.fetch("/compilers")
+        response = self.fetch("/compiler")
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
@@ -49,7 +49,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_libraries_endpoint(self):
         """Test the libraries endpoint."""
-        response = self.fetch("/libraries")
+        response = self.fetch("/library")
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
@@ -58,7 +58,7 @@ class CromperAPITests(AsyncHTTPTestCase):
 
     def test_libraries_endpoint_with_platform_filter(self):
         """Test the libraries endpoint with platform filtering."""
-        response = self.fetch("/libraries?platform=n64")
+        response = self.fetch("/library?platform=n64")
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)

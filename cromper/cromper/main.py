@@ -482,9 +482,9 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
     return tornado.web.Application(
         [
             (r"/health", HealthHandler, dict(executor=thread_executor)),
-            (r"/platforms", PlatformsHandler, dict(executor=thread_executor)),
-            (r"/compilers", CompilersHandler, dict(executor=thread_executor)),
-            (r"/libraries", LibrariesHandler, dict(executor=thread_executor)),
+            (r"/platform", PlatformsHandler, dict(executor=thread_executor)),
+            (r"/compiler", CompilersHandler, dict(executor=thread_executor)),
+            (r"/library", LibrariesHandler, dict(executor=thread_executor)),
             # cpu-bound handlers
             (r"/compile", CompileHandler, dict(executor=process_executor)),
             (r"/assemble", AssembleHandler, dict(executor=process_executor)),
