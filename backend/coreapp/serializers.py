@@ -155,7 +155,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_obj = serializers.FileField(allow_null=True, required=False)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.JSONField(default=list)  # type: ignore
 
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
@@ -175,6 +175,17 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
+
+    def validate_libraries(
+        self, libraries: list[dict[str, str]]
+    ) -> list[dict[str, str]]:
+        for library in libraries:
+            for key in ["name", "version"]:
+                if key not in library:
+                    raise serializers.ValidationError(
+                        f"Library {library} is missing '{key}' key"
+                    )
+        return libraries
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         cromper = get_cromper_client()

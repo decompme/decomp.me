@@ -13,6 +13,9 @@ from cromper.flags import (
     COMMON_MSDOS_DIFF_FLAGS,
     Flags,
 )
+from coreapp.models.scratch import Scratch
+from rest_framework.exceptions import APIException
+
 
 logger = logging.getLogger(__name__)
 

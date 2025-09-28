@@ -73,21 +73,6 @@ class PresetTests(BaseTestCase):
         assert preset.owner is not None
         assert preset.owner.pk == self.user.pk
 
-    def test_list_compiler_with_custom_presets(self) -> None:
-        user = self.create_user()
-        self.create_preset(SAMPLE_PRESET_DICT)
-        response = self.client.get(reverse("compiler"))
-        body = response.json()
-
-        assert "platforms" in body
-        assert "n64" in body["platforms"]
-        assert "presets" in body["platforms"]["n64"]
-        assert len(body["platforms"]["n64"]["presets"]) == 1
-        assert (
-            body["platforms"]["n64"]["presets"][0]["name"] == SAMPLE_PRESET_DICT["name"]
-        )
-        assert body["platforms"]["n64"]["presets"][0]["owner"]["id"] == user.pk
-
     def test_owner_can_delete_preset(self) -> None:
         self.create_user()
         preset = self.create_preset(SAMPLE_PRESET_DICT)

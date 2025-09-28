@@ -56,44 +56,7 @@ export default function Page() {
                 for the legitimate purpose of security is a widespread practice
                 and does not conflict with privacy regulations.
             </p>
-            <p className="my-4">
-                <b>Analytics:</b> we use the open source Plausible Analytics
-                software routed through our stats subdomain to count website
-                visits etc. All analytics data collected is publicly available
-                on{" "}
-                <Link href="https://stats.decomp.me/decomp.me" className={link}>
-                    stats.decomp.me
-                </Link>
-                . All site measurement is carried out absolutely anonymously and
-                in aggregate only. Analytics data collected is limited to:
-            </p>
-            <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
-                <li className="my-1">Page URL</li>
-                <li className="my-1">HTTP Referer</li>
-                <li className="my-1">
-                    Browser and operating system (using User-Agent HTTP header,
-                    which is discarded)
-                </li>
-                <li className="my-1">
-                    Device type (using screen width, which is discarded)
-                </li>
-                <li className="my-1">
-                    Country, region, city (using IP address, which is then
-                    discarded)
-                </li>
-                <li className="my-1">
-                    Actions taken on the site, such as compiling or saving a
-                    scratch
-                </li>
-            </ul>
-            <p className="my-4">
-                For more information about analytics data, see the{" "}
-                <Link href="https://plausible.io/data-policy" className={link}>
-                    Plausible Data Policy
-                </Link>
-                . Please note that decomp.me servers, not Plausible, store and
-                process our analytics data.
-            </p>
+
             <p className="my-4">
                 <b>Voluntarily-submitted information:</b> decomp.me collects and
                 retains information voluntarily submitted to us. For logged-in

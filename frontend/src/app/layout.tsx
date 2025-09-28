@@ -1,5 +1,3 @@
-import PlausibleProvider from "next-plausible";
-
 import ThemeProvider from "./ThemeProvider";
 
 import "allotment/dist/style.css";
@@ -48,12 +46,6 @@ export default function RootLayout({
                 <link rel="shortcut icon" href="/purplefrog.svg" />
                 <link rel="apple-touch-icon" href="/purplefrog-bg-180.png" />
 
-                <PlausibleProvider
-                    domain="decomp.me"
-                    customDomain="https://stats.decomp.me"
-                    selfHosted={true}
-                    trackOutboundLinks={true}
-                />
                 <ThemeProvider />
             </head>
             <body className="flex flex-col bg-gray-1 font-sans text-gray-12 subpixel-antialiased">
