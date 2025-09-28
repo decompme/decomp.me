@@ -309,8 +309,10 @@ class ScratchViewSet(
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":
+            logger.info("TERSE")
             return TerseScratchSerializer
         else:
+            logger.info("NOT TERSE")
             return ScratchSerializer
 
     @scratch_condition

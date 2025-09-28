@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from attr import dataclass
 from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
@@ -57,6 +58,18 @@ else:
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(profile)
+
+
+# FIXME: partial copy/paste from cromper
+@dataclass(frozen=True)
+class Library:
+    name: str
+    version: str
+
+
+class LibrarySerializer(serializers.Serializer[Library]):
+    name = serializers.CharField()
+    version = serializers.CharField()
 
 
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
@@ -237,6 +250,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         return data
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
@@ -244,7 +262,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
     language = serializers.SerializerMethodField()
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )
@@ -263,8 +281,12 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Language:
-        return scratch.get_language()
+    def get_language(self, scratch: Scratch) -> Optional[str]:
+        return scratch.get_language().value
+
+    def get_libraries(self, scratch: Scratch):
+        logger.info("GET LIBRARIES WAS CALLED!")
+        return str(scratch.libraries)
 
 
 class TerseScratchSerializer(ScratchSerializer):

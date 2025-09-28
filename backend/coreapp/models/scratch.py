@@ -187,7 +187,7 @@ class Scratch(models.Model):
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.
         # Either way: fall back to the compiler default.
-        return compiler.language.value
+        return compiler.language
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
