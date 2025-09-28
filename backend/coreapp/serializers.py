@@ -276,11 +276,8 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Optional[str]:
+    def get_language(self, scratch: Scratch) -> str:
         return scratch.get_language().value
-
-    def get_libraries(self, scratch: Scratch):
-        return str(scratch.libraries)
 
 
 class TerseScratchSerializer(ScratchSerializer):
