@@ -250,11 +250,6 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         return data
 
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
@@ -285,7 +280,6 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         return scratch.get_language().value
 
     def get_libraries(self, scratch: Scratch):
-        logger.info("GET LIBRARIES WAS CALLED!")
         return str(scratch.libraries)
 
 
