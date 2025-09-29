@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 import tornado.web
 
-from cromper import platforms, libraries
+from cromper import compilers, platforms, libraries
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -59,13 +59,13 @@ class PlatformHandler(BaseHandler):
 
     def get(self, id=None):
         """Get all available platforms."""
-        platforms_data = []
+
         compilers_instance = self.application.settings["compilers_instance"]
         available_platforms = platforms._platforms
         if id is not None:
             if id in available_platforms:
                 return self.write(
-                    platforms._platforms[id].to_json(
+                    available_platforms[id].to_json(
                         compilers=compilers_instance,
                         include_compilers=True,
                     )
@@ -74,15 +74,11 @@ class PlatformHandler(BaseHandler):
             self.set_status(404)
             return self.write({"error": "Unknown platform"})
 
-        for platform in available_platforms.values():
-            platforms_data.append(
-                platform.to_json(
-                    compilers=compilers_instance,
-                    include_compilers=True,
-                )
-            )
-        # TODO: remove this 'platforms' key one day
-        self.write({"platforms": platforms_data})
+        platforms_data = {
+            p.id: p.to_json(compilers=compilers_instance, include_compilers=True)
+            for p in available_platforms.values()
+        }
+        self.write(platforms_data)
 
 
 class CompilerHandler(BaseHandler):
@@ -104,7 +100,7 @@ class CompilerHandler(BaseHandler):
             self.set_status(404)
             return self.write({"error": "Unknown platform/compiler"})
 
-        if compiler_id:
+        if platform_id or compiler_id:
             return self.write(compilers_data)
 
         # TODO: Remove this 'compilers' key one day

@@ -98,11 +98,7 @@ class CromperClient:
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper service...")
             response = self._make_request("GET", "/platform")
-            response_json = response.get("platforms", [])
-            self._platforms_cache = {
-                comp["id"]: Platform(**comp) for comp in response_json
-            }
-
+            self._platforms_cache = {k: Platform(**v) for (k, v) in response.items()}
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
 

@@ -8,6 +8,9 @@ if (!API_BASE) {
     throw new Error("No API_BASE set");
 }
 
+const CROMPER_BASE =
+    process.env.INTERNAL_CROMPER_BASE ?? process.env.NEXT_PUBLIC_API_BASE;
+
 type Json = any;
 
 const commonOpts: RequestInit = {
@@ -42,7 +45,10 @@ export class RequestFailedError extends Error {
 }
 
 export function normalizeUrl(url: string) {
-    if (url.startsWith("/")) {
+    // FIXME: handle this properly
+    if (url.startsWith("/platform")) {
+        url = CROMPER_BASE + url;
+    } else if (url.startsWith("/")) {
         url = API_BASE + url;
     }
     return url;
