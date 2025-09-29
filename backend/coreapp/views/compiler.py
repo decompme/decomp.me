@@ -73,15 +73,11 @@ class CompilerDetail(APIView):
         }
 
     @staticmethod
-    def platforms_json(
-        include_num_scratches: bool = False,
-    ) -> Dict[str, Dict[str, object]]:
+    def platforms_json() -> Dict[str, Dict[str, object]]:
         ret: Dict[str, Dict[str, object]] = {}
 
         for platform in compilers.available_platforms():
-            ret[platform.id] = platform.to_json(
-                include_num_scratches=include_num_scratches,
-            )
+            ret[platform.id] = platform.to_json()
 
         return ret
 
