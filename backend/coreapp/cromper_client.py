@@ -9,7 +9,6 @@ import requests
 from django.conf import settings
 
 from coreapp.error import AssemblyError, CompilationError
-from coreapp.models.preset import Preset
 
 if TYPE_CHECKING:
     from coreapp.models.scratch import Asm
@@ -29,7 +28,6 @@ class Platform:
     def to_json(
         self,
         include_compilers: bool = False,
-        include_presets: bool = False,
         include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
@@ -42,13 +40,6 @@ class Platform:
         if include_compilers:
             ret["compilers"] = self.compilers
 
-        if include_presets:
-            from coreapp.serializers import TersePresetSerializer
-
-            ret["presets"] = [
-                TersePresetSerializer(p).data
-                for p in Preset.objects.filter(platform=self.id).order_by("name")
-            ]
         if include_num_scratches:
             from coreapp.models.scratch import Scratch
 

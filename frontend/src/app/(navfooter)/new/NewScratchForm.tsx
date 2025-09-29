@@ -29,28 +29,11 @@ import type { TerseScratch } from "@/lib/api/types";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
-
-import {
-    applyCompiler,
-    applyPreset,
-    clearSubmittedDraft,
-    emptyDraft,
-    filterDuplicateScratches,
-    getLabels,
-    readStoredDraft,
-    selectDraftCompiler,
-    storedDraftFields,
-    writeStoredDraft,
-    type NewScratchDraft,
-} from "./NewScratchForm.state";
-
-const SEARCH_MAX_LENGTH = 64;
-
-type CreateScratchError = {
-    title: string;
-    detail: string;
-    hint?: string;
-};
+import { get } from "@/lib/api/request";
+import type { TerseScratch } from "@/lib/api/types";
+import { SingleLineScratchItem } from "@/components/ScratchItem";
+import { useDebounce } from "use-debounce";
+import { useCompilers, usePresets } from "@/lib/api";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -228,14 +211,33 @@ export default function NewScratchForm({
     );
     const availablePresets = presets;
 
+    // 2. Fetch compilers and presets for selected platform
+    const compilers = useCompilers(platform);
+    const presets = usePresets(platform);
     useEffect(() => {
-        // A platform must have at least one compiler to exist on the site.
-        // So an empty compiler list means the API result is still pending.
-        if (
-            availableCompilers.length === 0 ||
-            typeof availablePresets === "undefined"
-        ) {
-            return;
+        if (compilers && typeof presets !== "undefined") {
+            setAvailableCompilers(Object.keys(compilers));
+            setAvailablePresets(presets);
+        } else {
+            setAvailableCompilers([]);
+            setAvailablePresets(undefined);
+        }
+    }, [compilers, presets]);
+
+    // 3. Select compiler based on local storage
+    useEffect(() => {
+        // A platform will always have at least 1 available compiler
+        if (availableCompilers.length === 0) return;
+
+        setReady(true);
+
+        const pid = Number.parseInt(localStorage.new_scratch_presetId);
+        if (!Number.isNaN(pid)) {
+            const preset = availablePresets.filter((x) => x.id === pid)[0];
+            if (preset) {
+                setPreset(preset);
+                return;
+            }
         }
 
         if (initializedPlatform.current === draft.platform) {

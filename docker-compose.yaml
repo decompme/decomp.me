@@ -82,4 +82,4 @@ services:
       - ./nginx/development/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
-      - ./backend/static:/var/www/static
+    restart: unless-stopped

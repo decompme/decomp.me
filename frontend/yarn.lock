@@ -3808,10 +3808,15 @@ nanoid@^3.3.11, nanoid@^3.3.6:
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.11.tgz#4f4f112cefbe303202f2199838128936266d185b"
   integrity sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==
 
-next@16.2.6:
-  version "16.2.6"
-  resolved "https://registry.yarnpkg.com/next/-/next-16.2.6.tgz#4564833d2865efc598b7c63541b5771792d3d811"
-  integrity sha512-qOVgKJg1+At15NpeUP+eJgCHvTCgXsogweq87Ri/Ix7PkqQHg4sdaXmSFqKlgaIXE4kW0g25LE68W87UANlHtw==
+neo-async@^2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
+  integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
+
+next-remove-imports@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/next-remove-imports/-/next-remove-imports-1.0.12.tgz#30be38374121ff8fc7734ab2d437fc77291931b0"
+  integrity sha512-3tdL6VuSykJ/mcUwxfjQ+Fd4OpEmrwWVHtLZ/fhNcSaToWCutUp7nrfIww7/4CURe9I7BDCQE9AWl4fkY3YZOQ==
   dependencies:
     "@next/env" "16.2.6"
     "@swc/helpers" "0.5.15"
