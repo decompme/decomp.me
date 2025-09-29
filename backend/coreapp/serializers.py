@@ -65,6 +65,7 @@ class ProfileField(ProfileFieldBaseClass):
 class Library:
     name: str
     version: str
+
     def to_json(self):
         return {
             "name": self.name,
@@ -75,7 +76,6 @@ class Library:
 class LibrarySerializer(serializers.Serializer[Library]):
     name = serializers.CharField()
     version = serializers.CharField()
-
 
 
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
