@@ -8,10 +8,10 @@ from dataclasses import dataclass
 
 import diff as asm_differ
 
-from .platforms import Platform
-from .flags import ASMDIFF_FLAG_PREFIX
-from .error import AssemblyError, DiffError, NmError, ObjdumpError
-from .sandbox import Sandbox
+from ..platforms import Platform
+from ..flags import ASMDIFF_FLAG_PREFIX
+from ..error import AssemblyError, DiffError, NmError, ObjdumpError
+from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 

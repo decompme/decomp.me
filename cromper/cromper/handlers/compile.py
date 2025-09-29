@@ -5,7 +5,7 @@ from typing import Any, Dict
 import tornado.web
 
 from .handlers import BaseHandler
-from ..compiler_wrapper import CompilerWrapper
+from ..wrappers.compiler_wrapper import CompilerWrapper
 from ..error import CompilationError
 
 

@@ -4,7 +4,7 @@ from typing import Any, Dict
 import tornado.web
 
 from .handlers import BaseHandler
-from ..diff_wrapper import DiffWrapper
+from ..wrappers.diff_wrapper import DiffWrapper
 
 from cromper import platforms
 

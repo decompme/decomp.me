@@ -42,7 +42,7 @@ class CromperTestCase(unittest.TestCase):
     def create_compiler_wrapper(self):
         """Create a CompilerWrapper with proper test configuration."""
         from cromper.main import CromperConfig
-        from cromper.compiler_wrapper import CompilerWrapper
+        from cromper.cromper.wrappers.compiler_wrapper import CompilerWrapper
 
         config = CromperConfig()
         wrapper = CompilerWrapper(

@@ -3,7 +3,7 @@ from typing import Any, Dict
 import tornado
 
 from .handlers import BaseHandler
-from ..decompiler_wrapper import DecompilerWrapper
+from ..wrappers.decompiler_wrapper import DecompilerWrapper
 
 from cromper import platforms
 

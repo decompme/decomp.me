@@ -1,8 +1,8 @@
 import logging
 
-from .compilers import Compiler
 from .m2c_wrapper import M2CError, M2CWrapper
-from .platforms import Platform
+from ..compilers import Compiler
+from ..platforms import Platform
 
 logger = logging.getLogger(__name__)
 
