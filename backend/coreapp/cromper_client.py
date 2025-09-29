@@ -25,27 +25,6 @@ class Platform:
     compilers: list[str]
     has_decompiler: bool = False
 
-    def to_json(
-        self,
-        include_compilers: bool = False,
-        include_num_scratches: bool = False,
-    ) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "arch": self.arch,
-            "has_decompiler": self.has_decompiler,
-        }
-        if include_compilers:
-            ret["compilers"] = self.compilers
-
-        if include_num_scratches:
-            from coreapp.models.scratch import Scratch
-
-            ret["num_scratches"] = Scratch.objects.filter(platform=self.id).count()
-        return ret
-
 
 # TODO copied from cromper, should deduplicate
 class Language(enum.Enum):

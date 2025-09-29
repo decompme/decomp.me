@@ -10,6 +10,7 @@ from coreapp.views import (
     scratch,
     user,
     search,
+    scratch_count,
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -21,6 +22,9 @@ urlpatterns = [
     *router.urls,
     path("library", library.LibraryDetail.as_view(), name="library"),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
+    path(
+        "scratch-count", scratch_count.ScratchCountView.as_view(), name="scratch-count"
+    ),
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
         "user/scratches",
