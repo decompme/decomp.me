@@ -38,5 +38,4 @@ urlpatterns = [
         name="user-scratches",
     ),
     path("search", search.SearchViewSet.as_view(), name="search"),
-    path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]

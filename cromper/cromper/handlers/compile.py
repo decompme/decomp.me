@@ -7,6 +7,7 @@ import tornado.web
 from .handlers import BaseHandler
 from ..wrappers.compiler_wrapper import CompilerWrapper
 from ..error import CompilationError
+from ..libraries import Library
 
 
 def compile(data: Dict[str, Any], settings) -> Dict[str, Any]:
@@ -23,7 +24,7 @@ def compile(data: Dict[str, Any], settings) -> Dict[str, Any]:
     code = data.get("code", "")
     context = data.get("context", "")
     compiler_flags = data.get("compiler_flags", "")
-    libraries = data.get("libraries", [])  # TODO: implement library support
+    libraries = [Library(**l) for l in data.get("libraries", [])]
 
     config = settings["config"]
     wrapper = CompilerWrapper(
