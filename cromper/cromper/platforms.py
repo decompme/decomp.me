@@ -14,6 +14,7 @@ from cromper.flags import (
     Flags,
 )
 
+
 logger = logging.getLogger(__name__)
 
 

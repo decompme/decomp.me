@@ -52,9 +52,6 @@ export default function Footer() {
                             Status
                         </GhostButton>
                         <Separator />
-                        <GhostButton href="https://stats.decomp.me/decomp.me">
-                            Stats
-                        </GhostButton>
                     </div>
 
                     <div className="mt-2 flex items-center justify-center text-[#808080] text-xs">

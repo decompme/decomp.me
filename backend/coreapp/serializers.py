@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from attr import dataclass
 from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
@@ -57,6 +58,18 @@ else:
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(profile)
+
+
+# FIXME: partial copy/paste from cromper
+@dataclass(frozen=True)
+class Library:
+    name: str
+    version: str
+
+
+class LibrarySerializer(serializers.Serializer[Library]):
+    name = serializers.CharField()
+    version = serializers.CharField()
 
 
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
@@ -155,7 +168,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_obj = serializers.FileField(allow_null=True, required=False)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.JSONField(default=list)  # type: ignore
 
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
@@ -175,6 +188,17 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
+
+    def validate_libraries(
+        self, libraries: list[dict[str, str]]
+    ) -> list[dict[str, str]]:
+        for library in libraries:
+            for key in ["name", "version"]:
+                if key not in library:
+                    raise serializers.ValidationError(
+                        f"Library {library} is missing '{key}' key"
+                    )
+        return libraries
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         cromper = get_cromper_client()
@@ -233,7 +257,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
     context = serializers.CharField(allow_blank=True, trim_whitespace=False)  # type: ignore
     language = serializers.SerializerMethodField()
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )
@@ -252,8 +276,8 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Language:
-        return scratch.get_language()
+    def get_language(self, scratch: Scratch) -> str:
+        return scratch.get_language().value
 
 
 class TerseScratchSerializer(ScratchSerializer):

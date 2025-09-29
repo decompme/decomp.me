@@ -169,7 +169,6 @@ export interface PlatformMetadata extends PlatformBase {
 
 export interface Platform extends PlatformBase {
     compilers: string[];
-    presets: Preset[];
 }
 
 export interface ScratchResult {
