@@ -44,12 +44,16 @@ export class RequestFailedError extends Error {
     }
 }
 
+function isCromperUrl(url: string) {
+    if (url.startsWith("/platform")) return true;
+    if (url.startsWith("/compiler")) return true;
+    if (url.startsWith("/library")) return true;
+    return false;
+}
+
 export function normalizeUrl(url: string) {
-    // FIXME: handle this properly
-    if (url.startsWith("/platform")) {
-        url = CROMPER_BASE + url;
-    } else if (url.startsWith("/")) {
-        url = API_BASE + url;
+    if (url.startsWith("/")) {
+        url = (isCromperUrl(url) ? CROMPER_BASE : API_BASE) + url;
     }
     return url;
 }
