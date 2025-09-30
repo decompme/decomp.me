@@ -1,15 +1,17 @@
 import base64
+
 from typing import Any, Dict
 
 import tornado.web
 
 from .handlers import BaseHandler
+from ..config import CromperConfig
 from ..wrappers.diff_wrapper import DiffWrapper
 
 from cromper import platforms
 
 
-def generate_diff(data: Dict[str, Any], settings) -> Dict[str, Any]:
+def generate_diff(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
     """Synchronous diff generation that runs in process pool."""
     platform_id = data.get("platform_id")
     if not platform_id:
@@ -40,7 +42,6 @@ def generate_diff(data: Dict[str, Any], settings) -> Dict[str, Any]:
 
     # Create assembly data object
 
-    config = settings["config"]
     wrapper = DiffWrapper(
         objdump_timeout_seconds=10,  # TODO: make configurable
         use_jail=config.use_sandbox_jail,
@@ -81,6 +82,6 @@ class DiffHandler(BaseHandler):
         data = self.get_json_body()
         ioloop = tornado.ioloop.IOLoop.current()
         result = await ioloop.run_in_executor(
-            self.executor, generate_diff, data, self.application.settings
+            self.executor, generate_diff, data, self.config
         )
         self.write(result)

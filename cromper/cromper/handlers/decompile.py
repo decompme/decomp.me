@@ -3,12 +3,13 @@ from typing import Any, Dict
 import tornado
 
 from .handlers import BaseHandler
+from ..config import CromperConfig
 from ..wrappers.decompiler_wrapper import DecompilerWrapper
 
 from cromper import platforms
 
 
-def decompile(data: Dict[str, Any], settings) -> Dict[str, Any]:
+def decompile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
     """Synchronous decompilation that runs in process pool."""
     platform_id = data.get("platform_id")
     compiler_id = data.get("compiler_id")
@@ -17,7 +18,7 @@ def decompile(data: Dict[str, Any], settings) -> Dict[str, Any]:
 
     try:
         platform = platforms.from_id(platform_id)
-        compiler = settings["compilers_instance"].from_id(compiler_id)
+        compiler = config.compilers_instance.from_id(compiler_id)
     except ValueError:
         raise tornado.web.HTTPError(400, "invalid platform_id or compiler_id")
 
@@ -27,8 +28,6 @@ def decompile(data: Dict[str, Any], settings) -> Dict[str, Any]:
 
     if not asm:
         raise tornado.web.HTTPError(400, "asm is required")
-
-    config = settings["config"]
 
     wrapper = DecompilerWrapper(
         use_jail=config.use_sandbox_jail,
@@ -68,6 +67,6 @@ class DecompileHandler(BaseHandler):
         data = self.get_json_body()
         ioloop = tornado.ioloop.IOLoop.current()
         result = await ioloop.run_in_executor(
-            self.executor, decompile, data, self.application.settings
+            self.executor, decompile, data, self.config
         )
         self.write(result)

@@ -2,15 +2,21 @@ import json
 import traceback
 from typing import Any, Dict
 
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
 import tornado.web
 
+from ..config import CromperConfig
 from cromper import platforms, libraries
 
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base handler with common functionality."""
 
-    def initialize(self, executor):
+    def initialize(
+        self, config: CromperConfig, executor: ProcessPoolExecutor | ThreadPoolExecutor
+    ):
+        self.config = config
         self.executor = executor
 
     def set_default_headers(self):
@@ -31,12 +37,12 @@ class BaseHandler(tornado.web.RequestHandler):
             exc_info = kwargs["exc_info"]
             if exc_info[1]:
                 error_message = str(exc_info[1])
-                if self.application.settings.get("debug"):
+                if self.settings.get("debug"):
                     # Include traceback in debug mode
                     error_message += "\n" + "".join(
                         traceback.format_exception(*exc_info)
                     )
-
+        self.set_status(status_code)
         self.write({"error": error_message})
 
     def get_json_body(self) -> Dict[str, Any]:
@@ -58,9 +64,13 @@ class PlatformHandler(BaseHandler):
     """Platforms information endpoint."""
 
     def get(self, id=None):
-        """Get all available platforms."""
-
-        compilers_instance = self.application.settings["compilers_instance"]
+        """
+        /platform
+          returns a dictionary of available platforms keyed on Plaform.id
+        /platform/<platform_id>
+          returns a dictionary containing a single Platform
+        """
+        compilers_instance = self.config.compilers_instance
         available_platforms = platforms._platforms
         if id is not None:
             if id in available_platforms:
@@ -85,10 +95,16 @@ class CompilerHandler(BaseHandler):
     """Compilers information endpoint."""
 
     def get(self, platform_id=None, compiler_id=None):
-        """Get all available compilers."""
-        available_compilers = self.application.settings[
-            "compilers_instance"
-        ].available_compilers()
+        """
+        /compiler (used by decomp-permuter)
+          returns a dictionary of available compilers keyed on Compiler.id
+        /compiler/<platform_id>
+          returns a dictionary of available compilers keyed on Compiler.id for the target Platform ID
+        /compiler/<platform_id>/<compiler_id>
+          returns a dictionary containing the single Compiler with id compiler_id
+
+        """
+        available_compilers = self.config.compilers_instance.available_compilers()
 
         compilers_data = {
             c.id: c.to_json()

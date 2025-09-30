@@ -5,12 +5,13 @@ from typing import Any, Dict
 import tornado.web
 
 from .handlers import BaseHandler
+from ..config import CromperConfig
 from ..wrappers.compiler_wrapper import CompilerWrapper, AssemblyData
 from ..error import AssemblyError
 from cromper import platforms
 
 
-def assemble_asm(data: Dict[str, Any], settings) -> Dict[str, Any]:
+def assemble_asm(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
     """Synchronous assembly that runs in process pool."""
     platform_id = data.get("platform_id")
     if not platform_id:
@@ -30,7 +31,6 @@ def assemble_asm(data: Dict[str, Any], settings) -> Dict[str, Any]:
     # Create assembly data object
     asm = AssemblyData(data=asm_data, hash=asm_hash)
 
-    config = settings["config"]
     wrapper = CompilerWrapper(
         use_sandbox_jail=config.use_sandbox_jail,
         assembly_timeout_seconds=config.assembly_timeout_seconds,
@@ -68,6 +68,6 @@ class AssembleHandler(BaseHandler):
         data = self.get_json_body()
         ioloop = tornado.ioloop.IOLoop.current()
         result = await ioloop.run_in_executor(
-            self.executor, assemble_asm, data, self.application.settings
+            self.executor, assemble_asm, data, self.config
         )
         self.write(result)
