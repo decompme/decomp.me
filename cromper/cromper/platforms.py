@@ -76,12 +76,6 @@ class Platforms:
         return _platforms[platform_id]
 
 
-def from_id(platform_id: str) -> Platform:
-    if platform_id not in _platforms:
-        raise ValueError(f"Unknown platform: {platform_id}")
-    return _platforms[platform_id]
-
-
 MSDOS = Platform(
     id="msdos",
     name="Microsoft DOS",
