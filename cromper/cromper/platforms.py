@@ -62,6 +62,20 @@ class Platform:
         return ret
 
 
+class Platforms:
+    def __init__(self) -> None:
+        pass
+
+    def available_platforms(self):
+        return _platforms
+
+    @staticmethod
+    def from_id(platform_id: str) -> Platform:
+        if platform_id not in _platforms:
+            raise ValueError(f"Unknown platform: {platform_id}")
+        return _platforms[platform_id]
+
+
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
         raise ValueError(f"Unknown platform: {platform_id}")

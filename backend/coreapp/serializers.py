@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from attr import dataclass
@@ -7,13 +8,16 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.relations import SlugRelatedField
 
-from .cromper_client import Compiler, Language, Platform, get_cromper_client
+from .cromper_client import Compiler, Platform, get_cromper_client
 
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
 from .models.scratch import Scratch
+
+
+logger = logging.getLogger(__name__)
 
 
 class LanguageFlagSet:
@@ -67,6 +71,9 @@ class Library:
     version: str
 
     def to_json(self):
+        logger.warning(
+            "This is a Library from coreapp.serializers NOT from coreapp.models.Scratch!"
+        )
         return {
             "name": self.name,
             "version": self.version,
@@ -248,7 +255,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                         f"Unknown platform: {data['platform']}"
                     )
 
-                if compiler.platform != platform:
+                if compiler.platform != platform.id:
                     raise serializers.ValidationError(
                         f"Compiler {compiler.id} is not compatible with platform {platform.id}"
                     )

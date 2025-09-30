@@ -141,19 +141,17 @@ class CromperClient:
         code: str,
         context: str,
         function: str = "",
-        libraries: list[Any] = [],  # FIXME: sometimes a Library, sometimes a dict!
+        libraries: list[dict[str, str]] = [],
     ) -> Dict[str, Any]:
         """Compile code using the cromper service."""
-
         data = {
             "compiler_id": compiler_id,
             "compiler_flags": compiler_flags,
             "code": code,
             "context": context,
             "function": function,
-            "libraries": [l if isinstance(l, dict) else l.to_json() for l in libraries],
+            "libraries": libraries,
         }
-
         response = self._make_request("POST", "/compile", json=data)
 
         if not response.get("success"):

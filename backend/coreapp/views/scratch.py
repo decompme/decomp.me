@@ -29,7 +29,7 @@ from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Scratch
+from ..models.scratch import Asm, Assembly, Scratch, Library
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCreateSerializer,
@@ -87,13 +87,16 @@ def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
+        libraries = [
+            l.to_json() if isinstance(l, Library) else l for l in scratch.libraries
+        ]
         cromper_client = get_cromper_client()
         result = cromper_client.compile_code(
             compiler_id=scratch.compiler,
             compiler_flags=scratch.compiler_flags,
             code=scratch.source_code,
             context=scratch.context,
-            libraries=scratch.libraries,
+            libraries=libraries,
         )
         return CompilationResult(result["elf_object"], result["errors"])
     except (CompilationError, APIException) as e:
@@ -192,9 +195,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     cromper_client = get_cromper_client()
     compiler = cromper_client.get_compiler_by_id(data["compiler"])
-    platform_id = data.get("platform", compiler.platform)
-
-    platform = cromper_client.get_platform_by_id(platform_id)
+    platform = data.get("platform", compiler.platform)
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -207,7 +208,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     else:
         asm = get_db_asm(target_asm)
         cromper_client = get_cromper_client()
-        asm_result = cromper_client.assemble_asm(platform_id, asm)
+        asm_result = cromper_client.assemble_asm(platform.id, asm)
 
         # Create Assembly object from cromper response
         assembly, _ = Assembly.objects.get_or_create(

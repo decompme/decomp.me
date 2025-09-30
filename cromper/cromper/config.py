@@ -2,7 +2,7 @@ import os
 
 from pathlib import Path
 
-from cromper import compilers, libraries
+from cromper import compilers, libraries, platforms
 
 
 class CromperConfig:
@@ -50,3 +50,4 @@ class CromperConfig:
         # Set up the compiler and library base paths in the shared modules
         self.compilers_instance = compilers.Compilers(self.compiler_base_path)
         libraries.set_library_base_path(self.library_base_path)
+        self.platforms_instance = platforms.Platforms()

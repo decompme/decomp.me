@@ -68,7 +68,6 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             ),
         ],
         debug=config.debug,
-        # config=config,
     )
 
 

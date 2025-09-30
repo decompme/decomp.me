@@ -6,8 +6,6 @@ from .handlers import BaseHandler
 from ..config import CromperConfig
 from ..wrappers.decompiler_wrapper import DecompilerWrapper
 
-from cromper import platforms
-
 
 def decompile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
     """Synchronous decompilation that runs in process pool."""
@@ -17,7 +15,7 @@ def decompile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
         raise tornado.web.HTTPError(400, "platform_id and compiler_id are required")
 
     try:
-        platform = platforms.from_id(platform_id)
+        platform = config.platforms_instance.from_id(platform_id)
         compiler = config.compilers_instance.from_id(compiler_id)
     except ValueError:
         raise tornado.web.HTTPError(400, "invalid platform_id or compiler_id")

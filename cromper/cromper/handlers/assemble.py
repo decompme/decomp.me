@@ -8,7 +8,6 @@ from .handlers import BaseHandler
 from ..config import CromperConfig
 from ..wrappers.compiler_wrapper import CompilerWrapper, AssemblyData
 from ..error import AssemblyError
-from cromper import platforms
 
 
 def assemble_asm(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
@@ -18,7 +17,7 @@ def assemble_asm(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
         raise tornado.web.HTTPError(400, "platform_id is required")
 
     try:
-        platform = platforms.from_id(platform_id)
+        platform = config.platforms_instance.from_id(platform_id)
     except ValueError:
         raise tornado.web.HTTPError(400, "invalid platform_id")
 

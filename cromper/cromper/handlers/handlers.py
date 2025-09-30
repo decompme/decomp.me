@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import tornado.web
 
 from ..config import CromperConfig
-from cromper import platforms, libraries
+from cromper import libraries
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -71,7 +71,7 @@ class PlatformHandler(BaseHandler):
           returns a dictionary containing a single Platform
         """
         compilers_instance = self.config.compilers_instance
-        available_platforms = platforms._platforms
+        available_platforms = self.config.platforms_instance.available_platforms()
         if id is not None:
             if id in available_platforms:
                 return self.write(
