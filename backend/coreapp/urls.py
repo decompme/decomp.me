@@ -3,7 +3,6 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
-    library,
     preset,
     stats,
     project,
@@ -20,7 +19,6 @@ router.register(r"project", project.ProjectViewSet)
 
 urlpatterns = [
     *router.urls,
-    path("library", library.LibraryDetail.as_view(), name="library"),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
     path(
         "scratch-count", scratch_count.ScratchCountView.as_view(), name="scratch-count"
