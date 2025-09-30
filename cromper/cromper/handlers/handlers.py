@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 import tornado.web
 
-from cromper import compilers, platforms, libraries
+from cromper import platforms, libraries
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -76,7 +76,7 @@ class PlatformHandler(BaseHandler):
 
         platforms_data = {
             p.id: p.to_json(compilers=compilers_instance, include_compilers=True)
-            for p in available_platforms.values()
+            for p in sorted(available_platforms.values(), key=lambda x: x.id)
         }
         self.write(platforms_data)
 
@@ -92,7 +92,7 @@ class CompilerHandler(BaseHandler):
 
         compilers_data = {
             c.id: c.to_json()
-            for c in available_compilers
+            for c in sorted(available_compilers, key=lambda x: x.id)
             if (platform_id is None or c.platform.id == platform_id)
             and (compiler_id is None or c.id == compiler_id)
         }
@@ -103,7 +103,7 @@ class CompilerHandler(BaseHandler):
         if platform_id or compiler_id:
             return self.write(compilers_data)
 
-        # TODO: Remove this 'compilers' key one day
+        # TODO: Remove the 'compilers' key one day
         return self.write({"compilers": compilers_data})
 
 

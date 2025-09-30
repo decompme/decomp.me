@@ -5,9 +5,9 @@ from pathlib import Path
 import functools
 
 if TYPE_CHECKING:
-    from cromper.compilers import Compilers
+    from .compilers import Compilers
 
-from cromper.flags import (
+from .flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
     COMMON_MSDOS_DIFF_FLAGS,

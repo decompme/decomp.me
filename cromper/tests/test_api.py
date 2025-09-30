@@ -33,9 +33,14 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
-        self.assertIn("platforms", data)
-        self.assertIsInstance(data["platforms"], list)
-        self.assertGreater(len(data["platforms"]), 0)
+        self.assertIsInstance(data, dict)
+        self.assertGreater(len(data), 0)
+
+    # def test_platforms_endpoint_single(self):
+    #     """Test the platforms endpoint."""
+    #     response = self.fetch("/platform/compiler_id")
+    #     self.assertEqual(response.code, 200)
+    #     data = json.loads(response.body)
 
     def test_compilers_endpoint(self):
         """Test the compilers endpoint."""
@@ -46,6 +51,18 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertIn("compilers", data)
         self.assertIsInstance(data["compilers"], dict)
         self.assertGreater(len(data["compilers"]), 0)
+
+    # def test_compilers_endpoint_platform(self):
+    #     """Test the compilers endpoint."""
+    #     response = self.fetch("/compiler/platform_id")
+    #     self.assertEqual(response.code, 200)
+    #     data = json.loads(response.body)
+
+    # def test_compilers_endpoint_platform_compiler(self):
+    #     """Test the compilers endpoint."""
+    #     response = self.fetch("/compiler/platform_id/compiler_id")
+    #     self.assertEqual(response.code, 200)
+    #     data = json.loads(response.body)
 
     def test_libraries_endpoint(self):
         """Test the libraries endpoint."""

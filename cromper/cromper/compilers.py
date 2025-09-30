@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
 
-from cromper.flags import (
+from .flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
     COMMON_SHC_FLAGS,
@@ -23,7 +23,7 @@ from cromper.flags import (
     Flags,
     Language,
 )
-from cromper.platforms import (
+from .platforms import (
     GBA,
     GC_WII,
     IRIX,

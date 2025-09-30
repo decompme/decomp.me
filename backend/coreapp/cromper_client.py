@@ -102,6 +102,15 @@ class CromperClient:
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
 
+    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
+        """Get available libraries from the cromper service."""
+        params = {}
+        if platform:
+            params["platform"] = platform
+
+        response = self._make_request("GET", "/library", params=params)
+        return response.get("libraries", [])
+
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         """Get a specific compiler by ID."""
         compilers = self.get_compilers()
@@ -181,15 +190,6 @@ class CromperClient:
             "elf_object": elf_object,
         }
 
-    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
-        """Get available libraries from the cromper service."""
-        params = {}
-        if platform:
-            params["platform"] = platform
-
-        response = self._make_request("GET", "/library", params=params)
-        return response.get("libraries", [])
-
     def diff(
         self,
         platform_id: str,
@@ -200,7 +200,6 @@ class CromperClient:
     ) -> Dict[str, Any]:
         """Generate diff using the cromper service."""
         # Encode elf object as base64
-
         target_elf_b64 = base64.b64encode(target_elf).decode("utf-8")
         compiled_elf_b64 = base64.b64encode(compiled_elf).decode("utf-8")
 

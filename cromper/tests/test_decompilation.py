@@ -3,7 +3,7 @@ import unittest
 from cromper.compilers import GCC281PM, IDO53, MWCC_247_92
 from cromper.compilers import Compiler
 from cromper.platforms import N64, Platform
-from cromper.cromper.wrappers.decompiler_wrapper import (
+from cromper.wrappers.decompiler_wrapper import (
     DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
 )
