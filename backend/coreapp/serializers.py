@@ -1,4 +1,3 @@
-import logging
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from attr import dataclass
@@ -14,10 +13,7 @@ from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
-from .models.scratch import Scratch
-
-
-logger = logging.getLogger(__name__)
+from .models.scratch import Scratch, Library
 
 
 class LanguageFlagSet:
@@ -62,22 +58,6 @@ else:
 class ProfileField(ProfileFieldBaseClass):
     def to_representation(self, profile: Profile) -> Dict[str, Any]:
         return serialize_profile(profile)
-
-
-# FIXME: partial copy/paste from cromper
-@dataclass(frozen=True)
-class Library:
-    name: str
-    version: str
-
-    def to_json(self):
-        logger.warning(
-            "This is a Library from coreapp.serializers NOT from coreapp.models.Scratch!"
-        )
-        return {
-            "name": self.name,
-            "version": self.version,
-        }
 
 
 class LibrarySerializer(serializers.Serializer[Library]):

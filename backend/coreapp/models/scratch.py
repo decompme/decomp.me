@@ -15,7 +15,6 @@ from .profile import Profile
 logger = logging.getLogger(__name__)
 
 
-# FIXME: duplcated in coreapp.serializers due to circular import error
 @dataclass(frozen=True)
 class Library:
     name: str
