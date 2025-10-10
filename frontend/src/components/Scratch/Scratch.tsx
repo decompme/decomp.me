@@ -42,7 +42,7 @@ import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
 import ScrollRestorer from "../ScrollRestorer";
 
-enum TabId {
+export enum TabId {
     ABOUT = "scratch_about",
     SOURCE_CODE = "scratch_source_code",
     CONTEXT = "scratch_context",
@@ -477,7 +477,9 @@ export default function Scratch({
             </ErrorBoundary>
             <ErrorBoundary>
                 {layout && (
-                    <ScrollContext.Provider value={sourceEditor}>
+                    <ScrollContext.Provider
+                        value={{ sourceEditor, contextEditor, setLayout }}
+                    >
                         <CustomLayout
                             layout={layout}
                             onChange={setLayout}

@@ -3,9 +3,11 @@
 import {
     createContext,
     type CSSProperties,
+    type Dispatch,
     forwardRef,
     type HTMLAttributes,
     type RefObject,
+    type SetStateAction,
     useRef,
     useState,
 } from "react";
@@ -25,6 +27,8 @@ import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
 import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
+import { activateTabInLayout, type Layout } from "../CustomLayout";
+import { TabId } from "../Scratch/Scratch";
 
 const copyDiffContentsToClipboard = (diff: api.DiffOutput, kind: string) => {
     // kind is either "base", "current", or "previous"
@@ -154,21 +158,48 @@ function ThreeWayToggleButton({
 }
 
 export function scrollToLineNumber(
-    editorView: RefObject<EditorView>,
+    sourceEditorView: RefObject<EditorView>,
+    contextEditorView: RefObject<EditorView>,
+    setLayout: Dispatch<SetStateAction<Layout>>,
+    isInContext: boolean,
     lineNumber: number,
 ) {
+    const editorView = isInContext ? contextEditorView : sourceEditorView;
     if (!editorView) {
         return;
     }
-    if (lineNumber <= editorView.current.state.doc.lines) {
-        // check if the source line <= number of lines
-        // which can be false if pragmas are used to force line numbers
-        const line = editorView.current.state.doc.line(lineNumber);
-        if (line) {
-            const { top } = editorView.current.lineBlockAt(line.to);
-            editorView.current.scrollDOM.scrollTo({ top, behavior: "smooth" });
-        }
+    // check if the source line <= number of lines
+    // which can be false if pragmas are used to force line numbers
+    if (lineNumber > editorView.current.state.doc.lines) {
+        return;
     }
+    const line = editorView.current.state.doc.line(lineNumber);
+    if (!line) {
+        return;
+    }
+    setLayout((layout) => {
+        const clone = { ...layout };
+        activateTabInLayout(
+            clone,
+            isInContext ? TabId.CONTEXT : TabId.SOURCE_CODE,
+        );
+
+        const scrollToLine = () => {
+            if (editorView.current.inView) {
+                const { top } = editorView.current.lineBlockAt(line.to);
+                editorView.current.scrollDOM.scrollTo({
+                    top,
+                    behavior: "smooth",
+                });
+            } else {
+                requestAnimationFrame(scrollToLine);
+            }
+        };
+
+        requestAnimationFrame(scrollToLine);
+
+        return clone;
+    });
 }
 
 export const PADDING_TOP = 8;

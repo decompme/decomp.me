@@ -1,6 +1,13 @@
 /* eslint css-modules/no-unused-class: off */
 
-import { type CSSProperties, type RefObject, memo, useContext } from "react";
+import {
+    type CSSProperties,
+    type Dispatch,
+    type RefObject,
+    type SetStateAction,
+    memo,
+    useContext,
+} from "react";
 
 import clsx from "clsx";
 import type { EditorView } from "codemirror";
@@ -19,6 +26,7 @@ import {
 } from "./Diff";
 import styles from "./Diff.module.scss";
 import type { Highlighter } from "./Highlighter";
+import type { Layout } from "../CustomLayout";
 
 // Regex for tokenizing lines for click-to-highlight purposes.
 // Strings matched by the first regex group (spaces, punctuation)
@@ -82,8 +90,13 @@ function DiffCell({
     highlighter: Highlighter;
 }) {
     const selectedSourceLine = useContext(SelectedSourceLineContext);
-    const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
+    const { sourceEditor, contextEditor, setLayout } = useContext<{
+        sourceEditor: RefObject<EditorView>;
+        contextEditor: RefObject<EditorView>;
+        setLayout: Dispatch<SetStateAction<Layout>>;
+    }>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
+    const isInContext = cell?.src?.some((s) => s?.includes("ctx"));
 
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
@@ -112,7 +125,13 @@ function DiffCell({
                 <span className={styles.lineNumber}>
                     <button
                         onClick={() =>
-                            scrollToLineNumber(sourceEditor, cell.src_line)
+                            scrollToLineNumber(
+                                sourceEditor,
+                                contextEditor,
+                                setLayout,
+                                isInContext,
+                                cell.src_line,
+                            )
                         }
                     >
                         {cell.src_line}
