@@ -281,7 +281,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
                             for flag, language in language_flag_set.flags.items()
                             if flag in scratch.compiler_flags
                         ),
-                        key=lambda l: len(l[0]),
+                        key=lambda lang: len(lang[0]),
                         reverse=True,
                     )
                 ),
