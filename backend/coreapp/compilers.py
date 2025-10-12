@@ -10,7 +10,7 @@ from coreapp import platforms
 from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
-    COMMON_PRODG_GC_FLAGS,
+    COMMON_GCC_GC_FLAGS,
     COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
@@ -145,7 +145,7 @@ class GCCPS2Compiler(GCCCompiler):
 @dataclass(frozen=True)
 class GCCGCCompiler(GCCCompiler):
     platform: Platform = GC_WII
-    flags: ClassVar[Flags] = COMMON_PRODG_GC_FLAGS
+    flags: ClassVar[Flags] = COMMON_GCC_GC_FLAGS
 
 
 @dataclass(frozen=True)

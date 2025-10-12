@@ -275,22 +275,7 @@ COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_arch", flags=["-m2"]),
 ]
 
-COMMON_PRODG_GC_FLAGS: Flags = [
-    FlagSet(id="prodg_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
-    FlagSet(
-        id="prodg_debug_level",
-        flags=[
-            "-g",
-            "-ggdb",
-            "-gstabs",
-            "-gstabs+",
-            "-gdwarf",
-            "-gdwarf+",
-            "-gdwarf-2",
-        ],
-    ),
-    FlagSet(id="gcc_char_type", flags=["-fsigned-char", "-funsigned-char"]),
-    Checkbox("gcc_force_addr", "-fforce-addr"),
+COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
     LanguageFlagSet(
         id="gcc_source_language",
         flags={
