@@ -271,25 +271,17 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             None,
         )
 
-        # We sort by match length to avoid having a partial match
         if language_flag_set:
-            language = next(
-                iter(
-                    sorted(
-                        (
-                            (flag, language)
-                            for flag, language in language_flag_set.flags.items()
-                            if flag in scratch.compiler_flags
-                        ),
-                        key=lambda lang: len(lang[0]),
-                        reverse=True,
-                    )
-                ),
-                None,
-            )
+            matches = [
+                (flag, language)
+                for flag, language in language_flag_set.flags.items()
+                if flag in scratch.compiler_flags
+            ]
 
-            if language:
-                return language[1].value
+            if matches:
+                # taking the longest avoids detecting C++ as C
+                longest_match = max(matches, key=lambda m: len(m[0]))
+                return longest_match[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.
