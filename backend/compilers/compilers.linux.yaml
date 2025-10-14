@@ -189,8 +189,11 @@ dreamcast:
   - shc-v5.0r31
   - shc-v5.0r32
   - shc-v5.1r01
+  - shc-v5.1r03
+  - shc-v5.1r04
   - shc-v5.1r08
   - shc-v5.1r11
+  - shc-v5.1r13
 
 macosx:
   - gcc-5026

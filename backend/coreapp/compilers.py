@@ -531,8 +531,11 @@ SHC_V50R28 = SHCCompiler(id="shc-v5.0r28", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V50R31 = SHCCompiler(id="shc-v5.0r31", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V50R32 = SHCCompiler(id="shc-v5.0r32", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R01 = SHCCompiler(id="shc-v5.1r01", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R03 = SHCCompiler(id="shc-v5.1r03", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R04 = SHCCompiler(id="shc-v5.1r04", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R08 = SHCCompiler(id="shc-v5.1r08", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R13 = SHCCompiler(id="shc-v5.1r13", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
 IOP_GCC281 = GCCPS2Compiler(
@@ -1583,8 +1586,11 @@ _all_compilers: List[Compiler] = [
     SHC_V50R31,
     SHC_V50R32,
     SHC_V51R01,
+    SHC_V51R03,
+    SHC_V51R04,
     SHC_V51R08,
     SHC_V51R11,
+    SHC_V51R13,
     # PS2
     IOP_GCC281,
     IOP_GCC2952_102,
