@@ -24,9 +24,9 @@ class Platform:
     name: str
     description: str
     arch: str
-    assemble_cmd: str
-    objdump_cmd: str
-    nm_cmd: str
+    assemble_cmd: str | None = None
+    objdump_cmd: str | None = None
+    nm_cmd: str | None = None
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
@@ -52,7 +52,9 @@ class Platform:
             "name": self.name,
             "description": self.description,
             "arch": self.arch,
+            "has_assembler": self.assemble_cmd is not None,
             "has_decompiler": self.has_decompiler,
+            "has_objdump": self.objdump_cmd is not None,
         }
         if include_compilers:
             ret["compilers"] = [
@@ -248,6 +250,13 @@ N3DS = Platform(
     nm_cmd="arm-none-eabi-nm",
 )
 
+XBOX360 = Platform(
+    id="xbox360",
+    name="Xbox 360",
+    description="PowerPC (64-bit, big-endian)",
+    arch="ppc",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -266,5 +275,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "macosx": MACOSX,
         "msdos": MSDOS,
         "win32": WIN32,
+        "xbox360": XBOX360,
     }
 )
