@@ -6,13 +6,13 @@ import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import ScratchList from "@/components/ScratchList";
 import { ScratchItemPlatformList } from "@/components/ScratchItem";
 import { get } from "@/lib/api/request";
-import type { PlatformMetadata } from "@/lib/api/types";
+import type { PlatformBase, ScratchCount } from "@/lib/api/types";
 
 export async function generateMetadata(props: {
     params: Promise<{ id: number }>;
 }): Promise<Metadata> {
     const params = await props.params;
-    let platform: PlatformMetadata;
+    let platform: PlatformBase;
 
     try {
         platform = await get(`/platform/${params.id}`);
@@ -24,13 +24,21 @@ export async function generateMetadata(props: {
         return notFound();
     }
 
+    let scratch_count: ScratchCount;
+    try {
+        scratch_count = await get(`/scratch-count?platform=${params.id}`);
+    } catch (error) {
+        console.error(error);
+    }
+
     let description = "There ";
-    description += platform.num_scratches === 1 ? "is " : "are ";
+    description += scratch_count.num_scratches === 1 ? "is " : "are ";
     description +=
-        platform.num_scratches === 0
+        scratch_count.num_scratches === 0
             ? "currently no "
-            : `${platform.num_scratches.toLocaleString("en-US")} `;
-    description += platform.num_scratches === 1 ? "scratch " : "scratches ";
+            : `${scratch_count.num_scratches.toLocaleString("en-US")} `;
+    description +=
+        scratch_count.num_scratches === 1 ? "scratch " : "scratches ";
     description += "for this platform.";
 
     return {
@@ -44,7 +52,7 @@ export async function generateMetadata(props: {
 
 export default async function Page(props: { params: Promise<{ id: number }> }) {
     const params = await props.params;
-    let platform: PlatformMetadata;
+    let platform: PlatformBase;
     try {
         platform = await get(`/platform/${params.id}`);
     } catch (error) {
@@ -53,6 +61,13 @@ export default async function Page(props: { params: Promise<{ id: number }> }) {
 
     if (!platform) {
         return notFound();
+    }
+
+    let scratch_count: ScratchCount;
+    try {
+        scratch_count = await get(`/scratch-count?platform=${params.id}`);
+    } catch (error) {
+        console.error(error);
     }
 
     return (
@@ -68,7 +83,7 @@ export default async function Page(props: { params: Promise<{ id: number }> }) {
                     url={`/scratch?platform=${platform.id}&page_size=20`}
                     item={ScratchItemPlatformList}
                     isSortable={true}
-                    title={`Scratches (${platform.num_scratches.toLocaleString("en-US")})`}
+                    title={`Scratches (${scratch_count.num_scratches.toLocaleString("en-US")})`}
                 />
             </section>
         </main>

@@ -5,9 +5,9 @@ from pathlib import Path
 import functools
 
 if TYPE_CHECKING:
-    from cromper.compilers import Compilers
+    from .compilers import Compilers
 
-from cromper.flags import (
+from .flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
     COMMON_MSDOS_DIFF_FLAGS,
@@ -62,10 +62,18 @@ class Platform:
         return ret
 
 
-def from_id(platform_id: str) -> Platform:
-    if platform_id not in _platforms:
-        raise ValueError(f"Unknown platform: {platform_id}")
-    return _platforms[platform_id]
+class Platforms:
+    def __init__(self) -> None:
+        pass
+
+    def available_platforms(self):
+        return _platforms
+
+    @staticmethod
+    def from_id(platform_id: str) -> Platform:
+        if platform_id not in _platforms:
+            raise ValueError(f"Unknown platform: {platform_id}")
+        return _platforms[platform_id]
 
 
 MSDOS = Platform(

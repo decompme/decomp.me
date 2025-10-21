@@ -20,6 +20,12 @@ class Library:
     name: str
     version: str
 
+    def to_json(self):
+        return {
+            "name": self.name,
+            "version": self.version,
+        }
+
 
 def gen_scratch_id() -> str:
     ret = get_random_string(length=5)

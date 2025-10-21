@@ -25,27 +25,6 @@ class Platform:
     compilers: list[str]
     has_decompiler: bool = False
 
-    def to_json(
-        self,
-        include_compilers: bool = False,
-        include_num_scratches: bool = False,
-    ) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "arch": self.arch,
-            "has_decompiler": self.has_decompiler,
-        }
-        if include_compilers:
-            ret["compilers"] = self.compilers
-
-        if include_num_scratches:
-            from coreapp.models.scratch import Scratch
-
-            ret["num_scratches"] = Scratch.objects.filter(platform=self.id).count()
-        return ret
-
 
 # TODO copied from cromper, should deduplicate
 class Language(enum.Enum):
@@ -119,13 +98,18 @@ class CromperClient:
         if self._platforms_cache is None:
             logger.info("Fetching platforms from cromper service...")
             response = self._make_request("GET", "/platform")
-            response_json = response.get("platforms", [])
-            self._platforms_cache = {
-                comp["id"]: Platform(**comp) for comp in response_json
-            }
-
+            self._platforms_cache = {k: Platform(**v) for (k, v) in response.items()}
             logger.info(f"Cached {len(self._platforms_cache)} platforms")
         return self._platforms_cache
+
+    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
+        """Get available libraries from the cromper service."""
+        params = {}
+        if platform:
+            params["platform"] = platform
+
+        response = self._make_request("GET", "/library", params=params)
+        return response.get("libraries", [])
 
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         """Get a specific compiler by ID."""
@@ -157,7 +141,7 @@ class CromperClient:
         code: str,
         context: str,
         function: str = "",
-        libraries: list[str] = [],
+        libraries: list[dict[str, str]] = [],
     ) -> Dict[str, Any]:
         """Compile code using the cromper service."""
         data = {
@@ -168,7 +152,6 @@ class CromperClient:
             "function": function,
             "libraries": libraries,
         }
-
         response = self._make_request("POST", "/compile", json=data)
 
         if not response.get("success"):
@@ -205,15 +188,6 @@ class CromperClient:
             "elf_object": elf_object,
         }
 
-    def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
-        """Get available libraries from the cromper service."""
-        params = {}
-        if platform:
-            params["platform"] = platform
-
-        response = self._make_request("GET", "/library", params=params)
-        return response.get("libraries", [])
-
     def diff(
         self,
         platform_id: str,
@@ -224,7 +198,6 @@ class CromperClient:
     ) -> Dict[str, Any]:
         """Generate diff using the cromper service."""
         # Encode elf object as base64
-
         target_elf_b64 = base64.b64encode(target_elf).decode("utf-8")
         compiled_elf_b64 = base64.b64encode(compiled_elf).decode("utf-8")
 

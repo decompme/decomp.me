@@ -4,9 +4,9 @@ import logging
 
 from m2c.main import parse_flags, run
 
-from .compilers import Compiler, CompilerType
-from .error import M2CError
-from .sandbox import Sandbox
+from ..compilers import Compiler, CompilerType
+from ..error import M2CError
+from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 

@@ -7,13 +7,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.relations import SlugRelatedField
 
-from .cromper_client import Compiler, Language, Platform, get_cromper_client
+from .cromper_client import Compiler, Platform, get_cromper_client
 
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
 from .models.project import Project, ProjectMember
-from .models.scratch import Scratch
+from .models.scratch import Scratch, Library
 
 
 class LanguageFlagSet:
@@ -60,13 +60,6 @@ class ProfileField(ProfileFieldBaseClass):
         return serialize_profile(profile)
 
 
-# FIXME: partial copy/paste from cromper
-@dataclass(frozen=True)
-class Library:
-    name: str
-    version: str
-
-
 class LibrarySerializer(serializers.Serializer[Library]):
     name = serializers.CharField()
     version = serializers.CharField()
@@ -79,7 +72,7 @@ class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
 
 
 class TersePresetSerializer(serializers.ModelSerializer[Preset]):
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     owner = ProfileField(read_only=True)
 
     class Meta:
@@ -97,7 +90,7 @@ class TersePresetSerializer(serializers.ModelSerializer[Preset]):
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
-    libraries = serializers.ListField(default=list)
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     num_scratches = serializers.SerializerMethodField()
     owner = ProfileField(read_only=True)
 
@@ -242,7 +235,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                         f"Unknown platform: {data['platform']}"
                     )
 
-                if compiler.platform != platform:
+                if compiler.platform != platform.id:
                     raise serializers.ValidationError(
                         f"Compiler {compiler.id} is not compatible with platform {platform.id}"
                     )

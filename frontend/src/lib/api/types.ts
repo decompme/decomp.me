@@ -145,6 +145,10 @@ export type Preset = TersePreset & {
     num_scratches: number;
 };
 
+export type ScratchCount = {
+    num_scratches: number;
+};
+
 export type CompilerBase = {
     id: string;
 };
@@ -161,10 +165,6 @@ export interface PlatformBase {
     description: string;
     arch: string;
     has_decompiler: boolean;
-}
-
-export interface PlatformMetadata extends PlatformBase {
-    num_scratches: number;
 }
 
 export interface Platform extends PlatformBase {

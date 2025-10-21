@@ -4,12 +4,12 @@ import subprocess
 import time
 from dataclasses import dataclass
 
-from cromper.compilers import Compiler, CompilerType
-from cromper.libraries import Library
-from cromper.error import AssemblyError, CompilationError
-from cromper.flags import Language
-from cromper.platforms import Platform
-from cromper.sandbox import Sandbox
+from ..compilers import Compiler, CompilerType
+from ..libraries import Library
+from ..error import AssemblyError, CompilationError
+from ..flags import Language
+from ..platforms import Platform
+from ..sandbox import Sandbox
 from cromper import util
 
 logger = logging.getLogger(__name__)
