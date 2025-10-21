@@ -54,12 +54,7 @@ services:
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
-      interval: 15s
-      timeout: 3s
-      retries: 10
-      start_period: 20s
+      INTERNAL_CROMPER_BASE: http://cromper:8888
     ports:
       - "8080:8080"
     restart: unless-stopped

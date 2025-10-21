@@ -7,7 +7,7 @@ from typing import ClassVar
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
-from cromper.flags import (
+from .flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_BORLAND_FLAGS,
     COMMON_CLANG_FLAGS,
@@ -30,7 +30,7 @@ from cromper.flags import (
     Language,
     LanguageFlagSet,
 )
-from cromper.platforms import (
+from .platforms import (
     GBA,
     GC_WII,
     IRIX,

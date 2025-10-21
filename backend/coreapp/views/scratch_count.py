@@ -1,7 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.utils.http import http_date, parse_http_date_safe
 from django.utils.timezone import now
-from rest_framework.exceptions import ValidationError
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,11 +26,7 @@ class ScratchCountView(APIView):
         if compiler:
             qs = qs.filter(compiler=compiler)
         if preset:
-            try:
-                preset_id = int(preset)
-            except ValueError:
-                raise ValidationError({"preset": "Must be an integer."})
-            qs = qs.filter(preset_id=preset_id)
+            qs = qs.filter(preset_id=preset)
 
         latest_created = (
             qs.order_by("-creation_time")

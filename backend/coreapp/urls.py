@@ -2,14 +2,12 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
-    library,
     preset,
     project,
     scratch,
     scratch_count,
     search,
-    stats,
-    user,
+    scratch_count,
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -19,8 +17,10 @@ router.register(r"project", project.ProjectViewSet)
 
 urlpatterns = [
     *router.urls,
-    path("library", library.LibraryDetail.as_view(), name="library"),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
+    path(
+        "scratch-count", scratch_count.ScratchCountView.as_view(), name="scratch-count"
+    ),
     path("user", user.CurrentUser.as_view(), name="current-user"),
     path(
         "user/scratches",
@@ -44,5 +44,4 @@ urlpatterns = [
         name="user-scratch-stats",
     ),
     path("search", search.SearchViewSet.as_view(), name="search"),
-    path("libraries", library.LibraryDetail.as_view(), name="libraries"),
 ]
