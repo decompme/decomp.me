@@ -10,6 +10,7 @@ from coreapp import platforms
 from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
+    COMMON_GCC_GC_FLAGS,
     COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
@@ -139,6 +140,12 @@ class GCCPS1Compiler(GCCCompiler):
 class GCCPS2Compiler(GCCCompiler):
     platform: Platform = PS2
     flags: ClassVar[Flags] = COMMON_GCC_PS2_FLAGS
+
+
+@dataclass(frozen=True)
+class GCCGCCompiler(GCCCompiler):
+    platform: Platform = GC_WII
+    flags: ClassVar[Flags] = COMMON_GCC_GC_FLAGS
 
 
 @dataclass(frozen=True)
@@ -1205,31 +1212,31 @@ MWCC_43_213 = MWCCWiiGCCompiler(
 
 PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
 
-PRODG_35 = GCCCompiler(
+PRODG_35 = GCCGCCompiler(
     id="prodg_35",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_35_B140 = GCCCompiler(
+PRODG_35_B140 = GCCGCCompiler(
     id="prodg_35_b140",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_37 = GCCCompiler(
+PRODG_37 = GCCGCCompiler(
     id="prodg_37",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_381 = GCCCompiler(
+PRODG_381 = GCCGCCompiler(
     id="prodg_381",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_393 = GCCCompiler(
+PRODG_393 = GCCGCCompiler(
     id="prodg_393",
     platform=GC_WII,
     cc=PRODG_NGC_CC,

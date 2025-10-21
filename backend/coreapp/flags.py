@@ -275,6 +275,16 @@ COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_arch", flags=["-m2"]),
 ]
 
+COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
+    LanguageFlagSet(
+        id="gcc_source_language",
+        flags={
+            "-x c": Language.C,
+            "-x c++": Language.CXX,
+        },
+    ),
+]
+
 COMMON_MSVC_FLAGS: Flags = [
     FlagSet(
         id="msvc_opt_level", flags=["/Od", "/O1", "/O2", "/Os", "/Ot", "/Og", "/Ox"]
