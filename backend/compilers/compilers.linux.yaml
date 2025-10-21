@@ -1,3 +1,6 @@
+common:
+  - wibo_dlls
+
 gba:
   - agbcc
   - agbccpp
