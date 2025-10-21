@@ -196,7 +196,17 @@
     "gcc2.7.2.2-mipsel": "gcc 2.7.2.2 + maspsx",
     "gcc2.7.2.3-mipsel": "gcc 2.7.2.3 + maspsx",
 
+    "shc-v5.0r10": "SHC v5.0 (Release 10)",
+    "shc-v5.0r26": "SHC v5.0 (Release 26)",
+    "shc-v5.0r28": "SHC v5.0 (Release 28)",
+    "shc-v5.0r31": "SHC v5.0 (Release 31)",
+    "shc-v5.0r32": "SHC v5.0 (Release 32)",
+    "shc-v5.1r01": "SHC v5.1 (Release 1)",
+    "shc-v5.1r03": "SHC v5.1 (Release 3)",
+    "shc-v5.1r04": "SHC v5.1 (Release 4)",
+    "shc-v5.1r08": "SHC v5.1 (Release 8)",
     "shc-v5.1r11": "SHC v5.1 (Release 11)",
+    "shc-v5.1r13": "SHC v5.1 (Release 13)",
 
     "psyq3.3": "PSYQ3.3 (gcc 2.6.0 + aspsx 2.21)",
     "psyq3.5": "PSYQ3.5 (gcc 2.6.0 + aspsx 2.34)",

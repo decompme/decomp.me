@@ -509,6 +509,16 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
     cc=SATURN_CC,
 )
 
+# earlier shc doesn't accept -fpu=single or -aggressive=2
+DREAMCAST_CC_V50R10 = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    "cp -r ${COMPILER_DIR}/bin/* . && "
+    "(SHC_LIB=. SHC_TMP=. ${WINE} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
+    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+)
+
+SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10)
+
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
@@ -516,7 +526,16 @@ DREAMCAST_CC = (
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
+SHC_V50R26 = SHCCompiler(id="shc-v5.0r26", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R28 = SHCCompiler(id="shc-v5.0r28", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R31 = SHCCompiler(id="shc-v5.0r31", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R32 = SHCCompiler(id="shc-v5.0r32", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R01 = SHCCompiler(id="shc-v5.1r01", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R03 = SHCCompiler(id="shc-v5.1r03", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R04 = SHCCompiler(id="shc-v5.1r04", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R08 = SHCCompiler(id="shc-v5.1r08", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R13 = SHCCompiler(id="shc-v5.1r13", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
 IOP_GCC281 = GCCPS2Compiler(
@@ -1561,7 +1580,17 @@ _all_compilers: List[Compiler] = [
     # Saturn
     CYGNUS_2_7_96Q3,
     # Dreamcast
+    SHC_V50R10,
+    SHC_V50R26,
+    SHC_V50R28,
+    SHC_V50R31,
+    SHC_V50R32,
+    SHC_V51R01,
+    SHC_V51R03,
+    SHC_V51R04,
+    SHC_V51R08,
     SHC_V51R11,
+    SHC_V51R13,
     # PS2
     IOP_GCC281,
     IOP_GCC2952_102,
