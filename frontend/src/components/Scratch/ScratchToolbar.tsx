@@ -151,7 +151,7 @@ function ScratchName({
 
 function Actions({
     isCompiling,
-    isModified,
+    isDirty,
     compile,
     scratch,
     setScratch,
@@ -195,7 +195,7 @@ function Actions({
                 <button
                     onClick={() => {
                         if (
-                            !isModified ||
+                            !isDirty ||
                             confirm(
                                 "This scratch has pending changes, are you sure you want to navigate away?",
                             )
@@ -322,7 +322,7 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
 
 export type Props = {
     isCompiling: boolean;
-    isModified: boolean;
+    isDirty: boolean;
     compile: () => Promise<void>;
     scratch: Readonly<api.Scratch>;
     setScratch: (scratch: Partial<api.Scratch>) => void;
