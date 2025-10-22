@@ -7,8 +7,6 @@ import {
     type KeyboardEvent,
 } from "react";
 
-import Link from "next/link";
-
 import {
     DownloadIcon,
     FileIcon,
@@ -20,6 +18,7 @@ import {
 } from "@primer/octicons-react";
 import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
+import { useRouter } from "next/navigation";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
@@ -152,6 +151,7 @@ function ScratchName({
 
 function Actions({
     isCompiling,
+    isModified,
     compile,
     scratch,
     setScratch,
@@ -166,6 +166,9 @@ function Actions({
     );
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
+
+    const router = useRouter();
+
     const canSave = scratch.owner && userIsYou(scratch.owner);
 
     const platform = api.usePlatform(scratch.platform);
@@ -189,10 +192,21 @@ function Actions({
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <Link href="/new">
+                <button
+                    onClick={() => {
+                        if (
+                            !isModified ||
+                            confirm(
+                                "This scratch has pending changes, are you sure you want to navigate away?",
+                            )
+                        ) {
+                            router.push("/new");
+                        }
+                    }}
+                >
                     <FileIcon />
                     New
-                </Link>
+                </button>
             </li>
             <li>
                 <button
@@ -308,6 +322,7 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
 
 export type Props = {
     isCompiling: boolean;
+    isModified: boolean;
     compile: () => Promise<void>;
     scratch: Readonly<api.Scratch>;
     setScratch: (scratch: Partial<api.Scratch>) => void;
