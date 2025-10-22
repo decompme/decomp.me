@@ -49,7 +49,6 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
-WINE = "wine"
 WIBO = "wibo"
 
 
@@ -108,8 +107,6 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"wine: could not load .*\.dll.*\n?",
-            r"wineserver: could not save registry .*\n?",
             r"### .*\.exe Driver Error:.*\n?",
             r"#   Cannot find my executable .*\n?",
             r"### MWCPPC\.exe Driver Error:.*\n?",
@@ -204,7 +201,6 @@ class CompilerWrapper:
                     shell=True,
                     env={
                         "PATH": PATH,
-                        "WINE": WINE,
                         "WIBO": WIBO,
                         "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
