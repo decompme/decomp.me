@@ -406,7 +406,7 @@ PSYQ_CCPSX = (
     'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "tmpdir=/tmp" >> SN.INI && '
-    'SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
+    'SN_PATH=. ${WIBO} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
@@ -520,7 +520,7 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WINE} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
@@ -529,7 +529,7 @@ SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WINE} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
@@ -552,7 +552,7 @@ IOP_GCC281 = GCCPS2Compiler(
 
 IOP_GCC2952_102 = GCCPS2Compiler(
     id="iop-gcc2.95.2-102",
-    cc='${WINE} "${COMPILER_DIR}"/bin/iop-gcc.exe -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}"/bin/iop-gcc.exe -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC29_990721 = GCCPS2Compiler(
@@ -583,27 +583,27 @@ EE_GCC29_991111_01_DTLS13010 = GCCPS2Compiler(
 
 EE_GCC2952_273A = GCCPS2Compiler(
     id="ee-gcc2.95.2-273a",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2952_274 = GCCPS2Compiler(
     id="ee-gcc2.95.2-274",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_107 = GCCPS2Compiler(
     id="ee-gcc2.95.3-107",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_114 = GCCPS2Compiler(
     id="ee-gcc2.95.3-114",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_136 = GCCPS2Compiler(
     id="ee-gcc2.95.3-136",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC296 = GCCPS2Compiler(
@@ -628,7 +628,7 @@ EE_GCC32_040921 = GCCPS2Compiler(
 
 MWCPS2_23_991202 = MWCCPS2Compiler(
     id="mwcps2-2.3-991202",
-    cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_CC = '${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"'
@@ -753,7 +753,7 @@ PSP_GCC_1_3_1 = GCCCompiler(
 PSPSNC_1_2_7503_0 = GCCCompiler(
     id="pspsnc_1.2.7503.0",
     platform=PSP,
-    cc='${WINE} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='${WIBO} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 MWCCPSP_CC = (
@@ -1210,7 +1210,7 @@ MWCC_43_213 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
-PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
+PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WIBO} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
 
 PRODG_35 = GCCGCCompiler(
     id="prodg_35",
@@ -1360,7 +1360,7 @@ MWCC_40_1051 = MWCCNDSArm9Compiler(
     cc=MWCCARM_CC,
 )
 
-CL_WIN = '${WINE} "${COMPILER_DIR}/Bin/CL.EXE" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+CL_WIN = '${WIBO} "${COMPILER_DIR}/Bin/CL.EXE" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC40 = MSVCCompiler(
     id="msvc4.0",
@@ -1442,12 +1442,12 @@ MSVC80P = MSVCCompiler(
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
-    '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )
 WATCOM_CXX = (
-    '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )
