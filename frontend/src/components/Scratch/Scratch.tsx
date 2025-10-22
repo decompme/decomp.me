@@ -466,6 +466,7 @@ export default function Scratch({
                     isCompiling={isCompiling}
                     scratch={scratch}
                     setScratch={setScratch}
+                    isModified={isModified}
                     saveCallback={saveCallback}
                     setDecompilationTabEnabled={setDecompilationTabEnabled}
                 />
