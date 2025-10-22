@@ -80,7 +80,7 @@ RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:1.0.0-alpha.4 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:1.0.0-alpha.5 /usr/local/sbin/wibo /usr/bin/
 
 # Patched mips binutils
 RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
