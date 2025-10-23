@@ -931,7 +931,7 @@ GCC281SNEWCXX = GCCCompiler(
 )
 
 # Python alternative to the printf/xarg approach
-PYTHON_SCHLEX = """mapfile -t FLAGS < <(python3 -c 'import shlex,sys; [print(x) for x in shlex.split(sys.argv[1])]' "${COMPILER_FLAGS}") && """
+PYTHON_SCHLEX = """mapfile -t FLAGS < <(python3 -c "import shlex,sys;print(*shlex.split(sys.argv[1]),sep='\\n')" "${COMPILER_FLAGS}") && """
 
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
