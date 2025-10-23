@@ -938,7 +938,7 @@ EGCS1124 = GCCCompiler(
     platform=N64,
     cc=(
         PYTHON_SHLEX
-        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/mips-linux-gcc" "${FLAGS[@]}" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"'
+        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/mips-linux-gcc" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${FLAGS[@]}" "${INPUT}" -o "${OUTPUT}"'
     ),
 )
 
@@ -947,7 +947,7 @@ EGCS1124C = GCCCompiler(
     platform=N64,
     cc=(
         PYTHON_SHLEX
-        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/gcc" "${FLAGS[@]}" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"'
+        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/gcc" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${FLAGS[@]}" "${INPUT}" -o "${OUTPUT}"'
     ),
 )
 
