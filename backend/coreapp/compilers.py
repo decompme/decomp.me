@@ -931,7 +931,7 @@ GCC281SNEWCXX = GCCCompiler(
 )
 
 # Python alternative to the printf/xargs approach for quoted flags
-PYTHON_SHLEX = """mapfile -t FLAGS < <(python3 -c "import shlex,sys;print(*shlex.split(sys.argv[1]),sep='\\n')" "${COMPILER_FLAGS}") && """
+PYTHON_SHLEX = """[[ -n "${COMPILER_FLAGS}" ]] && mapfile -t FLAGS < <(python3 -c "import shlex,sys; print(*shlex.split(sys.argv[1]), sep='\\n')" "${COMPILER_FLAGS}"); """
 
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
