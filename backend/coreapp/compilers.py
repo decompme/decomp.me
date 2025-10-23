@@ -930,14 +930,14 @@ GCC281SNEWCXX = GCCCompiler(
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
 )
 
-# Python alternative to the printf/xarg approach
-PYTHON_SCHLEX = """mapfile -t FLAGS < <(python3 -c "import shlex,sys;print(*shlex.split(sys.argv[1]),sep='\\n')" "${COMPILER_FLAGS}") && """
+# Python alternative to the printf/xargs approach for quoted flags
+PYTHON_SHLEX = """mapfile -t FLAGS < <(python3 -c "import shlex,sys;print(*shlex.split(sys.argv[1]),sep='\\n')" "${COMPILER_FLAGS}") && """
 
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
     cc=(
-        PYTHON_SCHLEX
+        PYTHON_SHLEX
         + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/mips-linux-gcc" "${FLAGS[@]}" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"'
     ),
 )
@@ -946,7 +946,7 @@ EGCS1124C = GCCCompiler(
     id="egcs_1.1.2-4c",
     platform=N64,
     cc=(
-        PYTHON_SCHLEX
+        PYTHON_SHLEX
         + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/gcc" "${FLAGS[@]}" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"'
     ),
 )
