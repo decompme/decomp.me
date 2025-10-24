@@ -76,7 +76,7 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     obj_bytes = file.read()
     is_elf = obj_bytes[:4] == b"\x7fELF"
     is_macho = obj_bytes[:4] == b"\xcf\xfa\xed\xfe"
-    is_coff = obj_bytes[:2] in (b"\x4c\x01", b"\x64\x86")
+    is_coff = obj_bytes[:2] in (b"\x4c\x01", b"\x64\x86", b"\xf2\x01")
     if not (is_elf or is_macho or is_coff):
         raise serializers.ValidationError("Object must be an ELF, Mach-O, or COFF file")
 
