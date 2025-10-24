@@ -18,6 +18,7 @@ import {
 } from "@primer/octicons-react";
 import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import TimeAgo from "@/components/TimeAgo";
@@ -149,6 +150,40 @@ function ScratchName({
     }
 }
 
+function NewScratchButton({ isDirty }: { isDirty: boolean }) {
+    const router = useRouter();
+
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey ||
+            e.button !== 0
+        ) {
+            return;
+        }
+
+        e.preventDefault();
+
+        if (
+            !isDirty ||
+            confirm(
+                "This scratch has pending changes, are you sure you want to navigate away?",
+            )
+        ) {
+            router.push("/new");
+        }
+    };
+
+    return (
+        <Link href="/new" onClick={handleClick}>
+            <FileIcon />
+            New
+        </Link>
+    );
+}
+
 function Actions({
     isCompiling,
     isDirty,
@@ -166,8 +201,6 @@ function Actions({
     );
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
-
-    const router = useRouter();
 
     const canSave = scratch.owner && userIsYou(scratch.owner);
 
@@ -192,21 +225,7 @@ function Actions({
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <button
-                    onClick={() => {
-                        if (
-                            !isDirty ||
-                            confirm(
-                                "This scratch has pending changes, are you sure you want to navigate away?",
-                            )
-                        ) {
-                            router.push("/new");
-                        }
-                    }}
-                >
-                    <FileIcon />
-                    New
-                </button>
+                <NewScratchButton isDirty={isDirty} />
             </li>
             <li>
                 <button
