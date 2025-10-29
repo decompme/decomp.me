@@ -1516,7 +1516,7 @@ WATCOM_110_CPP = WatcomCompiler(
 BORLAND_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'
 )
 
