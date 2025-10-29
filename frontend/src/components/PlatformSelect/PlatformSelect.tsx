@@ -22,7 +22,7 @@ export default function PlatformSelect({
     return (
         <ul
             className={clsx(
-                "grid grid-cols-2 md:grid-cols-3 gap-2 list-none",
+                "grid list-none grid-cols-2 gap-2 md:grid-cols-3",
                 className,
             )}
         >
@@ -34,13 +34,13 @@ export default function PlatformSelect({
                         key={key}
                         onClick={() => onChange(key)}
                         className={clsx(
-                            "flex items-center gap-3 p-3 rounded-md cursor-pointer select-none transition-colors",
-                            "border border-transparent hover:border-[var(--g400)]",
+                            "flex cursor-pointer select-none items-center gap-3 rounded-md p-3 transition-colors",
+                            "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]",
                             "text-var(--g1200) hover:text-[var(--g2000)]",
                             "bg-transparent",
                             "group",
                             {
-                                "border-[var(--g400)] text-[var(--g2000)] bg-[var(--g300)]":
+                                "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]":
                                     isSelected,
                             },
                         )}
@@ -49,7 +49,7 @@ export default function PlatformSelect({
                             clickable={false}
                             platform={key}
                             className={clsx(
-                                "w-10 h-10 transition-filter duration-200 filter",
+                                "h-10 w-10 filter transition-filter duration-200",
                                 "grayscale",
                                 "group-hover:grayscale-0",
                                 isSelected && "grayscale-0",
