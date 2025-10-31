@@ -35,14 +35,11 @@ export default function PlatformSelect({
                         onClick={() => onChange(key)}
                         className={clsx(
                             "flex cursor-pointer select-none items-center gap-3 rounded-md p-3 transition-colors",
-                            "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]",
-                            "text-var(--g1200) hover:text-[var(--g2000)]",
-                            "bg-transparent",
+                            "border hover:border-[var(--g400)] hover:text-[var(--g2000)]",
                             "group",
-                            {
-                                "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]":
-                                    isSelected,
-                            },
+                            isSelected
+                                ? "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]"
+                                : "border-transparent bg-transparent text-var(--g1200)",
                         )}
                     >
                         <PlatformIcon
