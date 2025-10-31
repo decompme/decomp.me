@@ -127,7 +127,7 @@ function PlatformSelectDropdown({
                 onClick={() => setOpen((o) => !o)}
                 className={clsx(
                     "flex w-full items-center justify-between gap-2 rounded-md p-3 transition-colors",
-                    "border border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)] hover:border-[var(--g500)]",
+                    "border border-[var(--g400)] bg-[var(--g200)] text-[var(--g2000)] hover:border-[var(--g500)]",
                 )}
             >
                 <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ function PlatformSelectDropdown({
                         <div className="h-6 w-6 animate-pulse rounded-full bg-[var(--g400)]" />
                     )}
                 </div>
-                <ChevronDownIcon className="text-[var(--g800)]" />
+                <ChevronDownIcon className="text-[var(--g1600)]" />
             </button>
 
             {open && (
