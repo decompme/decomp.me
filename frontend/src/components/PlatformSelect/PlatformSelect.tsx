@@ -1,7 +1,5 @@
-import clsx from "clsx";
-
 import { PlatformIcon } from "./PlatformIcon";
-import styles from "./PlatformSelect.module.scss";
+import clsx from "clsx";
 
 export type Props = {
     platforms: {
@@ -22,26 +20,50 @@ export default function PlatformSelect({
     className,
 }: Props) {
     return (
-        <ul className={clsx(styles.container, className)}>
-            {Object.entries(platforms).map(([key, platform]) => (
-                <li
-                    key={key}
-                    className={clsx(styles.platform, {
-                        [styles.selected]: value === key,
-                    })}
-                    onClick={() => onChange(key)}
-                >
-                    <PlatformIcon clickable={false} platform={key} />
-                    <div className={styles.labelContainer}>
-                        <div className={styles.consoleName}>
-                            {platform.name}
+        <ul
+            className={clsx(
+                "grid list-none grid-cols-2 gap-2 md:grid-cols-3",
+                className,
+            )}
+        >
+            {Object.entries(platforms).map(([key, platform]) => {
+                const isSelected = value === key;
+
+                return (
+                    <li
+                        key={key}
+                        onClick={() => onChange(key)}
+                        className={clsx(
+                            "flex cursor-pointer select-none items-center gap-3 rounded-md p-3 transition-colors",
+                            "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]",
+                            "text-var(--g1200) hover:text-[var(--g2000)]",
+                            "bg-transparent",
+                            "group",
+                            {
+                                "border-[var(--g400)] bg-[var(--g300)] text-[var(--g2000)]":
+                                    isSelected,
+                            },
+                        )}
+                    >
+                        <PlatformIcon
+                            clickable={false}
+                            platform={key}
+                            className={clsx(
+                                "h-10 w-10 filter transition-filter duration-200",
+                                "grayscale",
+                                "group-hover:grayscale-0",
+                                isSelected && "grayscale-0",
+                            )}
+                        />
+                        <div className="flex flex-col gap-1">
+                            <div className="font-medium">{platform.name}</div>
+                            <div className="text-xs opacity-60">
+                                {platform.description}
+                            </div>
                         </div>
-                        <div className={styles.platformName}>
-                            {platform.description}
-                        </div>
-                    </div>
-                </li>
-            ))}
+                    </li>
+                );
+            })}
         </ul>
     );
 }
