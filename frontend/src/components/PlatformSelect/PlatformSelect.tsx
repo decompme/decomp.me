@@ -180,7 +180,7 @@ export default function PlatformSelect({
     const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
     return typeof isSmallScreen === "undefined" ? (
-        <div className="border border-[var(--g400)] bg-[var(--g200)] animate-pulse rounded w-full h-12 p-3">
+        <div className="h-12 w-full animate-pulse rounded border border-[var(--g400)] bg-[var(--g200)] p-3">
             Loading...
         </div>
     ) : isSmallScreen ? (
