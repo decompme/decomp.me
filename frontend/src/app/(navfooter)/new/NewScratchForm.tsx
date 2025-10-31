@@ -32,7 +32,7 @@ function FormLabel({ children, htmlel, small }: FormLabelProps) {
     const Tag = htmlel ? "label" : "p";
     return (
         <Tag
-            className="m-0 block select-none p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
+            className="m-0 block select-none py-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
             {...(htmlel && { htmlel })}
         >
             {children}
