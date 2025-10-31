@@ -21,12 +21,12 @@ function PlatformList({
     platforms,
     value,
     onChange,
-    iconSize,
+    compact = false,
 }: {
     platforms: Props["platforms"];
     value: string;
     onChange: (key: string) => void;
-    iconSize?: number;
+    compact?: boolean;
 }) {
     return Object.entries(platforms).map(([key, platform]) => {
         const isSelected = value === key;
@@ -48,8 +48,7 @@ function PlatformList({
                     clickable={false}
                     platform={key}
                     className={clsx(
-                        iconSize ? `h-${iconSize}` : "h-8",
-                        iconSize ? `w-${iconSize}` : "w-8",
+                        compact ? "h-8 w-8" : "h-10 w-10",
                         "filter transition-filter duration-200",
                         "grayscale",
                         "group-hover:grayscale-0",
@@ -79,7 +78,6 @@ function PlatformSelectGrid({ platforms, value, onChange, className }: Props) {
                 platforms={platforms}
                 value={value}
                 onChange={onChange}
-                iconSize={10}
             />
         </ul>
     );
@@ -162,6 +160,7 @@ function PlatformSelectDropdown({
                             onChange(key);
                             setOpen(false);
                         }}
+                        compact={true}
                     />
                 </ul>
             )}
