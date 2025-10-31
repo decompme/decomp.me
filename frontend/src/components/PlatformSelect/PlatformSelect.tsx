@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { PlatformIcon } from "./PlatformIcon";
 import { useMediaQuery } from "@/lib/hooks";
 
+import { ChevronDownIcon } from "@primer/octicons-react";
+
 import clsx from "clsx";
 
 export type Props = {
@@ -142,7 +144,7 @@ function PlatformSelectDropdown({
                         <div className="h-6 w-6 animate-pulse rounded-full bg-[var(--g400)]" />
                     )}
                 </div>
-                <span className="text-[var(--g800)]">▾</span>
+                <ChevronDownIcon className="text-[var(--g800)]" />
             </button>
 
             {open && (
