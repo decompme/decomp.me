@@ -32,7 +32,7 @@ function FormLabel({ children, htmlel, small }: FormLabelProps) {
     const Tag = htmlel ? "label" : "p";
     return (
         <Tag
-            className="m-0 block p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
+            className="m-0 block select-none p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
             {...(htmlel && { htmlel })}
         >
             {children}
@@ -305,7 +305,7 @@ export default function NewScratchForm({
                     <div className="flex w-full flex-row items-center">
                         <span
                             className={clsx(
-                                "w-1/4 px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
+                                "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
                                 presetId === undefined
                                     ? "text-[color:var(--g700)]"
                                     : "text-[color:var(--g1200)]",
@@ -326,7 +326,7 @@ export default function NewScratchForm({
                     <div className="flex w-full flex-row items-center">
                         <span
                             className={clsx(
-                                "w-1/4 px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
+                                "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
                                 presetId === undefined
                                     ? "text-[color:var(--g1200)]"
                                     : "text-[color:var(--g700)]",
