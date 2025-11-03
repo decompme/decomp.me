@@ -92,7 +92,8 @@ def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
 def compile_scratch(scratch: Scratch, context: str | None = None) -> CompilationResult:
     try:
         libraries = [
-            lib.to_json() if isinstance(lib, Library) else lib for lib in scratch.libraries
+            lib.to_json() if isinstance(lib, Library) else lib
+            for lib in scratch.libraries
         ]
         cromper_client = get_cromper_client()
         result = cromper_client.compile_code(
