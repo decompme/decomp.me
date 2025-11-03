@@ -1,12 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg data-name="Layer 1" version="1.1" viewBox="0 0 235 235" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="linear-gradient" x1="634.51" x2="634.51" y1="125.33" y2="3.46" gradientTransform="translate(.245 52.64)" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#09b2cf" offset="0"/>
-            <stop stop-color="#304e97" offset="1"/>
-        </linearGradient>
-    </defs>
-    <g transform="translate(-517.25)">
-        <path d="m517.5 52.64v9.15h225.37v50.72h-225.37v69.85h234.51v-9.14h-224.52v-51.56h224.52v-69.02z" fill="url(#linear-gradient)" fill-rule="evenodd"/>
-    </g>
+<svg viewBox="0 0 235 235" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="linear-gradient" x1="117.26" x2="117.26" y1="125.33" y2="3.46" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#09b2cf" offset="0"/>
+      <stop stop-color="#304e97" offset="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- fallback -->
+  <path d="M0 52.64v9.15h225.37v50.72H0v69.85h234.51v-9.14H10.99v-51.56h224.52v-69.02z" fill="#1a7abb"/>
+
+  <!-- gradient -->
+  <path d="M0 52.64v9.15h225.37v50.72H0v69.85h234.51v-9.14H10.99v-51.56h224.52v-69.02z" fill="url(#linear-gradient)" fill-rule="evenodd"/>
 </svg>
