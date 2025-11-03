@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
@@ -48,14 +48,8 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
         }
 
 
-if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, Dict[str, Any]]
-else:
-    ProfileFieldBaseClass = serializers.RelatedField
-
-
-class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> Dict[str, Any]:
+class ProfileField(serializers.RelatedField[Profile, str, Dict[str, Any]]):
+    def to_representation(self, profile: Profile) -> Dict[str, Any]:  # type: ignore
         return serialize_profile(profile)
 
 
