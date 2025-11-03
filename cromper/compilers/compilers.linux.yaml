@@ -1,3 +1,6 @@
+common:
+  - wibo_dlls
+
 gba:
   - agbcc
   - agbccpp
@@ -183,7 +186,17 @@ saturn:
   - cygnus-2.7-96Q3
 
 dreamcast:
+  - shc-v5.0r10
+  - shc-v5.0r26
+  - shc-v5.0r28
+  - shc-v5.0r31
+  - shc-v5.0r32
+  - shc-v5.1r01
+  - shc-v5.1r03
+  - shc-v5.1r04
+  - shc-v5.1r08
   - shc-v5.1r11
+  - shc-v5.1r13
 
 macosx:
   - gcc-5026

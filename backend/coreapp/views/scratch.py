@@ -15,6 +15,8 @@ from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 
 from django.http import HttpResponse, QueryDict
+from django.utils.decorators import method_decorator
+
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -24,6 +26,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import CompilationResult, DiffResult, filter_compiler_flags
 from ..cromper_client import get_cromper_client
+from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
@@ -243,7 +246,9 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = data["libraries"]
+    libraries = [
+        Library(**lib) if isinstance(lib, dict) else lib for lib in data["libraries"]
+    ]
 
     ser = ScratchSerializer(
         data={
@@ -276,6 +281,7 @@ class ScratchPagination(CursorPagination):
     max_page_size = 100
 
 
+@method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 class ScratchViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,

@@ -166,29 +166,23 @@ class Scratch(models.Model):
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
         - Otherwise, fallback to the compiler's default language
         """
-
-        # TODO we need a more robust way to do this
+        # TODO need a more robust way to do this
         # language_flag_set = next(
-        #     iter(
-        #         [i for i in compiler.get("flags", []) if isinstance(i, LanguageFlagSet)]
-        #     ),
+        #     (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
         #     None,
         # )
 
         # if language_flag_set:
-        #     language = next(
-        #         iter(
-        #             [
-        #                 language
-        #                 for (flag, language) in language_flag_set.flags.items()
-        #                 if flag in self.compiler_flags
-        #             ]
-        #         ),
-        #         None,
-        #     )
+        #     matches = [
+        #         (flag, language)
+        #         for flag, language in language_flag_set.flags.items()
+        #         if flag in self.compiler_flags
+        #     ]
 
-        #     if language:
-        #         return language.value
+        #     if matches:
+        #         # taking the longest avoids detecting C++ as C
+        #         longest_match = max(matches, key=lambda m: len(m[0]))
+        #         return longest_match[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.

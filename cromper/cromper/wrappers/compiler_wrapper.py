@@ -172,6 +172,7 @@ class CompilerWrapper:
                         for lib in libraries
                     )
                 )
+                wibo_path = settings.COMPILER_BASE_PATH / "common" / "wibo_dlls"
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
@@ -182,6 +183,7 @@ class CompilerWrapper:
                         "PATH": PATH,
                         "WINE": WINE,
                         "WIBO": WIBO,
+                        "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(

@@ -7,6 +7,7 @@ from typing import ClassVar, List, Optional, OrderedDict
 from .flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
+    COMMON_GCC_GC_FLAGS,
     COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
@@ -154,6 +155,12 @@ class GCCPS1Compiler(GCCCompiler):
 class GCCPS2Compiler(GCCCompiler):
     platform: Platform = PS2
     flags: ClassVar[Flags] = COMMON_GCC_PS2_FLAGS
+
+
+@dataclass(frozen=True)
+class GCCGCCompiler(GCCCompiler):
+    platform: Platform = GC_WII
+    flags: ClassVar[Flags] = COMMON_GCC_GC_FLAGS
 
 
 @dataclass(frozen=True)
@@ -340,8 +347,8 @@ PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
     '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME=. /usr/bin/dosemu -f .dosemurc -quiet -dumb -K ${COMPILER_DIR} -E "D:\\COMPILE.BAT") && '
-    '(HOME=. /usr/bin/dosemu -f .dosemurc -quiet -dumb -K ${COMPILER_DIR} -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
@@ -387,7 +394,7 @@ PSYQ_CCPSX = (
     'echo "compiler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "assembler_path=${COMPILER_DIR//\\//\\\\}" >> SN.INI && '
     'echo "tmpdir=/tmp" >> SN.INI && '
-    'SN_PATH=. ${WINE} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
+    'SN_PATH=. ${WIBO} ${COMPILER_DIR}/CCPSX.EXE -v -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}bj" && '
     '${COMPILER_DIR}/psyq-obj-parser "${OUTPUT}"bj -o "${OUTPUT}"'
 )
 
@@ -486,9 +493,9 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 SATURN_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
     'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
@@ -497,14 +504,33 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
     cc=SATURN_CC,
 )
 
-DREAMCAST_CC = (
+# earlier shc doesn't accept -fpu=single or -aggressive=2
+DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WINE} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
+SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10)
+
+DREAMCAST_CC = (
+    'cat "$INPUT" | unix2dos > dos_src.c && '
+    "cp -r ${COMPILER_DIR}/bin/* . && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+)
+
+SHC_V50R26 = SHCCompiler(id="shc-v5.0r26", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R28 = SHCCompiler(id="shc-v5.0r28", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R31 = SHCCompiler(id="shc-v5.0r31", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V50R32 = SHCCompiler(id="shc-v5.0r32", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R01 = SHCCompiler(id="shc-v5.1r01", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R03 = SHCCompiler(id="shc-v5.1r03", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R04 = SHCCompiler(id="shc-v5.1r04", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R08 = SHCCompiler(id="shc-v5.1r08", platform=DREAMCAST, cc=DREAMCAST_CC)
 SHC_V51R11 = SHCCompiler(id="shc-v5.1r11", platform=DREAMCAST, cc=DREAMCAST_CC)
+SHC_V51R13 = SHCCompiler(id="shc-v5.1r13", platform=DREAMCAST, cc=DREAMCAST_CC)
 
 # PS2
 IOP_GCC281 = GCCPS2Compiler(
@@ -514,7 +540,7 @@ IOP_GCC281 = GCCPS2Compiler(
 
 IOP_GCC2952_102 = GCCPS2Compiler(
     id="iop-gcc2.95.2-102",
-    cc='${WINE} "${COMPILER_DIR}"/bin/iop-gcc.exe -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}"/bin/iop-gcc.exe -c -B "${COMPILER_DIR}"/lib/gcc-lib/mipsel-scei-elfl/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC29_990721 = GCCPS2Compiler(
@@ -545,27 +571,27 @@ EE_GCC29_991111_01_DTLS13010 = GCCPS2Compiler(
 
 EE_GCC2952_273A = GCCPS2Compiler(
     id="ee-gcc2.95.2-273a",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2952_274 = GCCPS2Compiler(
     id="ee-gcc2.95.2-274",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.2/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_107 = GCCPS2Compiler(
     id="ee-gcc2.95.3-107",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_114 = GCCPS2Compiler(
     id="ee-gcc2.95.3-114",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC2953_136 = GCCPS2Compiler(
     id="ee-gcc2.95.3-136",
-    cc='${WINE} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/ee-gcc.exe" -c -B "${COMPILER_DIR}"/lib/gcc-lib/ee/2.95.3/ $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC296 = GCCPS2Compiler(
@@ -590,7 +616,7 @@ EE_GCC32_040921 = GCCPS2Compiler(
 
 MWCPS2_23_991202 = MWCCPS2Compiler(
     id="mwcps2-2.3-991202",
-    cc='${WINE} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
+    cc='${WIBO} "${COMPILER_DIR}/mwccmips.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"',
 )
 
 MWCPS2_CC = '${WIBO} "${COMPILER_DIR}/mwccps2.exe" -c $COMPILER_FLAGS -nostdinc -stderr "$INPUT" -o "$OUTPUT"'
@@ -715,7 +741,7 @@ PSP_GCC_1_3_1 = GCCCompiler(
 PSPSNC_1_2_7503_0 = GCCCompiler(
     id="pspsnc_1.2.7503.0",
     platform=PSP,
-    cc='${WINE} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='${WIBO} ${COMPILER_DIR}/pspsnc.exe -c -td=. ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 MWCCPSP_CC = (
@@ -892,16 +918,25 @@ GCC281SNEWCXX = GCCCompiler(
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
 )
 
+# Python alternative to the printf/xargs approach for quoted flags
+PYTHON_SHLEX = """[[ -n "${COMPILER_FLAGS}" ]] && mapfile -t FLAGS < <(python3 -c "import shlex,sys; print(*shlex.split(sys.argv[1]), sep='\\n')" "${COMPILER_FLAGS}"); """
+
 EGCS1124 = GCCCompiler(
     id="egcs_1.1.2-4",
     platform=N64,
-    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/mips-linux-gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
+    cc=(
+        PYTHON_SHLEX
+        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/mips-linux-gcc" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${FLAGS[@]}" "${INPUT}" -o "${OUTPUT}"'
+    ),
 )
 
 EGCS1124C = GCCCompiler(
     id="egcs_1.1.2-4c",
     platform=N64,
-    cc='printf "%s" "${COMPILER_FLAGS}" | COMPILER_PATH="${COMPILER_DIR}" xargs -- "${COMPILER_DIR}"/gcc -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${INPUT}" -o "${OUTPUT}"',
+    cc=(
+        PYTHON_SHLEX
+        + 'COMPILER_PATH="${COMPILER_DIR}" "${COMPILER_DIR}/gcc" -c -G 0 -fno-PIC -mgp32 -mfp32 -mcpu=4300 -nostdinc "${FLAGS[@]}" "${INPUT}" -o "${OUTPUT}"'
+    ),
 )
 
 GCC440MIPS64ELF = GCCCompiler(
@@ -1172,33 +1207,33 @@ MWCC_43_213 = MWCCWiiGCCompiler(
     cc=MWCCEPPC_CC,
 )
 
-PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WINE} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
+PRODG_NGC_CC = "SN_NGC_PATH=${COMPILER_DIR} ${WIBO} ${COMPILER_DIR}/ngccc.exe ${COMPILER_FLAGS} -o ${OUTPUT} ${INPUT}"
 
-PRODG_35 = GCCCompiler(
+PRODG_35 = GCCGCCompiler(
     id="prodg_35",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_35_B140 = GCCCompiler(
+PRODG_35_B140 = GCCGCCompiler(
     id="prodg_35_b140",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_37 = GCCCompiler(
+PRODG_37 = GCCGCCompiler(
     id="prodg_37",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_381 = GCCCompiler(
+PRODG_381 = GCCGCCompiler(
     id="prodg_381",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
 )
 
-PRODG_393 = GCCCompiler(
+PRODG_393 = GCCGCCompiler(
     id="prodg_393",
     platform=GC_WII,
     cc=PRODG_NGC_CC,
@@ -1322,7 +1357,7 @@ MWCC_40_1051 = MWCCNDSArm9Compiler(
     cc=MWCCARM_CC,
 )
 
-CL_WIN = '${WINE} "${COMPILER_DIR}/Bin/CL.EXE" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+CL_WIN = '${WIBO} "${COMPILER_DIR}/Bin/CL.EXE" /c /nologo /I"Z:${COMPILER_DIR}/Include/" ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC40 = MSVCCompiler(
     id="msvc4.0",
@@ -1404,12 +1439,12 @@ MSVC80P = MSVCCompiler(
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
-    '${WINE} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wcc386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )
 WATCOM_CXX = (
-    '${WINE} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
+    '${WIBO} "${COMPILER_DIR}/binnt/wpp386.exe" $(echo "'
     + WATCOM_ARGS
     + "\" | sed 's:/:\\\\:g')"
 )
@@ -1469,7 +1504,7 @@ WATCOM_110_CPP = WatcomCompiler(
 BORLAND_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'
 )
 
@@ -1547,7 +1582,17 @@ _all_compilers: List[Compiler] = [
     # Saturn
     CYGNUS_2_7_96Q3,
     # Dreamcast
+    SHC_V50R10,
+    SHC_V50R26,
+    SHC_V50R28,
+    SHC_V50R31,
+    SHC_V50R32,
+    SHC_V51R01,
+    SHC_V51R03,
+    SHC_V51R04,
+    SHC_V51R08,
     SHC_V51R11,
+    SHC_V51R13,
     # PS2
     IOP_GCC281,
     IOP_GCC2952_102,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useReducer, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,17 +9,18 @@ import AsyncButton from "@/components/AsyncButton";
 import PresetSelect from "@/components/compiler/PresetSelect";
 import CodeMirror from "@/components/Editor/CodeMirror";
 import PlatformSelect from "@/components/PlatformSelect";
+import { SingleLineScratchItem } from "@/components/ScratchItem";
 import Select from "@/components/Select2";
 import * as api from "@/lib/api";
+import { useCompilers, usePresets } from "@/lib/api";
+import { get } from "@/lib/api/request";
+import type { TerseScratch } from "@/lib/api/types";
 import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
-import { get } from "@/lib/api/request";
-import type { TerseScratch } from "@/lib/api/types";
-import { SingleLineScratchItem } from "@/components/ScratchItem";
+import clsx from "clsx";
 import { useDebounce } from "use-debounce";
-import { useCompilers, usePresets } from "@/lib/api";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -31,7 +32,7 @@ function FormLabel({ children, htmlel, small }: FormLabelProps) {
     const Tag = htmlel ? "label" : "p";
     return (
         <Tag
-            className="m-0 block p-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
+            className="m-0 block select-none py-2.5 font-semibold text-[0.9em] text-[color:var(--g1700)]"
             {...(htmlel && { htmlel })}
         >
             {children}
@@ -297,31 +298,47 @@ export default function NewScratchForm({
             </div>
 
             <div>
-                <FormLabel>Compiler</FormLabel>
-                <div className="flex cursor-default select-none items-end justify-between max-[400px]:flex-col">
-                    <div className="flex w-full flex-1 flex-col">
-                        <span className="px-2.5 py-0.5 text-[0.8rem] text-[color:var(--g800)]">
-                            Select a compiler
-                        </span>
-                        <Select
-                            className="w-full"
-                            options={compilerChoiceOptions}
-                            value={compilerId}
-                            onChange={setCompiler}
-                        />
-                    </div>
-                    <div className="flex-0 px-2 py-2 text-center text-[0.8rem] text-[color:var(--g500)] min-[400px]:px-4">
-                        or
-                    </div>
-                    <div className="flex w-full flex-1 flex-col">
-                        <span className="px-2.5 py-0.5 text-[0.8rem] text-[color:var(--g800)]">
-                            Select a preset
+                <FormLabel small="(a preset combines a compiler with compiler flags)">
+                    Preset or Compiler
+                </FormLabel>
+                <div className="flex flex-col justify-between gap-0">
+                    <div className="flex w-full flex-row items-center">
+                        <span
+                            className={clsx(
+                                "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
+                                presetId === undefined
+                                    ? "text-[color:var(--g700)]"
+                                    : "text-[color:var(--g1200)]",
+                            )}
+                        >
+                            Preset
                         </span>
                         <PresetSelect
-                            className="w-full"
+                            className="w-3/4 sm:w-5/6"
                             presetId={presetId}
                             setPreset={setPreset}
                             availablePresets={availablePresets}
+                        />
+                    </div>
+
+                    <div className="py-2" />
+
+                    <div className="flex w-full flex-row items-center">
+                        <span
+                            className={clsx(
+                                "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
+                                presetId === undefined
+                                    ? "text-[color:var(--g1200)]"
+                                    : "text-[color:var(--g700)]",
+                            )}
+                        >
+                            Compiler
+                        </span>
+                        <Select
+                            className="w-3/4 sm:w-5/6"
+                            options={compilerChoiceOptions}
+                            value={compilerId}
+                            onChange={setCompiler}
                         />
                     </div>
                 </div>
@@ -350,7 +367,7 @@ export default function NewScratchForm({
             </div>
 
             {duplicates.length > 0 && (
-                <div className="-1 px-2.5 py-2 text-sm">
+                <div className="px-2.5 py-2 text-sm">
                     <p>
                         The following scratches have been found that share this
                         name:
