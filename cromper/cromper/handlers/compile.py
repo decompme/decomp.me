@@ -25,7 +25,7 @@ def compile(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]:
     code = data.get("code", "")
     context = data.get("context", "")
     compiler_flags = data.get("compiler_flags", "")
-    libraries = [Library(**l) for l in data.get("libraries", [])]
+    libraries = [Library(**lib) for lib in data.get("libraries", [])]
 
     wrapper = CompilerWrapper(
         use_sandbox_jail=config.use_sandbox_jail,
