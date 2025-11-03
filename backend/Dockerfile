@@ -46,7 +46,6 @@ COPY pyproject.toml uv.lock /backend/
 
 RUN uv sync --locked --no-dev
 
-
 FROM dependencies AS prod
 
 COPY --from=uv-install /backend/.venv /backend/.venv
