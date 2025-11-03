@@ -122,7 +122,7 @@ RUN wineboot --init
 WORKDIR /cromper
 
 
-FROM dependencies as dev
+FROM dependencies AS dev
 
 ARG ENABLE_DREAMCAST_SUPPORT
 ARG ENABLE_GBA_SUPPORT

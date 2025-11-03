@@ -5,7 +5,7 @@ FROM --platform=linux/amd64 ubuntu:26.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
 
 
-FROM base as dependencies
+FROM base AS dependencies
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -24,7 +24,7 @@ RUN apt-get update \
 COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
 
 
-FROM dependencies as dev
+FROM dependencies AS dev
 
 WORKDIR /backend
 
