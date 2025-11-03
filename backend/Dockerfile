@@ -41,7 +41,6 @@ COPY pyproject.toml uv.lock /backend/
 
 RUN uv sync --locked
 
-
 FROM dependencies AS prod
 
 COPY --from=uv-install /backend/.venv /backend/.venv
@@ -49,7 +48,6 @@ COPY --from=uv-install /backend/.venv /backend/.venv
 COPY manage.py /backend
 COPY db_housekeeping.py /backend
 
-COPY wine /backend/wine
 COPY decompme /backend/decompme
 
 COPY coreapp /backend/coreapp
