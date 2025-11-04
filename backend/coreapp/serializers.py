@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import PKOnlyObject, SlugRelatedField
 
 from coreapp import platforms
 
@@ -54,8 +54,11 @@ else:
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> Dict[str, Any]:
-        return serialize_profile(profile)
+    def to_representation(self, value: Profile | PKOnlyObject) -> dict[str, Any]:
+        if isinstance(value, Profile):
+            return serialize_profile(value)
+        # fallback
+        return super().to_representation(value)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
