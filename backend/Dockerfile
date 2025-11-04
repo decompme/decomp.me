@@ -21,7 +21,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.7 /uv /bin/uv
 
 
 FROM dependencies AS dev
@@ -31,12 +31,7 @@ WORKDIR /backend
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
-FROM python314 AS uv-install
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+FROM dependencies AS uv-install
 
 USER ubuntu
 
