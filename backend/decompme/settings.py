@@ -15,7 +15,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     DJANGO_LOG_LEVEL=(str, "INFO"),
-    DUMMY_COMPILER=(bool, False),
     ALLOWED_HOSTS=(list, []),
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SANDBOX_DISABLE_PROC=(bool, False),
@@ -33,14 +32,8 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
-    COMPILER_BASE_PATH=(str, BASE_DIR / "compilers"),
-    LIBRARY_BASE_PATH=(str, BASE_DIR / "libraries"),
     COMPILATION_CACHE_SIZE=(int, 100),
     WINEPREFIX=(str, "/tmp/wine"),
-    COMPILATION_TIMEOUT_SECONDS=(int, 10),
-    ASSEMBLY_TIMEOUT_SECONDS=(int, 3),
-    OBJDUMP_TIMEOUT_SECONDS=(int, 3),
-    TIMEOUT_SCALE_FACTOR=(int, 1),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
     SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
@@ -48,6 +41,7 @@ env = environ.Env(
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
     CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
     CONN_HEALTH_CHECKS=(bool, False),
+    CROMPER_URL=(str, "http://localhost:8888"),  # cromper service URL
 )
 
 for stem in [".env.local", ".env"]:
@@ -59,9 +53,9 @@ for stem in [".env.local", ".env"]:
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL")
-DUMMY_COMPILER = env("DUMMY_COMPILER")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 LOCAL_FILE_DIR = env("LOCAL_FILE_DIR")
+CROMPER_URL = env("CROMPER_URL")
 
 # Application definition
 
@@ -214,9 +208,6 @@ if DEBUG:
 else:
     SESSION_COOKIE_SAMESITE = "Lax"
 
-COMPILER_BASE_PATH = Path(env("COMPILER_BASE_PATH"))
-LIBRARY_BASE_PATH = Path(env("LIBRARY_BASE_PATH"))
-
 USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
 SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
 SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
@@ -229,13 +220,6 @@ GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
 COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)
 
 WINEPREFIX = Path(env("WINEPREFIX"))
-
-TIMEOUT_SCALE_FACTOR = env("TIMEOUT_SCALE_FACTOR", int)
-COMPILATION_TIMEOUT_SECONDS = (
-    env("COMPILATION_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FACTOR
-)
-ASSEMBLY_TIMEOUT_SECONDS = env("ASSEMBLY_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FACTOR
-OBJDUMP_TIMEOUT_SECONDS = env("OBJDUMP_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FACTOR
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
