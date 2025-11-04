@@ -19,7 +19,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.7 /uv /bin/uv
 
 
 FROM dependencies AS dev
@@ -31,7 +31,7 @@ USER ubuntu
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
-FROM base AS uv-install
+FROM dependencies AS uv-install
 
 USER ubuntu
 
