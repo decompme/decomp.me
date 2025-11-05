@@ -61,13 +61,17 @@ class GitHubUser(models.Model):
                     "code": oauth_code,
                 },
                 headers={"Accept": "application/json"},
+                timeout=5,
             )
-        except RequestException:
+            response_json = response.json()
+        except RequestException as e:
             raise MalformedGitHubApiResponseException(
-                "GitHub API login request failed."
+                f"GitHub API login request failed: {e}."
             )
-
-        response_json = response.json()
+        except ValueError:
+            raise MalformedGitHubApiResponseException(
+                "GitHub API returned invalid JSON."
+            )
 
         error: Optional[str] = response_json.get("error")
         if error == "bad_verification_code":
