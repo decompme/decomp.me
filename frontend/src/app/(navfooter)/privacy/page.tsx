@@ -18,9 +18,7 @@ export default function Page() {
                 Last updated March 11th 2025
             </p>
 
-            <p className="mt-2 mb-6 text-gray-11 text-sm">
-                Changelog:
-            </p>
+            <p className="mt-2 mb-6 text-gray-11 text-sm">Changelog:</p>
             <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
                 <li className="my-1">2022/01/13: Initial version</li>
             </ul>
