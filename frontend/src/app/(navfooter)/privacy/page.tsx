@@ -18,17 +18,15 @@ export default function Page() {
                 Last updated March 11th 2025
             </p>
 
-            <p className="mt-2 mb-6 text-gray-11 text-sm">
-                Changelog:
-                <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
-                    <li className="my-1">2022/1/13: Initial version</li>
-                </ul>
-                <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
-                    <li className="my-1">
-                        2025/3/11: Update to clarify public data usage
-                    </li>
-                </ul>
-            </p>
+            <p className="mt-2 mb-6 text-gray-11 text-sm">Changelog:</p>
+            <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
+                <li className="my-1">2022/01/13: Initial version</li>
+            </ul>
+            <ul className="mt-2 mb-6 px-4 text-gray-11 text-sm">
+                <li className="my-1">
+                    2025/03/11: Update to clarify public data usage
+                </li>
+            </ul>
 
             <p className="my-4">
                 For the purposes of this document, "We", "our", and "decomp.me"
