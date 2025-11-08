@@ -396,7 +396,7 @@ class ScratchViewSet(
             and len(compilation.elf_object) > 0,
         }
 
-        if include_objects:
+        if include_objects or request.method == "GET":
 
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")

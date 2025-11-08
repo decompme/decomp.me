@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -242,6 +242,7 @@ export function useCompilation(
     const [isCompilationOld, setIsCompilationOld] = useState(false);
     const [objdiffClientEnabled] = useObjdiffClientEnabled();
     const sUrl = scratchUrl(scratch);
+    const hasInitialized = useRef(false);
 
     const compile = useCallback(() => {
         if (compileRequestPromise) return compileRequestPromise;
@@ -313,8 +314,11 @@ export function useCompilation(
     });
 
     useEffect(() => {
-        if (!compilation) {
-            compile();
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            if (!compilation) {
+                compile();
+            }
         } else {
             setIsCompilationOld(true);
 
