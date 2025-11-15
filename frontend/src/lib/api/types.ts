@@ -88,7 +88,7 @@ export type DiffCell = {
     text: DiffText[];
     line?: number;
     branch?: number;
-    src?: string;
+    src?: string[];
     src_comment?: string;
     src_line?: number;
     src_path?: string;
