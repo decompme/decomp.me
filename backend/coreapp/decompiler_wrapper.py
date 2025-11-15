@@ -30,6 +30,8 @@ class DecompilerWrapper:
             if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
                 return "/* Too many lines to decompile; please run m2c manually */"
             try:
+                if platform.id == "gba" and "thumb_func_start" in asm:
+                    asm = f".syntax unified\n{asm}"
                 ret = M2CWrapper.decompile(asm, context, compiler, platform.arch)
             except M2CError as e:
                 # Attempt to decompile the source without context as a last-ditch effort
