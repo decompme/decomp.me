@@ -65,7 +65,7 @@ export default async function WelcomeInfo() {
                     </Link>
                     .
                 </p>
-                <div className="my-6 hidden sm:block">
+                <div className="mt-6 hidden sm:block">
                     <SiteStats />
                 </div>
             </div>
