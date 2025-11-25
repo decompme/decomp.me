@@ -15,7 +15,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
 
 FROM base AS nsjail
 
