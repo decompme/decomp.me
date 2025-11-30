@@ -20,7 +20,12 @@ export default function ScratchMatchBanner({
     );
 
     const match = data
-        ?.filter((s) => s.slug !== scratch.slug && s.score < scratch.score && s.score > -1)
+        ?.filter(
+            (s) =>
+                s.slug !== scratch.slug &&
+                s.score < scratch.score &&
+                s.score > -1,
+        )
         .reduce((lowest, current) => {
             return !lowest || current.score < lowest.score ? current : lowest;
         }, null);
