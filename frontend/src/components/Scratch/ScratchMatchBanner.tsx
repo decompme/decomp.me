@@ -6,6 +6,7 @@ import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
 
 import DismissableBanner from "../DismissableBanner";
+import { calculateScorePercent, percentToString } from "../ScoreBadge";
 
 export default function ScratchMatchBanner({
     scratch,
@@ -34,12 +35,20 @@ export default function ScratchMatchBanner({
 
     if (scratch.score === 0 || !match) return null;
 
-    let message = `This function has been ${match.score === 0 ? "matched" : `improved (score: ${match.score.toLocaleString("en-US")})`}`;
+    const isMatch = match.score === 0;
+
+    const percent = calculateScorePercent(match.score, match.max_score);
+    const percentString = percent !== 0 ? percentToString(percent) : "";
+
+    let message = `This function has ${isMatch ? "been matched" : "a lower-scoring scratch"}`;
     if (userIsYou(match.owner)) message += " by you, elsewhere";
     else if (match.owner) message += ` by ${match.owner.username}`;
 
+    if (!isMatch)
+        message += `. Improved score is ${match.score.toLocaleString("en-US")} ${percentString && `(${percentString})`}`;
+
     return (
-        <DismissableBanner>
+        <DismissableBanner color={isMatch ? "#951fd9" : "#4273e1"}>
             {message}.{" "}
             <Link href={scratchUrl(match)}>
                 View {match.score === 0 ? "match" : "improvement"}
