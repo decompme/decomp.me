@@ -34,9 +34,14 @@ PLATFORM_ID_TO_M2C_ARCH = {
 
 class M2CWrapper:
     @staticmethod
+    def is_platform_supported(platform_id: str) -> bool:
+        return platform_id in PLATFORM_ID_TO_M2C_ARCH
+
+    @staticmethod
     def get_triple(platform_id: str, compiler: Compiler) -> str:
-        triple = PLATFORM_ID_TO_M2C_ARCH.get(platform_id)
-        if not triple:
+        try:
+            triple = PLATFORM_ID_TO_M2C_ARCH[platform_id]
+        except KeyError:
             raise M2CError(f"Unsupported platform '{platform_id}'")
 
         if compiler.type != CompilerType.OTHER:

@@ -25,6 +25,9 @@ class DecompilerWrapper:
         if compiler == compilers.DUMMY:
             return f"decompiled({asm})"
 
+        if not M2CWrapper.is_platform_supported(platform.id):
+            return f"/* No decompiler yet implemented for {platform.arch} */\n{default_source_code}"
+
         ret = default_source_code
         if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
             return "/* Too many lines to decompile; please run m2c manually */"
@@ -32,8 +35,6 @@ class DecompilerWrapper:
         try:
             ret = M2CWrapper.decompile(asm, context, platform.id, compiler)
         except M2CError as e:
-            if "Unsupported platform" in str(e):
-                return f"/* No decompiler yet implemented for {platform.arch} */\n{default_source_code}"
             # Attempt to decompile the source without context as a last-ditch effort
             try:
                 ret = M2CWrapper.decompile(asm, "", platform.id, compiler)
