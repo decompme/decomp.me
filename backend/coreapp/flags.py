@@ -291,6 +291,7 @@ COMMON_GHS_FLAGS: Flags = [
     FlagSet(id="ghs_rtti_mode", flags=["--rtti", "--no_rtti"]),
     FlagSet(id="ghs_exceptions_mode", flags=["--exceptions", "--no_exceptions"]),
     FlagSet(id="ghs_ansi_alias_mode", flags=["-ansi_alias", "-no_ansi_alias"]),
+    FlagSet(id="ghs_inlining_mode", flags=["--max_inlining", "--inlining", "--no_inlining"]),
     Checkbox("ghs_gnu_mode", "--g++"),
     Checkbox("ghs_enable_noinline", "--enable_noinline"),
     Checkbox("ghs_link_once_templates", "--link_once_templates"),
