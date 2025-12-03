@@ -520,7 +520,7 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
@@ -529,7 +529,7 @@ SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
