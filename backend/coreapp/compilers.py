@@ -11,6 +11,7 @@ from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
     COMMON_GCC_GC_FLAGS,
+    COMMON_SHC_OLD_FLAGS,
     COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
@@ -120,6 +121,12 @@ class ArmccCompiler(Compiler):
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    library_include_flag: str = ""
+
+
+@dataclass(frozen=True)
+class SHCOldCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_SHC_OLD_FLAGS
     library_include_flag: str = ""
 
 
@@ -524,7 +531,9 @@ DREAMCAST_CC_V50R10 = (
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
-SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10)
+SHC_V50R10 = SHCOldCompiler(
+    id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10
+)
 
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
