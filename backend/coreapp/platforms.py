@@ -226,6 +226,7 @@ NDS_ARM9 = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 GBA = Platform(
@@ -236,6 +237,7 @@ GBA = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mcpu=arm7tdmi -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 N3DS = Platform(
@@ -246,6 +248,7 @@ N3DS = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mfpu=vfpv2 -march=armv6k -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(

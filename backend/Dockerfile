@@ -15,7 +15,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.18 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
 
 FROM base AS nsjail
 
@@ -80,7 +80,7 @@ RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:1.0.0-beta.1 /usr/local/sbin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:1.0.0-beta.5 /usr/local/bin/wibo /usr/bin/
 
 # Patched mips binutils
 RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \

@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models.course import Course, CourseChapter, CourseScenario
 from .models.github import GitHubUser
 from .models.preset import Preset, PresetAdmin
-from .models.profile import Profile
+from .models.profile import Profile, ProfileAdmin
 from .models.project import Project, ProjectMember
 from .models.scratch import (
     Asm,
@@ -13,7 +13,7 @@ from .models.scratch import (
     ScratchAdmin,
 )
 
-admin.site.register(Profile)
+admin.site.register(Profile, ProfileAdmin)
 admin.site.register(GitHubUser)
 admin.site.register(Asm)
 admin.site.register(Assembly, AssemblyAdmin)
