@@ -173,6 +173,7 @@
     "prodg_393": "ProDG 3.9.3 (gcc 2.95.3)",
 
     "old_agbcc": "old_agbcc",
+    "agbcc_arm": "agbcc_arm",
     "gcc-5370": "GCC 4.0.1 (Xcode 2.5) (C)",
     "gcc-5370-cpp": "GCC 4.0.1 (Xcode 2.5) (C++)",
     "gcc-5363": "GCC 4.0.1 (Xcode 2.4) (C)",

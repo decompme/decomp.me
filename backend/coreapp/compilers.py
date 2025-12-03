@@ -253,6 +253,13 @@ OLD_AGBCC = GCCCompiler(
     base_compiler=AGBCC,
 )
 
+AGBCC_ARM = GCCCompiler(
+    id="agbcc_arm",
+    platform=GBA,
+    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc_arm $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+    base_compiler=AGBCC,
+)
+
 AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
@@ -1538,6 +1545,7 @@ _all_compilers: List[Compiler] = [
     # GBA
     AGBCC,
     OLD_AGBCC,
+    AGBCC_ARM,
     AGBCCPP,
     # N3DS
     ARMCC_40_771,
