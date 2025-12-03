@@ -49,11 +49,11 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
 
 
 class ProfileField(serializers.RelatedField[Profile, str, Dict[str, Any]]):
-        def to_representation(self, value: Profile | PKOnlyObject) -> dict[str, Any]:
-            if isinstance(value, Profile):
-                return serialize_profile(value)
-            # fallback
-            return super().to_representation(value)
+    def to_representation(self, value: Profile | PKOnlyObject) -> dict[str, Any]:
+        if isinstance(value, Profile):
+            return serialize_profile(value)
+        # fallback
+        return super().to_representation(value)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
