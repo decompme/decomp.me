@@ -111,8 +111,12 @@ COMMON_CLANG_FLAGS: Flags = [
 
 COMMON_SHC_FLAGS: Flags = [
     FlagSet(id="shc_opt_level", flags=["-optimize=0", "-optimize=1"]),
-    FlagSet(id="shc_opt_type", flags=["-speed", "-size"]),
+    FlagSet(id="shc_opt_type", flags=["-speed", "-size", "-nospeed"]),
     FlagSet(id="shc_round", flags=["-round=zero", "-round=nearest"]),
+    FlagSet(id="shc_pic", flags=["-pic=0", "-pic=1"]),
+    FlagSet(id="shc_fpu", flags=["-fpu=single", "-fpu=double"]),
+    FlagSet(id="shc_extra", flags=["-extra=a=800", "-extra=a=1000", "-extra=a=1800"]),
+    Checkbox(id="shc_aggressive", flag="-aggressive=2"),
     Checkbox(id="shc_debug", flag="-debug"),
     Checkbox(id="shc_loop", flag="-loop"),
     Checkbox(id="shc_inline", flag="-inline"),
