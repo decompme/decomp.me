@@ -155,8 +155,8 @@ class M2CTests(CromperTestCase):
         sw $t6,0($a0)
         """,
             context="",
+            platform_id="mips",
             compiler=IDO53,
-            arch="mips",
         )
 
         self.assertIsInstance(c_code, str)
@@ -179,8 +179,8 @@ class M2CTests(CromperTestCase):
         blr
         """,
             context="",
+            platform_id="ppc",
             compiler=MWCC_247_92,
-            arch="ppc",
         )
 
         expected = "s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n"
