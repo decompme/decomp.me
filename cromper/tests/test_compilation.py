@@ -223,7 +223,7 @@ class CompilerFilteringTests(CromperTestCase):
 
     def test_filter_compiler_flags(self) -> None:
         """Test that compiler flag filtering works correctly."""
-        from cromper.cromper.wrappers.compiler_wrapper import CompilerWrapper
+        from cromper.wrappers.compiler_wrapper import CompilerWrapper
 
         test_cases = [
             # (input_flags, expected_output)

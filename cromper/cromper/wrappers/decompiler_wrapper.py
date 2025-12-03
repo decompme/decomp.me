@@ -31,8 +31,8 @@ class DecompilerWrapper:
             return "/* Too many lines to decompile; please run m2c manually */"
 
         try:
-            ret = M2CWrapper.decompile(asm, context, platform.id, compiler)
-        except M2CError as e:
+            ret = self.m2c_wrapper.decompile(asm, context, platform.id, compiler)
+        except M2CError:
             # Attempt to decompile the source without context as a last-ditch effort
             try:
                 ret = self.m2c_wrapper.decompile(asm, context, platform.id, compiler)

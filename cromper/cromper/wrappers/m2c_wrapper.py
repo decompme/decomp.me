@@ -26,6 +26,7 @@ PLATFORM_ID_TO_M2C_ARCH = {
     "nds_arm9": "arm",
 }
 
+
 class M2CWrapper:
     def __init__(self, **sandbox_kwargs):
         self.sandbox_kwargs = sandbox_kwargs
@@ -46,7 +47,9 @@ class M2CWrapper:
 
         return triple
 
-    def decompile(self, asm: str, context: str, platform_id: str, compiler: Compiler) -> str:
+    def decompile(
+        self, asm: str, context: str, platform_id: str, compiler: Compiler
+    ) -> str:
         with Sandbox(**self.sandbox_kwargs) as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 

@@ -2,12 +2,12 @@ import unittest
 
 from cromper.compilers import GCC281PM, IDO53, MWCC_247_92
 from cromper.compilers import Compiler
-from cromper.platforms import N64, Platform
+from cromper.platforms import GC_WII, N64, Platform
 from cromper.wrappers.decompiler_wrapper import (
     DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
 )
-from cromper.cromper.wrappers.m2c_wrapper import M2CWrapper
+from cromper.wrappers.m2c_wrapper import M2CWrapper
 
 from .common import CromperTestCase, requiresCompiler
 
@@ -155,7 +155,7 @@ class M2CTests(CromperTestCase):
         sw $t6,0($a0)
         """,
             context="",
-            platform_id="mips",
+            platform_id=N64.id,
             compiler=IDO53,
         )
 
@@ -179,7 +179,7 @@ class M2CTests(CromperTestCase):
         blr
         """,
             context="",
-            platform_id="ppc",
+            platform_id=GC_WII.id,
             compiler=MWCC_247_92,
         )
 
@@ -192,26 +192,17 @@ class M2CTests(CromperTestCase):
             (IDO53, "mips", "mips-ido"),
             (GCC281PM, "mips", "mips-gcc"),
             (MWCC_247_92, "ppc", "ppc-mwcc"),
-            (GCC281PM, "mipsel", "mipsel-gcc"),
-            (GCC281PM, "mipsee", "mipsee-gcc"),
+            (GCC281PM, "mipsel", "mips-gcc"),
+            (GCC281PM, "mipsee", "mips-gcc"),
         ]
 
         for compiler, arch, expected_triple in test_cases:
             with self.subTest(compiler=compiler.id, arch=arch):
-                triple = M2CWrapper.get_triple(compiler, arch)
+                triple = M2CWrapper.get_triple(compiler.platform.id, compiler)
                 self.assertEqual(triple, expected_triple)
 
-    def test_unsupported_arch(self) -> None:
-        """Test M2C with unsupported architecture."""
-        from cromper.error import M2CError
-
-        with self.assertRaises(M2CError) as cm:
-            M2CWrapper.get_triple(GCC281PM, "unsupported_arch")
-
-        self.assertIn("Unsupported arch", str(cm.exception))
-
-    def test_unsupported_compiler(self) -> None:
-        """Test M2C with unsupported compiler type."""
+    def test_unsupported_platform(self) -> None:
+        """Test M2C with unsupported platform"""
         from cromper.error import M2CError
 
         compiler = Compiler(
@@ -219,9 +210,20 @@ class M2CTests(CromperTestCase):
         )
 
         with self.assertRaises(M2CError) as cm:
-            M2CWrapper.get_triple(compiler, "mips")
+            M2CWrapper.get_triple("mips", compiler)
 
-        self.assertIn("Unsupported compiler", str(cm.exception))
+        self.assertIn("Unsupported platform", str(cm.exception))
+
+    def test_unsupported_compiler(self) -> None:
+        """Test M2C with unsupported compiler type."""
+        from cromper.error import M2CError
+
+        compiler = Compiler(id="mock", cc="mock", platform=N64, library_include_flag="")
+
+        with self.assertRaises(M2CError) as cm:
+            M2CWrapper.get_triple("mips", compiler)
+
+        self.assertIn("Unsupported platform", str(cm.exception))
 
 
 if __name__ == "__main__":
