@@ -5,186 +5,37 @@ on:
       - main
   pull_request:
 jobs:
-  full_test_and_build:
-    name: full test and build
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: poetry
-          cache-dependency-path: backend/poetry.lock
-      - name: Install backend Python dependencies
-        run: cd backend && poetry install --no-root
-      - name: Install apt dependencies (initial)
-        run: |-
-          sudo dpkg --add-architecture i386
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-get update -qq
-          sudo apt-get install -yqq --allow-downgrades libc6:i386 libgcc-s1:i386 libstdc++6:i386 wine
-
-          sudo apt-get install \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          sudo apt-get update -qq
-          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-          sudo apt-get install \
-            binutils-aarch64-linux-gnu \
-            binutils-arm-none-eabi \
-            binutils-djgpp \
-            binutils-mips-linux-gnu \
-            binutils-powerpc-linux-gnu \
-            binutils-sh-elf \
-            binutils-mingw-w64-i686 \
-            dos2unix \
-            libarchive-tools \
-            libprotobuf-dev \
-            libnl-route-3-dev \
-            libncurses5 \
-            protobuf-compiler
-      - name: Install msdos assembler
-        run: |-
-          wget https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz
-          sudo tar xvzf omftools.tar.gz -C /usr/bin jwasm omf-nm omf-objdump
-      - name: Install mips PS2 binutils
-        run: |-
-          wget https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz
-          sudo tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump
-      - name: Install apt dependencies (cached)
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: docker-ce docker-ce-cli containerd.io docker-compose-plugin binutils-aarch64-linux-gnu binutils-mips-linux-gnu binutils-powerpc-linux-gnu binutils-sh-elf dos2unix libprotobuf-dev libnl-route-3-dev libncurses5 protobuf-compiler wine software-properties-common
-          version: 1.0
-      - name: Install DOSEMU
-        run: |-
-          sudo add-apt-repository -y ppa:stsp-0/dj64
-          sudo add-apt-repository -y ppa:dosemu2/ppa
-          sudo apt-get update
-          sudo apt-get install -y dj64 dosemu2
-      - name: Install nsjail
-        run: |-
-          git clone --recursive --branch=3.1 https://github.com/google/nsjail
-          make -C nsjail
-          sudo cp nsjail/nsjail /usr/bin/
-      - name: Install GC/Wii binutils
-        run: |-
-          curl -sSL https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-`uname -m`.zip | \
-            sudo bsdtar -xvf- -C /usr/bin
-          sudo chmod +x /usr/bin/powerpc-eabi-*
-      - name: Cache compilers
-        uses: actions/cache@v4
-        with:
-          path: backend/compilers/download_cache
-          key: ${{ runner.os }}-compilers-${{ hashFiles('backend/compilers/compilers.*.yaml') }}
-      - name: Download compilers
-        run: |-
-          cd backend
-          poetry run python3 compilers/download.py
-      - name: Download libraries
-        run: |-
-          cd backend
-          poetry run python3 libraries/download.py
-      - name: Install wibo
-        run: |-
-          wget https://github.com/decompals/wibo/releases/download/0.6.12/wibo && chmod +x wibo && sudo cp wibo /usr/bin/
-
-      - name: Run backend tests
-        run: |-
-          mkdir -p "${WINEPREFIX}"
-          wineboot --init
-          cd backend
-          poetry run python3 manage.py test
-        env:
-          SYSTEM_ENV: GITHUB_WORKFLOW
-          WINEPREFIX: /tmp/wine
-          TIMEOUT_SCALE_FACTOR: 10
-
-      - name: Migrate backend
-        run: cd backend && poetry run python3 ./manage.py migrate
-
-      - name: Start backend
-        run: cd backend && poetry run python3 ./manage.py runserver > /dev/null 2>&1 &
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: yarn
-          cache-dependency-path: frontend/yarn.lock
-      - name: Install frontend dependencies
-        run: cd frontend && yarn --frozen-lockfile
-      - name: Build frontend
-        run: cd frontend && yarn build
-
-  backend_test_windows:
-    name: backend tests (windows)
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: poetry
-          cache-dependency-path: backend/poetry.lock
-      - name: Install Poetry
-        run: pip install --user poetry
-      - run: cd backend && poetry install --no-root
-      - name: Run tests
-        run: |-
-          cd backend
-          poetry run python manage.py test
-        env:
-          SYSTEM_ENV: GITHUB_WORKFLOW
-          TIMEOUT_SCALE_FACTOR: 10
-
-  backend_test_docker:
-    name: backend tests (docker)
-    runs-on: ubuntu-latest
+  backend_test_docker_dev:
+    name: backend tests (docker dev container)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Build decompme_backend image
         run: |-
-          docker build backend \
-            -t decompme_backend \
-            --build-arg ENABLE_MSDOS_SUPPORT=YES \
-            --build-arg ENABLE_GC_WII_SUPPORT=YES \
-            --build-arg ENABLE_PS2_SUPPORT=YES \
-            --build-arg ENABLE_SATURN_SUPPORT=YES \
-            --build-arg ENABLE_DREAMCAST_SUPPORT=YES \
-            --build-arg ENABLE_WIN32_SUPPORT=YES
+          docker build backend -t decompme_backend
       - name: Run tests
         run: |-
-          mkdir -p sandbox && chmod 777 sandbox
-          mkdir -p local_files && chmod 777 local_files
-          mkdir -p compilers && chmod 777 compilers
-          mkdir -p libraries && chmod 777 libraries
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          # NOTE: CI does not run as 'ubuntu' user
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          for dir in backend/.venv sandbox local_files compilers libraries; do
+            mkdir -p "$dir"
+            sudo chown "${USER_1000}:${USER_1000}" "$dir"
+          done
           docker run \
             -v $(pwd):/decomp.me \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/compilers:/compilers \
             -v $(pwd)/libraries:/libraries \
-            --tmpfs /dev/shm:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e LIBRARY_BASE_PATH=/libraries \
@@ -195,49 +46,180 @@ jobs:
             -e TIMEOUT_SCALE_FACTOR=10 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
-              poetry install --no-root && \
-              poetry run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
-              poetry run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
-              poetry run python manage.py test'
+              uv sync && \
+              uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
+              uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
+              for r in wine/*.reg; do regedit $r; done && \
+              uv run python manage.py test'
 
-  frontend_lint:
-    name: eslint & stylelint
-    runs-on: ubuntu-latest
+  backend_test_docker_prod:
+    name: backend tests (docker prod container)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js 20
+      - name: Build decompme_backend image
+        run: |-
+          docker build backend --target prod -t decompme_backend
+      - name: Fetch compilers and libraries
+        run: |-
+          python3 -m pip install requests
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
+      - name: Run tests
+        run: |-
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
+          docker run \
+            -v $(pwd)/local_files:/local_files \
+            -v $(pwd)/backend/compilers:/compilers \
+            -v $(pwd)/backend/libraries:/libraries \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
+            --entrypoint /bin/bash \
+            -e LOCAL_FILE_DIR=/local_files \
+            -e COMPILER_BASE_PATH=/compilers \
+            -e LIBRARY_BASE_PATH=/libraries \
+            -e USE_SANDBOX_JAIL=on \
+            -e SANDBOX_DISABLE_PROC=true \
+            -e TIMEOUT_SCALE_FACTOR=10 \
+            -e DATABASE_URL=sqlite:///:memory: \
+            -e DUMMY_COMPILER=1 \
+            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
+            decompme_backend \
+              -c '\
+              for r in wine/*.reg; do regedit $r; done && \
+              uv run python manage.py test'
+
+  docker_compose_test:
+    name: test docker compose
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch compilers and libraries
+        run: |
+          python3 -m pip install requests
+          python3 backend/compilers/download.py
+          python3 backend/libraries/download.py
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
+          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
+
+      - name: Setup dummy docker.prod.dev
+        run: |
+          echo 'POSTGRES_USER=decompme' >> docker.prod.env
+          echo 'POSTGRES_PASSWORD=decompme' >> docker.prod.env
+          echo 'SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key' >> docker.prod.env
+          echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
+          echo 'CONN_MAX_AGE=60' >> docker.prod.env
+          echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
+          echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
+          echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+          echo 'CI=true' >> docker.prod.env
+
+      - name: Comment out SSL server configuration from nginx
+        run: |
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+
+      - name: Bring up postgres and nginx containers
+        run: |
+          docker compose -f docker-compose.prod.yaml up -d postgres nginx
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+          docker compose logs nginx | grep "ready for start up"
+          ! docker compose logs nginx | grep -q "nginx-1 exited with code"
+
+      - name: Build and bring up up backend container
+        run: |
+          docker compose -f docker-compose.prod.yaml build backend
+          docker compose -f docker-compose.prod.yaml up -d backend
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Build and bring up up frontend container
+        run: |
+          docker compose -f docker-compose.prod.yaml -f docker-compose.build.yaml build frontend
+          docker compose -f docker-compose.prod.yaml up -d frontend
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Sanity check the endpoints
+        run: |
+          curl --silent http://localhost:8080/ | head -c 256
+          curl --silent http://localhost:8000/api/ | jq
+
+      - name: Shut everything down
+        run: |
+          docker compose -f docker-compose.prod.yaml down
+
+      - name: Print out image sizes
+        run: |
+          docker image ls
+
+  frontend_lint:
+    name: biome
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - name: Install frontend dependencies
-        run: cd frontend && yarn --frozen-lockfile
-      - run: cd frontend && yarn lint
+        run: |
+          cd frontend
+          yarn --frozen-lockfile
+      - name: Run Biome
+        run: |
+          cd frontend
+          yarn lint
 
   mypy:
     name: mypy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Setup Python 3.10
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
-          cache: poetry
-          cache-dependency-path: backend/poetry.lock
+          python-version: "3.12"
       - run: |-
           cd backend
-          poetry install --no-root
-          poetry run mypy
+          uv sync
+          uv run mypy
 
-  black:
-    name: black
-    runs-on: ubuntu-latest
+  ruff:
+    name: ruff
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: psf/black@stable
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          src: "./backend"
+          version: "latest"
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |-
+          cd backend
+          uv sync
+          uv run ruff check .
+          uv run ruff format --check .

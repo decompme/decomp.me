@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from django.test import Client
 
 from coreapp.compilers import GCC281PM
 from coreapp.models.preset import Preset
@@ -32,7 +31,7 @@ DUMMY_PRESET_DICT = {
 class PresetTests(BaseTestCase):
     def create_admin(self) -> None:
         self.username = "admin"
-        self.password = User.objects.make_random_password()
+        self.password = "testpassword"
         user, created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.is_staff = True
@@ -43,7 +42,7 @@ class PresetTests(BaseTestCase):
 
     def create_user(self, username: str = "dummy-user") -> User:
         self.username = username
-        self.password = User.objects.make_random_password()
+        self.password = "testpassword"
         user, created = User.objects.get_or_create(username=self.username)
         user.set_password(self.password)
         user.save()
@@ -77,22 +76,6 @@ class PresetTests(BaseTestCase):
         preset = self.create_preset(DUMMY_PRESET_DICT)
         assert preset.owner is not None
         assert preset.owner.pk == self.user.pk
-
-    def test_list_compiler_with_custom_presets(self) -> None:
-        user = self.create_user()
-        self.create_preset(DUMMY_PRESET_DICT)
-        response = self.client.get(reverse("compiler"))
-        body = response.json()
-
-        assert "platforms" in body
-        assert "dummy" in body["platforms"]
-        assert "presets" in body["platforms"]["dummy"]
-        assert len(body["platforms"]["dummy"]["presets"]) == 1
-        assert (
-            body["platforms"]["dummy"]["presets"][0]["name"]
-            == DUMMY_PRESET_DICT["name"]
-        )
-        assert body["platforms"]["dummy"]["presets"][0]["owner"]["id"] == user.pk
 
     def test_owner_can_delete_preset(self) -> None:
         self.create_user()

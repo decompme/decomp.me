@@ -1,4 +1,3 @@
-import json
 import logging
 import subprocess
 import shlex
@@ -114,7 +113,7 @@ class DiffWrapper:
                 },
                 timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
             )
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             raise NmError("Timeout expired")
         except subprocess.CalledProcessError as e:
             raise NmError.from_process_error(e)
@@ -133,7 +132,7 @@ class DiffWrapper:
 
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
-        known_objdump_flags = ["-Mno-aliases"]
+        known_objdump_flags = ["-Mno-aliases", "--reloc"]
         known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
         ret = []
 
@@ -199,7 +198,7 @@ class DiffWrapper:
                         },
                         timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
                     )
-                except subprocess.TimeoutExpired as e:
+                except subprocess.TimeoutExpired:
                     raise ObjdumpError("Timeout expired")
                 except subprocess.CalledProcessError as e:
                     raise ObjdumpError.from_process_error(e)
@@ -236,17 +235,18 @@ class DiffWrapper:
                 None, elf_object, basedump, config
             )
         except AssertionError as e:
-            logger.exception("Error preprocessing dump")
+            logger.exception("Error preprocessing dump: %s", e)
             raise DiffError(f"Error preprocessing dump: {e}")
         except Exception as e:
+            logger.exception("Error preprocessing dump: %s", e)
             raise DiffError(f"Error preprocessing dump: {e}")
 
         return basedump
 
     @staticmethod
-    def run_diff(basedump: str, mydump: str, config: Any) -> Dict[str, Any]:
-        base_lines = asm_differ.process(basedump, config)
-        my_lines = asm_differ.process(mydump, config)
+    def run_diff(
+        base_lines: list[str], my_lines: list[str], config: Any
+    ) -> Dict[str, Any]:
         diff_output = asm_differ.do_diff(base_lines, my_lines, config)
         table_data = asm_differ.align_diffs(diff_output, diff_output, config)
         return config.formatter.raw(table_data)
@@ -261,7 +261,7 @@ class DiffWrapper:
     ) -> DiffResult:
         if platform == DUMMY:
             # Todo produce diff for dummy
-            return DiffResult({"rows": ["a", "b"]}, "")
+            return DiffResult({"rows": ["a", "b"]})
 
         try:
             arch = asm_differ.get_arch(platform.arch or "")
@@ -281,17 +281,27 @@ class DiffWrapper:
                 objdump_flags,
             )
         except Exception as e:
+            logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
         try:
             mydump = DiffWrapper.get_dump(
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
-        except Exception as e:
+        except Exception:
             mydump = ""
 
         try:
-            result = DiffWrapper.run_diff(basedump, mydump, config)
+            base_lines = asm_differ.process(basedump, config)
+            my_lines = asm_differ.process(mydump, config)
+            result = DiffWrapper.run_diff(base_lines, my_lines, config)
+            diff_result = DiffResult(result)
+            if any(x.startswith("--disassemble=") for x in objdump_flags):
+                if len(base_lines) and len(my_lines) == 0:
+                    diff_result.errors = (
+                        "Warning: No diff rows. Is your function signature correct?"
+                    )
         except Exception as e:
+            logger.exception("Error running asm-differ: %s", e)
             raise DiffError(f"Error running asm-differ: {e}")
 
-        return DiffResult(result, "")
+        return diff_result

@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-I would like to create/update (delete as applicable) a compiler preset on decomp.me.
+I would like to create/update a compiler preset on decomp.me.
 
 - **Preset Name:** e.g. `Superfrog 64`
 - **Preset ID (when updating):** e.g. `13` (see [Compiler Presets API](https://decomp.me/api/preset))

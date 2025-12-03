@@ -1,4 +1,4 @@
-import isDarkColor from "is-dark-color"
+import isDarkColor from "is-dark-color";
 
 export const COLOR_NAMES = {
     background: "Background",
@@ -20,9 +20,9 @@ export const COLOR_NAMES = {
     string: "String",
     character: "Character",
     type: "Type name",
-}
+};
 
-export type Colors = Record<keyof typeof COLOR_NAMES, string>
+export type Colors = Record<keyof typeof COLOR_NAMES, string>;
 
 export const COLOR_SCHEME_PRESETS = {
     "Frog Dark": {
@@ -42,7 +42,7 @@ export const COLOR_SCHEME_PRESETS = {
         character: "#cefa0a",
         preprocessor: "#3bff6c",
     },
-    "Material": {
+    Material: {
         background: "#282c34",
         cursor: "#ffffff",
         foreground: "#abb2bf",
@@ -59,7 +59,7 @@ export const COLOR_SCHEME_PRESETS = {
         character: "#d479f2",
         preprocessor: "#d479f2",
     },
-    "Dracula": {
+    Dracula: {
         background: "#282A36",
         cursor: "#f8f8f2",
         foreground: "#f8f8f2",
@@ -93,45 +93,69 @@ export const COLOR_SCHEME_PRESETS = {
         character: "#9ec200",
         preprocessor: "#2fcd56",
     },
-}
+};
 
-export type ColorPresetName = keyof typeof COLOR_SCHEME_PRESETS
+export type ColorPresetName = keyof typeof COLOR_SCHEME_PRESETS;
 
-export type ColorScheme = ColorPresetName | Colors
+export type ColorScheme = ColorPresetName | Colors;
 
-export const DARK_THEMES: ColorPresetName[] = ["Frog Dark", "Material", "Dracula"]
+export const DARK_THEMES: ColorPresetName[] = [
+    "Frog Dark",
+    "Material",
+    "Dracula",
+];
 
-export const LIGHT_THEMES: ColorPresetName[] = ["Frog Light"]
+export const LIGHT_THEMES: ColorPresetName[] = ["Frog Light"];
 
 export function getColors(scheme: ColorScheme): Colors {
     if (typeof scheme === "string") {
-        return COLOR_SCHEME_PRESETS[scheme] ?? COLOR_SCHEME_PRESETS["Frog Dark"]
+        return (
+            COLOR_SCHEME_PRESETS[scheme] ?? COLOR_SCHEME_PRESETS["Frog Dark"]
+        );
     } else {
-        return scheme
+        return scheme;
     }
 }
 
 export function applyColorScheme(scheme: ColorScheme) {
-    const colors = getColors(scheme)
+    const colors = getColors(scheme);
 
     for (const [key, value] of Object.entries(colors)) {
-        document.body.style.setProperty(`--code-${key}`, value.toString())
+        document.body.style.setProperty(`--code-${key}`, value.toString());
     }
 
-    let isDark = true
+    let isDark = true;
     try {
-        isDark = isDarkColor(colors.background)
+        isDark = isDarkColor(colors.background);
     } catch (error) {
         // Ignore; color is being edited
     }
 
     if (isDark) {
-        document.body.style.setProperty("--code-selection", "#ffffff22")
-        document.body.style.setProperty("--code-highlight", "#ffffff05")
+        document.body.style.setProperty("--code-selection", "#ffffff22");
+        document.body.style.setProperty("--code-highlight", "#ffffff05");
+        // Indentation marker colors for dark theme
+        document.body.style.setProperty(
+            "--code-indentation-marker",
+            `color-mix(in srgb, ${colors.foreground}, transparent 60%)`,
+        );
+        document.body.style.setProperty(
+            "--code-indentation-marker-active",
+            `color-mix(in srgb, ${colors.foreground}, transparent 40%)`,
+        );
     } else {
-        document.body.style.setProperty("--code-selection", "#00000022")
-        document.body.style.setProperty("--code-highlight", "#00000005")
+        document.body.style.setProperty("--code-selection", "#00000022");
+        document.body.style.setProperty("--code-highlight", "#00000005");
+        // Indentation marker colors for light theme
+        document.body.style.setProperty(
+            "--code-indentation-marker",
+            `color-mix(in srgb, ${colors.foreground}, transparent 60%)`,
+        );
+        document.body.style.setProperty(
+            "--code-indentation-marker-active",
+            `color-mix(in srgb, ${colors.foreground}, transparent 40%)`,
+        );
     }
 }
 
-export default COLOR_SCHEME_PRESETS
+export default COLOR_SCHEME_PRESETS;

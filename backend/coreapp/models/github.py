@@ -41,7 +41,6 @@ class GitHubUser(models.Model):
         related_name="github",
     )
     github_id = models.PositiveIntegerField(unique=True, editable=False)
-    access_token = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "GitHub user"
@@ -57,18 +56,22 @@ class GitHubUser(models.Model):
             response = requests.post(
                 "https://github.com/login/oauth/access_token",
                 json={
-                    "client_id": settings.GITHUB_CLIENT_ID,  # type: ignore
-                    "client_secret": settings.GITHUB_CLIENT_SECRET,  # type: ignore
+                    "client_id": settings.GITHUB_CLIENT_ID,
+                    "client_secret": settings.GITHUB_CLIENT_SECRET,
                     "code": oauth_code,
                 },
                 headers={"Accept": "application/json"},
+                timeout=5,
             )
-        except RequestException:
+            response_json = response.json()
+        except RequestException as e:
             raise MalformedGitHubApiResponseException(
-                "GitHub API login request failed."
+                f"GitHub API login request failed: {e}."
             )
-
-        response_json = response.json()
+        except ValueError:
+            raise MalformedGitHubApiResponseException(
+                "GitHub API returned invalid JSON."
+            )
 
         error: Optional[str] = response_json.get("error")
         if error == "bad_verification_code":
@@ -79,7 +82,6 @@ class GitHubUser(models.Model):
             )
 
         try:
-            scope_str = str(response_json["scope"])
             access_token = str(response_json["access_token"])
         except KeyError:
             raise MalformedGitHubApiResponseException()
@@ -96,7 +98,7 @@ class GitHubUser(models.Model):
             if (
                 user.is_anonymous
                 or isinstance(user, User)
-                and GitHubUser.objects.filter(user=user).get() is not None
+                and GitHubUser.objects.filter(user=user).exists()
             ):
                 user = User.objects.create_user(
                     username=details.login,
@@ -114,7 +116,6 @@ class GitHubUser(models.Model):
             gh_user.user.username = details.login
             gh_user.user.save(update_fields=["username"])
 
-        gh_user.access_token = access_token
         gh_user.save()
 
         profile: Profile = (

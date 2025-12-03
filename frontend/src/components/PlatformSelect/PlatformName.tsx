@@ -1,19 +1,24 @@
-import Link from "next/link"
+import Link from "next/link";
 
-import useSWRImmutable from "swr/immutable"
+import useSWRImmutable from "swr/immutable";
 
-import * as api from "@/lib/api"
+import * as api from "@/lib/api";
 
 export type Props = {
-    platform: string
-}
+    platform: string;
+};
 
 export default function PlatformName({ platform }: Props) {
-    const { data } = useSWRImmutable<api.PlatformBase>(`/platform/${platform}`, api.get)
+    const { data } = useSWRImmutable<api.PlatformBase>(
+        `/platform/${platform}`,
+        api.get,
+    );
 
-    return <>
-        <Link href={`/platform/${platform}`}>
-            {data?.name ?? platform}
-        </Link>
-    </>
+    return (
+        <>
+            <Link href={`/platform/${platform}`} prefetch={false}>
+                {data?.name ?? platform}
+            </Link>
+        </>
+    );
 }

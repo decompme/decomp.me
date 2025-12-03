@@ -1,2 +1,6 @@
+User-agent: *
+Crawl-delay: 10
+Disallow: /api
+
 User-agent: Bytespider
 Disallow: /

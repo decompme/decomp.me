@@ -227,7 +227,15 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
-    @parameterized.expand(input=[(c,) for c in compilers.available_compilers() if not isinstance(c, DummyCompiler)], name_func=all_compilers_name_func, skip_on_empty=True)  # type: ignore
+    @parameterized.expand(
+        input=[
+            (c,)
+            for c in compilers.available_compilers()
+            if not isinstance(c, DummyCompiler)
+        ],
+        name_func=all_compilers_name_func,
+        skip_on_empty=True,
+    )  # type: ignore
     def test_all_compilers(self, compiler: Compiler) -> None:
         """
         Ensure that we can run a simple compilation/diff for all available compilers
@@ -260,6 +268,7 @@ nop
             diff_flags=[],
         )
 
-        self.assertTrue("rows" in diff.result)
-        self.assertGreater(len(diff.result["rows"]), 0)
-        self.assertEqual("", diff.errors)
+        diff_result: dict[str, Any] = diff.result  # type: ignore
+        self.assertTrue(diff_result is not None and "rows" in diff_result)
+        self.assertGreater(len(diff_result["rows"]), 0)
+        self.assertEqual(None, diff.errors)

@@ -1,0 +1,5 @@
+services:
+  frontend:
+    build:
+      extra_hosts:
+        - "backend=172.17.0.1"  # docker0 bridge

@@ -1,20 +1,27 @@
-import dynamic from "next/dynamic"
+import dynamic from "next/dynamic";
 
-import Loading from "@/components/loading.svg"
-import { TerseScratch } from "@/lib/api/types"
+import LoadingSpinner from "@/components/loading.svg";
+import type { TerseScratch } from "@/lib/api/types";
 
-const SortableFamilyList = dynamic(() => import("@/components/Scratch/SortableFamilyList"), {
-    loading: () => <div className="flex size-full items-center justify-center">
-        <Loading className="size-8 animate-pulse" />
-    </div>,
-})
+const SortableFamilyList = dynamic(
+    () => import("@/components/Scratch/SortableFamilyList"),
+    {
+        loading: () => (
+            <div className="flex size-full items-center justify-center">
+                <LoadingSpinner className="size-8 animate-pulse" />
+            </div>
+        ),
+    },
+);
 
 type Props = {
-    scratch: TerseScratch
-}
+    scratch: TerseScratch;
+};
 
 export default function FamilyPanel({ scratch }: Props) {
-    return <div className="h-full overflow-auto p-4">
-        <SortableFamilyList scratch={scratch} />
-    </div>
+    return (
+        <div className="h-full overflow-auto p-4">
+            <SortableFamilyList scratch={scratch} />
+        </div>
+    );
 }

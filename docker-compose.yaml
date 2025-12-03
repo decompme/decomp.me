@@ -1,7 +1,6 @@
-version: '2'
 services:
   postgres:
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_USER: decompme
       POSTGRES_PASSWORD: decompme
@@ -12,47 +11,33 @@ services:
   backend:
     build:
       context: backend
-      args:
-        ENABLE_GBA_SUPPORT: "YES"
-        ENABLE_GC_WII_SUPPORT: "YES"
-        ENABLE_N3DS_SUPPORT: "YES"
-        ENABLE_N64_SUPPORT: "YES"
-        ENABLE_NDS_ARM9_SUPPORT: "YES"
-        ENABLE_PS1_SUPPORT: "YES"
-        # dont install wine32 etc by default
-        ENABLE_MSDOS_SUPPORT: "NO"
-        ENABLE_PS2_SUPPORT: "NO"
-        ENABLE_WIN32_SUPPORT: "NO"
-        ENABLE_DREAMCAST_SUPPORT: "NO"
-        # dont install clang by default
-        ENABLE_SWITCH_SUPPORT: "NO"
-        # dont install dosemu by default
-        ENABLE_SATURN_SUPPORT: "NO"
-        # dont download macosx compilers by default
-        ENABLE_MACOSX_SUPPORT: "NO"
+      target: dev
     cap_drop:
       - all
     cap_add:
       - setuid
       - setgid
       - setfcap
+    environment:
+      - ENABLE_SWITCH_SUPPORT=NO
     env_file:
       - backend/docker.dev.env
     ports:
       - "8000:8000"
+      - "5678:5678"  # vscode debugger
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
       - ./backend:/backend
     tmpfs:
-      # explicitly mount /dev/shm with exec as dosemu2 requires exec privilege
-      - /dev/shm:exec,uid=1000,gid=1000,size=64M,mode=0700
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
   frontend:
-    build: frontend
+    build:
+      context: frontend
+      target: dev
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
@@ -62,9 +47,10 @@ services:
       - ./frontend:/frontend
       - .env:/.env
   nginx:
-    image: nginx:1.22-alpine
+    image: nginx:1.28-alpine
     ports:
       - "80:80"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/development.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media

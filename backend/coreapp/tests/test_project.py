@@ -1,16 +1,15 @@
 import tempfile
-from unittest.mock import Mock, patch
 
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
 from coreapp.models.project import Project, ProjectMember
+from coreapp.tests.common import BaseTestCase
 from django.contrib.auth.models import User
-from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 
 
-class ProjectTests(TestCase):
+class ProjectTests(BaseTestCase):
     @staticmethod
     def create_test_project(slug: str = "test") -> Project:
         project = Project(
@@ -35,9 +34,7 @@ class ProjectTests(TestCase):
         profile.user = User(username="test")
         profile.user.save()
         profile.save()
-        GitHubUser.objects.create(
-            user=profile.user, github_id=1234, access_token="__mock__"
-        )
+        GitHubUser.objects.create(user=profile.user, github_id=1234)
 
         data = {
             "slug": "example-project",
@@ -52,7 +49,7 @@ class ProjectTests(TestCase):
         response = self.client.post(
             reverse("project-list"),
             data,
-            content_type="application/json",
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -62,7 +59,7 @@ class ProjectTests(TestCase):
         response = self.client.post(
             reverse("project-list"),
             data,
-            content_type="application/json",
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Project.objects.count(), 1)
@@ -78,7 +75,7 @@ class ProjectTests(TestCase):
                     {
                         "description": "new description",
                     },
-                    content_type="application/json",
+                    format="json",
                 )
                 self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -100,7 +97,7 @@ class ProjectTests(TestCase):
                     {
                         "description": "new description",
                     },
-                    content_type="application/json",
+                    format="json",
                 )
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
 

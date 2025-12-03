@@ -1,3 +1,6 @@
+common:
+  - wibo_dlls
+
 gba:
   - agbcc
   - agbccpp
@@ -5,12 +8,15 @@ gba:
 gc_wii:
   - mwcc_233_144
   - mwcc_233_159
+  - mwcc_233_159p1
   - mwcc_233_163
   - mwcc_233_163e
   - mwcc_233_163n
+  - mwcc_242_53
   - mwcc_242_81
   - mwcc_242_81r
   - mwcc_247_92
+  - mwcc_247_92p1
   - mwcc_247_105
   - mwcc_247_107
   - mwcc_247_108
@@ -30,12 +36,16 @@ gc_wii:
   - mwcc_43_202
   - mwcc_43_213
   - prodg_35
+  - prodg_35_b140
   - prodg_37
+  - prodg_381
   - prodg_393
 
 n64:
   - gcc2.7.2kmc
-  - gcc2.7.2sn
+  - gcc2.7.2sn0001
+  - gcc2.7.2sn0004
+  - gcc2.7.2sn0006
   - gcc2.7.2snew
   - gcc2.8.1pm
   - gcc2.8.1sn
@@ -45,6 +55,7 @@ n64:
   - ido7.1
   - mips_pro_744
   - egcs_1.1.2-4
+  - egcs_1.1.2-4c
   - gcc4.4.0-mips64-elf
 
 n3ds:
@@ -100,32 +111,37 @@ ps1:
   - psyq4.4
   - psyq4.5
   - psyq4.6
+  - psyq_263_221
   - gcc2.5.7-psx
+  - gcc2.6.0-psx
   - gcc2.6.3-psx
-  - gcc2.6.0-mipsel
-  - gcc2.6.3-mipsel
+  - gcc2.7.2-psx
+  - gcc2.8.0-psx
+  - gcc2.8.1-psx
+  - gcc2.91.66-psx
+  - gcc2.95.2-psx
   - gcc2.7.0-mipsel
   - gcc2.7.1-mipsel
-  - gcc2.7.2-mipsel
   - gcc2.7.2.1-mipsel
   - gcc2.7.2.2-mipsel
   - gcc2.7.2.3-mipsel
-  - gcc2.8.0-mipsel
-  - gcc2.8.1-mipsel
-  - gcc2.91.66-mipsel
-  - gcc2.95.2-mipsel
 
 ps2:
+  - iop-gcc2.8.1
+  - iop-gcc2.95.2-102
   - ee-gcc2.9-990721
   - ee-gcc2.9-991111
   - ee-gcc2.9-991111a
   - ee-gcc2.9-991111-01
+  - ee-gcc2.9-991111-01-dtls13010
   - ee-gcc2.95.2-273a
   - ee-gcc2.95.2-274
   - ee-gcc2.95.3-107
   - ee-gcc2.95.3-114
   - ee-gcc2.95.3-136
   - ee-gcc2.96
+  - ee-gcc3.2-030210-beta2
+  - ee-gcc3.2-030926
   - ee-gcc3.2-040921
   - mwcps2-2.3-991202
   - mwcps2-2.3.3-000906
@@ -170,7 +186,17 @@ saturn:
   - cygnus-2.7-96Q3
 
 dreamcast:
+  - shc-v5.0r10
+  - shc-v5.0r26
+  - shc-v5.0r28
+  - shc-v5.0r31
+  - shc-v5.0r32
+  - shc-v5.1r01
+  - shc-v5.1r03
+  - shc-v5.1r04
+  - shc-v5.1r08
   - shc-v5.1r11
+  - shc-v5.1r13
 
 macosx:
   - gcc-5026
@@ -183,9 +209,12 @@ msdos:
   - wcc10.5a
   - wcc10.6
   - wcc11.0
+  - bcc2.0
+  - bcc3.1
 
 win32:
   - msvc4.0
+  - msvc4.1
   - msvc4.2
   - msvc6.0
   - msvc6.3
@@ -195,3 +224,5 @@ win32:
   - msvc6.6
   - msvc7.0
   - msvc7.1
+  - msvc8.0
+  - msvc8.0p

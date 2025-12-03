@@ -1,5 +1,7 @@
 from time import sleep
 from typing import Any, Dict
+import io
+import zipfile
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
@@ -405,7 +407,7 @@ class ScratchDetailTests(BaseTestCase):
         # fork the fork
         response = self.client.post(reverse("scratch-fork", args=[fork.slug]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        fork2: Scratch = Scratch.objects.get(slug=response.json()["slug"])
+        Scratch.objects.get(slug=response.json()["slug"])
 
         # verify the family holds all three
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
@@ -418,30 +420,11 @@ class ScratchDetailTests(BaseTestCase):
         # fork the root
         response = self.client.post(reverse("scratch-fork", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        fork = response.json()
 
         # verify the family holds both, in creation order
         response = self.client.get(reverse("scratch-family", args=[root.slug]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 2)
-
-    def test_family_etag(self) -> None:
-        root = self.create_nop_scratch()
-
-        # get etag of only the root
-        response = self.client.get(reverse("scratch-family", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        etag = response.headers.get("Etag")
-        self.assertIsNotNone(etag)
-
-        # fork the root
-        response = self.client.post(reverse("scratch-fork", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # verify etag has changed
-        response = self.client.get(reverse("scratch-family", args=[root.slug]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertNotEqual(etag, response.headers.get("Etag"))
 
     def test_family_checks_hash_only(self) -> None:
         """
@@ -493,7 +476,60 @@ class ScratchDetailTests(BaseTestCase):
         }
 
         scratch1 = self.create_scratch(scratch1_dict)
-        scratch2 = self.create_scratch(scratch2_dict)
+        self.create_scratch(scratch2_dict)
 
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 1)
+
+
+class ScratchExportTests(BaseTestCase):
+    @requiresCompiler(IDO71)
+    def test_export_asm_scratch(self) -> None:
+        """
+        Ensure that a scratch can be exported as a zip
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "typedef signed int s32;",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "s32 func() { return 2; }",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        response = self.client.get(f"/api/scratch/{scratch.slug}/export")
+
+        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        file_names = zip_file.namelist()
+
+        self.assertIn("metadata.json", file_names)
+        self.assertIn("target.s", file_names)
+        self.assertIn("target.o", file_names)
+        self.assertIn("code.c", file_names)
+        self.assertIn("ctx.c", file_names)
+        self.assertIn("current.o", file_names)
+
+    @requiresCompiler(IDO71)
+    def test_export_asm_scratch_target_only(self) -> None:
+        """
+        Ensure that a scratch can be exported as a zip
+        without performing the actual compilation step
+        """
+        scratch_dict = {
+            "platform": N64.id,
+            "compiler": IDO71.id,
+            "context": "typedef signed int s32;",
+            "target_asm": "jr $ra\nli $v0,2",
+            "source_code": "s32 func() { return 2; }",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        response = self.client.get(f"/api/scratch/{scratch.slug}/export?target_only=1")
+
+        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        file_names = zip_file.namelist()
+
+        self.assertIn("metadata.json", file_names)
+        self.assertIn("target.s", file_names)
+        self.assertIn("target.o", file_names)
+        self.assertIn("code.c", file_names)
+        self.assertIn("ctx.c", file_names)
+        self.assertNotIn("current.o", file_names)

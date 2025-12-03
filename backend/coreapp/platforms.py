@@ -4,12 +4,16 @@ from typing import Any, Dict, OrderedDict
 from pathlib import Path
 import functools
 
-from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_MIPS_DIFF_FLAGS, Flags
-from coreapp.models.preset import Preset
+from coreapp import compilers
+from coreapp.flags import (
+    COMMON_DIFF_FLAGS,
+    COMMON_MIPS_DIFF_FLAGS,
+    COMMON_MSDOS_DIFF_FLAGS,
+    Flags,
+)
 from coreapp.models.scratch import Scratch
 from rest_framework.exceptions import APIException
 
-from coreapp.serializers import PresetSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +43,9 @@ class Platform:
         return Scratch.objects.filter(platform=self.id).count()
 
     def to_json(
-        self, include_presets: bool = True, include_num_scratches: bool = False
+        self,
+        include_compilers: bool = False,
+        include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -48,10 +54,11 @@ class Platform:
             "arch": self.arch,
             "has_decompiler": self.has_decompiler,
         }
-        if include_presets:
-            ret["presets"] = [
-                PresetSerializer(p).data
-                for p in Preset.objects.filter(platform=self.id).order_by("name")
+        if include_compilers:
+            ret["compilers"] = [
+                x.id
+                for x in compilers.available_compilers()
+                if x.platform.id == self.id
             ]
         if include_num_scratches:
             ret["num_scratches"] = self.get_num_scratches()
@@ -78,10 +85,12 @@ MSDOS = Platform(
     id="msdos",
     name="Microsoft DOS",
     description="x86",
-    arch="i686",
-    assemble_cmd='jwasm -c -Fo"$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="omf-objdump",
+    arch="x86",
+    assemble_cmd='jwasm -c -Fo"$OUTPUT" -Fi"$PRELUDE" "$INPUT"',
+    objdump_cmd="omf-objdump --no-objects",
     nm_cmd="omf-nm",
+    supports_objdump_disassemble=True,
+    diff_flags=COMMON_DIFF_FLAGS + COMMON_MSDOS_DIFF_FLAGS,
 )
 
 WIN32 = Platform(
@@ -181,7 +190,7 @@ PS2 = Platform(
     name="PlayStation 2",
     description="MIPS (little-endian)",
     arch="mipsee",
-    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -mabi=eabi -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
     diff_flags=COMMON_DIFF_FLAGS + COMMON_MIPS_DIFF_FLAGS,
@@ -217,6 +226,7 @@ NDS_ARM9 = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 GBA = Platform(
@@ -227,6 +237,7 @@ GBA = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mcpu=arm7tdmi -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 N3DS = Platform(
@@ -237,6 +248,7 @@ N3DS = Platform(
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -mfpu=vfpv2 -march=armv6k -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="arm-none-eabi-objdump",
     nm_cmd="arm-none-eabi-nm",
+    has_decompiler=True,
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(

@@ -1,5 +1,73 @@
-FROM node:20
+FROM node:22-alpine AS dev
 
 WORKDIR /frontend
 
 ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
+
+
+FROM node:22-alpine AS builder
+
+RUN apk add curl
+
+COPY package.json /frontend/
+COPY yarn.lock /frontend/
+
+WORKDIR /frontend
+
+RUN yarn install --frozen-lockfile
+
+COPY next-env.d.ts /frontend/
+COPY next.config.js /frontend/
+COPY postcss.config.js /frontend/
+COPY tailwind.config.js /frontend/
+COPY tsconfig.json /frontend/
+COPY sentry.server.config.ts /frontend/
+
+COPY public /frontend/public
+COPY src /frontend/src
+
+# NOTE: 'backend' will point to bare-metal host via docker0 bridge adapter
+ARG INTERNAL_API_BASE=http://backend:8000/api
+ENV INTERNAL_API_BASE=${INTERNAL_API_BASE}
+
+ARG API_BASE=/api
+ENV API_BASE=${API_BASE}
+
+ARG NEXT_PUBLIC_SENTRY_DSN=https://206c1a30d26affa7a77beb00550733c8@o4504592968581120.ingest.us.sentry.io/4509486010400768
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
+ARG GITHUB_CLIENT_ID=9c5d3c7ca624a23b7c1c
+ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+
+ARG OBJDIFF_BASE=https://diff.decomp.dev/
+ENV OBJDIFF_BASE=${OBJDIFF_BASE}
+
+# allows for cache busting even if only backend changed
+ARG GIT_HASH
+
+RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
+    sleep 1; \
+    done
+
+RUN yarn build --no-lint && rm -rf .next/cache
+
+
+FROM node:22-alpine AS prod
+
+WORKDIR /frontend
+
+ENV NODE_ENV=production
+
+# Copy only required files
+COPY --from=builder /frontend/public ./public
+COPY --from=builder /frontend/.next ./.next
+COPY --from=builder /frontend/node_modules ./node_modules
+COPY --from=builder /frontend/package.json ./package.json
+
+ARG NEXT_PUBLIC_SENTRY_DSN=https://206c1a30d26affa7a77beb00550733c8@o4504592968581120.ingest.us.sentry.io/4509486010400768
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
+ARG GIT_HASH=abc123
+ENV GIT_HASH=${GIT_HASH}
+
+CMD ["yarn", "start"]

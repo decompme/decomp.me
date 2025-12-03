@@ -163,6 +163,8 @@ COMMON_MWCC_FLAGS: Flags = [
         id="mwcc_opt_level",
         flags=[
             "-O0",
+            "-O0,p",
+            "-O0,s",
             "-O1",
             "-O1,p",
             "-O1,s",
@@ -273,19 +275,32 @@ COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_arch", flags=["-m2"]),
 ]
 
+COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
+    LanguageFlagSet(
+        id="gcc_source_language",
+        flags={
+            "-x c": Language.C,
+            "-x c++": Language.CXX,
+        },
+    ),
+]
+
 COMMON_MSVC_FLAGS: Flags = [
     FlagSet(
         id="msvc_opt_level", flags=["/Od", "/O1", "/O2", "/Os", "/Ot", "/Og", "/Ox"]
     ),
     FlagSet(id="msvc_codegen", flags=["/GB", "/G3", "/G4", "/G5", "/G6"]),
+    FlagSet(id="msvc_fp", flags=["/fp:precise", "/fp:strict", "/fp:fast"]),
+    FlagSet(id="msvc_rtlib", flags=["/ML", "/MT", "/MD", "/MLd", "/MTd", "/MDd"]),
+    FlagSet(id="msvc_inline", flags=["/Ob0", "/Ob1", "/Ob2"]),
+    FlagSet(id="msvc_alignment", flags=["/Zp1", "/Zp2", "/Zp4", "/Zp8", "/Zp16"]),
+    FlagSet(id="msvc_callconv", flags=["/Gd", "/Gr", "/Gz"]),
     Checkbox("msvc_compile_cpp", "/TP"),
     Checkbox("msvc_use_rtti", "/GR"),
     Checkbox("msvc_use_ehsc", "/GX"),
     Checkbox("msvc_disable_stack_checking", "/Gs"),
+    Checkbox("msvc_disable_buffer_security_checks", "/GS-"),
     Checkbox("msvc_runtime_debug_checks", "/GZ"),
-    Checkbox("msvc_cdecl", "/Gd"),
-    Checkbox("msvc_fastcall", "/Gr"),
-    Checkbox("msvc_stdcall", "/Gz"),
 ]
 
 COMMON_WATCOM_FLAGS: Flags = [
@@ -321,3 +336,7 @@ COMMON_WATCOM_FLAGS: Flags = [
     Checkbox("watcom_signedchar", "-j"),
     Checkbox("watcom_fpu", "-fpi87"),
 ]
+
+COMMON_MSDOS_DIFF_FLAGS: Flags = [Checkbox("diff_reloc", "--reloc")]
+
+COMMON_BORLAND_FLAGS: Flags = []

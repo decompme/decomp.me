@@ -1,20 +1,16 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ImproperlyConfigured
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedRelatedField, SlugRelatedField
-from rest_framework.reverse import reverse
+from rest_framework.relations import PKOnlyObject, SlugRelatedField
 
 from coreapp import platforms
 
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
-from .middleware import Request
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -35,7 +31,11 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
     else:
         user = profile.user
 
-        gh_user: Optional[GitHubUser] = GitHubUser.objects.filter(user=user).first()
+        gh_user: Optional[GitHubUser] = getattr(user, "github", None)
+        if not gh_user:
+            # NOTE: All models with an "owner" should fetch related "owner__user__github"
+            # in order to avoid N+1 queries when a Profile is serialized for each object.
+            gh_user = GitHubUser.objects.filter(user=user).first()
 
         return {
             "is_anonymous": False,
@@ -54,13 +54,40 @@ else:
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> Dict[str, Any]:
-        return serialize_profile(profile)
+    def to_representation(self, value: Profile | PKOnlyObject) -> dict[str, Any]:
+        if isinstance(value, Profile):
+            return serialize_profile(value)
+        # fallback
+        return super().to_representation(value)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
     name = serializers.CharField()
     version = serializers.CharField()
+
+
+class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
+    class Meta:
+        model = Preset
+        fields = ["id", "name"]
+
+
+class TersePresetSerializer(serializers.ModelSerializer[Preset]):
+    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    owner = ProfileField(read_only=True)
+
+    class Meta:
+        model = Preset
+        fields = [
+            "id",
+            "name",
+            "owner",
+            "platform",
+            "compiler",
+            "compiler_flags",
+            "diff_flags",
+            "libraries",
+        ]
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
@@ -95,14 +122,14 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
@@ -131,7 +158,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     target_obj = serializers.FileField(allow_null=True, required=False)
     context = serializers.CharField(allow_blank=True)  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
-    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    libraries = serializers.JSONField(default=list)  # type: ignore
 
     project = serializers.CharField(allow_blank=False, required=False)
     rom_address = serializers.IntegerField(required=False)
@@ -139,16 +166,27 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate_platform(self, platform: str) -> str:
         try:
             platforms.from_id(platform)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform}")
         return platform
 
     def validate_compiler(self, compiler: str) -> str:
         try:
             compilers.from_id(compiler)
-        except:
+        except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
+
+    def validate_libraries(
+        self, libraries: list[dict[str, str]]
+    ) -> list[dict[str, str]]:
+        for library in libraries:
+            for key in ["name", "version"]:
+                if key not in library:
+                    raise serializers.ValidationError(
+                        f"Library {library} is missing '{key}' key"
+                    )
+        return libraries
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if "preset" in data:
@@ -224,7 +262,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Optional[str]:
+    def get_language(self, scratch: Scratch) -> str:
         """
         Strategy for extracting a scratch's language:
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
@@ -232,24 +270,21 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         """
         compiler = compilers.from_id(scratch.compiler)
         language_flag_set = next(
-            iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
+            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
             None,
         )
 
         if language_flag_set:
-            language = next(
-                iter(
-                    [
-                        language
-                        for (flag, language) in language_flag_set.flags.items()
-                        if flag in scratch.compiler_flags
-                    ]
-                ),
-                None,
-            )
+            matches = [
+                (flag, language)
+                for flag, language in language_flag_set.flags.items()
+                if flag in scratch.compiler_flags
+            ]
 
-            if language:
-                return language.value
+            if matches:
+                # taking the longest avoids detecting C++ as C
+                longest_match = max(matches, key=lambda m: len(m[0]))
+                return longest_match[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.

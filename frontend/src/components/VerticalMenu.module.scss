@@ -14,14 +14,14 @@ $padding: 6px;
     padding: $padding 0;
     min-width: 150px;
 
-    @supports not (backdrop-filter: blur(10px)) {
-        background: var(--g100);
-    }
-
     // light theme
     background: rgba(255, 255, 255, 0.5);
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--a200);
+
+    @supports not (backdrop-filter: blur(10px)) {
+        background: var(--g100);
+    }
 
     // dark theme
     :global(.dark) & {

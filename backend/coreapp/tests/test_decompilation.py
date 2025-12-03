@@ -91,8 +91,8 @@ class M2CTests(TestCase):
         sw $t6,0($a0)
         """,
             "",
+            "n64",
             IDO53,
-            "mips",
         )
 
         self.assertTrue(
@@ -115,8 +115,8 @@ class M2CTests(TestCase):
         blr
         """,
             "",
+            "gc_wii",
             MWCC_247_92,
-            "ppc",
         )
 
         self.assertEqual(

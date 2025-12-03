@@ -1,11 +1,11 @@
-import AppearanceSettings from "./AppearanceSettings"
+"use client";
 
-export const metadata = {
-    title: "Appearance settings",
-}
+import AppearanceSettings from "./AppearanceSettings";
 
 export default function Page() {
-    return <>
-        <AppearanceSettings />
-    </>
+    return (
+        <>
+            <AppearanceSettings />
+        </>
+    );
 }

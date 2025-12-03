@@ -65,8 +65,7 @@ class UserTests(BaseTestCase):
         Ensure that a user is created upon sign-in with GitHub.
         """
 
-        responses.add(
-            responses.POST,
+        responses.post(
             "https://github.com/login/oauth/access_token",
             json={
                 "access_token": "__mock__",
@@ -74,14 +73,12 @@ class UserTests(BaseTestCase):
             },
             status=200,
         )
-        responses.add(
-            responses.GET,
+        responses.get(
             "https://api.github.com:443/user",
             json=GITHUB_USER,
             status=200,
         )
-        responses.add(
-            responses.GET,
+        responses.get(
             f"https://api.github.com:443/user/{GITHUB_USER['id']}",
             json=GITHUB_USER,
             status=200,
@@ -105,11 +102,7 @@ class UserTests(BaseTestCase):
         Ensure that you can log in to an existing user with GitHub.
         """
 
-        # log in as the user
-        self.test_github_login()
-
-        responses.add(
-            responses.POST,
+        responses.post(
             "https://github.com/login/oauth/access_token",
             json={
                 "access_token": "__mock__",
@@ -117,17 +110,23 @@ class UserTests(BaseTestCase):
             },
             status=200,
         )
-        responses.add(
-            responses.GET,
+        responses.get(
             "https://api.github.com:443/user",
             json=GITHUB_USER,
             status=200,
         )
-        responses.add(
-            responses.GET,
+        responses.get(
             f"https://api.github.com:443/user/{GITHUB_USER['id']}",
             json=GITHUB_USER,
             status=200,
+        )
+
+        # log in as the user
+        response = self.client.post(
+            self.current_user_url,
+            {
+                "code": "__mock__",
+            },
         )
 
         # log in as the user again

@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -10,8 +10,10 @@ from rest_framework.response import Response
 
 from .models.profile import Profile
 
+logger = logging.getLogger(__name__)
+
 if TYPE_CHECKING:
-    from .models.github import GitHubUser
+    pass
 
 
 class AnonymousUser(auth.models.AnonymousUser):
@@ -29,7 +31,7 @@ else:
 
 
 def disable_csrf(
-    get_response: Callable[[HttpRequest], Response]
+    get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[HttpRequest], Response]:
     def middleware(request: HttpRequest) -> Response:
         setattr(request, "_dont_enforce_csrf_checks", True)
@@ -39,61 +41,91 @@ def disable_csrf(
 
 
 def set_user_profile(
-    get_response: Callable[[HttpRequest], Response]
+    get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[Request], Response]:
     """
     Makes sure that `request.profile` is always available, even for anonymous users.
     """
 
     def middleware(request: Request) -> Response:
-        # Skip if the request is from SSR
-        if "User-Agent" in request.headers and (
-            "node-fetch" in request.headers["User-Agent"]
-            or "undici" in request.headers["User-Agent"]
-            or "Next.js Middleware" in request.headers["User-Agent"]
-        ):
+        user_agent = request.headers.get("User-Agent", "")
+        bot_signatures = [
+            "node",
+            "undici",
+            "Next.js Middleware",
+            "python-requests",
+            "curl",
+            "YandexRenderResourcesBot",
+            "SentryUptimeBot",
+        ]
+
+        # Avoid creating profiles for SSR or bots
+        if not user_agent or any(bot in user_agent for bot in bot_signatures):
             request.profile = Profile()
             return get_response(request)
 
-        profile: Optional[Profile] = None
+        profile = None
 
-        # Use the user's profile if they're logged in
-        if not request.user.is_anonymous:
-            profile = Profile.objects.filter(user=request.user).first()
+        # Try user-linked profile
+        if request.user.is_authenticated:
+            profile = getattr(request.user, "profile", None)
 
-        # Otherwise, use their session profile
+        # Try session-based profile
         if not profile:
-            id = request.session.get("profile_id")
+            profile_id = request.session.get("profile_id")
+            if isinstance(profile_id, int):
+                profile = (
+                    Profile.objects.select_related("user").filter(id=profile_id).first()
+                )
 
-            if isinstance(id, int):
-                profile = Profile.objects.filter(id=id).first()
-                if profile is not None:
-                    profile_user = User.objects.filter(profile=profile).first()
+                if profile and profile.user and request.user.is_anonymous:
+                    request.user = profile.user
 
-                    if profile_user and request.user.is_anonymous:
-                        request.user = profile_user
-
-        # If we still don't have a profile, create a new one
+        # Create new profile if none found
         if not profile:
-            profile = Profile()
-
-            # And attach it to the logged-in user, if there is one
-            if not request.user.is_anonymous:
-                assert Profile.objects.filter(user=request.user).first() is None
-                profile.user = request.user
+            profile = Profile(
+                user=request.user if request.user.is_authenticated else None
+            )
 
             profile.save()
             request.session["profile_id"] = profile.id
-            logging.debug(f"Made new profile: {profile}")
 
-        if profile.user is None and not request.user.is_anonymous:
-            profile.user = request.user
+            # More info to help identify why we are creating so many profiles...
+            x_forwarded_for = request.headers.get("X-Forwarded-For", "n/a")
+            logger.debug(
+                "Made new profile: User-Agent: %s, IP: %s, name: %s, request path: %s",
+                user_agent,
+                x_forwarded_for,
+                profile,
+                request.path,
+            )
 
+        # Update last seen timestamp if more than a minute since last updated
+        last_request_date = profile.last_request_date
         profile.last_request_date = now()
-        profile.save()
+        if (profile.last_request_date - last_request_date).total_seconds() > 60:
+            profile.save(update_fields=["last_request_date"])
 
         request.profile = profile
 
         return get_response(request)
+
+    return middleware
+
+
+def strip_cookie_vary(
+    get_response: Callable[[HttpRequest], Response],
+) -> Callable[[Request], Response]:
+    def middleware(request: Request) -> Response:
+        response = get_response(request)
+        if response.headers.pop("X-Globally-Cacheable", False):
+            if "Vary" in response.headers:
+                vary_headers = [h.strip() for h in response.headers["Vary"].split(",")]
+                vary_headers = [h for h in vary_headers if h.lower() != "cookie"]
+                if vary_headers:
+                    response.headers["Vary"] = ", ".join(vary_headers)
+                else:
+                    del response.headers["Vary"]
+        return response
 
     return middleware

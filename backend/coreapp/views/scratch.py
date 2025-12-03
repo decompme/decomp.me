@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import io
 import json
@@ -10,20 +11,27 @@ from typing import Any, Dict, Optional
 import django_filters
 from coreapp import compilers, platforms
 from django.core.files import File
+from django.db.models import F, FloatField, When, Case, Value
+from django.db.models.functions import Cast
+from django.db.models.query import QuerySet
+
 from django.http import HttpResponse, QueryDict
+from django.utils.decorators import method_decorator
+
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
-from rest_framework.routers import DefaultRouter
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
+from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..filters.search import NonEmptySearchFilter
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
@@ -56,8 +64,8 @@ def get_db_asm(request_asm: str) -> Asm:
     return asm
 
 
-# 500 KB
-MAX_FILE_SIZE = 500 * 1024
+# 1 MB
+MAX_FILE_SIZE = 1000 * 1024
 
 
 def cache_object(platform: Platform, file: File[Any]) -> Assembly:
@@ -69,8 +77,11 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
 
     # Check if ELF, Mach-O, or PE
     obj_bytes = file.read()
-    if obj_bytes[:4] not in [b"\x7fELF", b"\xcf\xfa\xed\xfe", b"\x4d\x5a\x90\x00"]:
-        raise serializers.ValidationError("Object must be an ELF, Mach-O, or PE file")
+    is_elf = obj_bytes[:4] == b"\x7fELF"
+    is_macho = obj_bytes[:4] == b"\xcf\xfa\xed\xfe"
+    is_coff = obj_bytes[:2] in (b"\x4c\x01", b"\x64\x86")
+    if not (is_elf or is_macho or is_coff):
+        raise serializers.ValidationError("Object must be an ELF, Mach-O, or COFF file")
 
     assembly, _ = Assembly.objects.get_or_create(
         hash=hashlib.sha256(obj_bytes).hexdigest(),
@@ -106,7 +117,7 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
             diff_flags=scratch.diff_flags,
         )
     except DiffError as e:
-        return DiffResult({}, str(e))
+        return DiffResult(None, str(e))
 
 
 def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
@@ -114,6 +125,8 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
     Given a scratch and a diff, update the scratch's score
     """
 
+    if diff.result is None:
+        return
     score = diff.result.get("current_score", scratch.score)
     max_score = diff.result.get("max_score", scratch.max_score)
     if score != scratch.score or max_score != scratch.max_score:
@@ -127,11 +140,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
     Initialize the scratch's score and ignore errors should they occur
     """
 
-    try:
-        compilation = compile_scratch(scratch)
-    except CompilationError:
-        compilation = CompilationResult(b"", "")
-
+    compilation = compile_scratch(scratch)
     try:
         diff = diff_compilation(scratch, compilation)
         update_scratch_score(scratch, diff)
@@ -149,24 +158,7 @@ def scratch_last_modified(
         return None
 
 
-def scratch_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
-    if scratch:
-        # We hash the Accept header too to avoid the following situation:
-        # - DEBUG is enabled
-        # - Developer visits /api/scratch/:slug manually, seeing the DRF HTML page
-        # - **Browsers caches the page**
-        # - Developer visits /scratch/:slug
-        # - The frontend JS fetches /api/scratch/:slug
-        # - The fetch mistakenly returns the cached HTML instead of returning JSON (oops!)
-        return str(hash((scratch, request.headers.get("Accept"))))
-    else:
-        return None
-
-
-scratch_condition = condition(
-    last_modified_func=scratch_last_modified, etag_func=scratch_etag
-)
+scratch_condition = condition(last_modified_func=scratch_last_modified)
 
 
 def is_contentful_asm(asm: Optional[Asm]) -> bool:
@@ -179,30 +171,6 @@ def is_contentful_asm(asm: Optional[Asm]) -> bool:
         return False
 
     return True
-
-
-def family_etag(request: Request, pk: Optional[str] = None) -> Optional[str]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
-    if scratch:
-        if is_contentful_asm(scratch.target_assembly.source_asm):
-            assert scratch.target_assembly.source_asm is not None
-
-            family = Scratch.objects.filter(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-            )
-        elif (
-            scratch.target_assembly.elf_object is not None
-            and len(scratch.target_assembly.elf_object) > 0
-        ):
-            family = Scratch.objects.filter(
-                target_assembly__hash=scratch.target_assembly.hash,
-            )
-        else:
-            family = Scratch.objects.filter(slug=scratch.slug)
-
-        return str(hash((family, request.headers.get("Accept"))))
-    else:
-        return None
 
 
 def update_needs_recompile(partial: Dict[str, Any]) -> bool:
@@ -229,8 +197,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     platform: Optional[Platform] = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
-    project = data.get("project")
-    rom_address = data.get("rom_address")
 
     if not platform:
         platform = compiler.platform
@@ -266,7 +232,9 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     name = data.get("name", diff_label) or "Untitled"
 
-    libraries = [Library(**lib) for lib in data["libraries"]]
+    libraries = [
+        Library(**lib) if isinstance(lib, dict) else lib for lib in data["libraries"]
+    ]
 
     ser = ScratchSerializer(
         data={
@@ -299,6 +267,7 @@ class ScratchPagination(CursorPagination):
     max_page_size = 100
 
 
+@method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 class ScratchViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -307,16 +276,29 @@ class ScratchViewSet(
     mixins.ListModelMixin,
     GenericViewSet,  # type: ignore
 ):
-    queryset = Scratch.objects.all()
+    match_percent = Case(
+        When(max_score__lte=0, then=Value(0.0)),
+        When(score__lt=0, then=Value(0.0)),
+        When(score__gt=F("max_score"), then=Value(0.0)),
+        When(score=0, then=Value(1.0)),
+        When(match_override=True, then=Value(1.0)),
+        default=1.0 - (F("score") / Cast("max_score", FloatField())),
+    )
+
+    queryset = (
+        Scratch.objects.all()
+        .select_related("owner__user__github")
+        .annotate(match_percent=match_percent)
+    )
     pagination_class = ScratchPagination
     filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
-        filters.SearchFilter,
+        NonEmptySearchFilter,
         filters.OrderingFilter,
     ]
     search_fields = ["name", "diff_label"]
-    ordering_fields = ["creation_time", "last_updated", "score"]
+    ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer[Scratch]]:
         if self.action == "list":
@@ -374,6 +356,7 @@ class ScratchViewSet(
         scratch: Scratch = self.get_object()
 
         # Apply partial
+        include_objects = False
         if request.method == "POST":
             # TODO: use a serializer w/ validation
             if "compiler" in request.data:
@@ -391,6 +374,8 @@ class ScratchViewSet(
             if "libraries" in request.data:
                 libs = [Library(**lib) for lib in request.data["libraries"]]
                 scratch.libraries = libs
+            if "include_objects" in request.data:
+                include_objects = request.data["include_objects"]
 
         compilation = compile_scratch(scratch)
         diff = diff_compilation(scratch, compilation)
@@ -404,20 +389,32 @@ class ScratchViewSet(
         if diff.errors:
             compiler_output += diff.errors + "\n"
 
-        return Response(
-            {
-                "diff_output": diff.result,
-                "compiler_output": compiler_output,
-                "success": compilation.elf_object is not None
-                and len(compilation.elf_object) > 0,
-            }
-        )
+        response = {
+            "diff_output": diff.result,
+            "compiler_output": compiler_output,
+            "success": compilation.elf_object is not None
+            and len(compilation.elf_object) > 0,
+        }
+
+        if include_objects or request.method == "GET":
+
+            def to_base64(obj: bytes) -> str:
+                return base64.b64encode(obj).decode("utf-8")
+
+            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
+            response["right_object"] = to_base64(compilation.elf_object)
+
+        return Response(response)
 
     @action(detail=True, methods=["POST"])
     def decompile(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
         if scratch.target_assembly.source_asm is None:
-            return Response({"decompilation": None})
+            return Response(
+                {
+                    "decompilation": "This scratch cannot currently be run through the decompiler because it was created via object file."
+                }
+            )
 
         context = request.data.get("context", scratch.context)
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
@@ -510,9 +507,10 @@ class ScratchViewSet(
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)
 
-            compilation = compile_scratch(scratch)
-            if compilation.elf_object:
-                zip_f.writestr("current.o", compilation.elf_object)
+            if request.GET.get("target_only") != "1":
+                compilation = compile_scratch(scratch)
+                if compilation.elf_object:
+                    zip_f.writestr("current.o", compilation.elf_object)
 
         # Prevent possible header injection attacks
         safe_name = re.sub(r"[^a-zA-Z0-9_:]", "_", scratch.name)[:64]
@@ -526,30 +524,47 @@ class ScratchViewSet(
         )
 
     @action(detail=True)
-    @condition(etag_func=family_etag)
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
+        subqueries: list[QuerySet["Scratch"]] = []
+
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None
-
-            family = Scratch.objects.filter(
-                target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash,
-            ).order_by("creation_time")
+            subqueries.append(
+                Scratch.objects.filter(
+                    target_assembly__source_asm__hash=scratch.target_assembly.source_asm.hash
+                )
+            )
         elif (
             scratch.target_assembly.elf_object is not None
             and len(scratch.target_assembly.elf_object) > 0
         ):
-            family = Scratch.objects.filter(
-                target_assembly__hash=scratch.target_assembly.hash,
-            ).order_by("creation_time")
+            subqueries.append(
+                Scratch.objects.filter(
+                    target_assembly__hash=scratch.target_assembly.hash,
+                    diff_label=scratch.diff_label,
+                )
+            )
         else:
-            family = Scratch.objects.filter(slug=scratch.slug)
+            subqueries.append(Scratch.objects.filter(slug=scratch.slug))
+
+        if scratch.family_id is not None:
+            subqueries.append(Scratch.objects.filter(family_id=scratch.family_id))
+
+        if scratch.parent_id is not None:
+            subqueries.append(Scratch.objects.filter(parent_id=scratch.parent_id))
+
+        # Avoid 'ORDER BY not allowed in subqueries of compound statements.'
+        subqueries = [sq.order_by() for sq in subqueries]
+
+        if len(subqueries) == 1:
+            family = subqueries[0]
+        else:
+            family = subqueries[0].union(*subqueries[1:])
+
+        family = family.order_by("creation_time")
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
         )
-
-
-router = DefaultRouter(trailing_slash=False)
-router.register(r"scratch", ScratchViewSet)

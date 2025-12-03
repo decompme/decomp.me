@@ -1,22 +1,22 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import Image from "next/image"
+import Image from "next/image";
 
-import classNames from "classnames"
-import { useLayer } from "react-laag"
+import clsx from "clsx";
+import { useLayer } from "react-laag";
 
-import * as api from "@/lib/api"
-import { userAvatarUrl } from "@/lib/api/urls"
+import * as api from "@/lib/api";
+import { userAvatarUrl } from "@/lib/api/urls";
 
-import GitHubLoginButton from "../GitHubLoginButton"
-import VerticalMenu from "../VerticalMenu"
+import GitHubLoginButton from "../GitHubLoginButton";
+import VerticalMenu from "../VerticalMenu";
 
-import styles from "./LoginState.module.scss"
-import UserMenu from "./UserMenuItems"
+import styles from "./LoginState.module.scss";
+import UserMenu from "./UserMenuItems";
 
 export default function LoginState({ className }: { className?: string }) {
-    const user = api.useThisUser()
-    const [isUserMenuOpen, setUserMenuOpen] = useState(false)
+    const user = api.useThisUser();
+    const [isUserMenuOpen, setUserMenuOpen] = useState(false);
 
     const { renderLayer, triggerProps, layerProps } = useLayer({
         isOpen: isUserMenuOpen,
@@ -25,35 +25,44 @@ export default function LoginState({ className }: { className?: string }) {
         auto: false,
         placement: "bottom-end",
         triggerOffset: 4,
-    })
+    });
 
     if (!user) {
         // Loading...
-        return <div />
+        return <div />;
     }
 
     if (api.isAnonUser(user)) {
-        return <GitHubLoginButton label="Sign in" />
+        return <GitHubLoginButton label="Sign in" />;
     }
 
-    return <button
-        className={classNames(styles.user, className)}
-        onClick={() => setUserMenuOpen(!isUserMenuOpen)}
-        {...triggerProps}
-    >
-        <Image
-            className={styles.avatar}
-            src={userAvatarUrl(user)}
-            alt="Account menu"
-            width={28}
-            height={28}
-            sizes="28px"
-            priority
-        />
-        {renderLayer(<div {...layerProps}>
-            {isUserMenuOpen && <VerticalMenu open={isUserMenuOpen} setOpen={setUserMenuOpen}>
-                <UserMenu />
-            </VerticalMenu>}
-        </div>)}
-    </button>
+    return (
+        <button
+            className={clsx(styles.user, className)}
+            onClick={() => setUserMenuOpen(!isUserMenuOpen)}
+            {...triggerProps}
+        >
+            <Image
+                className={styles.avatar}
+                src={userAvatarUrl(user)}
+                alt="Account menu"
+                width={28}
+                height={28}
+                sizes="28px"
+                priority
+            />
+            {renderLayer(
+                <div {...layerProps}>
+                    {isUserMenuOpen && (
+                        <VerticalMenu
+                            open={isUserMenuOpen}
+                            setOpen={setUserMenuOpen}
+                        >
+                            <UserMenu />
+                        </VerticalMenu>
+                    )}
+                </div>,
+            )}
+        </button>
+    );
 }

@@ -4,7 +4,7 @@ import logging
 
 from m2c.main import parse_flags, run
 
-from coreapp.compilers import Compiler
+from coreapp.compilers import Compiler, CompilerType
 
 from coreapp.sandbox import Sandbox
 
@@ -15,33 +15,49 @@ class M2CError(Exception):
     pass
 
 
+PLATFORM_ID_TO_M2C_ARCH = {
+    # mips
+    "irix": "mips",
+    "n64": "mips",
+    "ps1": "mipsel",
+    "ps2": "mipsee",
+    "psp": "mipsel",
+    # ppc
+    "gc_wii": "ppc",
+    "macosx": "ppc",
+    # arm
+    "gba": "gba",
+    "n3ds": "arm",
+    "nds_arm9": "arm",
+}
+
+
 class M2CWrapper:
     @staticmethod
-    def get_triple(compiler: Compiler, arch: str) -> str:
-        if "mips" in arch:
-            t_arch = "mips"
-        elif "ppc" in arch:
-            t_arch = "ppc"
-        else:
-            raise M2CError(f"Unsupported arch '{arch}'")
-
-        if compiler.is_ido:
-            t_compiler = "ido"
-        elif compiler.is_gcc:
-            t_compiler = "gcc"
-        elif compiler.is_mwcc:
-            t_compiler = "mwcc"
-        else:
-            raise M2CError(f"Unsupported compiler '{compiler}'")
-
-        return f"{t_arch}-{t_compiler}"
+    def is_platform_supported(platform_id: str) -> bool:
+        return platform_id in PLATFORM_ID_TO_M2C_ARCH
 
     @staticmethod
-    def decompile(asm: str, context: str, compiler: Compiler, arch: str) -> str:
+    def get_triple(platform_id: str, compiler: Compiler) -> str:
+        try:
+            triple = PLATFORM_ID_TO_M2C_ARCH[platform_id]
+        except KeyError:
+            raise M2CError(f"Unsupported platform '{platform_id}'")
+
+        if compiler.type != CompilerType.OTHER:
+            triple += f"-{compiler.type.value}"
+
+        return triple
+
+    @staticmethod
+    def decompile(asm: str, context: str, platform_id: str, compiler: Compiler) -> str:
         with Sandbox() as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
-            flags.append(f"--target={M2CWrapper.get_triple(compiler, arch)}")
+            flags.append(f"--target={M2CWrapper.get_triple(platform_id, compiler)}")
+
+            if platform_id == "gba" and "thumb_func_start" in asm:
+                asm = f".syntax unified\n{asm}"
 
             # Create temp asm file
             asm_path = sandbox.path / "asm.s"

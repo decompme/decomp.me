@@ -1,43 +1,40 @@
 {
     "files.trimTrailingWhitespace": true,
     // eslint
-    "eslint.workingDirectories": [
-        "frontend"
-    ],
+    "eslint.workingDirectories": ["frontend"],
     "eslint.format.enable": true,
     "[javascript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true
     },
     "[javascriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true
     },
     "[typescript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true
     },
     "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true
     },
     // stylelint
     "[css]": {
         "editor.defaultFormatter": "stylelint.vscode-stylelint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[scss]": {
         "editor.defaultFormatter": "stylelint.vscode-stylelint",
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "[python]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "typescript.tsdk": "frontend/node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "mypy-type-checker.args": [
-        "--config-file=backend/mypy.ini"
-    ],
-    "editor.formatOnSave": true
+    "mypy-type-checker.args": ["--config-file=backend/mypy.ini"],
+    "json.format.enable": false,
+    "json.format.keepLines": true
 }

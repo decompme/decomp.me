@@ -51,9 +51,8 @@ $padding: 4px;
 
     text-align: center;
 
-    &.editable {
-        cursor: text;
-    }
+    cursor: text;
+    user-select: text;
 
     &[contenteditable] {
         text-overflow: initial;
@@ -65,7 +64,7 @@ $padding: 4px;
     }
 }
 
-.breadcrumbs {
+nav.breadcrumbs {
     padding: 0 $padding;
 
     display: inline-flex;

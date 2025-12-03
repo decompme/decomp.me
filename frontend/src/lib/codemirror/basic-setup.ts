@@ -1,14 +1,27 @@
-import { autocompletion, closeBrackets } from "@codemirror/autocomplete"
-import { history } from "@codemirror/commands"
-import { bracketMatching, foldGutter, indentOnInput, indentUnit } from "@codemirror/language"
+import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+import { history } from "@codemirror/commands";
+import {
+    bracketMatching,
+    foldGutter,
+    indentOnInput,
+    indentUnit,
+} from "@codemirror/language";
 //import { rectangularSelection, crosshairCursor } from "@codemirror/rectangular-selection"
-import { highlightSelectionMatches } from "@codemirror/search"
-import { Extension, EditorState } from "@codemirror/state"
-import { lineNumbers, highlightActiveLineGutter, keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor } from "@codemirror/view"
-import { indentationMarkers } from "@replit/codemirror-indentation-markers"
+import { highlightSelectionMatches } from "@codemirror/search";
+import { type Extension, EditorState } from "@codemirror/state";
+import {
+    lineNumbers,
+    highlightActiveLineGutter,
+    keymap,
+    highlightSpecialChars,
+    drawSelection,
+    highlightActiveLine,
+    dropCursor,
+} from "@codemirror/view";
+import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 
-import defaultKeymap from "./default-keymap"
-import defaultTheme from "./default-theme"
+import defaultKeymap from "./default-keymap";
+import defaultTheme from "./default-theme";
 
 const basicSetup: Extension = [
     lineNumbers(),
@@ -27,11 +40,18 @@ const basicSetup: Extension = [
     //crosshairCursor({ key: "Control" }),
     highlightActiveLine(),
     highlightSelectionMatches({ highlightWordAroundCursor: true }),
-    indentationMarkers(),
+    indentationMarkers({
+        colors: {
+            light: "var(--code-indentation-marker)",
+            dark: "var(--code-indentation-marker)",
+            activeLight: "var(--code-indentation-marker-active)",
+            activeDark: "var(--code-indentation-marker-active)",
+        },
+    }),
     keymap.of(defaultKeymap),
     indentUnit.of("    "),
     defaultTheme,
-]
+];
 
 export const decompileSetup: Extension = [
     EditorState.readOnly.of(true),
@@ -41,10 +61,17 @@ export const decompileSetup: Extension = [
     foldGutter(),
     drawSelection(),
     highlightActiveLine(),
-    indentationMarkers(),
+    indentationMarkers({
+        colors: {
+            light: "var(--code-indentation-marker)",
+            dark: "var(--code-indentation-marker)",
+            activeLight: "var(--code-indentation-marker-active)",
+            activeDark: "var(--code-indentation-marker-active)",
+        },
+    }),
     keymap.of(defaultKeymap),
     indentUnit.of("    "),
     defaultTheme,
-]
+];
 
-export default basicSetup
+export default basicSetup;

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg version="1.1" viewBox="0 0 570 570" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg viewBox="0 0 570 570" xmlns="http://www.w3.org/2000/svg" >
  <defs>
   <linearGradient id="linearGradient1196" x1="447.96" x2="294.01" y1="-19.244" y2="291.87" gradientTransform="matrix(.78381 0 0 .82831 48.581 -9.195)" gradientUnits="userSpaceOnUse">
    <stop stop-color="#00f" offset="0"/>
@@ -7,6 +6,9 @@
   </linearGradient>
  </defs>
  <g transform="matrix(1.0573 0 0 1.0573 -81.644 110.14)">
+  <!-- fallback -->
+  <path d="m227.91 152.86v-83.685h235.47v167.37h-235.47z" fill="#1a7abb"/>
+  <!-- gradient -->
   <path d="m227.91 152.86v-83.685h235.47v167.37h-235.47z" fill="url(#linearGradient1196)"/>
   <g fill="#4b435b">
    <path d="m224.87 263.01s106.52 37.594 238.11 0c11.637-7.1641 12.531-17.012 12.531-17.012l-3.5781-168.29s-0.89453-15.215-13.43-17.902c-12.527-2.6836-120.84-20.586-230.05 0-7.1641 3.5859-13.422 5.3711-18.793 180.82-1.7969 13.422 15.211 22.375 15.211 22.375zm8.9883-189.01h225.86v152.14l-225.86-4e-3z"/>

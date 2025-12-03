@@ -6,6 +6,7 @@ import environ
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.transport import HttpTransport
 
 django_stubs_ext.monkeypatch()
 
@@ -20,6 +21,7 @@ env = environ.Env(
     SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
     SANDBOX_DISABLE_PROC=(bool, False),
     SECURE_SSL_REDIRECT=(bool, False),
+    SECURE_PROXY_SSL_HEADER=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
     SECURE_HSTS_PRELOAD=(bool, False),
@@ -42,9 +44,12 @@ env = environ.Env(
     TIMEOUT_SCALE_FACTOR=(int, 1),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
+    SENTRY_TIMEOUT=(int, 3),
     SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
     SESSION_EXPIRE_AFTER_LAST_ACTIVITY=(bool, True),
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
+    CONN_MAX_AGE=(int, 0),  # default: a new connection for each request
+    CONN_HEALTH_CHECKS=(bool, False),
 )
 
 for stem in [".env.local", ".env"]:
@@ -77,6 +82,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "coreapp.middleware.strip_cookie_vary",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -115,7 +121,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "decompme.wsgi.application"
 
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": {
+        **env.db(),
+        "CONN_MAX_AGE": env("CONN_MAX_AGE"),
+        "CONN_HEALTH_CHECKS": env("CONN_HEALTH_CHECKS"),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -190,6 +202,9 @@ LOGGING = {
     },
 }
 
+if env("SECURE_PROXY_SSL_HEADER"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SECURE_SSL_REDIRECT = env("SECURE_SSL_REDIRECT")
 SECURE_HSTS_SECONDS = env("SECURE_HSTS_SECONDS")
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env("SECURE_HSTS_INCLUDE_SUBDOMAINS")
@@ -226,15 +241,21 @@ OBJDUMP_TIMEOUT_SECONDS = env("OBJDUMP_TIMEOUT_SECONDS", int) * TIMEOUT_SCALE_FA
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
+SENTRY_TIMEOUT = env("SENTRY_TIMEOUT", int)
 
 SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", int)
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = env("SESSION_EXPIRE_AFTER_LAST_ACTIVITY", bool)
 SESSION_TIMEOUT_REDIRECT = env("SESSION_TIMEOUT_REDIRECT", str)
 
 if SENTRY_DSN:
+    # via https://stackoverflow.com/a/54596711
+    class CustomHttpTransport(HttpTransport):
+        TIMEOUT = SENTRY_TIMEOUT
+
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
         traces_sample_rate=SENTRY_SAMPLE_RATE,
         send_default_pii=False,
+        transport=CustomHttpTransport,
     )

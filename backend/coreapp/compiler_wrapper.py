@@ -19,8 +19,9 @@ from typing import (
 from django.conf import settings
 
 from coreapp import compilers, platforms
-from coreapp.compilers import Compiler
+from coreapp.compilers import Compiler, CompilerType
 
+from coreapp.flags import Language
 from coreapp.platforms import Platform
 import coreapp.util as util
 
@@ -54,8 +55,8 @@ WIBO = "wibo"
 
 @dataclass
 class DiffResult:
-    result: Dict[str, Any]
-    errors: str
+    result: Optional[Dict[str, Any]] = None
+    errors: Optional[str] = None
 
 
 @dataclass
@@ -112,6 +113,7 @@ class CompilerWrapper:
             r"### .*\.exe Driver Error:.*\n?",
             r"#   Cannot find my executable .*\n?",
             r"### MWCPPC\.exe Driver Error:.*\n?",
+            r"Fontconfig error:.*\n?",
         ]
 
         for str in filter_strings:
@@ -143,12 +145,18 @@ class CompilerWrapper:
 
             code_path = sandbox.path / code_file
             object_path = sandbox.path / "object.o"
+            skip_line_directive = (
+                compiler.type == CompilerType.IDO
+                and compiler.language == Language.PASCAL
+            )
             with code_path.open("w") as f:
-                f.write(f'#line 1 "{ctx_file}"\n')
+                if not skip_line_directive:
+                    f.write(f'#line 1 "{ctx_file}"\n')
                 f.write(context)
                 f.write("\n")
 
-                f.write(f'#line 1 "{src_file}"\n')
+                if not skip_line_directive:
+                    f.write(f'#line 1 "{src_file}"\n')
                 f.write(code)
                 f.write("\n")
 
@@ -156,7 +164,7 @@ class CompilerWrapper:
 
             # MWCC requires the file to exist for DWARF line numbers,
             # and requires the file contents for error messages
-            if compiler.is_mwcc:
+            if compiler.type == CompilerType.MWCC:
                 ctx_path = sandbox.path / ctx_file
                 ctx_path.touch()
                 with ctx_path.open("w") as f:
@@ -170,7 +178,7 @@ class CompilerWrapper:
                     f.write("\n")
 
             # IDO hack to support -KPIC
-            if compiler.is_ido and "-KPIC" in compiler_flags:
+            if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
@@ -187,6 +195,7 @@ class CompilerWrapper:
                         for lib in libraries
                     )
                 )
+                wibo_path = settings.COMPILER_BASE_PATH / "common" / "wibo_dlls"
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
@@ -197,6 +206,7 @@ class CompilerWrapper:
                         "PATH": PATH,
                         "WINE": WINE,
                         "WIBO": WIBO,
+                        "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
                         "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
@@ -221,7 +231,7 @@ class CompilerWrapper:
                 # Shlex issue?
                 logging.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
 
             if not object_path.exists():
@@ -290,7 +300,7 @@ class CompilerWrapper:
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 raise AssemblyError("Timeout expired")
 
             # Assembly failed

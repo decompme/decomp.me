@@ -1,11 +1,11 @@
-import EditorSettings from "./EditorSettings"
+"use client";
 
-export const metadata = {
-    title: "Editor settings",
-}
+import EditorSettings from "./EditorSettings";
 
 export default function Page() {
-    return <>
-        <EditorSettings />
-    </>
+    return (
+        <>
+            <EditorSettings />
+        </>
+    );
 }

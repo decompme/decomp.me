@@ -93,10 +93,10 @@
 
     align-items: stretch;
 
+    color: var(--g1600);
+
     > .cell {
         overflow: hidden;
-
-        color: var(--g1600);
 
         padding: 0 1em;
 
@@ -131,16 +131,34 @@
 .immediate { color: #6d6dff; }
 .stack { color: #abc501; }
 .register { color: #aa8b00; }
+.symbol { color: #fff; }
 
 .delay_slot {
     font-weight: bold;
     color: #969896;
 }
 
+.source_filename { font-weight: bold; }
+
+.diff_any { background-color: rgba(255, 255, 255, 0.02); }
+
 .diff_change { color: #6d6dff; }
 .diff_add { color: #45bd00; }
 .diff_remove { color: #c82829; }
-.source_filename { font-weight: bold; }
+
+.diff_change_row { background-color: rgba(106, 106, 255, 0.10); }
+.diff_add_row    { background-color: rgba(69, 189, 0, 0.10); }
+.diff_remove_row { background-color: rgba(200, 40, 41, 0.10); }
+
+:global(html:not(.dark)) {
+    .diff_change { color: #3a3aff; }
+    .diff_add    { color: #2a8000; }
+    .diff_remove { color: #a31212; }
+
+    .diff_change_row { background-color: #f4f4ff; }
+    .diff_add_row    { background-color: #f4fff4; }
+    .diff_remove_row { background-color: #fff4f4; }
+}
 
 .source_function {
     font-weight: bold;
@@ -169,6 +187,7 @@
     .rotation6 { color: rgb(82, 82, 205); } // hsv(240° 60% 80%)
     .rotation7 { color: rgb(164, 82, 205); } // hsv(280° 60% 80%)
     .rotation8 { color: rgb(205, 82, 164); } // hsv(320° 60% 80%)
+    .symbol { color: black }
 }
 
 .highlighted {
@@ -178,4 +197,21 @@
 
 .highlightable {
     cursor: pointer;
+}
+
+.copyButton {
+    cursor: pointer;
+    border-radius: 4px;
+    width: 2em;
+    height: 2em;
+
+    &:hover {
+        background-color: var(--a50);
+    }
+}
+
+.copyButton svg {
+    width: 1em;
+    height: 1em;
+    margin: 0.5em;
 }
