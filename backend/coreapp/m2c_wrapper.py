@@ -23,6 +23,7 @@ PLATFORM_ID_TO_M2C_ARCH = {
     "ps2": "mipsee",
     "psp": "mipsel",
     # ppc
+    "wiiu": "ppc",
     "gc_wii": "ppc",
     "macosx": "ppc",
     # arm
