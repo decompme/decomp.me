@@ -968,7 +968,7 @@ GCC440MIPS64ELF = GCCCompiler(
 GHS5322 = GHSCompiler(
     id="ghs5.3.22",
     platform=WIIU,
-    cc='${WIBO} "${COMPILER_DIR}/cxppc.exe" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+    cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 )
 
 # IRIX
