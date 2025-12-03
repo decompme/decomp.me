@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import PKOnlyObject, SlugRelatedField
 
 from .cromper_client import Compiler, Platform, get_cromper_client
 

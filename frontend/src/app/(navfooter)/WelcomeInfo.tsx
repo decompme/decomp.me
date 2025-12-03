@@ -54,7 +54,18 @@ export default async function WelcomeInfo() {
                     </Link>
                     <GitHubLoginButton />
                 </div>
-                <div className="my-6 hidden sm:block">
+                <p className="mx-auto my-6 w-full max-w-screen-sm text-gray-11 text-sm leading-tight">
+                    Alternatively, check out existing scratches filtered by{" "}
+                    <Link className="font-bold" href="/platform">
+                        platform
+                    </Link>{" "}
+                    or{" "}
+                    <Link className="font-bold" href="/preset">
+                        preset
+                    </Link>
+                    .
+                </p>
+                <div className="mt-6 hidden sm:block">
                     <SiteStats />
                 </div>
             </div>

@@ -6,6 +6,7 @@ import environ
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.transport import HttpTransport
 
 django_stubs_ext.monkeypatch()
 
@@ -36,6 +37,7 @@ env = environ.Env(
     WINEPREFIX=(str, "/tmp/wine"),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
+    SENTRY_TIMEOUT=(int, 3),
     SESSION_COOKIE_AGE=(int, 60 * 60 * 24 * 90),  # default: 90 days
     SESSION_EXPIRE_AFTER_LAST_ACTIVITY=(bool, True),
     SESSION_TIMEOUT_REDIRECT=(str, "/"),
@@ -223,15 +225,21 @@ WINEPREFIX = Path(env("WINEPREFIX"))
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
+SENTRY_TIMEOUT = env("SENTRY_TIMEOUT", int)
 
 SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", int)
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = env("SESSION_EXPIRE_AFTER_LAST_ACTIVITY", bool)
 SESSION_TIMEOUT_REDIRECT = env("SESSION_TIMEOUT_REDIRECT", str)
 
 if SENTRY_DSN:
+    # via https://stackoverflow.com/a/54596711
+    class CustomHttpTransport(HttpTransport):
+        TIMEOUT = SENTRY_TIMEOUT
+
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
         traces_sample_rate=SENTRY_SAMPLE_RATE,
         send_default_pii=False,
+        transport=CustomHttpTransport,
     )

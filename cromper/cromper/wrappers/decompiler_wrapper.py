@@ -24,9 +24,13 @@ class DecompilerWrapper:
         compiler: Compiler,
     ) -> str:
         ret = default_source_code
-        if platform.arch in ["mips", "mipsee", "mipsel", "mipsel:4000", "ppc", "arm32"]:
-            if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
-                return "/* Too many lines to decompile; please run m2c manually */"
+        if len(asm.splitlines()) > MAX_M2C_ASM_LINES:
+            return "/* Too many lines to decompile; please run m2c manually */"
+
+        try:
+            ret = M2CWrapper.decompile(asm, context, platform.id, compiler)
+        except M2CError as e:
+            # Attempt to decompile the source without context as a last-ditch effort
             try:
                 ret = self.m2c_wrapper.decompile(asm, context, compiler, platform.arch)
             except M2CError as e:

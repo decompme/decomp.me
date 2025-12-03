@@ -410,13 +410,13 @@ class ScratchViewSet(
             and len(compilation.elf_object) > 0,
         }
 
-        if include_objects:
-            response["left_object"] = base64.b64encode(
-                scratch.target_assembly.elf_object
-            ).decode("utf-8")
-            response["right_object"] = base64.b64encode(compilation.elf_object).decode(
-                "utf-8"
-            )
+        if include_objects or request.method == "GET":
+
+            def to_base64(obj: bytes) -> str:
+                return base64.b64encode(obj).decode("utf-8")
+
+            response["left_object"] = to_base64(scratch.target_assembly.elf_object)
+            response["right_object"] = to_base64(compilation.elf_object)
 
         return Response(response)
 

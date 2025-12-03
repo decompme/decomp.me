@@ -16,24 +16,18 @@ class M2CWrapper:
         self.sandbox_kwargs = sandbox_kwargs
 
     @staticmethod
-    def get_triple(compiler: Compiler, arch: str) -> str:
-        if "mipsee" in arch:
-            triple = "mipsee"
-        elif "mipsel" in arch:
-            triple = "mipsel"
-        elif "mips" in arch:
-            triple = "mips"
-        elif "ppc" in arch:
-            triple = "ppc"
-        elif "arm32" in arch:
-            triple = "arm"
-        else:
-            raise M2CError(f"Unsupported arch '{arch}'")
+    def is_platform_supported(platform_id: str) -> bool:
+        return platform_id in PLATFORM_ID_TO_M2C_ARCH
+
+    @staticmethod
+    def get_triple(platform_id: str, compiler: Compiler) -> str:
+        try:
+            triple = PLATFORM_ID_TO_M2C_ARCH[platform_id]
+        except KeyError:
+            raise M2CError(f"Unsupported platform '{platform_id}'")
 
         if compiler.type != CompilerType.OTHER:
             triple += f"-{compiler.type.value}"
-        else:
-            raise M2CError(f"Unsupported compiler '{compiler}'")
 
         return triple
 
@@ -41,7 +35,10 @@ class M2CWrapper:
         with Sandbox(**self.sandbox_kwargs) as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
-            flags.append(f"--target={M2CWrapper.get_triple(compiler, arch)}")
+            flags.append(f"--target={M2CWrapper.get_triple(platform_id, compiler)}")
+
+            if platform_id == "gba" and "thumb_func_start" in asm:
+                asm = f".syntax unified\n{asm}"
 
             # Create temp asm file
             asm_path = sandbox.path / "asm.s"
