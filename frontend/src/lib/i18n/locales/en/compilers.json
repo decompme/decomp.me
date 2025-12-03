@@ -112,6 +112,9 @@
     "msvc8.0": "Microsoft Visual C/C++ 8.0",
     "msvc8.0p": "Microsoft Visual C/C++ 8.0 (Patched)",
 
+    "msvc_ppc_14.00.2110": "Microsoft C/C++ Compiler 14.00.2110 for PowerPC",
+    "msvc_ppc_16.00.11886.00": "Microsoft C/C++ Compiler 16.00.11886.00 for PowerPC",
+
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
     "mwcc_20_82": "2.0 build 82 (MW 1.2sp2p3)",
