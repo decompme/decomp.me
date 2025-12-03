@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 from typing import Tuple
 
+from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -64,3 +65,7 @@ class Profile(models.Model):
 
         # 2 mins
         return delta.total_seconds() < (60 * 2)
+
+
+class ProfileAdmin(admin.ModelAdmin[Profile]):
+    raw_id_fields = ["user"]

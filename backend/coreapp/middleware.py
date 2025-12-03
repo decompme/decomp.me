@@ -56,6 +56,7 @@ def set_user_profile(
             "python-requests",
             "curl",
             "YandexRenderResourcesBot",
+            "SentryUptimeBot",
         ]
 
         # Avoid creating profiles for SSR or bots

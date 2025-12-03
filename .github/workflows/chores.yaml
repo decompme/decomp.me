@@ -22,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install uv
-        run: pip install uv
+        run: pip install uv==0.9.11
 
       - name: Update m2c & asm-differ
         run: cd backend && uv lock --upgrade-package m2c --upgrade-package asm-differ

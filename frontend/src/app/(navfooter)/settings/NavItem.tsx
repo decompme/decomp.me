@@ -21,9 +21,8 @@ export default function NavItem({ segment, label, icon }: Props) {
         <li className="grow text-center lg:text-left">
             <GhostButton
                 href={`/settings/${segment}`}
-                className={clsx({
-                    "!px-3 block rounded-md py-2": true,
-                    "pointer-events-none bg-gray-5 font-medium": isSelected,
+                className={clsx("!px-3 block rounded-md py-2", {
+                    "pointer-events-none bg-gray-3 font-medium": isSelected,
                 })}
             >
                 <span className="mr-2 opacity-50">{icon}</span>
