@@ -10,6 +10,21 @@ from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
+PLATFORM_ID_TO_M2C_ARCH = {
+    # mips
+    "irix": "mips",
+    "n64": "mips",
+    "ps1": "mipsel",
+    "ps2": "mipsee",
+    "psp": "mipsel",
+    # ppc
+    "gc_wii": "ppc",
+    "macosx": "ppc",
+    # arm
+    "gba": "gba",
+    "n3ds": "arm",
+    "nds_arm9": "arm",
+}
 
 class M2CWrapper:
     def __init__(self, **sandbox_kwargs):
@@ -31,7 +46,7 @@ class M2CWrapper:
 
         return triple
 
-    def decompile(self, asm: str, context: str, compiler: Compiler, arch: str) -> str:
+    def decompile(self, asm: str, context: str, platform_id: str, compiler: Compiler) -> str:
         with Sandbox(**self.sandbox_kwargs) as sandbox:
             flags = ["--stop-on-error", "--pointer-style=left"]
 
