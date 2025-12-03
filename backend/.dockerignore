@@ -8,10 +8,7 @@ __pycache__/
 Dockerfile*
 docker.*.env
 
-# compilers
-compilers/*/**
-!compilers/download.py
 
-# libraries
-libraries/*/**
-!libraries/download.py
+# TEMPORARY: because i'm switching between main/cromper branches
+compilers/**
+libraries/**

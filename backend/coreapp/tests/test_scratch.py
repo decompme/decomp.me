@@ -3,25 +3,21 @@ from typing import Any, Dict
 import io
 import zipfile
 
-from coreapp import compilers, platforms
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
 from coreapp.models.scratch import Assembly, Scratch
-from coreapp.platforms import GC_WII, N64
-from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.common import BaseTestCase
 from coreapp.views.scratch import compile_scratch_update_score
 from django.urls import reverse
 from rest_framework import status
 
 
 class ScratchCreationTests(BaseTestCase):
-    @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
         Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # TODO use N64.id
+            "compiler": "ido7.1",
             "context": "",
             "target_asm": """.late_rodata
 glabel D_8092C224
@@ -34,14 +30,13 @@ nop""",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(IDO53)
     def test_n64_func(self) -> None:
         """
         Ensure that functions with t6/t7 registers can be assembled.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO53.id,
+            "platform": "n64",  # TODO use N64.id
+            "compiler": "ido5.3",
             "context": "typedef unsigned char u8;",
             "target_asm": """
 .text
@@ -55,14 +50,13 @@ sb  $t6, %lo(D_801D702C)($at)
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(IDO71)
     def test_fpr_reg_names(self) -> None:
         """
         Ensure that functions with O32 register names can be assembled.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # TODO use N64.id
+            "compiler": "ido7.1",
             "context": "",
             "target_asm": """
 glabel test
@@ -81,33 +75,19 @@ nop
         }
         self.create_scratch(scratch_dict)
 
-    def test_dummy_platform(self) -> None:
-        """
-        Ensure that we can create scratches with the dummy platform and compiler
-        """
-        scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
-            "context": "",
-            "target_asm": "this is some test asm",
-        }
-        self.create_scratch(scratch_dict)
-
-    @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """
         Ensure that max_score is available upon scratch creation even if the initial compilation fails
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "ido7.1",
             "context": "this aint cod",
             "target_asm": ".text\nglabel func_80929D04\njr $ra\nnop",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.max_score, 200)
 
-    @requiresCompiler(IDO71)
     def test_import_scratch(self) -> None:
         """
         Ensure that creating a scratch created via permuter import.py is successful
@@ -117,34 +97,32 @@ nop
             "target_asm": ".text\nglabel imported_function\njr $ra\nnop",
             "context": "/* context */",
             "source_code": "void imported_function(void) {}",
-            "compiler": IDO71.id,
+            "compiler": "ido7.1",
             "compiler_flags": "-O2",
             "diff_label": "imported_function",
         }
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.name, "imported_function")
 
-    @requiresCompiler(MWCC_242_81)
     def test_mwcc_242_81(self) -> None:
         """
         Ensure that MWCC works
         """
         scratch_dict = {
-            "platform": GC_WII.id,
-            "compiler": MWCC_242_81.id,
+            "platform": "gc_wii",  # TODO use GC_WII.id
+            "compiler": "mwcc_242_81",
             "context": "",
             "target_asm": ".fn somefunc, local\nblr\n.endfn somefunc",
         }
         self.create_scratch(scratch_dict)
 
-    @requiresCompiler(EE_GCC29_991111)
     def test_ps2_platform(self) -> None:
         """
         Ensure that we can create scratches with the ps2 platform and compiler
         """
         scratch_dict = {
-            "platform": platforms.PS2.id,
-            "compiler": compilers.EE_GCC29_991111.id,
+            "platform": "ps2",
+            "compiler": "ee-gcc2.9-991111",
             "context": "",
             "target_asm": "jr $ra\nnop",
         }
@@ -152,14 +130,13 @@ nop
 
 
 class ScratchModificationTests(BaseTestCase):
-    @requiresCompiler(GCC281PM, IDO53)
     def test_update_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets updated when the code changes.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": GCC281PM.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "gcc2.8.1pm",
             "context": "",
             "target_asm": "jr $ra",
         }
@@ -179,7 +156,7 @@ class ScratchModificationTests(BaseTestCase):
         # Update the scratch's code and compiler output
         scratch_patch = {
             "source_code": "int func() { return 2; }",
-            "compiler": IDO53.id,
+            "compiler": "ido5.3",
         }
 
         response = self.client.patch(
@@ -191,14 +168,13 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 200)
 
-    @requiresCompiler(GCC281PM)
     def test_update_scratch_score_on_compile_get(self) -> None:
         """
         Ensure that a scratch's score gets updated on a GET to compile
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": GCC281PM.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "gcc2.8.1pm",
             "compiler_flags": "-O2",
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
@@ -220,14 +196,13 @@ class ScratchModificationTests(BaseTestCase):
         assert scratch is not None
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler(IDO71)
     def test_create_scratch_score(self) -> None:
         """
         Ensure that a scratch's score gets set upon creation.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "ido7.1",
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "int func() { return 2; }",
@@ -235,14 +210,13 @@ class ScratchModificationTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
         self.assertEqual(scratch.score, 0)
 
-    @requiresCompiler(IDO71)
     def test_update_scratch_score_does_not_affect_last_updated(self) -> None:
         """
         Ensure that a scratch's last_updated field does not get updated when the max_score changes.
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "ido7.1",
             "context": "",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "int func() { return 2; }",
@@ -264,8 +238,8 @@ class ScratchForkTests(BaseTestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict: Dict[str, Any] = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
@@ -277,8 +251,8 @@ class ScratchForkTests(BaseTestCase):
         slug = scratch.slug
 
         fork_dict = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -432,14 +406,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
@@ -463,14 +437,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "context": "",
             "target_asm": " ",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",  # todo use id
+            "platform": "dummy",  # todo use id
             "context": "",
             "target_asm": " ",
         }
@@ -483,14 +457,13 @@ class ScratchDetailTests(BaseTestCase):
 
 
 class ScratchExportTests(BaseTestCase):
-    @requiresCompiler(IDO71)
     def test_export_asm_scratch(self) -> None:
         """
         Ensure that a scratch can be exported as a zip
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "ido7.1",
             "context": "typedef signed int s32;",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "s32 func() { return 2; }",
@@ -508,15 +481,14 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("ctx.c", file_names)
         self.assertIn("current.o", file_names)
 
-    @requiresCompiler(IDO71)
     def test_export_asm_scratch_target_only(self) -> None:
         """
         Ensure that a scratch can be exported as a zip
         without performing the actual compilation step
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
+            "platform": "n64",  # todo use ID
+            "compiler": "ido7.1",
             "context": "typedef signed int s32;",
             "target_asm": "jr $ra\nli $v0,2",
             "source_code": "s32 func() { return 2; }",

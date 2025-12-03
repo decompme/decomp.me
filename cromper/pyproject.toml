@@ -1,0 +1,44 @@
+[project]
+name = "cromper"
+version = "0.1.0"
+description = "Async compilation and assembly service for decomp.me"
+authors = [
+    {name = "decomp.me team"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "tornado>=6.5.2",
+    "requests>=2.32.5",
+    "python-dotenv>=1.0.0",
+    "m2c @ git+https://github.com/matt-kempster/m2c.git",
+    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
+    "pyyaml>=6.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-tornado>=0.8.1",
+    "ruff>=0.13.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.mypy]
+ignore_missing_imports = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+exclude = [
+    "compilers/.*",
+    "libraries/.*",
+]

@@ -2,7 +2,6 @@ import responses
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
 from coreapp.tests.common import BaseTestCase
-from coreapp import compilers, platforms
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
@@ -182,8 +181,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": "dummy",
+                "platform": "dummy",
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
@@ -218,8 +217,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": "dummy",
+                "platform": "dummy",
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
