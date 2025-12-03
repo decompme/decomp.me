@@ -17,6 +17,7 @@ import LogoPSP from "./psp.svg";
 import LogoSaturn from "./saturn.svg";
 import LogoSwitch from "./switch.svg";
 import UnknownIcon from "./unknown.svg";
+import LogoWiiU from "./wiiu.svg";
 import LogoWin32 from "./win32.svg";
 
 /** In release-date order */
@@ -33,6 +34,7 @@ const ICONS = {
     ps2: LogoPS2,
     psp: LogoPSP,
     n3ds: LogoN3DS,
+    wiiu: LogoWiiU,
     switch: LogoSwitch,
     saturn: LogoSaturn,
     dreamcast: LogoDreamcast,

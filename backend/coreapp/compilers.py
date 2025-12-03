@@ -16,6 +16,7 @@ from coreapp.flags import (
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_GHS_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
     COMMON_MWCC_NDS_ARM9_FLAGS,
@@ -42,6 +43,7 @@ from coreapp.platforms import (
     SATURN,
     DREAMCAST,
     SWITCH,
+    WIIU,
     WIN32,
     Platform,
 )
@@ -211,6 +213,11 @@ class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
+@dataclass(frozen=True)
+class GHSCompiler(Compiler):
+    platform: Platform = WIIU
+    flags: ClassVar[Flags] = COMMON_GHS_FLAGS
+    library_include_flag: str = "-I"
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
@@ -955,6 +962,13 @@ GCC440MIPS64ELF = GCCCompiler(
     id="gcc4.4.0-mips64-elf",
     platform=N64,
     cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
+# GHS
+GHS5322 = GHSCompiler(
+    id="ghs5.3.22",
+    platform=WIIU,
+    cc='${WIBO} "${COMPILER_DIR}/cxppc.exe" -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 )
 
 # IRIX
@@ -1743,6 +1757,8 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # WIIU
+    GHS5322,
     # WIN32
     MSVC40,
     MSVC41,

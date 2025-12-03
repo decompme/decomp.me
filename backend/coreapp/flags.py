@@ -285,6 +285,18 @@ COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
     ),
 ]
 
+COMMON_GHS_FLAGS: Flags = [
+    FlagSet(id="ghs_c_dialect", flags=["-c99", "-C99", "-ANSI", "-ansi", "-gcc"]),
+    FlagSet(id="ghs_opt_level", flags=["-Ospeed", "-Osize", "-Ogeneral", "-Odebug", "-Omoredebug"]),
+    FlagSet(id="ghs_rtti_mode", flags=["--rtti", "--no_rtti"]),
+    FlagSet(id="ghs_exceptions_mode", flags=["--exceptions", "--no_exceptions"]),
+    FlagSet(id="ghs_ansi_alias_mode", flags=["-ansi_alias", "-no_ansi_alias"]),
+    Checkbox("ghs_gnu_mode", "--g++"),
+    Checkbox("ghs_enable_noinline", "--enable_noinline"),
+    Checkbox("ghs_link_once_templates", "--link_once_templates"),
+    Checkbox("ghs_only_explicit_reg_use", "-only_explicit_reg_use")
+]
+
 COMMON_MSVC_FLAGS: Flags = [
     FlagSet(
         id="msvc_opt_level", flags=["/Od", "/O1", "/O2", "/Os", "/Ot", "/Og", "/Ox"]
