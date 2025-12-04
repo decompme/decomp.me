@@ -213,11 +213,13 @@ class BorlandCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
+
 @dataclass(frozen=True)
 class GHSCompiler(Compiler):
     platform: Platform = WIIU
     flags: ClassVar[Flags] = COMMON_GHS_FLAGS
     library_include_flag: str = "-I"
+
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
@@ -968,7 +970,7 @@ GCC440MIPS64ELF = GCCCompiler(
 GHS5322 = GHSCompiler(
     id="ghs5.3.22",
     platform=WIIU,
-    cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+    cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 # IRIX

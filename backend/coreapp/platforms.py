@@ -259,7 +259,7 @@ WIIU = Platform(
     assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="powerpc-eabi-objdump -M broadway",
     nm_cmd="powerpc-eabi-nm",
-    has_decompiler=True
+    has_decompiler=True,
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
