@@ -212,6 +212,9 @@ msdos:
   - bcc2.0
   - bcc3.1
 
+wiiu:
+  - ghs5.3.22
+
 win32:
   - msvc4.0
   - msvc4.1
