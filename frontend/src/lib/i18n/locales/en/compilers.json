@@ -81,6 +81,8 @@
     "gcc2.8.1pm": "GCC 2.8.1 (Paper Mario)",
     "gcc4.4.0-mips64-elf": "GCC 4.4.0 (mips64-elf)",
 
+    "ghs5.3.22": "GHS 5.3.22",
+
     "ido5.3_irix": "IDO 5.3",
     "ido5.3_asm_irix": "IDO 5.3 AS",
     "ido5.3_c++_irix": "IDO 5.3 C++",

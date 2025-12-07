@@ -251,6 +251,17 @@ N3DS = Platform(
     has_decompiler=True,
 )
 
+WIIU = Platform(
+    id="wiiu",
+    name="Nintendo Wii U",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-eabi-objdump -M broadway",
+    nm_cmd="powerpc-eabi-nm",
+    has_decompiler=True,
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -268,6 +279,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "dreamcast": DREAMCAST,
         "macosx": MACOSX,
         "msdos": MSDOS,
+        "wiiu": WIIU,
         "win32": WIN32,
     }
 )
