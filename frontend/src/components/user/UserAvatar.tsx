@@ -9,7 +9,7 @@ import clsx from "clsx";
 import * as api from "@/lib/api";
 import { userAvatarUrl } from "@/lib/api/urls";
 
-import AnonymousFrogAvatar from "./AnonymousFrog";
+import AnonymousFrogAvatar from "../Frog/AnonymousFrog";
 import styles from "./UserAvatar.module.scss";
 
 export type Props = {
