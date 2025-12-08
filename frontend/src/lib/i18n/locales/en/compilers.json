@@ -383,6 +383,8 @@
     "mwcc_line_numbers_on": "Enable debug info (C line numbers)",
     "mwcc_align_powerpc": "PowerPC alignment; default",
 
+    "ghs_dotciscxx": "Treat all files as C++ files",
+
     "msvc_opt_level": "Optimization level",
     "msvc_opt_level./O1": "minimize space",
     "msvc_opt_level./O2": "maximize speed",
