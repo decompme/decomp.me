@@ -35,23 +35,25 @@ export default function ScratchMatchBanner({
 
     if (scratch.score === 0 || !match) return null;
 
-    const isMatch = match.score === 0;
+    const isMatch = match.score === 0 || match.match_override;
+    const subject = userIsYou(match.owner)
+        ? "You have"
+        : `${match.owner?.username ?? "A user"} has`;
 
-    const percent = calculateScorePercent(match.score, match.max_score);
-    const percentString = percent !== 0 ? percentToString(percent) : "";
+    const percent = !isMatch
+        ? calculateScorePercent(match.score, match.max_score)
+        : null;
+    const percentString = percent ? ` (${percentToString(percent)})` : "";
 
-    let message = `This function has ${isMatch ? "been matched" : "a lower-scoring scratch"}`;
-    if (userIsYou(match.owner)) message += " by you, elsewhere";
-    else if (match.owner) message += ` by ${match.owner.username}`;
-
-    if (!isMatch)
-        message += `. Improved score is ${match.score.toLocaleString("en-US")} ${percentString && `(${percentString})`}`;
+    const message = isMatch
+        ? `${subject} matched this scratch elsewhere. `
+        : `${subject} a better scoring scratch elsewhere. The improved score is ${match.score.toLocaleString("en-US")}${percentString}. `;
 
     return (
         <DismissableBanner color={isMatch ? "#951fd9" : "#4273e1"}>
-            {message}.{" "}
+            {message}
             <Link href={scratchUrl(match)}>
-                View {match.score === 0 ? "match" : "improvement"}
+                View {isMatch ? "match" : "improvement"}
             </Link>
         </DismissableBanner>
     );
