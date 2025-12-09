@@ -1,11 +1,8 @@
 import clsx from "clsx";
-import Frog from "../Frog/Frog";
-import { getHolidayTheme } from "../Frog/holiday";
+import HolidayFrog from "../Frog/HolidayFrog";
 import styles from "./SiteLogo.module.scss";
 
 export default function SiteLogo() {
-    const { primary, secondary, message } = getHolidayTheme();
-
     return (
         <div
             className={clsx(
@@ -14,13 +11,7 @@ export default function SiteLogo() {
             )}
             aria-label="decomp.me logo"
         >
-            <Frog
-                className="size-7"
-                aria-label="Purple frog"
-                primary={primary}
-                secondary={secondary}
-                title={message}
-            />
+            <HolidayFrog />
             <span className="font-semibold text-xl leading-6 tracking-tight">
                 decomp.me
             </span>
