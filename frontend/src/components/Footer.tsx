@@ -4,7 +4,7 @@ import { MarkGithubIcon } from "@primer/octicons-react";
 
 import DiscordIcon from "./discord.svg";
 import GhostButton from "./GhostButton";
-import Logotype from "./Logotype";
+import SiteLogo from "./Nav/SiteLogo";
 
 function Separator() {
     return <div className="hidden h-4 w-px bg-gray-6 sm:inline-block" />;
@@ -20,7 +20,7 @@ export default function Footer() {
                 <div className="border-gray-6 border-t py-10">
                     <div className="flex items-center justify-center">
                         <Link href="/">
-                            <Logotype />
+                            <SiteLogo />
                         </Link>
                     </div>
                     <div className="mt-4 flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">

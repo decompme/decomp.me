@@ -9,7 +9,7 @@ import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 
 import GhostButton from "../GhostButton";
-import Logotype from "../Logotype";
+import SiteLogo from "./SiteLogo";
 
 import LoginState from "./LoginState";
 import styles from "./Nav.module.scss";
@@ -71,7 +71,7 @@ export default function Nav({ children }: Props) {
                         href="/"
                         className="transition-colors hover:text-gray-12 active:translate-y-px"
                     >
-                        <Logotype />
+                        <SiteLogo />
                     </Link>
                 </li>
                 <li className={styles.headerItemLoginState}>
@@ -108,7 +108,7 @@ export default function Nav({ children }: Props) {
                 <ul className={styles.links}>
                     <li className="flex items-center justify-center">
                         <Link href="/">
-                            <Logotype />
+                            <SiteLogo />
                         </Link>
                     </li>
                     <li>
