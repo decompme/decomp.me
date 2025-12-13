@@ -7,10 +7,6 @@ from django.urls import reverse
 from rest_framework import status
 
 
-# NOTE: Tests that require cromper (compilation, assembly, etc.) have been moved to
-# integration_tests/test_scratch_compilation.py
-# Only pure Django tests remain here (database operations, API routing, permissions, etc.)
-
 class ScratchForkTests(BaseTestCase):
     def test_fork_scratch(self) -> None:
         """
