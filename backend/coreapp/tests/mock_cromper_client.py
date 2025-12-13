@@ -51,6 +51,12 @@ class MockCromperClient:
     def assemble_asm(self, platform_id: str, asm: Any) -> Dict[str, Any]:
         """Return mock assembly result."""
         # Create a simple mock ELF object
+        if asm.data.strip() == "":
+            return {
+                "hash": "empty_asm_hash",
+                "arch": "mips",
+                "elf_object": b"",
+            }
         print("ASDF assemble_asm", platform_id, asm)
         mock_elf = b"\x7fELF" + b"\x00" * 100
         return {

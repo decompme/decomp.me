@@ -203,13 +203,6 @@ class ScratchDetailTests(BaseTestCase):
         scratch1 = self.create_scratch(scratch1_dict)
         scratch2 = self.create_scratch(scratch2_dict)
 
-        assembly_2: Assembly = scratch1.target_assembly
-        assembly_2.hash = 0
-        assembly_2.pk = None
-        assembly_2.save()
-        scratch2.target_assembly = assembly_2
-        scratch2.save()
-
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 2)
 

@@ -4,6 +4,7 @@ from coreapp.models.profile import Profile
 from coreapp.tests.common import BaseTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
+from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
 
 GITHUB_USER = {
@@ -208,6 +209,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     @responses.activate
+    @mock_cromper
     def test_cant_delete_scratch(self) -> None:
         """
         Ensure we can't delete a scratch we don't own
