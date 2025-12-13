@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
@@ -40,6 +41,22 @@ def disable_csrf(
     return middleware
 
 
+def request_needs_profile(req: Request):
+    methods_paths = [
+        ("GET", "^/api/user$"),  # FIXME: tests break without this
+        ("GET", "^/api/user/scratches$"),  # FIXME: tests break without this
+        ("POST", "^/api/scratch$"),
+        ("POST", r"^/api/scratch/[A-Za-z0-9]+/fork$"),
+        ("POST", r"^/api/scratch/[A-Za-z0-9]+/claim$"),
+        ("POST", "^/api/preset$"),
+    ]
+    for method, path in methods_paths:
+        if req.method == method and re.match(path, req.path):
+            return True
+
+    return False
+
+
 def set_user_profile(
     get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[Request], Response]:
@@ -49,6 +66,8 @@ def set_user_profile(
 
     def middleware(request: Request) -> Response:
         user_agent = request.headers.get("User-Agent", "")
+        x_forwarded_for = request.headers.get("X-Forwarded-For", "n/a")
+
         bot_signatures = [
             "node",
             "undici",
@@ -81,18 +100,16 @@ def set_user_profile(
                 if profile and profile.user and request.user.is_anonymous:
                     request.user = profile.user
 
-        # Create new profile if none found
-        if not profile:
+        # Create a new profile if endpoint requires one
+        if not profile and request_needs_profile(request):
             profile = Profile(
                 user=request.user if request.user.is_authenticated else None
             )
-
             profile.save()
             request.session["profile_id"] = profile.id
 
-            # More info to help identify why we are creating so many profiles...
-            x_forwarded_for = request.headers.get("X-Forwarded-For", "n/a")
-            logger.debug(
+            # Log profile creation to protect against misconfiguration or abuse
+            logger.warning(
                 "Made new profile: User-Agent: %s, IP: %s, name: %s, request path: %s",
                 user_agent,
                 x_forwarded_for,
@@ -100,11 +117,23 @@ def set_user_profile(
                 request.path,
             )
 
-        # Update last seen timestamp if more than a minute since last updated
-        last_request_date = profile.last_request_date
-        profile.last_request_date = now()
-        if (profile.last_request_date - last_request_date).total_seconds() > 60:
-            profile.save(update_fields=["last_request_date"])
+        if profile:
+            # Update last seen timestamp if more than a minute since last updated
+            last_request_date = profile.last_request_date
+            profile.last_request_date = now()
+            if (profile.last_request_date - last_request_date).total_seconds() > 60:
+                profile.save(update_fields=["last_request_date"])
+
+        else:
+            # Create a profile but do not save it to the database
+            profile = Profile()
+            logger.info(
+                "Made transient profile: %s, User-Agent: %s, IP: %s, Endpoint: %s",
+                profile,
+                user_agent,
+                x_forwarded_for,
+                request.path,
+            )
 
         request.profile = profile
 
