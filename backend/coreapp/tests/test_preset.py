@@ -4,6 +4,7 @@ from coreapp.models.preset import Preset
 from coreapp.tests.common import BaseTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
+from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
 
 from coreapp.compilers import GCC281PM, IDO53
@@ -53,7 +54,8 @@ class PresetTests(BaseTestCase):
         self.client.login(username=self.username, password=self.password)
         return user
 
-    def create_preset(self, partial: dict[str, Any]) -> Preset:
+    @mock_cromper
+    def create_preset(self, partial: Dict[str, Any]) -> Preset:
         response = self.client.post(reverse("preset-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         preset = Preset.objects.get(id=response.json()["id"])

@@ -24,7 +24,7 @@ class RequestTests(APITestCase):
         Ensure that a passive current-user read does not create a session profile.
         """
 
-        response = self.client.get(reverse("current-user"), HTTP_USER_AGENT="browser")
+        response = self.client.get(reverse("stats"), HTTP_USER_AGENT="browser")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertTrue(response.json()["is_ephemeral"])
@@ -64,9 +64,7 @@ class RequestTests(APITestCase):
         Ensure that we don't create profiles for node-fetch requests (SSR)
         """
 
-        response = self.client.get(
-            reverse("current-user"), HTTP_USER_AGENT="node-fetch"
-        )
+        response = self.client.get(reverse("stats"), HTTP_USER_AGENT="node-fetch")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
