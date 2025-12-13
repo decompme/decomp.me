@@ -27,7 +27,6 @@ services:
       - ./cromper:/cromper
       - ./cromper/compilers:/cromper/compilers:ro
       - ./cromper/libraries:/cromper/libraries:ro
-      - /cromper/.venv
     tmpfs:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
@@ -45,7 +44,7 @@ services:
       - backend/docker.dev.env
     ports:
       - "8000:8000"
-      - "5678:5678"  # vscode debugger
+      - "5678:5678" # vscode debugger
     volumes:
       - ./backend:/backend
   frontend:
