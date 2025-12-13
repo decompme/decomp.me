@@ -4,10 +4,12 @@ from typing import Any, Dict
 from coreapp.models.scratch import Assembly, Scratch
 from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
+from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
 
 
 class ScratchForkTests(BaseTestCase):
+    @mock_cromper
     def test_fork_scratch(self) -> None:
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
@@ -64,6 +66,7 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    @mock_cromper
     def test_last_modified(self) -> None:
         """
         Ensure that the Last-Modified header is set.
@@ -75,6 +78,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.headers.get("Last-Modified") is not None)
 
+    @mock_cromper
     def test_if_modified_since(self) -> None:
         """
         Ensure that the If-Modified-Since header is handled.
@@ -135,6 +139,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertIsNotNone(updated_scratch.owner)
         self.assertIsNone(updated_scratch.claim_token)
 
+    @mock_cromper
     def test_family(self) -> None:
         root = self.create_nop_scratch()
 
@@ -163,6 +168,8 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
+
+    @mock_cromper
     def test_family_order(self) -> None:
         root = self.create_nop_scratch()
 

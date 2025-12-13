@@ -114,32 +114,37 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
     def get_num_scratches(self, preset: Preset) -> int:
         return Scratch.objects.filter(preset=preset).count()
 
-    def validate_platform(self, platform_id: str) -> Platform:
+    def validate_platform(self, platform_id: str) -> str:
+        cromper = get_cromper_client()
+
         try:
-            cromper = get_cromper_client()
             platform = cromper.get_platform_by_id(platform_id)
         except Exception:
             raise serializers.ValidationError(f"Unknown platform: {platform_id}")
-        return platform
 
-    def validate_compiler(self, compiler_id: str) -> Compiler:
+        return platform.id
+
+    def validate_compiler(self, compiler_id: str) -> str:
+        cromper = get_cromper_client()
         try:
-            cromper = get_cromper_client()
             compiler = cromper.get_compiler_by_id(compiler_id)
         except Exception:
             raise serializers.ValidationError(f"Unknown compiler: {compiler_id}")
-        return compiler
+        return compiler.id
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         cromper = get_cromper_client()
+        try:
+            compiler = cromper.get_compiler_by_id(data["compiler"])
+            platform = cromper.get_platform_by_id(data["platform"])
+        except Exception:
+            raise serializers.ValidationError("Unknown compiler or platform lol")
 
-        compiler = cromper.get_compiler_by_id(data["compiler"])
-        platform = cromper.get_platform_by_id(data["platform"])
-
-        if compiler.platform != platform:
+        if compiler.platform.id != platform.id:
             raise serializers.ValidationError(
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"
             )
+
         return data
 
 
@@ -231,7 +236,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                         f"Unknown platform: {data['platform']}"
                     )
 
-                if compiler.platform != platform.id:
+                if compiler.platform != platform:
                     raise serializers.ValidationError(
                         f"Compiler {compiler.id} is not compatible with platform {platform.id}"
                     )
