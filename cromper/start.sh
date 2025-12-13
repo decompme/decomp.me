@@ -12,4 +12,4 @@ echo "Debug: ${CROMPER_DEBUG:-false}"
 echo "Use sandbox jail: ${USE_SANDBOX_JAIL:-false}"
 
 # Start the cromper service
-python3 -m cromper.main
+uv run python -m cromper.main

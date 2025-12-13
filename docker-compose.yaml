@@ -27,6 +27,7 @@ services:
       - ./cromper:/cromper
       - ./cromper/compilers:/cromper/compilers:ro
       - ./cromper/libraries:/cromper/libraries:ro
+      - /cromper/.venv
     tmpfs:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container

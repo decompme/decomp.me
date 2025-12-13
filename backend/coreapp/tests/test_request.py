@@ -1,5 +1,4 @@
 from coreapp.models.profile import Profile
-from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -26,31 +25,3 @@ class RequestTests(APITestCase):
 
         self.assertEqual(Profile.objects.count(), 0)
 
-
-# MIGRATE TEST TO CROMPER
-class TimeoutTests(BaseTestCase):
-    def test_compiler_timeout(self) -> None:
-        # Test that a hanging compilation will fail with a timeout error
-        with self.settings(COMPILATION_TIMEOUT_SECONDS=3):
-            scratch_dict = {
-                "compiler": "dummy_longrunning",
-                "platform": "dummy",
-                "context": "",
-                "target_asm": "asm(AAAAAAAA)",
-            }
-
-            scratch = self.create_scratch(scratch_dict)
-
-            compile_dict = {
-                "slug": scratch.slug,
-                "compiler": "dummy_longrunning",
-                "compiler_flags": "",
-                "source_code": "source(AAAAAAAA)",
-            }
-
-            response = self.client.post(
-                reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
-            )
-
-            self.assertFalse(response.json()["success"])
-            self.assertIn("timeout expired", response.json()["compiler_output"].lower())

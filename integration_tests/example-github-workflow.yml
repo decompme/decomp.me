@@ -1,0 +1,74 @@
+# Example GitHub Actions workflow for running tests
+# This shows how to run Django tests separately from integration tests
+
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  django-tests:
+    name: Django Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install poetry
+          poetry install
+
+      - name: Run Django tests
+        run: |
+          cd backend
+          poetry run python manage.py test
+        env:
+          DJANGO_SETTINGS_MODULE: decompme.settings
+          DATABASE_URL: sqlite:///test.db
+
+  integration-tests:
+    name: Integration Tests (Cromper + Django)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd integration_tests
+          pip install uv
+          uv sync
+
+      - name: Start services with Docker Compose
+        run: |
+          docker-compose up -d cromper backend postgres
+          sleep 15  # Wait for services to be ready
+
+      - name: Check cromper health
+        run: |
+          curl --retry 5 --retry-delay 2 --retry-connrefused http://localhost:3000/health
+
+      - name: Run integration tests
+        run: |
+          cd integration_tests
+          uv run pytest -v
+
+      - name: Stop services
+        if: always()
+        run: |
+          docker-compose down
