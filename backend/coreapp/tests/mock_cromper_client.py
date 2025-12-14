@@ -1,19 +1,25 @@
 from functools import wraps
 from typing import Any, Dict
 from unittest.mock import patch
-from coreapp.cromper_client import Compiler, Language, Platform
+from coreapp.compiler_utils import Compiler, Language, Platform
 
 
 def mock_cromper(func):
     """Decorator to mock cromper client in all locations where it's imported."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         mock_client = MockCromperClient()
         # Patch all locations where get_cromper_client is imported
-        with patch("coreapp.cromper_client.get_cromper_client", return_value=mock_client), \
-             patch("coreapp.serializers.get_cromper_client", return_value=mock_client), \
-             patch("coreapp.views.scratch.get_cromper_client", return_value=mock_client):
+        with (
+            patch(
+                "coreapp.cromper_client.get_cromper_client", return_value=mock_client
+            ),
+            patch("coreapp.serializers.get_cromper_client", return_value=mock_client),
+            patch("coreapp.views.scratch.get_cromper_client", return_value=mock_client),
+        ):
             return func(*args, **kwargs)
+
     return wrapper
 
 

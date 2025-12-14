@@ -91,7 +91,6 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    "EXCEPTION_HANDLER": "coreapp.error.custom_exception_handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 

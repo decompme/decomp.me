@@ -68,4 +68,3 @@ class RequestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
-

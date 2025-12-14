@@ -1,6 +1,4 @@
 import base64
-from dataclasses import dataclass
-import enum
 import json
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
@@ -8,51 +6,12 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 import requests
 from django.conf import settings
 
-from coreapp.error import AssemblyError, CompilationError
+from coreapp.compiler_utils import Compiler, CromperError, Platform
 
 if TYPE_CHECKING:
     from coreapp.models.scratch import Asm
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class Platform:
-    id: str
-    name: str
-    description: str
-    arch: str
-    compilers: list[str]
-    has_decompiler: bool = False
-
-
-# TODO copied from cromper, should deduplicate
-class Language(enum.Enum):
-    C = "C"
-    OLD_CXX = "C++"
-    CXX = "C++"
-    PASCAL = "Pascal"
-    ASSEMBLY = "Assembly"
-    OBJECTIVE_C = "ObjectiveC"
-
-    def get_file_extension(self) -> str:
-        return {
-            Language.C: "c",
-            Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
-            Language.PASCAL: "p",
-            Language.ASSEMBLY: "s",
-            Language.OBJECTIVE_C: "m",
-        }[self]
-
-
-@dataclass(frozen=True)
-class Compiler:
-    id: str
-    platform: Platform
-    flags: str
-    diff_flags: str
-    language: Language = Language.C
 
 
 class CromperClient:
@@ -76,10 +35,10 @@ class CromperClient:
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"Error communicating with cromper service: {e}")
-            raise CompilationError(f"cromper service error: {e}")
+            raise CromperError(f"cromper service error: {e}")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from cromper service: {e}")
-            raise CompilationError("Invalid response from cromper service")
+            raise CromperError("Invalid response from cromper service")
 
     def get_compilers(self) -> Dict[str, Compiler]:
         """Get all compilers from cromper service, with caching."""
@@ -156,7 +115,7 @@ class CromperClient:
 
         if not response.get("success"):
             error_msg = response.get("error", "Unknown compilation error")
-            raise CompilationError(error_msg)
+            raise CromperError(error_msg)
 
         # Decode the base64 elf object
         elf_object_b64 = response.get("elf_object", "")
@@ -176,7 +135,7 @@ class CromperClient:
 
         if not response.get("success"):
             error_msg = response.get("error", "Unknown assembly error")
-            raise AssemblyError(error_msg)
+            raise CromperError(error_msg)
 
         # Decode the base64 elf object
         elf_object_b64 = response.get("elf_object", "")
@@ -213,7 +172,7 @@ class CromperClient:
 
         if not response.get("success"):
             error_msg = response.get("error", "Unknown diff error")
-            raise CompilationError(error_msg)
+            raise CromperError(error_msg)
 
         return {
             "result": response.get("result"),
@@ -241,7 +200,7 @@ class CromperClient:
 
         if not response.get("success"):
             error_msg = response.get("error", "Unknown decompilation error")
-            raise CompilationError(error_msg)
+            raise CromperError(error_msg)
 
         return response.get("decompiled_code", "")
 

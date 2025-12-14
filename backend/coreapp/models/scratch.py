@@ -10,7 +10,7 @@ from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 
 if TYPE_CHECKING:
-    from coreapp.cromper_client import Language
+    from coreapp.compiler_utils import Language
 
 from .profile import Profile
 
