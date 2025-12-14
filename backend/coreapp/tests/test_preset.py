@@ -158,4 +158,3 @@ class PresetTests(BaseTestCase):
         self.create_preset(
             {**SAMPLE_PRESET_DICT, "platform": "n64", "compiler": "gcc2.8.1pm"}  # todo
         )
-

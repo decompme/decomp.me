@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.relations import PKOnlyObject, SlugRelatedField
 
-from .cromper_client import Compiler, Platform, get_cromper_client
+from .cromper_client import get_cromper_client
 
 from .models.github import GitHubUser
 from .models.preset import Preset

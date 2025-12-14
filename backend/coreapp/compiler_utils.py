@@ -6,7 +6,51 @@ that don't require the full compilation infrastructure.
 """
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Optional
+
+
+@dataclass(frozen=True)
+class Platform:
+    id: str
+    name: str
+    description: str
+    arch: str
+    compilers: list[str]
+    has_decompiler: bool = False
+
+
+# TODO copied from cromper, should deduplicate
+class Language(Enum):
+    C = "C"
+    OLD_CXX = "C++"
+    CXX = "C++"
+    PASCAL = "Pascal"
+    ASSEMBLY = "Assembly"
+    OBJECTIVE_C = "ObjectiveC"
+
+    def get_file_extension(self) -> str:
+        return {
+            Language.C: "c",
+            Language.CXX: "cpp",
+            Language.OLD_CXX: "c++",
+            Language.PASCAL: "p",
+            Language.ASSEMBLY: "s",
+            Language.OBJECTIVE_C: "m",
+        }[self]
+
+
+@dataclass(frozen=True)
+class Compiler:
+    id: str
+    platform: Platform
+    flags: str
+    diff_flags: str
+    language: Language = Language.C
+
+
+class CromperError(Exception):
+    pass
 
 
 @dataclass

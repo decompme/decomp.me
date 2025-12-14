@@ -24,11 +24,15 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from ..compiler_utils import CompilationResult, DiffResult, filter_compiler_flags
+from ..compiler_utils import (
+    CompilationResult,
+    CromperError,
+    DiffResult,
+    filter_compiler_flags,
+)
 from ..cromper_client import get_cromper_client
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
-from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.preset import Preset
@@ -103,7 +107,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             libraries=libraries,
         )
         return CompilationResult(result["elf_object"], result["errors"])
-    except (CompilationError, APIException) as e:
+    except (CromperError, APIException) as e:
         return CompilationResult(b"", str(e))
 
 
@@ -118,7 +122,7 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
             diff_flags=scratch.diff_flags,
         )
         return DiffResult(result["result"], result["errors"])
-    except (CompilationError, DiffError) as e:
+    except CromperError as e:
         return DiffResult(None, str(e))
 
 
@@ -198,7 +202,11 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     data = create_ser.validated_data
 
     cromper_client = get_cromper_client()
-    compiler = cromper_client.get_compiler_by_id(data["compiler"])
+    try:
+        compiler = cromper_client.get_compiler_by_id(data["compiler"])
+    except ValueError as e:
+        raise APIException(str(e))
+
     platform = data.get("platform", compiler.platform)
 
     target_asm: str = data.get("target_asm", "")
@@ -211,7 +219,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
         assembly = cache_object(platform.arch, target_obj)
     else:
         asm = get_db_asm(target_asm)
-        cromper_client = get_cromper_client()
         asm_result = cromper_client.assemble_asm(platform.id, asm)
 
         # Create Assembly object from cromper response
@@ -226,7 +233,6 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     source_code = data.get("source_code")
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-        cromper_client = get_cromper_client()
         source_code = cromper_client.decompile(
             platform_id=platform.id,
             compiler_id=compiler.id,

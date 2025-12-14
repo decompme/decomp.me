@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Any, Dict
 
-from coreapp.models.scratch import Assembly, Scratch
+from coreapp.models.scratch import Scratch
 from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
 from coreapp.tests.mock_cromper_client import mock_cromper
@@ -168,7 +168,6 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
-
     @mock_cromper
     def test_family_order(self) -> None:
         root = self.create_nop_scratch()
@@ -201,7 +200,7 @@ class ScratchDetailTests(BaseTestCase):
         }
 
         scratch1 = self.create_scratch(scratch1_dict)
-        scratch2 = self.create_scratch(scratch2_dict)
+        _ = self.create_scratch(scratch2_dict)
 
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 2)
@@ -248,4 +247,3 @@ class ScratchDatabaseTests(BaseTestCase):
         self.assertIsNotNone(scratch)
         self.assertEqual(scratch.compiler, "dummy")
         self.assertEqual(scratch.platform, "dummy")
-
