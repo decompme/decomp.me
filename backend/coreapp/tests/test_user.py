@@ -174,6 +174,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
+    @mock_cromper
     def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.

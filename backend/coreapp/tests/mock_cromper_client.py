@@ -21,7 +21,6 @@ class MockCromperClient:
     """Mock cromper client for testing."""
 
     def __init__(self) -> None:
-        print("ASDF INIT")
         self.dummy_platform = Platform(
             id="dummy",
             name="Dummy Platform",
@@ -40,12 +39,10 @@ class MockCromperClient:
 
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
         """Return a mock compiler."""
-        print("ASDF get_compiler_by_id", compiler_id)
         return self.dummy_compiler
 
     def get_platform_by_id(self, platform_id: str) -> Platform:
         """Return a mock platform."""
-        print("ASDF get_platform_by_id", platform_id)
         return self.dummy_platform
 
     def assemble_asm(self, platform_id: str, asm: Any) -> Dict[str, Any]:
@@ -57,7 +54,6 @@ class MockCromperClient:
                 "arch": "mips",
                 "elf_object": b"",
             }
-        print("ASDF assemble_asm", platform_id, asm)
         mock_elf = b"\x7fELF" + b"\x00" * 100
         return {
             "hash": "mock_hash_123",
@@ -74,7 +70,6 @@ class MockCromperClient:
         context: str = "",
     ) -> str:
         """Return mock decompiled code."""
-        print("ASDF decompile", platform_id, compiler_id, asm, context)
         return "int func(void) {\n    return 0;\n}\n"
 
     def compile_code(
@@ -87,7 +82,6 @@ class MockCromperClient:
         libraries: list[dict[str, str]] = [],
     ) -> Dict[str, Any]:
         """Return mock compilation result."""
-        print("ASDF compile_code", compiler_id, compiler_flags, code, context)
         mock_elf = b"\x7fELF" + b"\x00" * 100
         return {"elf_object": mock_elf, "errors": ""}
 
@@ -100,7 +94,6 @@ class MockCromperClient:
         diff_flags: list[str] = [],
     ) -> Dict[str, Any]:
         """Return mock diff result."""
-        print("ASDF diff", platform_id, diff_label, diff_flags)
         return {
             "result": {"current_score": 0, "max_score": 100},
             "errors": "",
