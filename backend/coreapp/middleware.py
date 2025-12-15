@@ -41,7 +41,7 @@ def disable_csrf(
     return middleware
 
 
-def is_public_request(req: Request):
+def is_public_request(req: Request) -> bool:
     methods_paths = [
         ("GET", "/api/compiler"),
         ("GET", "/api/library"),
