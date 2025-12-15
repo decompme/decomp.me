@@ -13,7 +13,7 @@ class RequestTests(APITestCase):
         Ensure that we create a profile for a normal request
         """
 
-        response = self.client.get(reverse("compilers"), HTTP_USER_AGENT="browser")
+        response = self.client.get(reverse("current-user"), HTTP_USER_AGENT="browser")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 1)
@@ -23,7 +23,9 @@ class RequestTests(APITestCase):
         Ensure that we don't create profiles for node-fetch requests (SSR)
         """
 
-        response = self.client.get(reverse("compilers"), HTTP_USER_AGENT="node-fetch")
+        response = self.client.get(
+            reverse("current-user"), HTTP_USER_AGENT="node-fetch"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
