@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Callable, TYPE_CHECKING, Union
 
 from django.contrib import auth
@@ -40,6 +41,27 @@ def disable_csrf(
     return middleware
 
 
+def is_public_request(req: Request) -> bool:
+    methods_paths = [
+        ("GET", "/api/compiler"),
+        ("GET", "/api/library"),
+        ("GET", "/api/platform"),
+        ("GET", "/api/preset"),
+        ("GET", "/api/scratch-count$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+/compile$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+$"),
+        ("GET", "/api/scratch$"),
+        ("GET", "/api/search$"),
+        ("GET", "/api/stats$"),
+        ("GET", "/api/users"),
+    ]
+    for method, path in methods_paths:
+        if req.method == method and re.match(path, req.path):
+            return True
+
+    return False
+
+
 def set_user_profile(
     get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[Request], Response]:
@@ -57,10 +79,16 @@ def set_user_profile(
             "curl",
             "YandexRenderResourcesBot",
             "SentryUptimeBot",
+            "Discord",
         ]
 
-        # Avoid creating profiles for SSR or bots
+        # Avoid creating persistent profiles for SSR or bots
         if not user_agent or any(bot in user_agent for bot in bot_signatures):
+            request.profile = Profile()
+            return get_response(request)
+
+        # Avoid creating persistent for public endpoints
+        if is_public_request(request):
             request.profile = Profile()
             return get_response(request)
 
