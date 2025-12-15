@@ -54,7 +54,6 @@ def is_public_request(req: Request) -> bool:
         ("GET", "/api/search$"),
         ("GET", "/api/stats$"),
         ("GET", "/api/users"),
-        ("POST", "/api/scratch/[A-Za-z0-9]+/compile$"),
     ]
     for method, path in methods_paths:
         if req.method == method and re.match(path, req.path):
