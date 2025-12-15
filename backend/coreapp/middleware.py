@@ -49,6 +49,8 @@ def is_public_request(req: Request) -> bool:
         ("GET", "/api/preset"),
         ("GET", "/api/scratch-count$"),
         ("GET", "/api/scratch/[A-Za-z0-9]+/compile$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+/export$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+/family$"),
         ("GET", "/api/scratch/[A-Za-z0-9]+$"),
         ("GET", "/api/scratch$"),
         ("GET", "/api/search$"),
