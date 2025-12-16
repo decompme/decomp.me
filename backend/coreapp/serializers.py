@@ -126,10 +126,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
 
     def validate_compiler(self, compiler_id: str) -> str:
         cromper = get_cromper_client()
-        try:
-            compiler = cromper.get_compiler_by_id(compiler_id)
-        except Exception:
-            raise serializers.ValidationError(f"Unknown compiler: {compiler_id}")
+        compiler = cromper.get_compiler_by_id(compiler_id)
         return compiler.id
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:

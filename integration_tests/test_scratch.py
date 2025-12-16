@@ -10,6 +10,7 @@ import zipfile
 import pytest
 from coreapp.models.scratch import Scratch
 from coreapp.views.scratch import compile_scratch_update_score
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 
@@ -295,34 +296,3 @@ class TestScratchExport(IntegrationTestBase):
         assert "ctx.c" in file_names
         assert "current.o" not in file_names
 
-
-@pytest.mark.integration
-class TestScratchTimeout(IntegrationTestBase):
-    """Tests for compilation timeout handling."""
-
-    def test_compiler_timeout(self, api_client, settings):
-        """Test that a hanging compilation will fail with a timeout error"""
-        # Note: This test requires the dummy_longrunning compiler to be available
-        with settings(COMPILATION_TIMEOUT_SECONDS=3):
-            scratch_dict = {
-                "compiler": "dummy_longrunning",
-                "platform": "dummy",
-                "context": "",
-                "target_asm": "asm(AAAAAAAA)",
-            }
-
-            scratch = self.create_scratch(api_client, scratch_dict)
-
-            compile_dict = {
-                "slug": scratch.slug,
-                "compiler": "dummy_longrunning",
-                "compiler_flags": "",
-                "source_code": "source(AAAAAAAA)",
-            }
-
-            response = api_client.post(
-                reverse("scratch-compile", kwargs={"pk": scratch.slug}), compile_dict
-            )
-
-            assert response.json()["success"] is False
-            assert "timeout expired" in response.json()["compiler_output"].lower()

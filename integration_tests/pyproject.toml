@@ -49,6 +49,9 @@ python_functions = "test_*"
 markers = [
     "integration: marks tests as integration tests (requires cromper + Django)",
 ]
+# Django test database settings
+DJANGO_SETTINGS_MODULE = "decompme.settings"
+pythonpath = ["../backend"]
 
 [tool.ruff]
 line-length = 100

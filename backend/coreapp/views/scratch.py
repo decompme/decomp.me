@@ -227,6 +227,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
             defaults={
                 "arch": asm_result["arch"],
                 "elf_object": asm_result["elf_object"],
+                "source_asm": asm,
             },
         )
 

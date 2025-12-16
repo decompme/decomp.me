@@ -46,9 +46,14 @@ class CromperClient:
             logger.info("Fetching compilers from cromper service...")
             response = self._make_request("GET", "/compiler")
             response_json = response.get("compilers", {})
-            self._compilers_cache = {
-                key: Compiler(id=key, **response_json[key]) for key in response_json
-            }
+
+            self._compilers_cache = {}
+            for key in response_json:
+                platform_id = response_json[key].get("platform")
+                platform = self.get_platform_by_id(platform_id)
+                del response_json[key]["platform"]
+                self._compilers_cache[key] = Compiler(id=key, platform=platform, **response_json[key])
+
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
 

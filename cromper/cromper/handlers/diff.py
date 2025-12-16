@@ -25,7 +25,7 @@ def generate_diff(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]
     diff_label = data.get("diff_label", "")
     diff_flags = data.get("diff_flags", [])
 
-    if not target_elf or not compiled_elf:
+    if target_elf is None or compiled_elf is None:
         raise tornado.web.HTTPError(400, "target_elf and compiled_elf are required")
 
     try:
