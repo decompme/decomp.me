@@ -46,6 +46,7 @@ class CromperConfig:
             os.getenv("COMPILATION_TIMEOUT_SECONDS", "10")
         )
         self.assembly_timeout_seconds = int(os.getenv("ASSEMBLY_TIMEOUT_SECONDS", "3"))
+        self.objdump_timeout_seconds = int(os.getenv("OBJDUMP_TIMEOUT_SECONDS", "3"))
 
         # Set up the compiler and library base paths in the shared modules
         self.compilers_instance = compilers.Compilers(self.compiler_base_path)

@@ -15,8 +15,8 @@ class ScratchForkTests(BaseTestCase):
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict: Dict[str, Any] = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
@@ -29,8 +29,8 @@ class ScratchForkTests(BaseTestCase):
         old_claim_token = self.claim_tokens[slug]
 
         fork_dict = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -224,14 +224,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
         scratch2_dict = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
@@ -248,14 +248,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": " ",
         }
         scratch2_dict = {
-            "compiler": "dummy",  # todo use id
-            "platform": "dummy",  # todo use id
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": " ",
         }
