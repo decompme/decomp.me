@@ -24,13 +24,13 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from ..compiler_utils import (
+from ..compiler_utils import filter_compiler_flags
+from ..cromper_client import (
     CompilationResult,
     CromperError,
     DiffResult,
-    filter_compiler_flags,
+    get_cromper_client,
 )
-from ..cromper_client import get_cromper_client
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..filters.search import NonEmptySearchFilter

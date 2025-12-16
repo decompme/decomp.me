@@ -7,7 +7,6 @@ that don't require the full compilation infrastructure.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
 
 
 @dataclass(frozen=True)
@@ -47,26 +46,6 @@ class Compiler:
     flags: str
     diff_flags: str
     language: Language = Language.C
-
-
-class CromperError(Exception):
-    pass
-
-
-@dataclass
-class CompilationResult:
-    """Result of a compilation operation."""
-
-    elf_object: bytes
-    errors: str
-
-
-@dataclass
-class DiffResult:
-    """Result of a diff operation."""
-
-    result: Optional[dict[str, Any]]
-    errors: str
 
 
 def filter_compiler_flags(compiler_flags: str) -> str:

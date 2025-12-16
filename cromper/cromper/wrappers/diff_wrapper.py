@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 MAX_FUNC_SIZE_LINES = 25000
 
 # Default timeout for objdump/nm operations
-DEFAULT_OBJDUMP_TIMEOUT_SECONDS = 10
+DEFAULT_OBJDUMP_TIMEOUT_SECONDS = 3
 
 
 @dataclass

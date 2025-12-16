@@ -41,7 +41,7 @@ def generate_diff(data: Dict[str, Any], config: CromperConfig) -> Dict[str, Any]
     # Create assembly data object
 
     wrapper = DiffWrapper(
-        objdump_timeout_seconds=10,  # TODO: make configurable
+        objdump_timeout_seconds=config.objdump_timeout_seconds,
         use_jail=config.use_sandbox_jail,
         sandbox_tmp_path=config.sandbox_tmp_path,
         sandbox_chroot_path=config.sandbox_chroot_path,

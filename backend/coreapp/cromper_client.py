@@ -1,4 +1,5 @@
 import base64
+from dataclasses import dataclass
 import json
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
@@ -6,7 +7,34 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 import requests
 from django.conf import settings
 
-from coreapp.compiler_utils import Compiler, CromperError, Platform
+from coreapp.compiler_utils import Compiler, Platform
+
+
+@dataclass
+class CompilationResult:
+    """Result of a compilation operation."""
+
+    elf_object: bytes
+    errors: str
+
+
+@dataclass
+class DiffResult:
+    """Result of a diff operation."""
+
+    result: Optional[dict[str, Any]]
+    errors: str
+
+
+class CromperError(Exception):
+    pass
+
+
+class CromperTimeoutError(CromperError):
+    """Exception raised when a cromper request times out."""
+
+    pass
+
 
 if TYPE_CHECKING:
     from coreapp.models.scratch import Asm
@@ -17,7 +45,7 @@ logger = logging.getLogger(__name__)
 class CromperClient:
     """Client for communicating with the cromper service."""
 
-    def __init__(self, base_url: str, timeout: int = 30):
+    def __init__(self, base_url: str, timeout: int = 10):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
@@ -33,6 +61,9 @@ class CromperClient:
             response = self.session.request(method, url, timeout=self.timeout, **kwargs)
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout communicating with cromper service: {e}")
+            raise CromperTimeoutError(f"cromper service timeout: {e}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error communicating with cromper service: {e}")
             raise CromperError(f"cromper service error: {e}")
@@ -52,7 +83,9 @@ class CromperClient:
                 platform_id = response_json[key].get("platform")
                 platform = self.get_platform_by_id(platform_id)
                 del response_json[key]["platform"]
-                self._compilers_cache[key] = Compiler(id=key, platform=platform, **response_json[key])
+                self._compilers_cache[key] = Compiler(
+                    id=key, platform=platform, **response_json[key]
+                )
 
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
