@@ -241,6 +241,7 @@ def create_scratch(
             defaults={
                 "arch": asm_result["arch"],
                 "elf_object": asm_result["elf_object"],
+                "source_asm": asm,
             },
         )
 
