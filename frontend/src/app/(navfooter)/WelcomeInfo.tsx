@@ -46,7 +46,7 @@ export default async function WelcomeInfo() {
                     {SITE_DESCRIPTION}
                 </p>
                 <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
-                    <Link href="/new">
+                    <Link href="/new" prefetch={false}>
                         <Button primary>
                             Start decomping
                             <ArrowRightIcon />
@@ -56,11 +56,15 @@ export default async function WelcomeInfo() {
                 </div>
                 <p className="mx-auto my-6 w-full max-w-screen-sm text-gray-11 text-sm leading-tight">
                     Alternatively, check out existing scratches filtered by{" "}
-                    <Link className="font-bold" href="/platform">
+                    <Link
+                        className="font-bold"
+                        href="/platform"
+                        prefetch={false}
+                    >
                         platform
                     </Link>{" "}
                     or{" "}
-                    <Link className="font-bold" href="/preset">
+                    <Link className="font-bold" href="/preset" prefetch={false}>
                         preset
                     </Link>
                     .

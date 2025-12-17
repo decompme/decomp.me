@@ -268,6 +268,7 @@ class ScratchPagination(CursorPagination):
 
 
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
+@method_decorator(globally_cacheable(max_age=1), name="retrieve")
 class ScratchViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,

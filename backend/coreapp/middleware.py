@@ -49,6 +49,8 @@ def is_public_request(req: Request) -> bool:
         ("GET", "/api/preset"),
         ("GET", "/api/scratch-count$"),
         ("GET", "/api/scratch/[A-Za-z0-9]+/compile$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+/export$"),
+        ("GET", "/api/scratch/[A-Za-z0-9]+/family$"),
         ("GET", "/api/scratch/[A-Za-z0-9]+$"),
         ("GET", "/api/scratch$"),
         ("GET", "/api/search$"),
@@ -87,11 +89,6 @@ def set_user_profile(
             request.profile = Profile()
             return get_response(request)
 
-        # Avoid creating persistent for public endpoints
-        if is_public_request(request):
-            request.profile = Profile()
-            return get_response(request)
-
         profile = None
 
         # Try user-linked profile
@@ -108,6 +105,11 @@ def set_user_profile(
 
                 if profile and profile.user and request.user.is_anonymous:
                     request.user = profile.user
+
+        # Avoid creating persistent for public endpoints
+        if not profile and is_public_request(request):
+            request.profile = Profile()
+            return get_response(request)
 
         # Create new profile if none found
         if not profile:
