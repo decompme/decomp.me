@@ -16,6 +16,9 @@ jobs:
           docker build backend -t decompme_backend
       - name: Run tests
         run: |-
+          # NOTE: CI does not run as 'ubuntu' user
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          sudo chown -R "${USER_1000}:${USER_1000}" .
           docker run \
             -v $(pwd):/decomp.me \
             --entrypoint /bin/bash \
