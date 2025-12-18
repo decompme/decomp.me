@@ -1,8 +1,9 @@
-import logging
-from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict, TYPE_CHECKING
-from pathlib import Path
 import functools
+import logging
+from collections import OrderedDict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .compilers import Compilers
@@ -13,7 +14,6 @@ from .flags import (
     COMMON_MSDOS_DIFF_FLAGS,
     Flags,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class Platform:
     has_decompiler: bool = False
 
     @property
-    @functools.lru_cache()
+    @functools.lru_cache
     def asm_prelude(self) -> str:
         asm_prelude_path: Path = (
             Path(__file__).parent.parent / "asm_preludes" / f"{self.id}.s"
@@ -45,8 +45,8 @@ class Platform:
         self,
         compilers: "Compilers",
         include_compilers: bool = False,
-    ) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {
+    ) -> dict[str, Any]:
+        ret: dict[str, Any] = {
             "id": self.id,
             "name": self.name,
             "description": self.description,
@@ -219,7 +219,7 @@ NDS_ARM9 = Platform(
     description="ARMv5TE",
     arch="arm32",
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
+    objdump_cmd="arm-none-eabi-objdump -marmv5te",
     nm_cmd="arm-none-eabi-nm",
     has_decompiler=True,
 )
@@ -246,22 +246,56 @@ N3DS = Platform(
     has_decompiler=True,
 )
 
+WIIU = Platform(
+    id="wiiu",
+    name="Nintendo Wii U",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-eabi-objdump -M broadway",
+    nm_cmd="powerpc-eabi-nm",
+    has_decompiler=True,
+)
+
+XBOX360 = Platform(
+    id="xbox360",
+    name="Xbox 360",
+    description="PowerPC 64-bit (big-endian)",
+    arch="ppc",
+    assemble_cmd='powerpc-xenon-pe-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-xenon-pe-objdump",
+    nm_cmd="powerpc-xenon-pe-nm",
+)
+
+ANDROID_X86 = Platform(
+    id="android_x86",
+    name="Android x86",
+    description="i686",
+    arch="i686",
+    assemble_cmd='i686-linux-android-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="x86_64-linux-gnu-objdump",
+    nm_cmd="x86_64-linux-gnu-nm",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
-        "irix": IRIX,
-        "n64": N64,
-        "gc_wii": GC_WII,
-        "switch": SWITCH,
-        "gba": GBA,
-        "nds_arm9": NDS_ARM9,
-        "n3ds": N3DS,
-        "ps1": PS1,
-        "ps2": PS2,
-        "psp": PSP,
-        "saturn": SATURN,
-        "dreamcast": DREAMCAST,
-        "macosx": MACOSX,
-        "msdos": MSDOS,
-        "win32": WIN32,
+        IRIX.id: IRIX,
+        N64.id: N64,
+        GC_WII.id: GC_WII,
+        SWITCH.id: SWITCH,
+        GBA.id: GBA,
+        NDS_ARM9.id: NDS_ARM9,
+        N3DS.id: N3DS,
+        PS1.id: PS1,
+        PS2.id: PS2,
+        PSP.id: PSP,
+        SATURN.id: SATURN,
+        DREAMCAST.id: DREAMCAST,
+        MACOSX.id: MACOSX,
+        MSDOS.id: MSDOS,
+        WIIU.id: WIIU,
+        WIN32.id: WIN32,
+        XBOX360.id: XBOX360,
+        ANDROID_X86.id: ANDROID_X86,
     }
 )

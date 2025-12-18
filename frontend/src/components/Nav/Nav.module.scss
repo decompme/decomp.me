@@ -14,8 +14,6 @@ $padding: 8px;
 
 .header {
     min-height: $inner-size;
-    padding-top: $padding;
-    padding-bottom: $padding;
     box-sizing: content-box;
 
     display: grid;
@@ -30,6 +28,9 @@ $padding: 8px;
 
 .headerItemMenuToggle {
     grid-area: menutoggle;
+
+    align-items: center;
+    display: flex;
 
     & > button {
         width: $inner-size;
@@ -63,47 +64,6 @@ $padding: 8px;
 
         width: 100%;
         height: 100%;
-    }
-
-    &:not(:hover) {
-        @keyframes blink {
-            0% {
-                transform: scaleY(1);
-                opacity: 1;
-            }
-
-            25% {
-                transform: scaleY(0.2);
-                opacity: 0;
-            }
-
-            50% {
-                transform: scaleY(1);
-                opacity: 1;
-            }
-
-            75% {
-                transform: scaleY(0.2);
-                opacity: 0;
-            }
-
-            100% {
-                transform: scaleY(1);
-                opacity: 1;
-            }
-        }
-
-        :global(.frog_svg__pupilR),
-        :global(.frog_svg__pupilL),
-        :global(.frog_svg__eyeR),
-        :global(.frog_svg__eyeL) {
-            transform-origin: 0 7px;
-            animation: blink 0.4s 2s ease;
-
-            @media (prefers-reduced-motion) {
-                animation: none;
-            }
-        }
     }
 }
 

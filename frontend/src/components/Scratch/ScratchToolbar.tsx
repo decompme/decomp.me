@@ -5,12 +5,16 @@ import {
     type FC,
     type ClipboardEvent,
     type KeyboardEvent,
+    type MouseEvent,
+    type JSX,
 } from "react";
 
 import {
+    CheckIcon,
     DownloadIcon,
     FileIcon,
     IterationsIcon,
+    MilestoneIcon,
     RepoForkedIcon,
     SyncIcon,
     TrashIcon,
@@ -18,8 +22,7 @@ import {
 } from "@primer/octicons-react";
 import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/Link";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
@@ -32,9 +35,6 @@ import PlatformLink from "../PlatformLink";
 import { SpecialKey, useShortcut } from "../Shortcut";
 import UserAvatar from "../user/UserAvatar";
 
-import useFuzzySaveCallback, {
-    FuzzySaveAction,
-} from "./hooks/useFuzzySaveCallback";
 import styles from "./ScratchToolbar.module.scss";
 
 const ACTIVE_MS = 1000 * 60;
@@ -52,10 +52,11 @@ function exportScratchZip(scratch: api.Scratch) {
     a.click();
 }
 
-async function deleteScratch(scratch: api.Scratch) {
-    await api.delete_(scratchUrl(scratch), {});
-
-    window.location.href = scratch.project ? `/${scratch.project}` : "/";
+function startScratchTour(event?: MouseEvent<HTMLButtonElement>) {
+    event?.currentTarget.blur();
+    window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("scratch-tour:start"));
+    }, 0);
 }
 
 function EditTimeAgo({ date }: { date: string }) {
@@ -65,8 +66,8 @@ function EditTimeAgo({ date }: { date: string }) {
     const [, forceUpdate] = useState({});
     useEffect(() => {
         if (isActive) {
-            const interval = setTimeout(() => forceUpdate({}), ACTIVE_MS);
-            return () => clearInterval(interval);
+            const timeout = setTimeout(() => forceUpdate({}), ACTIVE_MS);
+            return () => clearTimeout(timeout);
         }
     }, [isActive]);
 
@@ -150,70 +151,92 @@ function ScratchName({
     }
 }
 
-function NewScratchButton({ isDirty }: { isDirty: boolean }) {
-    const router = useRouter();
-
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (
-            e.metaKey ||
-            e.ctrlKey ||
-            e.shiftKey ||
-            e.altKey ||
-            e.button !== 0
-        ) {
-            return;
-        }
-
-        e.preventDefault();
-
-        if (
-            !isDirty ||
-            confirm(
-                "This scratch has pending changes, are you sure you want to navigate away?",
-            )
-        ) {
-            router.push("/new");
-        }
-    };
-
+function NewScratchButton() {
     return (
-        <Link href="/new" onClick={handleClick}>
+        <Link href="/new">
             <FileIcon />
-            New
+            <span className="hidden md:inline">New</span>
         </Link>
+    );
+}
+
+function ActionButton({
+    onClick,
+    disabled = false,
+    title,
+    icon,
+    text,
+    dataTour,
+}: {
+    onClick: (event: MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+    disabled?: boolean;
+    title?: string;
+    icon: JSX.Element;
+    text: string;
+    dataTour?: string;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            aria-label={text}
+            data-tour={dataTour}
+        >
+            {icon}
+            <span className="hidden md:inline">{text}</span>
+        </button>
     );
 }
 
 function Actions({
     isCompiling,
-    isDirty,
     compile,
     scratch,
     setScratch,
     saveCallback,
+    deleteScratch,
     setDecompilationTabEnabled,
+    tourTargetsEnabled = true,
 }: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
-    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(
-        scratch,
-        setScratch,
-    );
+    const saveScratchRequest = api.useSaveScratch(scratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
 
-    const canSave = scratch.owner && userIsYou(scratch.owner);
+    const canSave = !!(scratch.owner && userIsYou(scratch.owner));
+    const isSaved = api.useIsScratchSaved(scratch);
 
     const platform = api.usePlatform(scratch.platform);
 
+    const saveScratch = async () => {
+        if (!canSave || isSaved || isSaving) return;
+
+        setIsSaving(true);
+        try {
+            setScratch(await saveScratchRequest());
+            saveCallback();
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const forkCurrentScratch = async () => {
+        if (isForking) return;
+
+        setIsForking(true);
+        try {
+            await forkScratch();
+            saveCallback();
+        } finally {
+            setIsForking(false);
+        }
+    };
+
     const fuzzyShortcut = useShortcut(
         [SpecialKey.CTRL_COMMAND, "S"],
-        async () => {
-            setIsSaving(true);
-            await fuzzySaveScratch();
-            setIsSaving(false);
-            saveCallback();
-        },
+        canSave ? saveScratch : forkCurrentScratch,
     );
 
     const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
@@ -225,45 +248,39 @@ function Actions({
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <NewScratchButton isDirty={isDirty} />
+                <NewScratchButton />
             </li>
+            {canSave && (
+                <li>
+                    <ActionButton
+                        onClick={saveScratch}
+                        disabled={isSaved || isSaving}
+                        title={isSaved ? "No unsaved changes" : fuzzyShortcut}
+                        text={isSaved ? "Saved" : "Save"}
+                        icon={isSaved ? <CheckIcon /> : <UploadIcon />}
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-save"
+                                : undefined
+                        }
+                    />
+                </li>
+            )}
             <li>
-                <button
-                    onClick={async () => {
-                        setIsSaving(true);
-                        await fuzzySaveScratch();
-                        setIsSaving(false);
-                        saveCallback();
-                    }}
-                    disabled={!canSave || isSaving}
-                    title={fuzzyShortcut}
-                >
-                    <UploadIcon />
-                    Save
-                </button>
-            </li>
-            <li>
-                <button
-                    onClick={async () => {
-                        setIsForking(true);
-                        await forkScratch();
-                        setIsForking(false);
-                        saveCallback();
-                    }}
+                <ActionButton
+                    onClick={forkCurrentScratch}
                     disabled={isForking}
-                    title={
-                        fuzzySaveAction === FuzzySaveAction.FORK
-                            ? fuzzyShortcut
-                            : undefined
+                    title={!canSave ? fuzzyShortcut : undefined}
+                    text={!canSave ? "Fork to save" : "Fork"}
+                    icon={<RepoForkedIcon />}
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-fork" : undefined
                     }
-                >
-                    <RepoForkedIcon />
-                    Fork
-                </button>
+                />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (
                 <li>
-                    <button
+                    <ActionButton
                         onClick={(event) => {
                             if (
                                 event.shiftKey ||
@@ -271,39 +288,67 @@ function Actions({
                                     "Are you sure you want to delete this scratch? This action cannot be undone.",
                                 )
                             ) {
-                                deleteScratch(scratch);
+                                void deleteScratch();
                             }
                         }}
-                    >
-                        <TrashIcon />
-                        Delete
-                    </button>
+                        text="Delete"
+                        icon={<TrashIcon />}
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-delete"
+                                : undefined
+                        }
+                    />
                 </li>
             )}
             <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export
-                </button>
+                <ActionButton
+                    onClick={() => exportScratchZip(scratch)}
+                    text="Export"
+                    icon={<DownloadIcon />}
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-export" : undefined
+                    }
+                />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={compile}
                     title={compileShortcut}
                     disabled={isCompiling}
-                >
-                    <SyncIcon />
-                    Compile
-                </button>
+                    text="Compile"
+                    icon={<SyncIcon />}
+                    dataTour={
+                        tourTargetsEnabled
+                            ? "scratch-action-compile"
+                            : undefined
+                    }
+                />
             </li>
             {platform?.has_decompiler && (
                 <li>
-                    <button onClick={() => setDecompilationTabEnabled(true)}>
-                        <IterationsIcon />
-                        Decompile
-                    </button>
+                    <ActionButton
+                        onClick={() => setDecompilationTabEnabled(true)}
+                        icon={<IterationsIcon />}
+                        text="Decompile"
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-decompile"
+                                : undefined
+                        }
+                    />
                 </li>
             )}
+            <li className="hidden md:list-item">
+                <ActionButton
+                    onClick={startScratchTour}
+                    icon={<MilestoneIcon />}
+                    text="Tour"
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-tour" : undefined
+                    }
+                />
+            </li>
         </ul>
     );
 }
@@ -333,7 +378,10 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
                 aria-hidden={location !== ActionsLocation.IN_NAV}
                 className={styles.inNavActionsContainer}
             >
-                <Actions {...props} />
+                <Actions
+                    {...props}
+                    tourTargetsEnabled={location === ActionsLocation.IN_NAV}
+                />
             </div>
         ),
     ];
@@ -341,12 +389,13 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
 
 export type Props = {
     isCompiling: boolean;
-    isDirty: boolean;
     compile: () => Promise<void>;
     scratch: Readonly<api.Scratch>;
     setScratch: (scratch: Partial<api.Scratch>) => void;
     saveCallback: () => void;
+    deleteScratch: () => Promise<void>;
     setDecompilationTabEnabled: (enabled: boolean) => void;
+    tourTargetsEnabled?: boolean;
 };
 
 export default function ScratchToolbar(props: Props) {
@@ -358,7 +407,7 @@ export default function ScratchToolbar(props: Props) {
     return (
         <>
             <Nav>
-                <div className={styles.container}>
+                <div className={styles.container} data-tour="scratch-toolbar">
                     <Breadcrumbs
                         className={styles.breadcrumbs}
                         pages={[
@@ -382,19 +431,24 @@ export default function ScratchToolbar(props: Props) {
                                 label: (
                                     <div className={styles.iconNamePair}>
                                         <PlatformLink
-                                            scratch={scratch}
+                                            platform={scratch.platform}
                                             size={20}
                                         />
-                                        <ScratchName
-                                            name={scratch.name}
-                                            onChange={
-                                                userIsYou(scratch.owner) &&
-                                                ((name) => setScratch({ name }))
-                                            }
-                                        />
-                                        <EditTimeAgo
-                                            date={scratch.last_updated}
-                                        />
+                                        <span data-tour="scratch-name">
+                                            <ScratchName
+                                                name={scratch.name}
+                                                onChange={
+                                                    userIsYou(scratch.owner) &&
+                                                    ((name) =>
+                                                        setScratch({ name }))
+                                                }
+                                            />
+                                        </span>
+                                        <span className="hidden md:inline">
+                                            <EditTimeAgo
+                                                date={scratch.last_updated}
+                                            />
+                                        </span>
                                     </div>
                                 ),
                             },
@@ -410,7 +464,7 @@ export default function ScratchToolbar(props: Props) {
                         "border-gray-6 border-b",
                     )}
                 >
-                    <Actions {...props} />
+                    <Actions {...props} tourTargetsEnabled />
                 </div>
             )}
         </>

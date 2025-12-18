@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, use } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import LoadingSkeleton from "@/app/scratch/[slug]/loading";
 import { post } from "@/lib/api/request";

@@ -111,9 +111,12 @@ export default function ObjdiffPanel({
     }, [objdiffFrame.current, isDark, colors, codeFont, codeFontSize]);
 
     const url = useMemo(() => {
-        return `${process.env.OBJDIFF_BASE}?theme=${
-            isDark ? "decomp-me-dark" : "decomp-me-light"
-        }`;
+        const url = new URL(process.env.OBJDIFF_BASE, window.location.href);
+        url.searchParams.set(
+            "theme",
+            isDark ? "decomp-me-dark" : "decomp-me-light",
+        );
+        return url.toString();
     }, []);
 
     return (

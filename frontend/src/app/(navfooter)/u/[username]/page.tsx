@@ -4,13 +4,13 @@ import { notFound } from "next/navigation";
 
 import Profile from "@/components/user/Profile";
 import { get } from "@/lib/api/request";
-import type { User } from "@/lib/api/types";
+import type { ScratchUser } from "@/lib/api/types";
 
 export async function generateMetadata(props: {
     params: Promise<{ username: string }>;
 }): Promise<Metadata> {
     const params = await props.params;
-    let user: User;
+    let user: ScratchUser;
 
     try {
         user = await get(`/users/${params.username}`);
@@ -26,6 +26,7 @@ export async function generateMetadata(props: {
         title: user.username,
         openGraph: {
             title: user.username,
+            images: [`/u/${user.username}/opengraph-image`],
         },
     };
 }
@@ -34,7 +35,7 @@ export default async function Page(props: {
     params: Promise<{ username: string }>;
 }) {
     const params = await props.params;
-    let user: User;
+    let user: ScratchUser;
     try {
         user = await get(`/users/${params.username}`);
     } catch (error) {

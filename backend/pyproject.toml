@@ -1,46 +1,44 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "decomp.me backend Django application"
+description = ""
 authors = [
-    {name = "decomp.me team"}
+    {name = "Decomp.me team"}
 ]
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
-    "django>=5.1.3",
-    "django-cors-headers>=4.6.0",
-    "django-environ>=0.11.2",
-    "django-filter>=24.3",
-    "djangorestframework>=3.15.2",
-    "psycopg2-binary>=2.9.10",
-    "jwt>=1.3.1",
-    "PyGithub>=2.5.0",
-    "drf-extensions>=0.7.1",
-    "tzdata==2024.2",
-    "Pillow==11.0",
-    "html-json-forms>=1.1.1",
-    "django-resized>=1.0.3",
     "django-cleanup>=9.0.0",
-    "sentry-sdk>=2.19.0",
+    "django-cors-headers>=4.6.0",
+    "django-environ>=0.13.0",
+    "django-filter>=24.3",
+    "django-resized>=1.0.3",
     "django-session-timeout>=0.1.0",
+    "django-stubs-ext>=5.2.9",
+    "django==5.2.11",
+    "djangorestframework>=3.15.2",
+    "drf-extensions>=0.7.1",
+    "gunicorn>=25.1.0",
+    "html-json-forms>=1.1.1",
+    "itsdangerous==2.2.0",
+    "parameterized>=0.9.0",
+    "Pillow==12.1.1",
+    "psycopg2-binary>=2.9.10",
+    "PyGithub>=2.5.0",
+    "pyyaml>=6.0.3",
     "requests>=2.32.3",
-    "setuptools>=75.6.0",
-    "debugpy>=1.8.13",
-    "gunicorn>=23.0.0",
+    "responses==0.26.0",
+    "sentry-sdk>=2.53.0",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.8.0",
-    "usort>=1.0.8",
-    "django-stubs-ext>=5.1.1",
-    "django-stubs[compatible-mypy]>=5.2.5",
-    "djangorestframework-stubs>=3.15.1",
-    "types-requests>=2.32.0.20241016",
-    "parameterized>=0.9.0",
-    "mypy>=1.13.0",
-    "responses==0.25.3",
+    "debugpy>=1.8.20",
+    "django-stubs>=5.2.9",
+    "djangorestframework-stubs>=3.16.8",
+    "mypy>=1.19.1",
+    "ruff>=0.15.2",
+    "types-requests>=2.32.4.20260107",
 ]
 
 [build-system]
@@ -53,9 +51,13 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["coreapp", "decompme"]
 
-[tool.mypy]
-disable_error_code = ["var-annotated", "import-untyped"]
-plugins = ["mypy_django_plugin.main"]
+[tool.ruff]
+include = ["coreapp/**/*.py", "decompme/**/*.py"]
 
-[tool.django-stubs]
-django_settings_module = "decompme.settings"
+[tool.ruff.lint]
+extend-select = ["I"]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["decomp"]
+combine-as-imports = true

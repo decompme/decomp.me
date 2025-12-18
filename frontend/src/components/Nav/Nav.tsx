@@ -2,14 +2,14 @@
 
 import { useEffect, useReducer, type ReactNode } from "react";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/Link";
+import { useRouter } from "@/lib/navigation";
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 
 import GhostButton from "../GhostButton";
-import Logotype from "../Logotype";
+import SiteLogo from "./SiteLogo";
 
 import LoginState from "./LoginState";
 import styles from "./Nav.module.scss";
@@ -50,7 +50,12 @@ export default function Nav({ children }: Props) {
             data-open={isOpen}
             data-force-toggle={!!children}
         >
-            <ul className={clsx(styles.header, "px-2 md:px-8 lg:px-16")}>
+            <ul
+                className={clsx(
+                    styles.header,
+                    "px-2 py-1 md:px-4 md:py-2 lg:px-16",
+                )}
+            >
                 <li className={styles.headerItemMenuToggle}>
                     <button
                         id="navtoggle"
@@ -71,7 +76,7 @@ export default function Nav({ children }: Props) {
                         href="/"
                         className="transition-colors hover:text-gray-12 active:translate-y-px"
                     >
-                        <Logotype />
+                        <SiteLogo />
                     </Link>
                 </li>
                 <li className={styles.headerItemLoginState}>
@@ -108,7 +113,7 @@ export default function Nav({ children }: Props) {
                 <ul className={styles.links}>
                     <li className="flex items-center justify-center">
                         <Link href="/">
-                            <Logotype />
+                            <SiteLogo />
                         </Link>
                     </li>
                     <li>

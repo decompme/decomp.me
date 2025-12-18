@@ -1,7 +1,7 @@
 import { ChevronRightIcon } from "@primer/octicons-react";
 
 import GhostButton from "@/components/GhostButton";
-import Frog from "@/components/Nav/frog.svg";
+import Frog from "@/components/Frog/Frog";
 
 export default function NotFound() {
     return (

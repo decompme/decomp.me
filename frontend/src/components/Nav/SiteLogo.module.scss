@@ -1,0 +1,39 @@
+@keyframes blink {
+  0% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  75% {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.blinkingEyes :global(.pupilR),
+.blinkingEyes :global(.pupilL),
+.blinkingEyes :global(.eyeR),
+.blinkingEyes :global(.eyeL) {
+  transform-origin: 0 7px;
+  animation: blink 0.4s 2s ease;
+}
+
+@media (prefers-reduced-motion) {
+  .blinkingEyes :global(.pupilR),
+  .blinkingEyes :global(.pupilL),
+  .blinkingEyes :global(.eyeR),
+  .blinkingEyes :global(.eyeL) {
+    animation: none;
+  }
+}

@@ -4,19 +4,16 @@ import subprocess
 import time
 from dataclasses import dataclass
 
-from ..compilers import Compiler, CompilerType
-from ..libraries import Library
-from ..error import AssemblyError, CompilationError
-from ..flags import Language
-from ..platforms import Platform
-from ..sandbox import Sandbox
 from cromper import util
 
-logger = logging.getLogger(__name__)
+from ..compilers import Compiler, CompilerType
+from ..error import AssemblyError, CompilationError
+from ..flags import Language
+from ..libraries import Library
+from ..platforms import Platform
+from ..sandbox import Sandbox
 
-PATH: str = "/bin:/usr/bin"
-WINE = "wine"
-WIBO = "wibo"
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -91,12 +88,9 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"wine: could not load .*\.dll.*\n?",
-            r"wineserver: could not save registry .*\n?",
             r"### .*\.exe Driver Error:.*\n?",
             r"#   Cannot find my executable .*\n?",
             r"### MWCPPC\.exe Driver Error:.*\n?",
-            r"Fontconfig error:.*\n?",
         ]
 
         for str in filter_strings:
@@ -116,7 +110,7 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
-            ext = compiler.language.get_file_extension()
+            ext = compiler.get_language(compiler_flags).get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"
@@ -159,18 +153,16 @@ class CompilerWrapper:
             if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
-            # Generate random filename for temporary file
+            # Generate a function label when the request does not provide one.
             fname = util.random_string()
 
             # Run compiler
             try:
                 st = round(time.time() * 1000)
                 libraries_compiler_flags = " ".join(
-                    (
-                        compiler.library_include_flag
-                        + str(lib.get_include_path(compiler.platform.id))
-                        for lib in libraries
-                    )
+                    compiler.library_include_flag
+                    + str(lib.get_include_path(compiler.platform.id))
+                    for lib in libraries
                 )
                 wibo_path = (
                     self.sandbox_kwargs["compiler_base_path"] / "common" / "wibo_dlls"
@@ -182,9 +174,7 @@ class CompilerWrapper:
                     ),
                     shell=True,
                     env={
-                        "PATH": PATH,
-                        "WINE": WINE,
-                        "WIBO": WIBO,
+                        "WIBO": "wibo",
                         "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
@@ -201,25 +191,25 @@ class CompilerWrapper:
                     timeout=self.compilation_timeout_seconds,
                 )
                 et = round(time.time() * 1000)
-                logging.debug(f"Compilation finished in: {et - st} ms")
+                logger.debug(f"Compilation finished in: {et - st} ms")
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 msg = e.stdout
 
-                logging.debug("Compilation failed: %s", msg)
+                logger.debug("Compilation failed: %s", msg)
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
             except ValueError as e:
                 # Shlex issue?
-                logging.debug("Compilation failed: %s", e)
+                logger.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
             except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
 
             if not object_path.exists():
                 error_msg = (
-                    "Compiler did not create an object file: %s" % compile_proc.stdout
+                    f"Compiler did not create an object file: {compile_proc.stdout}"
                 )
-                logging.debug(error_msg)
+                logger.debug(error_msg)
                 raise CompilationError(error_msg)
 
             object_bytes = object_path.read_bytes()
@@ -254,7 +244,6 @@ class CompilerWrapper:
                     mounts=[],
                     shell=True,
                     env={
-                        "PATH": PATH,
                         "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),

@@ -1,7 +1,7 @@
 import base64
-from dataclasses import dataclass
 import json
 import logging
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import requests

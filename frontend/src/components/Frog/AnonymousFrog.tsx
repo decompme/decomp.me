@@ -1,12 +1,8 @@
 import type { SVGProps } from "react";
-
 import clsx from "clsx";
-
 import type * as api from "@/lib/api";
 
-import Frog from "../Nav/frog.svg";
-
-import styles from "./AnonymousFrog.module.scss";
+import Frog from "./Frog";
 
 export type Props = SVGProps<SVGElement> & {
     user: api.AnonymousUser;
@@ -18,11 +14,11 @@ export default function AnonymousFrogAvatar({
     className,
     ...props
 }: Props) {
-    const accentStyle = {
-        "--accent-hue": user.frog_color[0],
-        "--accent-saturation": user.frog_color[1],
-        "--accent-lightness": user.frog_color[2],
-    };
+    const [hue, saturation, lightness] = user.frog_color;
+
+    const primary = `hsl(${hue}, ${saturation * 100}%, ${lightness * 100}%)`;
+    const secondary = `hsl(${hue}, ${(0.3 * (1 - saturation) + saturation) * 100}%, ${(0.5 * (1 - lightness) + lightness) * 100}%)`;
+    const nose = `hsl(${hue}, ${(saturation - 0.2 * saturation) * 100}%, ${(lightness - 0.4 * lightness) * 100}%)`;
 
     return (
         <div
@@ -32,8 +28,10 @@ export default function AnonymousFrogAvatar({
             )}
         >
             <Frog
-                style={accentStyle}
-                className={clsx(styles.anonymousFrog, "h-4/6 w-4/6")}
+                primary={primary}
+                secondary={secondary}
+                nose={nose}
+                className="h-4/6 w-4/6"
                 {...props}
             />
         </div>

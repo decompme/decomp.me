@@ -6,43 +6,41 @@ import logging
 import re
 import zipfile
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 import django_filters
 from django.core.files import File
-from django.db.models import F, FloatField, When, Case, Value
+from django.db.models import Case, F, FloatField, Value, When
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
-
 from django.http import HttpResponse, QueryDict
 from django.utils.decorators import method_decorator
-
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_utils import filter_compiler_flags
-from ..cromper_client import (
-    CompilationResult,
-    CromperError,
-    DiffResult,
-    get_cromper_client,
-)
+from ..cromper_client import CromperError, get_cromper_client
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
+from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
+from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Scratch, Library
+from ..models.scratch import Asm, Assembly, Library, Scratch
+from ..pagination import SafeCursorPagination
 from ..serializers import (
     ClaimableScratchSerializer,
+    ScratchCompileSerializer,
     ScratchCreateSerializer,
+    ScratchDecompileSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
 )
+from ..wrapper_result import CompilationResult, DiffResult
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +76,7 @@ def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
     obj_bytes = file.read()
     is_elf = obj_bytes[:4] == b"\x7fELF"
     is_macho = obj_bytes[:4] == b"\xcf\xfa\xed\xfe"
-    is_coff = obj_bytes[:2] in (b"\x4c\x01", b"\x64\x86")
+    is_coff = obj_bytes[:2] in (b"\x4c\x01", b"\x64\x86", b"\xf2\x01")
     if not (is_elf or is_macho or is_coff):
         raise serializers.ValidationError("Object must be an ELF, Mach-O, or COFF file")
 
@@ -92,8 +90,13 @@ def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
     return assembly
 
 
-def compile_scratch(scratch: Scratch) -> CompilationResult:
+def compile_scratch(scratch: Scratch, context: str | None = None) -> CompilationResult:
     try:
+        scratch_context = (
+            scratch.context_fk.text
+            if context is None and scratch.context_fk
+            else context
+        ) or ""
         libraries = [
             lib.to_json() if isinstance(lib, Library) else lib
             for lib in scratch.libraries
@@ -103,7 +106,7 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
             compiler_id=scratch.compiler,
             compiler_flags=scratch.compiler_flags,
             code=scratch.source_code,
-            context=scratch.context,
+            context=scratch_context,
             libraries=libraries,
         )
         return CompilationResult(result["elf_object"], result["errors"])
@@ -111,7 +114,10 @@ def compile_scratch(scratch: Scratch) -> CompilationResult:
         return CompilationResult(b"", str(e))
 
 
-def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
+def diff_compilation(
+    scratch: Scratch,
+    compilation: CompilationResult,
+) -> DiffResult:
     try:
         cromper_client = get_cromper_client()
         result = cromper_client.diff(
@@ -126,7 +132,10 @@ def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffRe
         return DiffResult(None, str(e))
 
 
-def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
+def update_scratch_score(
+    scratch: Scratch,
+    diff: DiffResult,
+) -> None:
     """
     Given a scratch and a diff, update the scratch's score
     """
@@ -139,9 +148,12 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
         scratch.score = score
         scratch.max_score = max_score
         scratch.save(update_fields=["score", "max_score"])
+        update_best_forks_for_scratch(scratch)
 
 
-def compile_scratch_update_score(scratch: Scratch) -> None:
+def compile_scratch_update_score(
+    scratch: Scratch,
+) -> None:
     """
     Initialize the scratch's score and ignore errors should they occur
     """
@@ -155,9 +167,11 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
 
 def scratch_last_modified(
-    request: Request, pk: Optional[str] = None
-) -> Optional[datetime]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
+    request: Request,
+    pk: str | None = None,
+    partial: bool | None = False,
+) -> datetime | None:
+    scratch: Scratch | None = Scratch.objects.filter(slug=pk).first()
     if scratch:
         return scratch.last_updated
     else:
@@ -167,7 +181,7 @@ def scratch_last_modified(
 scratch_condition = condition(last_modified_func=scratch_last_modified)
 
 
-def is_contentful_asm(asm: Optional[Asm]) -> bool:
+def is_contentful_asm(asm: Asm | None) -> bool:
     if asm is None:
         return False
 
@@ -179,7 +193,7 @@ def is_contentful_asm(asm: Optional[Asm]) -> bool:
     return True
 
 
-def update_needs_recompile(partial: Dict[str, Any]) -> bool:
+def update_needs_recompile(partial: dict[str, Any]) -> bool:
     recompile_params = [
         "compiler",
         "compiler_flags",
@@ -196,7 +210,10 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     return False
 
 
-def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch:
+def create_scratch(
+    data: dict[str, Any],
+    allow_project: bool = False,
+) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
@@ -247,7 +264,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset_id: Optional[str] = None
+    preset_id: str | None = None
     if data.get("preset"):
         preset: Preset = data["preset"]
         preset_id = str(preset.id)
@@ -282,7 +299,11 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     return scratch
 
 
-class ScratchPagination(CursorPagination):
+def profile_can_own_scratch(request: Request) -> bool:
+    return request.profile.id is not None
+
+
+class ScratchPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 10
     page_size_query_param = "page_size"
@@ -290,6 +311,7 @@ class ScratchPagination(CursorPagination):
 
 
 @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
+@method_decorator(globally_cacheable(max_age=1), name="retrieve")
 class ScratchViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -309,11 +331,14 @@ class ScratchViewSet(
 
     queryset = (
         Scratch.objects.all()
-        .select_related("owner__user__github")
+        .select_related(
+            "owner__user__github",
+            "best_fork__fork__owner__user__github",
+        )
         .annotate(match_percent=match_percent)
     )
     pagination_class = ScratchPagination
-    filterset_fields = ["platform", "compiler", "preset"]
+    filterset_class = ScratchFilter
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         NonEmptySearchFilter,
@@ -349,10 +374,14 @@ class ScratchViewSet(
             response.status_code = status.HTTP_403_FORBIDDEN
             return response
 
+        match_override_was_enabled = scratch.match_override
         response = super().update(request, *args, **kwargs)
+        scratch = self.get_object()
+
+        if match_override_was_enabled != scratch.match_override:
+            update_best_forks_for_scratch(scratch)
 
         if update_needs_recompile(request.data):
-            scratch = self.get_object()
             compile_scratch_update_score(scratch)
             return Response(
                 ScratchSerializer(scratch, context={"request": request}).data
@@ -379,26 +408,31 @@ class ScratchViewSet(
 
         # Apply partial
         include_objects = False
+        scratch_context = None
         if request.method == "POST":
-            # TODO: use a serializer w/ validation
-            if "compiler" in request.data:
-                scratch.compiler = request.data["compiler"]
-            if "compiler_flags" in request.data:
-                scratch.compiler_flags = request.data["compiler_flags"]
-            if "diff_flags" in request.data:
-                scratch.diff_flags = request.data["diff_flags"]
-            if "diff_label" in request.data:
-                scratch.diff_label = request.data["diff_label"]
-            if "source_code" in request.data:
-                scratch.source_code = request.data["source_code"]
-            if "context" in request.data:
-                scratch.context = request.data["context"]
-            if "libraries" in request.data:
-                scratch.libraries = request.data["libraries"]
-            if "include_objects" in request.data:
-                include_objects = request.data["include_objects"]
+            compile_ser = ScratchCompileSerializer(
+                data=request.data, context={"scratch": scratch}
+            )
+            compile_ser.is_valid(raise_exception=True)
+            partial = compile_ser.validated_data
 
-        compilation = compile_scratch(scratch)
+            if "compiler" in partial:
+                scratch.compiler = partial["compiler"]
+            if "compiler_flags" in partial:
+                scratch.compiler_flags = partial["compiler_flags"]
+            if "diff_flags" in partial:
+                scratch.diff_flags = partial["diff_flags"]
+            if "diff_label" in partial:
+                scratch.diff_label = partial["diff_label"]
+            if "source_code" in partial:
+                scratch.source_code = partial["source_code"] or ""
+            if "context" in partial:
+                scratch_context = partial["context"]
+            if "libraries" in partial:
+                scratch.libraries = [Library(**lib) for lib in partial["libraries"]]
+            include_objects = partial["include_objects"]
+
+        compilation = compile_scratch(scratch, context=scratch_context)
         diff = diff_compilation(scratch, compilation)
 
         if request.method == "GET":
@@ -437,8 +471,16 @@ class ScratchViewSet(
                 }
             )
 
-        context = request.data.get("context", scratch.context)
-        compiler_id = request.data.get("compiler", scratch.compiler)
+        decompile_ser = ScratchDecompileSerializer(
+            data=request.data, context={"scratch": scratch}
+        )
+        decompile_ser.is_valid(raise_exception=True)
+        partial = decompile_ser.validated_data
+
+        context = partial.get(
+            "context", scratch.context_fk.text if scratch.context_fk else ""
+        )
+        compiler_id = partial.get("compiler", scratch.compiler)
 
         cromper_client = get_cromper_client()
         decompilation = cromper_client.decompile(
@@ -454,20 +496,23 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token = request.data.get("token")
+        token: Any = request.data.get("token")
 
-        if not scratch.is_claimable():
+        if (
+            not isinstance(token, str)
+            or not scratch.is_claimable()
+            or not scratch.verify_claim_token(token)
+        ):
             return Response({"success": False})
 
-        if scratch.claim_token and scratch.claim_token != token:
-            return Response({"success": False})
+        if not profile_can_own_scratch(request):
+            return Response({"success": False}, status=status.HTTP_403_FORBIDDEN)
 
         profile = request.profile
 
         logger.debug(f"Granting ownership of scratch {scratch} to {profile}")
 
         scratch.owner = profile
-        scratch.claim_token = None
         scratch.save()
 
         return Response({"success": True})
@@ -475,6 +520,12 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def fork(self, request: Request, pk: str) -> Response:
         parent: Scratch = self.get_object()
+
+        if not profile_can_own_scratch(request):
+            return Response(
+                {"detail": "A persistent user profile is required to fork scratches."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # TODO Needed for test_fork_scratch test?
         if isinstance(request.data, QueryDict):
@@ -491,6 +542,7 @@ class ScratchViewSet(
         libraries = ser.validated_data["libraries"]
         new_scratch = ser.save(
             parent=parent,
+            owner=request.profile,
             target_assembly=parent.target_assembly,
             platform=parent.platform,
             libraries=libraries,
@@ -499,7 +551,7 @@ class ScratchViewSet(
         compile_scratch_update_score(new_scratch)
 
         return Response(
-            ClaimableScratchSerializer(new_scratch, context={"request": request}).data,
+            ScratchSerializer(new_scratch, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -523,8 +575,8 @@ class ScratchViewSet(
 
             src_ext = scratch.get_language().get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
-            if scratch.context:
-                zip_f.writestr(f"ctx.{src_ext}", scratch.context)
+            if scratch.context_fk and scratch.context_fk.text:
+                zip_f.writestr(f"ctx.{src_ext}", scratch.context_fk.text)
 
             if request.GET.get("target_only") != "1":
                 compilation = compile_scratch(scratch)
@@ -546,7 +598,7 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        subqueries: list[QuerySet["Scratch"]] = []
+        subqueries: list[QuerySet[Scratch]] = []
 
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None
@@ -582,7 +634,12 @@ class ScratchViewSet(
         else:
             family = subqueries[0].union(*subqueries[1:])
 
-        family = family.order_by("creation_time")
+        # Materialize the union before the final fetch so Postgres can use slug
+        # index lookups instead of planning joins across the full scratch table.
+        family_ids = list(family.values_list("slug", flat=True))
+        family = ScratchViewSet.queryset.filter(slug__in=family_ids).order_by(
+            "creation_time"
+        )
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data

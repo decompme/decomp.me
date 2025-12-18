@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-
+import { getPublic } from "@/lib/api/request";
 import {
     platformIcon,
     PLATFORMS,
@@ -10,22 +10,18 @@ const IMAGE_WIDTH_PX = 1200;
 const IMAGE_HEIGHT_PX = 400;
 
 export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export default async function HomeOG() {
-    const OpenSansExtraBold = fetch(
-        new URL("/public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
-    ).then((res) => res.arrayBuffer());
-
     const OpenSansSemiBold = fetch(
-        new URL("/public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
+        new URL("../../public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
 
     const OpenSansBold = fetch(
-        new URL("/public/fonts/OpenSans-Bold.ttf", import.meta.url),
+        new URL("../../public/fonts/OpenSans-Bold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
 
-    const statsRes = await fetch("http://decomp.me/api/stats");
-    const stats = await statsRes.json();
+    const stats = await getPublic("/stats");
     const iconSize = 160;
     const iconCount = 5;
     const textScale = 4.15;
@@ -58,7 +54,7 @@ export default async function HomeOG() {
             <div tw="w-full h-1/10" />
             <div
                 tw={`flex w-full justify-center text-[${textSize.title}rem]`}
-                style={{ fontFamily: "OpenSans-ExtraBold" }}
+                style={{ fontFamily: "OpenSans-Bold" }}
             >
                 decomp.me
             </div>
@@ -84,10 +80,6 @@ export default async function HomeOG() {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
             fonts: [
-                {
-                    name: "OpenSans-ExtraBold",
-                    data: await OpenSansExtraBold,
-                },
                 {
                     name: "OpenSans-SemiBold",
                     data: await OpenSansSemiBold,

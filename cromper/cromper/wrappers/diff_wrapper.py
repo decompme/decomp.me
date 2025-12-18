@@ -1,30 +1,50 @@
 import logging
-import subprocess
+import re
 import shlex
-from pathlib import Path
-from typing import List, Dict, Any, Optional
-from functools import lru_cache
+import subprocess
 from dataclasses import dataclass
+from pathlib import Path
+from functools import lru_cache
+from typing import Any
 
 import diff as asm_differ
 
-from ..platforms import Platform
-from ..flags import ASMDIFF_FLAG_PREFIX
 from ..error import AssemblyError, DiffError, NmError, ObjdumpError
+from ..flags import ASMDIFF_FLAG_PREFIX
+from ..platforms import Platform
 from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 25000
 
-# Default timeout for objdump/nm operations
+PARAM_FLAGS = {
+    "--adjust-vma": re.compile(r"^(0x[0-9a-fA-F]+|\d+)$"),
+    "-Mreg-names": re.compile(r"^([a-zA-Z0-9]+)$"),
+    "--disassemble": re.compile(r"^[a-zA-Z0-9_,.$@?<>:\-\[\]]+$"),
+}
+
+
+@dataclass
+class ParsedFlag:
+    name: str
+    value: str | None = None
+
+
+def parse_flag(flag: str) -> ParsedFlag:
+    if "=" in flag:
+        name, value = flag.split("=", 1)
+        return ParsedFlag(name=name, value=value)
+    return ParsedFlag(name=flag)
+
+
 DEFAULT_OBJDUMP_TIMEOUT_SECONDS = 3
 
 
 @dataclass
 class DiffResult:
-    result: Optional[Dict[str, Any]] = None
-    errors: Optional[str] = None
+    result: dict[str, Any] | None = None
+    errors: str | None = None
 
 
 class DiffWrapper:
@@ -65,7 +85,7 @@ class DiffWrapper:
 
     @staticmethod
     def create_config(
-        arch: asm_differ.ArchSettings, diff_flags: List[str]
+        arch: asm_differ.ArchSettings, diff_flags: list[str]
     ) -> asm_differ.Config:
         show_rodata_refs = "-DIFFno_show_rodata_refs" not in diff_flags
         algorithm = "difflib" if "-DIFFdifflib" in diff_flags else "levenshtein"
@@ -98,11 +118,13 @@ class DiffWrapper:
             reg_categories={},
             show_rodata_refs=show_rodata_refs,
             diff_function_symbols=diff_function_symbols,
+            # Other
+            ref_file=None,
         )
 
     def get_objdump_target_function_flags(
         self, sandbox: Sandbox, target_path: Path, platform: Platform, label: str
-    ) -> List[str]:
+    ) -> list[str]:
         if not label:
             return ["--start-address=0"]
 
@@ -136,20 +158,30 @@ class DiffWrapper:
         return ["--start-address=0"]
 
     @staticmethod
-    def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
+    def parse_objdump_flags(diff_flags: list[str]) -> list[str]:
         known_objdump_flags = ["-Mno-aliases", "--reloc"]
-        known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
+
         ret = []
 
         for flag in diff_flags:
-            if flag in known_objdump_flags or flag.startswith(
-                tuple(known_objdump_flag_prefixes)
-            ):
+            parsed = parse_flag(flag)
+
+            if parsed.name in PARAM_FLAGS:
+                regex = PARAM_FLAGS[parsed.name]
+
+                if not parsed.value or not regex.match(parsed.value):
+                    logger.warning("Ignoring invalid objdump flag: '%s'", flag)
+                    continue
+
+                ret.append(f"{parsed.name}={parsed.value}")
+                continue
+
+            if flag in known_objdump_flags:
                 ret.append(flag)
 
         return ret
 
-    @lru_cache()
+    @lru_cache(maxsize=100)
     def run_objdump(
         self,
         target_data: bytes,
@@ -213,7 +245,7 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         config: asm_differ.Config,
-        diff_flags: List[str],
+        diff_flags: list[str],
     ) -> str:
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
@@ -245,7 +277,7 @@ class DiffWrapper:
     @staticmethod
     def run_diff(
         base_lines: list[str], my_lines: list[str], config: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         diff_output = asm_differ.do_diff(base_lines, my_lines, config)
         table_data = asm_differ.align_diffs(diff_output, diff_output, config)
         return config.formatter.raw(table_data)
@@ -256,7 +288,7 @@ class DiffWrapper:
         platform: Platform,
         diff_label: str,
         compiled_elf: bytes,
-        diff_flags: List[str],
+        diff_flags: list[str],
     ) -> DiffResult:
         try:
             arch = asm_differ.get_arch(platform.arch or "")
@@ -267,6 +299,7 @@ class DiffWrapper:
         objdump_flags = DiffWrapper.parse_objdump_flags(diff_flags)
 
         config = DiffWrapper.create_config(arch, diff_flags)
+        warnings = []
         try:
             basedump = self.get_dump(
                 target_elf,
@@ -278,11 +311,16 @@ class DiffWrapper:
         except Exception as e:
             logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
-        try:
-            mydump = self.get_dump(
-                compiled_elf, platform, diff_label, config, objdump_flags
-            )
-        except Exception:
+        if compiled_elf:
+            try:
+                mydump = self.get_dump(
+                    compiled_elf, platform, diff_label, config, objdump_flags
+                )
+            except Exception as e:
+                logger.exception("Error dumping compiled assembly: %s", e)
+                mydump = ""
+                warnings.append(f"Warning: Error dumping compiled assembly: {e}")
+        else:
             mydump = ""
 
         try:
@@ -292,9 +330,11 @@ class DiffWrapper:
             diff_result = DiffResult(result)
             if any(x.startswith("--disassemble=") for x in objdump_flags):
                 if len(base_lines) and len(my_lines) == 0:
-                    diff_result.errors = (
+                    warnings.append(
                         "Warning: No diff rows. Is your function signature correct?"
                     )
+            if warnings:
+                diff_result.errors = "\n".join(warnings)
         except Exception as e:
             logger.exception("Error running asm-differ: %s", e)
             raise DiffError(f"Error running asm-differ: {e}")

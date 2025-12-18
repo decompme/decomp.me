@@ -1,7 +1,7 @@
 import logging
 import random
 import string
-from typing import Any, Optional
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
@@ -9,7 +9,6 @@ from django.db.utils import IntegrityError
 from django.views import View
 from rest_framework import mixins, permissions, status
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import CursorPagination
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -18,7 +17,9 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from ..models.github import GitHubUser
+from ..models.profile import Profile
 from ..models.project import Project, ProjectMember
+from ..pagination import SafeCursorPagination
 from ..serializers import ProjectMemberSerializer, ProjectSerializer
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class TemporaryProjectCreationStaffOnlyException(APIException):
     )
 
 
-class ProjectPagination(CursorPagination):
+class ProjectPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 20
     page_size_query_param = "page_size"
@@ -107,10 +108,11 @@ class ProjectViewSet(
     parser_classes = [JSONParser, MultiPartParser]
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user: Optional[User] = request.profile.user
+        profile: Profile = request.profile  # type: ignore[attr-defined]
+        user: User | None = profile.user
         if not user:
             raise GithubLoginException()
-        gh_user: Optional[GitHubUser] = user.github
+        gh_user: GitHubUser | None = user.github
         if not gh_user:
             raise GithubLoginException()
         if not user.is_staff:
@@ -125,7 +127,7 @@ class ProjectViewSet(
 
         project = serializer.save()
 
-        ProjectMember(project=project, user=request.profile.user).save()
+        ProjectMember(project=project, user=profile.user).save()
 
         return Response(
             ProjectSerializer(project, context={"request": request}).data,

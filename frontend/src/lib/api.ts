@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
 
-import { ResponseError, get, post, patch } from "./api/request";
+import { ResponseError, get, getPublic, post, patch } from "./api/request";
 import type {
     AnonymousUser,
     User,
@@ -22,8 +22,12 @@ import type {
     ClaimableScratch,
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
+import {
+    buildScratchCompileRequest,
+    buildScratchSavePatch,
+    isScratchSaved,
+} from "./api/scratchState";
 import { ignoreNextWarnBeforeUnload } from "./hooks";
-import { useObjdiffClientEnabled } from "./settings";
 
 function onErrorRetry<C>(
     error: ResponseError,
@@ -39,17 +43,8 @@ function onErrorRetry<C>(
     setTimeout(() => revalidate({ retryCount }), 5000);
 }
 
-function undefinedIfUnchanged<O, K extends keyof O>(
-    saved: O,
-    local: O,
-    key: K,
-): O[K] | undefined {
-    if (saved[key] !== local[key]) {
-        return local[key] !== undefined ? local[key] : null;
-    }
-}
-
 export * from "./api/request";
+export * from "./api/scratchState";
 export * from "./api/types";
 
 export function useThisUser(): User | AnonymousUser | undefined {
@@ -91,10 +86,14 @@ export function useUserIsYou(): (
     ); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-export function useSavedScratch(scratch: Scratch): Scratch {
-    const { data: savedScratch, error } = useSWR(scratchUrl(scratch), get, {
-        fallbackData: scratch, // No loading state, just use the local scratch
-    });
+export function useSavedScratch(scratch: Scratch, enabled = true): Scratch {
+    const { data: savedScratch, error } = useSWR(
+        enabled ? scratchUrl(scratch) : null,
+        get,
+        {
+            fallbackData: scratch, // No loading state, just use the local scratch
+        },
+    );
 
     if (error) throw error;
 
@@ -113,55 +112,10 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             throw new Error("Cannot save scratch which you do not own");
         }
 
-        const updatedScratch = await patch(scratchUrl(localScratch), {
-            source_code: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "source_code",
-            ),
-            context: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "context",
-            ),
-            compiler: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "compiler",
-            ),
-            compiler_flags: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "compiler_flags",
-            ),
-            diff_flags: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "diff_flags",
-            ),
-            diff_label: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "diff_label",
-            ),
-            preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
-            name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
-            description: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "description",
-            ),
-            match_override: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "match_override",
-            ),
-            libraries: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "libraries",
-            ),
-        });
+        const updatedScratch = await patch(
+            scratchUrl(localScratch),
+            buildScratchSavePatch(savedScratch, localScratch),
+        );
 
         await mutate(scratchUrl(localScratch), updatedScratch, {
             revalidate: false,
@@ -181,6 +135,8 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
 
     if (!success) throw new Error("Scratch cannot be claimed");
 
+    await mutate("/user", user, { revalidate: false });
+
     delete scratch.claim_token;
     await mutate(scratchUrl(scratch), {
         ...scratch,
@@ -190,7 +146,12 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
 
 export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
     const scratch = await post(`${scratchUrl(parent)}/fork`, parent);
-    await claimScratch(scratch);
+
+    if (scratch.owner) {
+        await mutate("/user", scratch.owner, { revalidate: false });
+    }
+    await mutate(scratchUrl(scratch), scratch, { revalidate: false });
+
     return scratch;
 }
 
@@ -205,23 +166,33 @@ export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
     }, [parent, router]);
 }
 
-export function useIsScratchSaved(scratch: Scratch): boolean {
-    const saved = useSavedScratch(scratch);
+export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
+    const saved = useSavedScratch(scratch, enabled);
 
-    return (
-        scratch.name === saved.name &&
-        scratch.description === saved.description &&
-        scratch.compiler === saved.compiler &&
-        scratch.compiler_flags === saved.compiler_flags &&
-        JSON.stringify(scratch.diff_flags) ===
-            JSON.stringify(saved.diff_flags) &&
-        scratch.diff_label === saved.diff_label &&
-        scratch.source_code === saved.source_code &&
-        scratch.context === saved.context &&
-        scratch.match_override === saved.match_override &&
-        JSON.stringify(scratch.libraries) === JSON.stringify(saved.libraries)
-    );
+    return isScratchSaved(scratch, saved);
 }
+
+function getScratchCompileInputKey(scratch: Scratch | null): string {
+    return JSON.stringify({
+        compiler: scratch?.compiler,
+        compiler_flags: scratch?.compiler_flags,
+        diff_flags: scratch?.diff_flags,
+        diff_label: scratch?.diff_label,
+        source_code: scratch?.source_code,
+        context: scratch?.context,
+        libraries: scratch?.libraries,
+    });
+}
+
+type CompilationState = {
+    compilation: Compilation | null;
+    inputKey: string | null;
+};
+
+type CompileRequest = {
+    promise: Promise<void>;
+    runAgain: boolean;
+};
 
 export function useCompilation(
     scratch: Scratch | null,
@@ -236,68 +207,91 @@ export function useCompilation(
     isCompilationOld: boolean;
 } {
     const savedScratch = useSavedScratch(scratch);
-    const [compileRequestPromise, setCompileRequestPromise] =
-        useState<Promise<void>>(null);
-    const [compilation, setCompilation] = useState<Compilation>(initial);
+    const [isCompiling, setIsCompiling] = useState(false);
+    const compileInputKey = useMemo(
+        () => getScratchCompileInputKey(scratch),
+        [scratch],
+    );
+    const [compilationState, setCompilationState] = useState<CompilationState>(
+        () => ({
+            compilation: initial,
+            inputKey: initial ? compileInputKey : null,
+        }),
+    );
+    const compilation = compilationState.compilation;
     const [isCompilationOld, setIsCompilationOld] = useState(false);
-    const [objdiffClientEnabled] = useObjdiffClientEnabled();
+    const [queuedCompile, setQueuedCompile] = useState(false);
     const sUrl = scratchUrl(scratch);
     const hasInitialized = useRef(false);
+    const compileRequestRef = useRef<CompileRequest | null>(null);
 
-    const compile = useCallback(() => {
-        if (compileRequestPromise) return compileRequestPromise;
-
-        if (!scratch)
-            return Promise.reject(
-                new Error("Cannot compile without a scratch"),
-            );
-
-        if (!scratch.compiler)
-            return Promise.reject(
-                new Error("Cannot compile before a compiler is set"),
-            );
-
-        const promise = post(`${scratchUrl(scratch)}/compile`, {
-            // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
-            compiler: scratch.compiler,
-            compiler_flags: scratch.compiler_flags,
-            diff_flags: scratch.diff_flags,
-            diff_label: scratch.diff_label,
-            libraries: scratch.libraries,
-            source_code: scratch.source_code,
-            context: savedScratch
-                ? undefinedIfUnchanged(savedScratch, scratch, "context")
-                : scratch.context,
-            include_objects: objdiffClientEnabled,
-        })
-            .then((compilation: Compilation) => {
-                return compilation;
-            })
-            .then((compilation: Compilation) => {
-                setCompilation(compilation);
-            })
-            .finally(() => {
-                setCompileRequestPromise(null);
-                setIsCompilationOld(false);
-            })
-            .catch((error) => {
-                if (error instanceof ResponseError) {
-                    setCompilation({
-                        compiler_output: error.json?.detail,
-                        diff_output: null,
-                        success: false,
-                        left_object: null,
-                        right_object: null,
-                    });
-                } else {
-                    return Promise.reject(error);
+    const compile = useCallback(
+        (queueIfRunning = false) => {
+            if (compileRequestRef.current) {
+                if (queueIfRunning) {
+                    compileRequestRef.current.runAgain = true;
                 }
-            });
+                return compileRequestRef.current.promise;
+            }
 
-        setCompileRequestPromise(promise);
+            if (!scratch)
+                return Promise.reject(
+                    new Error("Cannot compile without a scratch"),
+                );
 
-        return promise;
-    }, [compileRequestPromise, savedScratch, scratch, objdiffClientEnabled]);
+            if (!scratch.compiler)
+                return Promise.reject(
+                    new Error("Cannot compile before a compiler is set"),
+                );
+
+            const requestInputKey = compileInputKey;
+            const promise = post(
+                `${scratchUrl(scratch)}/compile`,
+                buildScratchCompileRequest(savedScratch, scratch),
+            )
+                .then((compilation: Compilation) => {
+                    return compilation;
+                })
+                .then((compilation: Compilation) => {
+                    setCompilationState({
+                        compilation,
+                        inputKey: requestInputKey,
+                    });
+                })
+                .finally(() => {
+                    const runAgain = compileRequestRef.current?.runAgain;
+                    compileRequestRef.current = null;
+                    setIsCompiling(false);
+                    if (runAgain) {
+                        setQueuedCompile(true);
+                    } else {
+                        setIsCompilationOld(false);
+                    }
+                })
+                .catch((error) => {
+                    if (error instanceof ResponseError) {
+                        setCompilationState({
+                            compilation: {
+                                compiler_output: error.json?.detail,
+                                diff_output: null,
+                                success: false,
+                                left_object: null,
+                                right_object: null,
+                            },
+                            inputKey: requestInputKey,
+                        });
+                    } else {
+                        return Promise.reject(error);
+                    }
+                });
+
+            compileRequestRef.current = { promise, runAgain: false };
+            setIsCompiling(true);
+
+            return promise;
+        },
+        [compileInputKey, savedScratch, scratch],
+    );
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl);
@@ -314,42 +308,48 @@ export function useCompilation(
     });
 
     useEffect(() => {
+        if (isCompiling || !queuedCompile) return;
+
+        setQueuedCompile(false);
+        compile();
+    }, [compile, isCompiling, queuedCompile]);
+
+    useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
             if (!compilation) {
                 compile();
             }
         } else {
+            if (compileInputKey === compilationState.inputKey) {
+                return;
+            }
+
             setIsCompilationOld(true);
 
             if (autoRecompile) {
                 if (scratch && scratch.compiler !== "") {
-                    debouncedCompile();
+                    debouncedCompile(true);
                 } else {
-                    setCompilation(null);
+                    setCompilationState({
+                        compilation: null,
+                        inputKey: compileInputKey,
+                    });
                 }
             }
         }
     }, [
         // eslint-disable-line react-hooks/exhaustive-deps
-        debouncedCompile,
         autoRecompile,
-
-        // fields passed to compilations
-        scratch.compiler,
-        scratch.compiler_flags,
-        scratch.diff_flags,
-        scratch.diff_label,
-        scratch.source_code,
-        scratch.context,
-        scratch.libraries,
+        compileInputKey,
+        compilationState.inputKey,
     ]);
 
     return {
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: !!compileRequestPromise,
+        isCompiling,
         isCompilationOld,
     };
 }
@@ -432,7 +432,10 @@ export function usePreset(id: number | undefined): PresetBase | undefined {
 
 export function usePaginated<T>(
     url: string,
-    firstPage?: Page<T>,
+    options: {
+        firstPage?: Page<T>;
+        isPublic?: boolean;
+    } = {},
 ): {
     results: T[];
     hasNext: boolean;
@@ -441,50 +444,60 @@ export function usePaginated<T>(
     loadNext: () => Promise<void>;
     loadPrevious: () => Promise<void>;
 } {
+    const { firstPage, isPublic } = options;
+    const fetchPage = isPublic ? getPublic : get;
     const [results, setResults] = useState<T[]>(firstPage?.results ?? []);
     const [next, setNext] = useState<string | null>(firstPage?.next);
     const [previous, setPrevious] = useState<string | null>(
         firstPage?.previous,
     );
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(!firstPage);
 
     useEffect(() => {
+        let isCurrent = true;
+
         if (!firstPage) {
             setResults([]);
             setNext(url);
             setPrevious(null);
             setIsLoading(true);
 
-            get(url).then((page: Page<T>) => {
+            fetchPage(url).then((page: Page<T>) => {
+                if (!isCurrent) return;
+
                 setResults(page.results);
                 setNext(page.next);
                 setPrevious(page.previous);
                 setIsLoading(false);
             });
         }
-    }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [fetchPage, url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadNext = useCallback(async () => {
         if (!next) throw new Error("No more");
 
         setIsLoading(true);
 
-        const data: Page<T> = await get(next);
+        const data = await fetchPage(next);
         setResults((results) => [...results, ...data.results]);
         setNext(data.next);
         setIsLoading(false);
-    }, [next]);
+    }, [fetchPage, next]);
 
     const loadPrevious = useCallback(async () => {
         if (!previous) throw new Error("No more");
 
         setIsLoading(true);
 
-        const data: Page<T> = await get(previous);
+        const data = await fetchPage(previous);
         setResults((results) => [...data.results, ...results]);
         setPrevious(data.previous);
         setIsLoading(false);
-    }, [previous]);
+    }, [fetchPage, previous]);
 
     return {
         results,
@@ -503,7 +516,7 @@ export interface Stats {
 }
 
 export function useStats(): Stats | undefined {
-    const { data, error } = useSWR<Stats>("/stats", get, {
+    const { data, error } = useSWR<Stats>("/stats", getPublic, {
         refreshInterval: 1000 * 60, // 60 seconds
     });
 

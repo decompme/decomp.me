@@ -4,25 +4,23 @@ from typing import Any
 import django_filters
 from django import forms
 from django.db.models import Count
-
 from django.utils.decorators import method_decorator
-
-from rest_framework.exceptions import APIException
-from rest_framework.serializers import BaseSerializer
-
-from ..decorators.cache import globally_cacheable
-
-from ..filters.search import NonEmptySearchFilter
-
-from coreapp.models.preset import Preset
-from coreapp.serializers import TinyPresetSerializer, PresetSerializer
-from rest_framework.decorators import action
 from rest_framework import filters, serializers, status
-from rest_framework.pagination import CursorPagination
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
+
+from coreapp.models.preset import Preset
+from coreapp.models.profile import Profile
+from coreapp.pagination import SafeCursorPagination
+from coreapp.serializers import PresetSerializer, TinyPresetSerializer
+
+from ..decorators.cache import globally_cacheable
+from ..filters.search import NonEmptySearchFilter
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +30,7 @@ class AuthorizationException(APIException):
     default_detail = "You must be logged in to perform this action."
 
 
-class PresetPagination(CursorPagination):
+class PresetPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 10
     page_size_query_param = "page_size"
@@ -40,11 +38,22 @@ class PresetPagination(CursorPagination):
 
 
 class IsOwnerOrReadOnly(BasePermission):
+    def has_permission(self, request: Any, view: Any) -> bool:
+        if request.method == "POST":
+            profile = getattr(request, "profile", None)
+            return bool(profile is not None and profile.is_staff())
+        return True
+
     def has_object_permission(self, request: Any, view: Any, obj: Any) -> bool:
         if request.method in SAFE_METHODS:
             return True
+        if request.method == "DELETE":
+            return False
+        profile = getattr(request, "profile", None)
+        if profile is not None and profile.is_staff():
+            return True
         if isinstance(obj, Preset):
-            return obj.owner == request.profile
+            return obj.owner == profile
         return False
 
 
@@ -61,7 +70,11 @@ class PresetFilterSet(django_filters.FilterSet):
 )
 class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
-    queryset = Preset.objects.all().annotate(num_scratches=Count("scratch__preset__id"))
+    queryset = (
+        Preset.objects.select_related("owner__user", "owner__user__github")
+        .all()
+        .annotate(num_scratches=Count("scratch"))
+    )
     pagination_class = PresetPagination
     filterset_class = PresetFilterSet
     filter_backends = [
@@ -80,10 +93,17 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     # creation is a special case where you cannot be an owner
     # therefore we only check if the user is authenticated or not
     def perform_create(self, serializer: BaseSerializer[Any]) -> None:
-        if self.request.profile.is_anonymous():
+        profile: Profile = self.request.profile  # type: ignore[attr-defined]
+        if profile.is_anonymous():
             raise AuthorizationException()
 
-        serializer.save(owner=self.request.profile)
+        serializer.save(owner=profile)
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return Response(
+            {"detail": "Presets can only be deleted from the admin panel."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
     @action(
         detail=True,

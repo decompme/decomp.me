@@ -4,6 +4,7 @@ common:
 gba:
   - agbcc
   - agbccpp
+  - gcc2.96
 
 gc_wii:
   - mwcc_233_144
@@ -49,6 +50,8 @@ n64:
   - gcc2.7.2snew
   - gcc2.8.1pm
   - gcc2.8.1sn
+  - ido4.1
+  - ido5.2
   - ido5.3
   - ido5.3_c++
   - ido6.0
@@ -61,9 +64,12 @@ n64:
 n3ds:
   - armcc_40_771
   - armcc_40_821
+  - armcc_40_865
+  - armcc_40_902
   - armcc_41_561
   - armcc_41_713
   - armcc_41_791
+  - armcc_41_844
   - armcc_41_894
   - armcc_41_921
   - armcc_41_1049
@@ -115,6 +121,7 @@ ps1:
   - gcc2.5.7-psx
   - gcc2.6.0-psx
   - gcc2.6.3-psx
+  - gcc2.7.2-cdk
   - gcc2.7.2-psx
   - gcc2.8.0-psx
   - gcc2.8.1-psx
@@ -140,7 +147,6 @@ ps2:
   - ee-gcc2.95.3-114
   - ee-gcc2.95.3-136
   - ee-gcc2.96
-  - ee-gcc3.2-030210-beta2
   - ee-gcc3.2-030926
   - ee-gcc3.2-040921
   - mwcps2-2.3-991202
@@ -205,12 +211,17 @@ macosx:
   - gcc3-1041
 
 msdos:
+  - wcc10.0a
   - wcc10.5
   - wcc10.5a
   - wcc10.6
   - wcc11.0
   - bcc2.0
   - bcc3.1
+  - msc5.1
+
+wiiu:
+  - ghs5.3.22
 
 win32:
   - msvc4.0
@@ -226,3 +237,11 @@ win32:
   - msvc7.1
   - msvc8.0
   - msvc8.0p
+
+xbox360:
+  - msvc_ppc_14.00.2110
+  - msvc_ppc_16.00.11886.00
+
+android_x86:
+  - ndk-r8e-gcc-4.4.3
+  - ndk-r8e-gcc-4.7

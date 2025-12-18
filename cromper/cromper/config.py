@@ -38,7 +38,6 @@ class CromperConfig:
         self.sandbox_chroot_path = Path(
             os.getenv("SANDBOX_CHROOT_PATH", "/tmp/sandbox/root")
         )
-        self.wineprefix = Path(os.getenv("WINEPREFIX", "/tmp/wine"))
         self.nsjail_bin_path = Path(os.getenv("SANDBOX_NSJAIL_BIN_PATH", "/bin/nsjail"))
 
         # Timeouts

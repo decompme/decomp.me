@@ -53,7 +53,6 @@ class CromperTestCase(unittest.TestCase):
             sandbox_chroot_path=config.sandbox_chroot_path,
             compiler_base_path=config.compiler_base_path,
             library_base_path=config.library_base_path,
-            wineprefix=config.wineprefix,
             nsjail_bin_path=config.nsjail_bin_path,
             sandbox_disable_proc=config.sandbox_disable_proc,
             debug=config.debug,

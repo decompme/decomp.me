@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import DateObject from "react-date-object";
 import ReactTimeAgo from "react-timeago";
 
@@ -12,7 +16,22 @@ export default function TimeAgo({
 }: {
     date: string;
 }) {
+    const [mounted, setMounted] = useState(false);
+    const dateTime = new Date(date).toISOString();
+    const fallbackTitle = dateTime.substring(0, 19).replace("T", " ");
     const title = formatDateString(date);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <time dateTime={dateTime} title={fallbackTitle}>
+                {fallbackTitle}
+            </time>
+        );
+    }
 
     return <ReactTimeAgo date={date} title={title} />;
 }

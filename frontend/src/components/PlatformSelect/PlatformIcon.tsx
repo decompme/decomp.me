@@ -1,7 +1,8 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { platformUrl } from "@/lib/api/urls";
 
+import LogoAndroid from "./android.svg";
 import LogoDreamcast from "./dreamcast.svg";
 import LogoGBA from "./gba.svg";
 import LogoGCWii from "./gc_wii.svg";
@@ -17,7 +18,9 @@ import LogoPSP from "./psp.svg";
 import LogoSaturn from "./saturn.svg";
 import LogoSwitch from "./switch.svg";
 import UnknownIcon from "./unknown.svg";
+import LogoWiiU from "./wiiu.svg";
 import LogoWin32 from "./win32.svg";
+import LogoXbox360 from "./xbox360.svg";
 
 /** In release-date order */
 const ICONS = {
@@ -33,9 +36,12 @@ const ICONS = {
     ps2: LogoPS2,
     psp: LogoPSP,
     n3ds: LogoN3DS,
+    wiiu: LogoWiiU,
     switch: LogoSwitch,
     saturn: LogoSaturn,
     dreamcast: LogoDreamcast,
+    xbox360: LogoXbox360,
+    android_x86: LogoAndroid,
 };
 
 export const PLATFORMS = Object.keys(ICONS);
@@ -57,7 +63,7 @@ export function PlatformIcon({ platform, className, clickable, size }: Props) {
 
     if (clickable) {
         return (
-            <Link href={url} prefetch={false}>
+            <Link href={url}>
                 <Icon width={size} height={size} className={className} />
             </Link>
         );

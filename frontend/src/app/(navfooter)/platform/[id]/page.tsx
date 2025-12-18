@@ -80,7 +80,7 @@ export default async function Page(props: { params: Promise<{ id: number }> }) {
 
             <section>
                 <ScratchList
-                    url={`/scratch?platform=${platform.id}&page_size=20`}
+                    url={`/scratch?platform=${platform.id}&page_size=20&has_owner=true`}
                     item={ScratchItemPlatformList}
                     isSortable={true}
                     title={`Scratches (${scratch_count.num_scratches.toLocaleString("en-US")})`}

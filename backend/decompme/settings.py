@@ -3,7 +3,6 @@ from pathlib import Path
 
 import django_stubs_ext
 import environ
-
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.transport import HttpTransport
@@ -17,8 +16,6 @@ env = environ.Env(
     DEBUG=(bool, False),
     DJANGO_LOG_LEVEL=(str, "INFO"),
     ALLOWED_HOSTS=(list, []),
-    SANDBOX_NSJAIL_BIN_PATH=(str, "/bin/nsjail"),
-    SANDBOX_DISABLE_PROC=(bool, False),
     SECURE_SSL_REDIRECT=(bool, False),
     SECURE_PROXY_SSL_HEADER=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
@@ -29,12 +26,9 @@ env = environ.Env(
     MEDIA_URL=(str, "/media/"),
     MEDIA_ROOT=(str, BASE_DIR / "media"),
     LOCAL_FILE_DIR=(str, BASE_DIR / "local_files"),
-    USE_SANDBOX_JAIL=(bool, False),
     SESSION_COOKIE_SECURE=(bool, True),
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
-    COMPILATION_CACHE_SIZE=(int, 100),
-    WINEPREFIX=(str, "/tmp/wine"),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
     SENTRY_TIMEOUT=(int, 3),
@@ -76,6 +70,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "coreapp.middleware.strip_session",
     "coreapp.middleware.strip_cookie_vary",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -91,6 +86,7 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "coreapp.error.custom_exception_handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
@@ -209,18 +205,8 @@ if DEBUG:
 else:
     SESSION_COOKIE_SAMESITE = "Lax"
 
-USE_SANDBOX_JAIL = env("USE_SANDBOX_JAIL")
-SANDBOX_NSJAIL_BIN_PATH = Path(env("SANDBOX_NSJAIL_BIN_PATH"))
-SANDBOX_CHROOT_PATH = BASE_DIR.parent / "sandbox" / "root"
-SANDBOX_TMP_PATH = BASE_DIR.parent / "sandbox" / "tmp"
-SANDBOX_DISABLE_PROC = env("SANDBOX_DISABLE_PROC")
-
 GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
-
-COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)
-
-WINEPREFIX = Path(env("WINEPREFIX"))
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)

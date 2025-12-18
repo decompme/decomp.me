@@ -8,6 +8,9 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres:/var/lib/postgresql/data
+      - ./pgdump:/pgdump
+    restart: unless-stopped
+
   cromper:
     build:
       context: cromper
@@ -18,8 +21,13 @@ services:
       - setuid
       - setgid
       - setfcap
+    environment:
+      CROMPER_PORT: 8888
+      USE_SANDBOX_JAIL: "true"
+      SANDBOX_DISABLE_PROC: "true"
     ports:
       - "8888:8888"
+    restart: unless-stopped
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
@@ -28,25 +36,36 @@ services:
       - ./cromper/compilers:/cromper/compilers:ro
       - ./cromper/libraries:/cromper/libraries:ro
     tmpfs:
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
       - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
-    environment:
-      - CROMPER_PORT=8888
-      - USE_SANDBOX_JAIL=true
-      - SANDBOX_DISABLE_PROC=true
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
   backend:
     build:
       context: backend
       target: dev
     env_file:
       - backend/docker.dev.env
+    depends_on:
+      cromper:
+        condition: service_healthy
     ports:
       - "8000:8000"
       - "5678:5678" # vscode debugger
+    restart: unless-stopped
     volumes:
       - ./backend:/backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
   frontend:
     build:
       context: frontend
@@ -57,15 +76,31 @@ services:
       INTERNAL_CROMPER_BASE: http://cromper:8888
     ports:
       - "8080:8080"
+    restart: unless-stopped
     volumes:
       - ./frontend:/frontend
       - .env:/.env
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
   nginx:
-    image: nginx:1.28-alpine
+    build:
+      context: nginx
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     ports:
       - "80:80"
+    restart: unless-stopped
     volumes:
-      - ./nginx/development.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/development/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
-    restart: unless-stopped
+      - ./backend/static:/var/www/static

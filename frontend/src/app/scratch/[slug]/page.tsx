@@ -1,5 +1,8 @@
 import type { Metadata, ResolvingMetadata } from "next";
 
+import { bubbleNotFound, get } from "@/lib/api/request";
+import type { Scratch } from "@/lib/api/types";
+
 import getScratchDetails from "./getScratchDetails";
 import ScratchEditor from "./ScratchEditor";
 
@@ -8,7 +11,9 @@ export async function generateMetadata(
     parent: ResolvingMetadata,
 ): Promise<Metadata> {
     const params = await props.params;
-    const { scratch } = await getScratchDetails(params.slug);
+    const scratch: Scratch = await get(`/scratch/${params.slug}`).catch(
+        bubbleNotFound,
+    );
     const parentData = await parent;
 
     return {

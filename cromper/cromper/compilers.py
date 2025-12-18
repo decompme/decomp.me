@@ -1,30 +1,36 @@
 import enum
 import logging
+from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar, List, Optional, OrderedDict
+from typing import ClassVar
 
 from .flags import (
     COMMON_ARMCC_FLAGS,
+    COMMON_BORLAND_FLAGS,
     COMMON_CLANG_FLAGS,
-    COMMON_GCC_GC_FLAGS,
-    COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
+    COMMON_GCC_GC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_GHS_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
     COMMON_MWCC_NDS_ARM9_FLAGS,
     COMMON_MWCC_PS2_FLAGS,
     COMMON_MWCC_PSP_FLAGS,
     COMMON_MWCC_WII_GC_FLAGS,
+    COMMON_SHC_FLAGS,
+    COMMON_SHC_OLD_FLAGS,
     COMMON_WATCOM_FLAGS,
-    COMMON_BORLAND_FLAGS,
     Flags,
     Language,
+    LanguageFlagSet,
 )
 from .platforms import (
+    ANDROID_X86,
+    DREAMCAST,
     GBA,
     GC_WII,
     IRIX,
@@ -37,9 +43,10 @@ from .platforms import (
     PS2,
     PSP,
     SATURN,
-    DREAMCAST,
     SWITCH,
+    WIIU,
     WIN32,
+    XBOX360,
     Platform,
 )
 
@@ -50,21 +57,22 @@ class Compilers:
     def __init__(self, base_path: Path) -> None:
         self.base_path = base_path
         self._available_compilers = OrderedDict(
-            {c.id: c for c in _all_compilers if c.available(base_path)}
+            (c.id, c) for c in _all_compilers if c.available(base_path)
         )
 
         logger.info(
-            f"Enabled {len(self._available_compilers)} compiler(s): {', '.join(self._available_compilers.keys())}"
+            "Enabled %d compiler(s): %s",
+            len(self._available_compilers),
+            ", ".join(self._available_compilers),
         )
 
-    def all_compilers(self) -> List["Compiler"]:
+    def all_compilers(self) -> list["Compiler"]:
         return list(_all_compilers)
 
-    def available_compilers(self) -> List["Compiler"]:
+    def available_compilers(self) -> list["Compiler"]:
         return list(self._available_compilers.values())
 
     def is_compiler_available(self, compiler: "Compiler") -> bool:
-        """Check if a specific compiler is available with this instance's base path."""
         return compiler.available(self.base_path)
 
     @staticmethod
@@ -89,16 +97,13 @@ class Compiler:
     platform: Platform
     flags: ClassVar[Flags]
     library_include_flag: str
-    base_compiler: Optional["Compiler"] = None
+    base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: Language = Language.C
 
     @property
     def path(self) -> Path:
-        if self.base_compiler is not None:
-            return self.base_compiler.path
-        # This will be overridden by get_path method
-        raise NotImplementedError("Use get_path method instead")
+        raise NotImplementedError("Use get_path(base) in the Cromper service")
 
     def get_path(self, base: Path) -> Path:
         if self.base_compiler is not None:
@@ -111,12 +116,31 @@ class Compiler:
             print(f"Compiler {self.id} not found at {self.get_path(base)}")
         return self.get_path(base).exists()
 
-    def to_json(self) -> dict:
-        """Convert compiler to JSON format compatible with decomp.me frontend."""
+    def get_language(self, compiler_flags: str = "") -> Language:
+        language_flag_set = next(
+            (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
+            None,
+        )
+        if language_flag_set is None:
+            return self.language
+
+        matches = [
+            (flag, language)
+            for flag, language in language_flag_set.flags.items()
+            if flag in compiler_flags
+        ]
+        if not matches:
+            return self.language
+
+        return max(matches, key=lambda match: len(match[0]))[1]
+
+    def to_json(self) -> dict[str, object]:
         return {
+            "id": self.id,
             "platform": self.platform.id,
             "flags": [f.to_json() for f in self.flags],
             "diff_flags": [f.to_json() for f in self.platform.diff_flags],
+            "language": self.language.value,
         }
 
 
@@ -135,6 +159,12 @@ class ArmccCompiler(Compiler):
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    library_include_flag: str = ""
+
+
+@dataclass(frozen=True)
+class SHCOldCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_SHC_OLD_FLAGS
     library_include_flag: str = ""
 
 
@@ -227,6 +257,20 @@ class BorlandCompiler(Compiler):
     library_include_flag: str = ""
 
 
+@dataclass(frozen=True)
+class GHSCompiler(Compiler):
+    platform: Platform = WIIU
+    flags: ClassVar[Flags] = COMMON_GHS_FLAGS
+    library_include_flag: str = "-I"
+
+
+@dataclass(frozen=True)
+class MicrosoftCCompiler(Compiler):
+    platform = MSDOS
+    flags: ClassVar[Flags] = []
+    library_include_flag: str = ""
+
+
 # GBA
 AGBCC = GCCCompiler(
     id="agbcc",
@@ -241,9 +285,23 @@ OLD_AGBCC = GCCCompiler(
     base_compiler=AGBCC,
 )
 
+GCC_296 = GCCCompiler(
+    id="gcc2.96",
+    platform=GBA,
+    cc='"${COMPILER_DIR}"/usr/local/bin/arm-elf-gcc $COMPILER_FLAGS -S -o - "$INPUT" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+)
+
+AGBCC_ARM = GCCCompiler(
+    id="agbcc_arm",
+    platform=GBA,
+    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc_arm $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+    base_compiler=AGBCC,
+)
+
 AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
+    language=Language.CXX,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 # N3DS
@@ -257,6 +315,18 @@ ARMCC_40_771 = ArmccCompiler(
 
 ARMCC_40_821 = ArmccCompiler(
     id="armcc_40_821",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_40_865 = ArmccCompiler(
+    id="armcc_40_865",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_40_902 = ArmccCompiler(
+    id="armcc_40_902",
     platform=N3DS,
     cc=ARMCC_CC,
 )
@@ -275,6 +345,12 @@ ARMCC_41_713 = ArmccCompiler(
 
 ARMCC_41_791 = ArmccCompiler(
     id="armcc_41_791",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_844 = ArmccCompiler(
+    id="armcc_41_844",
     platform=N3DS,
     cc=ARMCC_CC,
 )
@@ -346,9 +422,9 @@ PSYQ_COMPILE_BAT = "\r\n".join(
 PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
-    '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '/usr/bin/cpp "${INPUT}" | unix2dos > dos_src.c && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
@@ -419,7 +495,8 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 PS1_GCC = (
-    '/usr/bin/cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
+    # Fixup "# 0" line directives because cc1plus chokes on them
+    '/usr/bin/cpp -nostdinc "${INPUT}" | sed "s/^# 0/# 1/" > "${INPUT}".i && '
     'eval "${COMPILER_DIR}/gcc ${COMPILER_FLAGS} -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}".i"'
 )
 
@@ -435,6 +512,11 @@ GCC260_PSX = GCCPS1Compiler(
 
 GCC263_PSX = GCCPS1Compiler(
     id="gcc2.6.3-psx",
+    cc=PS1_GCC,
+)
+
+GCC272_CDK = GCCPS1Compiler(
+    id="gcc2.7.2-cdk",
     cc=PS1_GCC,
 )
 
@@ -493,9 +575,9 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 SATURN_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
     'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
@@ -508,17 +590,19 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
-    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
+    "python3 ${COMPILER_DIR}/rof2elf.py dos_src.obj ${OUTPUT} --isa=sh4"
 )
 
-SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10)
+SHC_V50R10 = SHCOldCompiler(
+    id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10
+)
 
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
-    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
+    "python3 ${COMPILER_DIR}/rof2elf.py dos_src.obj ${OUTPUT} --isa=sh4"
 )
 
 SHC_V50R26 = SHCCompiler(id="shc-v5.0r26", platform=DREAMCAST, cc=DREAMCAST_CC)
@@ -597,11 +681,6 @@ EE_GCC2953_136 = GCCPS2Compiler(
 EE_GCC296 = GCCPS2Compiler(
     id="ee-gcc2.96",
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
-)
-
-EE_GCC32_030210_BETA2 = GCCPS2Compiler(
-    id="ee-gcc3.2-030210-beta2",
-    cc='WIBOPATH="${COMPILER_DIR}"/dll/ ${WINE} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC32_030926 = GCCPS2Compiler(
@@ -794,6 +873,19 @@ MWCCPSP_3_0_1_219 = MWCCPSPCompiler(
 )
 
 # N64
+IDO41 = IDOCompiler(
+    id="ido4.1",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix-4.0 -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -I "{COMPILER_DIR}"/usr/include -EL -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+    + '&& python3  "${COMPILER_DIR}"/usr/bin/ecoff_tool.py --convert-elf "$OUTPUT" -o "$OUTPUT"',
+)
+
+IDO52 = IDOCompiler(
+    id="ido5.2",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
 IDO53 = IDOCompiler(
     id="ido5.3",
     platform=N64,
@@ -811,6 +903,14 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71_CXX = IDOCompiler(
+    id="ido7.1_c++",
+    platform=N64,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO71,
+    language=Language.OLD_CXX,
 )
 
 IDO60 = IDOCompiler(
@@ -853,6 +953,7 @@ GCC272SN0001CXX = GCCCompiler(
     id="gcc2.7.2sn0001-cxx",
     base_compiler=GCC272SN0001,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
@@ -878,6 +979,7 @@ GCC272SN0006CXX = GCCCompiler(
     id="gcc2.7.2sn0006-cxx",
     base_compiler=GCC272SN0006,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -903,6 +1005,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -913,6 +1016,7 @@ GCC281SNEWCXX = GCCCompiler(
     id="gcc2.8.1snew-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
@@ -943,6 +1047,13 @@ GCC440MIPS64ELF = GCCCompiler(
     id="gcc4.4.0-mips64-elf",
     platform=N64,
     cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
+# GHS
+GHS5322 = GHSCompiler(
+    id="ghs5.3.22",
+    platform=WIIU,
+    cc='${WIBO} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 # IRIX
@@ -1023,6 +1134,7 @@ XCODE_GCC401_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS,
     base_compiler=XCODE_GCC401_C,
+    language=Language.CXX,
 )
 
 XCODE_24_C = GCCCompiler(
@@ -1036,6 +1148,7 @@ XCODE_24_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_24_C,
+    language=Language.CXX,
 )
 
 XCODE_GCC400_C = GCCCompiler(
@@ -1049,6 +1162,7 @@ XCODE_GCC400_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_GCC400_C,
+    language=Language.CXX,
 )
 
 PBX_GCC3 = GCCCompiler(
@@ -1449,6 +1563,20 @@ WATCOM_CXX = (
     + "\" | sed 's:/:\\\\:g')"
 )
 
+WATCOM_100A_C = WatcomCompiler(
+    id="wcc10.0a",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_100A_CPP = WatcomCompiler(
+    id="wpp10.0a",
+    base_compiler=WATCOM_100A_C,
+    platform=MSDOS,
+    language=Language.CXX,
+    cc=WATCOM_CXX,
+)
+
 WATCOM_105_C = WatcomCompiler(
     id="wcc10.5",
     platform=MSDOS,
@@ -1459,6 +1587,7 @@ WATCOM_105_CPP = WatcomCompiler(
     id="wpp10.5",
     base_compiler=WATCOM_105_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1472,6 +1601,7 @@ WATCOM_105A_CPP = WatcomCompiler(
     id="wpp10.5a",
     base_compiler=WATCOM_105A_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1485,6 +1615,7 @@ WATCOM_106_CPP = WatcomCompiler(
     id="wpp10.6",
     base_compiler=WATCOM_106_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1498,13 +1629,14 @@ WATCOM_110_CPP = WatcomCompiler(
     id="wpp11.0",
     base_compiler=WATCOM_110_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
 BORLAND_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'
 )
 
@@ -1520,17 +1652,59 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
-_all_compilers: List[Compiler] = [
+MSC_51 = MicrosoftCCompiler(
+    id="msc5.1",
+    platform=MSDOS,
+    cc=(
+        "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+        'cat "${INPUT}" | unix2dos > dos_src.c && '
+        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
+        'cp out.o "${OUTPUT}"'
+    ),
+)
+
+CL_XBOX = '${WIBO} "${COMPILER_DIR}/cl.exe" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+MSVC_PPC_14_00_2110 = MSVCCompiler(
+    id="msvc_ppc_14.00.2110",
+    platform=XBOX360,
+    cc=CL_XBOX,
+)
+
+MSVC_PPC_16_00_11886_00 = MSVCCompiler(
+    id="msvc_ppc_16.00.11886.00",
+    platform=XBOX360,
+    cc=CL_XBOX,
+)
+
+ANDROID_R8E_443_C = GCCCompiler(
+    id="ndk-r8e-gcc-4.4.3",
+    platform=ANDROID_X86,
+    cc='"$COMPILER_DIR"/toolchains/x86-4.4.3/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
+ANDROID_R8E_47_C = GCCCompiler(
+    id="ndk-r8e-gcc-4.7",
+    platform=ANDROID_X86,
+    cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
+_all_compilers: list[Compiler] = [
     # GBA
     AGBCC,
     OLD_AGBCC,
+    AGBCC_ARM,
     AGBCCPP,
+    GCC_296,
     # N3DS
     ARMCC_40_771,
     ARMCC_40_821,
+    ARMCC_40_865,
+    ARMCC_40_902,
     ARMCC_41_561,
     ARMCC_41_713,
     ARMCC_41_791,
+    ARMCC_41_844,
     ARMCC_41_894,
     ARMCC_41_921,
     ARMCC_41_1049,
@@ -1555,6 +1729,7 @@ _all_compilers: List[Compiler] = [
     GCC257_PSX,
     GCC260_PSX,
     GCC263_PSX,
+    GCC272_CDK,
     GCC272_PSX,
     GCC280_PSX,
     GCC281_PSX,
@@ -1607,7 +1782,6 @@ _all_compilers: List[Compiler] = [
     EE_GCC2953_114,
     EE_GCC2953_136,
     EE_GCC296,
-    EE_GCC32_030210_BETA2,
     EE_GCC32_030926,
     EE_GCC32_040921,
     MWCPS2_23_991202,
@@ -1634,10 +1808,13 @@ _all_compilers: List[Compiler] = [
     MWCPS2_301B205_051227,
     MWCPS2_301B210_060308,
     # N64
+    IDO41,
+    IDO52,
     IDO53,
     IDO53_CXX,
     IDO60,
     IDO71,
+    IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,
     GCC272SN0001,
@@ -1729,6 +1906,8 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # WIIU
+    GHS5322,
     # WIN32
     MSVC40,
     MSVC41,
@@ -1744,6 +1923,8 @@ _all_compilers: List[Compiler] = [
     MSVC80,
     MSVC80P,
     # Watcom, DOS and Win32
+    WATCOM_100A_C,
+    WATCOM_100A_CPP,
     WATCOM_105_C,
     WATCOM_105_CPP,
     WATCOM_105A_C,
@@ -1755,4 +1936,12 @@ _all_compilers: List[Compiler] = [
     # Borland, DOS
     BORLAND_20_C,
     BORLAND_31_C,
+    # Microsoft C compiler
+    MSC_51,
+    # Xbox 360
+    MSVC_PPC_14_00_2110,
+    MSVC_PPC_16_00_11886_00,
+    # GCC, Android
+    ANDROID_R8E_443_C,
+    ANDROID_R8E_47_C,
 ]

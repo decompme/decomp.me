@@ -14,12 +14,10 @@ until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
 done
 
 if [ -z "$CI" ]; then
+  uv run manage.py clearsessions
   uv run /backend/db_housekeeping.py
 else
   echo "Skipping housekeeping: running in CI environment"
 fi
-
-uv run /backend/manage.py migrate
-
 
 uv run gunicorn -w ${WORKERS} decompme.wsgi --bind ${BE_HOST}:${BE_PORT}

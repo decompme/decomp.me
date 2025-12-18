@@ -1,16 +1,15 @@
 # This file wraps common django decorators in method_decorator for use with the APIView class
 
+from collections.abc import Callable
 from datetime import datetime
-
-from typing import Callable, Optional
 
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
 
 
 def condition(
-    etag_func: Optional[Callable[..., Optional[str]]] = None,
-    last_modified_func: Optional[Callable[..., Optional[datetime]]] = None,
+    etag_func: Callable[..., str | None] | None = None,
+    last_modified_func: Callable[..., datetime | None] | None = None,
 ) -> Callable[..., Callable[..., Response]]:
     """
     Handle Last-Modified and ETag headers.

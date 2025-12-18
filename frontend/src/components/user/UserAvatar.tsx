@@ -9,11 +9,11 @@ import clsx from "clsx";
 import * as api from "@/lib/api";
 import { userAvatarUrl } from "@/lib/api/urls";
 
-import AnonymousFrogAvatar from "./AnonymousFrog";
+import AnonymousFrogAvatar from "../Frog/AnonymousFrog";
 import styles from "./UserAvatar.module.scss";
 
 export type Props = {
-    user: api.User | api.AnonymousUser | undefined;
+    user: api.ScratchUser | api.User | api.AnonymousUser | undefined;
     className?: string;
 };
 
@@ -36,7 +36,7 @@ export default function UserAvatar({ user, className }: Props) {
     return (
         <span className={clsx(styles.avatar, className)}>
             {api.isAnonUser(user) ? (
-                <AnonymousFrogAvatar user={user} />
+                <AnonymousFrogAvatar user={user} className="size-full" />
             ) : (
                 userAvatarUrl(user) && (
                     <Image src={userAvatarUrl(user)} alt="" fill sizes="64px" />

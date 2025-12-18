@@ -1,11 +1,15 @@
 import responses
-from coreapp.models.github import GitHubUser
-from coreapp.models.profile import Profile
-from coreapp.tests.common import BaseTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
+
+from coreapp.models.github import GitHubUser
+from coreapp.models.profile import Profile
+from coreapp.tests import (
+    mock_cromper_client as compilers,
+    mock_cromper_client as platforms,
+)
+from coreapp.tests.common import BaseTestCase
 
 GITHUB_USER = {
     "login": "BowserSlug",
@@ -51,13 +55,16 @@ class UserTests(BaseTestCase):
 
     def test_set_user_profile_middleware(self) -> None:
         """
-        Ensure that an anonymous profile is created for requests.
+        Ensure that cookie-less current-user reads stay stateless.
         """
 
         response = self.client.get(self.current_user_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Profile.objects.count(), 1)
+        self.assertTrue(response.json()["is_ephemeral"])
+        self.assertIsNone(response.json()["id"])
+        self.assertEqual(Profile.objects.count(), 0)
         self.assertEqual(User.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
 
     @responses.activate
     def test_github_login(self) -> None:
@@ -174,7 +181,6 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
-    @mock_cromper
     def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
@@ -183,8 +189,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": "dummy",
-                "platform": "dummy",
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
@@ -210,7 +216,6 @@ class UserTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     @responses.activate
-    @mock_cromper
     def test_cant_delete_scratch(self) -> None:
         """
         Ensure we can't delete a scratch we don't own
@@ -220,8 +225,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": "dummy",
-                "platform": "dummy",
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
