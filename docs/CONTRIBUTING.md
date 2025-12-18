@@ -19,11 +19,15 @@ backend/
 
 ## Setup
 
-See [DOCKER.md](DOCKER.md) for instructions on how to run the project in a Docker container. Otherwise, continue reading this guide.
+We use [Docker](https://docker.com) for both development and production environments — it’s the simplest way to get everything up and running. See [DOCKER.md](DOCKER.md) for detailed setup instructions.
+
+We officially support running decomp.me on Linux (we use Ubuntu 24.04 LTS) on the `amd64` architecture. Running decomp.me natively on Windows or macOS is not supported and may result in unpredictable behavior or missing functionality. The instructions below assume you are using a Linux system on `x86_64` hardware.
+
+### Prerequisites
 
 Dependencies:
-- Python >=3.10
-- Node.js >=14
+- Python >=3.10 (Production uses 3.12)
+- Node.js >=14 <=24 (Production uses 24)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 

@@ -53,6 +53,7 @@ RUN dpkg --add-architecture i386 \
     binutils-djgpp \
     binutils-mingw-w64-i686 \
     binutils-mips-linux-gnu \
+    binutils-mipsel-linux-gnu \
     binutils-powerpc-linux-gnu \
     binutils-sh-elf \
     cpp \

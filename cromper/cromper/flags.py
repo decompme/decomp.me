@@ -109,13 +109,22 @@ COMMON_CLANG_FLAGS: Flags = [
     Checkbox(id="clang_no_exceptions", flag="-fno-exceptions"),
 ]
 
-COMMON_SHC_FLAGS: Flags = [
+COMMON_SHC_OLD_FLAGS: Flags = [
     FlagSet(id="shc_opt_level", flags=["-optimize=0", "-optimize=1"]),
-    FlagSet(id="shc_opt_type", flags=["-speed", "-size"]),
-    FlagSet(id="shc_round", flags=["-round=zero", "-round=nearest"]),
+    FlagSet(id="shc_opt_type", flags=["-speed", "-size", "-nospeed"]),
+    FlagSet(id="shc_pic", flags=["-pic=0", "-pic=1"]),
+    FlagSet(
+        id="shc_extra", flags=["-extra=asm=800", "-extra=asm=1000", "-extra=asm=1800"]
+    ),
     Checkbox(id="shc_debug", flag="-debug"),
     Checkbox(id="shc_loop", flag="-loop"),
     Checkbox(id="shc_inline", flag="-inline"),
+]
+
+COMMON_SHC_FLAGS: Flags = COMMON_SHC_OLD_FLAGS + [
+    FlagSet(id="shc_round", flags=["-round=zero", "-round=nearest"]),
+    FlagSet(id="shc_fpu", flags=["-fpu=single", "-fpu=double"]),
+    Checkbox(id="shc_aggressive", flag="-aggressive=2"),
 ]
 
 COMMON_GCC_FLAGS: Flags = [
@@ -283,6 +292,24 @@ COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
             "-x c++": Language.CXX,
         },
     ),
+]
+
+COMMON_GHS_FLAGS: Flags = [
+    FlagSet(id="ghs_c_dialect", flags=["-c99", "-C99", "-ANSI", "-ansi", "-gcc"]),
+    FlagSet(
+        id="ghs_opt_level",
+        flags=["-Ospeed", "-Osize", "-Ogeneral", "-Odebug", "-Omoredebug"],
+    ),
+    FlagSet(id="ghs_rtti_mode", flags=["--rtti", "--no_rtti"]),
+    FlagSet(id="ghs_exceptions_mode", flags=["--exceptions", "--no_exceptions"]),
+    FlagSet(id="ghs_ansi_alias_mode", flags=["-ansi_alias", "-no_ansi_alias"]),
+    FlagSet(
+        id="ghs_inlining_mode", flags=["--max_inlining", "--inlining", "--no_inlining"]
+    ),
+    Checkbox("ghs_gnu_mode", "--g++"),
+    Checkbox("ghs_enable_noinline", "--enable_noinline"),
+    Checkbox("ghs_link_once_templates", "--link_once_templates"),
+    Checkbox("ghs_only_explicit_reg_use", "-only_explicit_reg_use"),
 ]
 
 COMMON_MSVC_FLAGS: Flags = [

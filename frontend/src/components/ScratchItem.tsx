@@ -13,7 +13,7 @@ import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 
 import getTranslation from "@/lib/i18n/translate";
 
-import AnonymousFrogAvatar from "./user/AnonymousFrog";
+import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";

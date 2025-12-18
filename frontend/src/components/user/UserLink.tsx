@@ -17,10 +17,10 @@ export default function UserLink({ user, showUsername }: Props) {
     const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`;
 
     const inner = (
-        <>
-            <UserAvatar user={user} className="mr-1 size-4 align-middle" />
+        <div className="flex flex-row items-center">
+            <UserAvatar user={user} className="mr-1 size-5" />
             {showUsername !== false && <span>{user.username}</span>}
-        </>
+        </div>
     );
 
     if (!url) {

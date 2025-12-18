@@ -66,6 +66,7 @@ services:
     volumes:
       # repo files
       - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
       # certbot
       - ./certbot:/var/www/certbot
@@ -107,15 +108,7 @@ services:
     networks:
       - decompme
     command: >
-      postgres
-      -c shared_buffers=8GB
-      -c work_mem=128MB
-      -c maintenance_work_mem=2GB
-      -c effective_cache_size=16GB
-      -c wal_buffers=32MB
-      -c checkpoint_completion_target=0.9
-      -c random_page_cost=1.1
-      -c effective_io_concurrency=300
+      postgres -c shared_buffers=8GB -c work_mem=128MB -c maintenance_work_mem=2GB -c effective_cache_size=16GB -c wal_buffers=32MB -c checkpoint_completion_target=0.9 -c random_page_cost=1.1 -c effective_io_concurrency=300
 
 networks:
   decompme:

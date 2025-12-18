@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import Link from "next/link";
 
-import Frog from "@/components/Nav/frog.svg";
+import Frog from "@/components/Frog/Frog";
 
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11";
 
