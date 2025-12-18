@@ -145,6 +145,7 @@ jobs:
   frontend_lint:
     name: frontend lint and tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Setup Node.js 24
@@ -169,6 +170,7 @@ jobs:
   backend_lint:
     name: backend lint and type check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -189,6 +191,7 @@ jobs:
   cromper_lint:
     name: cromper lint and type check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
