@@ -23,23 +23,22 @@ RUN apt-get update \
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.7 /uv /bin/uv
 
-
-FROM dependencies AS dev
+USER ubuntu
 
 WORKDIR /backend
+
+
+FROM dependencies AS dev
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
 FROM dependencies AS uv-install
 
-USER ubuntu
-
-WORKDIR /backend
-
 COPY pyproject.toml uv.lock /backend/
 
 RUN uv sync --locked --no-dev
+
 
 FROM dependencies AS prod
 
