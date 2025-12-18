@@ -127,6 +127,7 @@ jobs:
   frontend_lint:
     name: biome
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 24
@@ -147,6 +148,7 @@ jobs:
   backend_lint:
     name: backend lint and type check
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -167,6 +169,7 @@ jobs:
   cromper_lint:
     name: cromper lint and type check
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
