@@ -33,6 +33,7 @@ jobs:
       - name: Build decompme_backend image
         run: |-
           docker build backend --target prod -t decompme_backend
+      - name: Run tests
         run: |-
           mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
           docker run \
