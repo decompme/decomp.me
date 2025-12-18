@@ -1,271 +1,22 @@
 from time import sleep
 from typing import Any, Dict
-import io
-import zipfile
 
-from coreapp import compilers, platforms
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
-from coreapp.models.scratch import Assembly, Scratch
-from coreapp.platforms import GC_WII, N64
-from coreapp.tests.common import BaseTestCase, requiresCompiler
-from coreapp.views.scratch import compile_scratch_update_score
+from coreapp.models.scratch import Scratch
+from coreapp.tests.common import BaseTestCase
 from django.urls import reverse
+from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
 
 
-class ScratchCreationTests(BaseTestCase):
-    @requiresCompiler(IDO71)
-    def test_accept_late_rodata(self) -> None:
-        """
-        Ensure that .late_rodata (used in ASM_PROCESSOR) is accepted during scratch creation.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "",
-            "target_asm": """.late_rodata
-glabel D_8092C224
-.float 0.1
-
-.text
-glabel func_80929D04
-jr $ra
-nop""",
-        }
-        self.create_scratch(scratch_dict)
-
-    @requiresCompiler(IDO53)
-    def test_n64_func(self) -> None:
-        """
-        Ensure that functions with t6/t7 registers can be assembled.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO53.id,
-            "context": "typedef unsigned char u8;",
-            "target_asm": """
-.text
-glabel func_8019B378
-lui $t6, %hi(sOcarinaSongAppendPos)
-lbu $t6, %lo(sOcarinaSongAppendPos)($t6)
-lui $at, %hi(D_801D702C)
-jr  $ra
-sb  $t6, %lo(D_801D702C)($at)
-""",
-        }
-        self.create_scratch(scratch_dict)
-
-    @requiresCompiler(IDO71)
-    def test_fpr_reg_names(self) -> None:
-        """
-        Ensure that functions with O32 register names can be assembled.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "",
-            "target_asm": """
-glabel test
-lui   $at, 0x3ff0
-mtc1  $at, $fv1f
-mtc1  $zero, $fv1
-beqz  $a0, .L00400194
-move  $v0, $a0
-andi  $a1, $a0, 3
-negu  $a1, $a1
-beqz  $a1, .L004000EC
-addu  $v1, $a1, $a0
-mtc1  $v0, $ft0
-nop
-""",
-        }
-        self.create_scratch(scratch_dict)
-
-    def test_dummy_platform(self) -> None:
-        """
-        Ensure that we can create scratches with the dummy platform and compiler
-        """
-        scratch_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
-            "context": "",
-            "target_asm": "this is some test asm",
-        }
-        self.create_scratch(scratch_dict)
-
-    @requiresCompiler(IDO71)
-    def test_max_score(self) -> None:
-        """
-        Ensure that max_score is available upon scratch creation even if the initial compilation fails
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "this aint cod",
-            "target_asm": ".text\nglabel func_80929D04\njr $ra\nnop",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        self.assertEqual(scratch.max_score, 200)
-
-    @requiresCompiler(IDO71)
-    def test_import_scratch(self) -> None:
-        """
-        Ensure that creating a scratch created via permuter import.py is successful
-        """
-        scratch_dict = {
-            "name": "imported_function",
-            "target_asm": ".text\nglabel imported_function\njr $ra\nnop",
-            "context": "/* context */",
-            "source_code": "void imported_function(void) {}",
-            "compiler": IDO71.id,
-            "compiler_flags": "-O2",
-            "diff_label": "imported_function",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        self.assertEqual(scratch.name, "imported_function")
-
-    @requiresCompiler(MWCC_242_81)
-    def test_mwcc_242_81(self) -> None:
-        """
-        Ensure that MWCC works
-        """
-        scratch_dict = {
-            "platform": GC_WII.id,
-            "compiler": MWCC_242_81.id,
-            "context": "",
-            "target_asm": ".fn somefunc, local\nblr\n.endfn somefunc",
-        }
-        self.create_scratch(scratch_dict)
-
-    @requiresCompiler(EE_GCC29_991111)
-    def test_ps2_platform(self) -> None:
-        """
-        Ensure that we can create scratches with the ps2 platform and compiler
-        """
-        scratch_dict = {
-            "platform": platforms.PS2.id,
-            "compiler": compilers.EE_GCC29_991111.id,
-            "context": "",
-            "target_asm": "jr $ra\nnop",
-        }
-        self.create_scratch(scratch_dict)
-
-
-class ScratchModificationTests(BaseTestCase):
-    @requiresCompiler(GCC281PM, IDO53)
-    def test_update_scratch_score(self) -> None:
-        """
-        Ensure that a scratch's score gets updated when the code changes.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": GCC281PM.id,
-            "context": "",
-            "target_asm": "jr $ra",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        slug = scratch.slug
-
-        self.assertGreater(scratch.score, 0)
-
-        # Obtain ownership of the scratch
-        response = self.client.post(
-            reverse("scratch-claim", kwargs={"pk": slug}),
-            {"token": scratch.claim_token},
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(response.json()["success"])
-
-        # Update the scratch's code and compiler output
-        scratch_patch = {
-            "source_code": "int func() { return 2; }",
-            "compiler": IDO53.id,
-        }
-
-        response = self.client.patch(
-            reverse("scratch-detail", kwargs={"pk": slug}), scratch_patch
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        scratch = Scratch.objects.get(slug=slug)
-        assert scratch is not None
-        self.assertEqual(scratch.score, 200)
-
-    @requiresCompiler(GCC281PM)
-    def test_update_scratch_score_on_compile_get(self) -> None:
-        """
-        Ensure that a scratch's score gets updated on a GET to compile
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": GCC281PM.id,
-            "compiler_flags": "-O2",
-            "context": "",
-            "target_asm": "jr $ra\nli $v0,2",
-            "source_code": "int func() { return 2; }",
-        }
-        scratch = self.create_scratch(scratch_dict)
-
-        scratch.score = -1
-        scratch.max_score = -1
-        scratch.save()
-
-        self.assertEqual(scratch.score, -1)
-        slug = scratch.slug
-
-        response = self.client.get(reverse("scratch-compile", kwargs={"pk": slug}))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        scratch = Scratch.objects.get(slug=slug)
-        assert scratch is not None
-        self.assertEqual(scratch.score, 0)
-
-    @requiresCompiler(IDO71)
-    def test_create_scratch_score(self) -> None:
-        """
-        Ensure that a scratch's score gets set upon creation.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "",
-            "target_asm": "jr $ra\nli $v0,2",
-            "source_code": "int func() { return 2; }",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        self.assertEqual(scratch.score, 0)
-
-    @requiresCompiler(IDO71)
-    def test_update_scratch_score_does_not_affect_last_updated(self) -> None:
-        """
-        Ensure that a scratch's last_updated field does not get updated when the max_score changes.
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "",
-            "target_asm": "jr $ra\nli $v0,2",
-            "source_code": "int func() { return 2; }",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        scratch.max_score = -1
-        scratch.save()
-        self.assertEqual(scratch.max_score, -1)
-
-        prev_last_updated = scratch.last_updated
-        compile_scratch_update_score(scratch)
-        self.assertEqual(scratch.max_score, 200)
-        self.assertEqual(prev_last_updated, scratch.last_updated)
-
-
 class ScratchForkTests(BaseTestCase):
+    @mock_cromper
     def test_fork_scratch(self) -> None:
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
         scratch_dict: Dict[str, Any] = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "glabel meow\njr $ra",
             "diff_label": "meow",
@@ -277,8 +28,8 @@ class ScratchForkTests(BaseTestCase):
         slug = scratch.slug
 
         fork_dict = {
-            "compiler": platforms.DUMMY.id,
-            "platform": compilers.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "compiler_flags": "-O2",
             "source_code": "int func() { return 2; }",
             "context": "",
@@ -315,6 +66,7 @@ class ScratchDetailTests(BaseTestCase):
         response = self.client.head(reverse("scratch-detail", args=["doesnt_exist"]))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    @mock_cromper
     def test_last_modified(self) -> None:
         """
         Ensure that the Last-Modified header is set.
@@ -326,6 +78,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.headers.get("Last-Modified") is not None)
 
+    @mock_cromper
     def test_if_modified_since(self) -> None:
         """
         Ensure that the If-Modified-Since header is handled.
@@ -386,6 +139,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertIsNotNone(updated_scratch.owner)
         self.assertIsNone(updated_scratch.claim_token)
 
+    @mock_cromper
     def test_family(self) -> None:
         root = self.create_nop_scratch()
 
@@ -414,6 +168,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 3)
 
+    @mock_cromper
     def test_family_order(self) -> None:
         root = self.create_nop_scratch()
 
@@ -432,27 +187,20 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": "jr $ra\nnop\n",
         }
 
         scratch1 = self.create_scratch(scratch1_dict)
-        scratch2 = self.create_scratch(scratch2_dict)
-
-        assembly_2: Assembly = scratch1.target_assembly
-        assembly_2.hash = 0
-        assembly_2.pk = None
-        assembly_2.save()
-        scratch2.target_assembly = assembly_2
-        scratch2.save()
+        _ = self.create_scratch(scratch2_dict)
 
         response = self.client.get(reverse("scratch-family", args=[scratch1.slug]))
         self.assertEqual(len(response.json()), 2)
@@ -463,14 +211,14 @@ class ScratchDetailTests(BaseTestCase):
         """
 
         scratch1_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": " ",
         }
         scratch2_dict = {
-            "compiler": compilers.DUMMY.id,
-            "platform": platforms.DUMMY.id,
+            "compiler": "dummy",
+            "platform": "dummy",
             "context": "",
             "target_asm": " ",
         }
@@ -482,54 +230,20 @@ class ScratchDetailTests(BaseTestCase):
         self.assertEqual(len(response.json()), 1)
 
 
-class ScratchExportTests(BaseTestCase):
-    @requiresCompiler(IDO71)
-    def test_export_asm_scratch(self) -> None:
-        """
-        Ensure that a scratch can be exported as a zip
-        """
-        scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "typedef signed int s32;",
-            "target_asm": "jr $ra\nli $v0,2",
-            "source_code": "s32 func() { return 2; }",
-        }
-        scratch = self.create_scratch(scratch_dict)
-        response = self.client.get(f"/api/scratch/{scratch.slug}/export")
+class ScratchDatabaseTests(BaseTestCase):
+    """Tests for pure Django database and model functionality."""
 
-        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-        file_names = zip_file.namelist()
-
-        self.assertIn("metadata.json", file_names)
-        self.assertIn("target.s", file_names)
-        self.assertIn("target.o", file_names)
-        self.assertIn("code.c", file_names)
-        self.assertIn("ctx.c", file_names)
-        self.assertIn("current.o", file_names)
-
-    @requiresCompiler(IDO71)
-    def test_export_asm_scratch_target_only(self) -> None:
+    def test_scratch_creation_without_compilation(self) -> None:
         """
-        Ensure that a scratch can be exported as a zip
-        without performing the actual compilation step
+        Test that we can create a scratch with just target_asm (no compilation).
         """
         scratch_dict = {
-            "platform": N64.id,
-            "compiler": IDO71.id,
-            "context": "typedef signed int s32;",
-            "target_asm": "jr $ra\nli $v0,2",
-            "source_code": "s32 func() { return 2; }",
+            "compiler": "dummy",
+            "platform": "dummy",
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
         }
         scratch = self.create_scratch(scratch_dict)
-        response = self.client.get(f"/api/scratch/{scratch.slug}/export?target_only=1")
-
-        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-        file_names = zip_file.namelist()
-
-        self.assertIn("metadata.json", file_names)
-        self.assertIn("target.s", file_names)
-        self.assertIn("target.o", file_names)
-        self.assertIn("code.c", file_names)
-        self.assertIn("ctx.c", file_names)
-        self.assertNotIn("current.o", file_names)
+        self.assertIsNotNone(scratch)
+        self.assertEqual(scratch.compiler, "dummy")
+        self.assertEqual(scratch.platform, "dummy")

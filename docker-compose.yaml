@@ -8,9 +8,9 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres:/var/lib/postgresql/data
-  backend:
+  cromper:
     build:
-      context: backend
+      context: cromper
       target: dev
     cap_drop:
       - all
@@ -18,22 +18,35 @@ services:
       - setuid
       - setgid
       - setfcap
-    environment:
-      - ENABLE_SWITCH_SUPPORT=NO
-    env_file:
-      - backend/docker.dev.env
     ports:
-      - "8000:8000"
-      - "5678:5678"  # vscode debugger
+      - "8888:8888"
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
-      - ./backend:/backend
+      - ./cromper:/cromper
+      - ./cromper/compilers:/cromper/compilers:ro
+      - ./cromper/libraries:/cromper/libraries:ro
     tmpfs:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+    environment:
+      - CROMPER_PORT=8888
+      - USE_SANDBOX_JAIL=true
+      - SANDBOX_DISABLE_PROC=true
+    restart: unless-stopped
+  backend:
+    build:
+      context: backend
+      target: dev
+    env_file:
+      - backend/docker.dev.env
+    ports:
+      - "8000:8000"
+      - "5678:5678" # vscode debugger
+    volumes:
+      - ./backend:/backend
   frontend:
     build:
       context: frontend
@@ -41,6 +54,7 @@ services:
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
+      INTERNAL_CROMPER_BASE: http://cromper:8888
     ports:
       - "8080:8080"
     volumes:
@@ -55,3 +69,4 @@ services:
       - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
+    restart: unless-stopped

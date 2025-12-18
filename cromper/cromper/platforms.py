@@ -1,18 +1,18 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict
+from typing import Any, Dict, OrderedDict, TYPE_CHECKING
 from pathlib import Path
 import functools
 
-from coreapp import compilers
-from coreapp.flags import (
+if TYPE_CHECKING:
+    from .compilers import Compilers
+
+from .flags import (
     COMMON_DIFF_FLAGS,
     COMMON_MIPS_DIFF_FLAGS,
     COMMON_MSDOS_DIFF_FLAGS,
     Flags,
 )
-from coreapp.models.scratch import Scratch
-from rest_framework.exceptions import APIException
 
 
 logger = logging.getLogger(__name__)
@@ -34,18 +34,17 @@ class Platform:
     @property
     @functools.lru_cache()
     def asm_prelude(self) -> str:
-        asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
+        asm_prelude_path: Path = (
+            Path(__file__).parent.parent / "asm_preludes" / f"{self.id}.s"
+        )
         if asm_prelude_path.is_file():
             return asm_prelude_path.read_text()
         return ""
 
-    def get_num_scratches(self) -> int:
-        return Scratch.objects.filter(platform=self.id).count()
-
     def to_json(
         self,
+        compilers: "Compilers",
         include_compilers: bool = False,
-        include_num_scratches: bool = False,
     ) -> Dict[str, Any]:
         ret: Dict[str, Any] = {
             "id": self.id,
@@ -60,26 +59,22 @@ class Platform:
                 for x in compilers.available_compilers()
                 if x.platform.id == self.id
             ]
-        if include_num_scratches:
-            ret["num_scratches"] = self.get_num_scratches()
         return ret
 
 
-def from_id(platform_id: str) -> Platform:
-    if platform_id not in _platforms:
-        raise APIException(f"Unknown platform: {platform_id}")
-    return _platforms[platform_id]
+class Platforms:
+    def __init__(self) -> None:
+        pass
 
+    def available_platforms(self):
+        return _platforms
 
-DUMMY = Platform(
-    id="dummy",
-    name="Dummy System",
-    description="DMY",
-    arch="dummy",
-    assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
-    objdump_cmd="echo",
-    nm_cmd="echo",
-)
+    @staticmethod
+    def from_id(platform_id: str) -> Platform:
+        if platform_id not in _platforms:
+            raise ValueError(f"Unknown platform: {platform_id}")
+        return _platforms[platform_id]
+
 
 MSDOS = Platform(
     id="msdos",
@@ -264,7 +259,6 @@ WIIU = Platform(
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
-        "dummy": DUMMY,
         "irix": IRIX,
         "n64": N64,
         "gc_wii": GC_WII,

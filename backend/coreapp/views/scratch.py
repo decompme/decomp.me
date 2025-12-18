@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 import django_filters
-from coreapp import compilers, platforms
 from django.core.files import File
 from django.db.models import F, FloatField, When, Case, Value
 from django.db.models.functions import Cast
@@ -25,19 +24,19 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
-from ..decompiler_wrapper import DecompilerWrapper
+from ..compiler_utils import filter_compiler_flags
+from ..cromper_client import (
+    CompilationResult,
+    CromperError,
+    DiffResult,
+    get_cromper_client,
+)
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
-from ..diff_wrapper import DiffWrapper
-from ..error import CompilationError, DiffError
 from ..filters.search import NonEmptySearchFilter
-from ..flags import Language
-from ..libraries import Library
 from ..middleware import Request
 from ..models.preset import Preset
-from ..models.scratch import Asm, Assembly, Scratch
-from ..platforms import Platform
+from ..models.scratch import Asm, Assembly, Scratch, Library
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCreateSerializer,
@@ -68,7 +67,7 @@ def get_db_asm(request_asm: str) -> Asm:
 MAX_FILE_SIZE = 1000 * 1024
 
 
-def cache_object(platform: Platform, file: File[Any]) -> Assembly:
+def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
     # Validate file size
     if file.size > MAX_FILE_SIZE:
         raise serializers.ValidationError(
@@ -86,7 +85,7 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     assembly, _ = Assembly.objects.get_or_create(
         hash=hashlib.sha256(obj_bytes).hexdigest(),
         defaults={
-            "arch": platform.arch,
+            "arch": platform_arch,
             "elf_object": obj_bytes,
         },
     )
@@ -95,28 +94,35 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
 
 def compile_scratch(scratch: Scratch) -> CompilationResult:
     try:
-        return CompilerWrapper.compile_code(
-            compilers.from_id(scratch.compiler),
-            scratch.compiler_flags,
-            scratch.source_code,
-            scratch.context,
-            scratch.diff_label,
-            tuple(scratch.libraries),
+        libraries = [
+            lib.to_json() if isinstance(lib, Library) else lib
+            for lib in scratch.libraries
+        ]
+        cromper_client = get_cromper_client()
+        result = cromper_client.compile_code(
+            compiler_id=scratch.compiler,
+            compiler_flags=scratch.compiler_flags,
+            code=scratch.source_code,
+            context=scratch.context,
+            libraries=libraries,
         )
-    except (CompilationError, APIException) as e:
+        return CompilationResult(result["elf_object"], result["errors"])
+    except (CromperError, APIException) as e:
         return CompilationResult(b"", str(e))
 
 
 def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
     try:
-        return DiffWrapper.diff(
-            scratch.target_assembly,
-            platforms.from_id(scratch.platform),
-            scratch.diff_label,
-            bytes(compilation.elf_object),
+        cromper_client = get_cromper_client()
+        result = cromper_client.diff(
+            platform_id=scratch.platform,
+            target_elf=scratch.target_assembly.elf_object,
+            compiled_elf=compilation.elf_object,
+            diff_label=scratch.diff_label,
             diff_flags=scratch.diff_flags,
         )
-    except DiffError as e:
+        return DiffResult(result["result"], result["errors"])
+    except CromperError as e:
         return DiffResult(None, str(e))
 
 
@@ -195,11 +201,13 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Optional[Platform] = data.get("platform")
-    compiler = compilers.from_id(data["compiler"])
+    cromper_client = get_cromper_client()
+    try:
+        compiler = cromper_client.get_compiler_by_id(data["compiler"])
+    except ValueError as e:
+        raise APIException(str(e))
 
-    if not platform:
-        platform = compiler.platform
+    platform = data.get("platform", compiler.platform)
 
     target_asm: str = data.get("target_asm", "")
     target_obj: File[Any] | None = data.get("target_obj")
@@ -208,20 +216,34 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     if target_obj:
         asm = None
-        assembly = cache_object(platform, target_obj)
+        assembly = cache_object(platform.arch, target_obj)
     else:
         asm = get_db_asm(target_asm)
-        assembly = CompilerWrapper.assemble_asm(platform, asm)
+        asm_result = cromper_client.assemble_asm(platform.id, asm)
+
+        # Create Assembly object from cromper response
+        assembly, _ = Assembly.objects.get_or_create(
+            hash=asm_result["hash"],
+            defaults={
+                "arch": asm_result["arch"],
+                "elf_object": asm_result["elf_object"],
+                "source_asm": asm,
+            },
+        )
 
     source_code = data.get("source_code")
     if asm and not source_code:
         default_source_code = f"void {diff_label or 'func'}(void) {{\n    // ...\n}}\n"
-        source_code = DecompilerWrapper.decompile(
-            default_source_code, platform, asm.data, context, compiler
+        source_code = cromper_client.decompile(
+            platform_id=platform.id,
+            compiler_id=compiler.id,
+            asm=asm.data,
+            default_source_code=default_source_code,
+            context=context,
         )
 
     compiler_flags = data.get("compiler_flags", "")
-    compiler_flags = CompilerWrapper.filter_compiler_flags(compiler_flags)
+    compiler_flags = filter_compiler_flags(compiler_flags)
 
     diff_flags = data.get("diff_flags", [])
 
@@ -373,8 +395,7 @@ class ScratchViewSet(
             if "context" in request.data:
                 scratch.context = request.data["context"]
             if "libraries" in request.data:
-                libs = [Library(**lib) for lib in request.data["libraries"]]
-                scratch.libraries = libs
+                scratch.libraries = request.data["libraries"]
             if "include_objects" in request.data:
                 include_objects = request.data["include_objects"]
 
@@ -418,16 +439,15 @@ class ScratchViewSet(
             )
 
         context = request.data.get("context", scratch.context)
-        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        compiler_id = request.data.get("compiler", scratch.compiler)
 
-        platform = platforms.from_id(scratch.platform)
-
-        decompilation = DecompilerWrapper.decompile(
-            "",
-            platform,
-            scratch.target_assembly.source_asm.data,
-            context,
-            compiler,
+        cromper_client = get_cromper_client()
+        decompilation = cromper_client.decompile(
+            platform_id=scratch.platform,
+            compiler_id=compiler_id,
+            asm=scratch.target_assembly.source_asm.data,
+            default_source_code="",
+            context=context,
         )
 
         return Response({"decompilation": decompilation})
@@ -469,7 +489,7 @@ class ScratchViewSet(
         ser = ScratchSerializer(data=fork_data, context={"request": request})
         ser.is_valid(raise_exception=True)
 
-        libraries = [Library(**lib) for lib in ser.validated_data["libraries"]]
+        libraries = ser.validated_data["libraries"]
         new_scratch = ser.save(
             parent=parent,
             target_assembly=parent.target_assembly,
@@ -502,8 +522,7 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
-            src_ext = Language(language).get_file_extension()
+            src_ext = scratch.get_language().get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context)

@@ -2,9 +2,9 @@ import responses
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
 from coreapp.tests.common import BaseTestCase
-from coreapp import compilers, platforms
 from django.contrib.auth.models import User
 from django.urls import reverse
+from coreapp.tests.mock_cromper_client import mock_cromper
 from rest_framework import status
 
 GITHUB_USER = {
@@ -174,6 +174,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(Profile.objects.count(), 2)
 
     @responses.activate
+    @mock_cromper
     def test_own_scratch(self) -> None:
         """
         Create a scratch anonymously, claim it, then log in and verify that the scratch owner is your logged-in user.
@@ -182,8 +183,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": "dummy",
+                "platform": "dummy",
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },
@@ -209,6 +210,7 @@ class UserTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     @responses.activate
+    @mock_cromper
     def test_cant_delete_scratch(self) -> None:
         """
         Ensure we can't delete a scratch we don't own
@@ -218,8 +220,8 @@ class UserTests(BaseTestCase):
         response = self.client.post(
             "/api/scratch",
             {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
+                "compiler": "dummy",
+                "platform": "dummy",
                 "context": "",
                 "target_asm": "jr $ra\nnop\n",
             },

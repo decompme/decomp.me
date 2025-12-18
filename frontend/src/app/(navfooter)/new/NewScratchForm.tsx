@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useReducer, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,18 +9,18 @@ import AsyncButton from "@/components/AsyncButton";
 import PresetSelect from "@/components/compiler/PresetSelect";
 import CodeMirror from "@/components/Editor/CodeMirror";
 import PlatformSelect from "@/components/PlatformSelect";
+import { SingleLineScratchItem } from "@/components/ScratchItem";
 import Select from "@/components/Select2";
 import * as api from "@/lib/api";
+import { useCompilers, usePresets } from "@/lib/api";
+import { get } from "@/lib/api/request";
+import type { TerseScratch } from "@/lib/api/types";
 import { scratchUrl } from "@/lib/api/urls";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
-import { get } from "@/lib/api/request";
-import type { TerseScratch } from "@/lib/api/types";
-import { SingleLineScratchItem } from "@/components/ScratchItem";
-import { useDebounce } from "use-debounce";
-import { useCompilers, usePresets } from "@/lib/api";
 import clsx from "clsx";
+import { useDebounce } from "use-debounce";
 
 interface FormLabelProps {
     children: React.ReactNode;

@@ -1,7 +1,7 @@
 services:
-  backend:
+  cromper:
     build:
-      context: backend
+      context: cromper
       target: prod
     cap_drop:
       - all
@@ -12,25 +12,37 @@ services:
     env_file:
       - docker.prod.env
     ports:
-      - "8000:8000"
+      - "8888:8888"
     restart: on-failure
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
       # persist compilers + libraries
-      - ./backend/compilers:/backend/compilers
-      - ./backend/libraries:/backend/libraries
-      # static files for django /admin control panel
-      - ./backend/static:/backend/static
+      - ./cromper/compilers:/cromper/compilers
+      - ./cromper/libraries:/cromper/libraries
     tmpfs:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
     networks:
       - decompme
-    # uncommment for local testing
-    # entrypoint: tail -f /dev/null
+  backend:
+    build:
+      context: backend
+      target: prod
+    env_file:
+      - docker.prod.env
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    volumes:
+      # static files for django /admin control panel
+      - ./backend/static:/backend/static
+    networks:
+      - decompme
+  # uncommment for local testing
+  # entrypoint: tail -f /dev/null
 
   frontend:
     build:
@@ -63,7 +75,7 @@ services:
       - ./backend/media:/media
       # static files for django /admin control panel
       - ./backend/static:/var/www/decomp.me/static
-      # TODO: mount static + public files from frontend
+    # TODO: mount static + public files from frontend
     # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
     #extra_hosts:
     #  - "backend=172.17.0.1"   # docker0 bridge
@@ -96,15 +108,7 @@ services:
     networks:
       - decompme
     command: >
-      postgres
-      -c shared_buffers=8GB
-      -c work_mem=128MB
-      -c maintenance_work_mem=2GB
-      -c effective_cache_size=16GB
-      -c wal_buffers=32MB
-      -c checkpoint_completion_target=0.9
-      -c random_page_cost=1.1
-      -c effective_io_concurrency=300
+      postgres -c shared_buffers=8GB -c work_mem=128MB -c maintenance_work_mem=2GB -c effective_cache_size=16GB -c wal_buffers=32MB -c checkpoint_completion_target=0.9 -c random_page_cost=1.1 -c effective_io_concurrency=300
 
 networks:
   decompme:

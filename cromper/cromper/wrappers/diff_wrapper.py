@@ -2,31 +2,43 @@ import logging
 import subprocess
 import shlex
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from functools import lru_cache
+from dataclasses import dataclass
 
 import diff as asm_differ
 
-from coreapp.platforms import DUMMY, Platform
-from coreapp.flags import ASMDIFF_FLAG_PREFIX
-from django.conf import settings
-
-from .compiler_wrapper import DiffResult, PATH
-
-from .error import AssemblyError, DiffError, NmError, ObjdumpError
-from .models.scratch import Assembly
-from .sandbox import Sandbox
+from ..platforms import Platform
+from ..flags import ASMDIFF_FLAG_PREFIX
+from ..error import AssemblyError, DiffError, NmError, ObjdumpError
+from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 25000
 
+# Default timeout for objdump/nm operations
+DEFAULT_OBJDUMP_TIMEOUT_SECONDS = 3
+
+
+@dataclass
+class DiffResult:
+    result: Optional[Dict[str, Any]] = None
+    errors: Optional[str] = None
+
 
 class DiffWrapper:
+    def __init__(
+        self,
+        objdump_timeout_seconds: int = DEFAULT_OBJDUMP_TIMEOUT_SECONDS,
+        **sandbox_kwargs,
+    ):
+        self.objdump_timeout_seconds = objdump_timeout_seconds
+        self.sandbox_kwargs = sandbox_kwargs
+
     @staticmethod
     def filter_objdump_flags(compiler_flags: str) -> str:
         # Remove irrelevant flags that are part of the base objdump configs, but clutter the compiler settings field.
-        # TODO: use cfg for this?
         skip_flags_with_args: set[str] = set()
         skip_flags = {
             "--disassemble",
@@ -88,9 +100,8 @@ class DiffWrapper:
             diff_function_symbols=diff_function_symbols,
         )
 
-    @staticmethod
     def get_objdump_target_function_flags(
-        sandbox: Sandbox, target_path: Path, platform: Platform, label: str
+        self, sandbox: Sandbox, target_path: Path, platform: Platform, label: str
     ) -> List[str]:
         if not label:
             return ["--start-address=0"]
@@ -105,13 +116,7 @@ class DiffWrapper:
             nm_proc = sandbox.run_subprocess(
                 [platform.nm_cmd] + [sandbox.rewrite_path(target_path)],
                 shell=True,
-                env={
-                    "PATH": PATH,
-                    "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                        settings.COMPILER_BASE_PATH
-                    ),
-                },
-                timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
+                timeout=self.objdump_timeout_seconds,
             )
         except subprocess.TimeoutExpired:
             raise NmError("Timeout expired")
@@ -145,8 +150,8 @@ class DiffWrapper:
         return ret
 
     @lru_cache()
-    @staticmethod
     def run_objdump(
+        self,
         target_data: bytes,
         platform: Platform,
         arch_flags: tuple[str, ...],
@@ -165,7 +170,7 @@ class DiffWrapper:
         if platform.id != "msdos":
             flags += ["--reloc"]
 
-        with Sandbox() as sandbox:
+        with Sandbox(**self.sandbox_kwargs) as sandbox:
             target_path = sandbox.path / "out.s"
             target_path.write_bytes(target_data)
 
@@ -177,7 +182,7 @@ class DiffWrapper:
                     has_symbol = True
             if not has_symbol:
                 flags.append("--disassemble")
-                flags += DiffWrapper.get_objdump_target_function_flags(
+                flags += self.get_objdump_target_function_flags(
                     sandbox, target_path, platform, label
                 )
 
@@ -190,13 +195,7 @@ class DiffWrapper:
                         + list(map(shlex.quote, flags))
                         + [sandbox.rewrite_path(target_path)],
                         shell=True,
-                        env={
-                            "PATH": PATH,
-                            "COMPILER_BASE_PATH": sandbox.rewrite_path(
-                                settings.COMPILER_BASE_PATH
-                            ),
-                        },
-                        timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
+                        timeout=self.objdump_timeout_seconds,
                     )
                 except subprocess.TimeoutExpired:
                     raise ObjdumpError("Timeout expired")
@@ -208,8 +207,8 @@ class DiffWrapper:
         out = objdump_proc.stdout
         return out
 
-    @staticmethod
     def get_dump(
+        self,
         elf_object: bytes,
         platform: Platform,
         diff_label: str,
@@ -219,7 +218,7 @@ class DiffWrapper:
         if len(elf_object) == 0:
             raise AssemblyError("Asm empty")
 
-        basedump = DiffWrapper.run_objdump(
+        basedump = self.run_objdump(
             elf_object,
             platform,
             tuple(config.arch.arch_flags),
@@ -251,18 +250,14 @@ class DiffWrapper:
         table_data = asm_differ.align_diffs(diff_output, diff_output, config)
         return config.formatter.raw(table_data)
 
-    @staticmethod
     def diff(
-        target_assembly: Assembly,
+        self,
+        target_elf: bytes,
         platform: Platform,
         diff_label: str,
         compiled_elf: bytes,
         diff_flags: List[str],
     ) -> DiffResult:
-        if platform == DUMMY:
-            # Todo produce diff for dummy
-            return DiffResult({"rows": ["a", "b"]})
-
         try:
             arch = asm_differ.get_arch(platform.arch or "")
         except ValueError:
@@ -273,8 +268,8 @@ class DiffWrapper:
 
         config = DiffWrapper.create_config(arch, diff_flags)
         try:
-            basedump = DiffWrapper.get_dump(
-                bytes(target_assembly.elf_object),
+            basedump = self.get_dump(
+                target_elf,
                 platform,
                 diff_label,
                 config,
@@ -284,7 +279,7 @@ class DiffWrapper:
             logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
         try:
-            mydump = DiffWrapper.get_dump(
+            mydump = self.get_dump(
                 compiled_elf, platform, diff_label, config, objdump_flags
             )
         except Exception:

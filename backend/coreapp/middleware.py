@@ -13,9 +13,6 @@ from .models.profile import Profile
 
 logger = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
-    pass
-
 
 class AnonymousUser(auth.models.AnonymousUser):
     profile: Profile
