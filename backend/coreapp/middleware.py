@@ -159,3 +159,15 @@ def strip_cookie_vary(
         return response
 
     return middleware
+
+
+def strip_session(
+    get_response: Callable[[HttpRequest], Response],
+) -> Callable[[Request], Response]:
+    def middleware(request: Request) -> Response:
+        response = get_response(request)
+        if is_public_request(request):
+            response.cookies.clear()
+        return response
+
+    return middleware
