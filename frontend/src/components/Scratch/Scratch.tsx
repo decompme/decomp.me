@@ -131,9 +131,8 @@ function applyDefaultDiffTab(
     layout: Layout,
     defaultDiffTab: DefaultDiffTab,
 ): Layout {
-    const preferredTab = defaultDiffTab === DefaultDiffTab.OBJDIFF
-        ? TabId.OBJDIFF
-        : TabId.DIFF;
+    const preferredTab =
+        defaultDiffTab === DefaultDiffTab.OBJDIFF ? TabId.OBJDIFF : TabId.DIFF;
     visitLayout(layout, (node) => {
         if (node.kind === "pane" && node.tabs.includes(preferredTab)) {
             node.activeTab = preferredTab;
