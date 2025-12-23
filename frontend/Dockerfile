@@ -39,7 +39,7 @@ ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 ARG GITHUB_CLIENT_ID=9c5d3c7ca624a23b7c1c
 ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 
-ARG OBJDIFF_BASE=https://diff.decomp.dev/
+ARG OBJDIFF_BASE=https://diff.decomp.me/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
 # allows for cache busting even if only backend changed
