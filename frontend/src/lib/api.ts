@@ -23,7 +23,6 @@ import type {
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
 import { ignoreNextWarnBeforeUnload } from "./hooks";
-import { useObjdiffClientEnabled } from "./settings";
 
 function onErrorRetry<C>(
     error: ResponseError,
@@ -240,7 +239,6 @@ export function useCompilation(
         useState<Promise<void>>(null);
     const [compilation, setCompilation] = useState<Compilation>(initial);
     const [isCompilationOld, setIsCompilationOld] = useState(false);
-    const [objdiffClientEnabled] = useObjdiffClientEnabled();
     const sUrl = scratchUrl(scratch);
     const hasInitialized = useRef(false);
 
@@ -268,7 +266,7 @@ export function useCompilation(
             context: savedScratch
                 ? undefinedIfUnchanged(savedScratch, scratch, "context")
                 : scratch.context,
-            include_objects: objdiffClientEnabled,
+            include_objects: true,
         })
             .then((compilation: Compilation) => {
                 return compilation;
@@ -297,7 +295,7 @@ export function useCompilation(
         setCompileRequestPromise(promise);
 
         return promise;
-    }, [compileRequestPromise, savedScratch, scratch, objdiffClientEnabled]);
+    }, [compileRequestPromise, savedScratch, scratch]);
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl);

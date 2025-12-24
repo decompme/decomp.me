@@ -10,7 +10,8 @@ import {
     useLanguageServerEnabled,
     useVimModeEnabled,
     useThreeWayDiffBase,
-    useObjdiffClientEnabled,
+    useDefaultDiffTab,
+    DefaultDiffTab,
 } from "@/lib/settings";
 
 import Checkbox from "../Checkbox";
@@ -28,8 +29,7 @@ export default function EditorSettings() {
         useLanguageServerEnabled();
     const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled();
     const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase();
-    const [objdiffClientEnabled, setObjdiffClientEnabled] =
-        useObjdiffClientEnabled();
+    const [defaultDiffTab, setDefaultDiffTab] = useDefaultDiffTab();
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] =
         useState(false);
@@ -77,6 +77,15 @@ export default function EditorSettings() {
         },
     };
 
+    const defaultDiffTabOptions = {
+        [DefaultDiffTab.ASM_DIFFER]: {
+            label: "asm-differ",
+        },
+        [DefaultDiffTab.OBJDIFF]: {
+            label: "objdiff",
+        },
+    };
+
     return (
         <>
             <Section title="Automatic compilation">
@@ -113,6 +122,19 @@ export default function EditorSettings() {
                     options={threeWayDiffOptions}
                 />
             </Section>
+            <Section title="Default diff tab">
+                <div className="text-gray-11">
+                    Choose which diff tool should be shown by default when
+                    viewing a scratch.
+                </div>
+                <RadioList
+                    value={defaultDiffTab}
+                    onChange={(value: string) => {
+                        setDefaultDiffTab(value as DefaultDiffTab);
+                    }}
+                    options={defaultDiffTabOptions}
+                />
+            </Section>
             <Section title="Match progress bar">
                 <Checkbox
                     checked={matchProgressBarEnabled}
@@ -141,14 +163,6 @@ export default function EditorSettings() {
                     onChange={setVimModeEnabled}
                     label="Enable vim bindings"
                     description="Enable vim bindings in the scratch editor"
-                />
-            </Section>
-            <Section title="Experiments">
-                <Checkbox
-                    checked={objdiffClientEnabled}
-                    onChange={setObjdiffClientEnabled}
-                    label="Enable objdiff integration [alpha]"
-                    description="Enable objdiff tab in the scratch editor. Still under development."
                 />
             </Section>
         </>

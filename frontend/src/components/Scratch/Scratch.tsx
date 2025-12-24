@@ -14,13 +14,15 @@ import {
     useLanguageServerEnabled,
     useVimModeEnabled,
     useMatchProgressBarEnabled,
-    useObjdiffClientEnabled,
+    useDefaultDiffTab,
+    DefaultDiffTab,
 } from "@/lib/settings";
 
 import CompilerOpts from "../compiler/CompilerOpts";
 import CustomLayout, {
     activateTabInLayout,
     type Layout,
+    visitLayout,
 } from "../CustomLayout";
 import CompilationPanel from "../Diff/CompilationPanel";
 import CodeMirror from "../Editor/CodeMirror";
@@ -121,6 +123,24 @@ function getDefaultLayout(
     return "mobile_2row";
 }
 
+function cloneValue<T>(layout: T): T {
+    return JSON.parse(JSON.stringify(layout)) as T;
+}
+
+function applyDefaultDiffTab(
+    layout: Layout,
+    defaultDiffTab: DefaultDiffTab,
+): Layout {
+    const preferredTab =
+        defaultDiffTab === DefaultDiffTab.OBJDIFF ? TabId.OBJDIFF : TabId.DIFF;
+    visitLayout(layout, (node) => {
+        if (node.kind === "pane" && node.tabs.includes(preferredTab)) {
+            node.activeTab = preferredTab;
+        }
+    });
+    return layout;
+}
+
 export type Props = {
     scratch: Readonly<api.Scratch>;
     onChange: (scratch: Partial<api.Scratch>) => void;
@@ -150,6 +170,7 @@ export default function Scratch({
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting();
     const [languageServerEnabledSetting] = useLanguageServerEnabled();
     const [matchProgressBarEnabledSetting] = useMatchProgressBarEnabled();
+    const [defaultDiffTab] = useDefaultDiffTab();
     const { compilation, isCompiling, isCompilationOld, compile } =
         api.useCompilation(
             scratch,
@@ -210,14 +231,12 @@ export default function Scratch({
     useEffect(() => {
         if (decompilationTabEnabled) {
             setLayout((layout) => {
-                const clone = { ...layout };
+                const clone = cloneValue(layout);
                 activateTabInLayout(clone, TabId.DECOMPILATION);
                 return clone;
             });
         }
     }, [decompilationTabEnabled]);
-
-    const [objdiffClientEnabled] = useObjdiffClientEnabled();
 
     // If the version of the scratch changes, refresh code editors
     useEffect(() => {
@@ -378,22 +397,20 @@ export default function Scratch({
                 );
             case TabId.OBJDIFF:
                 return (
-                    objdiffClientEnabled && (
-                        <Tab
-                            key={id}
-                            tabKey={id}
-                            label="objdiff [alpha]"
-                            className={styles.diffTab}
-                        >
-                            {compilation && (
-                                <ObjdiffPanel
-                                    scratch={scratch}
-                                    compilation={compilation}
-                                    buildRunning={isCompiling}
-                                />
-                            )}
-                        </Tab>
-                    )
+                    <Tab
+                        key={id}
+                        tabKey={id}
+                        label="objdiff"
+                        className={styles.diffTab}
+                    >
+                        {compilation && (
+                            <ObjdiffPanel
+                                scratch={scratch}
+                                compilation={compilation}
+                                buildRunning={isCompiling}
+                            />
+                        )}
+                    </Tab>
                 );
             case TabId.DECOMPILATION:
                 return (
@@ -435,7 +452,12 @@ export default function Scratch({
 
         if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout);
-            setLayout(DEFAULT_LAYOUTS[preferredLayout]);
+            setLayout(
+                applyDefaultDiffTab(
+                    cloneValue(DEFAULT_LAYOUTS[preferredLayout]),
+                    defaultDiffTab,
+                ),
+            );
         }
     }
 
