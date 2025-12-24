@@ -22,7 +22,7 @@ wheels = [
 [[package]]
 name = "asm-differ"
 version = "0.1.0"
-source = { git = "https://github.com/simonlindholm/asm-differ.git#96fc879d9d8293193cf8452f0926eafc751546d7" }
+source = { git = "https://github.com/simonlindholm/asm-differ.git#4eb23bcd4bbeab81c16535c6318389e0c55584f7" }
 dependencies = [
     { name = "colorama" },
     { name = "cxxfilt" },
