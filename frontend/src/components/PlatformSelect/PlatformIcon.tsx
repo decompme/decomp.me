@@ -19,6 +19,7 @@ import LogoSwitch from "./switch.svg";
 import UnknownIcon from "./unknown.svg";
 import LogoWiiU from "./wiiu.svg";
 import LogoWin32 from "./win32.svg";
+import LogoXbox360 from "./xbox360.svg";
 
 /** In release-date order */
 const ICONS = {
@@ -38,6 +39,7 @@ const ICONS = {
     switch: LogoSwitch,
     saturn: LogoSaturn,
     dreamcast: LogoDreamcast,
+    xbox360: LogoXbox360,
 };
 
 export const PLATFORMS = Object.keys(ICONS);
