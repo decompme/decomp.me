@@ -102,6 +102,11 @@ RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/
     && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
     && rm omftools-linux-x86_64.tar.gz
 
+# Android binutils
+RUN wget "https://github.com/decompme/compilers/releases/download/compilers/android-ndk-r8e-linux-x86_64.tar.bz2" \
+    && tar xjvf android-ndk-r8e-linux-x86_64.tar.bz2 -C /usr/bin --strip-components=5 toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-{as,nm,objdump} \
+    && rm android-ndk-r8e-linux-x86_64.tar.bz2
+
 RUN mkdir -p /etc/fonts
 
 ENV WINEPREFIX=/tmp/wine

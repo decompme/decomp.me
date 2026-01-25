@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { platformUrl } from "@/lib/api/urls";
 
+import LogoAndroid from "./android.svg";
 import LogoDreamcast from "./dreamcast.svg";
 import LogoGBA from "./gba.svg";
 import LogoGCWii from "./gc_wii.svg";
@@ -38,6 +39,7 @@ const ICONS = {
     switch: LogoSwitch,
     saturn: LogoSaturn,
     dreamcast: LogoDreamcast,
+    android_x86: LogoAndroid,
 };
 
 export const PLATFORMS = Object.keys(ICONS);
