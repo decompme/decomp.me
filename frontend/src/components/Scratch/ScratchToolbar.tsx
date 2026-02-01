@@ -382,7 +382,7 @@ export default function ScratchToolbar(props: Props) {
                                 label: (
                                     <div className={styles.iconNamePair}>
                                         <PlatformLink
-                                            scratch={scratch}
+                                            platform={scratch.platform}
                                             size={20}
                                         />
                                         <ScratchName
