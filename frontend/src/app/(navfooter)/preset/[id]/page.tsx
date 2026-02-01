@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { notFound } from "next/navigation";
 
-import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
+import PlatformLink from "@/components/PlatformLink";
 import ScratchList from "@/components/ScratchList";
 import { ScratchItemPresetList } from "@/components/ScratchItem";
 import { get } from "@/lib/api/request";
@@ -63,7 +63,7 @@ export default async function Page(props: { params: Promise<{ id: number }> }) {
     return (
         <main className="mx-auto w-full max-w-3xl p-4">
             <div className="flex items-center gap-2 font-medium text-2xl">
-                <PlatformIcon platform={preset.platform} size={32} />
+                <PlatformLink platform={preset.platform} size={32} />
                 <h1>{preset.name}</h1>
             </div>
             <p className="py-3 text-gray-11">{compilerName}</p>
