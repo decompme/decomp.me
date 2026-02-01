@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: backend
+      pull_policy: always
       target: prod
     cap_drop:
       - all
@@ -35,6 +36,7 @@ services:
   frontend:
     build:
       context: frontend
+      pull_policy: always
       target: prod
     env_file:
       - docker.prod.env
@@ -47,6 +49,7 @@ services:
   nginx:
     build:
       context: nginx
+      pull_policy: always
     ports:
       - "80:80"
       - "443:443"
