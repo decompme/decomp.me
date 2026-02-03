@@ -270,6 +270,8 @@ ANDROID_X86 = Platform(
     assemble_cmd='i686-linux-android-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="i686-linux-android-objdump",
     nm_cmd="i686-linux-android-nm",
+    # While it supports disassembly, it doesn't allow specifying a symbol.
+    supports_objdump_disassemble=False,
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
