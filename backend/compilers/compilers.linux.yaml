@@ -229,3 +229,6 @@ win32:
   - msvc7.1
   - msvc8.0
   - msvc8.0p
+
+android_x86:
+  - ndk-r8e-gcc-4.7

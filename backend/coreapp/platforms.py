@@ -262,6 +262,16 @@ WIIU = Platform(
     has_decompiler=True,
 )
 
+ANDROID_X86 = Platform(
+    id="android_x86",
+    name="Android x86",
+    description="i686",
+    arch="i686",
+    assemble_cmd='i686-linux-android-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="i686-linux-android-objdump",
+    nm_cmd="i686-linux-android-nm",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -281,5 +291,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "msdos": MSDOS,
         "wiiu": WIIU,
         "win32": WIN32,
+        "android_x86": ANDROID_X86,
     }
 )

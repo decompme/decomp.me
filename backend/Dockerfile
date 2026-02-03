@@ -55,6 +55,7 @@ RUN dpkg --add-architecture i386 \
     binutils-mipsel-linux-gnu \
     binutils-powerpc-linux-gnu \
     binutils-sh-elf \
+    bzip2 \
     cpp \
     dj64 \
     dos2unix \
@@ -101,6 +102,11 @@ RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/
     && wget "https://github.com/decompals/binutils-omf/releases/download/v0.4/omftools-linux-x86_64.tar.gz" \
     && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
     && rm omftools-linux-x86_64.tar.gz
+
+# Android binutils
+RUN wget "https://github.com/decompme/compilers/releases/download/compilers/android-ndk-r8e-linux-x86_64.tar.bz2" \
+    && bash -c 'tar xjvf android-ndk-r8e-linux-x86_64.tar.bz2 -C /usr/bin --strip-components=5 toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-{as,nm,objdump}' \
+    && rm android-ndk-r8e-linux-x86_64.tar.bz2
 
 RUN mkdir -p /etc/fonts
 

@@ -251,6 +251,8 @@
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
+    "ndk-r8e-gcc-4.7": "Android NDK r8e (GCC 4.7)",
+
     "armcc_opt_level": "Optimization level",
     "armcc_opt_level.-O0": "No optimization",
     "armcc_opt_level.-O1": "Some optimization",
