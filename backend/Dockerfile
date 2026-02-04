@@ -55,6 +55,7 @@ RUN dpkg --add-architecture i386 \
     binutils-mipsel-linux-gnu \
     binutils-powerpc-linux-gnu \
     binutils-sh-elf \
+    binutils-x86-64-linux-gnu \
     bzip2 \
     cpp \
     dj64 \
