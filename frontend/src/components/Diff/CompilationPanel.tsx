@@ -6,11 +6,15 @@ import Ansi from "ansi-to-react";
 
 import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";
-import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings";
+import {
+    ThreeWayDiffBase,
+    useThreeWayDiffBase,
+    diffCompressionContext,
+} from "@/lib/settings";
 
 import GhostButton from "../GhostButton";
 
-import Diff from "./Diff";
+import Diff, { compressMatching } from "./Diff";
 
 function getProblemState(compilation: api.Compilation): ProblemState {
     if (!compilation.success) {
@@ -53,6 +57,8 @@ export default function CompilationPanel({
     const problemState = getProblemState(compilation);
     const [threeWayDiffBase] = useThreeWayDiffBase();
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false);
+    const [compressionLevel] = diffCompressionContext();
+    const [compressionEnabled, setCompressionEnabled] = useState(false);
     const prevCompilation = usedCompilationRef.current;
 
     // Only update the diff if it's never been set or if the compilation succeeded
@@ -82,9 +88,12 @@ export default function CompilationPanel({
     }
 
     const diff = useMemo(() => {
-        if (threeWayDiffEnabled) return interdiff(usedDiff, usedBase);
-        else return usedDiff;
-    }, [threeWayDiffEnabled, usedDiff, usedBase]);
+        return threeWayDiffEnabled
+            ? interdiff(usedDiff, usedBase)
+            : compressionEnabled
+              ? compressMatching({ diff: usedDiff, context: compressionLevel })
+              : usedDiff;
+    }, [threeWayDiffEnabled, compressionEnabled, usedDiff, usedBase]);
 
     const container = useRef<HTMLDivElement>(null);
     const allotment = useRef<AllotmentHandle>(null);
@@ -118,6 +127,8 @@ export default function CompilationPanel({
                         }
                         threeWayDiffEnabled={threeWayDiffEnabled}
                         setThreeWayDiffEnabled={setThreeWayDiffEnabled}
+                        compressionEnabled={compressionEnabled}
+                        setCompressionEnabled={setCompressionEnabled}
                         threeWayDiffBase={threeWayDiffBase}
                         selectedSourceLine={selectedSourceLine}
                     />

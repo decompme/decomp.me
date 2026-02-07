@@ -10,7 +10,12 @@ import {
     useState,
 } from "react";
 
-import { VersionsIcon, CopyIcon } from "@primer/octicons-react";
+import {
+    VersionsIcon,
+    CopyIcon,
+    FoldIcon,
+    UnfoldIcon,
+} from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
@@ -176,6 +181,86 @@ export const PADDING_BOTTOM = 8;
 
 export const SelectedSourceLineContext = createContext<number | null>(null);
 
+/* heavily inspired by compress_matching from diff.py */
+export function compressMatching({
+    diff,
+    context,
+}: {
+    diff: api.DiffOutput;
+    context: number;
+}): api.DiffOutput {
+    if (context < 0) {
+        return diff;
+    }
+
+    const rows: api.DiffRow[] = [];
+    const matchingStreak: api.DiffRow[] = [];
+
+    const isMatchingRow = (row: api.DiffRow): boolean => {
+        const baseTexts = row.base?.text ?? [];
+        const currentTexts = row.current?.text ?? [];
+
+        if (baseTexts.length !== currentTexts.length) {
+            return false;
+        }
+
+        return baseTexts.every(
+            (t, i) => t.format !== "" || currentTexts[i].format !== "",
+        );
+    };
+
+    let skippedCount = 0;
+
+    const flushMatching = () => {
+        if (matchingStreak.length <= 2 * context + 1) {
+            rows.push(...matchingStreak);
+        } else {
+            rows.push(...matchingStreak.slice(0, context));
+            const skipped = matchingStreak.length - 2 * context;
+
+            const filler: api.DiffRow = {
+                key: `skip-${skippedCount}`,
+                base: {
+                    text: [
+                        {
+                            text: `Skipped ${skipped} line(s)`,
+                            format: "diff_skip",
+                        },
+                    ],
+                },
+                current: { text: [{ text: "", format: "diff_skip" }] },
+            };
+            rows.push(filler);
+            skippedCount += 1;
+
+            if (context > 0) {
+                rows.push(...matchingStreak.slice(-context));
+            }
+        }
+        // clear
+        matchingStreak.splice(0, matchingStreak.length);
+    };
+
+    for (const row of diff.rows) {
+        if (isMatchingRow(row)) {
+            matchingStreak.push(row);
+        } else {
+            flushMatching();
+            rows.push(row);
+        }
+    }
+
+    flushMatching();
+
+    return {
+        arch_str: diff.arch_str,
+        current_score: diff.current_score,
+        max_score: diff.max_score,
+        header: diff.header,
+        rows: rows,
+    };
+}
+
 export type Props = {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
@@ -183,6 +268,8 @@ export type Props = {
     isCurrentOutdated: boolean;
     threeWayDiffEnabled: boolean;
     setThreeWayDiffEnabled: (value: boolean) => void;
+    compressionEnabled: boolean;
+    setCompressionEnabled: (value: boolean) => void;
     threeWayDiffBase: ThreeWayDiffBase;
     selectedSourceLine: number | null;
 };
@@ -194,6 +281,8 @@ export default function Diff({
     isCurrentOutdated,
     threeWayDiffEnabled,
     setThreeWayDiffEnabled,
+    compressionEnabled,
+    setCompressionEnabled,
     threeWayDiffBase,
     selectedSourceLine,
 }: Props) {
@@ -246,6 +335,24 @@ export default function Diff({
         </>
     );
 
+    const compressButton = (
+        <>
+            <button
+                className={styles.compressionToggle}
+                onClick={() => {
+                    setCompressionEnabled(!compressionEnabled);
+                }}
+                title={`${compressionEnabled ? "Disable" : "Enable"} diff compression`}
+            >
+                {compressionEnabled ? (
+                    <FoldIcon size={24} />
+                ) : (
+                    <UnfoldIcon size={24} />
+                )}
+            </button>
+        </>
+    );
+
     return (
         <div
             ref={container.ref}
@@ -276,6 +383,7 @@ export default function Diff({
                     <CopyButton diff={diff as api.DiffOutput} kind="current" />
                     {isCompiling && <LoadingSpinner className="size-6" />}
                     {!threeWayDiffEnabled && threeWayButton}
+                    {!threeWayDiffEnabled && compressButton}
                 </div>
                 {threeWayDiffEnabled && (
                     <div className={styles.header}>

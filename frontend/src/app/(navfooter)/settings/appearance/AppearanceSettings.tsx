@@ -20,6 +20,8 @@ export default function AppearanceSettings() {
     const [codeColorScheme, setCodeColorScheme] = settings.useCodeColorScheme();
     const [diffCellBackground, setDiffCellBackground] =
         settings.diffCellBackgroundEnabled();
+    const [diffCompressionContext, setDiffCompressionContext] =
+        settings.diffCompressionContext();
 
     return (
         <>
@@ -77,6 +79,17 @@ export default function AppearanceSettings() {
                         checked={diffCellBackground}
                         onChange={setDiffCellBackground}
                     />
+                    <div className="my-6 md:mb-0 md:w-full">
+                        <SliderField
+                            label="Diff compression context"
+                            min={0}
+                            max={8}
+                            step={1}
+                            unit=" row(s)"
+                            value={diffCompressionContext}
+                            onChange={setDiffCompressionContext}
+                        />
+                    </div>
                 </div>
 
                 <div className="mb-6 max-w-xl">

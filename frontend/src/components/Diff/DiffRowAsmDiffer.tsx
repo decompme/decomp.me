@@ -85,9 +85,10 @@ function DiffCell({
     const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
 
+    const [diffCellBackgroundEnabled] = settings.diffCellBackgroundEnabled();
+
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
-    const [diffCellBackgroundEnabled] = settings.diffCellBackgroundEnabled();
     const bgClassName = diffCellBackgroundEnabled
         ? (() => {
               for (const item of cell.text) {
@@ -96,6 +97,7 @@ function DiffCell({
                       return styles.diff_remove_row;
                   if (item.format === "diff_change")
                       return styles.diff_change_row;
+                  if (item.format === "diff_skip") return styles.diff_skip_row;
               }
               return null;
           })()
