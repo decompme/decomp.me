@@ -58,8 +58,10 @@ export default function SliderField({
                 </div>
 
                 <div className="inline-flex w-5/6 items-center gap-2 text-gray-10 text-xs">
-                    {min}
-                    {unit}
+                    <span className="w-1/6 text-right">
+                        {min}
+                        {unit}
+                    </span>
                     <input
                         id={id}
                         type="range"
@@ -71,10 +73,12 @@ export default function SliderField({
                             onChange(clamp(+evt.target.value, min, max))
                         }
                         disabled={disabled}
-                        className="w-full focus:ring"
+                        className="w-4/6 focus:ring"
                     />
-                    {max}
-                    {unit}
+                    <span className="w-1/6">
+                        {max}
+                        {unit}
+                    </span>
                 </div>
             </div>
 

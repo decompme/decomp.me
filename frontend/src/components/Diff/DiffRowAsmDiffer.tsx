@@ -96,6 +96,7 @@ function DiffCell({
                       return styles.diff_remove_row;
                   if (item.format === "diff_change")
                       return styles.diff_change_row;
+                  if (item.format === "diff_skip") return styles.diff_skip_row;
               }
               return null;
           })()
