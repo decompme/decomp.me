@@ -60,6 +60,10 @@ export const diffCellBackgroundEnabled = createStorageKey<boolean>(
     "diffCellBackgroundEnabled",
     true,
 );
+export const diffCompressionContext = createStorageKey<number>(
+    "diffCompressionContext",
+    3,
+);
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();
