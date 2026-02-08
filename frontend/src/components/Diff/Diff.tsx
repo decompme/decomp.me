@@ -321,6 +321,7 @@ export function flattenGroups(groups: DiffGroup[]): api.DiffRow[] {
                         ],
                     },
                     current: { text: [{ text: "", format }] },
+                    previous: { text: [{ text: "", format }] },
                 };
                 flat.push(placeholder);
                 if (group.isExpanded) {
