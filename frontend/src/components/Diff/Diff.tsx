@@ -234,6 +234,7 @@ export function compressMatching({
             return false;
         }
 
+        // Rely on asm-differ's opinion
         return baseTexts.every(
             (t, i) => t.format !== "" || currentTexts[i].format !== "",
         );
@@ -416,7 +417,7 @@ export default function Diff({
                 }}
                 title={
                     compressionEnabled
-                        ? "Expand all compressed streaks"
+                        ? "Do not compress streaks of matching lines"
                         : "Compress streaks of matching lines"
                 }
             >
