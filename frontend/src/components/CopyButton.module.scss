@@ -1,0 +1,26 @@
+.button {
+    cursor: pointer;
+    border-radius: 4px;
+    width: 2em;
+    height: 2em;
+
+    padding: 0px 5px;
+
+    &:hover {
+        color: var(--g1700);
+    }
+}
+
+.copied {
+    background: var(--accent);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.faded {
+    opacity: 0;
+}
