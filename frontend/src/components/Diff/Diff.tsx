@@ -105,7 +105,6 @@ function DiffBody({
     const flattened = useMemo(() => flattenGroups(groups), [groups]);
 
     function toggleGroup(groups: DiffGroup[], key: string) {
-        console.log(groups, key);
         return groups.map((g) => {
             if (g.type === "collapsed" && g.key === key) {
                 return { ...g, isExpanded: !g.isExpanded };
