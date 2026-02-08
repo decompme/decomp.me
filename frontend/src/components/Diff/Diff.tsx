@@ -87,10 +87,6 @@ function DiffBody({
     const [compressionContext] = diffCompressionContext();
     const [groups, setGroups] = useState<DiffGroup[]>([]);
 
-    if (!diff) {
-        return <div className={styles.bodyContainer} />;
-    }
-
     useEffect(() => {
         if (!diff) return;
 
@@ -103,6 +99,10 @@ function DiffBody({
     }, [diff, compressionEnabled, compressionContext]);
 
     const flattened = useMemo(() => flattenGroups(groups), [groups]);
+
+    if (!diff) {
+        return <div className={styles.bodyContainer} />;
+    }
 
     function toggleGroup(groups: DiffGroup[], key: string) {
         return groups.map((g) => {
