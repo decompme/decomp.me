@@ -231,5 +231,5 @@ win32:
   - msvc8.0p
 
 android_x86:
-  - ndk-r8e-gcc-4.7
   - ndk-r8e-gcc-4.4.3
+  - ndk-r8e-gcc-4.7
