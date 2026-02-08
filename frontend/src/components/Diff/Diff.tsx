@@ -6,6 +6,8 @@ import {
     forwardRef,
     type HTMLAttributes,
     type RefObject,
+    useEffect,
+    useMemo,
     useRef,
     useState,
 } from "react";
@@ -21,7 +23,11 @@ import { FixedSizeList } from "react-window";
 
 import type * as api from "@/lib/api";
 import { useSize } from "@/lib/hooks";
-import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings";
+import {
+    ThreeWayDiffBase,
+    useCodeFontSize,
+    diffCompressionContext,
+} from "@/lib/settings";
 
 import LoadingSpinner from "../loading.svg";
 
@@ -70,22 +76,49 @@ function DiffBody({
     diff,
     diffLabel,
     fontSize,
+    compressionEnabled,
 }: {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
     fontSize: number | undefined;
+    compressionEnabled: boolean;
 }) {
     const { highlighters, setHighlightAll } = useHighlighers(3);
+    const [compressionContext] = diffCompressionContext();
+    const [groups, setGroups] = useState<DiffGroup[]>([]);
 
     if (!diff) {
         return <div className={styles.bodyContainer} />;
     }
 
-    const itemData = AsmDiffer.createDiffListData(
-        diff,
-        diffLabel,
+    useEffect(() => {
+        if (!diff) return;
+
+        const newGroups = compressMatching({
+            rows: diff.rows,
+            context: compressionEnabled ? compressionContext : -1,
+        });
+
+        setGroups(newGroups);
+    }, [diff, compressionEnabled, compressionContext]);
+
+    const flattened = useMemo(() => flattenGroups(groups), [groups]);
+
+    function toggleGroup(groups: DiffGroup[], key: string) {
+        console.log(groups, key);
+        return groups.map((g) => {
+            if (g.type === "collapsed" && g.key === key) {
+                return { ...g, isExpanded: !g.isExpanded };
+            }
+            return g;
+        });
+    }
+
+    const itemData: AsmDiffer.DiffListData = {
+        rows: flattened,
         highlighters,
-    );
+        onToggle: (key: string) => setGroups((prev) => toggleGroup(prev, key)),
+    };
 
     return (
         <div
@@ -105,7 +138,7 @@ function DiffBody({
                 }) => (
                     <FixedSizeList
                         className={styles.body}
-                        itemCount={itemData.itemCount}
+                        itemCount={flattened.length}
                         itemData={itemData}
                         itemSize={(fontSize ?? 12) * 1.33}
                         overscanCount={40}
@@ -168,19 +201,29 @@ export const PADDING_BOTTOM = 8;
 
 export const SelectedSourceLineContext = createContext<number | null>(null);
 
+type DiffGroup =
+    | { type: "rows"; key: string; rows: api.DiffRow[] }
+    | {
+          type: "collapsed";
+          key: string;
+          rows: api.DiffRow[];
+          isExpanded: boolean;
+      };
+
 /* heavily inspired by compress_matching from diff.py */
 export function compressMatching({
-    diff,
+    rows,
     context,
 }: {
-    diff: api.DiffOutput;
+    rows: api.DiffRow[];
     context: number;
-}): api.DiffOutput {
+}): DiffGroup[] {
     if (context < 0) {
-        return diff;
+        // no compression
+        return [{ type: "rows", key: "group-0", rows }];
     }
 
-    const rows: api.DiffRow[] = [];
+    const groups: DiffGroup[] = [];
     const matchingStreak: api.DiffRow[] = [];
 
     const isMatchingRow = (row: api.DiffRow): boolean => {
@@ -196,56 +239,98 @@ export function compressMatching({
         );
     };
 
-    let skippedCount = 0;
+    let groupCount = 0;
 
     const flushMatching = () => {
+        if (matchingStreak.length === 0) return;
+
         if (matchingStreak.length <= 2 * context + 1) {
-            rows.push(...matchingStreak);
+            groups.push({
+                type: "rows",
+                key: `group-${groupCount++}`,
+                rows: [...matchingStreak],
+            });
         } else {
-            rows.push(...matchingStreak.slice(0, context));
-            const skipped = matchingStreak.length - 2 * context;
-
-            const filler: api.DiffRow = {
-                key: `skip-${skippedCount}`,
-                base: {
-                    text: [
-                        {
-                            text: `Skipped ${skipped} line(s)`,
-                            format: "diff_skip",
-                        },
-                    ],
-                },
-                current: { text: [{ text: "", format: "diff_skip" }] },
-            };
-            rows.push(filler);
-            skippedCount += 1;
-
             if (context > 0) {
-                rows.push(...matchingStreak.slice(-context));
+                groups.push({
+                    type: "rows",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(0, context),
+                });
+                groups.push({
+                    type: "collapsed",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(context, -context),
+                    isExpanded: false,
+                });
+                groups.push({
+                    type: "rows",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(-context),
+                });
+            } else {
+                groups.push({
+                    type: "collapsed",
+                    key: `group-${groupCount++}`,
+                    rows: [...matchingStreak],
+                    isExpanded: false,
+                });
             }
         }
-        // clear
-        matchingStreak.splice(0, matchingStreak.length);
+
+        matchingStreak.length = 0; // clear
     };
 
-    for (const row of diff.rows) {
+    for (const row of rows) {
         if (isMatchingRow(row)) {
             matchingStreak.push(row);
         } else {
             flushMatching();
-            rows.push(row);
+            groups.push({
+                type: "rows",
+                key: `group-${groupCount++}`,
+                rows: [row],
+            });
         }
     }
 
     flushMatching();
+    return groups;
+}
 
-    return {
-        arch_str: diff.arch_str,
-        current_score: diff.current_score,
-        max_score: diff.max_score,
-        header: diff.header,
-        rows: rows,
-    };
+export function flattenGroups(groups: DiffGroup[]): api.DiffRow[] {
+    const flat: api.DiffRow[] = [];
+
+    for (const group of groups) {
+        switch (group.type) {
+            case "rows": {
+                flat.push(...group.rows);
+                break;
+            }
+            case "collapsed": {
+                const format = "diff_skip";
+                const placeholder: api.DiffRow = {
+                    key: group.key,
+                    base: {
+                        text: [
+                            {
+                                text: `${group.isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} unchanged lines`,
+                                format,
+                            },
+                        ],
+                    },
+                    current: { text: [{ text: "", format }] },
+                };
+                flat.push(placeholder);
+                if (group.isExpanded) {
+                    flat.push(...group.rows);
+                }
+                break;
+            }
+        }
+    }
+
+    return flat;
 }
 
 export type Props = {
@@ -329,7 +414,11 @@ export default function Diff({
                 onClick={() => {
                     setCompressionEnabled(!compressionEnabled);
                 }}
-                title={`${compressionEnabled ? "Disable" : "Enable"} diff compression`}
+                title={
+                    compressionEnabled
+                        ? "Expand all compressed streaks"
+                        : "Compress streaks of matching lines"
+                }
             >
                 {compressionEnabled ? (
                     <FoldIcon size={24} />
@@ -403,6 +492,7 @@ export default function Diff({
                             }
                         />
                         {threeWayButton}
+                        {compressButton}
                     </div>
                 )}
             </div>
@@ -410,6 +500,7 @@ export default function Diff({
                 <DiffBody
                     diff={diff}
                     diffLabel={diffLabel}
+                    compressionEnabled={compressionEnabled}
                     fontSize={fontSize}
                 />
             </SelectedSourceLineContext.Provider>

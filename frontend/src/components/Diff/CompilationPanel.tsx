@@ -6,15 +6,11 @@ import Ansi from "ansi-to-react";
 
 import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";
-import {
-    ThreeWayDiffBase,
-    useThreeWayDiffBase,
-    diffCompressionContext,
-} from "@/lib/settings";
+import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings";
 
 import GhostButton from "../GhostButton";
 
-import Diff, { compressMatching } from "./Diff";
+import Diff from "./Diff";
 
 function getProblemState(compilation: api.Compilation): ProblemState {
     if (!compilation.success) {
@@ -57,7 +53,6 @@ export default function CompilationPanel({
     const problemState = getProblemState(compilation);
     const [threeWayDiffBase] = useThreeWayDiffBase();
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false);
-    const [compressionLevel] = diffCompressionContext();
     const [compressionEnabled, setCompressionEnabled] = useState(false);
     const prevCompilation = usedCompilationRef.current;
 
@@ -88,12 +83,8 @@ export default function CompilationPanel({
     }
 
     const diff = useMemo(() => {
-        return threeWayDiffEnabled
-            ? interdiff(usedDiff, usedBase)
-            : compressionEnabled
-              ? compressMatching({ diff: usedDiff, context: compressionLevel })
-              : usedDiff;
-    }, [threeWayDiffEnabled, compressionEnabled, usedDiff, usedBase]);
+        return threeWayDiffEnabled ? interdiff(usedDiff, usedBase) : usedDiff;
+    }, [threeWayDiffEnabled, usedDiff, usedBase]);
 
     const container = useRef<HTMLDivElement>(null);
     const allotment = useRef<AllotmentHandle>(null);
