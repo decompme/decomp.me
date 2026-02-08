@@ -1565,7 +1565,13 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
-ANDROID_R8E_C = GCCCompiler(
+ANDROID_R8E_443_C = GCCCompiler(
+    id="ndk-r8e-gcc-4.4.3",
+    platform=ANDROID_X86,
+    cc='"$COMPILER_DIR"/toolchains/x86-4.4.3/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
+ANDROID_R8E_47_C = GCCCompiler(
     id="ndk-r8e-gcc-4.7",
     platform=ANDROID_X86,
     cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
@@ -1812,7 +1818,8 @@ _all_compilers: List[Compiler] = [
     BORLAND_20_C,
     BORLAND_31_C,
     # GCC, Android
-    ANDROID_R8E_C,
+    ANDROID_R8E_443_C,
+    ANDROID_R8E_47_C,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
