@@ -1818,8 +1818,8 @@ _all_compilers: List[Compiler] = [
     BORLAND_20_C,
     BORLAND_31_C,
     # GCC, Android
-    ANDROID_R8E_47_C,
     ANDROID_R8E_443_C,
+    ANDROID_R8E_47_C,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
