@@ -24,9 +24,9 @@ class Platform:
     name: str
     description: str
     arch: str
-    assemble_cmd: str | None = None
-    objdump_cmd: str | None = None
-    nm_cmd: str | None = None
+    assemble_cmd: str
+    objdump_cmd: str
+    nm_cmd: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
@@ -52,9 +52,7 @@ class Platform:
             "name": self.name,
             "description": self.description,
             "arch": self.arch,
-            "has_assembler": self.assemble_cmd is not None,
             "has_decompiler": self.has_decompiler,
-            "has_objdump": self.objdump_cmd is not None,
         }
         if include_compilers:
             ret["compilers"] = [
@@ -258,6 +256,9 @@ XBOX360 = Platform(
     name="Xbox 360",
     description="PowerPC (64-bit, big-endian)",
     arch="ppc",
+    assemble_cmd='powerpc-xenon-pe-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-xenon-pe-objdump",
+    nm_cmd="powerpc-xenon-pe-nm",
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(

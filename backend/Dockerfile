@@ -93,6 +93,11 @@ RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.
     bsdtar -xvf- -C /usr/bin \
     && chmod +x /usr/bin/powerpc-eabi-*
 
+# Xbox 360 (Xenon) PowerPC binutils
+RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
+    bsdtar -xvf- -C /usr/bin \
+    && chmod +x /usr/bin/powerpc-xenon-pe-*
+
 # MSDOS specific
 RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
     && tar xvzf omftools.tar.gz -C /usr/bin jwasm \
