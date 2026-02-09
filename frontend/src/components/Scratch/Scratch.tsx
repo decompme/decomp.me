@@ -168,13 +168,16 @@ export default function Scratch({
     const compilerOptsScrollPosition = useRef(0);
 
     const [isModified, setIsModified] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
     const setScratch = (scratch: Partial<api.Scratch>) => {
         onChange(scratch);
         setIsModified(true);
+        setIsDirty(true);
     };
     const [perSaveObj, setPerSaveObj] = useState({});
     const saveCallback = () => {
         setPerSaveObj({});
+        setIsDirty(false);
     };
 
     const shouldCompare = !isModified;
@@ -466,6 +469,7 @@ export default function Scratch({
                     isCompiling={isCompiling}
                     scratch={scratch}
                     setScratch={setScratch}
+                    isDirty={isDirty}
                     saveCallback={saveCallback}
                     setDecompilationTabEnabled={setDecompilationTabEnabled}
                 />

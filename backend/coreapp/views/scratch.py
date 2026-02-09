@@ -16,6 +16,8 @@ from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 
 from django.http import HttpResponse, QueryDict
+from django.utils.decorators import method_decorator
+
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -25,6 +27,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper
+from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
@@ -264,6 +267,7 @@ class ScratchPagination(CursorPagination):
     max_page_size = 100
 
 
+@method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1), name="list")
 class ScratchViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -392,7 +396,7 @@ class ScratchViewSet(
             and len(compilation.elf_object) > 0,
         }
 
-        if include_objects:
+        if include_objects or request.method == "GET":
 
             def to_base64(obj: bytes) -> str:
                 return base64.b64encode(obj).decode("utf-8")

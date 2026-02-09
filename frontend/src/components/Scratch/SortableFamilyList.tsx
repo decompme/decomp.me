@@ -51,7 +51,11 @@ function FamilyMember({
             {isCurrent ? (
                 <span className="font-medium text-gray-11">This scratch</span>
             ) : (
-                <Link href={scratchUrl(scratch)} className="font-medium">
+                <Link
+                    href={scratchUrl(scratch)}
+                    className="font-medium"
+                    prefetch={false}
+                >
                     {scratch.name}
                 </Link>
             )}

@@ -33,8 +33,6 @@ class M2CWrapper:
 
         if compiler.type != CompilerType.OTHER:
             triple += f"-{compiler.type.value}"
-        else:
-            raise M2CError(f"Unsupported compiler '{compiler}'")
 
         return triple
 

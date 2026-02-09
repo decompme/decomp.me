@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import PKOnlyObject, SlugRelatedField
 
 from coreapp import platforms
 
@@ -54,8 +54,11 @@ else:
 
 
 class ProfileField(ProfileFieldBaseClass):
-    def to_representation(self, profile: Profile) -> Dict[str, Any]:
-        return serialize_profile(profile)
+    def to_representation(self, value: Profile | PKOnlyObject) -> dict[str, Any]:
+        if isinstance(value, Profile):
+            return serialize_profile(value)
+        # fallback
+        return super().to_representation(value)
 
 
 class LibrarySerializer(serializers.Serializer[Library]):
@@ -259,7 +262,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "platform",
         ]
 
-    def get_language(self, scratch: Scratch) -> Optional[str]:
+    def get_language(self, scratch: Scratch) -> str:
         """
         Strategy for extracting a scratch's language:
         - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
@@ -267,24 +270,21 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         """
         compiler = compilers.from_id(scratch.compiler)
         language_flag_set = next(
-            iter([i for i in compiler.flags if isinstance(i, LanguageFlagSet)]),
+            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
             None,
         )
 
         if language_flag_set:
-            language = next(
-                iter(
-                    [
-                        language
-                        for (flag, language) in language_flag_set.flags.items()
-                        if flag in scratch.compiler_flags
-                    ]
-                ),
-                None,
-            )
+            matches = [
+                (flag, language)
+                for flag, language in language_flag_set.flags.items()
+                if flag in scratch.compiler_flags
+            ]
 
-            if language:
-                return language.value
+            if matches:
+                # taking the longest avoids detecting C++ as C
+                longest_match = max(matches, key=lambda m: len(m[0]))
+                return longest_match[1].value
 
         # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
         # have a flag within it.

@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..decorators.cache import globally_cacheable
+from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.github import GitHubUser
 from ..models.profile import Profile
@@ -55,7 +56,13 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
-    filter_backends = [filters.OrderingFilter]
+
+    filterset_fields = ["platform", "compiler", "preset"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
+        filters.OrderingFilter,
+    ]
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
@@ -74,9 +81,10 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
 
     pagination_class = ScratchPagination
     serializer_class = TerseScratchSerializer
-    filterset_fields = ["preset"]
+    filterset_fields = ["platform", "compiler", "preset"]
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
         filters.OrderingFilter,
     ]
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
