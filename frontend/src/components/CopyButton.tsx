@@ -2,14 +2,17 @@ import { useState } from "react";
 import clsx from "clsx";
 import { CopyIcon } from "@primer/octicons-react";
 
-import styles from "./CopyButton.module.scss";
-
 interface CopyButtonProps {
     title?: string;
+    size?: number;
     text: string | (() => string | Promise<string>);
 }
 
-export default function CopyButton({ title = "Copy", text }: CopyButtonProps) {
+export default function CopyButton({
+    title = "Copy",
+    size = 16,
+    text,
+}: CopyButtonProps) {
     const [copied, setCopied] = useState(false);
     const [fade, setFade] = useState(false);
 
@@ -28,24 +31,34 @@ export default function CopyButton({ title = "Copy", text }: CopyButtonProps) {
             setCopied(true);
             setFade(false);
             setTimeout(() => setFade(true), 1000);
-            setTimeout(() => setCopied(false), 1500); // 0.5s css transition
+            setTimeout(() => setCopied(false), 1500); // matches 0.5s transition
         } catch (err) {
-            console.error("Failed to copy text to clipboard: ", err);
+            console.error("Failed to copy text to clipboard:", err);
         }
     };
 
     return (
         <>
             <button
-                className={styles.button}
+                className={
+                    "cursor-pointer rounded px-2 hover:text-[var(--g1700)]"
+                }
                 aria-label={title}
                 title={title}
                 onClick={handleCopy}
             >
-                <CopyIcon />
+                <CopyIcon size={size} />
             </button>
+
             {copied && (
-                <span className={clsx(styles.copied, fade && styles.faded)}>
+                <span
+                    className={clsx(
+                        "rounded px-2 py-1",
+                        "bg-[var(--accent)] text-[0.9em] text-[var(--g2000)]",
+                        "opacity-100 transition-opacity duration-500 ease-in-out",
+                        fade && "opacity-0",
+                    )}
+                >
                     Copied!
                 </span>
             )}

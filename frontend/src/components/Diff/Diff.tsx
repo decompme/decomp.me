@@ -259,6 +259,7 @@ export default function Diff({
                     Target
                     <CopyButton
                         title="Copy content"
+                        size={12}
                         text={() =>
                             diffContentsToString(diff as api.DiffOutput, "base")
                         }
@@ -268,6 +269,7 @@ export default function Diff({
                     Current
                     <CopyButton
                         title="Copy content"
+                        size={12}
                         text={() =>
                             diffContentsToString(
                                 diff as api.DiffOutput,
@@ -285,6 +287,7 @@ export default function Diff({
                             : "Previous"}
                         <CopyButton
                             title="Copy content"
+                            size={12}
                             text={() =>
                                 diffContentsToString(
                                     diff as api.DiffOutput,
