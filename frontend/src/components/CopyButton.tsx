@@ -3,15 +3,17 @@ import clsx from "clsx";
 import { CopyIcon } from "@primer/octicons-react";
 
 interface CopyButtonProps {
+    text: string | (() => string | Promise<string>);
     title?: string;
     size?: number;
-    text: string | (() => string | Promise<string>);
+    className?: string;
 }
 
 export default function CopyButton({
+    text,
     title = "Copy",
     size = 16,
-    text,
+    className = "",
 }: CopyButtonProps) {
     const [copied, setCopied] = useState(false);
     const [fade, setFade] = useState(false);
@@ -40,9 +42,10 @@ export default function CopyButton({
     return (
         <>
             <button
-                className={
-                    "cursor-pointer rounded px-2 hover:text-[var(--g1700)]"
-                }
+                className={clsx(
+                    "cursor-pointer rounded px-2 py-2 hover:bg-[var(--a50)] hover:text-[var(--g1700)]",
+                    className,
+                )}
                 aria-label={title}
                 title={title}
                 onClick={handleCopy}
