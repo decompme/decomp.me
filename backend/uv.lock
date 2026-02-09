@@ -22,7 +22,7 @@ wheels = [
 [[package]]
 name = "asm-differ"
 version = "0.1.0"
-source = { git = "https://github.com/simonlindholm/asm-differ.git#96fc879d9d8293193cf8452f0926eafc751546d7" }
+source = { git = "https://github.com/simonlindholm/asm-differ.git#4eb23bcd4bbeab81c16535c6318389e0c55584f7" }
 dependencies = [
     { name = "colorama" },
     { name = "cxxfilt" },
@@ -789,7 +789,7 @@ wheels = [
 [[package]]
 name = "m2c"
 version = "0.1.0"
-source = { git = "https://github.com/matt-kempster/m2c.git#3c66c4ad9d925e49941cb3e9997db4fc96d419ce" }
+source = { git = "https://github.com/matt-kempster/m2c.git#a21c1dcd7255b176c032bb932f521846e98d4372" }
 dependencies = [
     { name = "graphviz" },
 ]

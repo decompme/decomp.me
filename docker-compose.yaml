@@ -8,6 +8,7 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres:/var/lib/postgresql/data
+      - ./pgdump:/pgdump
   backend:
     build:
       context: backend
@@ -52,5 +53,6 @@ services:
       - "80:80"
     volumes:
       - ./nginx/development.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media

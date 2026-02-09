@@ -8,6 +8,11 @@ export enum ThreeWayDiffBase {
     PREV = "prev",
 }
 
+export enum DefaultDiffTab {
+    ASM_DIFFER = "asm-differ",
+    OBJDIFF = "objdiff",
+}
+
 export const useTheme = createStorageKey<Theme>("theme", "auto");
 export const useAutoRecompileSetting = createStorageKey<boolean>(
     "autoRecompile",
@@ -47,9 +52,9 @@ export const useThreeWayDiffBase = createStorageKey<ThreeWayDiffBase>(
     "threeWayDiffBase",
     ThreeWayDiffBase.SAVED,
 );
-export const useObjdiffClientEnabled = createStorageKey<boolean>(
-    "objdiffClientEnabled",
-    false,
+export const useDefaultDiffTab = createStorageKey<DefaultDiffTab>(
+    "defaultDiffTab",
+    DefaultDiffTab.ASM_DIFFER,
 );
 export const diffCellBackgroundEnabled = createStorageKey<boolean>(
     "diffCellBackgroundEnabled",

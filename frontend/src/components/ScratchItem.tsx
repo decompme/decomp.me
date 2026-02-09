@@ -13,7 +13,7 @@ import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 
 import getTranslation from "@/lib/i18n/translate";
 
-import AnonymousFrogAvatar from "./user/AnonymousFrog";
+import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";
@@ -59,7 +59,7 @@ export function ScratchItem({
                 <div className={styles.header}>
                     <PlatformLink
                         size={16}
-                        scratch={scratch}
+                        platform={scratch.platform}
                         className={styles.icon}
                     />
                     <Link
@@ -110,7 +110,7 @@ export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
                 <div className={styles.header}>
                     <PlatformLink
                         size={16}
-                        scratch={scratch}
+                        platform={scratch.platform}
                         className={styles.icon}
                     />
                     <Link
@@ -247,7 +247,11 @@ export function SingleLineScratchItem({
 
     return (
         <li className={styles.singleLine}>
-            <PlatformLink size={16} scratch={scratch} className={styles.icon} />
+            <PlatformLink
+                size={16}
+                platform={scratch.platform}
+                className={styles.icon}
+            />
             <Link
                 href={scratchUrl(scratch)}
                 prefetch={false}

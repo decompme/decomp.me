@@ -52,8 +52,11 @@ RUN dpkg --add-architecture i386 \
     binutils-djgpp \
     binutils-mingw-w64-i686 \
     binutils-mips-linux-gnu \
+    binutils-mipsel-linux-gnu \
     binutils-powerpc-linux-gnu \
     binutils-sh-elf \
+    binutils-x86-64-linux-gnu \
+    bzip2 \
     cpp \
     dj64 \
     dos2unix \
@@ -106,6 +109,11 @@ RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/
     && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
     && rm omftools-linux-x86_64.tar.gz
 
+# Android binutils
+RUN wget "https://github.com/decompme/compilers/releases/download/compilers/android-ndk-r8e-linux-x86_64.tar.bz2" \
+    && bash -c 'tar xjvf android-ndk-r8e-linux-x86_64.tar.bz2 -C /usr/bin --strip-components=5 toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-{as,nm,objdump}' \
+    && rm android-ndk-r8e-linux-x86_64.tar.bz2
+
 RUN mkdir -p /etc/fonts
 
 ENV WINEPREFIX=/tmp/wine
@@ -126,38 +134,6 @@ WORKDIR /backend
 
 
 FROM dependencies AS dev
-
-ARG ENABLE_DREAMCAST_SUPPORT
-ARG ENABLE_GBA_SUPPORT
-ARG ENABLE_GC_WII_SUPPORT
-ARG ENABLE_MACOSX_SUPPORT
-ARG ENABLE_MSDOS_SUPPORT
-ARG ENABLE_N3DS_SUPPORT
-ARG ENABLE_N64_SUPPORT
-ARG ENABLE_NDS_ARM9_SUPPORT
-ARG ENABLE_PS1_SUPPORT
-ARG ENABLE_PS2_SUPPORT
-ARG ENABLE_PSP_SUPPORT
-ARG ENABLE_SATURN_SUPPORT
-ARG ENABLE_SWITCH_SUPPORT
-ARG ENABLE_WIN32_SUPPORT
-ARG ENABLE_XBOX360_SUPPORT
-
-ENV ENABLE_DREAMCAST_SUPPORT=${ENABLE_DREAMCAST_SUPPORT} \
-    ENABLE_GBA_SUPPORT=${ENABLE_GBA_SUPPORT} \
-    ENABLE_GC_WII_SUPPORT=${ENABLE_GC_WII_SUPPORT} \
-    ENABLE_MACOSX_SUPPORT=${ENABLE_MACOSX_SUPPORT} \
-    ENABLE_MSDOS_SUPPORT=${ENABLE_MSDOS_SUPPORT} \
-    ENABLE_N3DS_SUPPORT=${ENABLE_N3DS_SUPPORT} \
-    ENABLE_N64_SUPPORT=${ENABLE_N64_SUPPORT} \
-    ENABLE_NDS_ARM9_SUPPORT=${ENABLE_NDS_ARM9_SUPPORT} \
-    ENABLE_PS1_SUPPORT=${ENABLE_PS1_SUPPORT} \
-    ENABLE_PS2_SUPPORT=${ENABLE_PS2_SUPPORT} \
-    ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT} \
-    ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT} \
-    ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT} \
-    ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT} \
-    ENABLE_XBOX360_SUPPORT=${ENABLE_XBOX360_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 

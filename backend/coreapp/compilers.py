@@ -11,11 +11,13 @@ from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
     COMMON_CLANG_FLAGS,
     COMMON_GCC_GC_FLAGS,
+    COMMON_SHC_OLD_FLAGS,
     COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
+    COMMON_GHS_FLAGS,
     COMMON_IDO_FLAGS,
     COMMON_MSVC_FLAGS,
     COMMON_MWCC_NDS_ARM9_FLAGS,
@@ -28,6 +30,7 @@ from coreapp.flags import (
     Language,
 )
 from coreapp.platforms import (
+    ANDROID_X86,
     GBA,
     GC_WII,
     IRIX,
@@ -42,6 +45,7 @@ from coreapp.platforms import (
     SATURN,
     DREAMCAST,
     SWITCH,
+    WIIU,
     WIN32,
     XBOX360,
     Platform,
@@ -121,6 +125,12 @@ class ArmccCompiler(Compiler):
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    library_include_flag: str = ""
+
+
+@dataclass(frozen=True)
+class SHCOldCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_SHC_OLD_FLAGS
     library_include_flag: str = ""
 
 
@@ -213,6 +223,13 @@ class BorlandCompiler(Compiler):
     library_include_flag: str = ""
 
 
+@dataclass(frozen=True)
+class GHSCompiler(Compiler):
+    platform: Platform = WIIU
+    flags: ClassVar[Flags] = COMMON_GHS_FLAGS
+    library_include_flag: str = "-I"
+
+
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
         raise APIException(
@@ -251,6 +268,13 @@ OLD_AGBCC = GCCCompiler(
     id="old_agbcc",
     platform=GBA,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/old_agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+    base_compiler=AGBCC,
+)
+
+AGBCC_ARM = GCCCompiler(
+    id="agbcc_arm",
+    platform=GBA,
+    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc_arm $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
     base_compiler=AGBCC,
 )
 
@@ -521,16 +545,18 @@ CYGNUS_2_7_96Q3 = GCCSaturnCompiler(
 DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
-SHC_V50R10 = SHCCompiler(id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10)
+SHC_V50R10 = SHCOldCompiler(
+    id="shc-v5.0r10", platform=DREAMCAST, cc=DREAMCAST_CC_V50R10
+)
 
 DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
-    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c ${COMPILER_FLAGS} -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -extra=a=1800 -pic=0 -macsave=0 -sjis -string=const -aggressive=2 -object=dos_src.obj) && "
+    "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
     "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
 )
 
@@ -956,6 +982,13 @@ GCC440MIPS64ELF = GCCCompiler(
     id="gcc4.4.0-mips64-elf",
     platform=N64,
     cc='"${COMPILER_DIR}"/bin/mips64-elf-gcc -I "${COMPILER_DIR}"/mips64-elf/include -c ${COMPILER_FLAGS} "${INPUT}" -o "${OUTPUT}"',
+)
+
+# GHS
+GHS5322 = GHSCompiler(
+    id="ghs5.3.22",
+    platform=WIIU,
+    cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 # IRIX
@@ -1547,12 +1580,25 @@ MSVC_PPC_16_00_11886_00 = MSVCCompiler(
     cc=CL_XBOX,
 )
 
+ANDROID_R8E_443_C = GCCCompiler(
+    id="ndk-r8e-gcc-4.4.3",
+    platform=ANDROID_X86,
+    cc='"$COMPILER_DIR"/toolchains/x86-4.4.3/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
+ANDROID_R8E_47_C = GCCCompiler(
+    id="ndk-r8e-gcc-4.7",
+    platform=ANDROID_X86,
+    cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
 _all_compilers: List[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
     OLD_AGBCC,
+    AGBCC_ARM,
     AGBCCPP,
     # N3DS
     ARMCC_40_771,
@@ -1758,6 +1804,8 @@ _all_compilers: List[Compiler] = [
     XCODE_GCC400_C,
     XCODE_GCC400_CPP,
     PBX_GCC3,
+    # WIIU
+    GHS5322,
     # WIN32
     MSVC40,
     MSVC41,
@@ -1787,6 +1835,9 @@ _all_compilers: List[Compiler] = [
     # Xbox 360
     MSVC_PPC_14_00_2110,
     MSVC_PPC_16_00_11886_00,
+    # GCC, Android
+    ANDROID_R8E_443_C,
+    ANDROID_R8E_47_C,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})

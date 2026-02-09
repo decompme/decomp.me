@@ -13,7 +13,7 @@ services:
       - docker.prod.env
     ports:
       - "8000:8000"
-    restart: on-failure
+    restart: unless-stopped
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
@@ -40,7 +40,7 @@ services:
       - docker.prod.env
     ports:
       - "8080:8080"
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - decompme
 
@@ -50,10 +50,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    restart: on-failure
+    restart: unless-stopped
     volumes:
       # repo files
       - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
       # certbot
       - ./certbot:/var/www/certbot
@@ -87,7 +88,7 @@ services:
       - docker.prod.env
     # ports:
     #   - "5432:5432"
-    restart: on-failure
+    restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
       # BOOTSTRAP: for dumping/restoring db

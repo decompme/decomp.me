@@ -1,11 +1,11 @@
-FROM node:22-alpine AS dev
+FROM node:24-alpine AS dev
 
 WORKDIR /frontend
 
 ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
 
 
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 RUN apk add curl
 
@@ -39,7 +39,7 @@ ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 ARG GITHUB_CLIENT_ID=9c5d3c7ca624a23b7c1c
 ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 
-ARG OBJDIFF_BASE=https://diff.decomp.dev/
+ARG OBJDIFF_BASE=https://diff.decomp.me/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
 # allows for cache busting even if only backend changed
@@ -52,7 +52,7 @@ RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
 RUN yarn build --no-lint && rm -rf .next/cache
 
 
-FROM node:22-alpine AS prod
+FROM node:24-alpine AS prod
 
 WORKDIR /frontend
 

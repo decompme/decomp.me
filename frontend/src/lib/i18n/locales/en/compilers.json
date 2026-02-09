@@ -81,6 +81,8 @@
     "gcc2.8.1pm": "GCC 2.8.1 (Paper Mario)",
     "gcc4.4.0-mips64-elf": "GCC 4.4.0 (mips64-elf)",
 
+    "ghs5.3.22": "GHS 5.3.22",
+
     "ido5.3_irix": "IDO 5.3",
     "ido5.3_asm_irix": "IDO 5.3 AS",
     "ido5.3_c++_irix": "IDO 5.3 C++",
@@ -176,6 +178,7 @@
     "prodg_393": "ProDG 3.9.3 (gcc 2.95.3)",
 
     "old_agbcc": "old_agbcc",
+    "agbcc_arm": "agbcc_arm",
     "gcc-5370": "GCC 4.0.1 (Xcode 2.5) (C)",
     "gcc-5370-cpp": "GCC 4.0.1 (Xcode 2.5) (C++)",
     "gcc-5363": "GCC 4.0.1 (Xcode 2.4) (C)",
@@ -250,6 +253,9 @@
     "bcc3.1": "Borland C++ Compiler 3.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
+
+    "ndk-r8e-gcc-4.4.3": "Android NDK r8e (GCC 4.4.3)",
+    "ndk-r8e-gcc-4.7": "Android NDK r8e (GCC 4.7)",
 
     "armcc_opt_level": "Optimization level",
     "armcc_opt_level.-O0": "No optimization",
@@ -431,12 +437,24 @@
     "shc_opt_level.-optimize=0": "Optimization: off",
     "shc_opt_level.-optimize=1": "Optimization: on",
     "shc_opt_type": "Optimization type",
-    "shc_opt_type.speed": "Optimization for speed",
-    "shc_opt_type.size": "Optimization for size",
+    "shc_opt_type.-speed": "Optimization for speed",
+    "shc_opt_type.-size": "Optimization for size",
+    "shc_opt_type.-nospeed": "Optimization for both speed and size",
     "shc_round": "Floating-point rounding options",
     "shc_round.-round=zero": "Round to zero",
     "shc_round.-round=nearest": "Round to nearest",
+    "shc_pic": "Position-independent code",
+    "shc_pic.-pic=0": "Position-independent code: off",
+    "shc_pic.-pic=1": "Position-independent code: on",
+    "shc_fpu": "Floating-point precision options",
+    "shc_fpu.-fpu=single": "Treat float as single",
+    "shc_fpu.-fpu=double": "Treat float as double",
+    "shc_extra": "Extra options",
+    "shc_extra.-extra=asm=800": "Align literal pools to 32 bytes",
+    "shc_extra.-extra=asm=1000": "Reduce literal pool",
+    "shc_extra.-extra=asm=1800": "Align literal pools to 32 bytes + reduce literal pool",
     "shc_debug": "Debug",
+    "shc_aggressive": "Use float multiplication for division with constant",
     "shc_loop": "Loop unrolling",
     "shc_inline": "Inline static functions",
 

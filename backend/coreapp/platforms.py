@@ -251,6 +251,17 @@ N3DS = Platform(
     has_decompiler=True,
 )
 
+WIIU = Platform(
+    id="wiiu",
+    name="Nintendo Wii U",
+    description="PowerPC",
+    arch="ppc",
+    assemble_cmd='powerpc-eabi-as -mgekko -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-eabi-objdump -M broadway",
+    nm_cmd="powerpc-eabi-nm",
+    has_decompiler=True,
+)
+
 XBOX360 = Platform(
     id="xbox360",
     name="Xbox 360",
@@ -259,6 +270,16 @@ XBOX360 = Platform(
     assemble_cmd='powerpc-xenon-pe-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="powerpc-xenon-pe-objdump",
     nm_cmd="powerpc-xenon-pe-nm",
+)
+
+ANDROID_X86 = Platform(
+    id="android_x86",
+    name="Android x86",
+    description="i686",
+    arch="i686",
+    assemble_cmd='i686-linux-android-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="x86_64-linux-gnu-objdump",
+    nm_cmd="x86_64-linux-gnu-nm",
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
@@ -278,7 +299,9 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "dreamcast": DREAMCAST,
         "macosx": MACOSX,
         "msdos": MSDOS,
+        "wiiu": WIIU,
         "win32": WIN32,
         "xbox360": XBOX360,
+        "android_x86": ANDROID_X86,
     }
 )
