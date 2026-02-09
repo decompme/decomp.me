@@ -4,10 +4,15 @@ import { CopyIcon } from "@primer/octicons-react";
 
 import styles from "./CopyButton.module.scss";
 
+interface CopyButtonProps {
+    title?: string;
+    text: string | (() => string | Promise<string>);
+}
+
 export default function CopyButton({
     title = "Copy",
     text,
-}: { title?: string; text: string | (() => string | Promise<string>) }) {
+}: CopyButtonProps) {
     const [copied, setCopied] = useState(false);
     const [fade, setFade] = useState(false);
 
@@ -36,6 +41,7 @@ export default function CopyButton({
         <>
             <button
                 className={styles.button}
+                aria-label={title}
                 title={title}
                 onClick={handleCopy}
             >
