@@ -262,6 +262,16 @@ WIIU = Platform(
     has_decompiler=True,
 )
 
+XBOX360 = Platform(
+    id="xbox360",
+    name="Xbox 360",
+    description="PowerPC 64-bit (big-endian)",
+    arch="ppc",
+    assemble_cmd='powerpc-xenon-pe-as -o "$OUTPUT" "$PRELUDE" "$INPUT"',
+    objdump_cmd="powerpc-xenon-pe-objdump",
+    nm_cmd="powerpc-xenon-pe-nm",
+)
+
 ANDROID_X86 = Platform(
     id="android_x86",
     name="Android x86",
@@ -291,6 +301,7 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "msdos": MSDOS,
         "wiiu": WIIU,
         "win32": WIN32,
+        "xbox360": XBOX360,
         "android_x86": ANDROID_X86,
     }
 )

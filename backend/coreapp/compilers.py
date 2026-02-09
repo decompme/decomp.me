@@ -47,6 +47,7 @@ from coreapp.platforms import (
     SWITCH,
     WIIU,
     WIN32,
+    XBOX360,
     Platform,
 )
 from django.conf import settings
@@ -1565,6 +1566,20 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
+CL_XBOX = '${WIBO} "${COMPILER_DIR}/cl.exe" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+MSVC_PPC_14_00_2110 = MSVCCompiler(
+    id="msvc_ppc_14.00.2110",
+    platform=XBOX360,
+    cc=CL_XBOX,
+)
+
+MSVC_PPC_16_00_11886_00 = MSVCCompiler(
+    id="msvc_ppc_16.00.11886.00",
+    platform=XBOX360,
+    cc=CL_XBOX,
+)
+
 ANDROID_R8E_443_C = GCCCompiler(
     id="ndk-r8e-gcc-4.4.3",
     platform=ANDROID_X86,
@@ -1817,6 +1832,9 @@ _all_compilers: List[Compiler] = [
     # Borland, DOS
     BORLAND_20_C,
     BORLAND_31_C,
+    # Xbox 360
+    MSVC_PPC_14_00_2110,
+    MSVC_PPC_16_00_11886_00,
     # GCC, Android
     ANDROID_R8E_443_C,
     ANDROID_R8E_47_C,

@@ -83,7 +83,7 @@ RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
-COPY --from=ghcr.io/decompals/wibo:1.0.0-beta.5 /usr/local/bin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
 
 # Patched mips binutils
 RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
@@ -95,6 +95,11 @@ RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/down
 RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-x86_64.zip" | \
     bsdtar -xvf- -C /usr/bin \
     && chmod +x /usr/bin/powerpc-eabi-*
+
+# Xbox 360 (Xenon) PowerPC binutils
+RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
+    bsdtar -xvf- -C /usr/bin \
+    && chmod +x /usr/bin/powerpc-xenon-pe-*
 
 # MSDOS specific
 RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
