@@ -1,5 +1,4 @@
 /* eslint css-modules/no-unused-class: off */
-
 import {
     createContext,
     type CSSProperties,
@@ -134,7 +133,7 @@ function DiffBody({
                 }) => (
                     <FixedSizeList
                         className={styles.body}
-                        itemCount={flattened.length}
+                        itemCount={itemData.rows.length}
                         itemData={itemData}
                         itemSize={(fontSize ?? 12) * 1.33}
                         overscanCount={40}
@@ -170,6 +169,30 @@ function ThreeWayToggleButton({
             <div className={styles.threeWayToggleNumber}>
                 {enabled ? "3" : "2"}
             </div>
+        </button>
+    );
+}
+
+function CompressToggleButton({
+    enabled,
+    setEnabled,
+}: {
+    enabled: boolean;
+    setEnabled: (enabled: boolean) => void;
+}) {
+    return (
+        <button
+            className={styles.compressionToggle}
+            onClick={() => {
+                setEnabled(!enabled);
+            }}
+            title={
+                enabled
+                    ? "Do not compress streaks of matching lines"
+                    : "Compress streaks of matching lines"
+            }
+        >
+            {enabled ? <FoldIcon size={24} /> : <UnfoldIcon size={24} />}
         </button>
     );
 }
@@ -409,25 +432,10 @@ export default function Diff({
     );
 
     const compressButton = (
-        <>
-            <button
-                className={styles.compressionToggle}
-                onClick={() => {
-                    setCompressionEnabled(!compressionEnabled);
-                }}
-                title={
-                    compressionEnabled
-                        ? "Do not compress streaks of matching lines"
-                        : "Compress streaks of matching lines"
-                }
-            >
-                {compressionEnabled ? (
-                    <FoldIcon size={24} />
-                ) : (
-                    <UnfoldIcon size={24} />
-                )}
-            </button>
-        </>
+        <CompressToggleButton
+            enabled={compressionEnabled}
+            setEnabled={setCompressionEnabled}
+        />
     );
 
     return (
