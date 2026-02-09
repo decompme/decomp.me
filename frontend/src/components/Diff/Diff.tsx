@@ -1,12 +1,10 @@
 /* eslint css-modules/no-unused-class: off */
-
 import {
     createContext,
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
     type RefObject,
-    useEffect,
     useMemo,
     useRef,
     useState,
@@ -85,39 +83,37 @@ function DiffBody({
 }) {
     const { highlighters, setHighlightAll } = useHighlighers(3);
     const [compressionContext] = diffCompressionContext();
-    const [groups, setGroups] = useState<DiffGroup[]>([]);
 
-    useEffect(() => {
-        if (!diff) return;
-
-        const newGroups = compressMatching({
+    const groups = useMemo(() => {
+        if (!diff) return [] as DiffGroup[];
+        return compressMatching({
             rows: diff.rows,
             context: compressionEnabled ? compressionContext : -1,
         });
-
-        setGroups(newGroups);
     }, [diff, compressionEnabled, compressionContext]);
 
-    const flattened = useMemo(() => flattenGroups(groups), [groups]);
+    const [expandedGroups, setExpandedGroups] = useState<
+        Record<string, boolean>
+    >({});
+
+    const flattened = useMemo(
+        () => flattenGroups(groups, expandedGroups),
+        [groups, expandedGroups],
+    );
+
+    const itemData: AsmDiffer.DiffListData = useMemo(
+        () => ({
+            rows: flattened,
+            highlighters,
+            onToggle: (key: string) =>
+                setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] })),
+        }),
+        [flattened, highlighters],
+    );
 
     if (!diff) {
         return <div className={styles.bodyContainer} />;
     }
-
-    function toggleGroup(groups: DiffGroup[], key: string) {
-        return groups.map((g) => {
-            if (g.type === "collapsed" && g.key === key) {
-                return { ...g, isExpanded: !g.isExpanded };
-            }
-            return g;
-        });
-    }
-
-    const itemData: AsmDiffer.DiffListData = {
-        rows: flattened,
-        highlighters,
-        onToggle: (key: string) => setGroups((prev) => toggleGroup(prev, key)),
-    };
 
     return (
         <div
@@ -298,9 +294,11 @@ export function compressMatching({
     return groups;
 }
 
-export function flattenGroups(groups: DiffGroup[]): api.DiffRow[] {
+export function flattenGroups(
+    groups: DiffGroup[],
+    expandedGroups: Record<string, boolean>,
+): api.DiffRow[] {
     const flat: api.DiffRow[] = [];
-
     for (const group of groups) {
         switch (group.type) {
             case "rows": {
@@ -309,12 +307,14 @@ export function flattenGroups(groups: DiffGroup[]): api.DiffRow[] {
             }
             case "collapsed": {
                 const format = "diff_skip";
+                const isExpanded =
+                    expandedGroups[group.key] ?? group.isExpanded;
                 const placeholder: api.DiffRow = {
                     key: group.key,
                     base: {
                         text: [
                             {
-                                text: `${group.isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} unchanged lines`,
+                                text: `${isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} unchanged lines`,
                                 format,
                             },
                         ],
@@ -323,14 +323,13 @@ export function flattenGroups(groups: DiffGroup[]): api.DiffRow[] {
                     previous: { text: [{ text: "", format }] },
                 };
                 flat.push(placeholder);
-                if (group.isExpanded) {
+                if (isExpanded) {
                     flat.push(...group.rows);
                 }
                 break;
             }
         }
     }
-
     return flat;
 }
 
