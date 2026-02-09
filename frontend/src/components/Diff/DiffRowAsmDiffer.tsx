@@ -139,7 +139,6 @@ export const DiffRow = memo(function DiffRow({
     style,
 }: { data: DiffListData; index: number; style: CSSProperties }) {
     const row = data.rows[index];
-
     const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
 
     return (

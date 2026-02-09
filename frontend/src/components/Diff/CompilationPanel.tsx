@@ -83,7 +83,8 @@ export default function CompilationPanel({
     }
 
     const diff = useMemo(() => {
-        return threeWayDiffEnabled ? interdiff(usedDiff, usedBase) : usedDiff;
+        if (threeWayDiffEnabled) return interdiff(usedDiff, usedBase);
+        else return usedDiff;
     }, [threeWayDiffEnabled, usedDiff, usedBase]);
 
     const container = useRef<HTMLDivElement>(null);
