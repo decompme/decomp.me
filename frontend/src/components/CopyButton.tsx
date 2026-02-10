@@ -42,14 +42,14 @@ export default function CopyButton({
             if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
             if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
 
-            fadeTimeoutRef.current = window.setTimeout(() => {
-                console.log("setfade(true)");
-                setFade(true);
-            }, popup_lifetime_ms);
-            resetTimeoutRef.current = window.setTimeout(() => {
-                console.log("setCopied(false)");
-                setCopied(false);
-            }, popup_lifetime_ms + popup_fade_duration_ms);
+            fadeTimeoutRef.current = window.setTimeout(
+                () => setFade(true),
+                popup_lifetime_ms,
+            );
+            resetTimeoutRef.current = window.setTimeout(
+                () => setCopied(false),
+                popup_lifetime_ms + popup_fade_duration_ms,
+            );
         } catch (err) {
             console.error("Failed to copy text to clipboard:", err);
         }
