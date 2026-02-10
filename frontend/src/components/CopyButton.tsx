@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { CopyIcon } from "@primer/octicons-react";
 
@@ -13,10 +13,16 @@ export default function CopyButton({
     text,
     title = "Copy",
     size = 16,
-    className = "",
+    className,
 }: CopyButtonProps) {
     const [copied, setCopied] = useState(false);
     const [fade, setFade] = useState(false);
+
+    const fadeTimeoutRef = useRef<number | null>(null);
+    const resetTimeoutRef = useRef<number | null>(null);
+
+    const popup_lifetime_ms = 1200;
+    const popup_fade_duration_ms = 500;
 
     const handleCopy = async () => {
         try {
@@ -32,15 +38,33 @@ export default function CopyButton({
             await navigator.clipboard.writeText(value);
             setCopied(true);
             setFade(false);
-            setTimeout(() => setFade(true), 1000);
-            setTimeout(() => setCopied(false), 1500); // matches 0.5s transition
+
+            if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+            if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+
+            fadeTimeoutRef.current = window.setTimeout(() => {
+                console.log("setfade(true)");
+                setFade(true);
+            }, popup_lifetime_ms);
+            resetTimeoutRef.current = window.setTimeout(() => {
+                console.log("setCopied(false)");
+                setCopied(false);
+            }, popup_lifetime_ms + popup_fade_duration_ms);
         } catch (err) {
             console.error("Failed to copy text to clipboard:", err);
         }
     };
 
+    // cleanup
+    useEffect(() => {
+        return () => {
+            if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+            if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+        };
+    }, []);
+
     return (
-        <>
+        <div className="relative inline-block">
             <button
                 className={clsx(
                     "cursor-pointer rounded p-[0.5em] text-[var(--g1500)] hover:bg-[var(--g400)]",
@@ -58,13 +82,13 @@ export default function CopyButton({
                     className={clsx(
                         "rounded px-2 py-1",
                         "bg-[var(--accent)] text-[#eee] text-[0.9em]",
-                        "opacity-100 transition-opacity duration-500 ease-in-out",
-                        fade && "opacity-0",
+                        `transition-opacity duration-${popup_fade_duration_ms} ease-in`,
+                        fade ? "opacity-5" : "opacity-100",
                     )}
                 >
                     Copied!
                 </span>
             )}
-        </>
+        </div>
     );
 }
