@@ -57,7 +57,7 @@ export default function CopyButton({
                 <span
                     className={clsx(
                         "rounded px-2 py-1",
-                        "bg-[var(--accent)] text-[0.9em] text-[#eee]",
+                        "bg-[var(--accent)] text-[#eee] text-[0.9em]",
                         "opacity-100 transition-opacity duration-500 ease-in-out",
                         fade && "opacity-0",
                     )}
