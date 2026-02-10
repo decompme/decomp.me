@@ -43,7 +43,7 @@ export default function CopyButton({
         <>
             <button
                 className={clsx(
-                    "cursor-pointer rounded px-2 py-2 hover:bg-[var(--a50)] hover:text-[var(--g1700)]",
+                    "cursor-pointer rounded p-[0.5em] text-[var(--g1500)] hover:bg-[var(--g400)]",
                     className,
                 )}
                 aria-label={title}
@@ -57,7 +57,7 @@ export default function CopyButton({
                 <span
                     className={clsx(
                         "rounded px-2 py-1",
-                        "bg-[var(--accent)] text-[0.9em] text-[var(--g2000)]",
+                        "bg-[var(--accent)] text-[0.9em] text-[#eee]",
                         "opacity-100 transition-opacity duration-500 ease-in-out",
                         fade && "opacity-0",
                     )}
