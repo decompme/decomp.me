@@ -56,23 +56,6 @@
     text-wrap: nowrap;
 }
 
-.copyIcon {
-    padding: 0px 5px;
-    cursor: pointer;
-    color: var(--g1400);
-
-    &:hover {
-        color: var(--g1700);
-    }
-}
-.copied {
-    background: var(--accent);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.9em;
-}
-
 .scratchLink {
     flex-shrink: 1;
     overflow: hidden;

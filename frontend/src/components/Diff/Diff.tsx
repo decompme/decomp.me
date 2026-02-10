@@ -10,7 +10,7 @@ import {
     useState,
 } from "react";
 
-import { VersionsIcon, CopyIcon } from "@primer/octicons-react";
+import { VersionsIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
@@ -25,8 +25,9 @@ import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
 import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
+import CopyButton from "../CopyButton";
 
-const copyDiffContentsToClipboard = (diff: api.DiffOutput, kind: string) => {
+const diffContentsToString = (diff: api.DiffOutput, kind: string): string => {
     // kind is either "base", "current", or "previous"
     const contents = diff.rows.map((row) => {
         let text = "";
@@ -40,21 +41,8 @@ const copyDiffContentsToClipboard = (diff: api.DiffOutput, kind: string) => {
         return text;
     });
 
-    navigator.clipboard.writeText(contents.join("\n"));
+    return contents.join("\n");
 };
-
-// Small component for the copy button
-function CopyButton({ diff, kind }: { diff: api.DiffOutput; kind: string }) {
-    return (
-        <button
-            className={styles.copyButton} // Add a new style for the button
-            onClick={() => copyDiffContentsToClipboard(diff, kind)}
-            title="Copy content"
-        >
-            <CopyIcon size={16} />
-        </button>
-    );
-}
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
 const innerElementType = forwardRef<
@@ -269,11 +257,26 @@ export default function Diff({
             <div className={styles.headers}>
                 <div className={styles.header}>
                     Target
-                    <CopyButton diff={diff as api.DiffOutput} kind="base" />
+                    <CopyButton
+                        title="Copy content"
+                        size={12}
+                        text={() =>
+                            diffContentsToString(diff as api.DiffOutput, "base")
+                        }
+                    />
                 </div>
                 <div className={styles.header}>
                     Current
-                    <CopyButton diff={diff as api.DiffOutput} kind="current" />
+                    <CopyButton
+                        title="Copy content"
+                        size={12}
+                        text={() =>
+                            diffContentsToString(
+                                diff as api.DiffOutput,
+                                "current",
+                            )
+                        }
+                    />
                     {isCompiling && <LoadingSpinner className="size-6" />}
                     {!threeWayDiffEnabled && threeWayButton}
                 </div>
@@ -283,8 +286,14 @@ export default function Diff({
                             ? "Saved"
                             : "Previous"}
                         <CopyButton
-                            diff={diff as api.DiffOutput}
-                            kind="previous"
+                            title="Copy content"
+                            size={12}
+                            text={() =>
+                                diffContentsToString(
+                                    diff as api.DiffOutput,
+                                    "previous",
+                                )
+                            }
                         />
                         {threeWayButton}
                     </div>
