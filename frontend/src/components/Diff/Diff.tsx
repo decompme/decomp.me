@@ -10,11 +10,7 @@ import {
     useState,
 } from "react";
 
-import {
-    VersionsIcon,
-    FoldIcon,
-    UnfoldIcon,
-} from "@primer/octicons-react";
+import { VersionsIcon, FoldIcon, UnfoldIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
