@@ -64,7 +64,9 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                     <span>{scratch.name}</span>
                     <CopyButton
                         title="Copy Scratch link to clipboard"
-                        text={`${window.location.origin}${scratchUrl(scratch)}`}
+                        text={() =>
+                            `${typeof window !== "undefined" ? window.location.origin : ""}${scratchUrl(scratch)}`
+                        }
                         className={"ml-1"}
                     />
                 </div>
