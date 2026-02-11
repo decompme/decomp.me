@@ -402,7 +402,7 @@ export default function NewScratchForm({
                     valueVersion={valueVersion}
                     onChange={setContext}
                     extensions={[basicSetup, cpp()]}
-                    placeholder="Add your typedefs, structs, and declarations here."
+                    placeholder="Add any typedefs, structs, and declarations here."
                 />
             </div>
 
