@@ -391,7 +391,7 @@ export default function NewScratchForm({
                     valueVersion={valueVersion}
                     onChange={setAsm}
                     extensions={basicSetup}
-                    placeholder="Place your GNU as compatible assembly here."
+                    placeholder="Place your GNU assembler compatible assembly here."
                 />
             </div>
             <div className="flex h-[200px] flex-col">
