@@ -38,7 +38,8 @@ function FormatDiffText({
             {texts.map((t, index1) =>
                 Array.from(t.text.matchAll(RE_TOKEN)).map((match, index2) => {
                     const text = match[0];
-                    const isToken = !match[1];
+                    const isPlaceholder = t.format === "diff_skip";
+                    const isToken = !match[1] && !isPlaceholder;
                     const key = `${index1},${index2}`;
 
                     let className: string;
@@ -85,9 +86,10 @@ function DiffCell({
     const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
 
+    const [diffCellBackgroundEnabled] = settings.diffCellBackgroundEnabled();
+
     if (!cell) return <div className={clsx(styles.cell, className)} />;
 
-    const [diffCellBackgroundEnabled] = settings.diffCellBackgroundEnabled();
     const bgClassName = diffCellBackgroundEnabled
         ? (() => {
               for (const item of cell.text) {
@@ -96,6 +98,7 @@ function DiffCell({
                       return styles.diff_remove_row;
                   if (item.format === "diff_change")
                       return styles.diff_change_row;
+                  if (item.format === "diff_skip") return styles.diff_skip_row;
               }
               return null;
           })()
@@ -125,35 +128,28 @@ function DiffCell({
 }
 
 export type DiffListData = {
-    diff: api.DiffOutput | null;
-    itemCount: number;
+    rows: api.DiffRow[];
     highlighters: Highlighter[];
+    onToggle: (groupKey: string) => void;
 };
-
-export const createDiffListData = memoize(
-    (
-        diff: api.DiffOutput | null,
-        _diffLabel: string,
-        highlighters: Highlighter[],
-    ): DiffListData => {
-        return { diff, highlighters, itemCount: diff?.rows?.length ?? 0 };
-    },
-);
 
 export const DiffRow = memo(function DiffRow({
     data,
     index,
     style,
 }: { data: DiffListData; index: number; style: CSSProperties }) {
-    const row = data.diff?.rows?.[index];
+    const row = data.rows[index];
+    const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
+
     return (
         <li
-            className={styles.row}
+            className={clsx(styles.row, isPlaceholder && styles.collapsed)}
             style={{
                 ...style,
                 top: `${Number.parseFloat(style.top.toString()) + PADDING_TOP}px`,
                 lineHeight: `${style.height.toString()}px`,
             }}
+            onClick={isPlaceholder ? () => data.onToggle(row.key) : undefined}
         >
             <DiffCell cell={row.base} highlighter={data.highlighters[0]} />
             <DiffCell cell={row.current} highlighter={data.highlighters[1]} />

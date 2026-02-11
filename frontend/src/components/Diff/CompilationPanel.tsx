@@ -53,6 +53,7 @@ export default function CompilationPanel({
     const problemState = getProblemState(compilation);
     const [threeWayDiffBase] = useThreeWayDiffBase();
     const [threeWayDiffEnabled, setThreeWayDiffEnabled] = useState(false);
+    const [compressionEnabled, setCompressionEnabled] = useState(false);
     const prevCompilation = usedCompilationRef.current;
 
     // Only update the diff if it's never been set or if the compilation succeeded
@@ -118,6 +119,8 @@ export default function CompilationPanel({
                         }
                         threeWayDiffEnabled={threeWayDiffEnabled}
                         setThreeWayDiffEnabled={setThreeWayDiffEnabled}
+                        compressionEnabled={compressionEnabled}
+                        setCompressionEnabled={setCompressionEnabled}
                         threeWayDiffBase={threeWayDiffBase}
                         selectedSourceLine={selectedSourceLine}
                     />

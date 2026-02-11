@@ -1,23 +1,27 @@
 /* eslint css-modules/no-unused-class: off */
-
 import {
     createContext,
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
     type RefObject,
+    useMemo,
     useRef,
     useState,
 } from "react";
 
-import { VersionsIcon } from "@primer/octicons-react";
+import { VersionsIcon, FoldIcon, UnfoldIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 
 import type * as api from "@/lib/api";
 import { useSize } from "@/lib/hooks";
-import { ThreeWayDiffBase, useCodeFontSize } from "@/lib/settings";
+import {
+    ThreeWayDiffBase,
+    useCodeFontSize,
+    diffCompressionContext,
+} from "@/lib/settings";
 
 import LoadingSpinner from "../loading.svg";
 
@@ -66,22 +70,46 @@ function DiffBody({
     diff,
     diffLabel,
     fontSize,
+    compressionEnabled,
 }: {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
     fontSize: number | undefined;
+    compressionEnabled: boolean;
 }) {
     const { highlighters, setHighlightAll } = useHighlighers(3);
+    const [compressionContext] = diffCompressionContext();
+
+    const groups = useMemo(() => {
+        if (!diff) return [] as DiffGroup[];
+        return compressMatching({
+            rows: diff.rows,
+            context: compressionEnabled ? compressionContext : -1,
+        });
+    }, [diff, compressionEnabled, compressionContext]);
+
+    const [expandedGroups, setExpandedGroups] = useState<
+        Record<string, boolean>
+    >({});
+
+    const flattened = useMemo(
+        () => flattenGroups(groups, expandedGroups),
+        [groups, expandedGroups],
+    );
+
+    const itemData: AsmDiffer.DiffListData = useMemo(
+        () => ({
+            rows: flattened,
+            highlighters,
+            onToggle: (key: string) =>
+                setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] })),
+        }),
+        [flattened, highlighters],
+    );
 
     if (!diff) {
         return <div className={styles.bodyContainer} />;
     }
-
-    const itemData = AsmDiffer.createDiffListData(
-        diff,
-        diffLabel,
-        highlighters,
-    );
 
     return (
         <div
@@ -101,7 +129,7 @@ function DiffBody({
                 }) => (
                     <FixedSizeList
                         className={styles.body}
-                        itemCount={itemData.itemCount}
+                        itemCount={itemData.rows.length}
                         itemData={itemData}
                         itemSize={(fontSize ?? 12) * 1.33}
                         overscanCount={40}
@@ -141,6 +169,30 @@ function ThreeWayToggleButton({
     );
 }
 
+function CompressToggleButton({
+    enabled,
+    setEnabled,
+}: {
+    enabled: boolean;
+    setEnabled: (enabled: boolean) => void;
+}) {
+    return (
+        <button
+            className={styles.compressionToggle}
+            onClick={() => {
+                setEnabled(!enabled);
+            }}
+            title={
+                enabled
+                    ? "Do not compress streaks of matching lines"
+                    : "Compress streaks of matching lines"
+            }
+        >
+            {enabled ? <FoldIcon size={24} /> : <UnfoldIcon size={24} />}
+        </button>
+    );
+}
+
 export function scrollToLineNumber(
     editorView: RefObject<EditorView>,
     lineNumber: number,
@@ -164,6 +216,143 @@ export const PADDING_BOTTOM = 8;
 
 export const SelectedSourceLineContext = createContext<number | null>(null);
 
+type DiffGroup =
+    | { type: "rows"; key: string; rows: api.DiffRow[] }
+    | {
+          type: "collapsed";
+          key: string;
+          rows: api.DiffRow[];
+          isExpanded: boolean;
+      };
+
+/* heavily inspired by compress_matching from diff.py */
+export function compressMatching({
+    rows,
+    context,
+}: {
+    rows: api.DiffRow[];
+    context: number;
+}): DiffGroup[] {
+    if (context < 0) {
+        // no compression
+        return [{ type: "rows", key: "group-0", rows }];
+    }
+
+    const groups: DiffGroup[] = [];
+    const matchingStreak: api.DiffRow[] = [];
+
+    const isMatchingRow = (row: api.DiffRow): boolean => {
+        const baseTexts = row.base?.text ?? [];
+        const currentTexts = row.current?.text ?? [];
+
+        if (baseTexts.length !== currentTexts.length) {
+            return false;
+        }
+
+        // Rely on asm-differ's opinion
+        return baseTexts.every(
+            (t, i) => t.format !== "" || currentTexts[i].format !== "",
+        );
+    };
+
+    let groupCount = 0;
+
+    const flushMatching = () => {
+        if (matchingStreak.length === 0) return;
+
+        if (matchingStreak.length <= 2 * context + 1) {
+            groups.push({
+                type: "rows",
+                key: `group-${groupCount++}`,
+                rows: [...matchingStreak],
+            });
+        } else {
+            if (context > 0) {
+                groups.push({
+                    type: "rows",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(0, context),
+                });
+                groups.push({
+                    type: "collapsed",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(context, -context),
+                    isExpanded: false,
+                });
+                groups.push({
+                    type: "rows",
+                    key: `group-${groupCount++}`,
+                    rows: matchingStreak.slice(-context),
+                });
+            } else {
+                groups.push({
+                    type: "collapsed",
+                    key: `group-${groupCount++}`,
+                    rows: [...matchingStreak],
+                    isExpanded: false,
+                });
+            }
+        }
+
+        matchingStreak.length = 0; // clear
+    };
+
+    for (const row of rows) {
+        if (isMatchingRow(row)) {
+            matchingStreak.push(row);
+        } else {
+            flushMatching();
+            groups.push({
+                type: "rows",
+                key: `group-${groupCount++}`,
+                rows: [row],
+            });
+        }
+    }
+
+    flushMatching();
+    return groups;
+}
+
+export function flattenGroups(
+    groups: DiffGroup[],
+    expandedGroups: Record<string, boolean>,
+): api.DiffRow[] {
+    const flat: api.DiffRow[] = [];
+    for (const group of groups) {
+        switch (group.type) {
+            case "rows": {
+                flat.push(...group.rows);
+                break;
+            }
+            case "collapsed": {
+                const format = "diff_skip";
+                const isExpanded =
+                    expandedGroups[group.key] ?? group.isExpanded;
+                const placeholder: api.DiffRow = {
+                    key: group.key,
+                    base: {
+                        text: [
+                            {
+                                text: `${isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} unchanged lines`,
+                                format,
+                            },
+                        ],
+                    },
+                    current: { text: [{ text: "", format }] },
+                    previous: { text: [{ text: "", format }] },
+                };
+                flat.push(placeholder);
+                if (isExpanded) {
+                    flat.push(...group.rows);
+                }
+                break;
+            }
+        }
+    }
+    return flat;
+}
+
 export type Props = {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
@@ -171,6 +360,8 @@ export type Props = {
     isCurrentOutdated: boolean;
     threeWayDiffEnabled: boolean;
     setThreeWayDiffEnabled: (value: boolean) => void;
+    compressionEnabled: boolean;
+    setCompressionEnabled: (value: boolean) => void;
     threeWayDiffBase: ThreeWayDiffBase;
     selectedSourceLine: number | null;
 };
@@ -182,6 +373,8 @@ export default function Diff({
     isCurrentOutdated,
     threeWayDiffEnabled,
     setThreeWayDiffEnabled,
+    compressionEnabled,
+    setCompressionEnabled,
     threeWayDiffBase,
     selectedSourceLine,
 }: Props) {
@@ -234,6 +427,13 @@ export default function Diff({
         </>
     );
 
+    const compressButton = (
+        <CompressToggleButton
+            enabled={compressionEnabled}
+            setEnabled={setCompressionEnabled}
+        />
+    );
+
     return (
         <div
             ref={container.ref}
@@ -279,6 +479,7 @@ export default function Diff({
                     />
                     {isCompiling && <LoadingSpinner className="size-6" />}
                     {!threeWayDiffEnabled && threeWayButton}
+                    {!threeWayDiffEnabled && compressButton}
                 </div>
                 {threeWayDiffEnabled && (
                     <div className={styles.header}>
@@ -296,6 +497,7 @@ export default function Diff({
                             }
                         />
                         {threeWayButton}
+                        {compressButton}
                     </div>
                 )}
             </div>
@@ -303,6 +505,7 @@ export default function Diff({
                 <DiffBody
                     diff={diff}
                     diffLabel={diffLabel}
+                    compressionEnabled={compressionEnabled}
                     fontSize={fontSize}
                 />
             </SelectedSourceLineContext.Provider>

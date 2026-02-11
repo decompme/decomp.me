@@ -58,6 +58,18 @@
     color: var(--g1500);
 }
 
+.compressionToggle {
+    position: relative;
+    padding: 4px 4px;
+    cursor: pointer;
+
+    &:hover {
+        border-radius: 4px;
+        color: var(--g1300);
+        background: var(--g400);
+    }
+}
+
 // Columns
 .headers,
 .row {
@@ -116,6 +128,14 @@
     }
 }
 
+.row.collapsed {
+    cursor: pointer;
+}
+
+.row.collapsed > .cell {
+    cursor: pointer;
+}
+
 .cell span.lineNumber {
     display: inline-block;
 
@@ -145,19 +165,23 @@
 .diff_change { color: #6d6dff; }
 .diff_add { color: #45bd00; }
 .diff_remove { color: #c82829; }
+.diff_skip { color: #e6c700; }
 
 .diff_change_row { background-color: rgba(106, 106, 255, 0.10); }
 .diff_add_row    { background-color: rgba(69, 189, 0, 0.10); }
 .diff_remove_row { background-color: rgba(200, 40, 41, 0.10); }
+.diff_skip_row { background-color: rgba(230, 199, 0, 0.10); }
 
 :global(html:not(.dark)) {
     .diff_change { color: #3a3aff; }
     .diff_add    { color: #2a8000; }
     .diff_remove { color: #a31212; }
+    .diff_skip   { color: #b38f00; }
 
     .diff_change_row { background-color: #f4f4ff; }
     .diff_add_row    { background-color: #f4fff4; }
     .diff_remove_row { background-color: #fff4f4; }
+    .diff_skip_row   { background-color: #fffbea; }
 }
 
 .source_function {
