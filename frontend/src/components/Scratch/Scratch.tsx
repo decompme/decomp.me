@@ -298,6 +298,7 @@ export default function Scratch({
                             }}
                             onSelectedLineChange={setSelectedSourceLine}
                             extensions={cmExtensionsSource}
+                            placeholder="Write the code for the function you are matching here."
                         />
                     </Tab>
                 );
@@ -322,6 +323,7 @@ export default function Scratch({
                                 setScratch({ context: value });
                             }}
                             extensions={cmExtensionsContext}
+                            placeholder="Add your typedefs, structs, and declarations here."
                         />
                     </Tab>
                 );
