@@ -334,7 +334,7 @@ export function flattenGroups(
                     base: {
                         text: [
                             {
-                                text: `${isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} unchanged lines`,
+                                text: `${isExpanded ? "▼ Collapse" : "▶ Expand"} ${group.rows.length} matching lines`,
                                 format,
                             },
                         ],
