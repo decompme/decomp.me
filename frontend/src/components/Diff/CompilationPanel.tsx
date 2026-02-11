@@ -101,11 +101,16 @@ export default function CompilationPanel({
             <Allotment
                 ref={allotment}
                 vertical
-                onChange={([_top, bottom]) => {
-                    if (_top === undefined || bottom === undefined) {
+                onChange={([_diffHeight, problemsHeight]) => {
+                    if (
+                        _diffHeight === undefined ||
+                        problemsHeight === undefined
+                    ) {
                         return;
                     }
-                    setIsProblemsCollapsed(bottom <= problemsCollapsedHeight);
+                    setIsProblemsCollapsed(
+                        problemsHeight <= problemsCollapsedHeight,
+                    );
                 }}
             >
                 <Allotment.Pane>
