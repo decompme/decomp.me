@@ -143,6 +143,7 @@ export default function CompilationPanel({
                             <GhostButton
                                 className="flex w-max grow justify-between text-gray-11"
                                 onClick={() => {
+                                    setIsProblemsCollapsed((curr) => !curr);
                                     const containerHeight =
                                         container.current?.clientHeight ?? 0;
                                     const newProblemsHeight =
