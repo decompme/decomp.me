@@ -101,11 +101,16 @@ export default function CompilationPanel({
             <Allotment
                 ref={allotment}
                 vertical
-                onChange={([_top, bottom]) => {
-                    if (_top === undefined || bottom === undefined) {
+                onChange={([_diffHeight, problemsHeight]) => {
+                    if (
+                        _diffHeight === undefined ||
+                        problemsHeight === undefined
+                    ) {
                         return;
                     }
-                    setIsProblemsCollapsed(bottom <= problemsCollapsedHeight);
+                    setIsProblemsCollapsed(
+                        problemsHeight <= problemsCollapsedHeight,
+                    );
                 }}
             >
                 <Allotment.Pane>
@@ -138,6 +143,7 @@ export default function CompilationPanel({
                             <GhostButton
                                 className="flex w-max grow justify-between text-gray-11"
                                 onClick={() => {
+                                    setIsProblemsCollapsed((curr) => !curr);
                                     const containerHeight =
                                         container.current?.clientHeight ?? 0;
                                     const newProblemsHeight =
