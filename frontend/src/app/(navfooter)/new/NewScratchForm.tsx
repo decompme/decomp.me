@@ -391,18 +391,18 @@ export default function NewScratchForm({
                     valueVersion={valueVersion}
                     onChange={setAsm}
                     extensions={basicSetup}
+                    placeholder="Place your GAS-compatible assembly code here."
                 />
             </div>
             <div className="flex h-[200px] flex-col">
-                <FormLabel small="(any typedefs, structs, and declarations you would like to include go here; typically generated with m2ctx.py)">
-                    Context
-                </FormLabel>
+                <FormLabel small="(optional)">Context</FormLabel>
                 <CodeMirror
                     className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
                     value={context}
                     valueVersion={valueVersion}
                     onChange={setContext}
                     extensions={[basicSetup, cpp()]}
+                    placeholder="Add any typedefs, structs, and declarations here."
                 />
             </div>
 

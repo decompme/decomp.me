@@ -13,6 +13,10 @@
         cursor: text;
     }
 
+    :global(.cm-placeholder) {
+        font-style: italic;
+    }
+
     :global(.cm-gutters),
     :global(.cm-content),
     :global(.cm-tooltip-hover) {

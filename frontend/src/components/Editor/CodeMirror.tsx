@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import { type Extension, EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { EditorView, placeholder } from "@codemirror/view";
 import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -49,6 +49,7 @@ export interface Props {
     className?: string;
     viewRef?: RefObject<EditorView | null>;
     extensions: Extension; // const
+    placeholder?: string;
 }
 
 export default function CodeMirror({
@@ -60,6 +61,7 @@ export default function CodeMirror({
     className,
     viewRef: viewRefProp,
     extensions,
+    placeholder: placeholderText,
 }: Props) {
     const { ref: el, width } = useSize<HTMLDivElement>();
 
@@ -96,6 +98,7 @@ export default function CodeMirror({
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
+                    placeholder(placeholderText || ""),
                     EditorState.transactionExtender.of(
                         ({ docChanged, newDoc, newSelection }) => {
                             // value / onChange
