@@ -789,7 +789,7 @@ wheels = [
 [[package]]
 name = "m2c"
 version = "0.1.0"
-source = { git = "https://github.com/matt-kempster/m2c.git#400dd3471df589a6fc7af983921f43a4cf9af473" }
+source = { git = "https://github.com/matt-kempster/m2c.git#e24d4ead75afa89b9cc901c412b9d99c582ea4e3" }
 dependencies = [
     { name = "graphviz" },
 ]
