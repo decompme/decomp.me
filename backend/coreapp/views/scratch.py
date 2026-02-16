@@ -31,6 +31,7 @@ from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
+from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
 from ..flags import Language
 from ..libraries import Library
@@ -292,7 +293,7 @@ class ScratchViewSet(
         .annotate(match_percent=match_percent)
     )
     pagination_class = ScratchPagination
-    filterset_fields = ["platform", "compiler", "preset"]
+    filterset_class = ScratchFilter
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         NonEmptySearchFilter,

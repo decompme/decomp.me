@@ -41,7 +41,7 @@ export default function Page() {
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
                     <h2 className="mb-2 text-lg">Recent activity</h2>
-                    <ScratchList url="/scratch?page_size=20" />
+                    <ScratchList url="/scratch?page_size=20&has_owner=true" />
                 </section>
             </div>
         </main>
