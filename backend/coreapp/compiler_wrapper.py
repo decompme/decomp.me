@@ -229,8 +229,6 @@ class CompilerWrapper:
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
             except ValueError as e:
                 # Shlex issue?
-                logger.error("value error: %s", e)
-
                 logger.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
             except subprocess.TimeoutExpired:
