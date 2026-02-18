@@ -182,7 +182,7 @@ class CompilerWrapper:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                logging.warning("%s does not exist, creating it!", compiler.path)
+                logger.warning("%s does not exist, creating it!", compiler.path)
                 compiler.path.mkdir(parents=True)
 
             # Run compiler
@@ -220,16 +220,16 @@ class CompilerWrapper:
                     timeout=settings.COMPILATION_TIMEOUT_SECONDS,
                 )
                 et = round(time.time() * 1000)
-                logging.debug(f"Compilation finished in: {et - st} ms")
+                logger.debug(f"Compilation finished in: {et - st} ms")
             except subprocess.CalledProcessError as e:
                 # Compilation failed
                 msg = e.stdout
 
-                logging.debug("Compilation failed: %s", msg)
+                logger.debug("Compilation failed: %s", msg)
                 raise CompilationError(CompilerWrapper.filter_compile_errors(msg))
             except ValueError as e:
                 # Shlex issue?
-                logging.debug("Compilation failed: %s", e)
+                logger.debug("Compilation failed: %s", e)
                 raise CompilationError(str(e))
             except subprocess.TimeoutExpired:
                 raise CompilationError("Compilation failed: timeout expired")
@@ -238,7 +238,7 @@ class CompilerWrapper:
                 error_msg = (
                     "Compiler did not create an object file: %s" % compile_proc.stdout
                 )
-                logging.debug(error_msg)
+                logger.debug(error_msg)
                 raise CompilationError(error_msg)
 
             object_bytes = object_path.read_bytes()
