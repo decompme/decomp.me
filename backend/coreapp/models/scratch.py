@@ -121,7 +121,7 @@ class Scratch(models.Model):
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
-    context_fk = models.ForeignKey(Context, null=True, on_delete=models.SET_NULL)
+    context_fk = models.ForeignKey(Context, null=True, on_delete=models.PROTECT)
     diff_label = models.CharField(
         max_length=1024, blank=True
     )  # blank means diff from the start of the file
