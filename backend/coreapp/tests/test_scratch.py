@@ -154,7 +154,7 @@ nop
 
 class ScratchContextTests(BaseTestCase):
 
-    def create_scratch_with_context(self, context=""):
+    def create_scratch_with_context(self, context: str = "") -> Dict[str, Any]:
         scratch_dict: Dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
             "platform": compilers.DUMMY.id,
@@ -173,7 +173,9 @@ class ScratchContextTests(BaseTestCase):
         self.assertIsNotNone(s1.context_fk)
         self.assertEqual(s1.context_fk_id, s2.context_fk_id)
         self.assertEqual(Context.objects.count(), 1)
-        self.assertEqual(Context.objects.first().text, ctx)
+        ctx_obj = Context.objects.first()
+        assert ctx_obj is not None
+        self.assertEqual(ctx_obj.text, ctx)
 
     def test_context_creates_separate_instances_for_different_texts(self) -> None:
         d1 = self.create_scratch_with_context("typedef int s32;")
@@ -215,6 +217,8 @@ class ScratchContextTests(BaseTestCase):
         # Ensure a new context was created
         s.refresh_from_db()
         self.assertNotEqual(s.context_fk_id, old_ctx_id)
+        self.assertIsNotNone(s.context_fk)
+        assert s.context_fk is not None
         self.assertEqual(s.context_fk.text, "typedef float f32;")
         self.assertEqual(Context.objects.count(), 2)
 
@@ -223,6 +227,7 @@ class ScratchContextTests(BaseTestCase):
         s = self.create_scratch(d)
         ctx = s.context_fk
         self.assertIsNotNone(ctx)
+        assert ctx is not None
 
         with self.assertRaises(ProtectedError):
             ctx.delete()
@@ -238,6 +243,8 @@ class ScratchContextTests(BaseTestCase):
         s1 = self.create_scratch(d)
         s2 = self.create_scratch(d)
         ctx = s1.context_fk
+        self.assertIsNotNone(ctx)
+        assert ctx is not None
 
         s1.delete()
         s2.delete()
