@@ -153,7 +153,6 @@ nop
 
 
 class ScratchContextTests(BaseTestCase):
-
     def create_scratch_with_context(self, context: str = "") -> Dict[str, Any]:
         scratch_dict: Dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
