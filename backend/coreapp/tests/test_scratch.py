@@ -5,10 +5,11 @@ import zipfile
 
 from coreapp import compilers, platforms
 from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
-from coreapp.models.scratch import Assembly, Scratch
+from coreapp.models.scratch import Assembly, Context, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
+from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
@@ -149,6 +150,106 @@ nop
             "target_asm": "jr $ra\nnop",
         }
         self.create_scratch(scratch_dict)
+
+
+class ScratchContextTests(BaseTestCase):
+
+    def create_scratch_with_context(self, context=""):
+        scratch_dict: Dict[str, Any] = {
+            "compiler": platforms.DUMMY.id,
+            "platform": compilers.DUMMY.id,
+            "context": context,
+            "target_asm": "glabel meow\njr $ra",
+            "name": "cat scratch",
+        }
+        return scratch_dict
+
+    def test_context_deduplicates_identical_texts(self) -> None:
+        ctx = "typedef int s32;"
+        d = self.create_scratch_with_context(ctx)
+        s1 = self.create_scratch(d)
+        s2 = self.create_scratch(d)
+
+        self.assertIsNotNone(s1.context_fk)
+        self.assertEqual(s1.context_fk_id, s2.context_fk_id)
+        self.assertEqual(Context.objects.count(), 1)
+        self.assertEqual(Context.objects.first().text, ctx)
+
+    def test_context_creates_separate_instances_for_different_texts(self) -> None:
+        d1 = self.create_scratch_with_context("typedef int s32;")
+        d2 = self.create_scratch_with_context("typedef float f32;")
+        s1 = self.create_scratch(d1)
+        s2 = self.create_scratch(d2)
+
+        self.assertNotEqual(s1.context_fk_id, s2.context_fk_id)
+        self.assertEqual(Context.objects.count(), 2)
+
+    def test_context_blank_does_not_create_instance(self) -> None:
+        d = self.create_scratch_with_context("")
+        s = self.create_scratch(d)
+        self.assertIsNone(s.context_fk)
+        self.assertEqual(Context.objects.count(), 0)
+
+    def test_context_update_creates_or_links_new_instance(self) -> None:
+        d = self.create_scratch_with_context("typedef int s32;")
+        s = self.create_scratch(d)
+        old_ctx_id = s.context_fk_id
+        slug = s.slug
+
+        # Obtain ownership of the scratch
+        response = self.client.post(
+            reverse("scratch-claim", kwargs={"pk": slug}),
+            {"token": s.claim_token},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.json()["success"])
+
+        # Patch the scratch with a new context
+        response = self.client.patch(
+            reverse("scratch-detail", kwargs={"pk": s.slug}),
+            {"context": "typedef float f32;"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure a new context was created
+        s.refresh_from_db()
+        self.assertNotEqual(s.context_fk_id, old_ctx_id)
+        self.assertEqual(s.context_fk.text, "typedef float f32;")
+        self.assertEqual(Context.objects.count(), 2)
+
+    def test_context_protects_from_deletion_while_in_use(self) -> None:
+        d = self.create_scratch_with_context("typedef int s32;")
+        s = self.create_scratch(d)
+        ctx = s.context_fk
+        self.assertIsNotNone(ctx)
+
+        with self.assertRaises(ProtectedError):
+            ctx.delete()
+
+        # Deleting the scratch should free the context
+        s.delete()
+        # Now deletion should succeed
+        ctx.delete()
+        self.assertEqual(Context.objects.count(), 0)
+
+    def test_context_can_be_deleted_after_all_scratches_removed(self) -> None:
+        d = self.create_scratch_with_context("typedef int s32;")
+        s1 = self.create_scratch(d)
+        s2 = self.create_scratch(d)
+        ctx = s1.context_fk
+
+        s1.delete()
+        s2.delete()
+
+        # Should now be orphaned
+        self.assertTrue(
+            Context.objects.filter(pk=ctx.pk, scratch__isnull=True).exists()
+        )
+
+        # Maintenance vacuum simulation
+        Context.objects.filter(scratch__isnull=True).delete()
+        self.assertFalse(Context.objects.exists())
 
 
 class ScratchModificationTests(BaseTestCase):

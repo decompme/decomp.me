@@ -157,7 +157,9 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
 
 def scratch_last_modified(
-    request: Request, pk: Optional[str] = None
+    request: Request,
+    pk: Optional[str] = None,
+    partial: Optional[bool] = False,
 ) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
