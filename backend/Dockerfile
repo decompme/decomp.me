@@ -92,7 +92,7 @@ RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/down
     && chmod +x /usr/bin/mips-ps2-decompals-*
 
 # Patched PowerPC binutils
-RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-1/linux-x86_64.zip" | \
+RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-2/linux-x86_64.zip" | \
     bsdtar -xvf- -C /usr/bin \
     && chmod +x /usr/bin/powerpc-eabi-*
 
