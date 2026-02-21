@@ -270,16 +270,12 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     def create(self, validated_data: dict[str, Any]) -> Scratch:
         context_text = validated_data.pop("context", "")
         validated_data["context_fk"] = Context.get_or_create_from_text(context_text)
-        # for backwards compatibility:
-        validated_data["context"] = context_text
         return super().create(validated_data)
 
     def update(self, instance: Scratch, validated_data: dict[str, Any]) -> Scratch:
         if "context" in validated_data:
             context_text = validated_data.pop("context", "")
             instance.context_fk = Context.get_or_create_from_text(context_text)
-            # for backwards compatibility:
-            instance.context = context_text
         return super().update(instance, validated_data)
 
     def get_language(self, scratch: Scratch) -> str:
