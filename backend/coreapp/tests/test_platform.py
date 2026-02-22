@@ -130,5 +130,8 @@ class PlatformAssembleRoundtripTests(unittest.TestCase):
                     self.assertIsNotNone(
                         dump, f"Disassembly for {platform.id} was None"
                     )
+                    self.assertTrue(
+                        dump.strip(), f"Empty disassembly for {platform.id}"
+                    )
                 except Exception as e:
                     self.fail(f"Failed for {platform.id}: {e}")
