@@ -5,26 +5,26 @@ from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.models.scratch import Asm, Assembly
 from coreapp.platforms import (
-    IRIX,
-    N64,
-    GC_WII,
-    SWITCH,
+    ANDROID_X86,
+    DREAMCAST,
     GBA,
-    NDS_ARM9,
+    GC_WII,
+    MACOSX,
+    MSDOS,
     N3DS,
+    N64,
+    NDS_ARM9,
     PS1,
     PS2,
     PSP,
     SATURN,
-    DREAMCAST,
-    MACOSX,
-    MSDOS,
+    SWITCH,
     WIIU,
     WIN32,
     XBOX360,
-    ANDROID_X86,
-    Platform,
     _platforms,
+    Platform,
+    IRIX,
 )
 
 
@@ -87,46 +87,46 @@ def disassemble_obj(platform: Platform, asm_obj_bytes: bytes) -> str:
 class PlatformAssembleRoundtripTests(unittest.TestCase):
     PLATFORM_ASM_MAP = {
         # MIPS
-        "irix": (IRIX, MIPS_ASM),
-        "n64": (N64, MIPS_ASM),
-        "ps1": (PS1, MIPS_ASM),
-        "ps2": (PS2, MIPS_ASM),
-        "psp": (PSP, MIPS_ASM),
+        IRIX.id: MIPS_ASM,
+        N64.id: MIPS_ASM,
+        PS1.id: MIPS_ASM,
+        PS2.id: MIPS_ASM,
+        PSP.id: MIPS_ASM,
         # PowerPC
-        "macosx": (MACOSX, PPC_ASM),
-        "gc_wii": (GC_WII, PPC_ASM),
-        "wiiu": (WIIU, PPC_ASM),
-        "xbox360": (XBOX360, PPC_ASM),
+        MACOSX.id: PPC_ASM,
+        GC_WII.id: PPC_ASM,
+        WIIU.id: PPC_ASM,
+        XBOX360.id: PPC_ASM,
         # x86 family
-        "msdos": (MSDOS, MSDOS_ASM),
-        "win32": (WIN32, X86_ASM),
-        "android_x86": (ANDROID_X86, X86_ASM),
+        MSDOS.id: MSDOS_ASM,
+        WIN32.id: X86_ASM,
+        ANDROID_X86.id: X86_ASM,
         # ARM / AArch64
-        "gba": (GBA, ARM_ASM),
-        "nds_arm9": (NDS_ARM9, ARM_ASM),
-        "n3ds": (N3DS, ARM_ASM),
-        "switch": (SWITCH, AARCH64_ASM),
+        GBA.id: ARM_ASM,
+        NDS_ARM9.id: ARM_ASM,
+        N3DS.id: ARM_ASM,
+        SWITCH.id: AARCH64_ASM,
         # SH2
-        "saturn": (SATURN, SH2_ASM),
-        "dreamcast": (DREAMCAST, SH2_ASM),
+        SATURN.id: SH2_ASM,
+        DREAMCAST.id: SH2_ASM,
     }
 
     def test_all_platforms_roundtrip(self) -> None:
-        for platform_name in _platforms:
-            if platform_name == "dummy":
+        for platform in _platforms.values():
+            if platform.id == "dummy":
                 continue
 
-            if platform_name not in self.PLATFORM_ASM_MAP:
-                self.fail(f"No test found for {platform_name}")
+            if platform.id not in self.PLATFORM_ASM_MAP:
+                self.fail(f"No test found for {platform.id}")
 
-            (platform, asm_code) = self.PLATFORM_ASM_MAP[platform_name]
+            asm_code = self.PLATFORM_ASM_MAP[platform.id]
 
-            with self.subTest(platform=platform_name):
+            with self.subTest(platform=platform.id):
                 try:
                     asm_obj = assemble_asm(platform, asm_code)
                     dump = disassemble_obj(platform, asm_obj.elf_object)
                     self.assertIsNotNone(
-                        dump, f"Disassembly for {platform_name} was None"
+                        dump, f"Disassembly for {platform.id} was None"
                     )
                 except Exception as e:
-                    self.fail(f"Failed for {platform_name}: {e}")
+                    self.fail(f"Failed for {platform.id}: {e}")
