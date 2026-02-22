@@ -11,12 +11,8 @@ import type * as api from "@/lib/api";
 import * as settings from "@/lib/settings";
 
 import { ScrollContext } from "../ScrollContext";
-
-import {
-    PADDING_TOP,
-    SelectedSourceLineContext,
-    scrollToLineNumber,
-} from "./Diff";
+import { useSelectedSourceLine } from "../SelectedSourceLineContext";
+import { PADDING_TOP, scrollToLineNumber } from "./Diff";
 import styles from "./Diff.module.scss";
 import type { Highlighter } from "./Highlighter";
 
@@ -82,7 +78,7 @@ function DiffCell({
     className?: string;
     highlighter: Highlighter;
 }) {
-    const selectedSourceLine = useContext(SelectedSourceLineContext);
+    const { selectedSourceLine } = useSelectedSourceLine();
     const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
     const hasLineNo = typeof cell?.src_line !== "undefined";
 

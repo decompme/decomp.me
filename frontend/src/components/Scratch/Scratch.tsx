@@ -1,4 +1,5 @@
 import {
+    createContext,
     useCallback,
     useEffect,
     useMemo,
@@ -50,6 +51,11 @@ import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
 import ScrollRestorer from "../ScrollRestorer";
+
+import {
+    useSelectedSourceLine,
+    SelectedSourceLineProvider,
+} from "../SelectedSourceLineContext";
 
 enum TabId {
     ABOUT = "scratch_about",
@@ -191,9 +197,6 @@ export default function Scratch({
             initialCompilation,
         );
     const userIsYou = api.useUserIsYou();
-    const [selectedSourceLine, setSelectedSourceLine] = useState<
-        number | null
-    >();
     const sourceEditor = useRef<EditorView>(null);
     const contextEditor = useRef<EditorView>(null);
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
@@ -278,6 +281,8 @@ export default function Scratch({
     );
 
     const renderTab = (id: string) => {
+        const { setSelectedSourceLine } = useSelectedSourceLine();
+
         switch (id as TabId) {
             case TabId.ABOUT:
                 return (
@@ -291,9 +296,7 @@ export default function Scratch({
                             <AboutPanel
                                 scratch={scratch}
                                 setScratch={
-                                    userIsYou(scratch.owner)
-                                        ? setScratch
-                                        : null
+                                    userIsYou(scratch.owner) ? setScratch : null
                                 }
                             />
                         )}
@@ -360,9 +363,7 @@ export default function Scratch({
                         {() => (
                             <ScrollRestorer
                                 className={styles.compilerOptsContainer}
-                                scrollPositionRef={
-                                    compilerOptsScrollPosition
-                                }
+                                scrollPositionRef={compilerOptsScrollPosition}
                             >
                                 <CompilerOpts
                                     platform={scratch.platform}
@@ -399,9 +400,7 @@ export default function Scratch({
                                             compilation?.diff_output
                                                 ?.max_score ?? -1
                                         }
-                                        matchOverride={
-                                            scratch.match_override
-                                        }
+                                        matchOverride={scratch.match_override}
                                         compiledSuccessfully={
                                             compilation?.success ?? false
                                         }
@@ -417,7 +416,6 @@ export default function Scratch({
                                 compilation={compilation}
                                 isCompiling={isCompiling}
                                 isCompilationOld={isCompilationOld}
-                                selectedSourceLine={selectedSourceLine}
                                 perSaveObj={perSaveObj}
                             />
                         )}
@@ -451,9 +449,7 @@ export default function Scratch({
                                     Decompilation
                                     <TabCloseButton
                                         onClick={() =>
-                                            setDecompilationTabEnabled(
-                                                false,
-                                            )
+                                            setDecompilationTabEnabled(false)
                                         }
                                     />
                                 </>
@@ -533,13 +529,15 @@ export default function Scratch({
             </ErrorBoundary>
             <ErrorBoundary>
                 {layout && (
-                    <ScrollContext.Provider value={sourceEditor}>
-                        <CustomLayout
-                            layout={layout}
-                            onChange={setLayout}
-                            renderTab={renderTab}
-                        />
-                    </ScrollContext.Provider>
+                    <SelectedSourceLineProvider>
+                        <ScrollContext.Provider value={sourceEditor}>
+                            <CustomLayout
+                                layout={layout}
+                                onChange={setLayout}
+                                renderTab={renderTab}
+                            />
+                        </ScrollContext.Provider>
+                    </SelectedSourceLineProvider>
                 )}
             </ErrorBoundary>
             {offlineOverlay}
