@@ -87,40 +87,42 @@ def disassemble_obj(platform: Platform, asm_obj_bytes: bytes) -> str:
 class PlatformAssembleRoundtripTests(unittest.TestCase):
     PLATFORM_ASM_MAP = {
         # MIPS
-        IRIX.id: MIPS_ASM,
-        N64.id: MIPS_ASM,
-        PS1.id: MIPS_ASM,
-        PS2.id: MIPS_ASM,
-        PSP.id: MIPS_ASM,
+        IRIX: MIPS_ASM,
+        N64: MIPS_ASM,
+        PS1: MIPS_ASM,
+        PS2: MIPS_ASM,
+        PSP: MIPS_ASM,
         # PowerPC
-        MACOSX.id: PPC_ASM,
-        GC_WII.id: PPC_ASM,
-        WIIU.id: PPC_ASM,
-        XBOX360.id: PPC_ASM,
+        MACOSX: PPC_ASM,
+        GC_WII: PPC_ASM,
+        WIIU: PPC_ASM,
+        XBOX360: PPC_ASM,
         # x86 family
-        MSDOS.id: MSDOS_ASM,
-        WIN32.id: X86_ASM,
-        ANDROID_X86.id: X86_ASM,
+        MSDOS: MSDOS_ASM,
+        WIN32: X86_ASM,
+        ANDROID_X86: X86_ASM,
         # ARM / AArch64
-        GBA.id: ARM_ASM,
-        NDS_ARM9.id: ARM_ASM,
-        N3DS.id: ARM_ASM,
-        SWITCH.id: AARCH64_ASM,
+        GBA: ARM_ASM,
+        NDS_ARM9: ARM_ASM,
+        N3DS: ARM_ASM,
+        SWITCH: AARCH64_ASM,
         # SH2
-        SATURN.id: SH2_ASM,
-        DREAMCAST.id: SH2_ASM,
+        SATURN: SH2_ASM,
+        DREAMCAST: SH2_ASM,
     }
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        missing = [
+            p.id
+            for p in _platforms.values()
+            if p.id != "dummy" and p not in cls.PLATFORM_ASM_MAP
+        ]
+        if missing:
+            raise AssertionError(f"Missing ASM definitions for: {missing}")
+
     def test_all_platforms_roundtrip(self) -> None:
-        for platform in _platforms.values():
-            if platform.id == "dummy":
-                continue
-
-            if platform.id not in self.PLATFORM_ASM_MAP:
-                self.fail(f"No test found for {platform.id}")
-
-            asm_code = self.PLATFORM_ASM_MAP[platform.id]
-
+        for platform, asm_code in self.PLATFORM_ASM_MAP.items():
             with self.subTest(platform=platform.id):
                 try:
                     asm_obj = assemble_asm(platform, asm_code)
