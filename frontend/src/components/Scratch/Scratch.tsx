@@ -1,4 +1,11 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 
 import type { EditorView } from "@codemirror/view";
 import { vim } from "@replit/codemirror-vim";
@@ -156,10 +163,15 @@ export default function Scratch({
     initialCompilation,
     offline,
 }: Props) {
-    const CODEMIRROR_EXTENSIONS = [
-        basicSetup,
-        scratch.language === "Pascal" ? StreamLanguage.define(pascal) : cpp(),
-    ];
+    const CODEMIRROR_EXTENSIONS = useMemo(
+        () => [
+            basicSetup,
+            scratch.language === "Pascal"
+                ? StreamLanguage.define(pascal)
+                : cpp(),
+        ],
+        [scratch.language],
+    );
 
     const container = useSize<HTMLDivElement>();
     const [layout, setLayout] = useState<Layout>(undefined);
@@ -190,11 +202,15 @@ export default function Scratch({
 
     const [isModified, setIsModified] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
-    const setScratch = (scratch: Partial<api.Scratch>) => {
-        onChange(scratch);
-        setIsModified(true);
-        setIsDirty(true);
-    };
+    const setScratch = useCallback(
+        (partial: Partial<api.Scratch>) => {
+            onChange(partial);
+            setIsModified(true);
+            setIsDirty(true);
+        },
+        [onChange],
+    );
+
     const [perSaveObj, setPerSaveObj] = useState({});
     const saveCallback = () => {
         setPerSaveObj({});
@@ -244,18 +260,22 @@ export default function Scratch({
     }, [scratch.slug, scratch.last_updated]);
 
     const [useVim] = useVimModeEnabled();
-    const cmExtensionsSource = [
-        ...CODEMIRROR_EXTENSIONS,
-        sourceCompareExtension,
-    ];
-    const cmExtensionsContext = [
-        ...CODEMIRROR_EXTENSIONS,
-        contextCompareExtension,
-    ];
-    if (useVim) {
-        cmExtensionsSource.push(vim());
-        cmExtensionsContext.push(vim());
-    }
+    const cmExtensionsSource = useMemo(
+        () => [
+            ...CODEMIRROR_EXTENSIONS,
+            sourceCompareExtension,
+            ...(useVim ? [vim()] : []),
+        ],
+        [CODEMIRROR_EXTENSIONS, sourceCompareExtension, useVim],
+    );
+    const cmExtensionsContext = useMemo(
+        () => [
+            ...CODEMIRROR_EXTENSIONS,
+            contextCompareExtension,
+            ...(useVim ? [vim()] : []),
+        ],
+        [CODEMIRROR_EXTENSIONS, contextCompareExtension, useVim],
+    );
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
@@ -271,7 +291,9 @@ export default function Scratch({
                             <AboutPanel
                                 scratch={scratch}
                                 setScratch={
-                                    userIsYou(scratch.owner) ? setScratch : null
+                                    userIsYou(scratch.owner)
+                                        ? setScratch
+                                        : null
                                 }
                             />
                         )}
@@ -338,7 +360,9 @@ export default function Scratch({
                         {() => (
                             <ScrollRestorer
                                 className={styles.compilerOptsContainer}
-                                scrollPositionRef={compilerOptsScrollPosition}
+                                scrollPositionRef={
+                                    compilerOptsScrollPosition
+                                }
                             >
                                 <CompilerOpts
                                     platform={scratch.platform}
@@ -375,7 +399,9 @@ export default function Scratch({
                                             compilation?.diff_output
                                                 ?.max_score ?? -1
                                         }
-                                        matchOverride={scratch.match_override}
+                                        matchOverride={
+                                            scratch.match_override
+                                        }
                                         compiledSuccessfully={
                                             compilation?.success ?? false
                                         }
@@ -425,7 +451,9 @@ export default function Scratch({
                                     Decompilation
                                     <TabCloseButton
                                         onClick={() =>
-                                            setDecompilationTabEnabled(false)
+                                            setDecompilationTabEnabled(
+                                                false,
+                                            )
                                         }
                                     />
                                 </>
@@ -446,12 +474,12 @@ export default function Scratch({
         }
     };
 
-    if (container.width) {
+    useEffect(() => {
+        if (!container.width) return;
         const preferredLayout = getDefaultLayout(
             container.width,
             container.height,
         );
-
         if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout);
             setLayout(
@@ -461,7 +489,7 @@ export default function Scratch({
                 ),
             );
         }
-    }
+    }, [container.width, container.height, layoutName, defaultDiffTab]);
 
     const offlineOverlay = offline ? (
         <>
