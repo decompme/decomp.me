@@ -6,7 +6,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -26,6 +25,7 @@ RUN apt-get update \
     flex \
     g++ \
     gcc \
+    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \
@@ -38,6 +38,49 @@ RUN git clone "https://github.com/google/nsjail" \
     --recursive --branch 3.4 /nsjail \
     && cd /nsjail \
     && make
+
+
+FROM base AS binutils
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    bzip2 \
+    libarchive-tools \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /binutils
+
+WORKDIR /binutils
+
+# Patched mips binutils
+RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.8/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
+    && tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump \
+    && rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz \
+    && chmod +x mips-ps2-decompals-*
+
+# Patched PowerPC binutils
+RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-2/linux-x86_64.zip" | \
+    bsdtar -xvf- \
+    && chmod +x powerpc-eabi-*
+
+# Xbox 360 (Xenon) PowerPC binutils
+RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
+    bsdtar -xvf- \
+    && chmod +x powerpc-xenon-pe-*
+
+# MSDOS specific
+RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
+    && tar xvzf omftools.tar.gz jwasm \
+    && rm omftools.tar.gz
+RUN wget "https://github.com/decompals/binutils-omf/releases/download/v0.4/omftools-linux-x86_64.tar.gz" \
+    && tar xvzf omftools-linux-x86_64.tar.gz omf-nm omf-objdump \
+    && rm omftools-linux-x86_64.tar.gz
+
+# Android binutils
+RUN wget "https://github.com/decompme/compilers/releases/download/compilers/android-ndk-r8e-linux-x86_64.tar.bz2" \
+    && bash -c 'tar xjvf android-ndk-r8e-linux-x86_64.tar.bz2 --strip-components=5 toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-{as,nm,objdump}' \
+    && rm android-ndk-r8e-linux-x86_64.tar.bz2
 
 
 FROM base AS dependencies
@@ -56,14 +99,12 @@ RUN dpkg --add-architecture i386 \
     binutils-powerpc-linux-gnu \
     binutils-sh-elf \
     binutils-x86-64-linux-gnu \
-    bzip2 \
     cpp \
     dj64 \
     dos2unix \
     dosemu2 \
     gcc-mips-linux-gnu \
     iptables \
-    libarchive-tools \
     libc6-dev-i386 \
     libdevmapper1.02.1 \
     libgpgme11 \
@@ -71,7 +112,6 @@ RUN dpkg --add-architecture i386 \
     libprotobuf-dev \
     libtinfo6 \
     netcat-traditional \
-    unzip \
     wget \
     wine \
     wine32:i386 \
@@ -80,39 +120,6 @@ RUN dpkg --add-architecture i386 \
 RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
     && apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb \
     && rm libtinfo5_6.3-2ubuntu0.1_amd64.deb
-
-COPY --from=nsjail /nsjail/nsjail /bin/nsjail
-
-COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
-
-# Patched mips binutils
-RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.4/binutils-mips-ps2-decompals-linux-x86-64.tar.gz" \
-    && tar xvzf binutils-mips-ps2-decompals-linux-x86-64.tar.gz -C /usr/bin mips-ps2-decompals-as mips-ps2-decompals-nm mips-ps2-decompals-objdump \
-    && rm binutils-mips-ps2-decompals-linux-x86-64.tar.gz \
-    && chmod +x /usr/bin/mips-ps2-decompals-*
-
-# Patched PowerPC binutils
-RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-2/linux-x86_64.zip" | \
-    bsdtar -xvf- -C /usr/bin \
-    && chmod +x /usr/bin/powerpc-eabi-*
-
-# Xbox 360 (Xenon) PowerPC binutils
-RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
-    bsdtar -xvf- -C /usr/bin \
-    && chmod +x /usr/bin/powerpc-xenon-pe-*
-
-# MSDOS specific
-RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/omftools.tar.gz" \
-    && tar xvzf omftools.tar.gz -C /usr/bin jwasm \
-    && rm omftools.tar.gz \
-    && wget "https://github.com/decompals/binutils-omf/releases/download/v0.4/omftools-linux-x86_64.tar.gz" \
-    && tar xvzf omftools-linux-x86_64.tar.gz -C /usr/bin omf-nm omf-objdump \
-    && rm omftools-linux-x86_64.tar.gz
-
-# Android binutils
-RUN wget "https://github.com/decompme/compilers/releases/download/compilers/android-ndk-r8e-linux-x86_64.tar.bz2" \
-    && bash -c 'tar xjvf android-ndk-r8e-linux-x86_64.tar.bz2 -C /usr/bin --strip-components=5 toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-{as,nm,objdump}' \
-    && rm android-ndk-r8e-linux-x86_64.tar.bz2
 
 RUN mkdir -p /etc/fonts
 
@@ -129,6 +136,12 @@ USER ubuntu
 
 # Initialize wine files to /home/ubuntu/.wine
 RUN wineboot --init
+
+COPY --from=nsjail /nsjail/nsjail /bin/nsjail
+
+COPY --from=binutils /binutils/ /usr/bin/
+
+COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
 
 WORKDIR /backend
 
