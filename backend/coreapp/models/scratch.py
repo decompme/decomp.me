@@ -1,8 +1,9 @@
+import hashlib
 import json
 import logging
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
-from django.db import models
+from django.db import models, IntegrityError
 from django.contrib import admin
 from django.utils.crypto import get_random_string
 
@@ -76,6 +77,34 @@ class LibrariesField(models.JSONField):
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
 
+class Context(models.Model):
+    text = models.TextField()
+    hash = models.BinaryField(max_length=8, unique=True, db_index=True)
+
+    @classmethod
+    def get_or_create_from_text(cls, text: Optional[str]) -> Optional["Context"]:
+        if text is None:
+            return None
+
+        text = text.strip()
+        if not text:
+            return None
+
+        h = hashlib.blake2b(text.encode("utf-8"), digest_size=8).digest()
+        try:
+            obj, _ = cls.objects.get_or_create(hash=h, defaults={"text": text})
+        except IntegrityError:
+            # Handle rare race condition or collision
+            obj = cls.objects.get(hash=h)
+            if obj.text != text:
+                # Incredibly unlikely...
+                raise ValueError("Hash collision detected for this Context")
+        return obj
+
+    def __str__(self) -> str:
+        return f"Context({self.hash.hex()})"
+
+
 class Scratch(models.Model):
     slug = models.SlugField(primary_key=True, default=gen_scratch_id)
     name = models.CharField(max_length=1024, default="Untitled", blank=False)
@@ -92,6 +121,7 @@ class Scratch(models.Model):
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
     context = models.TextField(blank=True)
+    context_fk = models.ForeignKey(Context, null=True, on_delete=models.PROTECT)
     diff_label = models.CharField(
         max_length=1024, blank=True
     )  # blank means diff from the start of the file
@@ -142,5 +172,5 @@ class Scratch(models.Model):
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
-    raw_id_fields = ["owner", "parent", "family"]
+    raw_id_fields = ["owner", "parent", "family", "context_fk"]
     readonly_fields = ["target_assembly"]

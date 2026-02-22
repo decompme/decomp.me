@@ -94,13 +94,20 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     return assembly
 
 
-def compile_scratch(scratch: Scratch) -> CompilationResult:
+def compile_scratch(
+    scratch: Scratch, context: Optional[str] = None
+) -> CompilationResult:
     try:
+        if context is None:
+            scratch_context = scratch.context_fk.text if scratch.context_fk else ""
+        else:
+            scratch_context = context
+
         return CompilerWrapper.compile_code(
             compilers.from_id(scratch.compiler),
             scratch.compiler_flags,
             scratch.source_code,
-            scratch.context,
+            scratch_context,
             scratch.diff_label,
             tuple(scratch.libraries),
         )
@@ -150,7 +157,9 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
 
 def scratch_last_modified(
-    request: Request, pk: Optional[str] = None
+    request: Request,
+    pk: Optional[str] = None,
+    partial: Optional[bool] = False,
 ) -> Optional[datetime]:
     scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
     if scratch:
@@ -359,6 +368,7 @@ class ScratchViewSet(
 
         # Apply partial
         include_objects = False
+        scratch_context = None
         if request.method == "POST":
             # TODO: use a serializer w/ validation
             if "compiler" in request.data:
@@ -372,14 +382,14 @@ class ScratchViewSet(
             if "source_code" in request.data:
                 scratch.source_code = request.data["source_code"]
             if "context" in request.data:
-                scratch.context = request.data["context"]
+                scratch_context = request.data["context"]
             if "libraries" in request.data:
                 libs = [Library(**lib) for lib in request.data["libraries"]]
                 scratch.libraries = libs
             if "include_objects" in request.data:
                 include_objects = request.data["include_objects"]
 
-        compilation = compile_scratch(scratch)
+        compilation = compile_scratch(scratch, context=scratch_context)
         diff = diff_compilation(scratch, compilation)
 
         if request.method == "GET":
@@ -418,7 +428,9 @@ class ScratchViewSet(
                 }
             )
 
-        context = request.data.get("context", scratch.context)
+        context = request.data.get(
+            "context", scratch.context_fk.text if scratch.context_fk else ""
+        )
         compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
 
         platform = platforms.from_id(scratch.platform)
@@ -506,8 +518,8 @@ class ScratchViewSet(
             language = compilers.from_id(scratch.compiler).language
             src_ext = Language(language).get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
-            if scratch.context:
-                zip_f.writestr(f"ctx.{src_ext}", scratch.context)
+            if scratch.context_fk and scratch.context_fk.text:
+                zip_f.writestr(f"ctx.{src_ext}", scratch.context_fk.text)
 
             if request.GET.get("target_only") != "1":
                 compilation = compile_scratch(scratch)
