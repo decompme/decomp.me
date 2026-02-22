@@ -312,6 +312,11 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
 
+    def to_representation(self, instance: Scratch) -> dict[str, Any]:
+        data = super().to_representation(instance)
+        data.pop("context", None)
+        return data
+
     class Meta:
         model = Scratch
         fields = [
