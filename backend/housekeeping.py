@@ -46,6 +46,21 @@ def remove_anonymous_profiles(
     return perform_delete(to_delete, dry_run=dry_run)
 
 
+def remove_orphan_contexts(
+    cutoff_datetime: datetime.datetime, dry_run: bool = False
+) -> int:
+    Context = get_model("Context")
+    Scratch = get_model("Scratch")
+
+    to_delete = Context.objects.annotate(  # type: ignore[attr-defined]
+        has_scratch=Exists(
+            Scratch.objects.filter(context_fk=OuterRef("pk"))  # type: ignore[attr-defined]
+        )
+    ).filter(has_scratch=False)
+
+    return perform_delete(to_delete, dry_run=dry_run)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Decomp.me database housekeeping script"
@@ -79,11 +94,12 @@ def main() -> None:
     for text, func in [
         ("Owner-less Scratches", remove_ownerless_scratches),
         ("Scratch-less Profiles", remove_anonymous_profiles),
+        ("Orphan Contexts", remove_orphan_contexts),
     ]:
         print(f"{prefix}Cleaning up {text}... ", end="")
         deleted = func(cutoff_datetime, dry_run=dry_run)
         if deleted:
-            print(f"{deleted:,} entry(s) removed")
+            print(f"{deleted:,} entry(s) {'would be ' if dry_run else ''}removed")
         else:
             print("No entries found!")
 
