@@ -4,7 +4,6 @@ import { type CSSProperties, type RefObject, memo, useContext } from "react";
 
 import clsx from "clsx";
 import type { EditorView } from "codemirror";
-import memoize from "memoize-one";
 import { areEqual } from "react-window";
 
 import type * as api from "@/lib/api";

@@ -1,6 +1,5 @@
 /* eslint css-modules/no-unused-class: off */
 import {
-    createContext,
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,

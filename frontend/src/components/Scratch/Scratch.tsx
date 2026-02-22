@@ -1,5 +1,4 @@
 import {
-    createContext,
     useCallback,
     useEffect,
     useMemo,
@@ -37,6 +36,10 @@ import CodeMirror from "../Editor/CodeMirror";
 import ErrorBoundary from "../ErrorBoundary";
 import ScoreBadge, { calculateScorePercent } from "../ScoreBadge";
 import { ScrollContext } from "../ScrollContext";
+import {
+    useSelectedSourceLine,
+    SelectedSourceLineProvider,
+} from "../SelectedSourceLineContext";
 import { Tab, TabCloseButton } from "../Tabs";
 
 import useLanguageServer from "./hooks/useLanguageServer";
@@ -51,11 +54,6 @@ import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
 import ScrollRestorer from "../ScrollRestorer";
-
-import {
-    useSelectedSourceLine,
-    SelectedSourceLineProvider,
-} from "../SelectedSourceLineContext";
 
 enum TabId {
     ABOUT = "scratch_about",
