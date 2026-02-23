@@ -61,12 +61,12 @@ RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/down
 
 # Patched PowerPC binutils
 RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-2/linux-x86_64.zip" | \
-    bsdtar -xvf- \
+    bsdtar -xvf- powerpc-eabi-as powerpc-eabi-nm powerpc-eabi-objdump \
     && chmod +x powerpc-eabi-*
 
 # Xbox 360 (Xenon) PowerPC binutils
 RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
-    bsdtar -xvf- \
+    bsdtar -xvf- powerpc-xenon-pe-as powerpc-xenon-pe-nm powerpc-xenon-pe-objdump \
     && chmod +x powerpc-xenon-pe-*
 
 # MSDOS specific
