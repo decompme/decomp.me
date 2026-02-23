@@ -6,7 +6,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -26,6 +25,7 @@ RUN apt-get update \
     flex \
     g++ \
     gcc \
+    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \
@@ -61,12 +61,12 @@ RUN wget "https://github.com/decompals/binutils-mips-ps2-decompals/releases/down
 
 # Patched PowerPC binutils
 RUN curl -sSL "https://github.com/encounter/gc-wii-binutils/releases/download/2.42-2/linux-x86_64.zip" | \
-    bsdtar -xvf- \
+    bsdtar -xvf- powerpc-eabi-as powerpc-eabi-nm powerpc-eabi-objdump \
     && chmod +x powerpc-eabi-*
 
 # Xbox 360 (Xenon) PowerPC binutils
 RUN curl -sSL "https://github.com/encounter/xbox360-binutils/releases/download/2.45.1-1/linux-x86_64.zip" | \
-    bsdtar -xvf- \
+    bsdtar -xvf- powerpc-xenon-pe-as powerpc-xenon-pe-nm powerpc-xenon-pe-objdump \
     && chmod +x powerpc-xenon-pe-*
 
 # MSDOS specific
@@ -148,10 +148,24 @@ WORKDIR /backend
 
 FROM dependencies AS dev
 
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+USER ubuntu
+
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
 FROM base AS uv-install
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 USER ubuntu
 

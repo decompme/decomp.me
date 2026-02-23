@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build decompme_backend image
         run: |-
-          docker build backend -t decompme_backend
+          docker build backend --target dev -t decompme_backend
       - name: Run tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
