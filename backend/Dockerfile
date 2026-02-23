@@ -6,7 +6,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    git \
     python-is-python3 \
     python3 \
     python3-pip \
@@ -26,6 +25,7 @@ RUN apt-get update \
     flex \
     g++ \
     gcc \
+    git \
     libnl-route-3-dev \
     libprotobuf-dev \
     libtool \
@@ -148,10 +148,24 @@ WORKDIR /backend
 
 FROM dependencies AS dev
 
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+USER ubuntu
+
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
 FROM base AS uv-install
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 USER ubuntu
 
