@@ -37,7 +37,6 @@ export type Props = {
     compilation: api.Compilation;
     isCompiling?: boolean;
     isCompilationOld?: boolean;
-    selectedSourceLine: number | null;
     perSaveObj: PerSaveObj;
 };
 
@@ -46,7 +45,6 @@ export default function CompilationPanel({
     compilation,
     isCompiling,
     isCompilationOld,
-    selectedSourceLine,
     perSaveObj,
 }: Props) {
     const usedCompilationRef = useRef<api.Compilation | null>(null);
@@ -127,7 +125,6 @@ export default function CompilationPanel({
                         compressionEnabled={compressionEnabled}
                         setCompressionEnabled={setCompressionEnabled}
                         threeWayDiffBase={threeWayDiffBase}
-                        selectedSourceLine={selectedSourceLine}
                     />
                 </Allotment.Pane>
                 <Allotment.Pane

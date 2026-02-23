@@ -1,4 +1,11 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 
 import type { EditorView } from "@codemirror/view";
 import { vim } from "@replit/codemirror-vim";
@@ -29,6 +36,10 @@ import CodeMirror from "../Editor/CodeMirror";
 import ErrorBoundary from "../ErrorBoundary";
 import ScoreBadge, { calculateScorePercent } from "../ScoreBadge";
 import { ScrollContext } from "../ScrollContext";
+import {
+    useSelectedSourceLine,
+    SelectedSourceLineProvider,
+} from "../SelectedSourceLineContext";
 import { Tab, TabCloseButton } from "../Tabs";
 
 import useLanguageServer from "./hooks/useLanguageServer";
@@ -156,10 +167,15 @@ export default function Scratch({
     initialCompilation,
     offline,
 }: Props) {
-    const CODEMIRROR_EXTENSIONS = [
-        basicSetup,
-        scratch.language === "Pascal" ? StreamLanguage.define(pascal) : cpp(),
-    ];
+    const CODEMIRROR_EXTENSIONS = useMemo(
+        () => [
+            basicSetup,
+            scratch.language === "Pascal"
+                ? StreamLanguage.define(pascal)
+                : cpp(),
+        ],
+        [scratch.language],
+    );
 
     const container = useSize<HTMLDivElement>();
     const [layout, setLayout] = useState<Layout>(undefined);
@@ -179,9 +195,6 @@ export default function Scratch({
             initialCompilation,
         );
     const userIsYou = api.useUserIsYou();
-    const [selectedSourceLine, setSelectedSourceLine] = useState<
-        number | null
-    >();
     const sourceEditor = useRef<EditorView>(null);
     const contextEditor = useRef<EditorView>(null);
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
@@ -190,11 +203,15 @@ export default function Scratch({
 
     const [isModified, setIsModified] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
-    const setScratch = (scratch: Partial<api.Scratch>) => {
-        onChange(scratch);
-        setIsModified(true);
-        setIsDirty(true);
-    };
+    const setScratch = useCallback(
+        (partial: Partial<api.Scratch>) => {
+            onChange(partial);
+            setIsModified(true);
+            setIsDirty(true);
+        },
+        [onChange],
+    );
+
     const [perSaveObj, setPerSaveObj] = useState({});
     const saveCallback = () => {
         setPerSaveObj({});
@@ -244,20 +261,26 @@ export default function Scratch({
     }, [scratch.slug, scratch.last_updated]);
 
     const [useVim] = useVimModeEnabled();
-    const cmExtensionsSource = [
-        ...CODEMIRROR_EXTENSIONS,
-        sourceCompareExtension,
-    ];
-    const cmExtensionsContext = [
-        ...CODEMIRROR_EXTENSIONS,
-        contextCompareExtension,
-    ];
-    if (useVim) {
-        cmExtensionsSource.push(vim());
-        cmExtensionsContext.push(vim());
-    }
+    const cmExtensionsSource = useMemo(
+        () => [
+            ...CODEMIRROR_EXTENSIONS,
+            sourceCompareExtension,
+            ...(useVim ? [vim()] : []),
+        ],
+        [CODEMIRROR_EXTENSIONS, sourceCompareExtension, useVim],
+    );
+    const cmExtensionsContext = useMemo(
+        () => [
+            ...CODEMIRROR_EXTENSIONS,
+            contextCompareExtension,
+            ...(useVim ? [vim()] : []),
+        ],
+        [CODEMIRROR_EXTENSIONS, contextCompareExtension, useVim],
+    );
 
     const renderTab = (id: string) => {
+        const { setSelectedSourceLine } = useSelectedSourceLine();
+
         switch (id as TabId) {
             case TabId.ABOUT:
                 return (
@@ -391,7 +414,6 @@ export default function Scratch({
                                 compilation={compilation}
                                 isCompiling={isCompiling}
                                 isCompilationOld={isCompilationOld}
-                                selectedSourceLine={selectedSourceLine}
                                 perSaveObj={perSaveObj}
                             />
                         )}
@@ -446,12 +468,12 @@ export default function Scratch({
         }
     };
 
-    if (container.width) {
+    useEffect(() => {
+        if (!container.width) return;
         const preferredLayout = getDefaultLayout(
             container.width,
             container.height,
         );
-
         if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout);
             setLayout(
@@ -461,7 +483,7 @@ export default function Scratch({
                 ),
             );
         }
-    }
+    }, [container.width, container.height, layoutName, defaultDiffTab]);
 
     const offlineOverlay = offline ? (
         <>
@@ -505,13 +527,15 @@ export default function Scratch({
             </ErrorBoundary>
             <ErrorBoundary>
                 {layout && (
-                    <ScrollContext.Provider value={sourceEditor}>
-                        <CustomLayout
-                            layout={layout}
-                            onChange={setLayout}
-                            renderTab={renderTab}
-                        />
-                    </ScrollContext.Provider>
+                    <SelectedSourceLineProvider>
+                        <ScrollContext.Provider value={sourceEditor}>
+                            <CustomLayout
+                                layout={layout}
+                                onChange={setLayout}
+                                renderTab={renderTab}
+                            />
+                        </ScrollContext.Provider>
+                    </SelectedSourceLineProvider>
                 )}
             </ErrorBoundary>
             {offlineOverlay}

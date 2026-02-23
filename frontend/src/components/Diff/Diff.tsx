@@ -1,6 +1,5 @@
 /* eslint css-modules/no-unused-class: off */
 import {
-    createContext,
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
@@ -214,8 +213,6 @@ export function scrollToLineNumber(
 export const PADDING_TOP = 8;
 export const PADDING_BOTTOM = 8;
 
-export const SelectedSourceLineContext = createContext<number | null>(null);
-
 type DiffGroup =
     | { type: "rows"; key: string; rows: api.DiffRow[] }
     | {
@@ -363,7 +360,6 @@ export type Props = {
     compressionEnabled: boolean;
     setCompressionEnabled: (value: boolean) => void;
     threeWayDiffBase: ThreeWayDiffBase;
-    selectedSourceLine: number | null;
 };
 
 export default function Diff({
@@ -376,7 +372,6 @@ export default function Diff({
     compressionEnabled,
     setCompressionEnabled,
     threeWayDiffBase,
-    selectedSourceLine,
 }: Props) {
     const [fontSize] = useCodeFontSize();
 
@@ -501,14 +496,12 @@ export default function Diff({
                     </div>
                 )}
             </div>
-            <SelectedSourceLineContext.Provider value={selectedSourceLine}>
-                <DiffBody
-                    diff={diff}
-                    diffLabel={diffLabel}
-                    compressionEnabled={compressionEnabled}
-                    fontSize={fontSize}
-                />
-            </SelectedSourceLineContext.Provider>
+            <DiffBody
+                diff={diff}
+                diffLabel={diffLabel}
+                compressionEnabled={compressionEnabled}
+                fontSize={fontSize}
+            />
         </div>
     );
 }
