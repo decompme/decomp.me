@@ -263,6 +263,9 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "creation_time",
             "platform",
             "context_fk",
+            "family",
+            "score",
+            "max_score",
         ]
 
     def get_context_text(self, instance: Scratch) -> str:
