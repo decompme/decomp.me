@@ -241,7 +241,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(write_only=True, required=False)  # type: ignore[assignment]
+    context = serializers.CharField(write_only=True, required=False, blank=True)  # type: ignore[assignment]
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
