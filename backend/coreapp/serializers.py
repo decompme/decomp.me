@@ -241,7 +241,8 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(allow_blank=True, required=False, write_only=False)  # type: ignore
+    context = serializers.CharField(write_only=True, required=False)  # type: ignore[assignment]
+    context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     preset = serializers.PrimaryKeyRelatedField(
@@ -253,6 +254,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         exclude = [
             "claim_token",
             "target_assembly",
+            "context_fk",
         ]
         read_only_fields = [
             "parent",
@@ -263,9 +265,13 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             "context_fk",
         ]
 
+    def get_context_text(self, instance: Scratch) -> str:
+        return instance.context_fk.text if instance.context_fk else ""
+
     def to_representation(self, instance: Scratch) -> dict[str, Any]:
         data = super().to_representation(instance)
-        data["context"] = instance.context_fk.text if instance.context_fk else ""
+        if "context_text" in data:
+            data["context"] = data.pop("context_text")
         return data
 
     def create(self, validated_data: dict[str, Any]) -> Scratch:
@@ -311,11 +317,6 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
-
-    def to_representation(self, instance: Scratch) -> dict[str, Any]:
-        data = super().to_representation(instance)
-        data.pop("context", None)
-        return data
 
     class Meta:
         model = Scratch
