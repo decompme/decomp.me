@@ -298,6 +298,18 @@ ARMCC_40_821 = ArmccCompiler(
     cc=ARMCC_CC,
 )
 
+ARMCC_40_865 = ArmccCompiler(
+    id="armcc_40_865",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_40_902 = ArmccCompiler(
+    id="armcc_40_902",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
 ARMCC_41_561 = ArmccCompiler(
     id="armcc_41_561",
     platform=N3DS,
@@ -312,6 +324,12 @@ ARMCC_41_713 = ArmccCompiler(
 
 ARMCC_41_791 = ArmccCompiler(
     id="armcc_41_791",
+    platform=N3DS,
+    cc=ARMCC_CC,
+)
+
+ARMCC_41_844 = ArmccCompiler(
+    id="armcc_41_844",
     platform=N3DS,
     cc=ARMCC_CC,
 )
@@ -1603,9 +1621,12 @@ _all_compilers: List[Compiler] = [
     # N3DS
     ARMCC_40_771,
     ARMCC_40_821,
+    ARMCC_40_865,
+    ARMCC_40_902,
     ARMCC_41_561,
     ARMCC_41_713,
     ARMCC_41_791,
+    ARMCC_41_844,
     ARMCC_41_894,
     ARMCC_41_921,
     ARMCC_41_1049,
