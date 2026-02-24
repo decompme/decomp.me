@@ -18,6 +18,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from ..models.github import GitHubUser
+from ..models.profile import Profile
 from ..models.project import Project, ProjectMember
 from ..serializers import ProjectMemberSerializer, ProjectSerializer
 
@@ -107,7 +108,8 @@ class ProjectViewSet(
     parser_classes = [JSONParser, MultiPartParser]
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        user: Optional[User] = request.profile.user
+        profile: Profile = request.profile  # type: ignore[attr-defined]
+        user: Optional[User] = profile.user
         if not user:
             raise GithubLoginException()
         gh_user: Optional[GitHubUser] = user.github
@@ -125,7 +127,7 @@ class ProjectViewSet(
 
         project = serializer.save()
 
-        ProjectMember(project=project, user=request.profile.user).save()
+        ProjectMember(project=project, user=profile.user).save()
 
         return Response(
             ProjectSerializer(project, context={"request": request}).data,

@@ -14,6 +14,7 @@ from ..decorators.cache import globally_cacheable
 
 from ..filters.search import NonEmptySearchFilter
 
+from coreapp.models.profile import Profile
 from coreapp.models.preset import Preset
 from coreapp.serializers import TinyPresetSerializer, PresetSerializer
 from rest_framework.decorators import action
@@ -80,10 +81,11 @@ class PresetViewSet(ModelViewSet):  # type: ignore
     # creation is a special case where you cannot be an owner
     # therefore we only check if the user is authenticated or not
     def perform_create(self, serializer: BaseSerializer[Any]) -> None:
-        if self.request.profile.is_anonymous():
+        profile: Profile = self.request.profile  # type: ignore[attr-defined]
+        if profile.is_anonymous():
             raise AuthorizationException()
 
-        serializer.save(owner=self.request.profile)
+        serializer.save(owner=profile)
 
     @action(
         detail=True,

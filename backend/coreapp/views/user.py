@@ -1,3 +1,5 @@
+from typing import Optional
+
 import django_filters
 
 from django.contrib.auth import logout
@@ -66,9 +68,10 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        if self.request.profile.id is None:
+        profile: Optional[Profile] = self.request.profile  # type: ignore[attr-defined]
+        if profile is None:  # should be impossible due to middleware
             return Scratch.objects.none()
-        return ScratchViewSet.queryset.filter(owner__id=self.request.profile.id)
+        return ScratchViewSet.queryset.filter(owner__id=profile.id)
 
 
 @method_decorator(
