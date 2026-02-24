@@ -92,6 +92,7 @@ function PlatformSelectDropdown({
     className,
 }: Props) {
     const [open, setOpen] = useState(false);
+    const isLoading = Object.keys(platforms).length === 0;
     const selected = platforms[value];
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -140,8 +141,10 @@ function PlatformSelectDropdown({
                             />
                             <span className="font-medium">{selected.name}</span>
                         </>
-                    ) : (
+                    ) : isLoading ? (
                         <div className="h-6 w-6 animate-pulse rounded-full bg-[var(--g400)]" />
+                    ) : (
+                        <span className="font-medium">Select a Platform</span>
                     )}
                 </div>
                 <ChevronDownIcon className="text-[var(--g1600)]" />
