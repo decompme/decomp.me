@@ -61,9 +61,12 @@ n64:
 n3ds:
   - armcc_40_771
   - armcc_40_821
+  - armcc_40_865
+  - armcc_40_902
   - armcc_41_561
   - armcc_41_713
   - armcc_41_791
+  - armcc_41_844
   - armcc_41_894
   - armcc_41_921
   - armcc_41_1049
