@@ -658,7 +658,7 @@ EE_GCC296 = GCCPS2Compiler(
 
 EE_GCC32_030210_BETA2 = GCCPS2Compiler(
     id="ee-gcc3.2-030210-beta2",
-    cc='WINEPATH="${COMPILER_DIR}"/dll/ ${WINE} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc='WIBOPATH="${COMPILER_DIR}"/dll/ ${WIBO} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC32_030926 = GCCPS2Compiler(

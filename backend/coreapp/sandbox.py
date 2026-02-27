@@ -47,13 +47,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             return []
 
         settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
-        settings.WINEPREFIX.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
-        assert ":" not in str(settings.WINEPREFIX)
 
         # wine-specific hacks
-        user = getpass.getuser()
         (self.path / "Temp").mkdir(parents=True, exist_ok=True)
 
         # fmt: off
@@ -81,11 +78,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
             "--rlimit_nofile", "soft",
-            # the following are settings that can be removed once we are done with wine
-            "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
-            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
         if settings.SANDBOX_DISABLE_PROC:
