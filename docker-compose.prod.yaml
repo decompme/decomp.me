@@ -54,7 +54,7 @@ services:
     volumes:
       # repo files
       - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
+      - ./nginx/geo.conf:/etc/nginx/conf.d/000_geo.conf:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
       # certbot
       - ./certbot:/var/www/certbot
