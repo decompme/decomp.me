@@ -148,6 +148,7 @@ def main() -> None:
         ("Owner-less Scratches", remove_ownerless_scratches),
         ("Scratch-less Profiles", remove_anonymous_profiles),
         ("Orphan Contexts", remove_orphan_contexts),
+        ("Unchanged Anonymous Forks", remove_unchanged_anonymous_forks),
     ]:
         print(f"{prefix}Cleaning up {text}... ", end="")
         deleted = func(cutoff_datetime, dry_run=dry_run)
