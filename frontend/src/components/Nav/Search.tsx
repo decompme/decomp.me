@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { SearchIcon } from "@primer/octicons-react";
 import clsx from "clsx";
@@ -32,10 +32,12 @@ function MountedSearch({ className }: { className?: string }) {
         console.info("<Search> close");
         setInputValue("");
         setQuery("");
+        updateUrl("");
         setIsFocused(false);
     };
 
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const pushRoute = (item: api.SearchResult) => {
         switch (item.type) {
@@ -49,6 +51,16 @@ function MountedSearch({ className }: { className?: string }) {
                 router.push(presetUrl(item.item));
                 break;
         }
+    };
+
+    const updateUrl = (query: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (query) {
+            params.set("search", query);
+        } else {
+            params.delete("search");
+        }
+        router.replace(`?${params.toString()}`);
     };
 
     const { isOpen, getMenuProps, getInputProps, getItemProps, setInputValue } =
@@ -72,6 +84,7 @@ function MountedSearch({ className }: { className?: string }) {
             onInputValueChange({ inputValue }) {
                 clearTimeout(debouncedTimeout);
                 setQuery(inputValue);
+                updateUrl(inputValue);
 
                 if (inputValue.length === 0) {
                     setSearchItems([]);
@@ -99,6 +112,10 @@ function MountedSearch({ className }: { className?: string }) {
                 }
             },
         });
+
+    useEffect(() => {
+        setInputValue(searchParams.get("search") || "");
+    }, []);
 
     const { renderLayer, triggerProps, layerProps, triggerBounds } = useLayer({
         isOpen,
