@@ -8,8 +8,11 @@ import zipfile
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+import itsdangerous
+
 import django_filters
 from coreapp import compilers, platforms
+from django.conf import settings
 from django.core.files import File
 from django.db.models import F, FloatField, When, Case, Value
 from django.db.models.functions import Cast
@@ -448,12 +451,26 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token = request.data.get("token")
+        token: Optional[str] = request.data.get("token")
 
-        if not scratch.is_claimable():
+        if token is None or not scratch.is_claimable():
             return Response({"success": False})
 
-        if scratch.claim_token and scratch.claim_token != token:
+        valid = False
+        s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
+        try:
+            data: dict[str, str] = s.loads(token)
+            valid = isinstance(data, dict) and data.get("slug") == scratch.slug
+        except itsdangerous.BadData:
+            pass
+
+        if not valid:
+            # fallback: check the database
+            valid = bool(scratch.claim_token and scratch.claim_token == token)
+            if valid:
+                scratch.claim_token = None  # clear legacy token
+
+        if not valid:
             return Response({"success": False})
 
         profile = request.profile
@@ -461,7 +478,6 @@ class ScratchViewSet(
         logger.debug(f"Granting ownership of scratch {scratch} to {profile}")
 
         scratch.owner = profile
-        scratch.claim_token = None
         scratch.save()
 
         return Response({"success": True})

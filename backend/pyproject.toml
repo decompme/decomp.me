@@ -30,6 +30,7 @@ dependencies = [
     "setuptools>=82.0.0",
     "debugpy>=1.8.20",
     "gunicorn>=25.1.0",
+    "itsdangerous==2.2.0",
 ]
 
 [dependency-groups]
