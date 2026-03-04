@@ -18,7 +18,7 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Context, Scratch
 
 
-def serialize_profile(profile: Profile, num_scratches=False) -> Dict[str, Any]:
+def serialize_profile(profile: Profile, num_scratches: bool =False) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "is_anonymous": True,
