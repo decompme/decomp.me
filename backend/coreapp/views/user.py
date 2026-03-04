@@ -106,5 +106,7 @@ def user(request: Request, username: str) -> Response:
     """
 
     return Response(
-        serialize_profile(get_object_or_404(Profile, user__username=username))
+        serialize_profile(
+            get_object_or_404(Profile, user__username=username), num_scratches=True
+        )
     )

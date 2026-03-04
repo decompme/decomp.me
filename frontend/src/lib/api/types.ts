@@ -24,6 +24,10 @@ export interface User {
     github_id: number | null;
 }
 
+export interface ScratchUser extends User {
+    num_scratches: number;
+}
+
 export interface TerseScratch {
     slug: string;
     owner: AnonymousUser | User | null; // null = unclaimed

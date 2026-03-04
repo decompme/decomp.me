@@ -4,13 +4,13 @@ import { notFound } from "next/navigation";
 
 import Profile from "@/components/user/Profile";
 import { get } from "@/lib/api/request";
-import type { User } from "@/lib/api/types";
+import type { ScratchUser } from "@/lib/api/types";
 
 export async function generateMetadata(props: {
     params: Promise<{ username: string }>;
 }): Promise<Metadata> {
     const params = await props.params;
-    let user: User;
+    let user: ScratchUser;
 
     try {
         user = await get(`/users/${params.username}`);
@@ -22,10 +22,20 @@ export async function generateMetadata(props: {
         return notFound();
     }
 
+    let description = "There ";
+    description += user.num_scratches === 1 ? "is " : "are ";
+    description +=
+        user.num_scratches === 0
+            ? "currently no "
+            : `${user.num_scratches.toLocaleString("en-US")} `;
+    description += user.num_scratches === 1 ? "scratch " : "scratches ";
+    description += "created by this user.";
+
     return {
         title: user.username,
         openGraph: {
             title: user.username,
+            description: description,
         },
     };
 }
@@ -34,7 +44,7 @@ export default async function Page(props: {
     params: Promise<{ username: string }>;
 }) {
     const params = await props.params;
-    let user: User;
+    let user: ScratchUser;
     try {
         user = await get(`/users/${params.username}`);
     } catch (error) {

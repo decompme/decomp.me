@@ -6,7 +6,7 @@ import { MarkGithubIcon } from "@primer/octicons-react";
 
 import GhostButton from "@/components/GhostButton";
 import Tabs, { Tab } from "@/components/Tabs";
-import type { User } from "@/lib/api/types";
+import type { ScratchUser } from "@/lib/api/types";
 import { userGithubHtmlUrl } from "@/lib/api/urls";
 
 import ScratchesTab from "./tabs/ScratchesTab";
@@ -49,14 +49,18 @@ function CustomLayout({ renderTab, layout, onChange }: Props) {
     );
 }
 
-export default function Profile({ user }: { user: User }) {
+export default function Profile({ user }: { user: ScratchUser }) {
     const [layout, setLayout] = useState<TabLayout>(tabLayout);
 
     const renderTab = (id: string) => {
         switch (id as TabId) {
             case TabId.SCRATCHES:
                 return (
-                    <Tab key={id} tabKey={id} label="Scratches">
+                    <Tab
+                        key={id}
+                        tabKey={id}
+                        label={`Scratches (${user.num_scratches.toLocaleString("en-US")})`}
+                    >
                         {() => <ScratchesTab user={user} />}
                     </Tab>
                 );
