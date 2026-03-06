@@ -13,7 +13,7 @@ import AnonymousFrogAvatar from "../Frog/AnonymousFrog";
 import styles from "./UserAvatar.module.scss";
 
 export type Props = {
-    user: api.User | api.AnonymousUser | undefined;
+    user: api.ScratchUser | api.User | api.AnonymousUser | undefined;
     className?: string;
 };
 

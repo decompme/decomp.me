@@ -18,7 +18,7 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Context, Scratch
 
 
-def serialize_profile(profile: Profile) -> Dict[str, Any]:
+def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str, Any]:
     if profile.user is None:
         return {
             "is_anonymous": True,
@@ -37,7 +37,7 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
             # in order to avoid N+1 queries when a Profile is serialized for each object.
             gh_user = GitHubUser.objects.filter(user=user).first()
 
-        return {
+        res = {
             "is_anonymous": False,
             "id": profile.id,
             "is_online": profile.is_online(),
@@ -45,6 +45,11 @@ def serialize_profile(profile: Profile) -> Dict[str, Any]:
             "username": user.username,
             "github_id": gh_user.github_id if gh_user else None,
         }
+
+        if num_scratches:
+            res["num_scratches"] = Scratch.objects.filter(owner__user=user).count()
+
+        return res
 
 
 if TYPE_CHECKING:
