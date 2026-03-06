@@ -564,7 +564,7 @@ DREAMCAST_CC_V50R10 = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
     "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
-    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+    "python3 ${COMPILER_DIR}/rof2elf.py dos_src.obj ${OUTPUT} --isa=sh4"
 )
 
 SHC_V50R10 = SHCOldCompiler(
@@ -575,7 +575,7 @@ DREAMCAST_CC = (
     'cat "$INPUT" | unix2dos > dos_src.c && '
     "cp -r ${COMPILER_DIR}/bin/* . && "
     "(SHC_LIB=. SHC_TMP=. ${WIBO} ${COMPILER_DIR}/bin/shc.exe dos_src.c -comment=nonest -cpu=sh4 -division=cpu -fpu=single -endian=little -macsave=0 -sjis -string=const ${COMPILER_FLAGS} -object=dos_src.obj) && "
-    "${WIBO} ${COMPILER_DIR}/bin/elfcnv.exe dos_src.obj ${OUTPUT}"
+    "python3 ${COMPILER_DIR}/rof2elf.py dos_src.obj ${OUTPUT} --isa=sh4"
 )
 
 SHC_V50R26 = SHCCompiler(id="shc-v5.0r26", platform=DREAMCAST, cc=DREAMCAST_CC)
