@@ -56,6 +56,11 @@ urlpatterns = [
         user.UserScratchList.as_view(),
         name="user-scratches",
     ),
+    path(
+        "users/<slug:username>/stats",
+        user.UserScratchStats.as_view(),
+        name="user-scratch-stats",
+    ),
     path("search", search.SearchViewSet.as_view(), name="search"),
     # TODO: remove (decomp-permuter still uses /compilers)
     path("compilers", compiler.CompilerDetail.as_view(), name="compilers"),
