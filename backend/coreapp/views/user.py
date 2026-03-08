@@ -112,6 +112,9 @@ def user(request: Request, username: str) -> Response:
     )
 
 
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
 class UserScratchStats(APIView):
     def get(self, request: Request, username: str) -> Response:
         groupby = "platform"
