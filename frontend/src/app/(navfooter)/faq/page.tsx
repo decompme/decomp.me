@@ -331,6 +331,14 @@ export default function Page() {
 
             <Title title={"Project Info"} />
 
+            <Question
+                question={"Can I programmatically access decomp.me data?"}
+            />
+            <p className="my-4">
+                We occasionally provide database dumps on request — just ask in
+                our <DiscordLink />. Please do not attempt to scrape the site.
+            </p>
+
             <Question question={"How do I report a bug?"} />
             <p className="my-4">
                 If you encounter a bug, please contact us on our <DiscordLink />{" "}
