@@ -22,21 +22,11 @@ export async function generateMetadata(props: {
         return notFound();
     }
 
-    let description = "There ";
-    description += user.num_scratches === 1 ? "is " : "are ";
-    description +=
-        user.num_scratches === 0
-            ? "currently no "
-            : `${user.num_scratches.toLocaleString("en-US")} `;
-    description += user.num_scratches === 1 ? "scratch " : "scratches ";
-    description += "created by this user.";
-
     return {
         title: user.username,
         openGraph: {
             title: user.username,
-            description: description,
-            images: [`/u/${params.username}/opengraph-image`],
+            images: [`/u/${user.username}/opengraph-image`],
         },
     };
 }
