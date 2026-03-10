@@ -25,8 +25,10 @@ class BaseTestCase(APITestCase):
     def create_scratch(self, partial: Dict[str, Any]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
-        scratch = Scratch.objects.get(slug=response.json()["slug"])
+        data = response.json()
+        scratch = Scratch.objects.get(slug=data["slug"])
         assert scratch is not None
+        scratch.claim_token = data.get("claim_token")
         return scratch
 
     def create_nop_scratch(self) -> Scratch:

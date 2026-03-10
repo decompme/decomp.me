@@ -355,6 +355,11 @@ class ClaimableScratchSerializer(ScratchSerializer):
             field for field in ScratchSerializer.Meta.exclude if field != "claim_token"
         ]
 
+    def to_representation(self, instance: Scratch) -> dict[str, Any]:
+        data = super().to_representation(instance)
+        data["claim_token"] = instance.claim_token_signed
+        return data
+
 
 class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]):
     slug = serializers.SlugField()
