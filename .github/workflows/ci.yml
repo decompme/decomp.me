@@ -75,6 +75,7 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
           mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
+          ls -al $(pwd)/backend/compilers
           docker run \
             -v $(pwd)/local_files:/local_files \
             -v $(pwd)/backend/compilers:/compilers \
@@ -99,6 +100,7 @@ jobs:
             decompme_backend \
               -c '\
               for r in wine/*.reg; do regedit $r; done && \
+              ls -al /compilers && \
               uv run python manage.py test'
 
   docker_compose_test:
