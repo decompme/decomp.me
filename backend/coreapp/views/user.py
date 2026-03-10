@@ -3,10 +3,10 @@ from typing import Optional
 import django_filters
 
 from django.contrib.auth import logout
+from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-
 from rest_framework import generics, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -110,3 +110,24 @@ def user(request: Request, username: str) -> Response:
             get_object_or_404(Profile, user__username=username), num_scratches=True
         )
     )
+
+
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
+class UserScratchStats(APIView):
+    def get(self, request: Request, username: str) -> Response:
+        groupby = "platform"
+
+        qs = Scratch.objects.filter(owner__user__username=username)
+        data = qs.values(groupby).annotate(count=Count("slug")).order_by("-count")
+
+        resp = Response(
+            {
+                "groupby": groupby,
+                "results": [
+                    {"group": row[groupby], "count": row["count"]} for row in data
+                ],
+            }
+        )
+        return resp
