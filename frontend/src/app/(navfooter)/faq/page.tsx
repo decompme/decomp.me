@@ -110,8 +110,8 @@ export default function Page() {
             <p className="my-4">
                 Although symbol names, comments, and other source-level
                 information are usually lost during compilation, matching
-                guarantees the reconstructed function behaves exactly like the
-                original binary.
+                guarantees the reconstructed function behaves exactly like it
+                does in the original binary.
             </p>
 
             <Title title={"Using decomp.me"} />
@@ -161,7 +161,7 @@ export default function Page() {
                 <FaqLink href="https://github.com/simonlindholm/decomp-permuter">
                     decomp-permuter
                 </FaqLink>{" "}
-                support scratch creation via API upload.
+                support scratch creation via the site's API.
             </p>
 
             <Question question={"What's the context for?"} />
