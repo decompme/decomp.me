@@ -13,15 +13,29 @@ function Title({ title }: { title: string }) {
     );
 }
 
+function slugify(text: string) {
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+}
+
 function Question({ question }: { question: string }) {
+    const id = slugify(question);
     return (
-        <h3 className="mt-8 font-semibold text-gray-11 text-xl tracking-tight">
-            {question}
+        <h3
+            id={id}
+            className="mt-8 font-semibold text-gray-11 text-xl tracking-tight"
+        >
+            <a href={`#${id}`} className="no-underline hover:underline">
+                {question}
+            </a>
         </h3>
     );
 }
 
-function FaqLink({ children, href }: { children: ReactNode; href?: string }) {
+function FaqLink({ children, href }: { children: ReactNode; href: string }) {
     return (
         <Link
             href={href}
@@ -128,9 +142,9 @@ export default function Page() {
                 page.
             </p>
             <p className="my-4">
-                To do this, you will need assembly code in GNU assembly format.
-                Depending on the target architecture there are a number of tools
-                that can help extract it. Examples include{" "}
+                To do this, you will need assembly code in GNU assembly (GAS)
+                syntax. Depending on the target architecture there are a number
+                of tools that can help extract it. Examples include{" "}
                 <FaqLink href="https://github.com/ethteck/splat">splat</FaqLink>{" "}
                 and{" "}
                 <FaqLink href="https://github.com/encounter/decomp-toolkit">
@@ -157,7 +171,7 @@ export default function Page() {
                 prototypes.
             </p>
             <p className="my-4">
-                It is compiled together with the main code, allowing you to
+                It is compiled together with your main code, allowing you to
                 separate functional code from supporting definitions.
             </p>
             <p className="my-4">
