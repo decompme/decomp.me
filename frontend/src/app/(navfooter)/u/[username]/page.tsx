@@ -36,6 +36,7 @@ export async function generateMetadata(props: {
         openGraph: {
             title: user.username,
             description: description,
+            images: [`/u/${params.username}/opengraph-image`],
         },
     };
 }
