@@ -70,11 +70,11 @@ export default function Page() {
                 run by volunteers in their free time.
             </p>
 
-            <Question question={"What do you mean by 'matching'?"} />
+            <Question question={'What do you mean by "matching"?'} />
             <p className="my-4">
-                decomp.me is designed for matching decompilation projects, where
-                the goal is to write high-level code (such as C or C++) that
-                compiles to assembly identical to the original.
+                decomp.me is designed for <b>matching decompilation</b>{" "}
+                projects, where the goal is to write high-level code (such as C
+                or C++) that compiles to assembly identical to the original.
             </p>
             <p className="my-4">
                 Achieving a match usually requires the same compiler, assembler,
@@ -88,9 +88,10 @@ export default function Page() {
 
             <Question question={"Why does writing matching code matter?"} />
             <p className="my-4">
-                A byte-perfect match ensures the function's behavior — including
-                undefined behavior — is reproduced exactly. Verification becomes
-                simple: either the assembly matches, or it doesn't.
+                A <b>byte-perfect</b> match ensures the function's behavior
+                (including undefined behavior) is reproduced exactly.
+                Verification becomes simple: either the assembly matches, or it
+                doesn't.
             </p>
             <p className="my-4">
                 Although symbol names, comments, and other source-level
@@ -116,6 +117,37 @@ export default function Page() {
             <p className="my-4">
                 Scratches have unique shareable links and can be forked to
                 create independent copies.
+            </p>
+
+            <Question question={"How do I create a scratch?"} />
+            <p className="my-4">
+                To create a scratch, select the target <b>Platform</b> and paste
+                assembly for a single function into the <b>Target Assembly</b>{" "}
+                section of the{" "}
+                <FaqLink href="https://decomp.me/new">New Scratch</FaqLink>{" "}
+                page.
+            </p>
+            <p className="my-4">
+                To do this, you will need assembly code in GNU assembly format.
+                Depending on the target architecture there are a number of tools
+                that can help extract it. Examples include{" "}
+                <FaqLink href="https://github.com/ethteck/splat">splat</FaqLink>{" "}
+                and{" "}
+                <FaqLink href="https://github.com/encounter/decomp-toolkit">
+                    dtk
+                </FaqLink>
+                .
+            </p>
+            <p className="my-4">
+                Additionally, tools such as{" "}
+                <FaqLink href="https://github.com/encounter/objdiff">
+                    objdiff
+                </FaqLink>{" "}
+                and the{" "}
+                <FaqLink href="https://github.com/simonlindholm/decomp-permuter">
+                    decomp-permuter
+                </FaqLink>{" "}
+                support scratch creation via API upload.
             </p>
 
             <Question question={"What's the context for?"} />
@@ -262,10 +294,6 @@ export default function Page() {
                 scratch, the original scratch will display a banner indicating
                 the improvement or matching solution exists.
             </p>
-            <p className="my-4">
-                To create a new scratch yourself, you will need assembly code
-                for the function in GNU assembly format.
-            </p>
 
             <Question question={"Can you help me match a scratch?"} />
             <p className="my-4">
@@ -314,7 +342,7 @@ export default function Page() {
             <ul className="ml-8 list-disc">
                 <li>a working compiler toolchain</li>
                 <li>
-                    tools for assembling and disassembling code (e.g. as and
+                    tools for assembling and disassembling code (e.g. GNU as and
                     objdump)
                 </li>
                 <li>support in the assembly diffing tools used by decomp.me</li>
@@ -335,7 +363,7 @@ export default function Page() {
                 question={"Can I programmatically access decomp.me data?"}
             />
             <p className="my-4">
-                We occasionally provide database dumps on request — just ask in
+                We occasionally provide database dumps on request - just ask in
                 our <DiscordLink />. Please do not attempt to scrape the site.
             </p>
 
@@ -350,9 +378,11 @@ export default function Page() {
             </p>
             <p className="my-4">Bug-fixing pull requests are always welcome.</p>
 
-            <Question question={"Why frog?"} />
+            <Question question={"What's with the purple frog?"} />
             <p className="my-4">
-                <Frog className="size-7" aria-label="Purple frog" />
+                <Frog className="inline size-7" aria-label="Purple frog" /> was
+                originally just a temporary placeholder logo. People liked it
+                more than we anticipated, and the purple frog stuck around!
             </p>
         </main>
     );
