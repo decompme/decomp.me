@@ -382,7 +382,7 @@ class ScratchForkTests(BaseTestCase):
         scratch = self.create_scratch(scratch_dict)
 
         slug = scratch.slug
-        old_claim_token = scratch.claim_token
+        old_claim_token = self.claim_tokens[slug]
 
         fork_dict = {
             "compiler": platforms.DUMMY.id,
@@ -475,7 +475,7 @@ class ScratchDetailTests(BaseTestCase):
         self.assertIsNone(scratch.owner)
         self.assertIsNotNone(scratch.claim_token)
 
-        claim_token = scratch.claim_token
+        claim_token = self.claim_tokens[scratch.slug]
         response = self.client.post(
             f"/api/scratch/{scratch.slug}/claim", {"token": claim_token}
         )

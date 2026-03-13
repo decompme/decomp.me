@@ -174,6 +174,14 @@ class Scratch(models.Model):
         s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
         return s.dumps({"slug": self.slug})
 
+    def verify_claim_token(self, token: str) -> bool:
+        s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
+        try:
+            data: dict[str, str] = s.loads(token)
+            return isinstance(data, dict) and data.get("slug") == self.slug
+        except itsdangerous.BadData:
+            return False
+
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]

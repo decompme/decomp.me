@@ -453,18 +453,11 @@ class ScratchViewSet(
         scratch: Scratch = self.get_object()
         token: Optional[str] = request.data.get("token")
 
-        if token is None or not scratch.is_claimable():
-            return Response({"success": False})
-
-        valid = False
-        s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
-        try:
-            data: dict[str, str] = s.loads(token)
-            valid = isinstance(data, dict) and data.get("slug") == scratch.slug
-        except itsdangerous.BadData:
-            pass
-
-        if not valid:
+        if (
+            token is None
+            or not scratch.is_claimable()
+            or not scratch.verify_claim_token(token)
+        ):
             return Response({"success": False})
 
         profile = request.profile
