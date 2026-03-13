@@ -8,11 +8,8 @@ import zipfile
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-import itsdangerous
-
 import django_filters
 from coreapp import compilers, platforms
-from django.conf import settings
 from django.core.files import File
 from django.db.models import F, FloatField, When, Case, Value
 from django.db.models.functions import Cast
