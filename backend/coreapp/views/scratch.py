@@ -465,12 +465,6 @@ class ScratchViewSet(
             pass
 
         if not valid:
-            # fallback: check the database
-            valid = bool(scratch.claim_token and scratch.claim_token == token)
-            if valid:
-                scratch.claim_token = None  # clear legacy token
-
-        if not valid:
             return Response({"success": False})
 
         profile = request.profile

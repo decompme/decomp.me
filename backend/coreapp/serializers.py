@@ -257,7 +257,6 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     class Meta:
         model = Scratch
         exclude = [
-            "claim_token",
             "target_assembly",
             "context_fk",
         ]
@@ -350,14 +349,9 @@ class TerseScratchSerializer(ScratchSerializer):
 class ClaimableScratchSerializer(ScratchSerializer):
     claim_token = serializers.CharField(read_only=True)
 
-    class Meta(ScratchSerializer.Meta):
-        exclude = [
-            field for field in ScratchSerializer.Meta.exclude if field != "claim_token"
-        ]
-
     def to_representation(self, instance: Scratch) -> dict[str, Any]:
         data = super().to_representation(instance)
-        data["claim_token"] = instance.claim_token_signed
+        data["claim_token"] = instance.claim_token
         return data
 
 
