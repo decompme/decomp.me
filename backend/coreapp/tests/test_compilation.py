@@ -1,4 +1,9 @@
 from typing import Any, Callable
+
+from django.urls import reverse
+from parameterized import param, parameterized
+from rest_framework import status
+
 from coreapp import compilers
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
@@ -16,9 +21,6 @@ from coreapp.flags import Language
 from coreapp.models.scratch import Assembly
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
-from django.urls import reverse
-from parameterized import param, parameterized
-from rest_framework import status
 
 
 def all_compilers_name_func(

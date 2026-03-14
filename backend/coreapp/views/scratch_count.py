@@ -1,7 +1,6 @@
 from django.utils.decorators import method_decorator
 from django.utils.http import http_date, parse_http_date_safe
 from django.utils.timezone import now
-
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView

@@ -1,8 +1,7 @@
-from datetime import datetime
 import typing
+from datetime import datetime
 from typing import Dict, Optional
 
-from coreapp import compilers
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from rest_framework.exceptions import NotFound
@@ -10,11 +9,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from coreapp import compilers
 from coreapp.models.preset import Preset
 
-from ..decorators.django import condition
 from ..decorators.cache import globally_cacheable
-
+from ..decorators.django import condition
 
 boot_time = now()
 

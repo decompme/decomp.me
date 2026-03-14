@@ -1,13 +1,13 @@
 from typing import Any, Dict
 
-
-from coreapp.compilers import GCC281PM
-from coreapp.models.preset import Preset
-from coreapp.platforms import N64, PS1, DUMMY
-from coreapp.tests.common import BaseTestCase, requiresCompiler
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
+
+from coreapp.compilers import GCC281PM
+from coreapp.models.preset import Preset
+from coreapp.platforms import DUMMY, N64, PS1
+from coreapp.tests.common import BaseTestCase, requiresCompiler
 
 SAMPLE_PRESET_DICT = {
     "name": "Kitty's Adventure",

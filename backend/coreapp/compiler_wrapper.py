@@ -2,28 +2,26 @@ import logging
 import os
 import re
 import subprocess
-from dataclasses import dataclass
 import time
-
+from dataclasses import dataclass
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     Optional,
-    Tuple,
-    TYPE_CHECKING,
-    TypeVar,
     Sequence,
+    Tuple,
+    TypeVar,
 )
 
 from django.conf import settings
 
+import coreapp.util as util
 from coreapp import compilers, platforms
 from coreapp.compilers import Compiler, CompilerType
-
 from coreapp.flags import Language
 from coreapp.platforms import Platform
-import coreapp.util as util
 
 from .error import AssemblyError, CompilationError
 from .libraries import Library

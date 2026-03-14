@@ -8,25 +8,23 @@ import zipfile
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-import itsdangerous
-
 import django_filters
-from coreapp import compilers, platforms
+import itsdangerous
 from django.conf import settings
 from django.core.files import File
-from django.db.models import F, FloatField, When, Case, Value
+from django.db.models import Case, F, FloatField, Value, When
 from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
-
 from django.http import HttpResponse, QueryDict
 from django.utils.decorators import method_decorator
-
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from coreapp import compilers, platforms
 
 from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
 from ..decompiler_wrapper import DecompilerWrapper

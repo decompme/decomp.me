@@ -6,14 +6,17 @@ from functools import cache
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
 
+from django.conf import settings
+from rest_framework import status
+from rest_framework.exceptions import APIException
+
 from coreapp import platforms
 from coreapp.flags import (
     COMMON_ARMCC_FLAGS,
+    COMMON_BORLAND_FLAGS,
     COMMON_CLANG_FLAGS,
-    COMMON_GCC_GC_FLAGS,
-    COMMON_SHC_OLD_FLAGS,
-    COMMON_SHC_FLAGS,
     COMMON_GCC_FLAGS,
+    COMMON_GCC_GC_FLAGS,
     COMMON_GCC_PS1_FLAGS,
     COMMON_GCC_PS2_FLAGS,
     COMMON_GCC_SATURN_FLAGS,
@@ -24,13 +27,15 @@ from coreapp.flags import (
     COMMON_MWCC_PS2_FLAGS,
     COMMON_MWCC_PSP_FLAGS,
     COMMON_MWCC_WII_GC_FLAGS,
+    COMMON_SHC_FLAGS,
+    COMMON_SHC_OLD_FLAGS,
     COMMON_WATCOM_FLAGS,
-    COMMON_BORLAND_FLAGS,
     Flags,
     Language,
 )
 from coreapp.platforms import (
     ANDROID_X86,
+    DREAMCAST,
     GBA,
     GC_WII,
     IRIX,
@@ -43,16 +48,12 @@ from coreapp.platforms import (
     PS2,
     PSP,
     SATURN,
-    DREAMCAST,
     SWITCH,
     WIIU,
     WIN32,
     XBOX360,
     Platform,
 )
-from django.conf import settings
-from rest_framework import status
-from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
 

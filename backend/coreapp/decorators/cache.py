@@ -1,7 +1,7 @@
-from functools import wraps
 import logging
+from functools import wraps
+from typing import Callable, Optional, ParamSpec, TypeVar
 
-from typing import Callable, Optional, TypeVar, ParamSpec
 from rest_framework.response import Response
 
 logger = logging.getLogger(__file__)

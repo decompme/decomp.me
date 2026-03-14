@@ -1,8 +1,7 @@
 import logging
+
 from coreapp import compilers
-
 from coreapp.compilers import Compiler
-
 from coreapp.m2c_wrapper import M2CError, M2CWrapper
 from coreapp.platforms import Platform
 

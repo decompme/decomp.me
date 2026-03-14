@@ -1,7 +1,6 @@
 import hashlib
 import logging
 import time
-
 from typing import Tuple
 
 logger = logging.getLogger(__name__)
