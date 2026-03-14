@@ -4,26 +4,23 @@ from typing import Any
 import django_filters
 from django import forms
 from django.db.models import Count
-
 from django.utils.decorators import method_decorator
-
-from rest_framework.exceptions import APIException
-from rest_framework.serializers import BaseSerializer
-
-from ..decorators.cache import globally_cacheable
-
-from ..filters.search import NonEmptySearchFilter
-
-from coreapp.models.profile import Profile
-from coreapp.models.preset import Preset
-from coreapp.serializers import TinyPresetSerializer, PresetSerializer
-from rest_framework.decorators import action
 from rest_framework import filters, serializers, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
+
+from coreapp.models.preset import Preset
+from coreapp.models.profile import Profile
+from coreapp.serializers import PresetSerializer, TinyPresetSerializer
+
+from ..decorators.cache import globally_cacheable
+from ..filters.search import NonEmptySearchFilter
 
 logger = logging.getLogger(__name__)
 

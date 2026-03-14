@@ -55,3 +55,14 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["coreapp", "decompme"]
+
+[tool.ruff]
+include = ["coreapp/**/*.py", "decompme/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["decomp"]
+combine-as-imports = true

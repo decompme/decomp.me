@@ -1,17 +1,18 @@
-from time import sleep
-from typing import Any, Dict
 import io
 import zipfile
+from time import sleep
+from typing import Any, Dict
+
+from django.db.models import ProtectedError
+from django.urls import reverse
+from rest_framework import status
 
 from coreapp import compilers, platforms
-from coreapp.compilers import GCC281PM, IDO53, IDO71, MWCC_242_81, EE_GCC29_991111
+from coreapp.compilers import EE_GCC29_991111, GCC281PM, IDO53, IDO71, MWCC_242_81
 from coreapp.models.scratch import Assembly, Context, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
-from django.db.models import ProtectedError
-from django.urls import reverse
-from rest_framework import status
 
 
 class ScratchCreationTests(BaseTestCase):

@@ -2,8 +2,8 @@ import hashlib
 import logging
 from typing import Any
 
-from django.db import migrations, transaction, reset_queries
 from django.apps.registry import Apps
+from django.db import migrations, reset_queries, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 logger = logging.getLogger(__name__)

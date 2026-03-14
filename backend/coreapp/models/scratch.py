@@ -4,10 +4,9 @@ import logging
 from typing import Any, Optional, Sequence
 
 import itsdangerous
-
-from django.db import models, IntegrityError
 from django.conf import settings
 from django.contrib import admin
+from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 
 from ..libraries import Library

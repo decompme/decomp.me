@@ -1,7 +1,6 @@
 # This file wraps common django decorators in method_decorator for use with the APIView class
 
 from datetime import datetime
-
 from typing import Callable, Optional
 
 from django.utils.decorators import method_decorator

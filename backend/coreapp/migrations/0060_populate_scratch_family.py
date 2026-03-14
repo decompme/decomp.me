@@ -1,12 +1,9 @@
 import logging
-
 from typing import Any
 
 from django.apps.registry import Apps
-
 from django.db import migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-
 
 logger = logging.getLogger(__name__)
 

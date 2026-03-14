@@ -4,6 +4,7 @@ import django.db.migrations.operations.special
 from django.apps.registry import Apps
 from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+
 import coreapp.models.profile
 
 
