@@ -1,8 +1,10 @@
+import functools
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, OrderedDict
 from pathlib import Path
-import functools
+from typing import Any, Dict, OrderedDict
+
+from rest_framework.exceptions import APIException
 
 from coreapp import compilers
 from coreapp.flags import (
@@ -12,8 +14,6 @@ from coreapp.flags import (
     Flags,
 )
 from coreapp.models.scratch import Scratch
-from rest_framework.exceptions import APIException
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,5 @@
 from datetime import datetime
 
-from coreapp import compilers
-from coreapp.models.preset import Preset
-from coreapp.views.compiler import CompilerDetail
-
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from rest_framework.decorators import api_view
@@ -11,9 +7,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..decorators.django import condition
-from ..decorators.cache import globally_cacheable
+from coreapp import compilers
+from coreapp.models.preset import Preset
+from coreapp.views.compiler import CompilerDetail
 
+from ..decorators.cache import globally_cacheable
+from ..decorators.django import condition
 
 boot_time = now()
 

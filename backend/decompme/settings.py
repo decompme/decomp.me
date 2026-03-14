@@ -3,7 +3,6 @@ from pathlib import Path
 
 import django_stubs_ext
 import environ
-
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.transport import HttpTransport
