@@ -20,6 +20,7 @@ if settings.USE_SANDBOX_JAIL:
 else:
     PATH = os.environ["PATH"]
 
+
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __enter__(self) -> "Sandbox":
         self.use_jail = settings.USE_SANDBOX_JAIL

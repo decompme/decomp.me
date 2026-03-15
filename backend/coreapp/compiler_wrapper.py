@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import subprocess
 from dataclasses import dataclass
