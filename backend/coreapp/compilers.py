@@ -57,7 +57,6 @@ from rest_framework.exceptions import APIException
 logger = logging.getLogger(__name__)
 
 CONFIG_PY = "config.py"
-COMPILER_BASE_PATH: Path = settings.COMPILER_BASE_PATH
 
 
 class CompilerType(enum.Enum):
@@ -82,11 +81,11 @@ class Compiler:
     def path(self) -> Path:
         if self.base_compiler is not None:
             return (
-                COMPILER_BASE_PATH
+                settings.COMPILER_BASE_PATH
                 / self.base_compiler.platform.id
                 / self.base_compiler.id
             )
-        return COMPILER_BASE_PATH / self.platform.id / self.id
+        return settings.COMPILER_BASE_PATH / self.platform.id / self.id
 
     def available(self) -> bool:
         # consider compiler binaries present if the compiler's directory is found

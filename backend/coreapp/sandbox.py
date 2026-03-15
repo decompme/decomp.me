@@ -14,6 +14,12 @@ from coreapp.error import SandboxError
 
 logger = logging.getLogger(__name__)
 
+PATH: str
+if settings.USE_SANDBOX_JAIL:
+    PATH = "/bin:/usr/bin"
+else:
+    PATH = os.environ["PATH"]
+
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __enter__(self) -> "Sandbox":
@@ -77,7 +83,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount", f"{self.path}:/var/tmp",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
-            "--env", "PATH=/usr/bin:/bin",
+            "--env", f"PATH={PATH}",
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
             "--rlimit_nofile", "soft",
