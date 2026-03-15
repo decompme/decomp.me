@@ -43,12 +43,6 @@ else:
 
 logger = logging.getLogger(__name__)
 
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
-
 WINE = "wine"
 WIBO = "wibo"
 
@@ -203,7 +197,6 @@ class CompilerWrapper:
                     ),
                     shell=True,
                     env={
-                        "PATH": PATH,
                         "WINE": WINE,
                         "WIBO": WIBO,
                         "WIBO_PATH": sandbox.rewrite_path(wibo_path),
@@ -288,7 +281,6 @@ class CompilerWrapper:
                     mounts=[],
                     shell=True,
                     env={
-                        "PATH": PATH,
                         "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
