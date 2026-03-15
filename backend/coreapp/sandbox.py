@@ -25,12 +25,12 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
     def __enter__(self) -> "Sandbox":
         self.use_jail = settings.USE_SANDBOX_JAIL
 
-        tmpdir: Optional[str] = None
+        tmpdir: Optional[Path] = None
         if self.use_jail:
             # Only use SANDBOX_TMP_PATH if USE_SANDBOX_JAIL is enabled,
             # otherwise use the system default
-            settings.SANDBOX_TMP_PATH.mkdir(parents=True, exist_ok=True)
-            tmpdir = str(settings.SANDBOX_TMP_PATH)
+            tmpdir = settings.SANDBOX_TMP_PATH
+            tmpdir.mkdir(parents=True, exist_ok=True)
 
         self.temp_dir = TemporaryDirectory(dir=tmpdir, ignore_cleanup_errors=True)
         self.path = Path(self.temp_dir.name)
@@ -101,8 +101,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             wrapper.append("--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
-        for key in env:
-            wrapper.extend(["--env", key])
+        for key, value in env.items():
+            wrapper.extend(["--env", f"{key}={value}"])
 
         wrapper.append("--")
         return wrapper
@@ -127,7 +127,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
 
         if shell:
             if isinstance(args, list):
-                args = " ".join(args)
+                args = shlex.join(args)
 
             command = wrapper + ["/bin/bash", "-euo", "pipefail", "-c", args]
         else:
