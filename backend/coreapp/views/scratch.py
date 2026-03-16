@@ -380,7 +380,7 @@ class ScratchViewSet(
             if "diff_label" in request.data:
                 scratch.diff_label = request.data["diff_label"]
             if "source_code" in request.data:
-                scratch.source_code = request.data["source_code"]
+                scratch.source_code = request.data["source_code"] or ""
             if "context" in request.data:
                 scratch_context = request.data["context"]
             if "libraries" in request.data:
