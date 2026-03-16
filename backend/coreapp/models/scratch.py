@@ -146,7 +146,6 @@ class Scratch(models.Model):
         related_name="children",
     )
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    claim_token = models.CharField(max_length=64, blank=True, null=True)  # deprecated
 
     class Meta:
         ordering = ["-creation_time"]
@@ -171,9 +170,17 @@ class Scratch(models.Model):
         return self.owner is None
 
     @property
-    def claim_token_signed(self) -> str:
+    def claim_token(self) -> str:
         s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
         return s.dumps({"slug": self.slug})
+
+    def verify_claim_token(self, token: str) -> bool:
+        s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
+        try:
+            data: dict[str, str] = s.loads(token)
+            return isinstance(data, dict) and data.get("slug") == self.slug
+        except itsdangerous.BadData:
+            return False
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
