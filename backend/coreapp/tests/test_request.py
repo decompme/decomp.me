@@ -1,10 +1,11 @@
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 from coreapp import compilers, platforms
 from coreapp.models.profile import Profile
 from coreapp.sandbox import Sandbox
 from coreapp.tests.common import BaseTestCase, requiresCompiler
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase
 
 
 class RequestTests(APITestCase):

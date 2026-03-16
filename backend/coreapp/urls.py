@@ -1,5 +1,4 @@
 from django.urls import path
-
 from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
@@ -7,12 +6,12 @@ from coreapp.views import (
     library,
     platform,
     preset,
-    stats,
     project,
     scratch,
-    user,
-    search,
     scratch_count,
+    search,
+    stats,
+    user,
 )
 
 router = DefaultRouter(trailing_slash=False)

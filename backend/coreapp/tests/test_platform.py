@@ -9,6 +9,7 @@ from coreapp.platforms import (
     DREAMCAST,
     GBA,
     GC_WII,
+    IRIX,
     MACOSX,
     MSDOS,
     N3DS,
@@ -22,11 +23,9 @@ from coreapp.platforms import (
     WIIU,
     WIN32,
     XBOX360,
-    _platforms,
     Platform,
-    IRIX,
+    _platforms,
 )
-
 
 MIPS_ASM = """\
 jr $ra

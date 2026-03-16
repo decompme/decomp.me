@@ -1,6 +1,6 @@
 from typing import Optional
-import django_filters
 
+import django_filters
 from django.db.models.query import QuerySet
 
 from ..models.scratch import Scratch

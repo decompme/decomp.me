@@ -1,13 +1,12 @@
 from typing import Optional
 
 import django_filters
-
 from django.contrib.auth import logout
 from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from rest_framework import generics, filters
+from rest_framework import filters, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
