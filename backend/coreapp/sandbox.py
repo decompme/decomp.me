@@ -127,7 +127,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
 
         if shell:
             if isinstance(args, list):
-                args = shlex.join(args)
+                args = " ".join(args)
 
             command = wrapper + ["/bin/bash", "-euo", "pipefail", "-c", args]
         else:
