@@ -493,6 +493,11 @@ GCC263_PSX = GCCPS1Compiler(
     cc=PS1_GCC,
 )
 
+GCC272_CDK = GCCPS1Compiler(
+    id="gcc2.7.2-cdk",
+    cc=PS1_GCC,
+)
+
 GCC272_PSX = GCCPS1Compiler(
     id="gcc2.7.2-psx",
     cc=PS1_GCC,
@@ -1651,6 +1656,7 @@ _all_compilers: List[Compiler] = [
     GCC257_PSX,
     GCC260_PSX,
     GCC263_PSX,
+    GCC272_CDK,
     GCC272_PSX,
     GCC280_PSX,
     GCC281_PSX,

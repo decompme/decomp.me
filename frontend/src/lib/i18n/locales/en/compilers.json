@@ -193,6 +193,7 @@
     "gcc2.5.7-psx": "gcc 2.5.7-psx + maspsx",
     "gcc2.6.0-psx": "gcc 2.6.0-psx + maspsx",
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
+    "gcc2.7.2-cdk": "gcc 2.7.2-970404 + maspsx",
     "gcc2.7.2-psx": "gcc 2.7.2-psx + maspsx",
     "gcc2.8.0-psx": "gcc 2.8.0-psx + maspsx",
     "gcc2.8.1-psx": "gcc 2.8.1-psx + maspsx",
