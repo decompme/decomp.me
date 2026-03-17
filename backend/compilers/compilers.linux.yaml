@@ -118,6 +118,7 @@ ps1:
   - gcc2.5.7-psx
   - gcc2.6.0-psx
   - gcc2.6.3-psx
+  - gcc2.7.2-cdk
   - gcc2.7.2-psx
   - gcc2.8.0-psx
   - gcc2.8.1-psx
