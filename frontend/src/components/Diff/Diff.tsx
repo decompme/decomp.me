@@ -4,12 +4,13 @@ import {
     forwardRef,
     type HTMLAttributes,
     type RefObject,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
 } from "react";
 
-import { VersionsIcon, FoldIcon, UnfoldIcon } from "@primer/octicons-react";
+import { FoldIcon, UnfoldIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
@@ -29,22 +30,17 @@ import * as AsmDiffer from "./DiffRowAsmDiffer";
 import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
 import CopyButton from "../CopyButton";
+import ToggleButton from "./ToggleButton";
 
-const diffContentsToString = (diff: api.DiffOutput, kind: string): string => {
-    // kind is either "base", "current", or "previous"
-    const contents = diff.rows.map((row) => {
-        let text = "";
-        if (kind === "base" && row.base) {
-            text = row.base.text.map((t) => t.text).join("");
-        } else if (kind === "current" && row.current) {
-            text = row.current.text.map((t) => t.text).join("");
-        } else if (kind === "previous" && row.previous) {
-            text = row.previous.text.map((t) => t.text).join("");
-        }
-        return text;
-    });
+type ColumnKey = "base" | "current" | "previous";
 
-    return contents.join("\n");
+const diffContentsToString = (
+    diff: api.DiffOutput,
+    kind: ColumnKey,
+): string => {
+    return diff.rows
+        .map((row) => row[kind]?.text.map((t) => t.text).join("") ?? "")
+        .join("\n");
 };
 
 // https://github.com/bvaughn/react-window#can-i-add-padding-to-the-top-and-bottom-of-a-list
@@ -65,16 +61,24 @@ const innerElementType = forwardRef<
 });
 innerElementType.displayName = "innerElementType";
 
+export type VisibleRow = {
+    key: string;
+    cells: Array<api.DiffCell | undefined>;
+    isPlaceholder?: boolean;
+};
+
 function DiffBody({
     diff,
     diffLabel,
     fontSize,
     compressionEnabled,
+    columns,
 }: {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
     fontSize: number | undefined;
     compressionEnabled: boolean;
+    columns: Array<ColumnKey>;
 }) {
     const { highlighters, setHighlightAll } = useHighlighers(3);
     const [compressionContext] = diffCompressionContext();
@@ -96,14 +100,26 @@ function DiffBody({
         [groups, expandedGroups],
     );
 
+    const visibleRows: VisibleRow[] = useMemo(() => {
+        return flattened.map((row) => {
+            const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
+
+            return {
+                key: row.key,
+                isPlaceholder,
+                cells: columns.map((col: ColumnKey) => row[col]),
+            };
+        });
+    }, [flattened, columns]);
+
     const itemData: AsmDiffer.DiffListData = useMemo(
         () => ({
-            rows: flattened,
+            rows: visibleRows,
             highlighters,
             onToggle: (key: string) =>
                 setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] })),
         }),
-        [flattened, highlighters],
+        [visibleRows, highlighters],
     );
 
     if (!diff) {
@@ -141,30 +157,6 @@ function DiffBody({
                 )}
             </AutoSizer>
         </div>
-    );
-}
-
-function ThreeWayToggleButton({
-    enabled,
-    setEnabled,
-}: { enabled: boolean; setEnabled: (enabled: boolean) => void }) {
-    return (
-        <button
-            className={styles.threeWayToggle}
-            onClick={() => {
-                setEnabled(!enabled);
-            }}
-            title={
-                enabled
-                    ? "Disable three-way diffing"
-                    : "Enable three-way diffing"
-            }
-        >
-            <VersionsIcon size={24} />
-            <div className={styles.threeWayToggleNumber}>
-                {enabled ? "3" : "2"}
-            </div>
-        </button>
     );
 }
 
@@ -350,6 +342,8 @@ export function flattenGroups(
     return flat;
 }
 
+type ColumnState = Record<ColumnKey, boolean>;
+
 export type Props = {
     diff: api.DiffOutput | null;
     diffLabel: string | null;
@@ -374,60 +368,112 @@ export default function Diff({
     threeWayDiffBase,
 }: Props) {
     const [fontSize] = useCodeFontSize();
-
     const container = useSize<HTMLDivElement>();
 
-    const [bar1Pos, setBar1Pos] = useState(Number.NaN);
-    const [bar2Pos, setBar2Pos] = useState(Number.NaN);
+    const [bar1Pos, setBar1Pos] = useState<number>(Number.NaN);
+    const [bar2Pos, setBar2Pos] = useState<number>(Number.NaN);
 
-    const columnMinWidth = 100;
-    const clampedBar1Pos = Math.max(
-        columnMinWidth,
-        Math.min(
-            container.width -
-                columnMinWidth -
-                (threeWayDiffEnabled ? columnMinWidth : 0),
-            bar1Pos,
-        ),
-    );
-    const clampedBar2Pos = threeWayDiffEnabled
-        ? Math.max(
-              clampedBar1Pos + columnMinWidth,
-              Math.min(container.width - columnMinWidth, bar2Pos),
-          )
-        : container.width;
+    const [columnState, setColumnState] = useState<ColumnState>({
+        base: true,
+        current: true,
+        previous: threeWayDiffEnabled,
+    });
 
-    // Distribute the bar positions across the container when its width changes
-    const updateBarPositions = (threeWayDiffEnabled: boolean) => {
-        const numSections = threeWayDiffEnabled ? 3 : 2;
-        setBar1Pos(container.width / numSections);
-        setBar2Pos((container.width / numSections) * 2);
-    };
-    const lastContainerWidthRef = useRef(Number.NaN);
-    if (lastContainerWidthRef.current !== container.width && container.width) {
-        lastContainerWidthRef.current = container.width;
-        updateBarPositions(threeWayDiffEnabled);
+    const columns = [
+        columnState.base && "base",
+        columnState.current && "current",
+        columnState.previous && "previous",
+    ].filter((col): col is ColumnKey => Boolean(col));
+
+    const columnCount = columns.length || 1;
+
+    const rightmostColumn = columns[columns.length - 1];
+
+    const prevRef = useRef({ width: 0, columnCount: 0 });
+
+    useLayoutEffect(() => {
+        const width = container.width;
+
+        if (!width) return;
+
+        const prev = prevRef.current;
+        const columnChanged = prev.columnCount !== columnCount;
+        const widthChanged = prev.width !== width;
+
+        if (columnChanged) {
+            // Reset positions based on new column count
+            if (columnCount === 1) {
+                setBar1Pos(width);
+                setBar2Pos(width);
+            } else {
+                setBar1Pos(width / columnCount);
+                setBar2Pos((width / columnCount) * 2);
+            }
+        } else if (widthChanged) {
+            // Preserve ratios ONLY when width changes
+            const ratio1 =
+                Number.isNaN(bar1Pos) || !prev.width
+                    ? 1 / columnCount
+                    : bar1Pos / prev.width;
+
+            const ratio2 =
+                Number.isNaN(bar2Pos) || !prev.width
+                    ? 2 / columnCount
+                    : bar2Pos / prev.width;
+
+            setBar1Pos(width * ratio1);
+            setBar2Pos(width * ratio2);
+        }
+
+        prevRef.current = { width, columnCount };
+    }, [container.width, columnCount, bar1Pos, bar2Pos]);
+
+    const columnMinWidth = 80;
+
+    function clampBars() {
+        const width = container.width;
+
+        if (!width || columnCount <= 1) {
+            return { bar1: width, bar2: width };
+        } else if (columnCount === 2) {
+            const b1 = Number.isNaN(bar1Pos) ? width / 2 : bar1Pos;
+
+            const clampedBar1 = Math.max(
+                columnMinWidth,
+                Math.min(width - columnMinWidth, b1),
+            );
+
+            return { bar1: clampedBar1, bar2: width };
+        } else {
+            const b1 = Number.isNaN(bar1Pos) ? width / 3 : bar1Pos;
+            const b2 = Number.isNaN(bar2Pos) ? (width / 3) * 2 : bar2Pos;
+
+            const clampedBar1 = Math.max(
+                columnMinWidth,
+                Math.min(width - columnMinWidth * 2, b1),
+            );
+
+            const clampedBar2 = Math.max(
+                clampedBar1 + columnMinWidth,
+                Math.min(width - columnMinWidth, b2),
+            );
+
+            return { bar1: clampedBar1, bar2: clampedBar2 };
+        }
     }
 
-    const threeWayButton = (
-        <>
-            <div className={styles.spacer} />
-            <ThreeWayToggleButton
-                enabled={threeWayDiffEnabled}
-                setEnabled={(enabled: boolean) => {
-                    updateBarPositions(enabled);
-                    setThreeWayDiffEnabled(enabled);
-                }}
-            />
-        </>
-    );
+    const { bar1: clampedBar1Pos, bar2: clampedBar2Pos } = clampBars();
 
-    const compressButton = (
-        <CompressToggleButton
-            enabled={compressionEnabled}
-            setEnabled={setCompressionEnabled}
-        />
-    );
+    const updateColumns = (updater: (prev: ColumnState) => ColumnState) => {
+        setColumnState((prev) => {
+            const next = updater(prev);
+            if (!next.base && !next.current && !next.previous) return prev;
+            return next;
+        });
+    };
+    const setColumn = (key: ColumnKey, value: boolean) => {
+        updateColumns((prev) => ({ ...prev, [key]: value }));
+    };
 
     return (
         <div
@@ -445,62 +491,76 @@ export default function Diff({
                 } as CSSProperties
             }
         >
-            <DragBar pos={clampedBar1Pos} onChange={setBar1Pos} />
-            {threeWayDiffEnabled && (
+            {columnCount >= 2 && (
+                <DragBar pos={clampedBar1Pos} onChange={setBar1Pos} />
+            )}
+            {columnCount === 3 && (
                 <DragBar pos={clampedBar2Pos} onChange={setBar2Pos} />
             )}
             <div className={styles.headers}>
-                <div className={styles.header}>
-                    Target
-                    <CopyButton
-                        title="Copy content"
-                        size={12}
-                        text={() =>
-                            diffContentsToString(diff as api.DiffOutput, "base")
-                        }
-                    />
-                </div>
-                <div className={styles.header}>
-                    Current
-                    <CopyButton
-                        title="Copy content"
-                        size={12}
-                        text={() =>
-                            diffContentsToString(
-                                diff as api.DiffOutput,
-                                "current",
-                            )
-                        }
-                    />
-                    {isCompiling && <LoadingSpinner className="size-6" />}
-                    {!threeWayDiffEnabled && threeWayButton}
-                    {!threeWayDiffEnabled && compressButton}
-                </div>
-                {threeWayDiffEnabled && (
-                    <div className={styles.header}>
-                        {threeWayDiffBase === ThreeWayDiffBase.SAVED
-                            ? "Saved"
-                            : "Previous"}
+                {columns.map((col) => (
+                    <div key={col} className={styles.header}>
+                        {col === "base" && "Target"}
+                        {col === "current" && "Current"}
+                        {col === "previous" &&
+                            (threeWayDiffBase === ThreeWayDiffBase.SAVED
+                                ? "Saved"
+                                : "Previous")}
                         <CopyButton
                             title="Copy content"
                             size={12}
                             text={() =>
-                                diffContentsToString(
-                                    diff as api.DiffOutput,
-                                    "previous",
-                                )
+                                diff ? diffContentsToString(diff, col) : ""
                             }
                         />
-                        {threeWayButton}
-                        {compressButton}
+                        {col === "current" && isCompiling && (
+                            <LoadingSpinner className="size-6" />
+                        )}
+
+                        {col === rightmostColumn && (
+                            <>
+                                <div className={styles.spacer} />
+                                <ToggleButton
+                                    label="T"
+                                    title={"Target column"}
+                                    enabled={columnState.base}
+                                    setEnabled={(enabled) =>
+                                        setColumn("base", enabled)
+                                    }
+                                />
+                                <ToggleButton
+                                    label="C"
+                                    title={"Current column"}
+                                    enabled={columnState.current}
+                                    setEnabled={(enabled) =>
+                                        setColumn("current", enabled)
+                                    }
+                                />
+                                <ToggleButton
+                                    label="3"
+                                    title={"3-way diff"}
+                                    enabled={columnState.previous}
+                                    setEnabled={(enabled) => {
+                                        setColumn("previous", enabled);
+                                        setThreeWayDiffEnabled(enabled);
+                                    }}
+                                />
+                                <CompressToggleButton
+                                    enabled={compressionEnabled}
+                                    setEnabled={setCompressionEnabled}
+                                />
+                            </>
+                        )}
                     </div>
-                )}
+                ))}
             </div>
+
             <DiffBody
                 diff={diff}
                 diffLabel={diffLabel}
                 compressionEnabled={compressionEnabled}
                 fontSize={fontSize}
+                columns={columns}
             />
         </div>
     );
