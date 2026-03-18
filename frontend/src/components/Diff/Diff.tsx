@@ -4,9 +4,8 @@ import {
     forwardRef,
     type HTMLAttributes,
     type RefObject,
-    useLayoutEffect,
+    useEffect,
     useMemo,
-    useRef,
     useState,
 } from "react";
 
@@ -31,15 +30,18 @@ import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
 import CopyButton from "../CopyButton";
 import ToggleButton from "./ToggleButton";
+import { useResizableColumns } from "./hooks";
 
 type ColumnKey = "base" | "current" | "previous";
+type ColumnState = Record<ColumnKey, boolean>;
+const ALL_COLUMNS: ColumnKey[] = ["base", "current", "previous"];
 
 const diffContentsToString = (
     diff: api.DiffOutput,
     kind: ColumnKey,
 ): string => {
     return diff.rows
-        .map((row) => row[kind]?.text.map((t) => t.text).join("") ?? "")
+        .map((row) => row[kind]?.text?.map((t) => t.text).join("") ?? "")
         .join("\n");
 };
 
@@ -95,29 +97,37 @@ function DiffBody({
         Record<string, boolean>
     >({});
 
+    useEffect(() => {
+        setExpandedGroups({});
+    }, [groups]);
+
     const flattened = useMemo(
         () => flattenGroups(groups, expandedGroups),
         [groups, expandedGroups],
     );
 
     const visibleRows: VisibleRow[] = useMemo(() => {
+        const getCells = (row: api.DiffRow) => columns.map((col) => row[col]);
+
         return flattened.map((row) => {
             const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
 
             return {
                 key: row.key,
                 isPlaceholder,
-                cells: columns.map((col: ColumnKey) => row[col]),
+                cells: getCells(row),
             };
         });
     }, [flattened, columns]);
 
-    const itemData: AsmDiffer.DiffListData = useMemo(
+    const handleToggle = (key: string) => {
+        setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+    const itemData = useMemo(
         () => ({
             rows: visibleRows,
             highlighters,
-            onToggle: (key: string) =>
-                setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] })),
+            onToggle: handleToggle,
         }),
         [visibleRows, highlighters],
     );
@@ -170,9 +180,7 @@ function CompressToggleButton({
     return (
         <button
             className={styles.compressionToggle}
-            onClick={() => {
-                setEnabled(!enabled);
-            }}
+            onClick={() => setEnabled(!enabled)}
             title={
                 enabled
                     ? "Do not compress streaks of matching lines"
@@ -188,16 +196,15 @@ export function scrollToLineNumber(
     editorView: RefObject<EditorView>,
     lineNumber: number,
 ) {
-    if (!editorView) {
-        return;
-    }
-    if (lineNumber <= editorView.current.state.doc.lines) {
+    const view = editorView.current;
+    if (!view) return;
+    if (lineNumber <= view.state.doc.lines) {
         // check if the source line <= number of lines
         // which can be false if pragmas are used to force line numbers
-        const line = editorView.current.state.doc.line(lineNumber);
+        const line = view.state.doc.line(lineNumber);
         if (line) {
-            const { top } = editorView.current.lineBlockAt(line.to);
-            editorView.current.scrollDOM.scrollTo({ top, behavior: "smooth" });
+            const { top } = view.lineBlockAt(line.to);
+            view.scrollDOM.scrollTo({ top, behavior: "smooth" });
         }
     }
 }
@@ -214,7 +221,7 @@ type DiffGroup =
           isExpanded: boolean;
       };
 
-/* heavily inspired by compress_matching from diff.py */
+// heavily inspired by compress_matching from diff.py
 export function compressMatching({
     rows,
     context,
@@ -256,7 +263,14 @@ export function compressMatching({
                 rows: [...matchingStreak],
             });
         } else {
-            if (context > 0) {
+            if (context === 0) {
+                groups.push({
+                    type: "collapsed",
+                    key: `group-${groupCount++}`,
+                    rows: [...matchingStreak],
+                    isExpanded: false,
+                });
+            } else {
                 groups.push({
                     type: "rows",
                     key: `group-${groupCount++}`,
@@ -272,13 +286,6 @@ export function compressMatching({
                     type: "rows",
                     key: `group-${groupCount++}`,
                     rows: matchingStreak.slice(-context),
-                });
-            } else {
-                groups.push({
-                    type: "collapsed",
-                    key: `group-${groupCount++}`,
-                    rows: [...matchingStreak],
-                    isExpanded: false,
                 });
             }
         }
@@ -342,7 +349,10 @@ export function flattenGroups(
     return flat;
 }
 
-type ColumnState = Record<ColumnKey, boolean>;
+type LocalColumnState = {
+    base: boolean;
+    current: boolean;
+};
 
 export type Props = {
     diff: api.DiffOutput | null;
@@ -370,109 +380,49 @@ export default function Diff({
     const [fontSize] = useCodeFontSize();
     const container = useSize<HTMLDivElement>();
 
-    const [bar1Pos, setBar1Pos] = useState<number>(Number.NaN);
-    const [bar2Pos, setBar2Pos] = useState<number>(Number.NaN);
-
-    const [columnState, setColumnState] = useState<ColumnState>({
+    const [columnState, setColumnState] = useState<LocalColumnState>({
         base: true,
         current: true,
+    });
+    const fullColumnState: ColumnState = {
+        ...columnState,
         previous: threeWayDiffEnabled,
+    };
+    const columns = ALL_COLUMNS.filter((col) => fullColumnState[col]);
+    const columnCount = columns.length;
+    const rightmostColumn = columns.at(-1);
+
+    const { bar1Px, bar2Px, setBar1Px, setBar2Px } = useResizableColumns({
+        width: container.width,
+        columnCount,
     });
 
-    const columns = [
-        columnState.base && "base",
-        columnState.current && "current",
-        columnState.previous && "previous",
-    ].filter((col): col is ColumnKey => Boolean(col));
+    const COLUMN_LABELS = {
+        base: "Target",
+        current: "Current",
+        previous:
+            threeWayDiffBase === ThreeWayDiffBase.SAVED ? "Saved" : "Previous",
+    };
 
-    const columnCount = columns.length || 1;
-
-    const rightmostColumn = columns[columns.length - 1];
-
-    const prevRef = useRef({ width: 0, columnCount: 0 });
-
-    useLayoutEffect(() => {
-        const width = container.width;
-
-        if (!width) return;
-
-        const prev = prevRef.current;
-        const columnChanged = prev.columnCount !== columnCount;
-        const widthChanged = prev.width !== width;
-
-        if (columnChanged) {
-            // Reset positions based on new column count
-            if (columnCount === 1) {
-                setBar1Pos(width);
-                setBar2Pos(width);
-            } else {
-                setBar1Pos(width / columnCount);
-                setBar2Pos((width / columnCount) * 2);
-            }
-        } else if (widthChanged) {
-            // Preserve ratios ONLY when width changes
-            const ratio1 =
-                Number.isNaN(bar1Pos) || !prev.width
-                    ? 1 / columnCount
-                    : bar1Pos / prev.width;
-
-            const ratio2 =
-                Number.isNaN(bar2Pos) || !prev.width
-                    ? 2 / columnCount
-                    : bar2Pos / prev.width;
-
-            setBar1Pos(width * ratio1);
-            setBar2Pos(width * ratio2);
-        }
-
-        prevRef.current = { width, columnCount };
-    }, [container.width, columnCount, bar1Pos, bar2Pos]);
-
-    const columnMinWidth = 80;
-
-    function clampBars() {
-        const width = container.width;
-
-        if (!width || columnCount <= 1) {
-            return { bar1: width, bar2: width };
-        } else if (columnCount === 2) {
-            const b1 = Number.isNaN(bar1Pos) ? width / 2 : bar1Pos;
-
-            const clampedBar1 = Math.max(
-                columnMinWidth,
-                Math.min(width - columnMinWidth, b1),
-            );
-
-            return { bar1: clampedBar1, bar2: width };
-        } else {
-            const b1 = Number.isNaN(bar1Pos) ? width / 3 : bar1Pos;
-            const b2 = Number.isNaN(bar2Pos) ? (width / 3) * 2 : bar2Pos;
-
-            const clampedBar1 = Math.max(
-                columnMinWidth,
-                Math.min(width - columnMinWidth * 2, b1),
-            );
-
-            const clampedBar2 = Math.max(
-                clampedBar1 + columnMinWidth,
-                Math.min(width - columnMinWidth, b2),
-            );
-
-            return { bar1: clampedBar1, bar2: clampedBar2 };
-        }
-    }
-
-    const { bar1: clampedBar1Pos, bar2: clampedBar2Pos } = clampBars();
-
-    const updateColumns = (updater: (prev: ColumnState) => ColumnState) => {
+    const updateColumns = (
+        updater: (prev: LocalColumnState) => LocalColumnState,
+    ) => {
         setColumnState((prev) => {
             const next = updater(prev);
-            if (!next.base && !next.current && !next.previous) return prev;
+            const hasOtherColumns =
+                next.base || next.current || threeWayDiffEnabled;
+            if (!hasOtherColumns) return prev;
             return next;
         });
     };
     const setColumn = (key: ColumnKey, value: boolean) => {
         updateColumns((prev) => ({ ...prev, [key]: value }));
+    };
+    const handleSetThreeWayDiff = (enabled: boolean) => {
+        const hasOtherColumns =
+            columnState.base || columnState.current || enabled;
+        if (!hasOtherColumns) return;
+        setThreeWayDiffEnabled(enabled);
     };
 
     return (
@@ -483,29 +433,20 @@ export default function Diff({
                 {
                     "--diff-font-size":
                         typeof fontSize === "number" ? `${fontSize}px` : "",
-                    "--diff-left-width": `${clampedBar1Pos}px`,
-                    "--diff-right-width": `${container.width - clampedBar2Pos}px`,
+                    "--diff-left-width": `${bar1Px}px`,
+                    "--diff-right-width": `${container.width - bar2Px}px`,
                     "--diff-current-filter": isCurrentOutdated
                         ? "grayscale(25%) brightness(70%)"
                         : "",
                 } as CSSProperties
             }
         >
-            {columnCount >= 2 && (
-                <DragBar pos={clampedBar1Pos} onChange={setBar1Pos} />
-            )}
-            {columnCount === 3 && (
-                <DragBar pos={clampedBar2Pos} onChange={setBar2Pos} />
-            )}
+            {columnCount >= 2 && <DragBar pos={bar1Px} onChange={setBar1Px} />}
+            {columnCount === 3 && <DragBar pos={bar2Px} onChange={setBar2Px} />}
             <div className={styles.headers}>
                 {columns.map((col) => (
                     <div key={col} className={styles.header}>
-                        {col === "base" && "Target"}
-                        {col === "current" && "Current"}
-                        {col === "previous" &&
-                            (threeWayDiffBase === ThreeWayDiffBase.SAVED
-                                ? "Saved"
-                                : "Previous")}
+                        {COLUMN_LABELS[col]}
                         <CopyButton
                             title="Copy content"
                             size={12}
@@ -539,11 +480,8 @@ export default function Diff({
                                 <ToggleButton
                                     label="3"
                                     title={"3-way diff"}
-                                    enabled={columnState.previous}
-                                    setEnabled={(enabled) => {
-                                        setColumn("previous", enabled);
-                                        setThreeWayDiffEnabled(enabled);
-                                    }}
+                                    enabled={threeWayDiffEnabled}
+                                    setEnabled={handleSetThreeWayDiff}
                                 />
                                 <CompressToggleButton
                                     enabled={compressionEnabled}
