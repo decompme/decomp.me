@@ -5,9 +5,9 @@ type ToggleButtonProps = {
     label: string | JSX.Element;
     enabled: boolean;
     setEnabled: (enabled: boolean) => void;
-    title?: string;
-    disabledLabel?: string;
-    enabledLabel?: string;
+    title: string;
+    disabledLabel: string;
+    enabledLabel: string;
     padding?: string;
 };
 
