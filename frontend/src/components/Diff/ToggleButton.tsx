@@ -5,9 +5,9 @@ type ToggleButtonProps = {
     label: string | JSX.Element;
     enabled: boolean;
     setEnabled: (enabled: boolean) => void;
-    title: string;
-    disabledLabel: string;
-    enabledLabel: string;
+    title?: string;
+    disabledLabel?: string;
+    enabledLabel?: string;
     padding?: string;
 };
 
@@ -26,7 +26,11 @@ export default function ToggleButton({
                 setEnabled(!enabled);
             }}
             aria-pressed={enabled}
-            title={`${enabled ? enabledLabel : disabledLabel}${title}`}
+            title={
+                title
+                    ? `${enabled ? enabledLabel : disabledLabel}${title}`
+                    : undefined
+            }
             className={clsx(
                 padding,
                 "text-md",
