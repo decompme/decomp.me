@@ -9,7 +9,7 @@ import {
     useState,
 } from "react";
 
-import { FoldIcon, UnfoldIcon } from "@primer/octicons-react";
+import { FoldIcon } from "@primer/octicons-react";
 import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
@@ -167,28 +167,6 @@ function DiffBody({
                 )}
             </AutoSizer>
         </div>
-    );
-}
-
-function CompressToggleButton({
-    enabled,
-    setEnabled,
-}: {
-    enabled: boolean;
-    setEnabled: (enabled: boolean) => void;
-}) {
-    return (
-        <button
-            className={styles.compressionToggle}
-            onClick={() => setEnabled(!enabled)}
-            title={
-                enabled
-                    ? "Do not compress streaks of matching lines"
-                    : "Compress streaks of matching lines"
-            }
-        >
-            {enabled ? <FoldIcon size={24} /> : <UnfoldIcon size={24} />}
-        </button>
     );
 }
 
@@ -463,7 +441,7 @@ export default function Diff({
                                 <div className={styles.spacer} />
                                 <ToggleButton
                                     label="T"
-                                    title={"Target column"}
+                                    title="Target column"
                                     enabled={columnState.base}
                                     setEnabled={(enabled) =>
                                         setColumn("base", enabled)
@@ -471,7 +449,7 @@ export default function Diff({
                                 />
                                 <ToggleButton
                                     label="C"
-                                    title={"Current column"}
+                                    title="Current column"
                                     enabled={columnState.current}
                                     setEnabled={(enabled) =>
                                         setColumn("current", enabled)
@@ -479,11 +457,16 @@ export default function Diff({
                                 />
                                 <ToggleButton
                                     label="3"
-                                    title={"3-way diff"}
+                                    title="3-way diff"
                                     enabled={threeWayDiffEnabled}
                                     setEnabled={handleSetThreeWayDiff}
                                 />
-                                <CompressToggleButton
+                                <ToggleButton
+                                    label={<FoldIcon size={16} />}
+                                    disabledLabel="Collapse streaks of "
+                                    enabledLabel="Show all "
+                                    title="matching lines"
+                                    padding="px-1 py-1"
                                     enabled={compressionEnabled}
                                     setEnabled={setCompressionEnabled}
                                 />
