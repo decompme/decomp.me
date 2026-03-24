@@ -151,15 +151,13 @@ export const DiffRow = memo(function DiffRow({
                 row.isPlaceholder ? () => data.onToggle(row.key) : undefined
             }
         >
-            {row.cells.map((cell, i) =>
-                cell ? (
-                    <DiffCell
-                        key={i}
-                        cell={cell}
-                        highlighter={data.highlighters[i]}
-                    />
-                ) : null,
-            )}
+            {row.cells.map((cell, i) => (
+                <DiffCell
+                    key={i}
+                    cell={cell}
+                    highlighter={data.highlighters[i]}
+                />
+            ))}
         </li>
     );
 }, areEqual);
