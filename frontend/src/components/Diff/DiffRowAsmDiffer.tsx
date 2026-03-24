@@ -11,7 +11,7 @@ import * as settings from "@/lib/settings";
 
 import { ScrollContext } from "../ScrollContext";
 import { useSelectedSourceLine } from "../SelectedSourceLineContext";
-import { PADDING_TOP, scrollToLineNumber } from "./Diff";
+import { PADDING_TOP, scrollToLineNumber, type VisibleRow } from "./Diff";
 import styles from "./Diff.module.scss";
 import type { Highlighter } from "./Highlighter";
 
@@ -123,7 +123,7 @@ function DiffCell({
 }
 
 export type DiffListData = {
-    rows: api.DiffRow[];
+    rows: VisibleRow[];
     highlighters: Highlighter[];
     onToggle: (groupKey: string) => void;
 };
@@ -132,23 +132,34 @@ export const DiffRow = memo(function DiffRow({
     data,
     index,
     style,
-}: { data: DiffListData; index: number; style: CSSProperties }) {
+}: {
+    data: DiffListData;
+    index: number;
+    style: CSSProperties;
+}) {
     const row = data.rows[index];
-    const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
 
     return (
         <li
-            className={clsx(styles.row, isPlaceholder && styles.collapsed)}
+            className={clsx(styles.row, row.isPlaceholder && styles.collapsed)}
             style={{
                 ...style,
                 top: `${Number.parseFloat(style.top.toString()) + PADDING_TOP}px`,
                 lineHeight: `${style.height.toString()}px`,
             }}
-            onClick={isPlaceholder ? () => data.onToggle(row.key) : undefined}
+            onClick={
+                row.isPlaceholder ? () => data.onToggle(row.key) : undefined
+            }
         >
-            <DiffCell cell={row.base} highlighter={data.highlighters[0]} />
-            <DiffCell cell={row.current} highlighter={data.highlighters[1]} />
-            <DiffCell cell={row.previous} highlighter={data.highlighters[2]} />
+            {row.cells.map((cell, i) =>
+                cell ? (
+                    <DiffCell
+                        key={i}
+                        cell={cell}
+                        highlighter={data.highlighters[i]}
+                    />
+                ) : null,
+            )}
         </li>
     );
 }, areEqual);
