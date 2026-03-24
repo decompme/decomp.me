@@ -1,10 +1,14 @@
+import type { JSX } from "react";
 import clsx from "clsx";
 
 type ToggleButtonProps = {
-    label: string;
+    label: string | JSX.Element;
     enabled: boolean;
     setEnabled: (enabled: boolean) => void;
     title?: string;
+    disabledLabel?: string;
+    enabledLabel?: string;
+    padding?: string;
 };
 
 export default function ToggleButton({
@@ -12,6 +16,9 @@ export default function ToggleButton({
     enabled,
     setEnabled,
     title,
+    disabledLabel = "Show ",
+    enabledLabel = "Hide ",
+    padding = "px-2 py-1",
 }: ToggleButtonProps) {
     return (
         <button
@@ -19,9 +26,9 @@ export default function ToggleButton({
                 setEnabled(!enabled);
             }}
             aria-pressed={enabled}
-            title={`${enabled ? "Hide " : "Show "}${title}`}
+            title={`${enabled ? enabledLabel : disabledLabel}${title}`}
             className={clsx(
-                "px-2 py-1",
+                padding,
                 "text-md",
                 "rounded-md border",
                 "transition-all duration-150",
