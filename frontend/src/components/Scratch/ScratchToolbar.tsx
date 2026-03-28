@@ -5,6 +5,7 @@ import {
     type FC,
     type ClipboardEvent,
     type KeyboardEvent,
+    type JSX,
 } from "react";
 
 import {
@@ -150,7 +151,10 @@ function ScratchName({
     }
 }
 
-function NewScratchButton({ isDirty }: { isDirty: boolean }) {
+function NewScratchButton({
+    isDirty,
+    isCompact,
+}: { isDirty: boolean; isCompact: boolean }) {
     const router = useRouter();
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -179,12 +183,47 @@ function NewScratchButton({ isDirty }: { isDirty: boolean }) {
     return (
         <Link href="/new" onClick={handleClick}>
             <FileIcon />
-            New
+            {!isCompact && "New"}
         </Link>
     );
 }
 
+function ActionButton({
+    onClick,
+    disabled = false,
+    title,
+    icon,
+    text,
+    isCompact,
+}: {
+    onClick: (event?: any) => void;
+    disabled?: boolean;
+    title?: string;
+    icon: JSX.Element;
+    text: string;
+    isCompact: boolean;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            aria-label={text}
+        >
+            {icon}
+            {!isCompact && text}
+        </button>
+    );
+}
+
+type ActionsVariant = "full" | "compact";
+
+type ActionsProps = Props & {
+    variant?: ActionsVariant;
+};
+
 function Actions({
+    variant = "full",
     isCompiling,
     isDirty,
     compile,
@@ -192,7 +231,7 @@ function Actions({
     setScratch,
     saveCallback,
     setDecompilationTabEnabled,
-}: Props) {
+}: ActionsProps) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(
@@ -222,13 +261,15 @@ function Actions({
 
     const isAdmin = api.useThisUserIsAdmin();
 
+    const isCompact = variant === "compact";
+
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <NewScratchButton isDirty={isDirty} />
+                <NewScratchButton isDirty={isDirty} isCompact={isCompact} />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={async () => {
                         setIsSaving(true);
                         await fuzzySaveScratch();
@@ -237,13 +278,13 @@ function Actions({
                     }}
                     disabled={!canSave || isSaving}
                     title={fuzzyShortcut}
-                >
-                    <UploadIcon />
-                    Save
-                </button>
+                    text={"Save"}
+                    isCompact={isCompact}
+                    icon={<UploadIcon />}
+                />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={async () => {
                         setIsForking(true);
                         await forkScratch();
@@ -256,14 +297,14 @@ function Actions({
                             ? fuzzyShortcut
                             : undefined
                     }
-                >
-                    <RepoForkedIcon />
-                    Fork
-                </button>
+                    isCompact={isCompact}
+                    text="Fork"
+                    icon={<RepoForkedIcon />}
+                />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (
                 <li>
-                    <button
+                    <ActionButton
                         onClick={(event) => {
                             if (
                                 event.shiftKey ||
@@ -274,34 +315,38 @@ function Actions({
                                 deleteScratch(scratch);
                             }
                         }}
-                    >
-                        <TrashIcon />
-                        Delete
-                    </button>
+                        text="Delete"
+                        icon={<TrashIcon />}
+                        isCompact={isCompact}
+                    />
                 </li>
             )}
             <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export
-                </button>
+                <ActionButton
+                    onClick={() => exportScratchZip(scratch)}
+                    text="Export"
+                    icon={<DownloadIcon />}
+                    isCompact={isCompact}
+                />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={compile}
                     title={compileShortcut}
                     disabled={isCompiling}
-                >
-                    <SyncIcon />
-                    Compile
-                </button>
+                    text="Compile"
+                    icon={<SyncIcon />}
+                    isCompact={isCompact}
+                />
             </li>
             {platform?.has_decompiler && (
                 <li>
-                    <button onClick={() => setDecompilationTabEnabled(true)}>
-                        <IterationsIcon />
-                        Decompile
-                    </button>
+                    <ActionButton
+                        onClick={() => setDecompilationTabEnabled(true)}
+                        icon={<IterationsIcon />}
+                        text="Decompile"
+                        isCompact={isCompact}
+                    />
                 </li>
             )}
         </ul>
@@ -410,7 +455,7 @@ export default function ScratchToolbar(props: Props) {
                         "border-gray-6 border-b",
                     )}
                 >
-                    <Actions {...props} />
+                    <Actions {...props} variant="compact" />
                 </div>
             )}
         </>
