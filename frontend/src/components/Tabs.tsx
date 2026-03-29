@@ -75,7 +75,7 @@ export class Tab extends Component<TabProps> {
                         <button
                             role="tab"
                             aria-selected={ctx.activeTab === key}
-                            className={styles.tabButton}
+                            className={clsx(styles.tabButton)}
                             disabled={this.props.disabled}
                             onClick={() => {
                                 ctx.setActive(key);
@@ -220,7 +220,7 @@ export default function Tabs({
             >
                 <div
                     role="tablist"
-                    className={styles.tabButtons}
+                    className={clsx(styles.tabButtons, "min-h-10 sm:min-h-12")}
                     style={{ background }}
                     onMouseMove={() => {
                         // If the event propagated here, no non-disabled tab is hovered over
