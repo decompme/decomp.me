@@ -151,10 +151,7 @@ function ScratchName({
     }
 }
 
-function NewScratchButton({
-    isDirty,
-    isCompact,
-}: { isDirty: boolean; isCompact: boolean }) {
+function NewScratchButton({ isDirty }: { isDirty: boolean }) {
     const router = useRouter();
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -183,7 +180,7 @@ function NewScratchButton({
     return (
         <Link href="/new" onClick={handleClick}>
             <FileIcon />
-            {!isCompact && "New"}
+            <span className="hidden md:inline">New</span>
         </Link>
     );
 }
@@ -194,14 +191,12 @@ function ActionButton({
     title,
     icon,
     text,
-    isCompact,
 }: {
     onClick: (event?: any) => void;
     disabled?: boolean;
     title?: string;
     icon: JSX.Element;
     text: string;
-    isCompact: boolean;
 }) {
     return (
         <button
@@ -211,7 +206,7 @@ function ActionButton({
             aria-label={text}
         >
             {icon}
-            {!isCompact && text}
+            <span className="hidden md:inline">{text}</span>
         </button>
     );
 }
@@ -261,12 +256,10 @@ function Actions({
 
     const isAdmin = api.useThisUserIsAdmin();
 
-    const isCompact = variant === "compact";
-
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <NewScratchButton isDirty={isDirty} isCompact={isCompact} />
+                <NewScratchButton isDirty={isDirty} />
             </li>
             <li>
                 <ActionButton
@@ -279,7 +272,6 @@ function Actions({
                     disabled={!canSave || isSaving}
                     title={fuzzyShortcut}
                     text={"Save"}
-                    isCompact={isCompact}
                     icon={<UploadIcon />}
                 />
             </li>
@@ -297,7 +289,6 @@ function Actions({
                             ? fuzzyShortcut
                             : undefined
                     }
-                    isCompact={isCompact}
                     text="Fork"
                     icon={<RepoForkedIcon />}
                 />
@@ -317,7 +308,6 @@ function Actions({
                         }}
                         text="Delete"
                         icon={<TrashIcon />}
-                        isCompact={isCompact}
                     />
                 </li>
             )}
@@ -326,7 +316,6 @@ function Actions({
                     onClick={() => exportScratchZip(scratch)}
                     text="Export"
                     icon={<DownloadIcon />}
-                    isCompact={isCompact}
                 />
             </li>
             <li>
@@ -336,7 +325,6 @@ function Actions({
                     disabled={isCompiling}
                     text="Compile"
                     icon={<SyncIcon />}
-                    isCompact={isCompact}
                 />
             </li>
             {platform?.has_decompiler && (
@@ -345,7 +333,6 @@ function Actions({
                         onClick={() => setDecompilationTabEnabled(true)}
                         icon={<IterationsIcon />}
                         text="Decompile"
-                        isCompact={isCompact}
                     />
                 </li>
             )}
