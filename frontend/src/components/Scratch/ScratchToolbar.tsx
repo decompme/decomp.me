@@ -211,14 +211,7 @@ function ActionButton({
     );
 }
 
-type ActionsVariant = "full" | "compact";
-
-type ActionsProps = Props & {
-    variant?: ActionsVariant;
-};
-
 function Actions({
-    variant = "full",
     isCompiling,
     isDirty,
     compile,
@@ -226,7 +219,7 @@ function Actions({
     setScratch,
     saveCallback,
     setDecompilationTabEnabled,
-}: ActionsProps) {
+}: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
     const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(
@@ -442,7 +435,7 @@ export default function ScratchToolbar(props: Props) {
                         "border-gray-6 border-b",
                     )}
                 >
-                    <Actions {...props} variant="compact" />
+                    <Actions {...props} />
                 </div>
             )}
         </>
