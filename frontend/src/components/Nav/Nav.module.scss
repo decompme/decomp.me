@@ -31,6 +31,9 @@ $padding: 8px;
 .headerItemMenuToggle {
     grid-area: menutoggle;
 
+    align-items: center;
+    display: flex;
+
     & > button {
         width: $inner-size;
         height: $inner-size;
