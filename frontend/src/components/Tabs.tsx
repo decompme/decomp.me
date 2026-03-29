@@ -75,7 +75,7 @@ export class Tab extends Component<TabProps> {
                         <button
                             role="tab"
                             aria-selected={ctx.activeTab === key}
-                            className={clsx(styles.tabButton)}
+                            className={styles.tabButton}
                             disabled={this.props.disabled}
                             onClick={() => {
                                 ctx.setActive(key);
