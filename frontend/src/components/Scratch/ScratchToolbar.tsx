@@ -417,9 +417,11 @@ export default function ScratchToolbar(props: Props) {
                                                 ((name) => setScratch({ name }))
                                             }
                                         />
-                                        <EditTimeAgo
-                                            date={scratch.last_updated}
-                                        />
+                                        <span className="hidden md:inline">
+                                            <EditTimeAgo
+                                                date={scratch.last_updated}
+                                            />
+                                        </span>
                                     </div>
                                 ),
                             },
