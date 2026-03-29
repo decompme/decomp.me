@@ -38,6 +38,7 @@ export type Props = {
     isCompiling?: boolean;
     isCompilationOld?: boolean;
     perSaveObj: PerSaveObj;
+    showProblems: boolean;
 };
 
 export default function CompilationPanel({
@@ -46,6 +47,7 @@ export default function CompilationPanel({
     isCompiling,
     isCompilationOld,
     perSaveObj,
+    showProblems,
 }: Props) {
     const usedCompilationRef = useRef<api.Compilation | null>(null);
     const problemState = getProblemState(compilation);
@@ -127,50 +129,54 @@ export default function CompilationPanel({
                         threeWayDiffBase={threeWayDiffBase}
                     />
                 </Allotment.Pane>
-                <Allotment.Pane
-                    minSize={problemsCollapsedHeight}
-                    preferredSize={
-                        isProblemsCollapsed
-                            ? problemsCollapsedHeight
-                            : problemsDefaultHeight
-                    }
-                >
-                    <div className="flex size-full flex-col">
-                        <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
-                            <GhostButton
-                                className="flex w-max grow justify-between text-gray-11"
-                                onClick={() => {
-                                    setIsProblemsCollapsed((curr) => !curr);
-                                    const containerHeight =
-                                        container.current?.clientHeight ?? 0;
-                                    const newProblemsHeight =
-                                        isProblemsCollapsed
-                                            ? problemsDefaultHeight
-                                            : problemsCollapsedHeight;
-                                    allotment.current?.resize([
-                                        containerHeight - newProblemsHeight,
-                                        newProblemsHeight,
-                                    ]);
-                                }}
-                            >
-                                <span className="font-medium text-sm">
-                                    {problemState === ProblemState.NO_PROBLEMS
-                                        ? "No problems"
-                                        : "Problems"}
-                                </span>
-                                {isProblemsCollapsed ? (
-                                    <ChevronUpIcon />
-                                ) : (
-                                    <ChevronDownIcon />
-                                )}
-                            </GhostButton>
-                        </h2>
+                {showProblems && (
+                    <Allotment.Pane
+                        minSize={problemsCollapsedHeight}
+                        preferredSize={
+                            isProblemsCollapsed
+                                ? problemsCollapsedHeight
+                                : problemsDefaultHeight
+                        }
+                    >
+                        <div className="flex size-full flex-col">
+                            <h2 className="flex items-center border-b border-b-gray-5 p-1 pl-3">
+                                <GhostButton
+                                    className="flex w-max grow justify-between text-gray-11"
+                                    onClick={() => {
+                                        setIsProblemsCollapsed((curr) => !curr);
+                                        const containerHeight =
+                                            container.current?.clientHeight ??
+                                            0;
+                                        const newProblemsHeight =
+                                            isProblemsCollapsed
+                                                ? problemsDefaultHeight
+                                                : problemsCollapsedHeight;
+                                        allotment.current?.resize([
+                                            containerHeight - newProblemsHeight,
+                                            newProblemsHeight,
+                                        ]);
+                                    }}
+                                >
+                                    <span className="font-medium text-sm">
+                                        {problemState ===
+                                        ProblemState.NO_PROBLEMS
+                                            ? "No problems"
+                                            : "Problems"}
+                                    </span>
+                                    {isProblemsCollapsed ? (
+                                        <ChevronUpIcon />
+                                    ) : (
+                                        <ChevronDownIcon />
+                                    )}
+                                </GhostButton>
+                            </h2>
 
-                        <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
-                            <Ansi>{compilation.compiler_output}</Ansi>
+                            <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
+                                <Ansi>{compilation.compiler_output}</Ansi>
+                            </div>
                         </div>
-                    </div>
-                </Allotment.Pane>
+                    </Allotment.Pane>
+                )}
             </Allotment>
         </div>
     );

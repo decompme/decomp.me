@@ -46,6 +46,7 @@ import useLanguageServer from "./hooks/useLanguageServer";
 import AboutPanel from "./panels/AboutPanel";
 import DecompilationPanel from "./panels/DecompilePanel";
 import FamilyPanel from "./panels/FamilyPanel";
+import ProblemPanel from "./panels/ProblemPanel";
 import styles from "./Scratch.module.scss";
 import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
@@ -64,6 +65,7 @@ enum TabId {
     DECOMPILATION = "scratch_decompilation",
     FAMILY = "scratch_family",
     OBJDIFF = "scratch_objdiff",
+    PROBLEMS = "scratch_problems",
 }
 
 const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
@@ -105,10 +107,9 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 size: 50,
                 activeTab: TabId.DIFF,
                 tabs: [
-                    TabId.ABOUT,
-                    TabId.FAMILY,
                     TabId.DIFF,
                     TabId.OBJDIFF,
+                    TabId.PROBLEMS,
                     TabId.DECOMPILATION,
                 ],
             },
@@ -117,7 +118,13 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                 kind: "pane",
                 size: 50,
                 activeTab: TabId.SOURCE_CODE,
-                tabs: [TabId.SOURCE_CODE, TabId.CONTEXT, TabId.OPTIONS],
+                tabs: [
+                    TabId.ABOUT,
+                    TabId.FAMILY,
+                    TabId.SOURCE_CODE,
+                    TabId.CONTEXT,
+                    TabId.OPTIONS,
+                ],
             },
         ],
     },
@@ -415,6 +422,7 @@ export default function Scratch({
                                 isCompiling={isCompiling}
                                 isCompilationOld={isCompilationOld}
                                 perSaveObj={perSaveObj}
+                                showProblems={layoutName !== "mobile_2row"}
                             />
                         )}
                     </Tab>
@@ -462,6 +470,18 @@ export default function Scratch({
                     <Tab key={id} tabKey={id} label="Family">
                         {() => <FamilyPanel scratch={scratch} />}
                     </Tab>
+                );
+            case TabId.PROBLEMS:
+                return (
+                    compilation?.compiler_output && (
+                        <Tab key={id} tabKey={id} label="Problems">
+                            {() => (
+                                <ProblemPanel
+                                    text={compilation.compiler_output}
+                                />
+                            )}
+                        </Tab>
+                    )
                 );
             default:
                 return <Tab key={id} tabKey={id} label={id} disabled />;
