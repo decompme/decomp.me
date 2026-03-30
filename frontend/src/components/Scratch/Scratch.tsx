@@ -104,19 +104,7 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
             {
                 key: 1,
                 kind: "pane",
-                size: 50,
-                activeTab: TabId.DIFF,
-                tabs: [
-                    TabId.DIFF,
-                    TabId.OBJDIFF,
-                    TabId.PROBLEMS,
-                    TabId.DECOMPILATION,
-                ],
-            },
-            {
-                key: 2,
-                kind: "pane",
-                size: 50,
+                size: 40,
                 activeTab: TabId.SOURCE_CODE,
                 tabs: [
                     TabId.ABOUT,
@@ -124,6 +112,18 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
                     TabId.SOURCE_CODE,
                     TabId.CONTEXT,
                     TabId.OPTIONS,
+                ],
+            },
+            {
+                key: 2,
+                kind: "pane",
+                size: 60,
+                activeTab: TabId.DIFF,
+                tabs: [
+                    TabId.DIFF,
+                    TabId.OBJDIFF,
+                    TabId.PROBLEMS,
+                    TabId.DECOMPILATION,
                 ],
             },
         ],
