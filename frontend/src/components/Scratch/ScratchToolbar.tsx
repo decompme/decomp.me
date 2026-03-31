@@ -5,6 +5,7 @@ import {
     type FC,
     type ClipboardEvent,
     type KeyboardEvent,
+    type JSX,
 } from "react";
 
 import {
@@ -179,8 +180,34 @@ function NewScratchButton({ isDirty }: { isDirty: boolean }) {
     return (
         <Link href="/new" onClick={handleClick}>
             <FileIcon />
-            New
+            <span className="hidden md:inline">New</span>
         </Link>
+    );
+}
+
+function ActionButton({
+    onClick,
+    disabled = false,
+    title,
+    icon,
+    text,
+}: {
+    onClick: (event?: any) => void;
+    disabled?: boolean;
+    title?: string;
+    icon: JSX.Element;
+    text: string;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            aria-label={text}
+        >
+            {icon}
+            <span className="hidden md:inline">{text}</span>
+        </button>
     );
 }
 
@@ -228,7 +255,7 @@ function Actions({
                 <NewScratchButton isDirty={isDirty} />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={async () => {
                         setIsSaving(true);
                         await fuzzySaveScratch();
@@ -237,13 +264,12 @@ function Actions({
                     }}
                     disabled={!canSave || isSaving}
                     title={fuzzyShortcut}
-                >
-                    <UploadIcon />
-                    Save
-                </button>
+                    text={"Save"}
+                    icon={<UploadIcon />}
+                />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={async () => {
                         setIsForking(true);
                         await forkScratch();
@@ -256,14 +282,13 @@ function Actions({
                             ? fuzzyShortcut
                             : undefined
                     }
-                >
-                    <RepoForkedIcon />
-                    Fork
-                </button>
+                    text="Fork"
+                    icon={<RepoForkedIcon />}
+                />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (
                 <li>
-                    <button
+                    <ActionButton
                         onClick={(event) => {
                             if (
                                 event.shiftKey ||
@@ -274,34 +299,34 @@ function Actions({
                                 deleteScratch(scratch);
                             }
                         }}
-                    >
-                        <TrashIcon />
-                        Delete
-                    </button>
+                        text="Delete"
+                        icon={<TrashIcon />}
+                    />
                 </li>
             )}
             <li>
-                <button onClick={() => exportScratchZip(scratch)}>
-                    <DownloadIcon />
-                    Export
-                </button>
+                <ActionButton
+                    onClick={() => exportScratchZip(scratch)}
+                    text="Export"
+                    icon={<DownloadIcon />}
+                />
             </li>
             <li>
-                <button
+                <ActionButton
                     onClick={compile}
                     title={compileShortcut}
                     disabled={isCompiling}
-                >
-                    <SyncIcon />
-                    Compile
-                </button>
+                    text="Compile"
+                    icon={<SyncIcon />}
+                />
             </li>
             {platform?.has_decompiler && (
                 <li>
-                    <button onClick={() => setDecompilationTabEnabled(true)}>
-                        <IterationsIcon />
-                        Decompile
-                    </button>
+                    <ActionButton
+                        onClick={() => setDecompilationTabEnabled(true)}
+                        icon={<IterationsIcon />}
+                        text="Decompile"
+                    />
                 </li>
             )}
         </ul>
@@ -392,9 +417,11 @@ export default function ScratchToolbar(props: Props) {
                                                 ((name) => setScratch({ name }))
                                             }
                                         />
-                                        <EditTimeAgo
-                                            date={scratch.last_updated}
-                                        />
+                                        <span className="hidden md:inline">
+                                            <EditTimeAgo
+                                                date={scratch.last_updated}
+                                            />
+                                        </span>
                                     </div>
                                 ),
                             },
