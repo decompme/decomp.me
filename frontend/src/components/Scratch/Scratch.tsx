@@ -23,6 +23,7 @@ import {
     useMatchProgressBarEnabled,
     useDefaultDiffTab,
     DefaultDiffTab,
+    useSwapVerticalLayout,
 } from "@/lib/settings";
 
 import CompilerOpts from "../compiler/CompilerOpts";
@@ -130,6 +131,23 @@ const DEFAULT_LAYOUTS: Record<"desktop_2col" | "mobile_2row", Layout> = {
     },
 };
 
+function maybeSwapVerticalLayout(
+    layout: Layout,
+    layoutName: string,
+    swap: boolean,
+): Layout {
+    if (layoutName !== "mobile_2row" || !swap) {
+        return layout;
+    }
+    if (layout.kind !== "vertical" || layout.children.length !== 2) {
+        return layout;
+    }
+
+    const clone = cloneValue(layout);
+    clone.children = [...clone.children].reverse();
+    return clone;
+}
+
 function getDefaultLayout(
     width: number,
     _height: number,
@@ -234,6 +252,8 @@ export default function Scratch({
         contextEditor,
         shouldCompare ? parentScratch?.context : undefined,
     );
+
+    const [swapVerticalLayout] = useSwapVerticalLayout();
 
     const [saveSource, saveContext] = useLanguageServer(
         languageServerEnabledSetting,
@@ -497,9 +517,13 @@ export default function Scratch({
         if (layoutName !== preferredLayout) {
             setLayoutName(preferredLayout);
             setLayout(
-                applyDefaultDiffTab(
-                    cloneValue(DEFAULT_LAYOUTS[preferredLayout]),
-                    defaultDiffTab,
+                maybeSwapVerticalLayout(
+                    applyDefaultDiffTab(
+                        cloneValue(DEFAULT_LAYOUTS[preferredLayout]),
+                        defaultDiffTab,
+                    ),
+                    preferredLayout,
+                    swapVerticalLayout,
                 ),
             );
         }

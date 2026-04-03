@@ -64,6 +64,10 @@ export const diffCompressionContext = createStorageKey<number>(
     "diffCompressionContext",
     3,
 );
+export const useSwapVerticalLayout = createStorageKey<boolean>(
+    "swapVerticalLayout",
+    false,
+);
 
 export function useIsSiteThemeDark() {
     const [theme] = useTheme();
