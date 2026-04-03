@@ -11,6 +11,7 @@ import {
     useVimModeEnabled,
     useThreeWayDiffBase,
     useDefaultDiffTab,
+    useSwapVerticalLayout,
     DefaultDiffTab,
 } from "@/lib/settings";
 
@@ -30,6 +31,7 @@ export default function EditorSettings() {
     const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled();
     const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase();
     const [defaultDiffTab, setDefaultDiffTab] = useDefaultDiffTab();
+    const [swapVerticalLayout, setSwapVerticalLayout] = useSwapVerticalLayout();
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] =
         useState(false);
@@ -141,6 +143,14 @@ export default function EditorSettings() {
                     onChange={setMatchProgressBarEnabled}
                     label="Show progress bar on scratch editor"
                     description="Show a progress bar at the top of the editor to visually display the match percent of a scratch."
+                />
+            </Section>
+            <Section title="Mobile layout">
+                <Checkbox
+                    checked={swapVerticalLayout}
+                    onChange={setSwapVerticalLayout}
+                    label="Show diff above editor"
+                    description="Position the diff panel above the code editor on mobile."
                 />
             </Section>
             <Section title="Language server">
