@@ -13,14 +13,14 @@ until nc -z ${DB_HOST} ${DB_PORT} > /dev/null; do
   sleep 1
 done
 
+uv run /backend/manage.py migrate
+
 if [ -z "$CI" ]; then
   uv run manage.py clearsessions
   uv run /backend/housekeeping.py
 else
   echo "Skipping housekeeping: running in CI environment"
 fi
-
-uv run /backend/manage.py migrate
 
 if command -v regedit &> /dev/null; then
   for reg in /backend/wine/*.reg; do
