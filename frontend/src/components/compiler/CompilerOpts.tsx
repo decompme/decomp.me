@@ -17,6 +17,7 @@ import PresetSelect from "./PresetSelect";
 
 import { OptsContext } from "./OptsContext";
 import {
+    StringParameterFlag,
     IntegerParameterFlag,
     HexParameterFlag,
     IntOrHexParameterFlag,
@@ -225,8 +226,17 @@ function DiffFlags({ schema }: FlagsProps) {
                         </DiffFlagSet>
                     );
                 } else if (flag.type === "parameter") {
-                    const value = getFlagValue(flag.flag);
+                    const value = getFlagValue(`${flag.flag}=`);
                     switch (flag.format) {
+                        case "string":
+                            return (
+                                <StringParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
                         case "int":
                             return (
                                 <IntegerParameterFlag

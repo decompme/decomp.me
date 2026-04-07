@@ -54,7 +54,7 @@ function ParameterFlag({
 
         if (validate(val)) {
             const addEdit = {
-                flag: `${flag}${val}`,
+                flag: `${flag}=${val}`,
                 value: true,
             };
             setFlags([removeEdit, addEdit]);
@@ -74,6 +74,22 @@ function ParameterFlag({
                 onChange={(e) => setInputValue(e.target.value)}
             />
         </div>
+    );
+}
+
+type StringParameterFlagProps = {
+    flag: string;
+    name: string;
+    value: string;
+};
+
+export function StringParameterFlag(props: StringParameterFlagProps) {
+    return (
+        <ParameterFlag
+            {...props}
+            validate={() => true}
+            placeholder="e.g. Foo"
+        />
     );
 }
 

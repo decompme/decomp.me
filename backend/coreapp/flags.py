@@ -216,7 +216,7 @@ COMMON_DIFF_FLAGS: Flags = [
         flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
     ),
     Checkbox("diff_function_symbols", ASMDIFF_FLAG_PREFIX + "diff_function_symbols"),
-    IntOrHexParameterFlag("adjust_vma", "--adjust-vma="),
+    IntOrHexParameterFlag("adjust_vma", "--adjust-vma"),
 ]
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [
