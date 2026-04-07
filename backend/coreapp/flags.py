@@ -65,7 +65,73 @@ class LanguageFlagSet:
         }
 
 
-Flags = List[Union[Checkbox, FlagSet, LanguageFlagSet]]
+@dataclass(frozen=True)
+class StringParameterFlag:
+    id: str
+    flag: str
+
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "parameter",
+            "format": "string",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
+
+@dataclass(frozen=True)
+class IntParameterFlag:
+    id: str
+    flag: str
+
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "parameter",
+            "format": "int",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
+
+@dataclass(frozen=True)
+class HexParameterFlag:
+    id: str
+    flag: str
+
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "parameter",
+            "format": "hex",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
+
+@dataclass(frozen=True)
+class IntOrHexParameterFlag:
+    id: str
+    flag: str
+
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "parameter",
+            "format": "int-or-hex",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
+
+Flags = List[
+    Union[
+        Checkbox,
+        FlagSet,
+        LanguageFlagSet,
+        StringParameterFlag,
+        IntParameterFlag,
+        HexParameterFlag,
+        IntOrHexParameterFlag,
+    ]
+]
 
 COMMON_ARMCC_FLAGS: Flags = [
     FlagSet(
@@ -150,6 +216,7 @@ COMMON_DIFF_FLAGS: Flags = [
         flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
     ),
     Checkbox("diff_function_symbols", ASMDIFF_FLAG_PREFIX + "diff_function_symbols"),
+    IntOrHexParameterFlag("adjust_vma", "--adjust-vma"),
 ]
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [

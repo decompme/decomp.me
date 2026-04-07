@@ -116,6 +116,12 @@ export type Flag =
           type: "flagset";
           id: string;
           flags: string[];
+      }
+    | {
+          type: "parameter";
+          format: "string" | "int" | "hex" | "int-or-hex";
+          id: string;
+          flag: string;
       };
 
 export type Library = {

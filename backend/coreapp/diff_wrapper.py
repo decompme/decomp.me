@@ -1,9 +1,11 @@
 import logging
+import re
 import shlex
 import subprocess
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import diff as asm_differ
 from django.conf import settings
@@ -19,6 +21,26 @@ from .sandbox import Sandbox
 logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 25000
+
+
+PARAM_FLAGS = {
+    "--adjust-vma": re.compile(r"^(0x[0-9a-fA-F]+|\d+)$"),
+    "-Mreg-names": re.compile(r"^([a-zA-Z0-9]+)$"),
+    "--disassemble": re.compile(r"^[a-zA-Z0-9_,.$@?<>:\-\[\]]+$"),
+}
+
+
+@dataclass
+class ParsedFlag:
+    name: str
+    value: Optional[str] = None
+
+
+def parse_flag(flag: str) -> ParsedFlag:
+    if "=" in flag:
+        name, value = flag.split("=", 1)
+        return ParsedFlag(name=name, value=value)
+    return ParsedFlag(name=flag)
 
 
 class DiffWrapper:
@@ -126,13 +148,23 @@ class DiffWrapper:
     @staticmethod
     def parse_objdump_flags(diff_flags: List[str]) -> List[str]:
         known_objdump_flags = ["-Mno-aliases", "--reloc"]
-        known_objdump_flag_prefixes = ["-Mreg-names=", "--disassemble="]
+
         ret = []
 
         for flag in diff_flags:
-            if flag in known_objdump_flags or flag.startswith(
-                tuple(known_objdump_flag_prefixes)
-            ):
+            parsed = parse_flag(flag)
+
+            if parsed.name in PARAM_FLAGS:
+                regex = PARAM_FLAGS[parsed.name]
+
+                if not parsed.value or not regex.match(parsed.value):
+                    logger.warning("Ignoring invalid objdump flag: '%s'", flag)
+                    continue
+
+                ret.append(f"{parsed.name}={parsed.value}")
+                continue
+
+            if flag in known_objdump_flags:
                 ret.append(flag)
 
         return ret

@@ -1,10 +1,4 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    Fragment,
-    type ReactElement,
-} from "react";
+import { useContext, useState, Fragment, type ReactElement } from "react";
 
 import { TrashIcon } from "@primer/octicons-react";
 
@@ -21,15 +15,15 @@ import Select from "../Select"; // TODO: use Select2
 import styles from "./CompilerOpts.module.css";
 import PresetSelect from "./PresetSelect";
 
+import { OptsContext } from "./OptsContext";
+import {
+    StringParameterFlag,
+    IntegerParameterFlag,
+    HexParameterFlag,
+    IntOrHexParameterFlag,
+} from "./ParameterFlags";
+
 const NO_TRANSLATION = "NO_TRANSLATION";
-
-interface IOptsContext {
-    checkFlag(flag: string): boolean;
-    setFlag(flag: string, value: boolean): void;
-    setFlags(edits: { flag: string; value: boolean }[]): void;
-}
-
-const OptsContext = createContext<IOptsContext>(undefined);
 
 type CheckboxProps = { flag: string; description: string };
 
@@ -195,7 +189,7 @@ function Flags({ schema }: FlagsProps) {
 
 function DiffFlags({ schema }: FlagsProps) {
     const compilersTranslation = getTranslation("compilers");
-    const { checkFlag } = useContext(OptsContext);
+    const { checkFlag, getFlagValue } = useContext(OptsContext);
 
     return (
         <>
@@ -231,6 +225,46 @@ function DiffFlags({ schema }: FlagsProps) {
                             {flagOptions}
                         </DiffFlagSet>
                     );
+                } else if (flag.type === "parameter") {
+                    const value = getFlagValue(`${flag.flag}=`);
+                    switch (flag.format) {
+                        case "string":
+                            return (
+                                <StringParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                        case "int":
+                            return (
+                                <IntegerParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                        case "hex":
+                            return (
+                                <HexParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                        case "int-or-hex":
+                            return (
+                                <IntOrHexParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                    }
                 }
             })}
         </>
@@ -360,10 +394,16 @@ export default function CompilerOpts({
                 .map((o) => o.flag);
 
             const negativeState = diff_opts.filter(
-                (o) => !negativeEdits.includes(o),
+                (o) => !negativeEdits.some((neg) => o.startsWith(neg)),
             );
 
             setDiffOpts([...negativeState, ...positiveEdits]);
+        },
+
+        getFlagValue(prefix: string): string | undefined {
+            const match = diff_opts.find((f) => f.startsWith(prefix));
+            if (!match) return undefined;
+            return match.slice(prefix.length);
         },
     };
 

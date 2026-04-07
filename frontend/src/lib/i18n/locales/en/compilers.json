@@ -528,6 +528,7 @@
     "mips_mreg_names.-Mreg-names=64": "ABI N64",
     "mips_mreg_names.-Mreg-names=numeric": "Numeric registers",
     "mno_aliases": "Disable pseudo instructions",
+    "adjust_vma": "Objdump start offset",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
     "diff_function_symbols": "Include function labels in diff",
     "diff_reloc": "Diff relocation",
