@@ -118,7 +118,8 @@ export type Flag =
           flags: string[];
       }
     | {
-          type: "integer";
+          type: "parameter";
+          format: "string" | "int" | "hex" | "int-or-hex";
           id: string;
           flag: string;
       };

@@ -1,10 +1,4 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    Fragment,
-    type ReactElement,
-} from "react";
+import { useContext, useState, Fragment, type ReactElement } from "react";
 
 import { TrashIcon } from "@primer/octicons-react";
 
@@ -21,16 +15,14 @@ import Select from "../Select"; // TODO: use Select2
 import styles from "./CompilerOpts.module.css";
 import PresetSelect from "./PresetSelect";
 
+import { OptsContext } from "./OptsContext";
+import {
+    IntegerParameterFlag,
+    HexParameterFlag,
+    IntOrHexParameterFlag,
+} from "./ParameterFlags";
+
 const NO_TRANSLATION = "NO_TRANSLATION";
-
-interface IOptsContext {
-    checkFlag(flag: string): boolean;
-    setFlag(flag: string, value: boolean): void;
-    setFlags(edits: { flag: string; value: boolean }[]): void;
-    getFlagValue(flag: string): string | undefined;
-}
-
-const OptsContext = createContext<IOptsContext>(undefined);
 
 type CheckboxProps = { flag: string; description: string };
 
@@ -65,64 +57,6 @@ function DiffCheckbox({ flag, description }: CheckboxProps) {
                 onChange={() => setFlag(flag, !isChecked)}
             />
             <label>{description}</label>
-        </div>
-    );
-}
-
-type IntegerParameterizedFlagProps = {
-    flag: string;
-    name: string;
-    value: string;
-    allowNegative?: boolean;
-};
-
-function IntegerParameterizedFlag({
-    flag,
-    name,
-    value,
-    allowNegative = false,
-}: IntegerParameterizedFlagProps) {
-    const { setFlags } = useContext(OptsContext);
-
-    const [inputValue, setInputValue] = useState(value ?? "");
-
-    const isValidValue = (val: string) => {
-        if (val.trim() === "") return false;
-        const num = Number(val);
-        if (!Number.isInteger(num)) return false;
-        if (!allowNegative && num < 0) return false;
-        return true;
-    };
-
-    const handleChange = (val: string) => {
-        setInputValue(val);
-
-        const removeEdit = {
-            flag: flag,
-            value: false,
-        };
-        if (isValidValue(val)) {
-            const addEdit = {
-                flag: `${flag}${val}`,
-                value: true,
-            };
-
-            setFlags([removeEdit, addEdit]);
-        } else {
-            setFlags([removeEdit]);
-        }
-    };
-
-    return (
-        <div className={styles.diffLabel}>
-            <label>{name}</label>
-            <input
-                type="number"
-                className={styles.textbox}
-                value={inputValue}
-                onChange={(e) => handleChange(e.target.value)}
-                min={allowNegative ? undefined : 0}
-            />
         </div>
     );
 }
@@ -290,17 +224,37 @@ function DiffFlags({ schema }: FlagsProps) {
                             {flagOptions}
                         </DiffFlagSet>
                     );
-                } else if (flag.type === "integer") {
+                } else if (flag.type === "parameter") {
                     const value = getFlagValue(flag.flag);
-
-                    return (
-                        <IntegerParameterizedFlag
-                            key={flag.id}
-                            flag={flag.flag}
-                            name={compilersTranslation.t(flag.id)}
-                            value={value}
-                        />
-                    );
+                    switch (flag.format) {
+                        case "int":
+                            return (
+                                <IntegerParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                        case "hex":
+                            return (
+                                <HexParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                        case "int-or-hex":
+                            return (
+                                <IntOrHexParameterFlag
+                                    key={flag.id}
+                                    flag={flag.flag}
+                                    name={compilersTranslation.t(flag.id)}
+                                    value={value}
+                                />
+                            );
+                    }
                 }
             })}
         </>
@@ -409,9 +363,6 @@ export default function CompilerOpts({
             for (const { flag, value } of edits) {
                 optsEditorProvider.setFlag(flag, value);
             }
-        },
-        getFlagValue(flag: string) {
-            return "";
         },
     };
 
