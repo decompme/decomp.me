@@ -26,7 +26,7 @@ MAX_FUNC_SIZE_LINES = 25000
 PARAM_FLAGS = {
     "--adjust-vma": re.compile(r"^(0x[0-9a-fA-F]+|\d+)$"),
     "-Mreg-names": re.compile(r"^([a-zA-Z0-9]+)$"),
-    "--disassemble": re.compile(r"^[a-zA-Z0-9_.$@-]+$"),
+    "--disassemble": re.compile(r"^[a-zA-Z0-9_,.$@?<>:\-\[\]]+$"),
 }
 
 
