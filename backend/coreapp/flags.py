@@ -310,6 +310,7 @@ COMMON_GHS_FLAGS: Flags = [
     Checkbox("ghs_enable_noinline", "--enable_noinline"),
     Checkbox("ghs_link_once_templates", "--link_once_templates"),
     Checkbox("ghs_only_explicit_reg_use", "-only_explicit_reg_use"),
+    Checkbox("ghs_dotciscxx", "-dotciscxx"),
 ]
 
 COMMON_MSVC_FLAGS: Flags = [
