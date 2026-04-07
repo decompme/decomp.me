@@ -116,6 +116,11 @@ export type Flag =
           type: "flagset";
           id: string;
           flags: string[];
+      }
+    | {
+          type: "integer";
+          id: string;
+          flag: string;
       };
 
 export type Library = {

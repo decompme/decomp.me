@@ -65,6 +65,19 @@ class LanguageFlagSet:
         }
 
 
+@dataclass(frozen=True)
+class IntegerParameterizedFlag:
+    id: str
+    flag: str
+
+    def to_json(self) -> Dict[str, str]:
+        return {
+            "type": "integer",
+            "id": self.id,
+            "flag": self.flag,
+        }
+
+
 Flags = List[Union[Checkbox, FlagSet, LanguageFlagSet]]
 
 COMMON_ARMCC_FLAGS: Flags = [
@@ -150,6 +163,7 @@ COMMON_DIFF_FLAGS: Flags = [
         flags=[ASMDIFF_FLAG_PREFIX + "levenshtein", ASMDIFF_FLAG_PREFIX + "difflib"],
     ),
     Checkbox("diff_function_symbols", ASMDIFF_FLAG_PREFIX + "diff_function_symbols"),
+    IntegerParameterizedFlag("adjust_vma", "--adjust-vma="),
 ]
 
 COMMON_MIPS_DIFF_FLAGS: Flags = [

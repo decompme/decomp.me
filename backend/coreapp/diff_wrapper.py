@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 25000
 
+BAD_FLAG_CHARS = [";", "'", " ", "&"]
+
 
 class DiffWrapper:
     @staticmethod
@@ -134,6 +136,12 @@ class DiffWrapper:
         ret = []
 
         for flag in diff_flags:
+            if any(x in flag for x in BAD_FLAG_CHARS):
+                logger.warning(
+                    "Skipping diff_flag: '%s' due to disallowed character", flag
+                )
+                continue
+
             if flag in known_objdump_flags or flag.startswith(
                 tuple(known_objdump_flag_prefixes)
             ):

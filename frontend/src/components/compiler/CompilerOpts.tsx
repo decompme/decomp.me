@@ -27,6 +27,7 @@ interface IOptsContext {
     checkFlag(flag: string): boolean;
     setFlag(flag: string, value: boolean): void;
     setFlags(edits: { flag: string; value: boolean }[]): void;
+    getFlagValue(flag: string): string | undefined;
 }
 
 const OptsContext = createContext<IOptsContext>(undefined);
@@ -64,6 +65,64 @@ function DiffCheckbox({ flag, description }: CheckboxProps) {
                 onChange={() => setFlag(flag, !isChecked)}
             />
             <label>{description}</label>
+        </div>
+    );
+}
+
+type IntegerParameterizedFlagProps = {
+    flag: string;
+    name: string;
+    value: string;
+    allowNegative?: boolean;
+};
+
+function IntegerParameterizedFlag({
+    flag,
+    name,
+    value,
+    allowNegative = false,
+}: IntegerParameterizedFlagProps) {
+    const { setFlags } = useContext(OptsContext);
+
+    const [inputValue, setInputValue] = useState(value ?? "");
+
+    const isValidValue = (val: string) => {
+        if (val.trim() === "") return false;
+        const num = Number(val);
+        if (!Number.isInteger(num)) return false;
+        if (!allowNegative && num < 0) return false;
+        return true;
+    };
+
+    const handleChange = (val: string) => {
+        setInputValue(val);
+
+        const removeEdit = {
+            flag: flag,
+            value: false,
+        };
+        if (isValidValue(val)) {
+            const addEdit = {
+                flag: `${flag}${val}`,
+                value: true,
+            };
+
+            setFlags([removeEdit, addEdit]);
+        } else {
+            setFlags([removeEdit]);
+        }
+    };
+
+    return (
+        <div className={styles.diffLabel}>
+            <label>{name}</label>
+            <input
+                type="number"
+                className={styles.textbox}
+                value={inputValue}
+                onChange={(e) => handleChange(e.target.value)}
+                min={allowNegative ? undefined : 0}
+            />
         </div>
     );
 }
@@ -195,7 +254,7 @@ function Flags({ schema }: FlagsProps) {
 
 function DiffFlags({ schema }: FlagsProps) {
     const compilersTranslation = getTranslation("compilers");
-    const { checkFlag } = useContext(OptsContext);
+    const { checkFlag, getFlagValue } = useContext(OptsContext);
 
     return (
         <>
@@ -230,6 +289,17 @@ function DiffFlags({ schema }: FlagsProps) {
                         >
                             {flagOptions}
                         </DiffFlagSet>
+                    );
+                } else if (flag.type === "integer") {
+                    const value = getFlagValue(flag.flag);
+
+                    return (
+                        <IntegerParameterizedFlag
+                            key={flag.id}
+                            flag={flag.flag}
+                            name={compilersTranslation.t(flag.id)}
+                            value={value}
+                        />
                     );
                 }
             })}
@@ -340,6 +410,9 @@ export default function CompilerOpts({
                 optsEditorProvider.setFlag(flag, value);
             }
         },
+        getFlagValue(flag: string) {
+            return "";
+        },
     };
 
     const diffOptsEditorProvider = {
@@ -360,10 +433,16 @@ export default function CompilerOpts({
                 .map((o) => o.flag);
 
             const negativeState = diff_opts.filter(
-                (o) => !negativeEdits.includes(o),
+                (o) => !negativeEdits.some((neg) => o.startsWith(neg)),
             );
 
             setDiffOpts([...negativeState, ...positiveEdits]);
+        },
+
+        getFlagValue(prefix: string): string | undefined {
+            const match = diff_opts.find((f) => f.startsWith(prefix));
+            if (!match) return undefined;
+            return match.slice(prefix.length);
         },
     };
 
