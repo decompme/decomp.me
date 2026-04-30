@@ -855,7 +855,17 @@ MWCCPSP_3_0_1_219 = MWCCPSPCompiler(
     cc=MWCCPSP_CC,
 )
 
+MWCCEPPC_CC = 'printf "%s" "${COMPILER_FLAGS}" | xargs -x -- ${WIBO} "${COMPILER_DIR}/mwcceppc.exe" -pragma "msg_show_realref off" -c -proc gekko -nostdinc -stderr -o "${OUTPUT}" "${INPUT}"'
+
+IDO_41_CC = '"${COMPILER_DIR}"/usr/bin/qemu-irix-4.0 -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -I "{COMPILER_DIR}"/usr/include -EL -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 # N64
+IDO41 = IDOCompiler(
+    id="ido4.1",
+    platform=N64,
+    cc=IDO_41_CC
+    + '&& python3  "${COMPILER_DIR}"/usr/bin/ecoff_tool.py --convert-elf "$OUTPUT" -o "$OUTPUT"',
+)
+
 IDO53 = IDOCompiler(
     id="ido5.3",
     platform=N64,
@@ -1736,6 +1746,7 @@ _all_compilers: List[Compiler] = [
     MWCPS2_301B205_051227,
     MWCPS2_301B210_060308,
     # N64
+    IDO41,
     IDO53,
     IDO53_CXX,
     IDO60,
