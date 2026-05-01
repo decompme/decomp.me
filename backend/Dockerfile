@@ -5,13 +5,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
-    curl \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base as python312
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     python-is-python3 \
     python3 \
     python3-pip \
     python3.12-dev \
     python3.12-venv \
-    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
@@ -35,16 +40,16 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone "https://github.com/google/nsjail" \
-    --recursive --branch 3.4 /nsjail \
+    --recursive --branch 3.6 /nsjail \
     && cd /nsjail \
     && make
-
 
 FROM base AS binutils
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     bzip2 \
+    curl \
     libarchive-tools \
     wget \
     && rm -rf /var/lib/apt/lists/*
@@ -83,7 +88,7 @@ RUN wget "https://github.com/decompme/compilers/releases/download/compilers/andr
     && rm android-ndk-r8e-linux-x86_64.tar.bz2
 
 
-FROM base AS dependencies
+FROM python312 AS dependencies
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
@@ -160,7 +165,7 @@ USER ubuntu
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
-FROM base AS uv-install
+FROM python312 AS uv-install
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
