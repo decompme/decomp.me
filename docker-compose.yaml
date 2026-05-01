@@ -56,3 +56,4 @@ services:
       - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
+      - ./backend/static:/var/www/static
