@@ -85,8 +85,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
             "--env", f"PATH={PATH}",
             "--cwd", "/tmp",
-            # FIXME: "soft" is technically larger but fails with "write error: File too large"
-            "--rlimit_fsize", "512",  # MB
+            # NOTE: "soft" resolves to a near-infinite RLIMIT_FSIZE in nsjail >=3.6,
+            # which causes some of the compilers/tooling to fail with "File too large" (SIGXFSZ).
+            # Use a large finite value instead.
+            "--rlimit_fsize", "512",  # 512 MB
             "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
