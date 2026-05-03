@@ -50,7 +50,12 @@ export default function Nav({ children }: Props) {
             data-open={isOpen}
             data-force-toggle={!!children}
         >
-            <ul className={clsx(styles.header, "px-2 md:px-8 lg:px-16")}>
+            <ul
+                className={clsx(
+                    styles.header,
+                    "px-2 py-1 md:px-4 md:py-2 lg:px-16",
+                )}
+            >
                 <li className={styles.headerItemMenuToggle}>
                     <button
                         id="navtoggle"
