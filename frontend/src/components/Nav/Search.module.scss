@@ -94,6 +94,11 @@
     text-overflow: ellipsis;
 }
 
+.itemName .match {
+    color: var(--g1700);
+    font-weight: 700;
+}
+
 .scratchOwnerAvatar {
     flex-shrink: 0;
     border-radius: 999px;
