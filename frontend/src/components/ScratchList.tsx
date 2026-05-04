@@ -22,6 +22,7 @@ export interface Props {
     item?: ({ scratch }: { scratch: TerseScratch }) => JSX.Element;
     emptyButtonLabel?: ReactNode;
     isSortable?: boolean;
+    isPublic?: boolean;
 }
 
 export default function ScratchList({
@@ -31,11 +32,13 @@ export default function ScratchList({
     item,
     emptyButtonLabel,
     isSortable,
+    isPublic,
 }: Props) {
     const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
     const { results, isLoading, hasNext, loadNext } =
         usePaginated<TerseScratch>(
             `${url || "/scratch"}&ordering=${sortMode.toString()}`,
+            { isPublic },
         );
 
     const Item = item || ScratchItem;

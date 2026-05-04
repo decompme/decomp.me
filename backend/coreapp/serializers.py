@@ -22,11 +22,12 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str
     if profile.user is None:
         return {
             "is_anonymous": True,
+            "is_ephemeral": profile.id is None,
             "id": profile.id,
             "is_online": profile.is_online(),
             "is_admin": False,
             "username": f"{profile.pseudonym} (anon)",
-            "frog_color": profile.get_frog_color(),
+            "frog_color": profile.get_frog_color() if profile.id else (0, 0.5, 0.5),
         }
     else:
         user = profile.user

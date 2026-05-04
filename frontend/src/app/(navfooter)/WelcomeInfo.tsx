@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 
 import { ArrowRightIcon } from "@primer/octicons-react";
@@ -12,25 +11,20 @@ import SiteStats from "./SiteStats";
 export const SITE_DESCRIPTION =
     "A collaborative reverse-engineering platform for working on decompilation projects with others to learn about how your favorite games work.";
 
-export default async function WelcomeInfo() {
-    const headersResult = await headers();
-    const saveDataEnabled = headersResult.get("Save-Data") === "on";
-
+export default function WelcomeInfo() {
     return (
         <div className="relative overflow-x-hidden p-2">
-            {!saveDataEnabled && (
-                <div className="-z-10 absolute top-14 hidden w-full opacity-80 sm:block">
-                    <ScrollingPlatformIcons />
-                    <div
-                        className="absolute top-0 size-full"
-                        style={{
-                            // Gradient to only show icons in the middle
-                            background:
-                                "linear-gradient(to right, transparent, hsl(var(--color-mauve1)) 40%, hsl(var(--color-mauve1)) 60%, transparent)",
-                        }}
-                    />
-                </div>
-            )}
+            <div className="-z-10 absolute top-14 hidden w-full opacity-80 sm:block">
+                <ScrollingPlatformIcons />
+                <div
+                    className="absolute top-0 size-full"
+                    style={{
+                        // Gradient to only show icons in the middle
+                        background:
+                            "linear-gradient(to right, transparent, hsl(var(--color-mauve1)) 40%, hsl(var(--color-mauve1)) 60%, transparent)",
+                    }}
+                />
+            </div>
             <div className="text-center text-lg">
                 <h1
                     className="mx-auto w-full max-w-lg font-extrabold text-4xl text-gray-12 !md:leading-[0.8] md:max-w-3xl md:text-6xl"

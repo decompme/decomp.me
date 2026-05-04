@@ -6,7 +6,7 @@ import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { useDebouncedCallback } from "use-debounce";
 
-import { ResponseError, get, post, patch } from "./api/request";
+import { ResponseError, get, getPublic, post, patch } from "./api/request";
 import type {
     AnonymousUser,
     User,
@@ -179,6 +179,8 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
     const user = await get("/user");
 
     if (!success) throw new Error("Scratch cannot be claimed");
+
+    await mutate("/user", user, { revalidate: false });
 
     delete scratch.claim_token;
     await mutate(scratchUrl(scratch), {
@@ -430,7 +432,10 @@ export function usePreset(id: number | undefined): PresetBase | undefined {
 
 export function usePaginated<T>(
     url: string,
-    firstPage?: Page<T>,
+    options: {
+        firstPage?: Page<T>;
+        isPublic?: boolean;
+    } = {},
 ): {
     results: T[];
     hasNext: boolean;
@@ -439,6 +444,8 @@ export function usePaginated<T>(
     loadNext: () => Promise<void>;
     loadPrevious: () => Promise<void>;
 } {
+    const { firstPage, isPublic } = options;
+    const fetchPage = isPublic ? getPublic : get;
     const [results, setResults] = useState<T[]>(firstPage?.results ?? []);
     const [next, setNext] = useState<string | null>(firstPage?.next);
     const [previous, setPrevious] = useState<string | null>(
@@ -453,36 +460,36 @@ export function usePaginated<T>(
             setPrevious(null);
             setIsLoading(true);
 
-            get(url).then((page: Page<T>) => {
+            fetchPage(url).then((page: Page<T>) => {
                 setResults(page.results);
                 setNext(page.next);
                 setPrevious(page.previous);
                 setIsLoading(false);
             });
         }
-    }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [fetchPage, url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadNext = useCallback(async () => {
         if (!next) throw new Error("No more");
 
         setIsLoading(true);
 
-        const data: Page<T> = await get(next);
+        const data = await fetchPage(next);
         setResults((results) => [...results, ...data.results]);
         setNext(data.next);
         setIsLoading(false);
-    }, [next]);
+    }, [fetchPage, next]);
 
     const loadPrevious = useCallback(async () => {
         if (!previous) throw new Error("No more");
 
         setIsLoading(true);
 
-        const data: Page<T> = await get(previous);
+        const data = await fetchPage(previous);
         setResults((results) => [...data.results, ...results]);
         setPrevious(data.previous);
         setIsLoading(false);
-    }, [previous]);
+    }, [fetchPage, previous]);
 
     return {
         results,
@@ -501,7 +508,7 @@ export interface Stats {
 }
 
 export function useStats(): Stats | undefined {
-    const { data, error } = useSWR<Stats>("/stats", get, {
+    const { data, error } = useSWR<Stats>("/stats", getPublic, {
         refreshInterval: 1000 * 60, // 60 seconds
     });
 
