@@ -77,6 +77,12 @@ class PresetTests(BaseTestCase):
         assert preset.owner is not None
         assert preset.owner.pk == self.user.pk
 
+    def test_create_preset_is_not_publicly_cacheable(self) -> None:
+        self.create_user()
+        response = self.client.post(reverse("preset-list"), DUMMY_PRESET_DICT)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+        self.assertNotIn("public", response.get("Cache-Control", ""))
+
     def test_owner_can_delete_preset(self) -> None:
         self.create_user()
         preset = self.create_preset(DUMMY_PRESET_DICT)
