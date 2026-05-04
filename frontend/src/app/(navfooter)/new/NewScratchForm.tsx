@@ -1,26 +1,48 @@
 "use client";
 
-import { useEffect, useState, useMemo, useReducer, useCallback } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+import clsx from "clsx";
+import { useDebounce } from "use-debounce";
 
 import AsyncButton from "@/components/AsyncButton";
 import PresetSelect from "@/components/compiler/PresetSelect";
 import CodeMirror from "@/components/Editor/CodeMirror";
 import PlatformSelect from "@/components/PlatformSelect";
 import Select from "@/components/Select2";
+import { SingleLineScratchItem } from "@/components/ScratchItem";
 import * as api from "@/lib/api";
+import { useCompilers, usePresets } from "@/lib/api";
+import { get } from "@/lib/api/request";
 import { scratchUrl } from "@/lib/api/urls";
+import type { TerseScratch } from "@/lib/api/types";
 import basicSetup from "@/lib/codemirror/basic-setup";
 import { cpp } from "@/lib/codemirror/cpp";
 import getTranslation from "@/lib/i18n/translate";
-import { get } from "@/lib/api/request";
-import type { TerseScratch } from "@/lib/api/types";
-import { SingleLineScratchItem } from "@/components/ScratchItem";
-import { useDebounce } from "use-debounce";
-import { useCompilers, usePresets } from "@/lib/api";
-import clsx from "clsx";
+
+import {
+    applyCompiler,
+    applyPreset,
+    clearSubmittedDraft,
+    emptyDraft,
+    filterDuplicateScratches,
+    getLabels,
+    readStoredDraft,
+    selectDraftCompiler,
+    storedDraftFields,
+    writeStoredDraft,
+    type NewScratchDraft,
+} from "./NewScratchForm.state";
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -45,32 +67,48 @@ function FormLabel({ children, htmlel, small }: FormLabelProps) {
     );
 }
 
-function getLabels(asm: string): string[] {
-    const lines = asm.split("\n");
-    let labels = [];
+function useDuplicateScratches(
+    label: string,
+    platform?: string,
+    presetId?: number,
+) {
+    const [debouncedLabel] = useDebounce(label, 1000, {
+        leading: false,
+        trailing: true,
+    });
+    const [duplicates, setDuplicates] = useState<TerseScratch[]>([]);
 
-    const jtbl_label_regex = /(^L[0-9a-fA-F]{8}$)|(^jtbl_)/;
-
-    for (const line of lines) {
-        let match = line.match(/^\s*glabel\s+([A-z0-9_]+)\s*/);
-        if (match) {
-            labels.push(match[1]);
-            continue;
+    useEffect(() => {
+        if (!debouncedLabel) {
+            setDuplicates([]);
+            return;
         }
-        match = line.match(/^\s*\.global\s+([A-z0-9_]+)\s*/);
-        if (match) {
-            labels.push(match[1]);
-            continue;
-        }
-        match = line.match(/^[A-z_]+_func_start\s+([A-z0-9_]+)/);
-        if (match) {
-            labels.push(match[1]);
-        }
-    }
 
-    labels = labels.filter((label) => !jtbl_label_regex.test(label));
+        let isCurrent = true;
+        const search = encodeURIComponent(debouncedLabel);
 
-    return labels;
+        get(`/scratch?search=${search}`)
+            .then((x) => x.results)
+            .then((scratches) =>
+                filterDuplicateScratches(
+                    scratches,
+                    debouncedLabel,
+                    platform,
+                    presetId,
+                ),
+            )
+            .then((duplicates) => {
+                if (isCurrent) {
+                    setDuplicates(duplicates);
+                }
+            });
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [debouncedLabel, platform, presetId]);
+
+    return duplicates;
 }
 
 export default function NewScratchForm({
@@ -80,140 +118,87 @@ export default function NewScratchForm({
         [id: string]: api.PlatformBase;
     };
 }) {
-    const [asm, setAsm] = useState("");
-    const [context, setContext] = useState("");
-    const [platform, setPlatform] = useState<string>();
-    const [compilerId, setCompilerId] = useState<string>("");
-    const [compilerFlags, setCompilerFlags] = useState<string>("");
-    const [diffFlags, setDiffFlags] = useState<string[]>([]);
-    const [libraries, setLibraries] = useState<api.Library[]>([]);
-    const [presetId, setPresetId] = useState<number | undefined>();
-
-    const [availableCompilers, setAvailableCompilers] = useState<string[]>([]);
-    const [availablePresets, setAvailablePresets] = useState<api.Preset[]>();
-
-    const [duplicates, setDuplicates] = useState([]);
-
-    const [ready, setReady] = useState(false);
+    const [draft, setDraft] = useState<NewScratchDraft>(emptyDraft);
+    const hasLoadedStoredDraft = useRef(false);
+    const initializedPlatform = useRef<string | undefined>(undefined);
 
     const [valueVersion, incrementValueVersion] = useReducer((x) => x + 1, 0);
 
     const router = useRouter();
 
     const defaultLabel = useMemo(() => {
-        const labels = getLabels(asm);
+        const labels = getLabels(draft.asm);
         return labels.length > 0 ? labels[0] : null;
-    }, [asm]);
-    const [label, setLabel] = useState<string>("");
-    const [debouncedLabel] = useDebounce(label, 1000, {
-        leading: false,
-        trailing: true,
-    });
+    }, [draft.asm]);
+    const duplicates = useDuplicateScratches(
+        draft.label,
+        draft.platform,
+        draft.presetId,
+    );
 
     const setPreset = useCallback((preset: api.Preset) => {
-        if (preset) {
-            setPresetId(preset.id);
-            setCompilerId(preset.compiler);
-            setCompilerFlags(preset.compiler_flags);
-            setDiffFlags(preset.diff_flags);
-            setLibraries(preset.libraries);
-        } else {
-            // User selected "Custom", don't change platform or compiler
-            setPresetId(undefined);
-            setCompilerFlags("");
-            setDiffFlags([]);
-            setLibraries([]);
-        }
+        setDraft((draft) => applyPreset(draft, preset));
     }, []);
     const setCompiler = useCallback((compiler?: string) => {
-        setCompilerId(compiler);
-        setCompilerFlags("");
-        setDiffFlags([]);
-        setLibraries([]);
-        setPresetId(undefined);
+        setDraft((draft) => applyCompiler(draft, compiler));
     }, []);
 
     useEffect(() => {
-        if (!ready) return;
-
-        localStorage.new_scratch_label = label;
-        localStorage.new_scratch_asm = asm;
-        localStorage.new_scratch_context = context;
-        localStorage.new_scratch_platform = platform;
-        localStorage.new_scratch_compilerId = compilerId;
-
-        if (presetId === undefined) {
-            localStorage.removeItem("new_scratch_presetId");
-        } else {
-            localStorage.new_scratch_presetId = presetId;
+        if (hasLoadedStoredDraft.current) {
+            writeStoredDraft(localStorage, storedDraftFields(draft));
         }
-    }, [ready, label, asm, context, platform, compilerId, presetId]);
+    }, [
+        draft.label,
+        draft.asm,
+        draft.context,
+        draft.platform,
+        draft.compilerId,
+        draft.presetId,
+    ]);
 
-    // 1. Load platform from local storage on initial mount
     useEffect(() => {
-        try {
-            const storedPlatform = localStorage.getItem("new_scratch_platform");
-            const platforms = Object.keys(availablePlatforms);
-            if (platforms.includes(storedPlatform)) {
-                setPlatform(storedPlatform);
-            } else {
-                // no local storage, or invalid value, remove it and set first platform
-                localStorage.removeItem("new_scratch_platform");
-                setPlatform(platforms[0]);
-            }
+        if (hasLoadedStoredDraft.current) return;
 
-            setLabel(localStorage.new_scratch_label ?? "");
-            setAsm(localStorage.new_scratch_asm ?? "");
-            setContext(localStorage.new_scratch_context ?? "");
+        try {
+            const storedDraft = readStoredDraft(
+                localStorage,
+                Object.keys(availablePlatforms),
+            );
+            setDraft((draft) => ({ ...draft, ...storedDraft }));
+            hasLoadedStoredDraft.current = true;
             incrementValueVersion();
         } catch (error) {
             console.warn("bad localStorage", error);
         }
-    }, []);
+    }, [availablePlatforms]);
 
-    // 2. Fetch compilers and presets for selected platform
-    const compilers = useCompilers(platform);
-    const presets = usePresets(platform);
+    const compilers = useCompilers(draft.platform);
+    const presets = usePresets(draft.platform);
+    const availableCompilers = useMemo(
+        () => Object.keys(compilers),
+        [compilers],
+    );
+    const availablePresets = presets;
+
     useEffect(() => {
-        if (compilers && typeof presets !== "undefined") {
-            setAvailableCompilers(Object.keys(compilers));
-            setAvailablePresets(presets);
-        } else {
-            setAvailableCompilers([]);
-            setAvailablePresets(undefined);
-        }
-    }, [compilers, presets]);
-
-    // 3. Select compiler based on local storage
-    useEffect(() => {
-        // A platform will always have at least 1 available compiler
-        if (availableCompilers.length === 0) return;
-
-        setReady(true);
-
-        const pid = Number.parseInt(localStorage.new_scratch_presetId);
-        if (!Number.isNaN(pid)) {
-            const preset = availablePresets.filter((x) => x.id === pid)[0];
-            if (preset) {
-                setPreset(preset);
-                return;
-            }
+        // A platform must have at least one compiler to exist on the site.
+        // So an empty compiler list means the API result is still pending.
+        if (
+            availableCompilers.length === 0 ||
+            typeof availablePresets === "undefined"
+        ) {
+            return;
         }
 
-        // Remove invalid or missing presetId
-        localStorage.removeItem("new_scratch_presetId");
-
-        // Use compilerId from local storage if present and valid
-        const cid = localStorage.new_scratch_compilerId ?? "";
-        if (availableCompilers.includes(cid)) {
-            setCompiler(cid);
-        } else {
-            console.log(
-                `Falling back to first available compiler for ${platform}`,
-            );
-            setCompiler(availableCompilers[0]);
+        if (initializedPlatform.current === draft.platform) {
+            return;
         }
-    }, [platform, availableCompilers, availablePresets]);
+
+        initializedPlatform.current = draft.platform;
+        setDraft((draft) =>
+            selectDraftCompiler(draft, availableCompilers, availablePresets),
+        );
+    }, [availableCompilers, availablePresets, draft.platform]);
 
     const compilersTranslation = getTranslation("compilers");
     const compilerChoiceOptions = useMemo(() => {
@@ -232,19 +217,18 @@ export default function NewScratchForm({
     const submit = async () => {
         try {
             const scratch: api.ClaimableScratch = await api.post("/scratch", {
-                target_asm: asm,
-                context: context || "",
-                platform,
-                compiler: compilerId,
-                compiler_flags: compilerFlags,
-                diff_flags: diffFlags,
-                libraries: libraries,
-                preset: presetId,
-                diff_label: label || defaultLabel || "",
+                target_asm: draft.asm,
+                context: draft.context || "",
+                platform: draft.platform,
+                compiler: draft.compilerId,
+                compiler_flags: draft.compilerFlags,
+                diff_flags: draft.diffFlags,
+                libraries: draft.libraries,
+                preset: draft.presetId,
+                diff_label: draft.label || defaultLabel || "",
             });
 
-            localStorage.new_scratch_label = "";
-            localStorage.new_scratch_asm = "";
+            clearSubmittedDraft(localStorage);
 
             await api.claimScratch(scratch);
 
@@ -255,44 +239,17 @@ export default function NewScratchForm({
         }
     };
 
-    useEffect(() => {
-        if (!debouncedLabel) {
-            // reset potential duplicates if no diff label
-            setDuplicates([]);
-            return;
-        }
-
-        const filterCandidates = (scratches: TerseScratch[]) => {
-            return scratches.filter((scratch: TerseScratch) => {
-                // search endpoint is greedy, so only match whole-name
-                if (scratch.name !== debouncedLabel) {
-                    return false;
-                }
-                // filter on preset if we have it
-                if (typeof presetId !== "undefined") {
-                    return scratch.preset === presetId;
-                }
-                // otherwise filter on platform
-                return scratch.platform === platform;
-            });
-        };
-
-        get(`/scratch?search=${debouncedLabel}`)
-            .then((x) => x.results)
-            .then(filterCandidates)
-            .then(setDuplicates);
-    }, [debouncedLabel, platform, presetId]);
-
     return (
         <div>
             <div>
                 <FormLabel>Platform</FormLabel>
                 <PlatformSelect
                     platforms={availablePlatforms}
-                    value={platform}
+                    value={draft.platform}
                     onChange={(p) => {
-                        setPlatform(p);
-                        setCompiler("");
+                        setDraft((draft) =>
+                            applyCompiler({ ...draft, platform: p }, ""),
+                        );
                     }}
                 />
             </div>
@@ -306,7 +263,7 @@ export default function NewScratchForm({
                         <span
                             className={clsx(
                                 "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
-                                presetId === undefined
+                                draft.presetId === undefined
                                     ? "text-[color:var(--g700)]"
                                     : "text-[color:var(--g1200)]",
                             )}
@@ -315,7 +272,7 @@ export default function NewScratchForm({
                         </span>
                         <PresetSelect
                             className="w-3/4 sm:w-5/6"
-                            presetId={presetId}
+                            presetId={draft.presetId}
                             setPreset={setPreset}
                             availablePresets={availablePresets}
                         />
@@ -327,7 +284,7 @@ export default function NewScratchForm({
                         <span
                             className={clsx(
                                 "w-1/4 select-none px-2.5 py-0.5 text-[0.8rem] sm:w-1/6",
-                                presetId === undefined
+                                draft.presetId === undefined
                                     ? "text-[color:var(--g1200)]"
                                     : "text-[color:var(--g700)]",
                             )}
@@ -337,7 +294,7 @@ export default function NewScratchForm({
                         <Select
                             className="w-3/4 sm:w-5/6"
                             options={compilerChoiceOptions}
-                            value={compilerId}
+                            value={draft.compilerId}
                             onChange={setCompiler}
                         />
                     </div>
@@ -354,10 +311,13 @@ export default function NewScratchForm({
                 <input
                     name="label"
                     type="text"
-                    value={label}
+                    value={draft.label}
                     placeholder={defaultLabel}
                     onChange={(e) =>
-                        setLabel((e.target as HTMLInputElement).value)
+                        setDraft((draft) => ({
+                            ...draft,
+                            label: (e.target as HTMLInputElement).value,
+                        }))
                     }
                     className="w-full rounded border border-[color:var(--g500)] bg-[color:var(--g200)] px-2.5 py-2 font-mono text-[0.8rem] text-[color:var(--g1200)] placeholder-[color:var(--g700)] outline-none"
                     autoCorrect="off"
@@ -387,9 +347,9 @@ export default function NewScratchForm({
                 <FormLabel small="(required)">Target assembly</FormLabel>
                 <CodeMirror
                     className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
-                    value={asm}
+                    value={draft.asm}
                     valueVersion={valueVersion}
-                    onChange={setAsm}
+                    onChange={(asm) => setDraft((draft) => ({ ...draft, asm }))}
                     extensions={basicSetup}
                     placeholder="Place your GAS-compatible assembly code here."
                 />
@@ -398,9 +358,11 @@ export default function NewScratchForm({
                 <FormLabel small="(optional)">Context</FormLabel>
                 <CodeMirror
                     className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
-                    value={context}
+                    value={draft.context}
                     valueVersion={valueVersion}
-                    onChange={setContext}
+                    onChange={(context) =>
+                        setDraft((draft) => ({ ...draft, context }))
+                    }
                     extensions={[basicSetup, cpp()]}
                     placeholder="Add any typedefs, structs, and declarations here."
                 />
@@ -409,7 +371,7 @@ export default function NewScratchForm({
             <div>
                 <AsyncButton
                     primary
-                    disabled={asm.length === 0}
+                    disabled={draft.asm.length === 0}
                     onClick={submit}
                     errorPlacement="right-center"
                     className="mt-2"
