@@ -22,6 +22,11 @@ import type {
     ClaimableScratch,
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
+import {
+    buildScratchCompileRequest,
+    buildScratchSavePatch,
+    isScratchSaved,
+} from "./api/scratchState";
 import { ignoreNextWarnBeforeUnload } from "./hooks";
 
 function onErrorRetry<C>(
@@ -38,17 +43,8 @@ function onErrorRetry<C>(
     setTimeout(() => revalidate({ retryCount }), 5000);
 }
 
-function undefinedIfUnchanged<O, K extends keyof O>(
-    saved: O,
-    local: O,
-    key: K,
-): O[K] | undefined {
-    if (saved[key] !== local[key]) {
-        return local[key] !== undefined ? local[key] : null;
-    }
-}
-
 export * from "./api/request";
+export * from "./api/scratchState";
 export * from "./api/types";
 
 export function useThisUser(): User | AnonymousUser | undefined {
@@ -112,55 +108,10 @@ export function useSaveScratch(localScratch: Scratch): () => Promise<Scratch> {
             throw new Error("Cannot save scratch which you do not own");
         }
 
-        const updatedScratch = await patch(scratchUrl(localScratch), {
-            source_code: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "source_code",
-            ),
-            context: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "context",
-            ),
-            compiler: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "compiler",
-            ),
-            compiler_flags: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "compiler_flags",
-            ),
-            diff_flags: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "diff_flags",
-            ),
-            diff_label: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "diff_label",
-            ),
-            preset: undefinedIfUnchanged(savedScratch, localScratch, "preset"),
-            name: undefinedIfUnchanged(savedScratch, localScratch, "name"),
-            description: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "description",
-            ),
-            match_override: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "match_override",
-            ),
-            libraries: undefinedIfUnchanged(
-                savedScratch,
-                localScratch,
-                "libraries",
-            ),
-        });
+        const updatedScratch = await patch(
+            scratchUrl(localScratch),
+            buildScratchSavePatch(savedScratch, localScratch),
+        );
 
         await mutate(scratchUrl(localScratch), updatedScratch, {
             revalidate: false,
@@ -209,19 +160,7 @@ export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
 export function useIsScratchSaved(scratch: Scratch): boolean {
     const saved = useSavedScratch(scratch);
 
-    return (
-        scratch.name === saved.name &&
-        scratch.description === saved.description &&
-        scratch.compiler === saved.compiler &&
-        scratch.compiler_flags === saved.compiler_flags &&
-        JSON.stringify(scratch.diff_flags) ===
-            JSON.stringify(saved.diff_flags) &&
-        scratch.diff_label === saved.diff_label &&
-        scratch.source_code === saved.source_code &&
-        scratch.context === saved.context &&
-        scratch.match_override === saved.match_override &&
-        JSON.stringify(scratch.libraries) === JSON.stringify(saved.libraries)
-    );
+    return isScratchSaved(scratch, saved);
 }
 
 export function useCompilation(
@@ -257,19 +196,10 @@ export function useCompilation(
                 new Error("Cannot compile before a compiler is set"),
             );
 
-        const promise = post(`${scratchUrl(scratch)}/compile`, {
-            // TODO: api should take { scratch } and support undefinedIfUnchanged on all fields
-            compiler: scratch.compiler,
-            compiler_flags: scratch.compiler_flags,
-            diff_flags: scratch.diff_flags,
-            diff_label: scratch.diff_label,
-            libraries: scratch.libraries,
-            source_code: scratch.source_code,
-            context: savedScratch
-                ? undefinedIfUnchanged(savedScratch, scratch, "context")
-                : scratch.context,
-            include_objects: true,
-        })
+        const promise = post(
+            `${scratchUrl(scratch)}/compile`,
+            buildScratchCompileRequest(savedScratch, scratch),
+        )
             .then((compilation: Compilation) => {
                 return compilation;
             })

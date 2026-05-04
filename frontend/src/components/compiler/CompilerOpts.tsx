@@ -13,6 +13,17 @@ import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 import Select from "../Select"; // TODO: use Select2
 
 import styles from "./CompilerOpts.module.css";
+import {
+    addLibrary,
+    applyDiffFlagEdits,
+    getDiffFlagValue,
+    getLibraryVersionOptions,
+    hasCompilerFlag,
+    removeLibrary,
+    setCompilerFlag,
+    setLibraryVersion,
+    type FlagEdit,
+} from "./CompilerOpts.state";
 import PresetSelect from "./PresetSelect";
 
 import { OptsContext } from "./OptsContext";
@@ -304,10 +315,12 @@ export default function CompilerOpts({
     const availableCompilers = api.useCompilers(platform);
 
     const compiler = value.compiler;
-    let opts = value.compiler_flags;
+    const opts = value.compiler_flags;
     const diff_opts = value.diff_flags || [];
 
     const setCompiler = (compiler: string) => {
+        if (compiler === value.compiler) return;
+
         onChange({
             compiler,
             compiler_flags: opts,
@@ -316,6 +329,8 @@ export default function CompilerOpts({
     };
 
     const setOpts = (opts: string) => {
+        if (opts === value.compiler_flags) return;
+
         onChange({
             compiler,
             compiler_flags: opts,
@@ -324,6 +339,8 @@ export default function CompilerOpts({
     };
 
     const setDiffOpts = (diff_opts: string[]) => {
+        if (diff_opts === value.diff_flags) return;
+
         onChange({
             compiler,
             compiler_flags: opts,
@@ -349,6 +366,8 @@ export default function CompilerOpts({
     };
 
     const setLibraries = (libraries: Library[]) => {
+        if (libraries === value.libraries) return;
+
         onChange({
             libraries,
         });
@@ -356,23 +375,19 @@ export default function CompilerOpts({
 
     const optsEditorProvider = {
         checkFlag(flag: string) {
-            return ` ${opts} `.includes(` ${flag} `);
+            return hasCompilerFlag(opts, flag);
         },
 
         setFlag(flag: string, enable: boolean) {
-            if (enable) {
-                opts = `${opts} ${flag}`;
-            } else {
-                opts = ` ${opts} `.replace(` ${flag} `, " ");
-            }
-            opts = opts.trim();
-            setOpts(opts);
+            setOpts(setCompilerFlag(opts, flag, enable));
         },
 
-        setFlags(edits: { flag: string; value: boolean }[]) {
+        setFlags(edits: FlagEdit[]) {
+            let updatedOpts = opts;
             for (const { flag, value } of edits) {
-                optsEditorProvider.setFlag(flag, value);
+                updatedOpts = setCompilerFlag(updatedOpts, flag, value);
             }
+            setOpts(updatedOpts);
         },
     };
 
@@ -385,25 +400,12 @@ export default function CompilerOpts({
             diffOptsEditorProvider.setFlags([{ flag, value: enable }]);
         },
 
-        setFlags(edits: { flag: string; value: boolean }[]) {
-            const positiveEdits = edits
-                .filter((o) => o.value)
-                .map((o) => o.flag);
-            const negativeEdits = edits
-                .filter((o) => !o.value)
-                .map((o) => o.flag);
-
-            const negativeState = diff_opts.filter(
-                (o) => !negativeEdits.some((neg) => o.startsWith(neg)),
-            );
-
-            setDiffOpts([...negativeState, ...positiveEdits]);
+        setFlags(edits: FlagEdit[]) {
+            setDiffOpts(applyDiffFlagEdits(diff_opts, edits));
         },
 
         getFlagValue(prefix: string): string | undefined {
-            const match = diff_opts.find((f) => f.startsWith(prefix));
-            if (!match) return undefined;
-            return match.slice(prefix.length);
+            return getDiffFlagValue(diff_opts, prefix);
         },
     };
 
@@ -594,48 +596,12 @@ export function LibrariesEditor({
 }) {
     const librariesTranslations = getTranslation("libraries");
 
-    const libraryVersions = (scratchlib: api.Library) => {
-        const lib = availableLibraries.find(
-            (lib) => lib.name === scratchlib.name,
-        );
-        if (lib != null) {
-            return Object.fromEntries(
-                lib.supported_versions.map((v) => [v, v]),
-            );
-        } else {
-            return { [scratchlib.version]: scratchlib.version };
-        }
-    };
-
-    const addLibrary = (libName: string) => {
-        const lib = availableLibraries.find((lib) => lib.name === libName);
-        if (lib != null) {
-            return setLibraryVersion(libName, lib.supported_versions[0]);
-        }
-    };
-    const setLibraryVersion = (libName: string, ver: string) => {
-        // clone the libraries
-        const libs: api.Library[] = JSON.parse(JSON.stringify(libraries));
-        // Check if the library is already enabled, if so return it
-        const scratchlib = libs.find(
-            (scratchlib) => scratchlib.name === libName,
-        );
-        if (scratchlib != null) {
-            // If it is, set the version
-            scratchlib.version = ver;
-        } else {
-            // If it isn't, add the library to the list
-            libs.push({ name: libName, version: ver });
-        }
-        setLibraries(libs);
-    };
-    const removeLibrary = (libName: string) => {
-        // clone the libraries
-        let libs: api.Library[] = JSON.parse(JSON.stringify(libraries));
-        // Only keep the libs whose name are not libName
-        libs = libs.filter((lib) => lib.name !== libName);
-        setLibraries(libs);
-    };
+    const addSelectedLibrary = (libraryName: string) =>
+        setLibraries(addLibrary(libraries, availableLibraries, libraryName));
+    const updateLibraryVersion = (libraryName: string, version: string) =>
+        setLibraries(setLibraryVersion(libraries, libraryName, version));
+    const removeSelectedLibrary = (libraryName: string) =>
+        setLibraries(removeLibrary(libraries, libraryName));
 
     const librariesSelectOptions = availableLibraries
         // Filter out libraries that are already in the scratch
@@ -659,12 +625,12 @@ export function LibrariesEditor({
             </label>
             <Select2
                 value={lib.version}
-                onChange={(value) => setLibraryVersion(lib.name, value)}
-                options={libraryVersions(lib)}
+                onChange={(value) => updateLibraryVersion(lib.name, value)}
+                options={getLibraryVersionOptions(availableLibraries, lib)}
             />
             <button
                 className={styles.deleteButton}
-                onClick={() => removeLibrary(lib.name)}
+                onClick={() => removeSelectedLibrary(lib.name)}
             >
                 <TrashIcon />
                 Remove library
@@ -684,7 +650,7 @@ export function LibrariesEditor({
                     options={selectOptions}
                     className={styles.librarySelect}
                 />
-                <Button primary onClick={() => addLibrary(selectedLib)}>
+                <Button primary onClick={() => addSelectedLibrary(selectedLib)}>
                     Add library
                 </Button>
             </div>
