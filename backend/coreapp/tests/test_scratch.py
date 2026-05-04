@@ -1,14 +1,17 @@
 import io
+import json
 import zipfile
 from time import sleep
 from typing import Any, Dict
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
 from coreapp import compilers, platforms
 from coreapp.compilers import EE_GCC29_991111, GCC281PM, IDO53, IDO71, MWCC_242_81
+from coreapp.libraries import Library
 from coreapp.models.scratch import Assembly, Context, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -94,6 +97,33 @@ nop
             "target_asm": "this is some test asm",
         }
         self.create_scratch(scratch_dict)
+
+    def test_create_object_scratch_with_multipart_libraries(self) -> None:
+        """
+        Ensure multipart object uploads can provide libraries as a JSON string.
+        """
+        object_bytes = b"\x4c\x01dummy coff object"
+        upload = SimpleUploadedFile(
+            "target.o", object_bytes, content_type="application/octet-stream"
+        )
+        response = self.client.post(
+            reverse("scratch-list"),
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "source_code": "",
+                "libraries": json.dumps([{"name": "directx", "version": "9.0"}]),
+                "target_obj": upload,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+
+        scratch = Scratch.objects.get(slug=response.json()["slug"])
+        self.assertIsNone(scratch.target_assembly.source_asm)
+        self.assertEqual(bytes(scratch.target_assembly.elf_object), object_bytes)
+        self.assertEqual(scratch.libraries, [Library(name="directx", version="9.0")])
 
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
