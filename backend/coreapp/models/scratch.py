@@ -24,10 +24,6 @@ def gen_scratch_id() -> str:
     return ret
 
 
-def gen_claim_token() -> str:
-    return get_random_string(length=32)
-
-
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
