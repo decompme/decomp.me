@@ -259,7 +259,7 @@ class ScratchCompileSerializer(serializers.Serializer[None]):
     )
     context = serializers.CharField(
         allow_blank=True, required=False, trim_whitespace=False
-    )
+    )  # type: ignore[assignment]
     libraries = serializers.ListField(child=LibrarySerializer(), required=False)
     include_objects = serializers.BooleanField(default=False, required=False)
 
