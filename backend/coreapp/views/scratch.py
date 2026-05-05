@@ -24,7 +24,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from coreapp import compilers, platforms
 
-from ..compiler_wrapper import CompilationResult, CompilerWrapper, DiffResult
+from ..compiler_wrapper import CompilerWrapper
 from ..decompiler_wrapper import DecompilerWrapper
 from ..decorators.cache import globally_cacheable
 from ..decorators.django import condition
@@ -45,6 +45,7 @@ from ..serializers import (
     ScratchSerializer,
     TerseScratchSerializer,
 )
+from ..wrapper_result import CompilationResult, DiffResult
 
 logger = logging.getLogger(__name__)
 
