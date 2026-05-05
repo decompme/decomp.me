@@ -70,6 +70,8 @@ class LibrariesField(models.JSONField):
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
+        if res is None:
+            return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:

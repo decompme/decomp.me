@@ -40,6 +40,7 @@ from ..models.scratch import Asm, Assembly, Scratch
 from ..platforms import Platform
 from ..serializers import (
     ClaimableScratchSerializer,
+    ScratchCompileSerializer,
     ScratchCreateSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
@@ -369,24 +370,25 @@ class ScratchViewSet(
         include_objects = False
         scratch_context = None
         if request.method == "POST":
-            # TODO: use a serializer w/ validation
-            if "compiler" in request.data:
-                scratch.compiler = request.data["compiler"]
-            if "compiler_flags" in request.data:
-                scratch.compiler_flags = request.data["compiler_flags"]
-            if "diff_flags" in request.data:
-                scratch.diff_flags = request.data["diff_flags"]
-            if "diff_label" in request.data:
-                scratch.diff_label = request.data["diff_label"]
-            if "source_code" in request.data:
-                scratch.source_code = request.data["source_code"] or ""
-            if "context" in request.data:
-                scratch_context = request.data["context"]
-            if "libraries" in request.data:
-                libs = [Library(**lib) for lib in request.data["libraries"]]
-                scratch.libraries = libs
-            if "include_objects" in request.data:
-                include_objects = request.data["include_objects"]
+            compile_ser = ScratchCompileSerializer(data=request.data)
+            compile_ser.is_valid(raise_exception=True)
+            partial = compile_ser.validated_data
+
+            if "compiler" in partial:
+                scratch.compiler = partial["compiler"]
+            if "compiler_flags" in partial:
+                scratch.compiler_flags = partial["compiler_flags"]
+            if "diff_flags" in partial:
+                scratch.diff_flags = partial["diff_flags"]
+            if "diff_label" in partial:
+                scratch.diff_label = partial["diff_label"]
+            if "source_code" in partial:
+                scratch.source_code = partial["source_code"] or ""
+            if "context" in partial:
+                scratch_context = partial["context"]
+            if "libraries" in partial:
+                scratch.libraries = [Library(**lib) for lib in partial["libraries"]]
+            include_objects = partial["include_objects"]
 
         compilation = compile_scratch(scratch, context=scratch_context)
         diff = diff_compilation(scratch, compilation)

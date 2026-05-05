@@ -123,6 +123,9 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         ]
 
     def get_num_scratches(self, preset: Preset) -> int:
+        annotated_count = getattr(preset, "num_scratches", None)
+        if annotated_count is not None:
+            return int(annotated_count)
         return Scratch.objects.filter(preset=preset).count()
 
     def validate_platform(self, platform: str) -> str:
@@ -162,7 +165,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True, required=False)
     target_obj = serializers.FileField(allow_null=True, required=False)
-    context = serializers.CharField(allow_blank=True)  # type: ignore
+    context = serializers.CharField(
+        allow_blank=True,
+        default="",
+        required=False,
+    )  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
     libraries = serializers.JSONField(default=list)  # type: ignore
 
@@ -242,12 +249,38 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         return data
 
 
+class ScratchCompileSerializer(serializers.Serializer[None]):
+    compiler = serializers.CharField(required=False)
+    compiler_flags = serializers.CharField(allow_blank=True, required=False)
+    diff_flags = serializers.ListField(child=serializers.CharField(), required=False)
+    diff_label = serializers.CharField(allow_blank=True, required=False)
+    source_code = serializers.CharField(
+        allow_blank=True, required=False, trim_whitespace=False
+    )
+    context = serializers.CharField(
+        allow_blank=True, required=False, trim_whitespace=False
+    )
+    libraries = serializers.ListField(child=LibrarySerializer(), required=False)
+    include_objects = serializers.BooleanField(default=False, required=False)
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(write_only=True, required=False, allow_blank=True)  # type: ignore[assignment]
+    context = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+    )  # type: ignore[assignment]
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)

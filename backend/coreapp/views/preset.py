@@ -59,7 +59,7 @@ class PresetFilterSet(django_filters.FilterSet):
 )
 class PresetViewSet(ModelViewSet):  # type: ignore
     permission_classes = [IsAdminUser | IsOwnerOrReadOnly]
-    queryset = Preset.objects.all().annotate(num_scratches=Count("scratch__preset__id"))
+    queryset = Preset.objects.all().annotate(num_scratches=Count("scratch"))
     pagination_class = PresetPagination
     filterset_class = PresetFilterSet
     filter_backends = [
