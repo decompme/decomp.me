@@ -2,4 +2,4 @@
 
 yarn install --frozen-lockfile
 
-yarn dev
+yarn dev --turbopack

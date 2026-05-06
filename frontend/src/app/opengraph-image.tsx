@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-
+import { getPublic } from "@/lib/api/request";
 import {
     platformIcon,
     PLATFORMS,
@@ -13,19 +13,18 @@ export const runtime = "edge";
 
 export default async function HomeOG() {
     const OpenSansExtraBold = fetch(
-        new URL("/public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
+        new URL("../../public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
 
     const OpenSansSemiBold = fetch(
-        new URL("/public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
+        new URL("../../public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
 
     const OpenSansBold = fetch(
-        new URL("/public/fonts/OpenSans-Bold.ttf", import.meta.url),
+        new URL("../../public/fonts/OpenSans-Bold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
 
-    const statsRes = await fetch("http://decomp.me/api/stats");
-    const stats = await statsRes.json();
+    const stats = await getPublic("/stats");
     const iconSize = 160;
     const iconCount = 5;
     const textScale = 4.15;

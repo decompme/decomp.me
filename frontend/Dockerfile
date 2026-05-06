@@ -23,6 +23,7 @@ COPY tailwind.config.js /frontend/
 COPY tsconfig.json /frontend/
 COPY sentry.server.config.ts /frontend/
 
+COPY loaders /frontend/loaders
 COPY public /frontend/public
 COPY src /frontend/src
 
@@ -49,7 +50,7 @@ RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
     sleep 1; \
     done
 
-RUN yarn build --no-lint && rm -rf .next/cache
+RUN yarn build --turbopack --no-lint && rm -rf .next/cache
 
 
 FROM node:24-alpine AS prod

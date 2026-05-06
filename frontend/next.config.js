@@ -1,4 +1,5 @@
 const { config } = require("dotenv");
+const path = require("node:path");
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` });
@@ -21,6 +22,7 @@ const removeImports = require("next-remove-imports")({
 });
 
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost");
+const svgrLoader = path.join(__dirname, "loaders/svgr-webpack.js");
 
 let app = removeImports({
     async redirects() {
@@ -79,7 +81,14 @@ let app = removeImports({
     webpack(config) {
         config.module.rules.push({
             test: /\.svg$/,
-            use: ["@svgr/webpack"],
+            use: [
+                {
+                    loader: svgrLoader,
+                    options: {
+                        runtimeConfig: false,
+                    },
+                },
+            ],
         });
 
         // @open-rpc/client-js brings in some dependencies which, in turn, have optional dependencies.
@@ -104,6 +113,21 @@ let app = removeImports({
         });
 
         return config;
+    },
+    turbopack: {
+        rules: {
+            "*.svg": {
+                loaders: [
+                    {
+                        loader: svgrLoader,
+                        options: {
+                            runtimeConfig: false,
+                        },
+                    },
+                ],
+                as: "*.js",
+            },
+        },
     },
     images: {
         remotePatterns: [
@@ -134,7 +158,7 @@ let app = removeImports({
 });
 
 if (process.env.ANALYZE === "true") {
-    app = require("@next/bundle-analyzer")(app);
+    app = require("@next/bundle-analyzer")()(app);
 }
 
 const isVercel = !!process.env.VERCEL;
