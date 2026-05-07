@@ -49,12 +49,25 @@ FROM base AS binutils
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+    binutils-aarch64-linux-gnu \
+    binutils-arm-none-eabi \
+    binutils-djgpp \
+    binutils-mingw-w64-i686 \
+    binutils-mips-linux-gnu \
+    binutils-mipsel-linux-gnu \
+    binutils-powerpc-linux-gnu \
+    binutils-sh-elf \
+    binutils-x86-64-linux-gnu \
     bzip2 \
     libarchive-tools \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /binutils
+
+RUN cp /usr/bin/*-as /binutils/ \
+    && cp /usr/bin/*-objdump /binutils/ \
+    && cp /usr/bin/*-nm /binutils/
 
 WORKDIR /binutils
 
@@ -121,23 +134,12 @@ RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && apt-get update \
     && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
-    binutils-aarch64-linux-gnu \
-    binutils-arm-none-eabi \
-    binutils-djgpp \
-    binutils-mingw-w64-i686 \
-    binutils-mips-linux-gnu \
-    binutils-mipsel-linux-gnu \
-    binutils-powerpc-linux-gnu \
-    binutils-sh-elf \
-    binutils-x86-64-linux-gnu \
     cpp \
     dj64 \
     dos2unix \
     dosemu2 \
     iptables \
     libc6-dev-i386 \
-    libdevmapper1.02.1 \
-    libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
     libtinfo6 \
@@ -147,6 +149,7 @@ RUN dpkg --add-architecture i386 \
     wine32:i386 \
     && rm -rf /var/lib/apt/lists/*
 
+# NOTE: libtinfo5 is required for clang
 RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
     URL=http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/$ARCHIVE; \
     SHA256=ab89265d8dd18bda6a29d7c796367d6d9f22a39a8fa83589577321e7caf3857b; \
