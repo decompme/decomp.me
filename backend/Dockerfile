@@ -10,7 +10,7 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base as python312
+FROM base AS python312
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -63,11 +63,17 @@ RUN apt-get update \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /binutils
+RUN mkdir /binutils /binutils-libs
 
 RUN cp /usr/bin/*-as /binutils/ \
+    && cp /usr/bin/*-objcopy /binutils/ \
     && cp /usr/bin/*-objdump /binutils/ \
     && cp /usr/bin/*-nm /binutils/
+
+RUN cp /lib/x86_64-linux-gnu/libbfd*.so* /binutils-libs/ \
+    && cp /lib/x86_64-linux-gnu/libctf*.so* /binutils-libs/ \
+    && cp /lib/x86_64-linux-gnu/libopcodes*.so* /binutils-libs/ \
+    && cp /lib/x86_64-linux-gnu/libsframe*.so* /binutils-libs/
 
 WORKDIR /binutils
 
@@ -141,7 +147,7 @@ RUN dpkg --add-architecture i386 \
     iptables \
     libc6-dev-i386 \
     libnl-route-3-200 \
-    libprotobuf-dev \
+    libprotobuf32t64 \
     libtinfo6 \
     netcat-traditional \
     wget \
@@ -151,7 +157,7 @@ RUN dpkg --add-architecture i386 \
 
 # NOTE: libtinfo5 is required for clang
 RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
-    URL=http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/$ARCHIVE; \
+    URL=https://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/$ARCHIVE; \
     SHA256=ab89265d8dd18bda6a29d7c796367d6d9f22a39a8fa83589577321e7caf3857b; \
     wget -O "$ARCHIVE" "$URL" \
     && echo "$SHA256  $ARCHIVE" | sha256sum -c - \
@@ -177,6 +183,7 @@ RUN wineboot --init
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY --from=binutils /binutils/ /usr/bin/
+COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 
 COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
 
