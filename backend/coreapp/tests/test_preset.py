@@ -75,7 +75,7 @@ class PresetTests(BaseTestCase):
         self.create_user()
         preset = self.create_preset(DUMMY_PRESET_DICT)
         assert preset.owner is not None
-        assert preset.owner.pk == self.user.pk
+        assert preset.owner.user_id == self.user.pk
 
     def test_owner_can_delete_preset(self) -> None:
         self.create_user()
@@ -106,10 +106,11 @@ class PresetTests(BaseTestCase):
     def test_list_preset_by_owner(self) -> None:
         # Create a new user and make it create a preset
         self.create_user()
-        self.create_preset(DUMMY_PRESET_DICT)
+        preset = self.create_preset(DUMMY_PRESET_DICT)
+        assert preset.owner_id is not None
 
         # Let's list all the user's presets
-        response = self.client.get(f"{reverse('preset-list')}?owner={self.user.pk}")
+        response = self.client.get(f"{reverse('preset-list')}?owner={preset.owner_id}")
         # Ensure the response is OK
         assert response.status_code == status.HTTP_200_OK
         # Check we only get one preset owned by the user
@@ -119,7 +120,8 @@ class PresetTests(BaseTestCase):
         # Ensure the user is the owner of the preset
         owner = results[0].get("owner")
         assert owner is not None
-        assert owner.get("id") == self.user.pk
+        assert owner.get("id") == preset.owner_id
+        assert owner.get("username") == self.user.username
 
     @requiresCompiler(GCC281PM)
     def test_create_preset_with_invalid_compiler(self) -> None:
