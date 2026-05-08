@@ -32,6 +32,8 @@ dependencies = [
     "gunicorn>=25.1.0",
     "itsdangerous==2.2.0",
     "django-stubs-ext>=5.2.9",
+    "responses==0.26.0",
+    "parameterized>=0.9.0",
 ]
 
 [dependency-groups]
@@ -41,9 +43,7 @@ dev = [
     "django-stubs>=5.2.9",
     "djangorestframework-stubs>=3.16.8",
     "types-requests>=2.32.4.20260107",
-    "parameterized>=0.9.0",
     "mypy>=1.19.1",
-    "responses==0.26.0",
 ]
 
 [build-system]
