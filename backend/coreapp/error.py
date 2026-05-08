@@ -1,6 +1,6 @@
 from sqlite3 import IntegrityError
 from subprocess import CalledProcessError
-from typing import Any, ClassVar, Optional, Self
+from typing import Any, ClassVar, Optional, TypeVar
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
@@ -34,6 +34,9 @@ def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]
     return response
 
 
+SubprocessErrorT = TypeVar("SubprocessErrorT", bound="SubprocessError")
+
+
 class SubprocessError(Exception):
     SUBPROCESS_NAME: ClassVar[str] = "Subprocess"
     msg: str
@@ -48,7 +51,9 @@ class SubprocessError(Exception):
         self.stderr = ""
 
     @classmethod
-    def from_process_error(cls, ex: CalledProcessError) -> Self:
+    def from_process_error(
+        cls: type[SubprocessErrorT], ex: CalledProcessError
+    ) -> SubprocessErrorT:
         command = ex.cmd[0] if isinstance(ex.cmd, list) else ex.cmd
         error = cls(f"{command} returned {ex.returncode}")
         error.stdout = ex.stdout or ""
@@ -83,7 +88,9 @@ class AssemblyError(SubprocessError):
     SUBPROCESS_NAME: ClassVar[str] = "Compiler"
 
     @classmethod
-    def from_process_error(cls, ex: CalledProcessError) -> Self:
+    def from_process_error(
+        cls: type[SubprocessErrorT], ex: CalledProcessError
+    ) -> SubprocessErrorT:
         error = super().from_process_error(ex)
 
         error_lines = []
