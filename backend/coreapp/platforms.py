@@ -1,8 +1,9 @@
 import functools
 import logging
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, OrderedDict
+from typing import Any
 
 from rest_framework.exceptions import APIException
 
@@ -32,7 +33,7 @@ class Platform:
     has_decompiler: bool = False
 
     @property
-    @functools.lru_cache()
+    @functools.lru_cache
     def asm_prelude(self) -> str:
         asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
         if asm_prelude_path.is_file():
@@ -46,8 +47,8 @@ class Platform:
         self,
         include_compilers: bool = False,
         include_num_scratches: bool = False,
-    ) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {
+    ) -> dict[str, Any]:
+        ret: dict[str, Any] = {
             "id": self.id,
             "name": self.name,
             "description": self.description,

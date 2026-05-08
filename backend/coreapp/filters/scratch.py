@@ -1,5 +1,3 @@
-from typing import Optional
-
 import django_filters
 from django.db.models.query import QuerySet
 
@@ -10,7 +8,7 @@ class ScratchFilter(django_filters.FilterSet):
     has_owner = django_filters.BooleanFilter(method="filter_has_owner")
 
     def filter_has_owner(
-        self, queryset: QuerySet[Scratch], name: str, value: Optional[bool]
+        self, queryset: QuerySet[Scratch], name: str, value: bool | None
     ) -> QuerySet[Scratch]:
         if value is None:
             return queryset

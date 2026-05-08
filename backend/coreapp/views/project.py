@@ -1,7 +1,7 @@
 import logging
 import random
 import string
-from typing import Any, Optional
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
@@ -109,10 +109,10 @@ class ProjectViewSet(
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         profile: Profile = request.profile  # type: ignore[attr-defined]
-        user: Optional[User] = profile.user
+        user: User | None = profile.user
         if not user:
             raise GithubLoginException()
-        gh_user: Optional[GitHubUser] = user.github
+        gh_user: GitHubUser | None = user.github
         if not gh_user:
             raise GithubLoginException()
         if not user.is_staff:

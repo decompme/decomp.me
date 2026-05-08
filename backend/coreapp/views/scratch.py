@@ -6,7 +6,7 @@ import logging
 import re
 import zipfile
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 import django_filters
 from django.core.files import File
@@ -95,9 +95,7 @@ def cache_object(platform: Platform, file: File[Any]) -> Assembly:
     return assembly
 
 
-def compile_scratch(
-    scratch: Scratch, context: Optional[str] = None
-) -> CompilationResult:
+def compile_scratch(scratch: Scratch, context: str | None = None) -> CompilationResult:
     try:
         if context is None:
             scratch_context = scratch.context_fk.text if scratch.context_fk else ""
@@ -162,10 +160,10 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
 def scratch_last_modified(
     request: Request,
-    pk: Optional[str] = None,
-    partial: Optional[bool] = False,
-) -> Optional[datetime]:
-    scratch: Optional[Scratch] = Scratch.objects.filter(slug=pk).first()
+    pk: str | None = None,
+    partial: bool | None = False,
+) -> datetime | None:
+    scratch: Scratch | None = Scratch.objects.filter(slug=pk).first()
     if scratch:
         return scratch.last_updated
     else:
@@ -175,7 +173,7 @@ def scratch_last_modified(
 scratch_condition = condition(last_modified_func=scratch_last_modified)
 
 
-def is_contentful_asm(asm: Optional[Asm]) -> bool:
+def is_contentful_asm(asm: Asm | None) -> bool:
     if asm is None:
         return False
 
@@ -187,7 +185,7 @@ def is_contentful_asm(asm: Optional[Asm]) -> bool:
     return True
 
 
-def update_needs_recompile(partial: Dict[str, Any]) -> bool:
+def update_needs_recompile(partial: dict[str, Any]) -> bool:
     recompile_params = [
         "compiler",
         "compiler_flags",
@@ -204,12 +202,12 @@ def update_needs_recompile(partial: Dict[str, Any]) -> bool:
     return False
 
 
-def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch:
+def create_scratch(data: dict[str, Any], allow_project: bool = False) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
 
-    platform: Optional[Platform] = data.get("platform")
+    platform: Platform | None = data.get("platform")
     compiler = compilers.from_id(data["compiler"])
 
     if not platform:
@@ -239,7 +237,7 @@ def create_scratch(data: Dict[str, Any], allow_project: bool = False) -> Scratch
 
     diff_flags = data.get("diff_flags", [])
 
-    preset_id: Optional[str] = None
+    preset_id: str | None = None
     if data.get("preset"):
         preset: Preset = data["preset"]
         preset_id = str(preset.id)
@@ -453,7 +451,7 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token: Optional[str] = request.data.get("token")
+        token: str | None = request.data.get("token")
 
         if (
             token is None
@@ -546,7 +544,7 @@ class ScratchViewSet(
     def family(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
 
-        subqueries: list[QuerySet["Scratch"]] = []
+        subqueries: list[QuerySet[Scratch]] = []
 
         if is_contentful_asm(scratch.target_assembly.source_asm):
             assert scratch.target_assembly.source_asm is not None

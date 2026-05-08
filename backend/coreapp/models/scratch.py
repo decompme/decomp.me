@@ -1,7 +1,8 @@
 import hashlib
 import json
 import logging
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import itsdangerous
 from django.conf import settings
@@ -82,7 +83,7 @@ class Context(models.Model):
     hash = models.BinaryField(max_length=8, unique=True, db_index=True)
 
     @classmethod
-    def get_or_create_from_text(cls, text: Optional[str]) -> Optional["Context"]:
+    def get_or_create_from_text(cls, text: str | None) -> "Context | None":
         if text is None:
             return None
 

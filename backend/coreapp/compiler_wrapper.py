@@ -2,12 +2,9 @@ import logging
 import re
 import subprocess
 import time
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
-    Callable,
-    Optional,
-    Sequence,
-    Tuple,
     TypeVar,
 )
 
@@ -42,7 +39,7 @@ WINE = "wine"
 WIBO = "wibo"
 
 
-def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
+def _check_assembly_cache(*args: str) -> tuple[Assembly | None, str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
@@ -109,7 +106,7 @@ class CompilerWrapper:
         libraries: Sequence[Library] = (),
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
-            return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
+            return CompilationResult(f"compiled({context}\n{code}".encode(), "")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
@@ -165,11 +162,9 @@ class CompilerWrapper:
             try:
                 st = round(time.time() * 1000)
                 libraries_compiler_flags = " ".join(
-                    (
-                        compiler.library_include_flag
-                        + str(lib.get_include_path(compiler.platform.id))
-                        for lib in libraries
-                    )
+                    compiler.library_include_flag
+                    + str(lib.get_include_path(compiler.platform.id))
+                    for lib in libraries
                 )
                 wibo_path = settings.COMPILER_BASE_PATH / "common" / "wibo_dlls"
                 compile_proc = sandbox.run_subprocess(
@@ -211,7 +206,7 @@ class CompilerWrapper:
 
             if not object_path.exists():
                 error_msg = (
-                    "Compiler did not create an object file: %s" % compile_proc.stdout
+                    f"Compiler did not create an object file: {compile_proc.stdout}"
                 )
                 logger.debug(error_msg)
                 raise CompilationError(error_msg)

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
 class DiffResult:
-    result: Optional[Dict[str, Any]] = None
-    errors: Optional[str] = None
+    result: dict[str, Any] | None = None
+    errors: str | None = None
 
 
 @dataclass
