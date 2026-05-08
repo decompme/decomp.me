@@ -24,10 +24,6 @@ def gen_scratch_id() -> str:
     return ret
 
 
-def gen_claim_token() -> str:
-    return get_random_string(length=32)
-
-
 class Asm(models.Model):
     hash = models.CharField(max_length=64, primary_key=True)
     data = models.TextField()
@@ -70,6 +66,8 @@ class LibrariesField(models.JSONField):
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
+        if res is None:
+            return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:

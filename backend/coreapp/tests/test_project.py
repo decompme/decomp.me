@@ -105,3 +105,8 @@ class ProjectTests(BaseTestCase):
                 p = Project.objects.first()
                 assert p is not None
                 self.assertEqual(p.description, "new description")
+
+    def test_unsaved_profile_is_not_project_member(self) -> None:
+        project = ProjectTests.create_test_project()
+
+        self.assertFalse(project.is_member(Profile()))

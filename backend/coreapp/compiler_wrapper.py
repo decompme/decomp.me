@@ -2,12 +2,9 @@ import logging
 import re
 import subprocess
 import time
-from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
-    Dict,
     Optional,
     Sequence,
     Tuple,
@@ -26,6 +23,7 @@ from .error import AssemblyError, CompilationError
 from .libraries import Library
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
+from .wrapper_result import CompilationResult
 
 # Thanks to Guido van Rossum for the following fix
 # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -42,18 +40,6 @@ logger = logging.getLogger(__name__)
 
 WINE = "wine"
 WIBO = "wibo"
-
-
-@dataclass
-class DiffResult:
-    result: Optional[Dict[str, Any]] = None
-    errors: Optional[str] = None
-
-
-@dataclass
-class CompilationResult:
-    elf_object: bytes
-    errors: str
 
 
 def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
@@ -173,8 +159,7 @@ class CompilerWrapper:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                logger.warning("%s does not exist, creating it!", compiler.path)
-                compiler.path.mkdir(parents=True)
+                raise CompilationError(f"Compiler {compiler.id} is not installed")
 
             # Run compiler
             try:

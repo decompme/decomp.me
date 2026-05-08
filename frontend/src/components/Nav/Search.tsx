@@ -6,6 +6,7 @@ import { SearchIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 import { useCombobox } from "downshift";
 import { useLayer } from "react-laag";
+import { useDebounce } from "use-debounce";
 
 import * as api from "@/lib/api";
 import { scratchUrl, userHtmlUrl, presetUrl } from "@/lib/api/urls";
@@ -19,12 +20,89 @@ import styles from "./Search.module.scss";
 import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 import UserAvatar from "../user/UserAvatar";
 
+const SEARCH_DEBOUNCE_MS = 200;
+const SEARCH_PAGE_SIZE = 5;
+
+function HighlightedMatch({ text, query }: { text: string; query: string }) {
+    if (!query) {
+        return text;
+    }
+
+    const index = text.toLocaleLowerCase().indexOf(query.toLocaleLowerCase());
+    if (index === -1) {
+        return text;
+    }
+
+    const before = text.slice(0, index);
+    const match = text.slice(index, index + query.length);
+    const after = text.slice(index + query.length);
+
+    return (
+        <>
+            {before}
+            <strong className={styles.match}>{match}</strong>
+            {after}
+        </>
+    );
+}
+
+function useSearchResults(query: string): {
+    isLoading: boolean;
+    searchItems: api.SearchResult[];
+    resultQuery: string;
+} {
+    const latestQuery = useRef(query);
+    const [debouncedQuery] = useDebounce(query, SEARCH_DEBOUNCE_MS, {
+        leading: false,
+        trailing: true,
+    });
+    const [searchItems, setSearchItems] = useState<api.SearchResult[]>([]);
+    const [resultQuery, setResultQuery] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    latestQuery.current = query;
+
+    useEffect(() => {
+        if (query.length === 0) {
+            setSearchItems([]);
+            setResultQuery("");
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
+    }, [query]);
+
+    useEffect(() => {
+        if (debouncedQuery.length === 0) {
+            return;
+        }
+
+        let isCurrent = true;
+        const search = encodeURIComponent(debouncedQuery);
+
+        api.get(`/search?search=${search}&page_size=${SEARCH_PAGE_SIZE}`).then(
+            (resp) => {
+                if (isCurrent && latestQuery.current === debouncedQuery) {
+                    setSearchItems(resp);
+                    setResultQuery(debouncedQuery);
+                    setIsLoading(false);
+                }
+            },
+        );
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [debouncedQuery]);
+
+    return { isLoading, searchItems, resultQuery };
+}
+
 function MountedSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [debouncedTimeout, setDebouncedTimeout] = useState<any>();
-    const [searchItems, setSearchItems] = useState<api.SearchResult[]>([]);
+    const { isLoading, searchItems, resultQuery } = useSearchResults(query);
 
     const items = query.length > 0 ? searchItems : [];
 
@@ -70,26 +148,7 @@ function MountedSearch({ className }: { className?: string }) {
                 }
             },
             onInputValueChange({ inputValue }) {
-                clearTimeout(debouncedTimeout);
                 setQuery(inputValue);
-
-                if (inputValue.length === 0) {
-                    setSearchItems([]);
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Use a timeout to avoid spamming the API with requests
-                setIsLoading(true);
-                setDebouncedTimeout(
-                    setTimeout(async () => {
-                        const resp = await api.get(
-                            `/search?search=${inputValue}&page_size=5`,
-                        );
-                        setSearchItems(resp);
-                        setIsLoading(false);
-                    }, 200),
-                );
             },
             onSelectedItemChange({ selectedItem }) {
                 if (selectedItem) {
@@ -188,7 +247,10 @@ function MountedSearch({ className }: { className?: string }) {
                                                 className="w-[1.2em]"
                                             />
                                             <span className={styles.itemName}>
-                                                {scratch.name}
+                                                <HighlightedMatch
+                                                    text={scratch.name}
+                                                    query={resultQuery}
+                                                />
                                             </span>
                                             <span>
                                                 {getMatchPercentString(scratch)}
@@ -213,7 +275,10 @@ function MountedSearch({ className }: { className?: string }) {
                                         >
                                             <UserAvatar user={user} />
                                             <span className={styles.itemName}>
-                                                {user.username}
+                                                <HighlightedMatch
+                                                    text={user.username}
+                                                    query={resultQuery}
+                                                />
                                             </span>
                                         </a>
                                     </li>
@@ -235,7 +300,10 @@ function MountedSearch({ className }: { className?: string }) {
                                                 className="w-[1.2em]"
                                             />
                                             <span className={styles.itemName}>
-                                                {preset.name}
+                                                <HighlightedMatch
+                                                    text={preset.name}
+                                                    query={resultQuery}
+                                                />
                                             </span>
                                             {preset.num_scratches > 1
                                                 ? `${preset.num_scratches.toLocaleString("en-US")} scratches`

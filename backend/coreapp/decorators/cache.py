@@ -22,6 +22,9 @@ def globally_cacheable(
         @wraps(view_func)
         def _wrapped_view(*args: P.args, **kwargs: P.kwargs) -> R:
             response: R = view_func(*args, **kwargs)
+            request = next((arg for arg in args if hasattr(arg, "method")), None)
+            if request and request.method not in ("GET", "HEAD", "OPTIONS"):
+                return response
 
             # Build Cache-Control header
             directives = ["public", f"max-age={max_age}"]

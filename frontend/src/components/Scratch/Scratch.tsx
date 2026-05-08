@@ -230,11 +230,18 @@ export default function Scratch({
     const [isDirty, setIsDirty] = useState(false);
     const setScratch = useCallback(
         (partial: Partial<api.Scratch>) => {
+            const hasChanges = Object.entries(partial).some(
+                ([key, value]) =>
+                    !Object.is(scratch[key as keyof api.Scratch], value),
+            );
+
+            if (!hasChanges) return;
+
             onChange(partial);
             setIsModified(true);
             setIsDirty(true);
         },
-        [onChange],
+        [onChange, scratch],
     );
 
     const [perSaveObj, setPerSaveObj] = useState({});

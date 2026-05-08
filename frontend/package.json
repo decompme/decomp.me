@@ -5,6 +5,7 @@
         "build": "next build",
         "start": "next start --port 8080",
         "lint": "biome check .",
+        "test": "vitest run",
         "format": "biome format . --write",
         "postinstall": "next telemetry disable",
         "analyze": "ANALYZE=true next build",
@@ -77,6 +78,7 @@
         "tailwindcss": "^3.4.16",
         "typescript": "^5.8.3",
         "umd-compat-loader": "^2.1.2",
+        "vitest": "^4.1.5",
         "webpack": "^5.97.1"
     },
     "browserslist": [
