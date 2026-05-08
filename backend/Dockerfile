@@ -1,6 +1,6 @@
 # This image intentionally targets amd64 because Wine/wine32 and the bundled
 # compiler/binutils artifacts are x86 Linux binaries.
-FROM --platform=linux/amd64 ubuntu:24.04 AS base
+FROM --platform=linux/amd64 ubuntu:26.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -10,14 +10,14 @@ RUN apt-get update \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base AS python312
+FROM base AS python314
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     python-is-python3 \
     python3 \
-    python3.12-dev \
-    python3.12-venv \
+    python3.14-dev \
+    python3.14-venv \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
@@ -133,7 +133,7 @@ RUN ARCHIVE=android-ndk-r8e-linux-x86_64.tar.bz2; \
     && rm "$ARCHIVE"
 
 
-FROM python312 AS dependencies
+FROM python314 AS dependencies
 
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
@@ -204,7 +204,7 @@ USER ubuntu
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]
 
 
-FROM python312 AS uv-install
+FROM python314 AS uv-install
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
