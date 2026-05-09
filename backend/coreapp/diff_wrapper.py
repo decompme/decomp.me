@@ -311,14 +311,17 @@ class DiffWrapper:
         except Exception as e:
             logger.exception("Error dumping target assembly: %s", e)
             raise DiffError(f"Error dumping target assembly: {e}")
-        try:
-            mydump = DiffWrapper.get_dump(
-                compiled_elf, platform, diff_label, config, objdump_flags
-            )
-        except Exception as e:
-            logger.exception("Error dumping compiled assembly: %s", e)
+        if compiled_elf:
+            try:
+                mydump = DiffWrapper.get_dump(
+                    compiled_elf, platform, diff_label, config, objdump_flags
+                )
+            except Exception as e:
+                logger.exception("Error dumping compiled assembly: %s", e)
+                mydump = ""
+                warnings.append(f"Warning: Error dumping compiled assembly: {e}")
+        else:
             mydump = ""
-            warnings.append(f"Warning: Error dumping compiled assembly: {e}")
 
         try:
             base_lines = asm_differ.process(basedump, config)

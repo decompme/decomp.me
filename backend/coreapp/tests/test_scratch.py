@@ -3,6 +3,7 @@ import json
 import zipfile
 from time import sleep
 from typing import Any, Dict
+from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
@@ -15,10 +16,35 @@ from coreapp.libraries import Library
 from coreapp.models.scratch import Assembly, Context, LibrariesField, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
-from coreapp.views.scratch import compile_scratch_update_score
+from coreapp.views.scratch import compile_scratch_update_score, diff_compilation
+from coreapp.wrapper_result import CompilationResult
 
 
 class ScratchCreationTests(BaseTestCase):
+    def test_diff_compilation_skips_failed_compilation(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        with patch("coreapp.views.scratch.DiffWrapper.diff") as diff:
+            result = diff_compilation(scratch, CompilationResult(b"", "Compiler error"))
+
+        self.assertIsNone(result.result)
+        self.assertIsNone(result.errors)
+        diff.assert_not_called()
+
+    def test_diff_compilation_can_diff_target_only(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        with patch("coreapp.views.scratch.DiffWrapper.diff") as diff:
+            result = diff_compilation(
+                scratch,
+                CompilationResult(b"", "Compiler error"),
+                allow_target_only=True,
+            )
+
+        self.assertEqual(result, diff.return_value)
+        diff.assert_called_once()
+        self.assertEqual(diff.call_args.args[3], b"")
+
     @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
