@@ -117,6 +117,9 @@ def compile_scratch(
 
 
 def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
+    if not compilation.elf_object:
+        return DiffResult(None)
+
     try:
         return DiffWrapper.diff(
             scratch.target_assembly,
