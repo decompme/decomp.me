@@ -31,6 +31,20 @@ class ScratchCreationTests(BaseTestCase):
         self.assertIsNone(result.errors)
         diff.assert_not_called()
 
+    def test_diff_compilation_can_diff_target_only(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        with patch("coreapp.views.scratch.DiffWrapper.diff") as diff:
+            result = diff_compilation(
+                scratch,
+                CompilationResult(b"", "Compiler error"),
+                allow_target_only=True,
+            )
+
+        self.assertEqual(result, diff.return_value)
+        diff.assert_called_once()
+        self.assertEqual(diff.call_args.args[3], b"")
+
     @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """

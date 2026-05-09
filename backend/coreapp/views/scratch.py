@@ -116,8 +116,12 @@ def compile_scratch(
         return CompilationResult(b"", str(e))
 
 
-def diff_compilation(scratch: Scratch, compilation: CompilationResult) -> DiffResult:
-    if not compilation.elf_object:
+def diff_compilation(
+    scratch: Scratch,
+    compilation: CompilationResult,
+    allow_target_only: bool = False,
+) -> DiffResult:
+    if not compilation.elf_object and not allow_target_only:
         return DiffResult(None)
 
     try:
@@ -154,7 +158,7 @@ def compile_scratch_update_score(scratch: Scratch) -> None:
 
     compilation = compile_scratch(scratch)
     try:
-        diff = diff_compilation(scratch, compilation)
+        diff = diff_compilation(scratch, compilation, allow_target_only=True)
         update_scratch_score(scratch, diff)
     except Exception:
         pass
