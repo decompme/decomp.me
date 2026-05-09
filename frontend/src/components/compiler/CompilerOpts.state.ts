@@ -53,6 +53,35 @@ export function setCompilerFlag(
     return existingFlags.join(" ");
 }
 
+export function applyCompilerFlagEdits(
+    flags: string | undefined,
+    edits: FlagEdit[],
+) {
+    const existingFlags = splitCompilerFlags(flags);
+    const editedFlags = edits.map((o) => o.flag);
+    const enabledFlags = edits
+        .filter((o) => o.value && o.flag)
+        .map((o) => o.flag);
+
+    const insertIndex = existingFlags.findIndex((flag) =>
+        editedFlags.includes(flag),
+    );
+    const retainedFlags = existingFlags.filter(
+        (flag) => !editedFlags.includes(flag),
+    );
+
+    const updatedFlags =
+        insertIndex === -1
+            ? [...retainedFlags, ...enabledFlags]
+            : [
+                  ...retainedFlags.slice(0, insertIndex),
+                  ...enabledFlags,
+                  ...retainedFlags.slice(insertIndex),
+              ];
+
+    return updatedFlags.join(" ");
+}
+
 export function applyDiffFlagEdits(flags: string[], edits: FlagEdit[]) {
     const enabledFlags = edits
         .filter((o) => o.value && o.flag)
