@@ -26,6 +26,13 @@ export const runtime = "edge";
 export default async function ScratchOG({
     params,
 }: { params: Promise<{ slug: string }> }) {
+    const OpenSansSemiBold = fetch(
+        new URL(
+            "../../../../public/fonts/OpenSans-SemiBold.ttf",
+            import.meta.url,
+        ),
+    ).then((res) => res.arrayBuffer());
+
     const { slug } = await params;
     const { scratch, parentScratch, compilation } =
         await getScratchDetails(slug);
@@ -53,7 +60,10 @@ export default async function ScratchOG({
     const todoWidth = IMAGE_WIDTH_PX - doneWidth;
 
     return new ImageResponse(
-        <div tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl">
+        <div
+            tw="flex flex-col justify-between w-full h-full bg-zinc-800 text-slate-50 text-5xl"
+            style={{ fontFamily: "OpenSans-SemiBold" }}
+        >
             <div tw="flex flex-col">
                 <div tw="flex flex-row justify-between ml-15 mr-15 mt-5">
                     <div tw="flex flex-col justify-center">
@@ -142,6 +152,14 @@ export default async function ScratchOG({
         {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
+            fonts: [
+                {
+                    name: "OpenSans-SemiBold",
+                    data: await OpenSansSemiBold,
+                    weight: 700,
+                    style: "normal",
+                },
+            ],
         },
     );
 }

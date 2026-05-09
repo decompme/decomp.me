@@ -67,6 +67,13 @@ function ChartRow({
 export default async function UserOG({
     params,
 }: { params: Promise<{ username: string }> }) {
+    const OpenSansSemiBold = fetch(
+        new URL(
+            "../../../../public/fonts/OpenSans-SemiBold.ttf",
+            import.meta.url,
+        ),
+    ).then((res) => res.arrayBuffer());
+
     const { username } = await params;
 
     let stats: Stats;
@@ -121,7 +128,10 @@ export default async function UserOG({
     const scratches = total === 1 ? "Scratch" : "Scratches";
 
     return new ImageResponse(
-        <div tw="flex w-full h-full bg-zinc-800 text-slate-50 text-5xl">
+        <div
+            tw="flex w-full h-full bg-zinc-800 text-slate-50 text-5xl"
+            style={{ fontFamily: "OpenSans-SemiBold" }}
+        >
             <div tw="flex flex-col h-full w-[60%] justify-between">
                 <div tw="flex flex-row mt-15 ml-10">
                     <img
@@ -148,6 +158,14 @@ export default async function UserOG({
         {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
+            fonts: [
+                {
+                    name: "OpenSans-SemiBold",
+                    data: await OpenSansSemiBold,
+                    weight: 700,
+                    style: "normal",
+                },
+            ],
         },
     );
 }
