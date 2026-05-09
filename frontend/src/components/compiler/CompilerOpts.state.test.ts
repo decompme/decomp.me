@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
     addLibrary,
     applyDiffFlagEdits,
+    applyCompilerFlagEdits,
     getDiffFlagValue,
     getLibraryVersionOptions,
     hasCompilerFlag,
@@ -37,6 +38,39 @@ describe("compiler flag editing", () => {
         }
 
         expect(flags).toBe("-g -mips2");
+    });
+
+    it("replaces compiler flagset options in a single edit", () => {
+        expect(
+            applyCompilerFlagEdits("-O2 -g", [
+                { flag: "-O0", value: false },
+                { flag: "-O1", value: false },
+                { flag: "-O2", value: false },
+                { flag: "-O3", value: true },
+            ]),
+        ).toBe("-O3 -g");
+    });
+
+    it("keeps the flagset position when replacing compiler flags", () => {
+        expect(
+            applyCompilerFlagEdits("-Wall -O2 -g3", [
+                { flag: "-O0", value: false },
+                { flag: "-O1", value: true },
+                { flag: "-O2", value: false },
+                { flag: "-O3", value: false },
+            ]),
+        ).toBe("-Wall -O1 -g3");
+    });
+
+    it("does not duplicate the current compiler flagset option", () => {
+        expect(
+            applyCompilerFlagEdits("-O2 -g", [
+                { flag: "-O0", value: false },
+                { flag: "-O1", value: false },
+                { flag: "-O2", value: true },
+                { flag: "-O3", value: false },
+            ]),
+        ).toBe("-O2 -g");
     });
 
     it("does not add empty compiler flags", () => {

@@ -15,6 +15,7 @@ import Select from "../Select"; // TODO: use Select2
 import styles from "./CompilerOpts.module.css";
 import {
     addLibrary,
+    applyCompilerFlagEdits,
     applyDiffFlagEdits,
     getDiffFlagValue,
     getLibraryVersionOptions,
@@ -80,18 +81,23 @@ type FlagSetProps = {
 };
 
 function FlagSet({ name, children, value }: FlagSetProps) {
-    const { setFlag } = useContext(OptsContext);
+    const { setFlags } = useContext(OptsContext);
 
     return (
         <div className={styles.flagSet}>
             <div className={styles.flagSetName}>{name}</div>
             <Select
                 onChange={(event) => {
-                    for (const child of children) {
-                        setFlag(child.props.flag, false);
-                    }
+                    const trueFlag = (event.target as HTMLSelectElement).value;
 
-                    setFlag((event.target as HTMLSelectElement).value, true);
+                    const edits = children.map((child) => {
+                        return {
+                            flag: child.props.flag,
+                            value: child.props.flag === trueFlag,
+                        };
+                    });
+
+                    setFlags(edits);
                 }}
                 value={value}
             >
@@ -383,11 +389,7 @@ export default function CompilerOpts({
         },
 
         setFlags(edits: FlagEdit[]) {
-            let updatedOpts = opts;
-            for (const { flag, value } of edits) {
-                updatedOpts = setCompilerFlag(updatedOpts, flag, value);
-            }
-            setOpts(updatedOpts);
+            setOpts(applyCompilerFlagEdits(opts, edits));
         },
     };
 
