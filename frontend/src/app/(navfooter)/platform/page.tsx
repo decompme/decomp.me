@@ -1,8 +1,10 @@
 import { Platforms } from "@/app/(navfooter)/platform/platforms";
-import { get } from "@/lib/api/request";
+import { getPublic } from "@/lib/api/request";
+
+export const revalidate = 300;
 
 export default async function Page() {
-    const availablePlatforms = await get("/platform");
+    const availablePlatforms = await getPublic("/platform");
 
     return (
         <main className="mx-auto w-full max-w-3xl p-4">
