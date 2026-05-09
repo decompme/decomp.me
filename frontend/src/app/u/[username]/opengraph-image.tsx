@@ -66,8 +66,8 @@ function ChartRow({
 
 export default async function UserOG({
     params,
-}: { params: { username: string } }) {
-    const username = params.username;
+}: { params: Promise<{ username: string }> }) {
+    const { username } = await params;
 
     let stats: Stats;
     let user: ScratchUser;

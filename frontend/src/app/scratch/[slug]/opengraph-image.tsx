@@ -25,10 +25,10 @@ export const runtime = "edge";
 
 export default async function ScratchOG({
     params,
-}: { params: { slug: string } }) {
-    const { scratch, parentScratch, compilation } = await getScratchDetails(
-        params.slug,
-    );
+}: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const { scratch, parentScratch, compilation } =
+        await getScratchDetails(slug);
 
     const preset: Preset | null =
         scratch.preset !== null ? await get(`/preset/${scratch.preset}`) : null;

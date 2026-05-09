@@ -50,7 +50,7 @@ RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
     sleep 1; \
     done
 
-RUN yarn build --turbopack --no-lint && rm -rf .next/cache
+RUN yarn build && rm -rf .next/cache
 
 
 FROM node:24-alpine AS prod
