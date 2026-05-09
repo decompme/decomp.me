@@ -26,13 +26,6 @@ export const runtime = "edge";
 export default async function ScratchOG({
     params,
 }: { params: Promise<{ slug: string }> }) {
-    const OpenSansSemiBold = fetch(
-        new URL(
-            "../../../../public/fonts/OpenSans-SemiBold.ttf",
-            import.meta.url,
-        ),
-    ).then((res) => res.arrayBuffer());
-
     const { slug } = await params;
     const { scratch, parentScratch, compilation } =
         await getScratchDetails(slug);
@@ -149,14 +142,6 @@ export default async function ScratchOG({
         {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
-            fonts: [
-                {
-                    name: "OpenSans",
-                    data: await OpenSansSemiBold,
-                    weight: 400,
-                    style: "normal",
-                },
-            ],
         },
     );
 }
