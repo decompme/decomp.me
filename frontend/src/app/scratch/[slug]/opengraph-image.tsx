@@ -26,6 +26,13 @@ export const runtime = "edge";
 export default async function ScratchOG({
     params,
 }: { params: Promise<{ slug: string }> }) {
+    const OpenSansSemiBold = fetch(
+        new URL(
+            "../../../../public/fonts/OpenSans-SemiBold.ttf",
+            import.meta.url,
+        ),
+    ).then((res) => res.arrayBuffer());
+
     const { slug } = await params;
     const { scratch, parentScratch, compilation } =
         await getScratchDetails(slug);
@@ -94,7 +101,7 @@ export default async function ScratchOG({
                             <div tw="flex flex-col justify-around">
                                 <CheckCircleFillIcon width={48} height={48} />
                             </div>
-                            <div tw="flex flex-col items-center ml-5">
+                            <div tw="flex flex-col justify-around ml-5">
                                 <div tw="flex">Matched</div>
                                 {scratch.match_override && (
                                     <div tw="flex text-4xl text-slate-300">
@@ -142,6 +149,14 @@ export default async function ScratchOG({
         {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
+            fonts: [
+                {
+                    name: "OpenSans",
+                    data: await OpenSansSemiBold,
+                    weight: 400,
+                    style: "normal",
+                },
+            ],
         },
     );
 }
