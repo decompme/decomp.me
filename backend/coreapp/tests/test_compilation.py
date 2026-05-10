@@ -1,4 +1,5 @@
 from typing import Any, Callable
+from unittest.mock import patch
 
 from django.urls import reverse
 from parameterized import param, parameterized
@@ -18,7 +19,7 @@ from coreapp.compilers import (
 )
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.flags import Language
-from coreapp.models.scratch import Assembly
+from coreapp.models.scratch import Asm, Assembly
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 
@@ -228,6 +229,33 @@ nop
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
+
+    @requiresCompiler(IDO71)
+    def test_diff_can_score_target_only(self) -> None:
+        """
+        Ensure diffs can be generated and scored even when compilation failed.
+        """
+        target_asm = Asm(
+            hash="target-only-diff",
+            data=".text\nglabel func\njr $ra\nnop",
+        )
+        with patch("coreapp.models.scratch.Assembly.save", autospec=True):
+            target_assembly = CompilerWrapper.assemble_asm(N64, target_asm)
+
+        diff = DiffWrapper.diff(
+            target_assembly,
+            N64,
+            "func",
+            b"",
+            diff_flags=[],
+        )
+
+        diff_result: dict[str, Any] = diff.result  # type: ignore
+        self.assertTrue(diff_result is not None and "rows" in diff_result)
+        self.assertGreater(len(diff_result["rows"]), 0)
+        self.assertEqual(200, diff_result.get("max_score"))
+        self.assertEqual(200, diff_result.get("current_score"))
+        self.assertEqual(None, diff.errors)
 
     @parameterized.expand(
         input=[
