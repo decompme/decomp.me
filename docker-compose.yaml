@@ -48,7 +48,8 @@ services:
       - ./frontend:/frontend
       - .env:/.env
   nginx:
-    image: nginx:1.28-alpine
+    build:
+      context: nginx
     ports:
       - "80:80"
     volumes:
