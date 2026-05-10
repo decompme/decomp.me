@@ -1,5 +1,5 @@
 export type FlagEdit = {
-    flag: string;
+    flag?: string;
     value: boolean;
 };
 
@@ -31,12 +31,58 @@ function areLibrariesEqual(left: Library[], right: Library[]) {
     );
 }
 
-function splitCompilerFlags(flags: string | undefined): string[] {
-    return flags?.trim().split(/\s+/).filter(Boolean) ?? [];
+function normalizeCompilerFlag(flag: string | undefined) {
+    return flag?.trim().replace(/\s+/g, " ") ?? "";
+}
+
+function splitCompilerFlags(
+    flags: string | undefined,
+    knownFlags: string[] = [],
+): string[] {
+    const normalizedFlags = normalizeCompilerFlag(flags ?? "");
+    if (!normalizedFlags) return [];
+
+    const normalizedKnownFlags = knownFlags
+        .map(normalizeCompilerFlag)
+        .filter(Boolean)
+        .sort((left, right) => right.length - left.length);
+
+    const compilerFlags: string[] = [];
+    let index = 0;
+
+    while (index < normalizedFlags.length) {
+        const knownFlag = normalizedKnownFlags.find((flag) => {
+            if (!normalizedFlags.startsWith(flag, index)) return false;
+
+            const next = normalizedFlags[index + flag.length];
+            return next === undefined || next === " ";
+        });
+
+        if (knownFlag) {
+            compilerFlags.push(knownFlag);
+            index += knownFlag.length + 1;
+            continue;
+        }
+
+        const nextSpace = normalizedFlags.indexOf(" ", index);
+        const end = nextSpace === -1 ? normalizedFlags.length : nextSpace;
+        compilerFlags.push(normalizedFlags.slice(index, end));
+        index = end + 1;
+    }
+
+    return compilerFlags;
+}
+
+export function normalizeDiffFlags(flags: string[] | undefined): string[] {
+    if (!flags) return [];
+
+    const normalizedFlags = flags.filter(Boolean);
+    return areArraysEqual(flags, normalizedFlags) ? flags : normalizedFlags;
 }
 
 export function hasCompilerFlag(flags: string | undefined, flag: string) {
-    return splitCompilerFlags(flags).includes(flag);
+    const normalizedFlag = normalizeCompilerFlag(flag);
+    return splitCompilerFlags(flags, [normalizedFlag]).includes(normalizedFlag);
 }
 
 export function setCompilerFlag(
@@ -44,10 +90,13 @@ export function setCompilerFlag(
     flag: string,
     enabled: boolean,
 ) {
-    const existingFlags = splitCompilerFlags(flags).filter((f) => f !== flag);
+    const normalizedFlag = normalizeCompilerFlag(flag);
+    const existingFlags = splitCompilerFlags(flags, [normalizedFlag]).filter(
+        (f) => f !== normalizedFlag,
+    );
 
-    if (enabled && flag) {
-        existingFlags.push(flag);
+    if (enabled && normalizedFlag) {
+        existingFlags.push(normalizedFlag);
     }
 
     return existingFlags.join(" ");
@@ -57,9 +106,10 @@ export function applyCompilerFlagEdits(
     flags: string | undefined,
     edits: FlagEdit[],
 ) {
-    const existingFlags = splitCompilerFlags(flags);
-    const editedFlags = edits.map((o) => o.flag);
+    const editedFlags = edits.map((o) => normalizeCompilerFlag(o.flag));
+    const existingFlags = splitCompilerFlags(flags, editedFlags);
     const enabledFlags = edits
+        .map((o) => ({ ...o, flag: normalizeCompilerFlag(o.flag) }))
         .filter((o) => o.value && o.flag)
         .map((o) => o.flag);
 
@@ -83,12 +133,13 @@ export function applyCompilerFlagEdits(
 }
 
 export function applyDiffFlagEdits(flags: string[], edits: FlagEdit[]) {
+    const existingFlags = normalizeDiffFlags(flags);
     const enabledFlags = edits
         .filter((o) => o.value && o.flag)
         .map((o) => o.flag);
     const disabledFlags = edits.filter((o) => !o.value).map((o) => o.flag);
 
-    const retainedFlags = flags.filter(
+    const retainedFlags = existingFlags.filter(
         (flag) =>
             !disabledFlags.some(
                 (disabledFlag) =>
