@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
@@ -18,7 +18,7 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Context, Scratch
 
 
-def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str, Any]:
+def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str, Any]:
     if profile.user is None:
         return {
             "is_anonymous": True,
@@ -32,7 +32,7 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str
     else:
         user = profile.user
 
-        gh_user: Optional[GitHubUser] = getattr(user, "github", None)
+        gh_user: GitHubUser | None = getattr(user, "github", None)
         if not gh_user:
             # NOTE: All models with an "owner" should fetch related "owner__user__github"
             # in order to avoid N+1 queries when a Profile is serialized for each object.
@@ -54,7 +54,7 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str
 
 
 if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, Dict[str, Any]]
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
@@ -142,7 +142,7 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         compiler = compilers.from_id(data["compiler"])
         platform = platforms.from_id(data["platform"])
 
@@ -201,7 +201,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                     )
         return libraries
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
             # Preset dictates platform
@@ -394,7 +394,7 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
 
     class Meta:
         model = Project
-        exclude: List[str] = []
+        exclude: list[str] = []
 
     def create(self, validated_data: Any) -> Project:
         project = Project.objects.create(**validated_data)

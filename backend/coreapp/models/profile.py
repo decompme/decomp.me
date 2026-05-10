@@ -1,7 +1,6 @@
 import json
 import random
 from pathlib import Path
-from typing import Tuple
 
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -47,7 +46,7 @@ class Profile(models.Model):
         else:
             return str(self.id)
 
-    def get_frog_color(self) -> Tuple[float, float, float]:
+    def get_frog_color(self) -> tuple[float, float, float]:
         """Use the ID of this profile to generate a random color for use in a frog profile picture"""
         prev_state = random.getstate()
         random.seed(self.id)

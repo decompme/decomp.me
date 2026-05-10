@@ -2,7 +2,7 @@ import io
 import json
 import zipfile
 from time import sleep
-from typing import Any, Dict
+from typing import Any
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
@@ -184,8 +184,8 @@ nop
 
 
 class ScratchContextTests(BaseTestCase):
-    def create_scratch_with_context(self, context: str = "") -> Dict[str, Any]:
-        scratch_dict: Dict[str, Any] = {
+    def create_scratch_with_context(self, context: str = "") -> dict[str, Any]:
+        scratch_dict: dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
             "platform": compilers.DUMMY.id,
             "context": context,
@@ -456,7 +456,7 @@ class ScratchForkTests(BaseTestCase):
         """
         Ensure that a scratch's fork maintains the relevant properties of its parent
         """
-        scratch_dict: Dict[str, Any] = {
+        scratch_dict: dict[str, Any] = {
             "compiler": platforms.DUMMY.id,
             "platform": compilers.DUMMY.id,
             "context": "",

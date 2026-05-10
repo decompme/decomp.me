@@ -1,6 +1,5 @@
 import typing
 from datetime import datetime
-from typing import Dict, Optional
 
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
@@ -30,8 +29,8 @@ class SingleCompilerDetail(APIView):
     def get(
         self,
         request: Request,
-        platform: Optional[str] = "",
-        compiler: Optional[str] = "",
+        platform: str | None = "",
+        compiler: str | None = "",
     ) -> Response:
         filtered = [
             c for c in compilers.available_compilers() if c.platform.id == platform
@@ -61,7 +60,7 @@ class SingleCompilerDetail(APIView):
 )
 class CompilerDetail(APIView):
     @staticmethod
-    def compilers_json() -> Dict[str, Dict[str, object]]:
+    def compilers_json() -> dict[str, dict[str, object]]:
         return {
             c.id: {
                 "platform": c.platform.id,
@@ -72,8 +71,8 @@ class CompilerDetail(APIView):
         }
 
     @staticmethod
-    def platforms_json() -> Dict[str, Dict[str, object]]:
-        ret: Dict[str, Dict[str, object]] = {}
+    def platforms_json() -> dict[str, dict[str, object]]:
+        ret: dict[str, dict[str, object]] = {}
 
         for platform in compilers.available_platforms():
             ret[platform.id] = platform.to_json()

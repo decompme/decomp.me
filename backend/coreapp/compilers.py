@@ -1,10 +1,11 @@
 import enum
 import logging
 import platform as platform_stdlib
+from collections import OrderedDict
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import ClassVar, List, Optional, OrderedDict
+from typing import ClassVar
 
 from django.conf import settings
 from rest_framework import status
@@ -74,7 +75,7 @@ class Compiler:
     platform: Platform
     flags: ClassVar[Flags]
     library_include_flag: str
-    base_compiler: Optional["Compiler"] = None
+    base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: Language = Language.C
 
@@ -240,12 +241,12 @@ def from_id(compiler_id: str) -> Compiler:
 
 
 @cache
-def available_compilers() -> List[Compiler]:
+def available_compilers() -> list[Compiler]:
     return list(_compilers.values())
 
 
 @cache
-def available_platforms() -> List[Platform]:
+def available_platforms() -> list[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
 
     return sorted(pset, key=lambda p: p.name)
@@ -1623,7 +1624,7 @@ ANDROID_R8E_47_C = GCCCompiler(
     cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
-_all_compilers: List[Compiler] = [
+_all_compilers: list[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
     # GBA

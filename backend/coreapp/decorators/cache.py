@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Optional, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from rest_framework.response import Response
 
@@ -12,7 +13,7 @@ R = TypeVar("R", bound=Response)
 
 
 def globally_cacheable(
-    max_age: int = 60, stale_while_revalidate: Optional[int] = None
+    max_age: int = 60, stale_while_revalidate: int | None = None
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Decorator to add Cache-Control headers for globally cacheable API responses.

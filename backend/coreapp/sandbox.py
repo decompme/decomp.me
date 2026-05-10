@@ -6,7 +6,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Self
 
 from django.conf import settings
 
@@ -22,10 +22,10 @@ else:
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __enter__(self) -> "Sandbox":
+    def __enter__(self) -> Self:
         self.use_jail = settings.USE_SANDBOX_JAIL
 
-        tmpdir: Optional[Path] = None
+        tmpdir: Path | None = None
         if self.use_jail:
             # Only use SANDBOX_TMP_PATH if USE_SANDBOX_JAIL is enabled,
             # otherwise use the system default
@@ -48,7 +48,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             path = Path("/tmp") / path.relative_to(self.path)
         return str(path)
 
-    def sandbox_command(self, mounts: List[Path], env: Dict[str, str]) -> List[str]:
+    def sandbox_command(self, mounts: list[Path], env: dict[str, str]) -> list[str]:
         if not self.use_jail:
             return []
 
@@ -112,12 +112,12 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
 
     def run_subprocess(
         self,
-        args: Union[str, List[str]],
+        args: str | list[str],
         *,
-        mounts: Optional[List[Path]] = None,
-        env: Optional[Dict[str, str]] = None,
+        mounts: list[Path] | None = None,
+        env: dict[str, str] | None = None,
         shell: bool = False,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> subprocess.CompletedProcess[str]:
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}

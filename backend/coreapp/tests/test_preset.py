@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -50,7 +50,7 @@ class PresetTests(BaseTestCase):
         self.client.login(username=self.username, password=self.password)
         return user
 
-    def create_preset(self, partial: Dict[str, Any]) -> Preset:
+    def create_preset(self, partial: dict[str, Any]) -> Preset:
         response = self.client.post(reverse("preset-list"), partial)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         preset = Preset.objects.get(id=response.json()["id"])

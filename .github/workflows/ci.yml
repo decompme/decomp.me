@@ -7,7 +7,7 @@ on:
 jobs:
   backend_test_docker_dev:
     name: backend tests (docker dev container)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -54,7 +54,7 @@ jobs:
 
   backend_test_docker_prod:
     name: backend tests (docker prod container)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -103,7 +103,7 @@ jobs:
 
   docker_compose_test:
     name: test docker compose
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -169,7 +169,7 @@ jobs:
 
   frontend_lint:
     name: biome
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Setup Node.js 24
@@ -193,17 +193,17 @@ jobs:
 
   mypy:
     name: mypy
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: "latest"
-      - name: Setup Python 3.12
+      - name: Setup Python 3.14
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - run: |-
           cd backend
           uv sync
@@ -211,17 +211,17 @@ jobs:
 
   ruff:
     name: ruff
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: "latest"
-      - name: Setup Python 3.12
+      - name: Setup Python 3.14
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - run: |-
           cd backend
           uv sync

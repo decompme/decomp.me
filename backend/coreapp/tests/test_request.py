@@ -1,8 +1,11 @@
+import subprocess
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from coreapp import compilers, platforms
+from coreapp.error import ObjdumpError
 from coreapp.models.profile import Profile
 from coreapp.sandbox import Sandbox
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -104,3 +107,17 @@ class TimeoutTests(BaseTestCase):
 
             self.assertEqual(sandboxed_proc.returncode, 0)
             self.assertIn(expected_output, sandboxed_proc.stdout)
+
+    def test_sandbox_subprocess_error_preserves_output(self) -> None:
+        missing_command = "definitely-not-a-real-command"
+
+        with self.settings(DEBUG=False):
+            with Sandbox() as sandbox:
+                with self.assertRaises(subprocess.CalledProcessError) as cm:
+                    sandbox.run_subprocess([missing_command], shell=True)
+
+        error = ObjdumpError.from_process_error(cm.exception)
+
+        self.assertIsInstance(error, ObjdumpError)
+        self.assertIn(missing_command, str(error))
+        self.assertIn("command not found", str(error))

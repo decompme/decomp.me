@@ -6,7 +6,7 @@ authors = [
     {name = "Decomp.me team"}
 ]
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
     "m2c @ git+https://github.com/matt-kempster/m2c.git",

@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import TYPE_CHECKING, Callable, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -24,7 +25,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 if TYPE_CHECKING:
 
     class Request(DRFRequest):
-        user: Union[User, AnonymousUser]
+        user: User | AnonymousUser
         profile: Profile
 
 else:

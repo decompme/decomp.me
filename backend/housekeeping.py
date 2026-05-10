@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
 import argparse
-import os
 import datetime
-from typing import Protocol, Type
+import os
+from typing import Protocol
 
 import django
 from django.apps import apps
-from django.db.models import Manager, Exists, OuterRef, Model, QuerySet, Q, F, Subquery
+from django.db.models import Exists, F, Manager, Model, OuterRef, Q, QuerySet, Subquery
 
 
 class DjangoModel(Protocol):
     objects: Manager[Model]
 
 
-def get_model(model_name: str) -> Type[DjangoModel]:
+def get_model(model_name: str) -> type[DjangoModel]:
     return apps.get_model("coreapp", model_name.capitalize())
 
 
@@ -138,7 +138,7 @@ def main() -> None:
     cutoff_days: int = args.cutoff_days
     assert cutoff_days >= 1, "--cutoff-days must be >= 1"
 
-    cutoff_datetime = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+    cutoff_datetime = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
         days=cutoff_days
     )
 

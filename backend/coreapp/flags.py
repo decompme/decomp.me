@@ -1,6 +1,5 @@
 import enum
 from dataclasses import dataclass
-from typing import Dict, List, Union
 
 ASMDIFF_FLAG_PREFIX = "-DIFF"
 
@@ -29,7 +28,7 @@ class Checkbox:
     id: str
     flag: str
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {
             "type": "checkbox",
             "id": self.id,
@@ -40,9 +39,9 @@ class Checkbox:
 @dataclass(frozen=True)
 class FlagSet:
     id: str
-    flags: List[str]
+    flags: list[str]
 
-    def to_json(self) -> Dict[str, Union[str, List[str]]]:
+    def to_json(self) -> dict[str, str | list[str]]:
         return {
             "type": "flagset",
             "id": self.id,
@@ -53,9 +52,9 @@ class FlagSet:
 @dataclass(frozen=True)
 class LanguageFlagSet:
     id: str
-    flags: Dict[str, Language]
+    flags: dict[str, Language]
 
-    def to_json(self) -> Dict[str, Union[str, List[str]]]:
+    def to_json(self) -> dict[str, str | list[str]]:
         # To the client, we're a regular FlagSet - the extra metadata we carry
         # is purely for the backend to determine the scratch's language
         return {
@@ -70,7 +69,7 @@ class StringParameterFlag:
     id: str
     flag: str
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {
             "type": "parameter",
             "format": "string",
@@ -84,7 +83,7 @@ class IntParameterFlag:
     id: str
     flag: str
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {
             "type": "parameter",
             "format": "int",
@@ -98,7 +97,7 @@ class HexParameterFlag:
     id: str
     flag: str
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {
             "type": "parameter",
             "format": "hex",
@@ -112,7 +111,7 @@ class IntOrHexParameterFlag:
     id: str
     flag: str
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {
             "type": "parameter",
             "format": "int-or-hex",
@@ -121,16 +120,14 @@ class IntOrHexParameterFlag:
         }
 
 
-Flags = List[
-    Union[
-        Checkbox,
-        FlagSet,
-        LanguageFlagSet,
-        StringParameterFlag,
-        IntParameterFlag,
-        HexParameterFlag,
-        IntOrHexParameterFlag,
-    ]
+Flags = list[
+    Checkbox
+    | FlagSet
+    | LanguageFlagSet
+    | StringParameterFlag
+    | IntParameterFlag
+    | HexParameterFlag
+    | IntOrHexParameterFlag
 ]
 
 COMMON_ARMCC_FLAGS: Flags = [
