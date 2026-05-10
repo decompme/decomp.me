@@ -23,6 +23,16 @@ describe("compiler flag editing", () => {
         expect(setCompilerFlag("-O2 -g", "-g", false)).toBe("-O2");
     });
 
+    it("checks complete compiler flags that contain whitespace", () => {
+        expect(hasCompilerFlag("-O2 -sym on", "-sym on")).toBe(true);
+        expect(hasCompilerFlag("-O2 -sym off", "-sym on")).toBe(false);
+    });
+
+    it("adds and removes compiler flags that contain whitespace", () => {
+        expect(setCompilerFlag("-O2", "-sym on", true)).toBe("-O2 -sym on");
+        expect(setCompilerFlag("-O2 -sym on", "-sym on", false)).toBe("-O2");
+    });
+
     it("normalizes whitespace and avoids duplicates", () => {
         expect(setCompilerFlag("  -O2   -g  ", "-O2", true)).toBe("-g -O2");
     });
@@ -51,6 +61,17 @@ describe("compiler flag editing", () => {
         ).toBe("-O3 -g");
     });
 
+    it("ignores flagset placeholder options without a flag", () => {
+        expect(
+            applyCompilerFlagEdits("-O2 -g", [
+                { value: false },
+                { flag: "-O0", value: false },
+                { flag: "-O1", value: true },
+                { flag: "-O2", value: false },
+            ]),
+        ).toBe("-O1 -g");
+    });
+
     it("keeps the flagset position when replacing compiler flags", () => {
         expect(
             applyCompilerFlagEdits("-Wall -O2 -g3", [
@@ -60,6 +81,15 @@ describe("compiler flag editing", () => {
                 { flag: "-O3", value: false },
             ]),
         ).toBe("-Wall -O1 -g3");
+    });
+
+    it("replaces compiler flagset options that contain whitespace", () => {
+        expect(
+            applyCompilerFlagEdits("-O2 -sym on -g", [
+                { flag: "-sym on", value: false },
+                { flag: "-sym off", value: true },
+            ]),
+        ).toBe("-O2 -sym off -g");
     });
 
     it("does not duplicate the current compiler flagset option", () => {
@@ -130,6 +160,15 @@ describe("diff flag editing", () => {
                 ],
             ),
         ).toEqual([]);
+    });
+
+    it("removes existing empty diff flags while applying edits", () => {
+        expect(
+            applyDiffFlagEdits(
+                ["", "-Mreg-names=32"],
+                [{ flag: "--adjust-vma=10", value: true }],
+            ),
+        ).toEqual(["-Mreg-names=32", "--adjust-vma=10"]);
     });
 
     it("preserves flags that only share a prefix", () => {

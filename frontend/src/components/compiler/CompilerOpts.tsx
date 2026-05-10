@@ -20,6 +20,7 @@ import {
     getDiffFlagValue,
     getLibraryVersionOptions,
     hasCompilerFlag,
+    normalizeDiffFlags,
     removeLibrary,
     setCompilerFlag,
     setLibraryVersion,
@@ -322,7 +323,7 @@ export default function CompilerOpts({
 
     const compiler = value.compiler;
     const opts = value.compiler_flags;
-    const diff_opts = value.diff_flags || [];
+    const diff_opts = normalizeDiffFlags(value.diff_flags);
 
     const setCompiler = (compiler: string) => {
         if (compiler === value.compiler) return;
@@ -359,7 +360,7 @@ export default function CompilerOpts({
             onChange({
                 compiler: preset.compiler,
                 compiler_flags: preset.compiler_flags,
-                diff_flags: preset.diff_flags,
+                diff_flags: normalizeDiffFlags(preset.diff_flags),
                 libraries: preset.libraries,
                 preset: preset.id,
             });
