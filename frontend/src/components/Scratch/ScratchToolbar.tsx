@@ -66,8 +66,8 @@ function EditTimeAgo({ date }: { date: string }) {
     const [, forceUpdate] = useState({});
     useEffect(() => {
         if (isActive) {
-            const interval = setTimeout(() => forceUpdate({}), ACTIVE_MS);
-            return () => clearInterval(interval);
+            const timeout = setTimeout(() => forceUpdate({}), ACTIVE_MS);
+            return () => clearTimeout(timeout);
         }
     }, [isActive]);
 

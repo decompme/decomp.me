@@ -33,6 +33,8 @@ export default function useLanguageServer(
         useState<(context: string) => Promise<void>>(undefined);
 
     useEffect(() => {
+        let isCurrent = true;
+
         const loadClangdModule = async () => {
             if (!enabled) return;
             if (!(scratch.language === "C" || scratch.language === "C++"))
@@ -41,10 +43,16 @@ export default function useLanguageServer(
             const { ClangdStdioTransport } = await import(
                 "@clangd-wasm/clangd-wasm"
             );
-            setClangdStdioTransportModule(() => ClangdStdioTransport);
+            if (isCurrent) {
+                setClangdStdioTransportModule(() => ClangdStdioTransport);
+            }
         };
 
         loadClangdModule();
+
+        return () => {
+            isCurrent = false;
+        };
     }, [scratch.language, enabled]);
 
     useEffect(() => {
@@ -54,9 +62,19 @@ export default function useLanguageServer(
     }, [scratch, initialScratchState]);
 
     useEffect(() => {
+        let isCurrent = true;
+
         fetch(new URL("./default-clang-format.yaml", import.meta.url))
             .then((res) => res.text())
-            .then(setDefaultClangFormat);
+            .then((defaultClangFormat) => {
+                if (isCurrent) {
+                    setDefaultClangFormat(defaultClangFormat);
+                }
+            });
+
+        return () => {
+            isCurrent = false;
+        };
     }, []);
 
     // We break this out into a seperate effect from the module loading

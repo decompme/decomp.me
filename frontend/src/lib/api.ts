@@ -384,6 +384,8 @@ export function usePaginated<T>(
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        let isCurrent = true;
+
         if (!firstPage) {
             setResults([]);
             setNext(url);
@@ -391,12 +393,18 @@ export function usePaginated<T>(
             setIsLoading(true);
 
             fetchPage(url).then((page: Page<T>) => {
+                if (!isCurrent) return;
+
                 setResults(page.results);
                 setNext(page.next);
                 setPrevious(page.previous);
                 setIsLoading(false);
             });
         }
+
+        return () => {
+            isCurrent = false;
+        };
     }, [fetchPage, url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadNext = useCallback(async () => {

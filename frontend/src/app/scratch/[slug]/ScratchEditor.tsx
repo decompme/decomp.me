@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import useSWR, { type Middleware, SWRConfig } from "swr";
 
@@ -26,12 +26,17 @@ function ScratchEditorInner({
     offline,
 }: Props) {
     const [scratch, setScratch] = useState(initialScratch);
+    const currentScratchUrl = scratchUrl(scratch);
+    const initialScratchUrl = scratchUrl(initialScratch);
 
     useWarnBeforeScratchUnload(scratch);
 
     // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
-    if (scratchUrl(scratch) !== scratchUrl(initialScratch))
-        setScratch(initialScratch);
+    useEffect(() => {
+        if (currentScratchUrl !== initialScratchUrl) {
+            setScratch(initialScratch);
+        }
+    }, [currentScratchUrl, initialScratch, initialScratchUrl]);
 
     // If the server scratch owner changes (i.e. scratch was claimed), update local scratch owner.
     // You can trigger this by:
@@ -41,17 +46,19 @@ function ScratchEditorInner({
     // 4. Notice the scratch owner (in the About panel) has changed to your newly-logged-in user
     const ownerMayChange = !scratch.owner || scratch.owner.is_anonymous;
     const cached = useSWR<api.Scratch>(
-        ownerMayChange && scratchUrl(scratch),
+        ownerMayChange && currentScratchUrl,
         api.get,
     )?.data;
-    if (
-        ownerMayChange &&
-        cached?.owner &&
-        !api.isUserEq(scratch.owner, cached?.owner)
-    ) {
-        console.info("Scratch owner updated", cached.owner);
-        setScratch((scratch) => ({ ...scratch, owner: cached.owner }));
-    }
+    useEffect(() => {
+        if (
+            ownerMayChange &&
+            cached?.owner &&
+            !api.isUserEq(scratch.owner, cached?.owner)
+        ) {
+            console.info("Scratch owner updated", cached.owner);
+            setScratch((scratch) => ({ ...scratch, owner: cached.owner }));
+        }
+    }, [cached?.owner, ownerMayChange, scratch.owner]);
 
     // On initial page load, request the latest scratch from the server, and
     // update `scratch` if it's newer.
@@ -59,16 +66,29 @@ function ScratchEditorInner({
     // was updated, so the originally-loaded initialScratch prop becomes stale.
     // https://github.com/decompme/decomp.me/issues/711
     useEffect(() => {
-        api.get(scratchUrl(scratch)).then((updatedScratch: api.Scratch) => {
-            const updateTime = new Date(updatedScratch.last_updated);
-            const scratchTime = new Date(scratch.last_updated);
+        let isCurrent = true;
 
-            if (scratchTime < updateTime) {
-                console.info("Client got updated scratch", updatedScratch);
-                setScratch(updatedScratch);
-            }
+        api.get(initialScratchUrl).then((updatedScratch: api.Scratch) => {
+            if (!isCurrent) return;
+
+            const updateTime = new Date(updatedScratch.last_updated);
+
+            setScratch((scratch) => {
+                const scratchTime = new Date(scratch.last_updated);
+
+                if (scratchTime < updateTime) {
+                    console.info("Client got updated scratch", updatedScratch);
+                    return updatedScratch;
+                }
+
+                return scratch;
+            });
         });
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [initialScratchUrl]);
 
     return (
         <>
@@ -100,22 +120,29 @@ export interface Props {
 export default function ScratchEditor(props: Props) {
     const [offline, setOffline] = useState(false);
 
-    const offlineMiddleware: Middleware = (_useSWRNext) => {
-        return (key, fetcher, config) => {
-            let swr = _useSWRNext(key, fetcher, config);
+    const offlineMiddleware = useMemo<Middleware>(() => {
+        return (_useSWRNext) => {
+            return function useOfflineMiddleware(key, fetcher, config) {
+                const swr = _useSWRNext(key, fetcher, config);
 
-            if (swr.error instanceof api.RequestFailedError) {
-                setOffline(true);
-                swr = Object.assign({}, swr, { error: null });
-            }
+                useEffect(() => {
+                    if (swr.error instanceof api.RequestFailedError) {
+                        setOffline(true);
+                    }
+                }, [swr.error]);
 
-            return swr;
+                if (swr.error instanceof api.RequestFailedError) {
+                    return Object.assign({}, swr, { error: null });
+                }
+
+                return swr;
+            };
         };
-    };
+    }, []);
 
-    const onSuccess = () => {
+    const onSuccess = useCallback(() => {
         setOffline(false);
-    };
+    }, []);
 
     return (
         <>

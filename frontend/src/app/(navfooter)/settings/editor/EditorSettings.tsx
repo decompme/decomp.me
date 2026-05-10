@@ -46,6 +46,7 @@ export default function EditorSettings() {
         }
 
         if (languageServerEnabled) {
+            let isCurrent = true;
             setDownloadingLanguageServer(true);
 
             import("@clangd-wasm/clangd-wasm").then(
@@ -54,9 +55,19 @@ export default function EditorSettings() {
                     // is is a way to make sure the wasm file ends up in the browser's cache.
                     fetch(ClangdStdioTransport.getDefaultWasmURL(false))
                         .then((res) => res.blob())
-                        .then(() => setDownloadingLanguageServer(false));
+                        .then(() => {
+                            if (isCurrent) {
+                                setDownloadingLanguageServer(false);
+                            }
+                        });
                 },
             );
+
+            return () => {
+                isCurrent = false;
+            };
+        } else {
+            setDownloadingLanguageServer(false);
         }
     }, [languageServerEnabled]);
 

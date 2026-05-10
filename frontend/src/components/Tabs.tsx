@@ -8,6 +8,7 @@ import {
     type RefObject,
     useLayoutEffect,
     useRef,
+    useEffect,
 } from "react";
 
 import { XIcon } from "@primer/octicons-react";
@@ -188,10 +189,13 @@ export default function Tabs({
 
     // Switch to first tab if active tab is not found
     const activeChild = tabs[activeTab];
+    const hasActiveChild = !!activeChild;
     const firstTab = Object.keys(tabs)[0];
-    if (!activeChild && firstTab) {
-        onChange(firstTab);
-    }
+    useEffect(() => {
+        if (!hasActiveChild && firstTab) {
+            onChange(firstTab);
+        }
+    }, [hasActiveChild, firstTab, onChange]);
 
     return (
         <TABS_CTX.Provider
