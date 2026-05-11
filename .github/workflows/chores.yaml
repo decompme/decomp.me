@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Commit changes
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "🤖 (chore): bump m2c / asm-differ to latest"
           title: "🤖 (chore): bump m2c / asm-differ to latest"
