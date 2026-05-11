@@ -44,10 +44,7 @@ def scratch_improves(original: Any, candidate: Any) -> bool:
         return (
             candidate_is_match
             and scratch_has_score(candidate)
-            and (
-                not scratch_has_score(original)
-                or candidate.score < original.score
-            )
+            and (not scratch_has_score(original) or candidate.score < original.score)
         )
 
     if candidate_is_match:

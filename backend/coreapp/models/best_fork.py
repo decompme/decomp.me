@@ -112,8 +112,7 @@ def find_best_fork_for_original(original: Scratch) -> Scratch | None:
         return None
 
     family = list(
-        Scratch.objects.filter(family_id=original.family_id)
-        .only(
+        Scratch.objects.filter(family_id=original.family_id).only(
             "slug",
             "family_id",
             "parent_id",
