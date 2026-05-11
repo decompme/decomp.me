@@ -16,7 +16,6 @@ class BestFork(NamedTuple):
     score: int
     max_score: int
     is_match: bool
-    match_override: bool
     updated_at: Any
 
 
@@ -122,10 +121,6 @@ def backfill_best_forks(
     processed = 0
     candidate_count = 0
     ancestor_count = 0
-    override_vs_override_count = 0
-    override_vs_override_examples: list[tuple[str, str, str]] = []
-    match_override_candidate_count = 0
-    match_override_candidate_examples: list[tuple[str, str]] = []
     for candidate in qs.iterator(chunk_size=chunk_size):
         processed += 1
         candidate_count += 1
@@ -139,32 +134,13 @@ def backfill_best_forks(
             ancestor_count += 1
 
             if scratch_improves(parent, candidate):
-                if scratch_is_match(parent) and scratch_is_match(candidate):
-                    match_override_candidate_count += 1
-                    if len(match_override_candidate_examples) < 10:
-                        match_override_candidate_examples.append(
-                            (parent.pk, candidate.pk)
-                        )
-
                 record = best_by_scratch.get(parent.pk)
-                if (
-                    record is not None
-                    and candidate.match_override
-                    and record.match_override
-                ):
-                    override_vs_override_count += 1
-                    if len(override_vs_override_examples) < 10:
-                        override_vs_override_examples.append(
-                            (parent.pk, candidate.pk, record.fork_id)
-                        )
-
                 if candidate_beats_record(candidate, record):
                     best_by_scratch[parent.pk] = BestFork(
                         fork_id=candidate.pk,
                         score=candidate.score,
                         max_score=candidate.max_score,
                         is_match=scratch_is_match(candidate),
-                        match_override=candidate.match_override,
                         updated_at=candidate.last_updated,
                     )
 
@@ -187,30 +163,6 @@ def backfill_best_forks(
         f"{ancestor_count:,}",
         f"{len(best_by_scratch):,}",
     )
-    logger.info(
-        "Saw %s override-vs-override best-fork comparisons",
-        f"{override_vs_override_count:,}",
-    )
-    logger.info(
-        "Saw %s match-improving matched candidates",
-        f"{match_override_candidate_count:,}",
-    )
-    if match_override_candidate_examples:
-        logger.info(
-            "Match-improving candidate examples: %s",
-            ", ".join(
-                f"scratch={scratch_id} candidate={candidate_id}"
-                for scratch_id, candidate_id in match_override_candidate_examples
-            ),
-        )
-    if override_vs_override_examples:
-        logger.info(
-            "Override-vs-override examples: %s",
-            ", ".join(
-                f"scratch={scratch_id} candidate={candidate_id} current_best={record_id}"
-                for scratch_id, candidate_id, record_id in override_vs_override_examples
-            ),
-        )
 
     records = []
     created = 0
@@ -236,14 +188,6 @@ def backfill_best_forks(
     logger.info("Finished creating %s BestFork rows", f"{created:,}")
 
 
-# def delete_backfilled_best_forks(
-#     apps: Apps,
-#     schema_editor: BaseDatabaseSchemaEditor,
-# ) -> None:
-#     BestForkModel = apps.get_model("coreapp", "BestFork")
-#     BestForkModel.objects.all().delete()
-
-
 class Migration(migrations.Migration):
     atomic = False
 
@@ -254,6 +198,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             backfill_best_forks,
-            # delete_backfilled_best_forks,
         ),
     ]
