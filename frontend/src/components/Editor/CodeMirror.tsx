@@ -21,7 +21,15 @@ function useLeadingTrailingDebounceCallback(
     callback: () => void,
     delay: number,
 ) {
-    const timeout = useRef<any>(null);
+    const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timeout.current) {
+                clearTimeout(timeout.current);
+            }
+        };
+    }, []);
 
     return useCallback(() => {
         if (timeout.current) {
@@ -32,7 +40,7 @@ function useLeadingTrailingDebounceCallback(
         }
 
         timeout.current = setTimeout(() => {
-            timeout.current = undefined;
+            timeout.current = null;
 
             // Trailing
             callback();
@@ -89,8 +97,12 @@ export default function CodeMirror({
 
     // Defer calls to onChange to avoid excessive re-renders
     const propagateValue = useLeadingTrailingDebounceCallback(() => {
-        onChangeRef.current?.(viewRef.current.state.doc.toString());
+        const view = viewRef.current;
+        if (view) {
+            onChangeRef.current?.(view.state.doc.toString());
+        }
     }, 100);
+    const animationFrameIds = useRef(new Set<number>());
 
     // Initial view creation
     useEffect(() => {
@@ -113,9 +125,11 @@ export default function CodeMirror({
                             ).number;
                             if (hoveredLineRef.current !== line) {
                                 hoveredLineRef.current = line;
-                                requestAnimationFrame(() => {
+                                const frameId = requestAnimationFrame(() => {
+                                    animationFrameIds.current.delete(frameId);
                                     onSelectedLineChangeRef.current?.(line);
                                 });
+                                animationFrameIds.current.add(frameId);
                             }
 
                             return null;
@@ -131,6 +145,10 @@ export default function CodeMirror({
         if (viewRefProp) viewRefProp.current = viewRef.current;
 
         return () => {
+            for (const frameId of animationFrameIds.current) {
+                cancelAnimationFrame(frameId);
+            }
+            animationFrameIds.current.clear();
             viewRef.current.destroy();
             viewRef.current = null;
             if (viewRefProp) viewRefProp.current = null;
