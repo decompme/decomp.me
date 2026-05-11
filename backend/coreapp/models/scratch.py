@@ -168,6 +168,18 @@ class Scratch(models.Model):
         return self.owner is None
 
     @property
+    def has_score(self) -> bool:
+        return self.score >= 0
+
+    @property
+    def is_match(self) -> bool:
+        return self.score == 0 or self.match_override
+
+    @property
+    def has_usable_result(self) -> bool:
+        return self.has_score or self.match_override
+
+    @property
     def claim_token(self) -> str:
         s = itsdangerous.URLSafeSerializer(settings.SECRET_KEY, salt="claim-token")
         return s.dumps({"slug": self.slug})

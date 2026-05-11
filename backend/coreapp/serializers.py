@@ -11,6 +11,7 @@ from coreapp import platforms
 from . import compilers
 from .flags import LanguageFlagSet
 from .libraries import Library
+from .models.best_fork import BestFork
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -358,6 +359,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
+    best_fork = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
@@ -376,7 +378,24 @@ class TerseScratchSerializer(ScratchSerializer):
             "parent",
             "preset",
             "libraries",
+            "best_fork",
         ]
+
+    def get_best_fork(self, scratch: Scratch) -> dict[str, Any] | None:
+        try:
+            best_fork: BestFork = scratch.best_fork
+        except BestFork.DoesNotExist:
+            return None
+
+        fork = best_fork.fork
+        return {
+            "slug": fork.slug,
+            "owner": serialize_profile(fork.owner) if fork.owner else None,
+            "score": best_fork.score,
+            "max_score": best_fork.max_score,
+            "is_match": best_fork.is_match,
+            "updated_at": best_fork.updated_at,
+        }
 
 
 # On initial creation, include the "claim_token" field.

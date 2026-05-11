@@ -36,7 +36,7 @@ export default function UserAvatar({ user, className }: Props) {
     return (
         <span className={clsx(styles.avatar, className)}>
             {api.isAnonUser(user) ? (
-                <AnonymousFrogAvatar user={user} />
+                <AnonymousFrogAvatar user={user} className="size-full" />
             ) : (
                 userAvatarUrl(user) && (
                     <Image src={userAvatarUrl(user)} alt="" fill sizes="64px" />
