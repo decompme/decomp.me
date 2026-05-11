@@ -20,6 +20,40 @@
     }
 }
 
+.icon {
+    flex-shrink: 0;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.improvement {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.35rem;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.45rem;
+
+    border-radius: 999px;
+
+    background: var(--link);
+    color: white;
+    font-size: 0.8em;
+    font-weight: 600;
+    line-height: 1;
+
+    &.match {
+        background: var(--accent);
+    }
+}
+
+.improvementIcon {
+    flex-shrink: 0;
+    color: white;
+}
+
 .scratch {
     display: grid;
     gap: 8px;
@@ -51,50 +85,15 @@
         overflow: hidden;
     }
 
-    .icon {
-        flex-shrink: 0;
-        width: 1.2em;
-        height: 1.2em;
-    }
-
     .owner {
         flex-shrink: 0;
         white-space: nowrap;
         color: var(--g1200);
     }
 
-    .improvement,
     .improvementSlot {
         display: inline-flex;
         align-items: center;
-    }
-
-    .improvement {
-        gap: 0.35rem;
-        justify-content: center;
-        min-width: 1.4rem;
-        height: 1.4rem;
-        padding: 0 0.45rem;
-
-        border-radius: 999px;
-
-        background: var(--link);
-        color: white;
-        font-size: 0.8em;
-        font-weight: 600;
-        line-height: 1;
-
-        &.match {
-            background: var(--accent);
-        }
-    }
-
-    .improvementIcon {
-        flex-shrink: 0;
-        color: white;
-    }
-
-    .improvementSlot {
         justify-content: center;
         min-width: 1rem;
     }
@@ -136,46 +135,10 @@
 
     padding: 0.4em 0;
 
-    .icon {
-        flex-shrink: 0;
-        width: 1.2em;
-        height: 1.2em;
-    }
-
     .name {
         flex-grow: 1;
 
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    .metadata {
-        color: var(--g1200);
-    }
-
-    .improvement {
-        flex-shrink: 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        justify-content: center;
-        min-width: 1.4rem;
-        height: 1.4rem;
-        padding: 0 0.45rem;
-        background: var(--link);
-        color: white;
-        border-radius: 999px;
-        font-size: 0.8em;
-        font-weight: 600;
-        line-height: 1;
-
-        &.match {
-            background: var(--accent);
-        }
-    }
-
-    .improvementIcon {
-        flex-shrink: 0;
-        color: white;
     }
 }
