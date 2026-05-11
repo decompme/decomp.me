@@ -12,10 +12,6 @@ const IMAGE_HEIGHT_PX = 400;
 export const runtime = "edge";
 
 export default async function HomeOG() {
-    const OpenSansExtraBold = fetch(
-        new URL("../../public/fonts/OpenSans-ExtraBold.ttf", import.meta.url),
-    ).then((res) => res.arrayBuffer());
-
     const OpenSansSemiBold = fetch(
         new URL("../../public/fonts/OpenSans-SemiBold.ttf", import.meta.url),
     ).then((res) => res.arrayBuffer());
@@ -57,7 +53,7 @@ export default async function HomeOG() {
             <div tw="w-full h-1/10" />
             <div
                 tw={`flex w-full justify-center text-[${textSize.title}rem]`}
-                style={{ fontFamily: "OpenSans-ExtraBold" }}
+                style={{ fontFamily: "OpenSans-Bold" }}
             >
                 decomp.me
             </div>
@@ -83,10 +79,6 @@ export default async function HomeOG() {
             width: IMAGE_WIDTH_PX,
             height: IMAGE_HEIGHT_PX,
             fonts: [
-                {
-                    name: "OpenSans-ExtraBold",
-                    data: await OpenSansExtraBold,
-                },
                 {
                     name: "OpenSans-SemiBold",
                     data: await OpenSansSemiBold,
