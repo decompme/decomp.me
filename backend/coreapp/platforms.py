@@ -225,7 +225,7 @@ NDS_ARM9 = Platform(
     description="ARMv5TE",
     arch="arm32",
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
+    objdump_cmd="arm-none-eabi-objdump -marmv5te",
     nm_cmd="arm-none-eabi-nm",
     has_decompiler=True,
 )
