@@ -7,7 +7,7 @@ export const metadata = {
     title: "New scratch",
 };
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function NewScratchPage() {
     const availablePlatforms = await getPublic("/platform");

@@ -7,8 +7,6 @@ ENTRYPOINT ["/frontend/docker_entrypoint.sh"]
 
 FROM node:24-alpine AS builder
 
-RUN apk add curl
-
 COPY package.json /frontend/
 COPY yarn.lock /frontend/
 
@@ -27,7 +25,6 @@ COPY loaders /frontend/loaders
 COPY public /frontend/public
 COPY src /frontend/src
 
-# NOTE: 'backend' will point to bare-metal host via docker0 bridge adapter
 ARG INTERNAL_API_BASE=http://backend:8000/api
 ENV INTERNAL_API_BASE=${INTERNAL_API_BASE}
 
@@ -43,12 +40,7 @@ ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 ARG OBJDIFF_BASE=https://diff.decomp.me/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
-# allows for cache busting even if only backend changed
 ARG GIT_HASH
-
-RUN until curl -s --head "${INTERNAL_API_BASE}" | grep "HTTP/" > /dev/null; do \
-    sleep 1; \
-    done
 
 RUN yarn build && rm -rf .next/cache
 
