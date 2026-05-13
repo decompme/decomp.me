@@ -65,7 +65,7 @@ export function useWarnBeforeUnload(
         navigationWarning.enabled = enabledRef.current;
         navigationWarning.message = messageRef.current;
         let shouldLeaveAfterPop = false;
-        let isRemovingHistoryGuard = false;
+        let restoreHistoryGuardTimeout: number | undefined;
 
         const armHistoryGuard = () => {
             if (
@@ -131,11 +131,6 @@ export function useWarnBeforeUnload(
         };
 
         const onPopState = () => {
-            if (isRemovingHistoryGuard) {
-                isRemovingHistoryGuard = false;
-                return;
-            }
-
             if (shouldLeaveAfterPop) {
                 shouldLeaveAfterPop = false;
                 return;
@@ -151,7 +146,11 @@ export function useWarnBeforeUnload(
                 return;
             }
 
-            armHistoryGuard();
+            // Back landed on the real page entry. Re-arm after the traversal
+            // settles so repeated Back clicks keep prompting.
+            restoreHistoryGuardTimeout = window.setTimeout(() => {
+                armHistoryGuard();
+            });
         };
 
         const onUnload = (event: BeforeUnloadEvent) => {
@@ -173,8 +172,8 @@ export function useWarnBeforeUnload(
 
         return () => {
             navigationWarning.enabled = false;
+            window.clearTimeout(restoreHistoryGuardTimeout);
             if (window.history.state?.[historyGuardKey]) {
-                isRemovingHistoryGuard = true;
                 window.history.back();
             }
             document.removeEventListener("click", onClick, { capture: true });
