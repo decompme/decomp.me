@@ -35,6 +35,7 @@ from ..filters.search import NonEmptySearchFilter
 from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
+from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
 from ..platforms import Platform
@@ -130,7 +131,10 @@ def diff_compilation(
         return DiffResult(None, str(e))
 
 
-def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
+def update_scratch_score(
+    scratch: Scratch,
+    diff: DiffResult,
+) -> None:
     """
     Given a scratch and a diff, update the scratch's score
     """
@@ -143,9 +147,12 @@ def update_scratch_score(scratch: Scratch, diff: DiffResult) -> None:
         scratch.score = score
         scratch.max_score = max_score
         scratch.save(update_fields=["score", "max_score"])
+        update_best_forks_for_scratch(scratch)
 
 
-def compile_scratch_update_score(scratch: Scratch) -> None:
+def compile_scratch_update_score(
+    scratch: Scratch,
+) -> None:
     """
     Initialize the scratch's score and ignore errors should they occur
     """
@@ -202,7 +209,10 @@ def update_needs_recompile(partial: dict[str, Any]) -> bool:
     return False
 
 
-def create_scratch(data: dict[str, Any], allow_project: bool = False) -> Scratch:
+def create_scratch(
+    data: dict[str, Any],
+    allow_project: bool = False,
+) -> Scratch:
     create_ser = ScratchCreateSerializer(data=data)
     create_ser.is_valid(raise_exception=True)
     data = create_ser.validated_data
@@ -300,7 +310,10 @@ class ScratchViewSet(
 
     queryset = (
         Scratch.objects.all()
-        .select_related("owner__user__github")
+        .select_related(
+            "owner__user__github",
+            "best_fork__fork__owner__user__github",
+        )
         .annotate(match_percent=match_percent)
     )
     pagination_class = ScratchPagination
@@ -340,10 +353,14 @@ class ScratchViewSet(
             response.status_code = status.HTTP_403_FORBIDDEN
             return response
 
+        match_override_was_enabled = scratch.match_override
         response = super().update(request, *args, **kwargs)
+        scratch = self.get_object()
+
+        if match_override_was_enabled != scratch.match_override:
+            update_best_forks_for_scratch(scratch)
 
         if update_needs_recompile(request.data):
-            scratch = self.get_object()
             compile_scratch_update_score(scratch)
             return Response(
                 ScratchSerializer(scratch, context={"request": request}).data
@@ -580,7 +597,10 @@ class ScratchViewSet(
         else:
             family = subqueries[0].union(*subqueries[1:])
 
-        family = family.order_by("creation_time")
+        family_ids = family.values_list("slug", flat=True)
+        family = ScratchViewSet.queryset.filter(slug__in=family_ids).order_by(
+            "creation_time"
+        )
 
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data

@@ -45,6 +45,16 @@ export interface TerseScratch {
     match_override: boolean;
     project: string;
     libraries: Library[];
+    best_fork: BestFork | null;
+}
+
+export interface BestFork {
+    slug: string;
+    owner: AnonymousUser | User | null;
+    score: number;
+    max_score: number;
+    is_match: boolean;
+    updated_at: string;
 }
 
 export interface Scratch extends TerseScratch {

@@ -32,7 +32,10 @@ class SearchViewSet(APIView):
 
         user_qs = Profile.objects.filter(user__username__icontains=query)[:page_size]
         preset_qs = Preset.objects.filter(name__icontains=query)[:page_size]
-        scratch_qs = Scratch.objects.filter(name__icontains=query)[:page_size]
+        scratch_qs = Scratch.objects.filter(name__icontains=query).select_related(
+            "owner__user__github",
+            "best_fork__fork__owner__user__github",
+        )[:page_size]
 
         results = []
 
