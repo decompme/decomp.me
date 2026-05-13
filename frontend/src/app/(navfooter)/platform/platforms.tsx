@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import PlatformSelect from "@/components/PlatformSelect";
 import type * as api from "@/lib/api";

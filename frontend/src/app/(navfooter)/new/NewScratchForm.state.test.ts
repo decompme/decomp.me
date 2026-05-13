@@ -52,6 +52,7 @@ function scratch(overrides: Partial<TerseScratch>): TerseScratch {
         parent: null,
         project: "",
         libraries: [],
+        best_fork: null,
         ...overrides,
     };
 }

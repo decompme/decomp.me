@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
 
 import clsx from "clsx";
 import { useDebounce } from "use-debounce";
@@ -23,6 +22,7 @@ import Select from "@/components/Select2";
 import { SingleLineScratchItem } from "@/components/ScratchItem";
 import * as api from "@/lib/api";
 import { useCompilers, usePresets } from "@/lib/api";
+import { useRouter } from "@/lib/navigation";
 import { get } from "@/lib/api/request";
 import { scratchUrl } from "@/lib/api/urls";
 import type { TerseScratch } from "@/lib/api/types";

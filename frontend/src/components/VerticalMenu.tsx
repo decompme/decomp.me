@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import clsx from "clsx";
 

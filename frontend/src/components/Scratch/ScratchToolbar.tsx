@@ -20,7 +20,6 @@ import {
 import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
 
 import TimeAgo from "@/components/TimeAgo";
 import * as api from "@/lib/api";
@@ -151,34 +150,9 @@ function ScratchName({
     }
 }
 
-function NewScratchButton({ isDirty }: { isDirty: boolean }) {
-    const router = useRouter();
-
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (
-            e.metaKey ||
-            e.ctrlKey ||
-            e.shiftKey ||
-            e.altKey ||
-            e.button !== 0
-        ) {
-            return;
-        }
-
-        e.preventDefault();
-
-        if (
-            !isDirty ||
-            confirm(
-                "This scratch has pending changes, are you sure you want to navigate away?",
-            )
-        ) {
-            router.push("/new");
-        }
-    };
-
+function NewScratchButton() {
     return (
-        <Link href="/new" onClick={handleClick}>
+        <Link href="/new">
             <FileIcon />
             <span className="hidden md:inline">New</span>
         </Link>
@@ -213,7 +187,6 @@ function ActionButton({
 
 function Actions({
     isCompiling,
-    isDirty,
     compile,
     scratch,
     setScratch,
@@ -252,7 +225,7 @@ function Actions({
     return (
         <ul className={styles.actions} aria-label="Scratch actions">
             <li>
-                <NewScratchButton isDirty={isDirty} />
+                <NewScratchButton />
             </li>
             <li>
                 <ActionButton
@@ -366,7 +339,6 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
 
 export type Props = {
     isCompiling: boolean;
-    isDirty: boolean;
     compile: () => Promise<void>;
     scratch: Readonly<api.Scratch>;
     setScratch: (scratch: Partial<api.Scratch>) => void;

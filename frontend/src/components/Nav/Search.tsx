@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import { SearchIcon } from "@primer/octicons-react";
 import clsx from "clsx";
