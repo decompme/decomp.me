@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { isAnonUser, type User, type AnonymousUser } from "@/lib/api/types";
 
@@ -42,11 +42,7 @@ export default function UserLink({
     }
 
     return (
-        <Link
-            href={url}
-            prefetch={false}
-            className="hover:underline active:translate-y-px"
-        >
+        <Link href={url} className="hover:underline active:translate-y-px">
             {inner}
         </Link>
     );

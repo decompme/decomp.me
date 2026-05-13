@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import useSWR from "swr";
 
@@ -31,11 +31,7 @@ function ScratchLink({ url }: { url: string }) {
 
     return (
         <span className={styles.scratchLinkContainer}>
-            <Link
-                href={scratchUrl(scratch)}
-                className={styles.scratchLink}
-                prefetch={false}
-            >
+            <Link href={scratchUrl(scratch)} className={styles.scratchLink}>
                 {scratch.name || "Untitled scratch"}
             </Link>
             {scratch.owner && (
@@ -103,9 +99,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                 {preset && (
                     <div className={styles.horizontalField}>
                         <p className={styles.label}>Preset</p>
-                        <Link href={presetUrl(preset)} prefetch={false}>
-                            {preset.name}
-                        </Link>
+                        <Link href={presetUrl(preset)}>{preset.name}</Link>
                     </div>
                 )}
                 <div className={styles.horizontalField}>

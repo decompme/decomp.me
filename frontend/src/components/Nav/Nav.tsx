@@ -2,7 +2,7 @@
 
 import { useEffect, useReducer, type ReactNode } from "react";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useRouter } from "next/navigation";
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";

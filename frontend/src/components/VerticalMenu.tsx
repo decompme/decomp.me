@@ -6,7 +6,7 @@ import {
     useState,
 } from "react";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useRouter } from "next/navigation";
 
 import clsx from "clsx";
