@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { platformUrl } from "@/lib/api/urls";
 
@@ -63,7 +63,7 @@ export function PlatformIcon({ platform, className, clickable, size }: Props) {
 
     if (clickable) {
         return (
-            <Link href={url} prefetch={false}>
+            <Link href={url}>
                 <Icon width={size} height={size} className={className} />
             </Link>
         );

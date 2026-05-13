@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { ArrowRightIcon } from "@primer/octicons-react";
 
@@ -40,7 +40,7 @@ export default function WelcomeInfo() {
                     {SITE_DESCRIPTION}
                 </p>
                 <div className="flex flex-col items-center justify-center gap-2 md:flex-row">
-                    <Link href="/new" prefetch={false}>
+                    <Link href="/new">
                         <Button primary>
                             Start decomping
                             <ArrowRightIcon />
@@ -50,15 +50,11 @@ export default function WelcomeInfo() {
                 </div>
                 <p className="mx-auto my-6 w-full max-w-screen-sm text-gray-11 text-sm leading-tight">
                     Alternatively, check out existing scratches filtered by{" "}
-                    <Link
-                        className="font-bold"
-                        href="/platform"
-                        prefetch={false}
-                    >
+                    <Link className="font-bold" href="/platform">
                         platform
                     </Link>{" "}
                     or{" "}
-                    <Link className="font-bold" href="/preset" prefetch={false}>
+                    <Link className="font-bold" href="/preset">
                         preset
                     </Link>
                     .

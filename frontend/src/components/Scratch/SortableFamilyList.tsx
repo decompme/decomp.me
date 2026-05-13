@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import clsx from "clsx";
 import useSWR from "swr";
@@ -51,11 +51,7 @@ function FamilyMember({
             {isCurrent ? (
                 <span className="font-medium text-gray-11">This scratch</span>
             ) : (
-                <Link
-                    href={scratchUrl(scratch)}
-                    className="font-medium"
-                    prefetch={false}
-                >
+                <Link href={scratchUrl(scratch)} className="font-medium">
                     {scratch.name}
                 </Link>
             )}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { platformUrl } from "@/lib/api/urls";
 
@@ -14,7 +14,7 @@ export default function PlatformLink(props: Props) {
     const Icon = platformIcon(props.platform);
 
     return (
-        <Link href={platformUrl(props.platform)} prefetch={false}>
+        <Link href={platformUrl(props.platform)}>
             <Icon
                 width={props.size}
                 height={props.size}

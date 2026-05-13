@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { RepoForkedIcon } from "@primer/octicons-react";
 import clsx from "clsx";
@@ -54,7 +54,6 @@ export function Improvement({
     return (
         <Link
             href={`/scratch/${improvement.slug}`}
-            prefetch={false}
             className={clsx(styles.improvement, {
                 [styles.match]: improvement.is_match,
             })}
@@ -82,7 +81,6 @@ function ScratchItemTitle({
             )}
             <Link
                 href={scratchUrl(scratch)}
-                prefetch={false}
                 className={clsx(styles.link, styles.name)}
             >
                 {scratch.name}
@@ -110,7 +108,7 @@ function ScratchPresetOrCompiler({ scratch }: { scratch: api.TerseScratch }) {
     const presetName = preset?.name;
 
     return presetName ? (
-        <Link href={presetUrl(preset)} prefetch={false} className={styles.link}>
+        <Link href={presetUrl(preset)} className={styles.link}>
             {presetName}
         </Link>
     ) : (
@@ -250,7 +248,6 @@ export function SingleLineScratchItem({
             />
             <Link
                 href={scratchUrl(scratch)}
-                prefetch={false}
                 className={clsx(styles.link, styles.name)}
             >
                 {scratch.name}

@@ -2,7 +2,7 @@
 
 import { type JSX, type ReactNode, useState } from "react";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import clsx from "clsx";
 

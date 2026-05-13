@@ -19,7 +19,7 @@ import {
 } from "@primer/octicons-react";
 import clsx from "clsx";
 import ContentEditable from "react-contenteditable";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useRouter } from "next/navigation";
 
 import TimeAgo from "@/components/TimeAgo";
