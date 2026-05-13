@@ -3,7 +3,7 @@
 import { useEffect, useReducer, type ReactNode } from "react";
 
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
 import clsx from "clsx";

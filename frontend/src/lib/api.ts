@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 import useSWR, { type Revalidator, type RevalidatorOptions, mutate } from "swr";
 import useSWRImmutable from "swr/immutable";

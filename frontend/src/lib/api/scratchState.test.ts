@@ -24,6 +24,7 @@ const scratch = (overrides: Partial<Scratch> = {}): Scratch => ({
     match_override: false,
     project: "",
     libraries: [{ name: "libultra", version: "2.0I" }],
+    best_fork: null,
     description: "notes",
     compiler_flags: "-O2",
     diff_flags: ["-DIFFreloc"],
