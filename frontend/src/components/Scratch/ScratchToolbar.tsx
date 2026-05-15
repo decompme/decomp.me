@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import {
+    CheckIcon,
     DownloadIcon,
     FileIcon,
     IterationsIcon,
@@ -32,9 +33,7 @@ import PlatformLink from "../PlatformLink";
 import { SpecialKey, useShortcut } from "../Shortcut";
 import UserAvatar from "../user/UserAvatar";
 
-import useFuzzySaveCallback, {
-    FuzzySaveAction,
-} from "./hooks/useFuzzySaveCallback";
+import useFuzzySaveCallback from "./hooks/useFuzzySaveCallback";
 import styles from "./ScratchToolbar.module.scss";
 
 const ACTIVE_MS = 1000 * 60;
@@ -195,25 +194,36 @@ function Actions({
 }: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
-    const [fuzzySaveAction, fuzzySaveScratch] = useFuzzySaveCallback(
-        scratch,
-        setScratch,
-    );
+    const [, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
 
-    const canSave = scratch.owner && userIsYou(scratch.owner);
+    const canSave = !!(scratch.owner && userIsYou(scratch.owner));
+    const isSaved = api.useIsScratchSaved(scratch);
 
     const platform = api.usePlatform(scratch.platform);
 
+    const saveScratch = async () => {
+        if (!canSave || isSaved || isSaving) return;
+
+        setIsSaving(true);
+        await fuzzySaveScratch();
+        setIsSaving(false);
+        saveCallback();
+    };
+
+    const forkCurrentScratch = async () => {
+        if (isForking) return;
+
+        setIsForking(true);
+        await forkScratch();
+        setIsForking(false);
+        saveCallback();
+    };
+
     const fuzzyShortcut = useShortcut(
         [SpecialKey.CTRL_COMMAND, "S"],
-        async () => {
-            setIsSaving(true);
-            await fuzzySaveScratch();
-            setIsSaving(false);
-            saveCallback();
-        },
+        canSave ? saveScratch : forkCurrentScratch,
     );
 
     const compileShortcut = useShortcut([SpecialKey.CTRL_COMMAND, "J"], () => {
@@ -227,35 +237,23 @@ function Actions({
             <li>
                 <NewScratchButton />
             </li>
+            {canSave && (
+                <li>
+                    <ActionButton
+                        onClick={saveScratch}
+                        disabled={isSaved || isSaving}
+                        title={isSaved ? "No unsaved changes" : fuzzyShortcut}
+                        text={isSaved ? "Saved" : "Save"}
+                        icon={isSaved ? <CheckIcon /> : <UploadIcon />}
+                    />
+                </li>
+            )}
             <li>
                 <ActionButton
-                    onClick={async () => {
-                        setIsSaving(true);
-                        await fuzzySaveScratch();
-                        setIsSaving(false);
-                        saveCallback();
-                    }}
-                    disabled={!canSave || isSaving}
-                    title={fuzzyShortcut}
-                    text={"Save"}
-                    icon={<UploadIcon />}
-                />
-            </li>
-            <li>
-                <ActionButton
-                    onClick={async () => {
-                        setIsForking(true);
-                        await forkScratch();
-                        setIsForking(false);
-                        saveCallback();
-                    }}
+                    onClick={forkCurrentScratch}
                     disabled={isForking}
-                    title={
-                        fuzzySaveAction === FuzzySaveAction.FORK
-                            ? fuzzyShortcut
-                            : undefined
-                    }
-                    text="Fork"
+                    title={!canSave ? fuzzyShortcut : undefined}
+                    text={!canSave ? "Fork to save" : "Fork"}
                     icon={<RepoForkedIcon />}
                 />
             </li>

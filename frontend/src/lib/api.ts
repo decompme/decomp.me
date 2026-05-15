@@ -142,7 +142,12 @@ export async function claimScratch(scratch: ClaimableScratch): Promise<void> {
 
 export async function forkScratch(parent: TerseScratch): Promise<Scratch> {
     const scratch = await post(`${scratchUrl(parent)}/fork`, parent);
-    await claimScratch(scratch);
+
+    if (scratch.owner) {
+        await mutate("/user", scratch.owner, { revalidate: false });
+    }
+    await mutate(scratchUrl(scratch), scratch, { revalidate: false });
+
     return scratch;
 }
 
