@@ -61,7 +61,7 @@ export function useWarnBeforeUnload(
     enabledRef.current = enabled;
     messageRef.current = message;
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         navigationWarning.enabled = enabledRef.current;
         navigationWarning.message = messageRef.current;
         let shouldLeaveAfterPop = false;
