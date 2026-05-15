@@ -86,10 +86,14 @@ export function useUserIsYou(): (
     ); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-export function useSavedScratch(scratch: Scratch): Scratch {
-    const { data: savedScratch, error } = useSWR(scratchUrl(scratch), get, {
-        fallbackData: scratch, // No loading state, just use the local scratch
-    });
+export function useSavedScratch(scratch: Scratch, enabled = true): Scratch {
+    const { data: savedScratch, error } = useSWR(
+        enabled ? scratchUrl(scratch) : null,
+        get,
+        {
+            fallbackData: scratch, // No loading state, just use the local scratch
+        },
+    );
 
     if (error) throw error;
 
@@ -162,8 +166,8 @@ export function useForkScratchAndGo(parent: TerseScratch): () => Promise<void> {
     }, [parent, router]);
 }
 
-export function useIsScratchSaved(scratch: Scratch): boolean {
-    const saved = useSavedScratch(scratch);
+export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
+    const saved = useSavedScratch(scratch, enabled);
 
     return isScratchSaved(scratch, saved);
 }

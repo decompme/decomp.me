@@ -33,7 +33,6 @@ import PlatformLink from "../PlatformLink";
 import { SpecialKey, useShortcut } from "../Shortcut";
 import UserAvatar from "../user/UserAvatar";
 
-import useFuzzySaveCallback from "./hooks/useFuzzySaveCallback";
 import styles from "./ScratchToolbar.module.scss";
 
 const ACTIVE_MS = 1000 * 60;
@@ -49,12 +48,6 @@ function exportScratchZip(scratch: api.Scratch) {
     a.href = url;
     a.download = `${scratch.name}.zip`;
     a.click();
-}
-
-async function deleteScratch(scratch: api.Scratch) {
-    await api.delete_(scratchUrl(scratch), {});
-
-    window.location.href = scratch.project ? `/${scratch.project}` : "/";
 }
 
 function EditTimeAgo({ date }: { date: string }) {
@@ -190,11 +183,12 @@ function Actions({
     scratch,
     setScratch,
     saveCallback,
+    deleteScratch,
     setDecompilationTabEnabled,
 }: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
-    const [, fuzzySaveScratch] = useFuzzySaveCallback(scratch, setScratch);
+    const saveScratchRequest = api.useSaveScratch(scratch);
     const [isSaving, setIsSaving] = useState(false);
     const [isForking, setIsForking] = useState(false);
 
@@ -207,18 +201,24 @@ function Actions({
         if (!canSave || isSaved || isSaving) return;
 
         setIsSaving(true);
-        await fuzzySaveScratch();
-        setIsSaving(false);
-        saveCallback();
+        try {
+            setScratch(await saveScratchRequest());
+            saveCallback();
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const forkCurrentScratch = async () => {
         if (isForking) return;
 
         setIsForking(true);
-        await forkScratch();
-        setIsForking(false);
-        saveCallback();
+        try {
+            await forkScratch();
+            saveCallback();
+        } finally {
+            setIsForking(false);
+        }
     };
 
     const fuzzyShortcut = useShortcut(
@@ -267,7 +267,7 @@ function Actions({
                                     "Are you sure you want to delete this scratch? This action cannot be undone.",
                                 )
                             ) {
-                                deleteScratch(scratch);
+                                void deleteScratch();
                             }
                         }}
                         text="Delete"
@@ -341,6 +341,7 @@ export type Props = {
     scratch: Readonly<api.Scratch>;
     setScratch: (scratch: Partial<api.Scratch>) => void;
     saveCallback: () => void;
+    deleteScratch: () => Promise<void>;
     setDecompilationTabEnabled: (enabled: boolean) => void;
 };
 
