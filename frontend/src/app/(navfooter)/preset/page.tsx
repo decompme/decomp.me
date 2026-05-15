@@ -1,7 +1,7 @@
 import { Presets } from "@/app/(navfooter)/preset/presets";
 import { getPublic } from "@/lib/api/request";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
     const availablePlatforms = await getPublic("/platform");
