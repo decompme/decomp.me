@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import useSWR, { type Middleware, SWRConfig } from "swr";
 
@@ -9,6 +9,7 @@ import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBefore
 import SetPageTitle from "@/components/SetPageTitle";
 import * as api from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
+import { ignoreNextWarnBeforeUnload } from "@/lib/hooks";
 
 function ScratchPageTitle({ scratch }: { scratch: api.Scratch }) {
     const isSaved = api.useIsScratchSaved(scratch);
@@ -26,10 +27,12 @@ function ScratchEditorInner({
     offline,
 }: Props) {
     const [scratch, setScratch] = useState(initialScratch);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const isDeletingRef = useRef(false);
     const currentScratchUrl = scratchUrl(scratch);
     const initialScratchUrl = scratchUrl(initialScratch);
 
-    useWarnBeforeScratchUnload(scratch);
+    useWarnBeforeScratchUnload(scratch, !isDeleting);
 
     // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
     useEffect(() => {
@@ -46,7 +49,7 @@ function ScratchEditorInner({
     // 4. Notice the scratch owner (in the About panel) has changed to your newly-logged-in user
     const ownerMayChange = !scratch.owner || scratch.owner.is_anonymous;
     const cached = useSWR<api.Scratch>(
-        ownerMayChange && currentScratchUrl,
+        ownerMayChange && !isDeleting && currentScratchUrl,
         api.get,
     )?.data;
     useEffect(() => {
@@ -66,29 +69,72 @@ function ScratchEditorInner({
     // was updated, so the originally-loaded initialScratch prop becomes stale.
     // https://github.com/decompme/decomp.me/issues/711
     useEffect(() => {
+        if (isDeleting) return;
+
         let isCurrent = true;
 
-        api.get(initialScratchUrl).then((updatedScratch: api.Scratch) => {
-            if (!isCurrent) return;
+        api.get(initialScratchUrl)
+            .then((updatedScratch: api.Scratch) => {
+                if (!isCurrent) return;
 
-            const updateTime = new Date(updatedScratch.last_updated);
+                const updateTime = new Date(updatedScratch.last_updated);
 
-            setScratch((scratch) => {
-                const scratchTime = new Date(scratch.last_updated);
+                setScratch((scratch) => {
+                    const scratchTime = new Date(scratch.last_updated);
 
-                if (scratchTime < updateTime) {
-                    console.info("Client got updated scratch", updatedScratch);
-                    return updatedScratch;
+                    if (scratchTime < updateTime) {
+                        console.info(
+                            "Client got updated scratch",
+                            updatedScratch,
+                        );
+                        return updatedScratch;
+                    }
+
+                    return scratch;
+                });
+            })
+            .catch((error) => {
+                if (!isCurrent) return;
+
+                if (
+                    error instanceof api.ResponseError &&
+                    error.status === 404 &&
+                    isDeletingRef.current
+                ) {
+                    return;
                 }
 
-                return scratch;
+                throw error;
             });
-        });
 
         return () => {
             isCurrent = false;
         };
-    }, [initialScratchUrl]);
+    }, [initialScratchUrl, isDeleting]);
+
+    const deleteScratch = useCallback(async () => {
+        isDeletingRef.current = true;
+        setIsDeleting(true);
+
+        try {
+            await api.delete_(currentScratchUrl, {});
+        } catch (error) {
+            isDeletingRef.current = false;
+            setIsDeleting(false);
+            throw error;
+        }
+
+        ignoreNextWarnBeforeUnload();
+        window.location.href = scratch.project ? `/${scratch.project}` : "/";
+    }, [currentScratchUrl, scratch.project]);
+
+    if (isDeleting) {
+        return (
+            <main className="grow">
+                <div className="p-4">Deleting scratch...</div>
+            </main>
+        );
+    }
 
     return (
         <>
@@ -103,6 +149,7 @@ function ScratchEditorInner({
                             return { ...scratch, ...partial };
                         });
                     }}
+                    deleteScratch={deleteScratch}
                     offline={offline}
                 />
             </main>

@@ -180,6 +180,7 @@ function applyDefaultDiffTab(
 export type Props = {
     scratch: Readonly<api.Scratch>;
     onChange: (scratch: Partial<api.Scratch>) => void;
+    deleteScratch: () => Promise<void>;
     parentScratch?: api.Scratch;
     initialCompilation?: Readonly<api.Compilation>;
     offline: boolean;
@@ -188,6 +189,7 @@ export type Props = {
 export default function Scratch({
     scratch,
     onChange,
+    deleteScratch,
     parentScratch,
     initialCompilation,
     offline,
@@ -564,6 +566,7 @@ export default function Scratch({
                     scratch={scratch}
                     setScratch={setScratch}
                     saveCallback={saveCallback}
+                    deleteScratch={deleteScratch}
                     setDecompilationTabEnabled={setDecompilationTabEnabled}
                 />
                 {matchProgressBarEnabledSetting && (

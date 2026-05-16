@@ -117,6 +117,10 @@ nav.breadcrumbs {
                 color: var(--g2000);
                 background: var(--g400);
             }
+
+            @media (width >= 768px) {
+                min-width: 64px;
+            }
         }
     }
 }

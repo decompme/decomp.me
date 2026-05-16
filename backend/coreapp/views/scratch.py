@@ -505,6 +505,7 @@ class ScratchViewSet(
         libraries = [Library(**lib) for lib in ser.validated_data["libraries"]]
         new_scratch = ser.save(
             parent=parent,
+            owner=request.profile,
             target_assembly=parent.target_assembly,
             platform=parent.platform,
             libraries=libraries,
@@ -513,7 +514,7 @@ class ScratchViewSet(
         compile_scratch_update_score(new_scratch)
 
         return Response(
-            ClaimableScratchSerializer(new_scratch, context={"request": request}).data,
+            ScratchSerializer(new_scratch, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 

@@ -484,7 +484,7 @@ class ScratchForkTests(BaseTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        new_claim_token = response.json()["claim_token"]
+        self.assertNotIn("claim_token", response.json())
         new_slug = response.json()["slug"]
 
         scratch = Scratch.objects.get(slug=slug)
@@ -496,9 +496,10 @@ class ScratchForkTests(BaseTestCase):
         # Make sure the name carried over to the fork
         self.assertEqual(scratch.name, fork.name)
 
-        # Ensure the new scratch has a (unique) claim token
-        self.assertIsNotNone(new_claim_token)
-        self.assertIsNot(new_claim_token, old_claim_token)
+        # Ensure the new scratch is owned by the profile that forked it.
+        self.assertEqual(fork.owner_id, self.client.session["profile_id"])
+        self.assertEqual(response.json()["owner"]["id"], fork.owner_id)
+        self.assertNotEqual(fork.claim_token, old_claim_token)
 
 
 class ScratchDetailTests(BaseTestCase):
