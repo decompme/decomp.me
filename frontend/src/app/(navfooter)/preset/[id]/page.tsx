@@ -8,6 +8,7 @@ import { ScratchItemPresetList } from "@/components/ScratchItem";
 import { get } from "@/lib/api/request";
 import type { Preset } from "@/lib/api/types";
 import getTranslation from "@/lib/i18n/translate";
+import PresetDetails from "./PresetDetails";
 
 export async function generateMetadata(props: {
     params: Promise<{ id: number }>;
@@ -67,6 +68,8 @@ export default async function Page(props: { params: Promise<{ id: number }> }) {
                 <h1>{preset.name}</h1>
             </div>
             <p className="py-3 text-gray-11">{compilerName}</p>
+
+            <PresetDetails initialPreset={preset} />
 
             <section>
                 <ScratchList

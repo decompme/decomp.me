@@ -50,6 +50,7 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str
 
         if num_scratches:
             res["num_scratches"] = Scratch.objects.filter(owner__user=user).count()
+            res["num_presets"] = Preset.objects.filter(owner__user=user).count()
 
         return res
 
@@ -77,24 +78,6 @@ class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
         fields = ["id", "name"]
-
-
-class TersePresetSerializer(serializers.ModelSerializer[Preset]):
-    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
-    owner = ProfileField(read_only=True)
-
-    class Meta:
-        model = Preset
-        fields = [
-            "id",
-            "name",
-            "owner",
-            "platform",
-            "compiler",
-            "compiler_flags",
-            "diff_flags",
-            "libraries",
-        ]
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
@@ -144,8 +127,18 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         return compiler
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        compiler = compilers.from_id(data["compiler"])
-        platform = platforms.from_id(data["platform"])
+        if self.instance is not None:
+            invalid_fields = set(data) - {"compiler_flags"}
+            if invalid_fields:
+                raise serializers.ValidationError(
+                    "Only compiler_flags can be edited on an existing preset."
+                )
+
+        compiler_id = data.get("compiler", getattr(self.instance, "compiler", None))
+        platform_id = data.get("platform", getattr(self.instance, "platform", None))
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(platform_id)
 
         if compiler.platform != platform:
             raise serializers.ValidationError(

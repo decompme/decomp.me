@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
@@ -31,7 +32,11 @@ class SearchViewSet(APIView):
         page_size = get_page_size(request.query_params.get("page_size", "5"))
 
         user_qs = Profile.objects.filter(user__username__icontains=query)[:page_size]
-        preset_qs = Preset.objects.filter(name__icontains=query)[:page_size]
+        preset_qs = (
+            Preset.objects.filter(name__icontains=query)
+            .select_related("owner__user", "owner__user__github")
+            .annotate(num_scratches=Count("scratch"))[:page_size]
+        )
         scratch_qs = Scratch.objects.filter(name__icontains=query).select_related(
             "owner__user__github",
             "best_fork__fork__owner__user__github",
