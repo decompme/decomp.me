@@ -27,6 +27,7 @@ export interface User {
 
 export interface ScratchUser extends User {
     num_scratches: number;
+    num_presets: number;
 }
 
 export interface TerseScratch {
