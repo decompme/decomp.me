@@ -134,8 +134,15 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
                     "Only compiler_flags can be edited on an existing preset."
                 )
 
-        compiler_id = data.get("compiler", getattr(self.instance, "compiler", None))
-        platform_id = data.get("platform", getattr(self.instance, "platform", None))
+        compiler_id = data.get("compiler")
+        platform_id = data.get("platform")
+
+        if compiler_id is None and self.instance is not None:
+            compiler_id = self.instance.compiler
+        if platform_id is None and self.instance is not None:
+            platform_id = self.instance.platform
+        if not isinstance(compiler_id, str) or not isinstance(platform_id, str):
+            raise serializers.ValidationError("Compiler and platform are required.")
 
         compiler = compilers.from_id(compiler_id)
         platform = platforms.from_id(platform_id)
