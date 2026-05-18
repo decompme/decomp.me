@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from coreapp.housekeeping import (
+    perform_delete,
     remove_anonymous_profiles,
     remove_orphan_asms,
     remove_orphan_assemblies,
@@ -98,6 +99,19 @@ class HousekeepingTests(TestCase):
 
         self.assertEqual(deleted, 1)
         self.assertTrue(Scratch.objects.filter(pk=old_ownerless_scratch.pk).exists())
+
+    def test_perform_delete_can_delete_in_batches(self) -> None:
+        asms = [
+            Asm.objects.create(hash=f"batched-asm-{index}", data="jr $ra\nnop")
+            for index in range(3)
+        ]
+
+        deleted = perform_delete(
+            Asm.objects.filter(pk__in=[asm.pk for asm in asms]), batch_size=1
+        )
+
+        self.assertEqual(deleted, 3)
+        self.assertFalse(Asm.objects.filter(pk__in=[asm.pk for asm in asms]).exists())
 
     def test_removes_scratchless_anonymous_profiles_created_before_cutoff(self) -> None:
         old_scratchless_profile = Profile.objects.create(user=None)

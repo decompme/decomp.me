@@ -13,10 +13,22 @@ def get_model(model_name: str) -> type[DjangoModel]:
     return apps.get_model("coreapp", model_name.capitalize())
 
 
-def perform_delete(qs: QuerySet[Model], dry_run: bool = False) -> int:
+ORPHAN_ASSET_DELETE_BATCH_SIZE = 1000
+
+
+def perform_delete(
+    qs: QuerySet[Model], dry_run: bool = False, batch_size: int | None = None
+) -> int:
     count = qs.count()
     if dry_run:
         return count
+
+    if batch_size is not None:
+        deleted = 0
+        while ids := list(qs.values_list("pk", flat=True)[:batch_size]):
+            batch_deleted, _ = qs.filter(pk__in=ids).delete()
+            deleted += batch_deleted
+        return deleted
 
     deleted, _ = qs.delete()
     return deleted
@@ -30,7 +42,9 @@ def remove_ownerless_scratches(
     to_delete = Scratch.objects.filter(
         owner__isnull=True, creation_time__lt=cutoff_datetime
     )
-    return perform_delete(to_delete, dry_run=dry_run)
+    return perform_delete(
+        to_delete, dry_run=dry_run, batch_size=ORPHAN_ASSET_DELETE_BATCH_SIZE
+    )
 
 
 def remove_anonymous_profiles(
@@ -42,7 +56,9 @@ def remove_anonymous_profiles(
     to_delete = Profile.objects.annotate(
         has_scratch=Exists(Scratch.objects.filter(owner=OuterRef("pk")))
     ).filter(user__isnull=True, creation_date__lt=cutoff_datetime, has_scratch=False)
-    return perform_delete(to_delete, dry_run=dry_run)
+    return perform_delete(
+        to_delete, dry_run=dry_run, batch_size=ORPHAN_ASSET_DELETE_BATCH_SIZE
+    )
 
 
 def remove_orphan_contexts(
