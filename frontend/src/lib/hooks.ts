@@ -66,6 +66,7 @@ export function useWarnBeforeUnload(
         navigationWarning.message = messageRef.current;
         let shouldLeaveAfterPop = false;
         let restoreHistoryGuardTimeout: number | undefined;
+        let didArmHistoryGuard = false;
 
         const armHistoryGuard = () => {
             if (
@@ -85,6 +86,7 @@ export function useWarnBeforeUnload(
                 "",
                 window.location.href,
             );
+            didArmHistoryGuard = true;
         };
 
         armHistoryGuard();
@@ -173,7 +175,7 @@ export function useWarnBeforeUnload(
         return () => {
             navigationWarning.enabled = false;
             window.clearTimeout(restoreHistoryGuardTimeout);
-            if (window.history.state?.[historyGuardKey]) {
+            if (didArmHistoryGuard && window.history.state?.[historyGuardKey]) {
                 window.history.back();
             }
             document.removeEventListener("click", onClick, { capture: true });
