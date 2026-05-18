@@ -58,6 +58,21 @@ describe("scratch save state", () => {
         );
     });
 
+    it("ignores source and context line ending differences", () => {
+        expect(
+            isScratchSaved(
+                scratch({
+                    source_code: "int main(void) {\n    return 0;\n}",
+                    context: "typedef int s32;\ntypedef float f32;",
+                }),
+                scratch({
+                    source_code: "int main(void) {\r\n    return 0;\r\n}",
+                    context: "typedef int s32;\r\ntypedef float f32;",
+                }),
+            ),
+        ).toBe(true);
+    });
+
     it("compares diff flags and libraries by value", () => {
         expect(
             isScratchSaved(
@@ -96,6 +111,21 @@ describe("scratch save state", () => {
                 scratch({
                     diff_flags: ["-DIFFreloc"],
                     libraries: [{ name: "libultra", version: "2.0I" }],
+                }),
+            ),
+        ).toEqual({});
+    });
+
+    it("does not patch source and context line ending differences", () => {
+        expect(
+            buildScratchSavePatch(
+                scratch({
+                    source_code: "int main(void) {\r\n    return 0;\r\n}",
+                    context: "typedef int s32;\r\ntypedef float f32;",
+                }),
+                scratch({
+                    source_code: "int main(void) {\n    return 0;\n}",
+                    context: "typedef int s32;\ntypedef float f32;",
                 }),
             ),
         ).toEqual({});
@@ -147,6 +177,17 @@ describe("scratch compile request", () => {
 
     it("omits unchanged context when a saved scratch is available", () => {
         expect(buildScratchCompileRequest(scratch(), scratch())).toMatchObject({
+            context: undefined,
+        });
+    });
+
+    it("omits context when only line endings changed", () => {
+        expect(
+            buildScratchCompileRequest(
+                scratch({ context: "typedef int s32;\r\ntypedef float f32;" }),
+                scratch({ context: "typedef int s32;\ntypedef float f32;" }),
+            ),
+        ).toMatchObject({
             context: undefined,
         });
     });

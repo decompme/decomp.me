@@ -79,9 +79,6 @@ function ScratchEditorInner({
                 if (!isCurrent) return;
 
                 const updateTime = new Date(updatedScratch.last_updated);
-                mutate(initialScratchUrl, updatedScratch, {
-                    revalidate: false,
-                });
 
                 setScratch((scratch) => {
                     const scratchTime = new Date(scratch.last_updated);
@@ -91,6 +88,9 @@ function ScratchEditorInner({
                             "Client got updated scratch",
                             updatedScratch,
                         );
+                        mutate(initialScratchUrl, updatedScratch, {
+                            revalidate: false,
+                        });
                         return updatedScratch;
                     }
 
