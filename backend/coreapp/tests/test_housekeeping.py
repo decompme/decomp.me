@@ -106,9 +106,7 @@ class HousekeepingTests(TestCase):
             for index in range(3)
         ]
 
-        deleted = perform_delete(
-            Asm.objects.filter(pk__in=[asm.pk for asm in asms]), batch_size=1
-        )
+        deleted = perform_delete(Asm.objects.filter(pk__in=[asm.pk for asm in asms]))
 
         self.assertEqual(deleted, 3)
         self.assertFalse(Asm.objects.filter(pk__in=[asm.pk for asm in asms]).exists())
