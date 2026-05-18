@@ -147,3 +147,11 @@
         text-overflow: ellipsis;
     }
 }
+
+.red-on-shift {
+    color: rgb(206, 58, 58);
+}
+
+.red-on-shift:hover {
+    color: rgb(245, 141, 141) !important;
+}
