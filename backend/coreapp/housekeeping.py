@@ -13,10 +13,24 @@ def get_model(model_name: str) -> type[DjangoModel]:
     return apps.get_model("coreapp", model_name.capitalize())
 
 
-def perform_delete(qs: QuerySet[Model], dry_run: bool = False) -> int:
+DEFAULT_DELETE_BATCH_SIZE = 1000
+
+
+def perform_delete(
+    qs: QuerySet[Model],
+    dry_run: bool = False,
+    batch_size: int | None = DEFAULT_DELETE_BATCH_SIZE,
+) -> int:
     count = qs.count()
     if dry_run:
         return count
+
+    if batch_size is not None:
+        deleted = 0
+        while ids := list(qs.values_list("pk", flat=True)[:batch_size]):
+            batch_deleted, _ = qs.filter(pk__in=ids).delete()
+            deleted += batch_deleted
+        return deleted
 
     deleted, _ = qs.delete()
     return deleted
