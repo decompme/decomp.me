@@ -71,9 +71,21 @@ export function buildScratchSavePatch(
 }
 
 export function isScratchSaved(local: Scratch, saved: Scratch) {
-    return SCRATCH_SAVE_FIELDS.every((field) =>
-        areScratchFieldValuesEqual(saved, local, field),
-    );
+    let isSaved = true;
+
+    for (const field of SCRATCH_SAVE_FIELDS) {
+        if (!areScratchFieldValuesEqual(saved, local, field)) {
+            console.info("Scratch has unsaved field", {
+                field,
+                saved: saved[field],
+                local: local[field],
+                scratch: local.slug,
+            });
+            isSaved = false;
+        }
+    }
+
+    return isSaved;
 }
 
 export function buildScratchCompileRequest(
