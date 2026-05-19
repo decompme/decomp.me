@@ -85,7 +85,7 @@ function ScratchItemTitle({
                 href={scratchUrl(scratch)}
                 className={clsx(styles.link, styles.name)}
             >
-                {scratch.name + ` [${scratch.slug}]`}
+                {scratch.name}
             </Link>
         </div>
     );
@@ -163,8 +163,13 @@ function ScratchItemRow({
             return;
         }
 
-        await api.delete_(scratchUrl(scratch), {});
-        setShowElement(false);
+        try {
+            await api.delete_(scratchUrl(scratch), {});
+            setShowElement(false); // Hide deleted element to avoid performing a page refresh, and allow deleting more scratches
+        } catch (error) {
+            alert("An error occurred trying to deleting this scratch.");
+            throw error;
+        }
     };
 
     document.body.addEventListener("keydown", (evt: KeyboardEvent) => {
