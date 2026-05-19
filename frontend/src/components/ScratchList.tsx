@@ -34,7 +34,7 @@ export default function ScratchList({
     emptyButtonLabel,
     isSortable,
     isPublic,
-    showDeleteButtons
+    showDeleteButtons,
 }: Props) {
     const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
     const { results, isLoading, hasNext, loadNext } =
@@ -64,7 +64,11 @@ export default function ScratchList({
                     )}
                 >
                     {results.map((scratch) => (
-                        <Item key={scratchUrl(scratch)} scratch={scratch} showDeleteButton={showDeleteButtons} />
+                        <Item
+                            key={scratchUrl(scratch)}
+                            scratch={scratch}
+                            showDeleteButton={showDeleteButtons}
+                        />
                     ))}
                     {results.length === 0 && emptyButtonLabel && (
                         <li className={styles.button}>
