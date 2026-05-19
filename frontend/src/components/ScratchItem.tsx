@@ -1,11 +1,11 @@
 "use client";
 
-import { type ReactNode, JSX, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import Image from "next/image";
 import Link from "@/components/Link";
 
-import { RepoForkedIcon } from "@primer/octicons-react";
+import { RepoForkedIcon, TrashIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 
 import TimeAgo from "@/components/TimeAgo";
@@ -15,12 +15,11 @@ import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 import getTranslation from "@/lib/i18n/translate";
 
 import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
+import Button from "./Button";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";
 import UserLink from "./user/UserLink";
-import Button from "./Button";
-import { TrashIcon } from "@primer/octicons-react";
 
 type MatchPercentSource = api.TerseScratch | api.BestFork;
 
