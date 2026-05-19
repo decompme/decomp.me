@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import useSWR, { type Middleware, SWRConfig } from "swr";
+import useSWR, { type Middleware, SWRConfig, useSWRConfig } from "swr";
 
 import Scratch from "@/components/Scratch";
 import useWarnBeforeScratchUnload from "@/components/Scratch/hooks/useWarnBeforeScratchUnload";
@@ -29,6 +29,7 @@ function ScratchEditorInner({
     const [scratch, setScratch] = useState(initialScratch);
     const [isDeleting, setIsDeleting] = useState(false);
     const isDeletingRef = useRef(false);
+    const { mutate } = useSWRConfig();
     const currentScratchUrl = scratchUrl(scratch);
     const initialScratchUrl = scratchUrl(initialScratch);
 
@@ -87,6 +88,9 @@ function ScratchEditorInner({
                             "Client got updated scratch",
                             updatedScratch,
                         );
+                        mutate(initialScratchUrl, updatedScratch, {
+                            revalidate: false,
+                        });
                         return updatedScratch;
                     }
 
@@ -110,7 +114,7 @@ function ScratchEditorInner({
         return () => {
             isCurrent = false;
         };
-    }, [initialScratchUrl, isDeleting]);
+    }, [initialScratchUrl, isDeleting, mutate]);
 
     const deleteScratch = useCallback(async () => {
         isDeletingRef.current = true;

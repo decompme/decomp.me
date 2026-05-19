@@ -31,16 +31,30 @@ export type ScratchCompileRequest = Pick<
     include_objects: true;
 };
 
+function normalizeLineEndings(value: string) {
+    return value.replace(/\r\n?/g, "\n");
+}
+
 function areScratchFieldValuesEqual<K extends ScratchSaveField>(
     saved: Scratch,
     local: Scratch,
     key: K,
 ) {
+    const savedValue = saved[key];
+    const localValue = local[key];
+
     if (key === "diff_flags" || key === "libraries") {
-        return JSON.stringify(saved[key]) === JSON.stringify(local[key]);
+        return JSON.stringify(savedValue) === JSON.stringify(localValue);
     }
 
-    return saved[key] === local[key];
+    if (key === "source_code" || key === "context") {
+        return (
+            normalizeLineEndings(savedValue as string) ===
+            normalizeLineEndings(localValue as string)
+        );
+    }
+
+    return savedValue === localValue;
 }
 
 export function undefinedIfUnchanged<O, K extends keyof O>(
@@ -87,9 +101,10 @@ export function buildScratchCompileRequest(
         diff_label: local.diff_label,
         libraries: local.libraries,
         source_code: local.source_code,
-        context: saved
-            ? undefinedIfUnchanged(saved, local, "context")
-            : local.context,
+        context:
+            saved && areScratchFieldValuesEqual(saved, local, "context")
+                ? undefined
+                : local.context,
         include_objects: true,
     };
 }
