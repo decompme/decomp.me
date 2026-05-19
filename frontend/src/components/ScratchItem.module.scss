@@ -149,13 +149,13 @@
 }
 
 .red-on-shift {
-    --warning-color: rgb(206, 58, 58);
+    --warning-color: #ce3a3a;
     color: var(--warning-color)  !important;
     border-color: var(--warning-color) !important;
 }
 
 .red-on-shift:hover {
-    --warning-hover-color: rgb(245, 141, 141);
+    --warning-hover-color: #f58d8d;
     color: var(--warning-hover-color)  !important;
     border-color: var(--warning-hover-color) !important;
 }
