@@ -8,8 +8,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from django.conf import settings
-from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -233,10 +232,7 @@ class GHSCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise APIException(
-            f"Unknown compiler: {compiler_id}",
-            str(status.HTTP_400_BAD_REQUEST),
-        )
+        raise ValidationError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 
