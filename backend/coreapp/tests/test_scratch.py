@@ -1,8 +1,10 @@
+import base64
 import io
 import json
 import zipfile
 from time import sleep
 from typing import Any
+from urllib.parse import urlencode
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
@@ -16,6 +18,29 @@ from coreapp.models.scratch import Assembly, Context, LibrariesField, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 from coreapp.views.scratch import compile_scratch_update_score
+
+
+class ScratchListTests(BaseTestCase):
+    def test_invalid_cursor_position_returns_client_error(self) -> None:
+        cursor = base64.b64encode(
+            urlencode(
+                {"p": "2026-05-17 17:55:06.395462+00:00-1 waitfor delay '0:0:15' -- "}
+            ).encode("ascii")
+        ).decode("ascii")
+
+        response = self.client.get(reverse("scratch-list"), {"cursor": cursor})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(), {"detail": "Invalid cursor", "kind": "ParseError"}
+        )
+
+    def test_scratch_count_rejects_invalid_preset_filter(self) -> None:
+        response = self.client.get(
+            reverse("scratch-count"), {"preset": "if(now()=sysdate(),sleep(15),0)"}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ScratchCreationTests(BaseTestCase):
@@ -321,6 +346,23 @@ class ScratchLibrariesTests(BaseTestCase):
 
 
 class ScratchModificationTests(BaseTestCase):
+    def test_update_rejects_invalid_compiler(self) -> None:
+        scratch = self.create_nop_scratch()
+        response = self.client.post(
+            reverse("scratch-claim", kwargs={"pk": scratch.slug}),
+            {"token": self.claim_tokens[scratch.slug]},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.patch(
+            reverse("scratch-detail", kwargs={"pk": scratch.slug}),
+            {"compiler": "if(now()=sysdate(),sleep(15),0)"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        scratch.refresh_from_db()
+        self.assertEqual(scratch.compiler, compilers.DUMMY.id)
+
     @requiresCompiler(GCC281PM, IDO53)
     def test_update_scratch_score(self) -> None:
         """
@@ -412,6 +454,24 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("left_object", response.json())
         self.assertNotIn("right_object", response.json())
+
+    @requiresCompiler(GCC281PM, EE_GCC29_991111)
+    def test_compile_post_rejects_mismatched_compiler_platform(self) -> None:
+        scratch = self.create_scratch(
+            {
+                "platform": N64.id,
+                "compiler": GCC281PM.id,
+                "context": "",
+                "target_asm": "jr $ra",
+            }
+        )
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"compiler": EE_GCC29_991111.id},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @requiresCompiler(IDO71)
     def test_create_scratch_score(self) -> None:
@@ -578,6 +638,43 @@ class ScratchDetailTests(BaseTestCase):
         updated_scratch = Scratch.objects.first()
         assert updated_scratch is not None
         self.assertIsNotNone(updated_scratch.owner)
+
+    def test_claim_rejects_non_string_token(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim",
+            {"token": ["not", "a", "token"]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.json()["success"])
+        scratch.refresh_from_db()
+        self.assertIsNone(scratch.owner_id)
+
+    def test_claim_requires_persistent_profile(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.client.credentials()
+
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim",
+            {"token": self.claim_tokens[scratch.slug]},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(response.json()["success"])
+        scratch.refresh_from_db()
+        self.assertIsNone(scratch.owner_id)
+
+    def test_fork_requires_persistent_profile(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.client.credentials()
+
+        response = self.client.post(reverse("scratch-fork", args=[scratch.slug]))
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Scratch.objects.count(), 1)
 
     def test_family(self) -> None:
         root = self.create_nop_scratch()

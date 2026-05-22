@@ -8,7 +8,6 @@ from django.utils.decorators import method_decorator
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import CursorPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -17,6 +16,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from coreapp.models.preset import Preset
 from coreapp.models.profile import Profile
+from coreapp.pagination import SafeCursorPagination
 from coreapp.serializers import PresetSerializer, TinyPresetSerializer
 
 from ..decorators.cache import globally_cacheable
@@ -30,7 +30,7 @@ class AuthorizationException(APIException):
     default_detail = "You must be logged in to perform this action."
 
 
-class PresetPagination(CursorPagination):
+class PresetPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 10
     page_size_query_param = "page_size"

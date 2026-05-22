@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 from coreapp import compilers
 from coreapp.flags import (
@@ -68,7 +68,7 @@ class Platform:
 
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
-        raise APIException(f"Unknown platform: {platform_id}")
+        raise ValidationError(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
 

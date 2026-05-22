@@ -18,7 +18,6 @@ from django.utils.decorators import method_decorator
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -38,11 +37,13 @@ from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
+from ..pagination import SafeCursorPagination
 from ..platforms import Platform
 from ..serializers import (
     ClaimableScratchSerializer,
     ScratchCompileSerializer,
     ScratchCreateSerializer,
+    ScratchDecompileSerializer,
     ScratchSerializer,
     TerseScratchSerializer,
 )
@@ -282,7 +283,11 @@ def create_scratch(
     return scratch
 
 
-class ScratchPagination(CursorPagination):
+def profile_can_own_scratch(request: Request) -> bool:
+    return request.profile.id is not None
+
+
+class ScratchPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 10
     page_size_query_param = "page_size"
@@ -389,7 +394,9 @@ class ScratchViewSet(
         include_objects = False
         scratch_context = None
         if request.method == "POST":
-            compile_ser = ScratchCompileSerializer(data=request.data)
+            compile_ser = ScratchCompileSerializer(
+                data=request.data, context={"scratch": scratch}
+            )
             compile_ser.is_valid(raise_exception=True)
             partial = compile_ser.validated_data
 
@@ -448,10 +455,16 @@ class ScratchViewSet(
                 }
             )
 
-        context = request.data.get(
+        decompile_ser = ScratchDecompileSerializer(
+            data=request.data, context={"scratch": scratch}
+        )
+        decompile_ser.is_valid(raise_exception=True)
+        partial = decompile_ser.validated_data
+
+        context = partial.get(
             "context", scratch.context_fk.text if scratch.context_fk else ""
         )
-        compiler = compilers.from_id(request.data.get("compiler", scratch.compiler))
+        compiler = compilers.from_id(partial.get("compiler", scratch.compiler))
 
         platform = platforms.from_id(scratch.platform)
 
@@ -468,14 +481,17 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def claim(self, request: Request, pk: str) -> Response:
         scratch: Scratch = self.get_object()
-        token: str | None = request.data.get("token")
+        token: Any = request.data.get("token")
 
         if (
-            token is None
+            not isinstance(token, str)
             or not scratch.is_claimable()
             or not scratch.verify_claim_token(token)
         ):
             return Response({"success": False})
+
+        if not profile_can_own_scratch(request):
+            return Response({"success": False}, status=status.HTTP_403_FORBIDDEN)
 
         profile = request.profile
 
@@ -489,6 +505,12 @@ class ScratchViewSet(
     @action(detail=True, methods=["POST"])
     def fork(self, request: Request, pk: str) -> Response:
         parent: Scratch = self.get_object()
+
+        if not profile_can_own_scratch(request):
+            return Response(
+                {"detail": "A persistent user profile is required to fork scratches."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # TODO Needed for test_fork_scratch test?
         if isinstance(request.data, QueryDict):
