@@ -1,13 +1,15 @@
 # postgres
 
-## Restoring a Production Backup Locally
+## Production Data
+
+### Restoring a Production Backup Locally
 
 Sometimes it’s helpful to work with real data — for example, when testing migrations or debugging weird edge cases that only show up in production.
 Since everything runs in Docker, it’s pretty easy to spin up a local copy of the production database.
 
-### How to do it
+#### How to do it
 
-1. Obtain a database backup and place in `./pgdump` directory:
+1. Obtain a database backup and place in the `./pgdump` directory at the base of the repo:
 ```sh
 scp somehost:~/decompme_20260206230001.backup ./pgdump/
 ```
@@ -602,3 +604,68 @@ pg_restore: finished item 3444 FK CONSTRAINT coreapp_scratch coreapp_scratch_tar
 pg_restore: finished main parallel loop
 ```
 </details>
+
+## Anonymized Production Data
+
+### Exporting Anonymized Production Data
+
+The decomp.me dataset is an interesting resource for individuals working on decompilers or similar workflows. We are able to create and publish anonymised database dumps on an ad-hoc basis.
+
+#### How to do it
+
+Run these commands within the running `decompme-postgres-1` production container:
+
+```bash
+export BACKUP_DATE=$(date +%Y%m%d%H%M%S)
+
+pg_dump -U decompme -d decompme \
+  -F c -b -v \
+  --exclude-table-data=auth_user \
+  --exclude-table-data=coreapp_githubuser \
+  -f "/pgdump/backup/decompme_public_${BACKUP_DATE}.backup"
+
+psql -U decompme -d decompme \
+  -c "\copy (
+    SELECT
+      id,
+      '!' as password,
+      NULL as last_login,
+      false AS is_superuser,
+      'user_' || id AS username,
+      '' AS first_name,
+      '' AS last_name,
+      '' AS email,
+      false AS is_staff,
+      is_active,
+      date_joined
+    FROM auth_user
+  ) TO '/pgdump/backup/coreapp_user_${BACKUP_DATE}.csv' WITH CSV HEADER"
+```
+
+### Restoring Anonymized Data
+
+The same steps should be followed as in "Restoring a Production Backup Locally", but there are 2 *additional* command to execute in order to populate the `auth_user` table and correctly set its incrementing primary key:
+
+```bash
+psql -U decompme -d decompme \
+  -c "\copy auth_user (
+    id,
+    password,
+    last_login,
+    is_superuser,
+    username,
+    first_name,
+    last_name,
+    email,
+    is_staff,
+    is_active,
+    date_joined
+  )
+  FROM '/pgdump/coreapp_user_20260524192511.csv' WITH CSV HEADER"
+
+psql -U decompme -d decompme \
+  -c "SELECT setval(
+    pg_get_serial_sequence('auth_user', 'id'),
+    COALESCE(MAX(id), 1)
+  ) FROM auth_user;"
+```
