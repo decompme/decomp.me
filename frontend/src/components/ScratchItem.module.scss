@@ -49,8 +49,7 @@
     }
 
     span {
-        // transform: translateY(1px);
-        transform: translate(-2px, 1px);
+        transform: translateX(-2px);
     }
 }
 
@@ -154,8 +153,8 @@
     border-color: var(--warning-color) !important;
     color: white !important;
     font-size: 0.8em;
-    padding: 0 0.4em;
-    min-width: 4.5rem;
+    max-width: 4.5rem;
+    max-height: 1.5rem;
     justify-content: center;
 }
 
