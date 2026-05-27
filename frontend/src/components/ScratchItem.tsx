@@ -217,7 +217,9 @@ function ScratchItemRow({
                                             className={styles["delete-button"]}
                                         >
                                             <TrashIcon size={14} />
-                                            <span className="hidden md:inline">Delete</span>
+                                            <span className="hidden md:inline">
+                                                Delete
+                                            </span>
                                         </Button>
                                     )}
                                 </div>
