@@ -154,11 +154,13 @@ function ScratchItemRow({
     showPresetOrCompiler?: boolean;
     showDeleteButton?: boolean;
 }) {
-    const [warnDelete, setWarnDelete] = useState(false);
     const [showElement, setShowElement] = useState(true);
-    const deleteScratch = async (scratch: api.TerseScratch) => {
+    const deleteScratch = async (
+        scratch: api.TerseScratch,
+        isShiftPressed: boolean,
+    ) => {
         if (
-            !warnDelete &&
+            !isShiftPressed &&
             !confirm(
                 "Are you sure you want to delete this scratch? This action cannot be undone.",
             )
@@ -175,17 +177,8 @@ function ScratchItemRow({
         }
     };
 
-    document.body.addEventListener("keydown", (evt: KeyboardEvent) => {
-        setWarnDelete(evt.shiftKey);
-    });
-
-    document.body.addEventListener("keyup", (evt: KeyboardEvent) => {
-        setWarnDelete(evt.shiftKey);
-    });
-
     return (
         <>
-            {" "}
             {showElement && (
                 <li className={styles.item}>
                     <div className={styles.scratch}>
@@ -215,16 +208,15 @@ function ScratchItemRow({
                                     )}
                                     {showDeleteButton && (
                                         <Button
-                                            onClick={() =>
-                                                deleteScratch(scratch)
+                                            onClick={(evt) =>
+                                                deleteScratch(
+                                                    scratch,
+                                                    evt.shiftKey,
+                                                )
                                             }
-                                            className={
-                                                warnDelete
-                                                    ? styles["red-on-shift"]
-                                                    : ""
-                                            }
+                                            className={styles["delete-button"]}
                                         >
-                                            <TrashIcon />
+                                            <TrashIcon size={14} /> Delete
                                         </Button>
                                     )}
                                 </div>
@@ -232,7 +224,7 @@ function ScratchItemRow({
                         </div>
                     </div>
                 </li>
-            )}{" "}
+            )}
         </>
     );
 }
