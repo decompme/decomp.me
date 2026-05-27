@@ -150,14 +150,18 @@
 
 .delete-button {
     --warning-color: #ce3a3a;
-    color: var(--warning-color)  !important;
+    background-color: var(--warning-color)  !important;
     border-color: var(--warning-color) !important;
+    color: white !important;
     font-size: 0.8em;
     padding: 0 0.4em;
+    min-width: 4.5rem;
+    justify-content: center;
 }
 
 .delete-button:hover {
     --warning-hover-color: #f58d8d;
-    color: var(--warning-hover-color)  !important;
+    background-color: var(--warning-hover-color)  !important;
     border-color: var(--warning-hover-color) !important;
+    color: white !important;
 }
