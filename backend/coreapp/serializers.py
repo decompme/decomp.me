@@ -271,6 +271,46 @@ class ScratchCompileSerializer(serializers.Serializer[None]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        scratch = self._context.get("scratch")
+        compiler_id = data.get("compiler")
+        if scratch is None or compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(scratch.platform)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
+
+class ScratchDecompileSerializer(serializers.Serializer[None]):
+    compiler = serializers.CharField(required=False)
+    context = serializers.CharField(allow_blank=True, required=False)  # type: ignore[assignment]
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        scratch = self._context.get("scratch")
+        compiler_id = data.get("compiler")
+        if scratch is None or compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(scratch.platform)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
 
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
@@ -326,6 +366,30 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             context_text = validated_data.pop("context", "")
             instance.context_fk = Context.get_or_create_from_text(context_text)
         return super().update(instance, validated_data)
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        compiler_id = data.get("compiler")
+        if compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform_id = self.instance.platform if self.instance else data.get("platform")
+        if platform_id is None:
+            return data
+
+        platform = platforms.from_id(platform_id)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
 
     def get_language(self, scratch: Scratch) -> str:
         """

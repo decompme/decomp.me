@@ -9,7 +9,6 @@ from django.db.utils import IntegrityError
 from django.views import View
 from rest_framework import mixins, permissions, status
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import CursorPagination
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -20,6 +19,7 @@ from rest_framework_extensions.routers import ExtendedSimpleRouter
 from ..models.github import GitHubUser
 from ..models.profile import Profile
 from ..models.project import Project, ProjectMember
+from ..pagination import SafeCursorPagination
 from ..serializers import ProjectMemberSerializer, ProjectSerializer
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class TemporaryProjectCreationStaffOnlyException(APIException):
     )
 
 
-class ProjectPagination(CursorPagination):
+class ProjectPagination(SafeCursorPagination):
     ordering = "-creation_time"
     page_size = 20
     page_size_query_param = "page_size"

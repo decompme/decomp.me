@@ -1,5 +1,6 @@
 from django.test.testcases import TestCase
 from django.urls import reverse
+from rest_framework import status
 
 from coreapp.compilers import GCC281PM, IDO53, MWCC_247_92
 from coreapp.decompiler_wrapper import DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
@@ -76,6 +77,24 @@ class DecompilationTests(BaseTestCase):
             + DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
             + "\ns32 return_2(void) {\n    return 2;\n}\n",
         )
+
+    @requiresCompiler(GCC281PM)
+    def test_decompile_endpoint_rejects_invalid_compiler(self) -> None:
+        scratch = self.create_scratch(
+            {
+                "compiler": GCC281PM.id,
+                "platform": N64.id,
+                "context": "",
+                "target_asm": "glabel return_2\njr $ra\nli $v0,2",
+            }
+        )
+
+        response = self.client.post(
+            reverse("scratch-decompile", kwargs={"pk": scratch.slug}),
+            {"compiler": "if(now()=sysdate(),sleep(15),0)"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class M2CTests(TestCase):
