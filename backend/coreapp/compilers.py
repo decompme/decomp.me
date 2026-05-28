@@ -387,7 +387,7 @@ CLANG_800 = ClangCompiler(
 )
 
 # PS1
-DOSEMU = 'ulimit -n 1024 && HOME="$(pwd)" /usr/bin/dosemu'
+DOSEMU = 'ulimit -n 16384 && HOME="$(pwd)" /usr/bin/dosemu'
 
 PSYQ_COMPILE_BAT = "\r\n".join(
     [
