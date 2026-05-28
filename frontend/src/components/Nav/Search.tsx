@@ -21,6 +21,7 @@ import { PlatformIcon } from "../PlatformSelect/PlatformIcon";
 import UserAvatar from "../user/UserAvatar";
 
 const SEARCH_DEBOUNCE_MS = 200;
+const SEARCH_MAX_LENGTH = 64;
 const SEARCH_PAGE_SIZE = 5;
 
 function HighlightedMatch({ text, query }: { text: string; query: string }) {
@@ -148,7 +149,7 @@ function MountedSearch({ className }: { className?: string }) {
                 }
             },
             onInputValueChange({ inputValue }) {
-                setQuery(inputValue);
+                setQuery((inputValue ?? "").slice(0, SEARCH_MAX_LENGTH));
             },
             onSelectedItemChange({ selectedItem }) {
                 if (selectedItem) {
@@ -203,6 +204,7 @@ function MountedSearch({ className }: { className?: string }) {
                     "rounded-md bg-transparent text-sm placeholder-current transition-colors hover:bg-gray-4 focus:bg-gray-5 focus:placeholder-gray-11": true,
                 })}
                 type="text"
+                maxLength={SEARCH_MAX_LENGTH}
                 placeholder="Search decomp.me"
                 spellCheck={false}
                 onFocus={() => setIsFocused(true)}

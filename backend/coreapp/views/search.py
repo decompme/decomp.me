@@ -4,6 +4,7 @@ from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 
 from ..decorators.cache import globally_cacheable
+from ..filters.search import validate_search_query
 from ..middleware import Request
 from ..models.preset import Preset
 from ..models.profile import Profile
@@ -28,7 +29,7 @@ def get_page_size(raw_page_size: str) -> int:
 class SearchViewSet(APIView):
     @globally_cacheable(max_age=60, stale_while_revalidate=30)
     def get(self, request: Request) -> Response:
-        query = request.query_params.get("search", "")
+        query = validate_search_query(request.query_params.get("search", ""))
         page_size = get_page_size(request.query_params.get("page_size", "5"))
 
         user_qs = Profile.objects.filter(user__username__icontains=query)[:page_size]
