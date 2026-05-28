@@ -155,16 +155,24 @@ function ScratchItemRow({
     showDeleteButton?: boolean;
 }) {
     const [showElement, setShowElement] = useState(true);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const deleteScratch = async (
         scratch: api.TerseScratch,
         isShiftPressed: boolean,
     ) => {
+        if (isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
         if (
             !isShiftPressed &&
             !confirm(
                 "Are you sure you want to delete this scratch? This action cannot be undone.",
             )
         ) {
+            setIsDeleting(false);
             return;
         }
 
@@ -173,8 +181,11 @@ function ScratchItemRow({
             setShowElement(false); // Hide deleted element to avoid performing a page refresh, and allow deleting more scratches
         } catch (error) {
             alert("An error occurred trying to deleting this scratch.");
+            setIsDeleting(false);
             throw error;
         }
+
+        setIsDeleting(false);
     };
 
     return (
