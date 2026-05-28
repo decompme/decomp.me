@@ -32,9 +32,9 @@
     flex-shrink: 0;
     gap: 0.35rem;
     justify-content: center;
-    min-width: 4.5rem;
+    min-width: 5rem;
     height: 1.4rem;
-    padding: 0 0.45rem;
+    padding: 0 0.5rem;
 
     border-radius: 0.5em;
 
@@ -145,22 +145,4 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-}
-
-.delete-button {
-    --warning-color: #ce3a3a;
-    background-color: var(--warning-color)  !important;
-    border-color: var(--warning-color) !important;
-    color: white !important;
-    font-size: 0.8em;
-    max-width: 4.5rem;
-    max-height: 1.5rem;
-    justify-content: center;
-}
-
-.delete-button:hover {
-    --warning-hover-color: #f58d8d;
-    background-color: var(--warning-hover-color)  !important;
-    border-color: var(--warning-hover-color) !important;
-    color: white !important;
 }

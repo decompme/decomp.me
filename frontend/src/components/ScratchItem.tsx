@@ -67,6 +67,58 @@ export function Improvement({
     );
 }
 
+function DeleteButton({
+    scratch,
+    onDeleteCallback,
+}: {
+    scratch: api.TerseScratch;
+    onDeleteCallback: () => void;
+}) {
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const deleteScratch = async (
+        scratch: api.TerseScratch,
+        isShiftPressed: boolean,
+    ) => {
+        if (isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
+        if (
+            !isShiftPressed &&
+            !confirm(
+                "Are you sure you want to delete this scratch? This action cannot be undone.",
+            )
+        ) {
+            setIsDeleting(false);
+            return;
+        }
+
+        try {
+            await api.delete_(scratchUrl(scratch), {});
+            // Hide deleted element to avoid performing a page refresh, and allow deleting more scratches
+            onDeleteCallback();
+        } catch (error) {
+            alert("An error occurred trying to deleting this scratch.");
+            setIsDeleting(false);
+            throw error;
+        }
+        setIsDeleting(false);
+    };
+
+    return (
+        <Button
+            onClick={(evt) => deleteScratch(scratch, evt.shiftKey)}
+            className="!border-none !py-1 text-xs rounded-md md:min-w-20"
+            danger
+        >
+            <TrashIcon size={14} />
+            <span className="hidden md:inline">Delete</span>
+        </Button>
+    );
+}
+
 function ScratchItemTitle({
     scratch,
     showPlatform,
@@ -155,38 +207,7 @@ function ScratchItemRow({
     showDeleteButton?: boolean;
 }) {
     const [showElement, setShowElement] = useState(true);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const deleteScratch = async (
-        scratch: api.TerseScratch,
-        isShiftPressed: boolean,
-    ) => {
-        if (isDeleting) {
-            return;
-        }
-
-        setIsDeleting(true);
-        if (
-            !isShiftPressed &&
-            !confirm(
-                "Are you sure you want to delete this scratch? This action cannot be undone.",
-            )
-        ) {
-            setIsDeleting(false);
-            return;
-        }
-
-        try {
-            await api.delete_(scratchUrl(scratch), {});
-            setShowElement(false); // Hide deleted element to avoid performing a page refresh, and allow deleting more scratches
-        } catch (error) {
-            alert("An error occurred trying to deleting this scratch.");
-            setIsDeleting(false);
-            throw error;
-        }
-
-        setIsDeleting(false);
-    };
+    const onDeleteCallback = () => setShowElement(false);
 
     return (
         <>
@@ -218,20 +239,10 @@ function ScratchItemRow({
                                         <ScratchOwner scratch={scratch} />
                                     )}
                                     {showDeleteButton && (
-                                        <Button
-                                            onClick={(evt) =>
-                                                deleteScratch(
-                                                    scratch,
-                                                    evt.shiftKey,
-                                                )
-                                            }
-                                            className={styles["delete-button"]}
-                                        >
-                                            <TrashIcon size={14} />
-                                            <span className="hidden md:inline">
-                                                Delete
-                                            </span>
-                                        </Button>
+                                        <DeleteButton
+                                            scratch={scratch}
+                                            onDeleteCallback={onDeleteCallback}
+                                        />
                                     )}
                                 </div>
                             )}
