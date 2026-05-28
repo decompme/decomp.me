@@ -110,7 +110,7 @@ function DeleteButton({
     return (
         <Button
             onClick={(evt) => deleteScratch(scratch, evt.shiftKey)}
-            className="!border-none !py-1 text-xs rounded-md md:min-w-20"
+            className="!border-none !py-1 rounded-md text-xs md:min-w-20"
             danger
         >
             <TrashIcon size={14} />
