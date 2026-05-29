@@ -13,6 +13,7 @@ import {
 import { FoldIcon, SearchIcon } from "@primer/octicons-react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
+import { useDebounce } from "use-debounce";
 
 import type * as api from "@/lib/api";
 import { useSize } from "@/lib/hooks";
@@ -39,20 +40,6 @@ type ColumnState = Record<ColumnKey, boolean>;
 const ALL_COLUMNS: ColumnKey[] = ["base", "current", "previous"];
 const DIFF_SEARCH_DEBOUNCE_MS = 150;
 const DIFF_SEARCH_MAX_MATCHES = 1000;
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-        const timeoutId = window.setTimeout(
-            () => setDebouncedValue(value),
-            delayMs,
-        );
-        return () => window.clearTimeout(timeoutId);
-    }, [value, delayMs]);
-
-    return debouncedValue;
-}
 
 const diffContentsToString = (
     diff: api.DiffOutput,
@@ -334,9 +321,13 @@ export default function Diff({
     >({});
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const debouncedSearchQuery = useDebouncedValue(
+    const [debouncedSearchQuery] = useDebounce(
         searchQuery,
         DIFF_SEARCH_DEBOUNCE_MS,
+        {
+            leading: false,
+            trailing: true,
+        },
     );
     const isSearchSettled = searchQuery === debouncedSearchQuery;
     const [activeSearchIndex, setActiveSearchIndex] = useState(0);
