@@ -3,12 +3,14 @@ import {
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
+    useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 
-import { FoldIcon } from "@primer/octicons-react";
+import { FoldIcon, SearchIcon } from "@primer/octicons-react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 
@@ -24,6 +26,8 @@ import LoadingSpinner from "../loading.svg";
 
 import styles from "./Diff.module.scss";
 import * as AsmDiffer from "./DiffRowAsmDiffer";
+import { type DiffSearchMatch, findDiffSearchMatches } from "./DiffSearch";
+import DiffSearchPanel from "./DiffSearchPanel";
 import DragBar from "./DragBar";
 import { useHighlighers } from "./Highlighter";
 import CopyButton from "../CopyButton";
@@ -33,6 +37,22 @@ import { useResizableColumns } from "./hooks";
 type ColumnKey = "base" | "current" | "previous";
 type ColumnState = Record<ColumnKey, boolean>;
 const ALL_COLUMNS: ColumnKey[] = ["base", "current", "previous"];
+const DIFF_SEARCH_DEBOUNCE_MS = 150;
+const DIFF_SEARCH_MAX_MATCHES = 1000;
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(
+            () => setDebouncedValue(value),
+            delayMs,
+        );
+        return () => window.clearTimeout(timeoutId);
+    }, [value, delayMs]);
+
+    return debouncedValue;
+}
 
 const diffContentsToString = (
     diff: api.DiffOutput,
@@ -69,65 +89,34 @@ export type VisibleRow = {
 
 function DiffBody({
     diff,
-    diffLabel,
     fontSize,
-    compressionEnabled,
-    columns,
+    rows,
+    onToggle,
+    activeSearchMatch,
 }: {
     diff: api.DiffOutput | null;
-    diffLabel: string | null;
     fontSize: number | undefined;
-    compressionEnabled: boolean;
-    columns: Array<ColumnKey>;
+    rows: VisibleRow[];
+    onToggle: (key: string) => void;
+    activeSearchMatch: DiffSearchMatch | null;
 }) {
     const { highlighters, setHighlightAll } = useHighlighers(3);
-    const [compressionContext] = diffCompressionContext();
-
-    const groups = useMemo(() => {
-        if (!diff) return [] as DiffGroup[];
-        return compressMatching({
-            rows: diff.rows,
-            context: compressionEnabled ? compressionContext : -1,
-        });
-    }, [diff, compressionEnabled, compressionContext]);
-
-    const [expandedGroups, setExpandedGroups] = useState<
-        Record<string, boolean>
-    >({});
+    const listRef = useRef<FixedSizeList>(null);
 
     useEffect(() => {
-        setExpandedGroups({});
-    }, [groups]);
+        if (activeSearchMatch) {
+            listRef.current?.scrollToItem(activeSearchMatch.rowIndex, "center");
+        }
+    }, [activeSearchMatch]);
 
-    const flattened = useMemo(
-        () => flattenGroups(groups, expandedGroups),
-        [groups, expandedGroups],
-    );
-
-    const visibleRows: VisibleRow[] = useMemo(() => {
-        const getCells = (row: api.DiffRow) => columns.map((col) => row[col]);
-
-        return flattened.map((row) => {
-            const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
-
-            return {
-                key: row.key,
-                isPlaceholder,
-                cells: getCells(row),
-            };
-        });
-    }, [flattened, columns]);
-
-    const handleToggle = (key: string) => {
-        setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
     const itemData = useMemo(
         () => ({
-            rows: visibleRows,
+            rows,
             highlighters,
-            onToggle: handleToggle,
+            onToggle,
+            activeSearchMatch,
         }),
-        [visibleRows, highlighters],
+        [rows, highlighters, onToggle, activeSearchMatch],
     );
 
     if (!diff) {
@@ -151,6 +140,7 @@ function DiffBody({
                     width: number | undefined;
                 }) => (
                     <FixedSizeList
+                        ref={listRef}
                         className={styles.body}
                         itemCount={itemData.rows.length}
                         itemData={itemData}
@@ -327,7 +317,6 @@ export type Props = {
 
 export default function Diff({
     diff,
-    diffLabel,
     isCompiling,
     isCurrentOutdated,
     threeWayDiffEnabled,
@@ -338,6 +327,19 @@ export default function Diff({
 }: Props) {
     const [fontSize] = useCodeFontSize();
     const container = useSize<HTMLDivElement>();
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const [compressionContext] = diffCompressionContext();
+    const [expandedGroups, setExpandedGroups] = useState<
+        Record<string, boolean>
+    >({});
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const debouncedSearchQuery = useDebouncedValue(
+        searchQuery,
+        DIFF_SEARCH_DEBOUNCE_MS,
+    );
+    const isSearchSettled = searchQuery === debouncedSearchQuery;
+    const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
     const [columnState, setColumnState] = useState<LocalColumnState>({
         base: true,
@@ -349,12 +351,96 @@ export default function Diff({
     };
     const columns = ALL_COLUMNS.filter((col) => fullColumnState[col]);
     const columnCount = columns.length;
+    const leftmostColumn = columns[0];
     const rightmostColumn = columns.at(-1);
 
     const { bar1Px, bar2Px, setBar1Px, setBar2Px } = useResizableColumns({
         width: container.width,
         columnCount,
     });
+
+    const groups = useMemo(() => {
+        if (!diff) return [] as DiffGroup[];
+        return compressMatching({
+            rows: diff.rows,
+            context: compressionEnabled ? compressionContext : -1,
+        });
+    }, [diff, compressionEnabled, compressionContext]);
+
+    useEffect(() => {
+        setExpandedGroups({});
+    }, [groups]);
+
+    const flattened = useMemo(
+        () => flattenGroups(groups, expandedGroups),
+        [groups, expandedGroups],
+    );
+
+    const visibleRows: VisibleRow[] = useMemo(() => {
+        const getCells = (row: api.DiffRow) => columns.map((col) => row[col]);
+
+        return flattened.map((row) => {
+            const isPlaceholder = row.base?.text?.[0]?.format === "diff_skip";
+
+            return {
+                key: row.key,
+                isPlaceholder,
+                cells: getCells(row),
+            };
+        });
+    }, [flattened, columns]);
+
+    const searchResult = useMemo(
+        () =>
+            findDiffSearchMatches(
+                visibleRows,
+                debouncedSearchQuery,
+                DIFF_SEARCH_MAX_MATCHES,
+            ),
+        [visibleRows, debouncedSearchQuery],
+    );
+    const searchMatches = searchResult.matches;
+    const activeSearchMatch = isSearchSettled
+        ? (searchMatches[activeSearchIndex] ?? null)
+        : null;
+
+    useEffect(() => {
+        if (!searchOpen) return;
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+    }, [searchOpen]);
+
+    useEffect(() => {
+        setActiveSearchIndex(0);
+    }, [debouncedSearchQuery]);
+
+    useEffect(() => {
+        if (searchMatches.length === 0) {
+            setActiveSearchIndex(0);
+            return;
+        }
+
+        setActiveSearchIndex((index) =>
+            Math.min(index, searchMatches.length - 1),
+        );
+    }, [searchMatches.length]);
+
+    const goToSearchMatch = useCallback(
+        (direction: 1 | -1) => {
+            if (!isSearchSettled || searchMatches.length === 0) return;
+            setActiveSearchIndex((index) => {
+                const next = index + direction;
+                if (next < 0) return searchMatches.length - 1;
+                if (next >= searchMatches.length) return 0;
+                return next;
+            });
+        },
+        [isSearchSettled, searchMatches.length],
+    );
+
+    const handleToggleGroup = useCallback((key: string) => {
+        setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+    }, []);
 
     const COLUMN_LABELS = {
         base: "Target",
@@ -413,6 +499,17 @@ export default function Diff({
                                 diff ? diffContentsToString(diff, col) : ""
                             }
                         />
+                        {col === leftmostColumn && (
+                            <button
+                                type="button"
+                                className={styles.searchButton}
+                                aria-label="Search diff"
+                                title="Search diff"
+                                onClick={() => setSearchOpen(true)}
+                            >
+                                <SearchIcon size={12} />
+                            </button>
+                        )}
                         {col === "current" && isCompiling && (
                             <LoadingSpinner className="size-6" />
                         )}
@@ -457,12 +554,27 @@ export default function Diff({
                 ))}
             </div>
 
+            {searchOpen && (
+                <DiffSearchPanel
+                    query={searchQuery}
+                    inputRef={searchInputRef}
+                    activeIndex={activeSearchIndex}
+                    matchCount={searchMatches.length}
+                    capped={searchResult.capped}
+                    isSettled={isSearchSettled}
+                    onQueryChange={setSearchQuery}
+                    onPrevious={() => goToSearchMatch(-1)}
+                    onNext={() => goToSearchMatch(1)}
+                    onClose={() => setSearchOpen(false)}
+                />
+            )}
+
             <DiffBody
                 diff={diff}
-                diffLabel={diffLabel}
-                compressionEnabled={compressionEnabled}
                 fontSize={fontSize}
-                columns={columns}
+                rows={visibleRows}
+                onToggle={handleToggleGroup}
+                activeSearchMatch={searchOpen ? activeSearchMatch : null}
             />
         </div>
     );
