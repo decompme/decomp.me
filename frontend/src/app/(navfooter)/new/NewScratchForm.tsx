@@ -23,7 +23,7 @@ import { SingleLineScratchItem } from "@/components/ScratchItem";
 import * as api from "@/lib/api";
 import { useCompilers, usePresets } from "@/lib/api";
 import { useRouter } from "@/lib/navigation";
-import { get } from "@/lib/api/request";
+import { ResponseError, get } from "@/lib/api/request";
 import { scratchUrl } from "@/lib/api/urls";
 import type { TerseScratch } from "@/lib/api/types";
 import basicSetup from "@/lib/codemirror/basic-setup";
@@ -45,6 +45,12 @@ import {
 } from "./NewScratchForm.state";
 
 const SEARCH_MAX_LENGTH = 64;
+
+type CreateScratchError = {
+    title: string;
+    detail: string;
+    hint?: string;
+};
 
 interface FormLabelProps {
     children: React.ReactNode;
@@ -114,6 +120,43 @@ function useDuplicateScratches(
     return duplicates;
 }
 
+function formatCreateScratchError(error: unknown): CreateScratchError | null {
+    if (!(error instanceof ResponseError)) {
+        return null;
+    }
+
+    if (error.status !== 400) {
+        return null;
+    }
+
+    if (typeof error.json?.detail === "string") {
+        if (error.json.code === "Assembler") {
+            return {
+                title: "Target assembly could not be assembled",
+                detail: error.json.detail,
+                hint: "Check that the target assembly is compatible with the GNU assembler syntax for the selected platform.",
+            };
+        }
+
+        return {
+            title: "Scratch could not be created",
+            detail: error.json.detail,
+        };
+    }
+
+    if (typeof error.message === "string" && error.message) {
+        return {
+            title: "Scratch could not be created",
+            detail: error.message,
+        };
+    }
+
+    return {
+        title: "Scratch could not be created",
+        detail: "Unable to create scratch. Please check the fields above and try again.",
+    };
+}
+
 export default function NewScratchForm({
     availablePlatforms,
 }: {
@@ -122,6 +165,8 @@ export default function NewScratchForm({
     };
 }) {
     const [draft, setDraft] = useState<NewScratchDraft>(emptyDraft);
+    const [submissionError, setSubmissionError] =
+        useState<CreateScratchError | null>(null);
     const hasLoadedStoredDraft = useRef(false);
     const initializedPlatform = useRef<string | undefined>(undefined);
 
@@ -218,8 +263,11 @@ export default function NewScratchForm({
     }, [availableCompilers, compilersTranslation]);
 
     const submit = async () => {
+        setSubmissionError(null);
+
+        let scratch: api.ClaimableScratch;
         try {
-            const scratch: api.ClaimableScratch = await api.post("/scratch", {
+            scratch = await api.post("/scratch", {
                 target_asm: draft.asm,
                 context: draft.context || "",
                 platform: draft.platform,
@@ -230,16 +278,21 @@ export default function NewScratchForm({
                 preset: draft.presetId,
                 diff_label: draft.label || defaultLabel || "",
             });
-
-            clearSubmittedDraft(localStorage);
-
-            await api.claimScratch(scratch);
-
-            router.push(scratchUrl(scratch));
         } catch (error) {
-            console.error(error);
+            const createError = formatCreateScratchError(error);
+            if (createError) {
+                setSubmissionError(createError);
+                return;
+            }
+
             throw error;
         }
+
+        clearSubmittedDraft(localStorage);
+
+        await api.claimScratch(scratch);
+
+        router.push(scratchUrl(scratch));
     };
 
     return (
@@ -352,10 +405,27 @@ export default function NewScratchForm({
                     className="w-full flex-1 overflow-hidden rounded border border-[color:var(--g500)] bg-[color:var(--g200)] [&_.cm-editor]:h-full"
                     value={draft.asm}
                     valueVersion={valueVersion}
-                    onChange={(asm) => setDraft((draft) => ({ ...draft, asm }))}
+                    onChange={(asm) => {
+                        setSubmissionError(null);
+                        setDraft((draft) => ({ ...draft, asm }));
+                    }}
                     extensions={basicSetup}
                     placeholder="Place your GAS-compatible assembly code here."
                 />
+            </div>
+            <div
+                role="alert"
+                aria-live="polite"
+                hidden={!submissionError}
+                className="mt-2 rounded border border-red-7 bg-red-3 px-3 py-2 text-red-12 text-sm"
+            >
+                <p className="mb-1 font-semibold">{submissionError?.title}</p>
+                {submissionError?.hint && (
+                    <p className="mb-2">{submissionError.hint}</p>
+                )}
+                <pre className="m-0 max-h-48 overflow-auto whitespace-pre-wrap font-mono text-xs leading-relaxed">
+                    {submissionError?.detail}
+                </pre>
             </div>
             <div className="flex h-[200px] flex-col">
                 <FormLabel small="(optional)">Context</FormLabel>

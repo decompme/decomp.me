@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from coreapp import compilers, platforms
-from coreapp.error import ObjdumpError
+from coreapp.error import AssemblyError, ObjdumpError, custom_exception_handler
 from coreapp.models.profile import Profile
 from coreapp.sandbox import Sandbox
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -63,6 +63,16 @@ class RequestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
+
+    def test_assembly_errors_are_reported_as_assembler_errors(self) -> None:
+        response = custom_exception_handler(AssemblyError("bad asm"), {})
+
+        self.assertIsNotNone(response)
+        assert response is not None
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["code"], "Assembler")
+        self.assertEqual(response.data["kind"], "AssemblyError")
+        self.assertEqual(response.data["detail"], "Assembler error: bad asm")
 
 
 class TimeoutTests(BaseTestCase):
