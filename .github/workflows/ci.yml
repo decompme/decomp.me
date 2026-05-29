@@ -37,13 +37,15 @@ jobs:
             --cap-add setfcap \
             --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
+            -e LOCAL_FILE_DIR=/local_files \
             -e COMPILER_BASE_PATH=/compilers \
             -e LIBRARY_BASE_PATH=/libraries \
             -e WINEPREFIX=/tmp/wine \
-            -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
+            -e DEBUG=1 \
+            -e DUMMY_COMPILER=1 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               uv sync && \
@@ -93,8 +95,9 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            -e DATABASE_URL=sqlite:///:memory: \
+            -e DEBUG=1 \
             -e DUMMY_COMPILER=1 \
+            -e DATABASE_URL=sqlite:///:memory: \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
               -c '\
