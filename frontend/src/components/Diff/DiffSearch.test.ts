@@ -69,4 +69,39 @@ describe("findDiffSearchMatches", () => {
             capped: true,
         });
     });
+
+    it("matches query whitespace against spaces or tabs in the diff", () => {
+        const rows = [
+            {
+                key: "row",
+                cells: [
+                    cell("beq     v1,v0,1e0"),
+                    cell("beq\tv1,v0,1e0"),
+                    cell("beqv1,v0,1e0"),
+                ],
+            },
+        ];
+
+        expect(findDiffSearchMatches(rows, "beq v1,v0,1e0")).toEqual({
+            matches: [
+                { rowIndex: 0, columnIndex: 0, start: 0, end: 17 },
+                { rowIndex: 0, columnIndex: 1, start: 0, end: 13 },
+            ],
+            capped: false,
+        });
+    });
+
+    it("treats regex characters as literal search text", () => {
+        const rows = [
+            {
+                key: "row",
+                cells: [cell("lw v0,%lo(symbol)(a0)")],
+            },
+        ];
+
+        expect(findDiffSearchMatches(rows, "%lo(symbol)(a0)")).toEqual({
+            matches: [{ rowIndex: 0, columnIndex: 0, start: 6, end: 21 }],
+            capped: false,
+        });
+    });
 });

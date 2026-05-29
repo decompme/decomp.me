@@ -20,33 +20,49 @@ type SearchableDiffRow = {
 const cellText = (cell: api.DiffCell | undefined): string =>
     cell?.text.map((text) => text.text).join("") ?? "";
 
+const escapeRegex = (text: string): string =>
+    text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function buildSearchRegex(query: string): RegExp | null {
+    const trimmed = query.trim();
+    if (!trimmed) return null;
+
+    const pattern = trimmed
+        .split(/[ \t]+/)
+        .map(escapeRegex)
+        .join("[ \\t]+");
+
+    return new RegExp(pattern, "gi");
+}
+
 export function findDiffSearchMatches(
     rows: SearchableDiffRow[],
     query: string,
     maxMatches = Number.POSITIVE_INFINITY,
 ): DiffSearchResult {
-    const needle = query.toLowerCase();
-    if (!needle) return { matches: [], capped: false };
+    const regex = buildSearchRegex(query);
+    if (!regex) return { matches: [], capped: false };
 
     const matches: DiffSearchMatch[] = [];
     for (const [rowIndex, row] of rows.entries()) {
         if (row.isPlaceholder) continue;
 
         for (const [columnIndex, cell] of row.cells.entries()) {
-            const haystack = cellText(cell).toLowerCase();
-            let start = haystack.indexOf(needle);
-            while (start !== -1) {
+            const haystack = cellText(cell);
+            regex.lastIndex = 0;
+
+            for (const match of haystack.matchAll(regex)) {
                 if (matches.length >= maxMatches) {
                     return { matches, capped: true };
                 }
 
+                const start = match.index;
                 matches.push({
                     rowIndex,
                     columnIndex,
                     start,
-                    end: start + needle.length,
+                    end: start + match[0].length,
                 });
-                start = haystack.indexOf(needle, start + needle.length);
             }
         }
     }
