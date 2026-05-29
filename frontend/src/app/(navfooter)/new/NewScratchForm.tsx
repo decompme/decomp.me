@@ -44,6 +44,8 @@ import {
     type NewScratchDraft,
 } from "./NewScratchForm.state";
 
+const SEARCH_MAX_LENGTH = 64;
+
 interface FormLabelProps {
     children: React.ReactNode;
     htmlel?: string;
@@ -85,7 +87,8 @@ function useDuplicateScratches(
         }
 
         let isCurrent = true;
-        const search = encodeURIComponent(debouncedLabel);
+        const query = debouncedLabel.slice(0, SEARCH_MAX_LENGTH);
+        const search = encodeURIComponent(query);
 
         get(`/scratch?search=${search}`)
             .then((x) => x.results)
