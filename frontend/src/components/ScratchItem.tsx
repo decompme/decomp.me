@@ -1,11 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import Image from "next/image";
 import Link from "@/components/Link";
 
-import { RepoForkedIcon } from "@primer/octicons-react";
+import { RepoForkedIcon, TrashIcon } from "@primer/octicons-react";
 import clsx from "clsx";
 
 import TimeAgo from "@/components/TimeAgo";
@@ -15,6 +15,7 @@ import { presetUrl, scratchUrl, userAvatarUrl } from "@/lib/api/urls";
 import getTranslation from "@/lib/i18n/translate";
 
 import AnonymousFrogAvatar from "./Frog/AnonymousFrog";
+import Button from "./Button";
 import PlatformLink from "./PlatformLink";
 import { calculateScorePercent, percentToString } from "./ScoreBadge";
 import styles from "./ScratchItem.module.scss";
@@ -63,6 +64,58 @@ export function Improvement({
             <RepoForkedIcon size={14} className={styles.improvementIcon} />
             <span>{improvementPercentString}</span>
         </Link>
+    );
+}
+
+function DeleteButton({
+    scratch,
+    onDeleteCallback,
+}: {
+    scratch: api.TerseScratch;
+    onDeleteCallback: () => void;
+}) {
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const deleteScratch = async (
+        scratch: api.TerseScratch,
+        isShiftPressed: boolean,
+    ) => {
+        if (isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
+        if (
+            !isShiftPressed &&
+            !confirm(
+                "Are you sure you want to delete this scratch? This action cannot be undone.",
+            )
+        ) {
+            setIsDeleting(false);
+            return;
+        }
+
+        try {
+            await api.delete_(scratchUrl(scratch), {});
+            // Hide deleted element to avoid performing a page refresh, and allow deleting more scratches
+            onDeleteCallback();
+        } catch (error) {
+            alert("An error occurred trying to deleting this scratch.");
+            setIsDeleting(false);
+            throw error;
+        }
+        setIsDeleting(false);
+    };
+
+    return (
+        <Button
+            onClick={(evt) => deleteScratch(scratch, evt.shiftKey)}
+            className="!border-none !py-1 rounded-md text-xs md:min-w-20"
+            danger
+        >
+            <TrashIcon size={14} />
+            <span className="hidden md:inline">Delete</span>
+        </Button>
     );
 }
 
@@ -144,53 +197,85 @@ function ScratchItemRow({
     showOwner = true,
     showPlatform = true,
     showPresetOrCompiler = true,
+    showDeleteButton = false,
 }: {
     scratch: api.TerseScratch;
     children?: ReactNode;
     showOwner?: boolean;
     showPlatform?: boolean;
     showPresetOrCompiler?: boolean;
+    showDeleteButton?: boolean;
 }) {
+    const [showElement, setShowElement] = useState(true);
+    const onDeleteCallback = () => setShowElement(false);
+
     return (
-        <li className={styles.item}>
-            <div className={styles.scratch}>
-                <div className={styles.header}>
-                    <ScratchItemTitle
-                        scratch={scratch}
-                        showPlatform={showPlatform}
-                    />
-                    <span className={styles.improvementSlot}>
-                        <Improvement improvement={scratch.best_fork} />
-                    </span>
-                </div>
-                <div className={styles.metadata}>
-                    <ScratchMetadata
-                        scratch={scratch}
-                        showPresetOrCompiler={showPresetOrCompiler}
-                    />
-                    {(children || showOwner) && (
-                        <div className={styles.metadataAside}>
-                            {children && (
-                                <div className={styles.actions}>{children}</div>
-                            )}
-                            {showOwner && <ScratchOwner scratch={scratch} />}
+        <>
+            {showElement && (
+                <li className={styles.item}>
+                    <div className={styles.scratch}>
+                        <div className={styles.header}>
+                            <ScratchItemTitle
+                                scratch={scratch}
+                                showPlatform={showPlatform}
+                            />
+                            <span className={styles.improvementSlot}>
+                                <Improvement improvement={scratch.best_fork} />
+                            </span>
                         </div>
-                    )}
-                </div>
-            </div>
-        </li>
+                        <div className={styles.metadata}>
+                            <ScratchMetadata
+                                scratch={scratch}
+                                showPresetOrCompiler={showPresetOrCompiler}
+                            />
+                            {(children || showOwner || showDeleteButton) && (
+                                <div className={styles.metadataAside}>
+                                    {children && (
+                                        <div className={styles.actions}>
+                                            {children}
+                                        </div>
+                                    )}
+                                    {showOwner && (
+                                        <ScratchOwner scratch={scratch} />
+                                    )}
+                                    {showDeleteButton && (
+                                        <DeleteButton
+                                            scratch={scratch}
+                                            onDeleteCallback={onDeleteCallback}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </li>
+            )}
+        </>
     );
 }
 
 export function ScratchItem({
     scratch,
     children,
-}: { scratch: api.TerseScratch; children?: ReactNode }) {
+}: {
+    scratch: api.TerseScratch;
+    children?: ReactNode;
+    showDeleteButton?: boolean;
+}) {
     return <ScratchItemRow scratch={scratch}>{children}</ScratchItemRow>;
 }
 
-export function ScratchItemNoOwner({ scratch }: { scratch: api.TerseScratch }) {
-    return <ScratchItemRow scratch={scratch} showOwner={false} />;
+export function ScratchItemNoOwner({
+    scratch,
+    showDeleteButton,
+}: { scratch: api.TerseScratch; showDeleteButton?: boolean }) {
+    return (
+        <ScratchItemRow
+            scratch={scratch}
+            showOwner={false}
+            showDeleteButton={showDeleteButton}
+        />
+    );
 }
 
 export function ScratchItemPlatformList({

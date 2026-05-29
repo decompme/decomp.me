@@ -32,9 +32,9 @@
     flex-shrink: 0;
     gap: 0.35rem;
     justify-content: center;
-    min-width: 4.5rem;
+    min-width: 5rem;
     height: 1.4rem;
-    padding: 0 0.45rem;
+    padding: 0 0.5rem;
 
     border-radius: 0.5em;
 
@@ -49,8 +49,7 @@
     }
 
     span {
-        // transform: translateY(1px);
-        transform: translate(-2px, 1px);
+        transform: translateX(-2px);
     }
 }
 
