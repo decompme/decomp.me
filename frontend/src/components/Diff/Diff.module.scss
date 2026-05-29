@@ -173,6 +173,11 @@
 .diff_skip_row { background-color: rgba(230, 199, 0, 0.10); }
 
 :global(html:not(.dark)) {
+    .immediate { color: #3434d4; }
+    .stack { color: #5f6f00; }
+    .register { color: #7a5a00; }
+    .symbol { color: var(--g1600); }
+
     .diff_change { color: #3a3aff; }
     .diff_add    { color: #2a8000; }
     .diff_remove { color: #a31212; }
@@ -202,16 +207,15 @@
 .rotation8 { color: grey; }
 
 :global(html:not(.dark)) {
-    .rotation0 { color: rgb(205, 82, 82); } // hsv(0° 60% 80%)
-    .rotation1 { color: rgb(205, 164, 82); } // hsv(40° 60% 80%)
-    .rotation2 { color: rgb(164, 205, 82); } // hsv(80° 60% 80%)
-    .rotation3 { color: rgb(82, 205, 82); } // hsv(120° 60% 80%)
-    .rotation4 { color: rgb(82, 205, 164); } // hsv(160° 60% 80%)
-    .rotation5 { color: rgb(82, 164, 205); } // hsv(200° 60% 80%)
-    .rotation6 { color: rgb(82, 82, 205); } // hsv(240° 60% 80%)
-    .rotation7 { color: rgb(164, 82, 205); } // hsv(280° 60% 80%)
-    .rotation8 { color: rgb(205, 82, 164); } // hsv(320° 60% 80%)
-    .symbol { color: black }
+    .rotation0 { color: #b3261e; }
+    .rotation1 { color: #8a5a00; }
+    .rotation2 { color: #5f6f00; }
+    .rotation3 { color: #0b7a24; }
+    .rotation4 { color: #00796b; }
+    .rotation5 { color: #006b8f; }
+    .rotation6 { color: #3451b2; }
+    .rotation7 { color: #7b2cbf; }
+    .rotation8 { color: #9b1b6b; }
 }
 
 .highlighted {
