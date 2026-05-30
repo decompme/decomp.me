@@ -145,6 +145,7 @@ RUN dpkg --add-architecture i386 \
     dj64 \
     dos2unix \
     dosemu2 \
+    g++ \
     iptables \
     libc6-dev-i386 \
     libnl-route-3-200 \

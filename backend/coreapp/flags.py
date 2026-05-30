@@ -5,22 +5,22 @@ ASMDIFF_FLAG_PREFIX = "-DIFF"
 
 
 class Language(enum.Enum):
-    C = "C"
-    OLD_CXX = "C++"
-    CXX = "C++"
-    PASCAL = "Pascal"
-    ASSEMBLY = "Assembly"
-    OBJECTIVE_C = "ObjectiveC"
+    C = ("C", "c")
+    OLD_CXX = ("C++", "c++")
+    CXX = ("C++", "cpp")
+    PASCAL = ("Pascal", "p")
+    ASSEMBLY = ("Assembly", "s")
+    OBJECTIVE_C = ("ObjectiveC", "m")
+
+    def __init__(self, display_name: str, file_extension: str):
+        self.display_name = display_name
+        self.file_extension = file_extension
 
     def get_file_extension(self) -> str:
-        return {
-            Language.C: "c",
-            Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
-            Language.PASCAL: "p",
-            Language.ASSEMBLY: "s",
-            Language.OBJECTIVE_C: "m",
-        }[self]
+        return self.file_extension
+
+    def get_display_name(self) -> str:
+        return self.display_name
 
 
 @dataclass(frozen=True)
@@ -370,7 +370,7 @@ COMMON_GHS_FLAGS: Flags = [
     FlagSet(
         id="ghs_inlining_mode", flags=["--max_inlining", "--inlining", "--no_inlining"]
     ),
-    Checkbox("ghs_gnu_mode", "--g++"),
+    LanguageFlagSet(id="ghs_source_language", flags={"--g++": Language.CXX}),
     Checkbox("ghs_enable_noinline", "--enable_noinline"),
     Checkbox("ghs_link_once_templates", "--link_once_templates"),
     Checkbox("ghs_only_explicit_reg_use", "-only_explicit_reg_use"),
@@ -386,7 +386,7 @@ COMMON_MSVC_FLAGS: Flags = [
     FlagSet(id="msvc_inline", flags=["/Ob0", "/Ob1", "/Ob2"]),
     FlagSet(id="msvc_alignment", flags=["/Zp1", "/Zp2", "/Zp4", "/Zp8", "/Zp16"]),
     FlagSet(id="msvc_callconv", flags=["/Gd", "/Gr", "/Gz"]),
-    Checkbox("msvc_compile_cpp", "/TP"),
+    LanguageFlagSet(id="msvc_source_language", flags={"/TP": Language.CXX}),
     Checkbox("msvc_use_rtti", "/GR"),
     Checkbox("msvc_use_ehsc", "/GX"),
     Checkbox("msvc_disable_stack_checking", "/Gs"),

@@ -112,7 +112,7 @@ class CompilerWrapper:
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            ext = compiler.language.get_file_extension()
+            ext = compiler.get_language(compiler_flags).get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"

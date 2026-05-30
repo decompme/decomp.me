@@ -31,7 +31,6 @@ from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
 from ..filters.scratch import ScratchFilter
 from ..filters.search import NonEmptySearchFilter
-from ..flags import Language
 from ..libraries import Library
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
@@ -558,8 +557,9 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            language = compilers.from_id(scratch.compiler).language
-            src_ext = Language(language).get_file_extension()
+            compiler = compilers.from_id(scratch.compiler)
+            language = compiler.get_language(scratch.compiler_flags)
+            src_ext = language.get_file_extension()
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context_fk and scratch.context_fk.text:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context_fk.text)

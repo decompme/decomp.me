@@ -10,8 +10,10 @@ from coreapp import compilers
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
     GCC281PM,
+    GHS5322,
     IDO53,
     IDO71,
+    MSVC40,
     MWCC_247_92,
     PBX_GCC3,
     WATCOM_105_C,
@@ -231,6 +233,16 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
+    def test_language_flags(self) -> None:
+        """
+        Ensure compiler flags that switch source language are reflected in metadata.
+        """
+        self.assertEqual(GHS5322.get_language(""), Language.C)
+        self.assertEqual(MSVC40.get_language(""), Language.C)
+        self.assertEqual(MWCC_247_92.get_language("-lang=c++"), Language.CXX)
+        self.assertEqual(GHS5322.get_language("--g++"), Language.CXX)
+        self.assertEqual(MSVC40.get_language("/TP"), Language.CXX)
+
     @requiresCompiler(IDO71)
     def test_diff_can_score_target_only(self) -> None:
         """
@@ -272,10 +284,14 @@ nop
         Ensure that we can run a simple compilation/diff for all available compilers
         """
         code = "int func(void) { return 5; }"
-        if compiler.language == Language.PASCAL:
+        language = compiler.get_language()
+        if language in (Language.CXX, Language.OLD_CXX):
+            code = 'extern "C" int func(void) { return 5; }'
+
+        if language == Language.PASCAL:
             code = "function func(): integer; begin func := 5; end;"
 
-        if compiler.language == Language.ASSEMBLY:
+        if language == Language.ASSEMBLY:
             code = "nada"
 
         result = CompilerWrapper.compile_code(

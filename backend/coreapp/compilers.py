@@ -32,6 +32,7 @@ from coreapp.flags import (
     COMMON_WATCOM_FLAGS,
     Flags,
     Language,
+    LanguageFlagSet,
 )
 from coreapp.platforms import (
     ANDROID_X86,
@@ -93,6 +94,25 @@ class Compiler:
         if not self.path.exists():
             print(f"Compiler {self.id} not found at {self.path}")
         return self.path.exists()
+
+    def get_language(self, compiler_flags: str = "") -> Language:
+        language_flag_set = next(
+            (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
+            None,
+        )
+        if language_flag_set is None:
+            return self.language
+
+        matches = [
+            (flag, language)
+            for flag, language in language_flag_set.flags.items()
+            if flag in compiler_flags
+        ]
+        if not matches:
+            return self.language
+
+        # Taking the longest avoids detecting C++ as C.
+        return max(matches, key=lambda match: len(match[0]))[1]
 
 
 @dataclass(frozen=True)
@@ -278,6 +298,7 @@ AGBCC_ARM = GCCCompiler(
 AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
+    language=Language.CXX,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 # N3DS
@@ -920,6 +941,7 @@ GCC272SN0001CXX = GCCCompiler(
     id="gcc2.7.2sn0001-cxx",
     base_compiler=GCC272SN0001,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
@@ -945,6 +967,7 @@ GCC272SN0006CXX = GCCCompiler(
     id="gcc2.7.2sn0006-cxx",
     base_compiler=GCC272SN0006,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -970,6 +993,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -980,6 +1004,7 @@ GCC281SNEWCXX = GCCCompiler(
     id="gcc2.8.1snew-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
@@ -1097,6 +1122,7 @@ XCODE_GCC401_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS,
     base_compiler=XCODE_GCC401_C,
+    language=Language.CXX,
 )
 
 XCODE_24_C = GCCCompiler(
@@ -1110,6 +1136,7 @@ XCODE_24_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_24_C,
+    language=Language.CXX,
 )
 
 XCODE_GCC400_C = GCCCompiler(
@@ -1123,6 +1150,7 @@ XCODE_GCC400_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_GCC400_C,
+    language=Language.CXX,
 )
 
 PBX_GCC3 = GCCCompiler(
@@ -1533,6 +1561,7 @@ WATCOM_105_CPP = WatcomCompiler(
     id="wpp10.5",
     base_compiler=WATCOM_105_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1546,6 +1575,7 @@ WATCOM_105A_CPP = WatcomCompiler(
     id="wpp10.5a",
     base_compiler=WATCOM_105A_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1559,6 +1589,7 @@ WATCOM_106_CPP = WatcomCompiler(
     id="wpp10.6",
     base_compiler=WATCOM_106_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1572,6 +1603,7 @@ WATCOM_110_CPP = WatcomCompiler(
     id="wpp11.0",
     base_compiler=WATCOM_110_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
