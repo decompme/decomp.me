@@ -9,7 +9,6 @@ from rest_framework.relations import PKOnlyObject, SlugRelatedField
 from coreapp import platforms
 
 from . import compilers
-from .flags import LanguageFlagSet
 from .libraries import Library
 from .models.best_fork import BestFork
 from .models.github import GitHubUser
@@ -398,27 +397,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         - Otherwise, fallback to the compiler's default language
         """
         compiler = compilers.from_id(scratch.compiler)
-        language_flag_set = next(
-            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
-            None,
-        )
-
-        if language_flag_set:
-            matches = [
-                (flag, language)
-                for flag, language in language_flag_set.flags.items()
-                if flag in scratch.compiler_flags
-            ]
-
-            if matches:
-                # taking the longest avoids detecting C++ as C
-                longest_match = max(matches, key=lambda m: len(m[0]))
-                return longest_match[1].value
-
-        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
-        # have a flag within it.
-        # Either way: fall back to the compiler default.
-        return compiler.language.value
+        return compiler.get_language(scratch.compiler_flags).get_display_name()
 
 
 class TerseScratchSerializer(ScratchSerializer):

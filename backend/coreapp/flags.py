@@ -5,22 +5,22 @@ ASMDIFF_FLAG_PREFIX = "-DIFF"
 
 
 class Language(enum.Enum):
-    C = "C"
-    OLD_CXX = "C++"
-    CXX = "C++"
-    PASCAL = "Pascal"
-    ASSEMBLY = "Assembly"
-    OBJECTIVE_C = "ObjectiveC"
+    C = ("C", "c")
+    OLD_CXX = ("C++", "c++")
+    CXX = ("C++", "cpp")
+    PASCAL = ("Pascal", "p")
+    ASSEMBLY = ("Assembly", "s")
+    OBJECTIVE_C = ("ObjectiveC", "m")
+
+    def __init__(self, display_name: str, file_extension: str):
+        self.display_name = display_name
+        self.file_extension = file_extension
 
     def get_file_extension(self) -> str:
-        return {
-            Language.C: "c",
-            Language.CXX: "cpp",
-            Language.OLD_CXX: "c++",
-            Language.PASCAL: "p",
-            Language.ASSEMBLY: "s",
-            Language.OBJECTIVE_C: "m",
-        }[self]
+        return self.file_extension
+
+    def get_display_name(self) -> str:
+        return self.display_name
 
 
 @dataclass(frozen=True)
