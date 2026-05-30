@@ -78,7 +78,6 @@ class Compiler:
     base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: Language = Language.C
-    language_flags: tuple[tuple[str, Language], ...] = ()
 
     @property
     def path(self) -> Path:
@@ -101,16 +100,12 @@ class Compiler:
             (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
             None,
         )
-        language_flag_set_flags = (
-            language_flag_set.flags.items() if language_flag_set else ()
-        )
+        if language_flag_set is None:
+            return self.language
+
         matches = [
             (flag, language)
-            for flag, language in language_flag_set_flags
-            if flag in compiler_flags
-        ] + [
-            (flag, language)
-            for flag, language in self.language_flags
+            for flag, language in language_flag_set.flags.items()
             if flag in compiler_flags
         ]
         if not matches:
@@ -234,7 +229,6 @@ class MWCCWiiGCCompiler(MWCCCompiler):
 class MSVCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
     library_include_flag: str = "/IZ:"
-    language_flags: tuple[tuple[str, Language], ...] = (("/TP", Language.CXX),)
 
 
 @dataclass(frozen=True)
@@ -1048,7 +1042,6 @@ GHS5322 = GHSCompiler(
     id="ghs5.3.22",
     platform=WIIU,
     cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
-    language_flags=(("--g++", Language.CXX),),
 )
 
 # IRIX

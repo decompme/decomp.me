@@ -237,6 +237,8 @@ nop
         """
         Ensure compiler flags that switch source language are reflected in metadata.
         """
+        self.assertEqual(GHS5322.get_language(""), Language.C)
+        self.assertEqual(MSVC40.get_language(""), Language.C)
         self.assertEqual(MWCC_247_92.get_language("-lang=c++"), Language.CXX)
         self.assertEqual(GHS5322.get_language("--g++"), Language.CXX)
         self.assertEqual(MSVC40.get_language("/TP"), Language.CXX)
