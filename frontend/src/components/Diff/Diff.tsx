@@ -3,14 +3,12 @@ import {
     type CSSProperties,
     forwardRef,
     type HTMLAttributes,
-    type RefObject,
     useEffect,
     useMemo,
     useState,
 } from "react";
 
 import { FoldIcon } from "@primer/octicons-react";
-import type { EditorView } from "codemirror";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 
@@ -168,23 +166,6 @@ function DiffBody({
             </AutoSizer>
         </div>
     );
-}
-
-export function scrollToLineNumber(
-    editorView: RefObject<EditorView>,
-    lineNumber: number,
-) {
-    const view = editorView.current;
-    if (!view) return;
-    if (lineNumber <= view.state.doc.lines) {
-        // check if the source line <= number of lines
-        // which can be false if pragmas are used to force line numbers
-        const line = view.state.doc.line(lineNumber);
-        if (line) {
-            const { top } = view.lineBlockAt(line.to);
-            view.scrollDOM.scrollTo({ top, behavior: "smooth" });
-        }
-    }
 }
 
 export const PADDING_TOP = 8;
