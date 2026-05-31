@@ -581,6 +581,11 @@ export default function Scratch({
             data-tour="scratch-view"
         >
             <ScratchTour />
+            <span
+                aria-hidden
+                className="pointer-events-none fixed top-4 left-1/2 size-px"
+                data-tour="scratch-tour-intro"
+            />
             <ErrorBoundary>
                 <ScratchMatchBanner scratch={scratch} />
             </ErrorBoundary>

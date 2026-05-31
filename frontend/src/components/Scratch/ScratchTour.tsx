@@ -8,6 +8,7 @@ import { Boarding, type BoardingSteps } from "boarding.js";
 type TourStep = BoardingSteps[number];
 
 const SELECTOR = {
+    tourIntro: '[data-tour="scratch-tour-intro"]',
     toolbar: '[data-tour="scratch-toolbar"]',
     scratchView: '[data-tour="scratch-view"]',
     leftPane: '[data-tour="scratch-layout-left"]',
@@ -227,10 +228,10 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
     addIfPresent(
         steps,
         makeStep(
-            SELECTOR.scratchView,
+            SELECTOR.tourIntro,
             "Scratch tour",
             "This tour highlights the core features of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
-            "top",
+            "bottom",
         ),
     );
 
