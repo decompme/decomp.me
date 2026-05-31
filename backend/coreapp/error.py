@@ -80,7 +80,7 @@ class SandboxError(SubprocessError):
 
 
 class AssemblyError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Compiler"
+    SUBPROCESS_NAME: ClassVar[str] = "Assembler"
 
     @classmethod
     def from_process_error(cls, ex: CalledProcessError) -> Self:
