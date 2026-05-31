@@ -172,6 +172,10 @@ function resetBoarding(boarding: Boarding) {
     }
 }
 
+function isTourViewportSupported() {
+    return window.matchMedia("(min-width: 768px)").matches;
+}
+
 function addIfPresent(steps: TourStep[], step: TourStep) {
     if (elementExists(step.element as string)) {
         steps.push(step);
@@ -519,6 +523,8 @@ export default function ScratchTour(): null {
         });
 
         const startTour = () => {
+            if (!isTourViewportSupported()) return;
+
             resetBoarding(boarding);
             const steps = buildTourSteps(boarding);
             if (steps.length === 0) return;

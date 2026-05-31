@@ -339,7 +339,7 @@ function Actions({
                     />
                 </li>
             )}
-            <li>
+            <li className="hidden md:list-item">
                 <ActionButton
                     onClick={startScratchTour}
                     icon={<MilestoneIcon />}
