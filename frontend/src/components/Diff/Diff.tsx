@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { FoldIcon, SearchIcon } from "@primer/octicons-react";
+import clsx from "clsx";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { useDebounce } from "use-debounce";
@@ -479,6 +480,16 @@ export default function Diff({
         >
             {columnCount >= 2 && <DragBar pos={bar1Px} onChange={setBar1Px} />}
             {columnCount === 3 && <DragBar pos={bar2Px} onChange={setBar2Px} />}
+            {columns.map((col) => (
+                <div
+                    key={col}
+                    className={clsx(
+                        styles.columnTourTarget,
+                        styles[`columnTourTarget-${col}`],
+                    )}
+                    data-tour={`scratch-diff-column-${col}-full`}
+                />
+            ))}
             <div className={styles.headers}>
                 {columns.map((col) => (
                     <div

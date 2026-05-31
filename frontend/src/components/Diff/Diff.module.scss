@@ -52,6 +52,29 @@
     }
 }
 
+.columnTourTarget {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.columnTourTarget-base {
+    left: 0;
+    width: var(--diff-left-width);
+}
+
+.columnTourTarget-current {
+    left: var(--diff-left-width);
+    right: var(--diff-right-width);
+}
+
+.columnTourTarget-previous {
+    right: 0;
+    width: var(--diff-right-width);
+}
+
 .searchPanel {
     position: absolute;
     z-index: 120;
