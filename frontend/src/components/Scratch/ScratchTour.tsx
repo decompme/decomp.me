@@ -10,6 +10,8 @@ type TourStep = BoardingSteps[number];
 const SELECTOR = {
     toolbar: '[data-tour="scratch-toolbar"]',
     scratchView: '[data-tour="scratch-view"]',
+    leftPane: '[data-tour="scratch-layout-left"]',
+    rightPane: '[data-tour="scratch-layout-right"]',
     tourHelp: '[data-tour="scratch-tour-help"]',
     compileButton: '[data-tour="scratch-action-compile"]',
     saveButton: '[data-tour="scratch-action-save"]',
@@ -34,6 +36,7 @@ const SELECTOR = {
     targetColumn: '[data-tour="scratch-diff-column-base"]',
     currentColumn: '[data-tour="scratch-diff-column-current"]',
     thirdColumn: '[data-tour="scratch-diff-column-previous"]',
+    diffToggles: '[data-tour="scratch-diff-toggles"]',
     targetToggle: '[data-tour="scratch-diff-toggle-target"]',
     currentToggle: '[data-tour="scratch-diff-toggle-current"]',
     threeWayToggle: '[data-tour="scratch-diff-toggle-three-way"]',
@@ -144,7 +147,8 @@ function makeClickToContinueStep({
             title,
             description,
             preferredSide,
-            showButtons: ["close", "previous"],
+            showButtons: ["close", "previous", "next"],
+            disableButtons: ["next"],
         },
     };
 }
@@ -225,7 +229,28 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.scratchView,
             "Scratch tour",
-            "This tour highlights the main parts of a scratch. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
+            "This tour highlights the core features of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
+            "top",
+        ),
+    );
+
+    addIfPresent(
+        steps,
+        makeStep(
+            SELECTOR.leftPane,
+            "Editing area",
+            "The left side of the scratch editor is where you make your changes: edit source code and context, tweak compiler options, and update scratch metadata.",
+            "right",
+        ),
+    );
+
+    addIfPresent(
+        steps,
+        makeStep(
+            SELECTOR.rightPane,
+            "Results area",
+            "The right side is where you will see the results of your changes: assembly diff and any warnings or errors from the compiler.",
+            "left",
         ),
     );
 
@@ -233,64 +258,79 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         steps,
         makeStep(
             SELECTOR.toolbar,
-            "Scratch overview",
-            "A scratch is a shareable workspace for matching a function. If you own the scratch you can rename it by clicking on its name and making your changes.",
+            "Scratch toolbar",
+            "The toolbar contains scratch-level actions such as saving, forking, exporting, decompiling. <br /> If you own the scratch you can rename it by clicking on its name and making your changes.",
         ),
     );
 
     addIfPresent(
         steps,
         makeStep(
-            SELECTOR.saveButton,
-            "Save",
-            "Hitting Save will save your changes.",
-        ),
-    );
-    addIfPresent(
-        steps,
-        makeStep(
             SELECTOR.forkButton,
             "Fork",
-            "Forking a scratch creates your own editable copy, this is how you can save your changes.",
-        ),
-    );
-    addIfPresent(
-        steps,
-        makeStep(
-            SELECTOR.compileButton,
-            "Compile",
-            "Clicking Compile will send your scratch to the backend to be compiled and diffed against the target assembly.",
-        ),
-    );
-    addIfPresent(
-        steps,
-        makeStep(
-            SELECTOR.decompileButton,
-            "Decompile",
-            "When the platform supports it, Decompile can generate a starting point from the target assembly.",
-        ),
-    );
-    addIfPresent(
-        steps,
-        makeStep(
-            SELECTOR.exportButton,
-            "Export",
-            "The Export button creates & downloads a zip of the current scratch, allowing you to inspect them locally.",
+            "Forking a scratch creates your own editable copy, this is how you can save your changes if you're not the owner.",
         ),
     );
 
     addTabSection({
         steps,
         boarding,
-        tabSelector: SELECTOR.aboutTab,
-        panelSelector: SELECTOR.aboutPanel,
-        tabTitle: "About tab",
+        tabSelector: SELECTOR.sourceTab,
+        panelSelector: SELECTOR.sourcePanel,
+        tabTitle: "Source code tab",
         tabDescription:
-            "Click <strong>About</strong> to switch to the About tab where you will find the scratch metadata.",
-        panelTitle: "About",
+            "Click the <strong>Source code</strong> tab to select the code editor.",
+        panelTitle: "Source code",
         panelDescription:
-            "The About tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes attached to the scratch.",
+            "The matching loop happens here: edit the code, compile, check the diff, repeat until the code matches. <br /> By default, changes are compiled automatically after a short delay; you can configure this behavior in the editor settings found in the hamburger menu.",
     });
+
+    addTabSection({
+        steps,
+        boarding,
+        tabSelector: SELECTOR.contextTab,
+        panelSelector: SELECTOR.contextPanel,
+        tabTitle: "Context tab",
+        tabDescription:
+            "Now click the <strong>Context</strong> tab to see supporting declarations.",
+        panelTitle: "Context",
+        panelDescription:
+            "Use this space for shared typedefs, symbols, function definitions, etc., that are used by the function you are trying to match.",
+    });
+
+    addTabSection({
+        steps,
+        boarding,
+        tabSelector: SELECTOR.optionsTab,
+        panelSelector: SELECTOR.optionsPanel,
+        tabTitle: "Options tab",
+        tabDescription:
+            "Click the <strong>Options</strong> tab to open compiler and diff settings.",
+        panelTitle: "Options",
+        panelDescription:
+            "Options control how your source is compiled and compared. Most scratches will have compiler flags set via a preset.",
+    });
+    steps.push(
+        makeStep(
+            SELECTOR.optionsCompiler,
+            "Compiler options",
+            "Compiler options allow you to change the compiler and flags used to build your source.",
+        ),
+    );
+    steps.push(
+        makeStep(
+            SELECTOR.optionsDiff,
+            "Diff options",
+            "Diff options control how the generated object is compared against the target.",
+        ),
+    );
+    steps.push(
+        makeStep(
+            SELECTOR.optionsOther,
+            "Other options",
+            "Match override lets an owner mark a scratch as matching even when naming or symbol details leave a mismatch.",
+        ),
+    );
 
     addTabSection({
         steps,
@@ -308,62 +348,14 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
     addTabSection({
         steps,
         boarding,
-        tabSelector: SELECTOR.sourceTab,
-        panelSelector: SELECTOR.sourcePanel,
-        tabTitle: "Source code tab",
-        tabDescription:
-            "Click <strong>Source code</strong> to return to the main editor.",
-        panelTitle: "Source code",
+        tabSelector: SELECTOR.aboutTab,
+        panelSelector: SELECTOR.aboutPanel,
+        tabTitle: "About tab",
+        tabDescription: "Now click the <strong>About</strong> tab.",
+        panelTitle: "About",
         panelDescription:
-            "Most of the matching loop happens here: edit code, compile, inspect the diff, and repeat.",
+            "The About tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes attached to the scratch.",
     });
-
-    addTabSection({
-        steps,
-        boarding,
-        tabSelector: SELECTOR.contextTab,
-        panelSelector: SELECTOR.contextPanel,
-        tabTitle: "Context tab",
-        tabDescription:
-            "Click <strong>Context</strong> to see supporting declarations.",
-        panelTitle: "Context",
-        panelDescription:
-            "Use this space for shared typedefs, symbols, function definitions, etc., that are used by the function you are trying to match.",
-    });
-
-    addTabSection({
-        steps,
-        boarding,
-        tabSelector: SELECTOR.optionsTab,
-        panelSelector: SELECTOR.optionsPanel,
-        tabTitle: "Options tab",
-        tabDescription:
-            "Click <strong>Options</strong> to open compiler and diff settings.",
-        panelTitle: "Options",
-        panelDescription:
-            "Options control how your source is compiled and compared. Most scratches will have compiler flags set via preset.",
-    });
-    steps.push(
-        makeStep(
-            SELECTOR.optionsCompiler,
-            "Compiler options",
-            "Compiler options choose the compiler and flags used to build your source.",
-        ),
-    );
-    steps.push(
-        makeStep(
-            SELECTOR.optionsDiff,
-            "Diff options",
-            "Diff options control how the generated object is compared against the target.",
-        ),
-    );
-    steps.push(
-        makeStep(
-            SELECTOR.optionsOther,
-            "Other options",
-            "Match override lets an owner mark a scratch as effectively matching even when naming or symbol details leave a tiny mismatch.",
-        ),
-    );
 
     addTabSection({
         steps,
@@ -375,7 +367,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click <strong>Compilation</strong> to inspect the current diff.",
         panelTitle: "Compilation",
         panelDescription:
-            "The Compilation panel shows the current assembly diff and compiler output. A score of 0 means the generated output matches the target.",
+            "The Compilation panel shows the current assembly diff and compiler output. The lower the score the better; a score of 0 means the generated output matches the target.",
         panelPreferredSide: "left",
     });
     addIfPresent(
@@ -391,15 +383,15 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.currentColumn,
             "Current column",
-            "Current show what the result of your compiled source code.",
+            "Current show the result of your compiled source code.",
         ),
     );
     addIfPresent(
         steps,
         makeStep(
-            SELECTOR.targetToggle,
+            SELECTOR.diffToggles,
             "Column toggles",
-            "The T and C buttons hide or show the Target and Current columns when you need more room.",
+            "These controls hide or show diff columns, enable 3-way comparison, and collapse long unchanged stretches when you need more room.",
         ),
     );
 
@@ -412,14 +404,14 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
                 waitForSelector: SELECTOR.thirdColumn,
                 title: "3-way diff",
                 description:
-                    "Click <strong>3</strong> to add a third column comparing against your saved version or previous compile, depending on your editor setting.",
+                    "Click the <strong>3</strong> to add a third column comparing against your saved version or previous compile, depending on your editor setting.",
             }),
         );
         steps.push(
             makeStep(
                 SELECTOR.thirdColumn,
                 "Third diff column",
-                "This extra column gives you another baseline while you compare changes.",
+                "This column allows you to better identify how your changes affect the diff.",
             ),
         );
         steps.push({
@@ -441,7 +433,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             makeStep(
                 SELECTOR.compressionToggle,
                 "Compress diff",
-                "The fold button collapses long unchanged stretches so you can focus on the differences. You can toggle it whenever the full diff has too much noise.",
+                "The fold button collapses long unchanged stretches so you can focus on the differences.",
             ),
         );
     }
@@ -453,10 +445,10 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         panelSelector: SELECTOR.objdiffPanel,
         tabTitle: "objdiff tab",
         tabDescription:
-            "Click <strong>objdiff</strong> to see another view of the comparison.",
+            "Click the <strong>objdiff</strong> tab to switch from asm-differ to the objdiff backend.",
         panelTitle: "objdiff",
         panelDescription:
-            "objdiff provides an object-level comparison view that can be useful when inspecting data in addition to and instruction differences.",
+            "objdiff provides an object-level comparison view that can be useful when inspecting data in addition to any instruction differences.",
         panelPreferredSide: "left",
     });
 
@@ -468,7 +460,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             panelSelector: SELECTOR.problemsPanel,
             tabTitle: "Problems tab",
             tabDescription:
-                "Click <strong>Problems</strong> to see compiler output.",
+                "Click the <strong>Problems</strong> panel to see compiler output.",
             panelTitle: "Problems",
             panelDescription:
                 "Any compiler errors and warnings will be shown here.",
@@ -490,20 +482,11 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             makeStep(
                 SELECTOR.decompilePanel,
                 "Decompilation",
-                "Decompilation is a helper for generating a starting point. It can save time, but the result still needs review and editing.",
-                "left",
+                "When the platform supports it, this table will show the results of running a decompiler against the target assembly and contents of the scratch context.",
             ),
         );
     }
 
-    addIfPresent(
-        steps,
-        makeStep(
-            SELECTOR.scratchView,
-            "The matching loop",
-            "The usual loop is edit source, context, or options; inspect the diff; and repeat. By default, changes are compiled automatically, and you can configure that behavior in your editor settings.",
-        ),
-    );
     addIfPresent(
         steps,
         makeStep(

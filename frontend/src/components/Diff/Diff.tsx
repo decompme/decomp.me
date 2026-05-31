@@ -512,41 +512,46 @@ export default function Diff({
                         {col === rightmostColumn && (
                             <>
                                 <div className={styles.spacer} />
-                                <ToggleButton
-                                    label="T"
-                                    title="Target column"
-                                    enabled={columnState.base}
-                                    setEnabled={(enabled) =>
-                                        setColumn("base", enabled)
-                                    }
-                                    dataTour="scratch-diff-toggle-target"
-                                />
-                                <ToggleButton
-                                    label="C"
-                                    title="Current column"
-                                    enabled={columnState.current}
-                                    setEnabled={(enabled) =>
-                                        setColumn("current", enabled)
-                                    }
-                                    dataTour="scratch-diff-toggle-current"
-                                />
-                                <ToggleButton
-                                    label="3"
-                                    title="3-way diff"
-                                    enabled={threeWayDiffEnabled}
-                                    setEnabled={handleSetThreeWayDiff}
-                                    dataTour="scratch-diff-toggle-three-way"
-                                />
-                                <ToggleButton
-                                    label={<FoldIcon size={16} />}
-                                    disabledLabel="Collapse streaks of "
-                                    enabledLabel="Show all "
-                                    title="matching lines"
-                                    padding="px-1 py-1"
-                                    enabled={compressionEnabled}
-                                    setEnabled={setCompressionEnabled}
-                                    dataTour="scratch-diff-toggle-compression"
-                                />
+                                <div
+                                    className="flex items-center gap-1"
+                                    data-tour="scratch-diff-toggles"
+                                >
+                                    <ToggleButton
+                                        label="T"
+                                        title="Target column"
+                                        enabled={columnState.base}
+                                        setEnabled={(enabled) =>
+                                            setColumn("base", enabled)
+                                        }
+                                        dataTour="scratch-diff-toggle-target"
+                                    />
+                                    <ToggleButton
+                                        label="C"
+                                        title="Current column"
+                                        enabled={columnState.current}
+                                        setEnabled={(enabled) =>
+                                            setColumn("current", enabled)
+                                        }
+                                        dataTour="scratch-diff-toggle-current"
+                                    />
+                                    <ToggleButton
+                                        label="3"
+                                        title="3-way diff"
+                                        enabled={threeWayDiffEnabled}
+                                        setEnabled={handleSetThreeWayDiff}
+                                        dataTour="scratch-diff-toggle-three-way"
+                                    />
+                                    <ToggleButton
+                                        label={<FoldIcon size={16} />}
+                                        disabledLabel="Collapse streaks of "
+                                        enabledLabel="Show all "
+                                        title="matching lines"
+                                        padding="px-1 py-1"
+                                        enabled={compressionEnabled}
+                                        setEnabled={setCompressionEnabled}
+                                        dataTour="scratch-diff-toggle-compression"
+                                    />
+                                </div>
                             </>
                         )}
                     </div>
