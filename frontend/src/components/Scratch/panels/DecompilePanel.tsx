@@ -50,7 +50,7 @@ export default function DecompilePanel({ scratch }: Props) {
         decompiledCode === null || scratch.context !== debouncedContext;
 
     return (
-        <div className={styles.container}>
+        <div className={styles.container} data-tour="scratch-decompile-panel">
             <section className={styles.main}>
                 <p>
                     Modify the context or compiler to see how the decompilation

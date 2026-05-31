@@ -2840,6 +2840,11 @@ binary-extensions@^2.0.0:
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.3.0.tgz#f6e14a97858d327252200242d4ccfe522c445522"
   integrity sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==
 
+boarding.js@^3.7.3:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/boarding.js/-/boarding.js-3.7.3.tgz#0e3ae267faa2ca5407c56e209f5898fb242310eb"
+  integrity sha512-Ndig9L06bwWdEBCor2St9cmcmtGTeSiXDhXeZ3QgWa/RLh4P5mL0DHQB5xRjo9wmSsqwMQhW3v2d79XKH9wnqw==
+
 boolbase@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"

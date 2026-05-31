@@ -1,6 +1,7 @@
 import ThemeProvider from "./ThemeProvider";
 
 import "allotment/dist/style.css";
+import "boarding.js/styles/main.css";
 import "./globals.scss";
 
 export const metadata = {

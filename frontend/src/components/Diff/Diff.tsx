@@ -481,7 +481,11 @@ export default function Diff({
             {columnCount === 3 && <DragBar pos={bar2Px} onChange={setBar2Px} />}
             <div className={styles.headers}>
                 {columns.map((col) => (
-                    <div key={col} className={styles.header}>
+                    <div
+                        key={col}
+                        className={styles.header}
+                        data-tour={`scratch-diff-column-${col}`}
+                    >
                         {COLUMN_LABELS[col]}
                         <CopyButton
                             title="Copy content"
@@ -515,6 +519,7 @@ export default function Diff({
                                     setEnabled={(enabled) =>
                                         setColumn("base", enabled)
                                     }
+                                    dataTour="scratch-diff-toggle-target"
                                 />
                                 <ToggleButton
                                     label="C"
@@ -523,12 +528,14 @@ export default function Diff({
                                     setEnabled={(enabled) =>
                                         setColumn("current", enabled)
                                     }
+                                    dataTour="scratch-diff-toggle-current"
                                 />
                                 <ToggleButton
                                     label="3"
                                     title="3-way diff"
                                     enabled={threeWayDiffEnabled}
                                     setEnabled={handleSetThreeWayDiff}
+                                    dataTour="scratch-diff-toggle-three-way"
                                 />
                                 <ToggleButton
                                     label={<FoldIcon size={16} />}
@@ -538,6 +545,7 @@ export default function Diff({
                                     padding="px-1 py-1"
                                     enabled={compressionEnabled}
                                     setEnabled={setCompressionEnabled}
+                                    dataTour="scratch-diff-toggle-compression"
                                 />
                             </>
                         )}

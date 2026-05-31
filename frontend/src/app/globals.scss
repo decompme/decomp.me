@@ -85,3 +85,95 @@ body.no-scroll {
         height: 100svh;
     }
 }
+
+#boarding-popover-item.scratch-tour-popover {
+    width: min(22rem, calc(100vw - 2rem));
+    border: 1px solid var(--g600);
+    border-radius: 8px;
+    background: var(--g200);
+    box-shadow: 0 18px 48px rgb(0 0 0 / 35%);
+    color: var(--g1700);
+
+    .boarding-popover-title {
+        margin-bottom: 0.45rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+
+    .boarding-popover-description {
+        color: var(--g1200);
+        font-size: 0.875rem;
+        line-height: 1.35;
+
+        strong {
+            color: var(--g1700);
+            font-weight: 700;
+        }
+
+        a {
+            color: var(--link);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: var(--g1700);
+        }
+    }
+
+    .boarding-popover-footer {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .boarding-navigation-btns {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    button {
+        display: inline-flex;
+        min-height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--g700);
+        border-radius: 6px;
+        background: var(--g400);
+        padding: 0.35rem 0.65rem;
+        color: var(--g1700);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: var(--a600);
+    }
+
+    .boarding-next-btn {
+        border-color: var(--a900);
+        background: var(--a400);
+        color: white;
+    }
+
+    .boarding-next-btn:hover {
+        background: var(--a600);
+    }
+
+    .boarding-disabled {
+        opacity: 0.45;
+        cursor: default;
+        pointer-events: none;
+    }
+
+    .boarding-popover-tip {
+        border-color: var(--g200);
+    }
+}

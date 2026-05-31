@@ -414,7 +414,10 @@ export default function CompilerOpts({
 
     return (
         <>
-            <section className={styles.header}>
+            <section
+                className={styles.header}
+                data-tour="scratch-options-preset"
+            >
                 <PlatformIcon platform={platform} size={32} />
                 <div className={styles.preset}>
                     Preset
@@ -426,7 +429,10 @@ export default function CompilerOpts({
                 </div>
             </section>
             <OptsContext.Provider value={optsEditorProvider}>
-                <section className={styles.section}>
+                <section
+                    className={styles.section}
+                    data-tour="scratch-options-compiler"
+                >
                     <h3 className={styles.heading}>Compiler options</h3>
                     <OptsEditor
                         availableCompilers={availableCompilers}
@@ -438,15 +444,20 @@ export default function CompilerOpts({
                 </section>
             </OptsContext.Provider>
 
-            <LibrariesSection
-                className={styles.section}
-                libraries={value.libraries}
-                setLibraries={setLibraries}
-                platform={platform}
-            />
+            <section data-tour="scratch-options-libraries">
+                <LibrariesSection
+                    className={styles.section}
+                    libraries={value.libraries}
+                    setLibraries={setLibraries}
+                    platform={platform}
+                />
+            </section>
 
             <OptsContext.Provider value={diffOptsEditorProvider}>
-                <section className={styles.section}>
+                <section
+                    className={styles.section}
+                    data-tour="scratch-options-diff"
+                >
                     <h3 className={styles.heading}>Diff options</h3>
                     <DiffOptsEditor
                         platform={platform}
@@ -457,7 +468,10 @@ export default function CompilerOpts({
                 </section>
             </OptsContext.Provider>
 
-            <section className={styles.section}>
+            <section
+                className={styles.section}
+                data-tour="scratch-options-other"
+            >
                 <h3 className={styles.heading}>Other options</h3>
                 <Checkbox
                     checked={matchOverride}
