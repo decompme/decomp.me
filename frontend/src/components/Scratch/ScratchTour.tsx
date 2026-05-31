@@ -8,12 +8,11 @@ import { Boarding, type BoardingSteps } from "boarding.js";
 type TourStep = BoardingSteps[number];
 
 const SELECTOR = {
-    tourIntro: '[data-tour="scratch-tour-intro"]',
     toolbar: '[data-tour="scratch-toolbar"]',
     scratchView: '[data-tour="scratch-view"]',
     leftPane: '[data-tour="scratch-layout-left"]',
     rightPane: '[data-tour="scratch-layout-right"]',
-    tourHelp: '[data-tour="scratch-tour-help"]',
+    tourButton: '[data-tour="scratch-action-tour"]',
     compileButton: '[data-tour="scratch-action-compile"]',
     saveButton: '[data-tour="scratch-action-save"]',
     forkButton: '[data-tour="scratch-action-fork"]',
@@ -228,9 +227,9 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
     addIfPresent(
         steps,
         makeStep(
-            SELECTOR.tourIntro,
+            SELECTOR.toolbar,
             "Scratch tour",
-            "This tour highlights the core features of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
+            "This button starts a guided tour of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
             "bottom",
         ),
     );
@@ -340,7 +339,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         panelSelector: SELECTOR.familyPanel,
         tabTitle: "Family tab",
         tabDescription:
-            "Click <strong>Family</strong> to switch to the Family tab to see related forks.",
+            "Click <strong>Family</strong> to switch to the family tab to see related forks.",
         panelTitle: "Scratch family",
         panelDescription:
             "Forks let people collaborate on the same target function. The family tab helps find related work and improvements.",
@@ -355,7 +354,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         tabDescription: "Now click the <strong>About</strong> tab.",
         panelTitle: "About",
         panelDescription:
-            "The About tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes attached to the scratch.",
+            "The about tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes attached to the scratch.",
     });
 
     addTabSection({
@@ -491,9 +490,9 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
     addIfPresent(
         steps,
         makeStep(
-            SELECTOR.tourHelp,
+            SELECTOR.tourButton,
             "More help",
-            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment.',
+            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment. <br /> You can start the tour again by clicking the <strong>Tour</strong> button.',
         ),
     );
 

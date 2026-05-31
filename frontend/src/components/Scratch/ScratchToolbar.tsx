@@ -5,6 +5,7 @@ import {
     type FC,
     type ClipboardEvent,
     type KeyboardEvent,
+    type MouseEvent,
     type JSX,
 } from "react";
 
@@ -51,8 +52,11 @@ function exportScratchZip(scratch: api.Scratch) {
     a.click();
 }
 
-function startScratchTour() {
-    window.dispatchEvent(new CustomEvent("scratch-tour:start"));
+function startScratchTour(event?: MouseEvent<HTMLButtonElement>) {
+    event?.currentTarget.blur();
+    window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("scratch-tour:start"));
+    }, 0);
 }
 
 function EditTimeAgo({ date }: { date: string }) {
@@ -460,7 +464,7 @@ export default function ScratchToolbar(props: Props) {
                         "border-gray-6 border-b",
                     )}
                 >
-                    <Actions {...props} />
+                    <Actions {...props} tourTargetsEnabled />
                 </div>
             )}
         </>
