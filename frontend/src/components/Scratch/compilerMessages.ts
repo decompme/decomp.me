@@ -41,7 +41,13 @@ function findSourceLineMatches(text: string): SourceLineMatch[] {
     return matches.sort((a, b) => a.start - b.start);
 }
 
-export function parseCompilerMessages(text: string): CompilerMessagePart[] {
+export function parseCompilerMessages(
+    text?: string | null,
+): CompilerMessagePart[] {
+    if (!text) {
+        return [];
+    }
+
     const locations: CompilerMessagePart[] = [];
     let index = 0;
 

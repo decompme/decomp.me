@@ -9,7 +9,11 @@ import { ScrollContext } from "../ScrollContext";
 
 import { parseCompilerMessages } from "./compilerMessages";
 
-export default function CompilerMessageOutput({ text }: { text: string }) {
+export default function CompilerMessageOutput({
+    text,
+}: {
+    text?: string | null;
+}) {
     const sourceEditor = useContext<RefObject<EditorView>>(ScrollContext);
     const parts = parseCompilerMessages(text);
 
