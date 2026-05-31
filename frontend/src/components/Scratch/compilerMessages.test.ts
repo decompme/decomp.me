@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import { parseCompilerMessages } from "./compilerMessages";
 
 describe("parseCompilerMessages", () => {
+    it("handles missing text", () => {
+        expect(parseCompilerMessages(undefined)).toEqual([]);
+        expect(parseCompilerMessages(null)).toEqual([]);
+    });
+
     it("captures src file line references", () => {
         expect(
             parseCompilerMessages(
