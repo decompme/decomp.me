@@ -7,11 +7,12 @@ import type { EditorView } from "codemirror";
 import { areEqual } from "react-window";
 
 import type * as api from "@/lib/api";
+import { scrollToLineNumber } from "@/lib/codemirror/scrollToLineNumber";
 import * as settings from "@/lib/settings";
 
 import { ScrollContext } from "../ScrollContext";
 import { useSelectedSourceLine } from "../SelectedSourceLineContext";
-import { PADDING_TOP, scrollToLineNumber, type VisibleRow } from "./Diff";
+import { PADDING_TOP, type VisibleRow } from "./Diff";
 import styles from "./Diff.module.scss";
 import type { Highlighter } from "./Highlighter";
 

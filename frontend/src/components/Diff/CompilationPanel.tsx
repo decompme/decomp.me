@@ -2,13 +2,13 @@ import { useMemo, useRef, useState } from "react";
 
 import { ChevronDownIcon, ChevronUpIcon } from "@primer/octicons-react";
 import { Allotment, type AllotmentHandle } from "allotment";
-import Ansi from "ansi-to-react";
 
 import type * as api from "@/lib/api";
 import { interdiff } from "@/lib/interdiff";
 import { ThreeWayDiffBase, useThreeWayDiffBase } from "@/lib/settings";
 
 import GhostButton from "../GhostButton";
+import CompilerMessageOutput from "../Scratch/CompilerMessageOutput";
 
 import Diff from "./Diff";
 
@@ -172,7 +172,9 @@ export default function CompilationPanel({
                             </h2>
 
                             <div className="h-full grow overflow-auto whitespace-pre px-3 py-2 font-mono text-xs leading-snug">
-                                <Ansi>{compilation.compiler_output}</Ansi>
+                                <CompilerMessageOutput
+                                    text={compilation.compiler_output}
+                                />
                             </div>
                         </div>
                     </Allotment.Pane>
