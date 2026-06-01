@@ -51,7 +51,10 @@ export default function DecompilePanel({ scratch }: Props) {
 
     return (
         <div className={styles.container} data-tour="scratch-decompile-panel">
-            <section className={styles.main}>
+            <section
+                className={styles.main}
+                data-tour="scratch-decompile-content"
+            >
                 <p>
                     Modify the context or compiler to see how the decompilation
                     of the assembly changes.

@@ -86,6 +86,34 @@ body.no-scroll {
     }
 }
 
+.scratch-tour-click-target {
+    position: relative;
+    isolation: isolate;
+    border-radius: 6px;
+    animation: scratch-tour-click-target-pulse 1.2s ease-out infinite;
+}
+
+@keyframes scratch-tour-click-target-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgb(192 88 255 / 60%);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgb(192 88 255 / 0%);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgb(192 88 255 / 0%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scratch-tour-click-target {
+        animation: none;
+        box-shadow: 0 0 0 3px rgb(192 88 255 / 60%);
+    }
+}
+
 #boarding-popover-item.scratch-tour-popover {
     width: min(22rem, calc(100vw - 2rem));
     border: 1px solid var(--g600);

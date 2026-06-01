@@ -7,6 +7,8 @@ import { Boarding, type BoardingSteps } from "boarding.js";
 
 type TourStep = BoardingSteps[number];
 
+const CLICK_TARGET_CLASS = "scratch-tour-click-target";
+
 const SELECTOR = {
     toolbar: '[data-tour="scratch-toolbar"]',
     scratchView: '[data-tour="scratch-view"]',
@@ -47,6 +49,7 @@ const SELECTOR = {
     problemsPanel: '[data-tour="scratch-problems-panel"]',
     decompileTab: '[data-tour="scratch-tab-decompilation"]',
     decompilePanel: '[data-tour="scratch-decompile-panel"]',
+    decompileContent: '[data-tour="scratch-decompile-content"]',
 };
 
 function element(selector: string) {
@@ -55,6 +58,13 @@ function element(selector: string) {
 
 function elementExists(selector: string) {
     return !!element(selector);
+}
+
+function clearClickTargets() {
+    const clickTargets = document.querySelectorAll(`.${CLICK_TARGET_CLASS}`);
+    for (let i = 0; i < clickTargets.length; i++) {
+        clickTargets[i].classList.remove(CLICK_TARGET_CLASS);
+    }
 }
 
 function isElementVisible(selector: string) {
@@ -115,6 +125,9 @@ function makeClickToContinueStep({
         element: selector,
         strictClickHandling: true,
         onHighlighted: () => {
+            clearClickTargets();
+            element(selector)?.classList.add(CLICK_TARGET_CLASS);
+
             const onClick = (event: MouseEvent) => {
                 const target = event.target;
                 if (!(target instanceof Element)) return;
@@ -135,6 +148,7 @@ function makeClickToContinueStep({
             };
         },
         onDeselected: () => {
+            element(selector)?.classList.remove(CLICK_TARGET_CLASS);
             removeClickListener?.();
             removeClickListener = undefined;
         },
@@ -158,6 +172,8 @@ function isToggleEnabled(selector: string) {
 }
 
 function resetBoarding(boarding: Boarding) {
+    clearClickTargets();
+
     if (!boarding.isActivated && !boarding.hasHighlightedElement()) return;
 
     try {
@@ -225,6 +241,16 @@ function addTabSection({
     );
 }
 
+function addDecompilationInfoStep(steps: TourStep[], selector: string) {
+    steps.push(
+        makeStep(
+            selector,
+            "Decompilation",
+            "When the platform supports it, this tab will show the results of running a decompiler against the target assembly and contents of the scratch context.",
+        ),
+    );
+}
+
 function buildTourSteps(boarding: Boarding): TourStep[] {
     const steps: TourStep[] = [];
 
@@ -233,7 +259,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.toolbar,
             "Scratch tour",
-            "This button starts a guided tour of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. When a step says <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
+            "Welcome to the guided tour of the scratch editor. Use <strong>Next</strong> and <strong>Back</strong> to move through it. <br /><br />When a step says to <strong>Click</strong> a tab or button, the tour will wait for you to do that before continuing.",
             "bottom",
         ),
     );
@@ -263,7 +289,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.toolbar,
             "Scratch toolbar",
-            "The toolbar contains scratch-level actions such as saving, forking, exporting, decompiling. <br /> If you own the scratch you can rename it by clicking on its name and making your changes.",
+            "The toolbar contains scratch-level actions such as saving, forking, exporting, decompiling. <br /><br /> If you own the scratch you can rename it by clicking on its name and making your changes.",
         ),
     );
 
@@ -271,8 +297,8 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         steps,
         makeStep(
             SELECTOR.forkButton,
-            "Fork",
-            "Forking a scratch creates your own editable copy, this is how you can save your changes if you're not the owner.",
+            "Fork to save",
+            "Forking a scratch creates your own editable copy, this is how you can save your changes when you aren't the owner.",
         ),
     );
 
@@ -286,7 +312,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click the <strong>Source code</strong> tab to select the code editor.",
         panelTitle: "Source code",
         panelDescription:
-            "The matching loop happens here: edit the code, compile, check the diff, repeat until the code matches. <br /> By default, changes are compiled automatically after a short delay; you can configure this behavior in the editor settings found in the hamburger menu.",
+            "The matching loop happens here: edit the code, compile, check the diff, repeat until the code matches. <br /><br /> By default, changes are compiled automatically after a short delay; you can configure this behavior in the editor settings found within the hamburger menu.",
     });
 
     addTabSection({
@@ -318,7 +344,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.optionsCompiler,
             "Compiler options",
-            "Compiler options allow you to change the compiler and flags used to build your source.",
+            "Compiler options allow you to change the compiler and tweak the flags used to build your source code.",
         ),
     );
     steps.push(
@@ -371,7 +397,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click <strong>Compilation</strong> to inspect the current diff.",
         panelTitle: "Compilation",
         panelDescription:
-            "The Compilation panel shows the current assembly diff and compiler output. The lower the score the better; a score of 0 means the generated output matches the target.",
+            "The compilation panel shows the current assembly diff and compiler output. The lower the score the better; a score of 0 means the generated output matches the target.",
         panelPreferredSide: "left",
     });
     addIfPresent(
@@ -379,7 +405,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.targetColumn,
             "Target column",
-            "Target shows the assembly you are trying to match.",
+            "The target column is the assembly that you are trying to match.",
         ),
     );
     addIfPresent(
@@ -387,7 +413,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.currentColumn,
             "Current column",
-            "Current show the result of your compiled source code.",
+            "The current column shows the result of your compiled source code.",
         ),
     );
     addIfPresent(
@@ -395,7 +421,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.diffToggles,
             "Column toggles",
-            "These controls hide or show diff columns, enable 3-way comparison, and collapse long unchanged stretches when you need more room.",
+            "These controls hide or show diff columns, enable 3-way comparison, and collapse long unchanged diffs when you need more room.",
         ),
     );
 
@@ -425,7 +451,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
                 isComplete: () =>
                     !isToggleEnabled(SELECTOR.threeWayToggle) &&
                     !isElementVisible(SELECTOR.thirdColumn),
-                title: "Turn 3-way off",
+                title: "Turn 3-way diff off",
                 description:
                     "Click <strong>3 again</strong> to return to the normal two-column diff.",
             }),
@@ -436,8 +462,8 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         steps.push(
             makeStep(
                 SELECTOR.compressionToggle,
-                "Compress diff",
-                "The fold button collapses long unchanged stretches so you can focus on the differences.",
+                "Compress the diff",
+                "The fold button collapses long matches so you can focus on the differences.",
             ),
         );
     }
@@ -462,7 +488,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             boarding,
             tabSelector: SELECTOR.problemsTab,
             panelSelector: SELECTOR.problemsPanel,
-            tabTitle: "Problems tab",
+            tabTitle: "Problems panel",
             tabDescription:
                 "Click the <strong>Problems</strong> panel to see compiler output.",
             panelTitle: "Problems",
@@ -471,24 +497,37 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         });
     }
 
-    if (elementExists(SELECTOR.decompileButton)) {
+    if (isElementVisible(SELECTOR.decompilePanel)) {
+        addDecompilationInfoStep(
+            steps,
+            elementExists(SELECTOR.decompileContent)
+                ? SELECTOR.decompileContent
+                : SELECTOR.decompilePanel,
+        );
+    } else if (elementExists(SELECTOR.decompileTab)) {
+        steps.push(
+            makeClickToContinueStep({
+                boarding,
+                selector: SELECTOR.decompileTab,
+                waitForSelector: SELECTOR.decompileContent,
+                title: "Decompilation tab",
+                description:
+                    "Click the <strong>Decompilation</strong> tab to show the decompiler output.",
+            }),
+        );
+        addDecompilationInfoStep(steps, SELECTOR.decompileContent);
+    } else if (elementExists(SELECTOR.decompileButton)) {
         steps.push(
             makeClickToContinueStep({
                 boarding,
                 selector: SELECTOR.decompileButton,
-                waitForSelector: SELECTOR.decompilePanel,
-                title: "Open decompilation",
+                waitForSelector: SELECTOR.decompileContent,
+                title: "Open decompilation panel",
                 description:
-                    "Click <strong>Decompile</strong> to open the decompiler panel for this scratch.",
+                    "Click <strong>Decompile</strong> to open the decompilation panel for this scratch.",
             }),
         );
-        steps.push(
-            makeStep(
-                SELECTOR.decompilePanel,
-                "Decompilation",
-                "When the platform supports it, this table will show the results of running a decompiler against the target assembly and contents of the scratch context.",
-            ),
-        );
+        addDecompilationInfoStep(steps, SELECTOR.decompileContent);
     }
 
     addIfPresent(
@@ -496,7 +535,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.tourButton,
             "More help",
-            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment. <br /> You can start the tour again by clicking the <strong>Tour</strong> button.',
+            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment. <br /><br />You can start the tour again by clicking the <strong>Tour</strong> button.',
         ),
     );
 
