@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Boarding, type BoardingSteps } from "boarding.js";
 
+import diffStyles from "../Diff/Diff.module.scss";
+
 type TourStep = BoardingSteps[number];
 
 const CLICK_TARGET_CLASS = "scratch-tour-click-target";
@@ -289,7 +291,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.toolbar,
             "Scratch toolbar",
-            "The toolbar contains scratch-level actions such as saving, forking, exporting, decompiling. <br /><br /> If you own the scratch you can rename it by clicking on its name and making your changes.",
+            "The toolbar contains scratch-level actions such as saving, forking, exporting, and decompiling. <br /><br /> If you own the scratch, you can rename it by clicking on its name and making your changes.",
         ),
     );
 
@@ -298,7 +300,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.forkButton,
             "Fork to save",
-            "Forking a scratch creates your own editable copy, this is how you can save your changes when you aren't the owner.",
+            "Forking a scratch creates your own editable copy. This is how you can save your changes when you aren't the owner.",
         ),
     );
 
@@ -312,7 +314,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click the <strong>Source code</strong> tab to select the code editor.",
         panelTitle: "Source code",
         panelDescription:
-            "The matching loop happens here: edit the code, compile, check the diff, repeat until the code matches. <br /><br /> By default, changes are compiled automatically after a short delay; you can configure this behavior in the editor settings found within the hamburger menu.",
+            "The matching loop happens here: edit the code, compile, check the diff, repeat until the code matches. <br /><br /> By default, changes are compiled automatically after a short delay; you can configure this behavior in the editor settings menu at the top left of the screen.",
     });
 
     addTabSection({
@@ -338,13 +340,13 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click the <strong>Options</strong> tab to open compiler and diff settings.",
         panelTitle: "Options",
         panelDescription:
-            "Options control how your source is compiled and compared. Most scratches will have compiler flags set via a preset.",
+            "These options control how your source is compiled and compared. <br /><br /> Most scratches will have the compiler and flags set via a preset.",
     });
     steps.push(
         makeStep(
             SELECTOR.optionsCompiler,
             "Compiler options",
-            "Compiler options allow you to change the compiler and tweak the flags used to build your source code.",
+            "The compiler options section is where you can change the compiler and tweak the flags used to build your source code.",
         ),
     );
     steps.push(
@@ -372,7 +374,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
             "Click <strong>Family</strong> to switch to the family tab to see related forks.",
         panelTitle: "Scratch family",
         panelDescription:
-            "Forks let people collaborate on the same target function. The family tab helps find related work and improvements.",
+            "Forks let people collaborate on the same target function. The family tab helps find related work and improvements. <br /><br /> If someone has improved or matched the scratch you are working on, a banner will appear at the top of the screen letting you know.",
     });
 
     addTabSection({
@@ -384,7 +386,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         tabDescription: "Now click the <strong>About</strong> tab.",
         panelTitle: "About",
         panelDescription:
-            "The about tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes attached to the scratch.",
+            "The about tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes that have been added to the scratch.",
     });
 
     addTabSection({
@@ -405,7 +407,15 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.targetColumn,
             "Target column",
-            "The target column is the assembly that you are trying to match.",
+            "The target column shows the assembly code that you are trying to match. <br /><br />" +
+                "The meaning of the diff letters is as follows: <ul>" +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_change}">|</b> generic diffs</li>` +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_remove}">&lt;</b> missing instruction</li>` +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_add}">&gt;</b> added instruction</li>` +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.immediate}">i</b> immediate diffs</li>` +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.register}">r</b> register diffs</li>` +
+                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.stack}">s</b> stack diffs</li>` +
+                "</ul>",
         ),
     );
     addIfPresent(
@@ -413,7 +423,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.currentColumn,
             "Current column",
-            "The current column shows the result of your compiled source code.",
+            "The current column shows the result of your compiled source code. <br /><br /> The <strong>~></strong> symbols are used to highlight jumps within the code. Where supported, source line numbers are included in the diff.",
         ),
     );
     addIfPresent(
@@ -453,7 +463,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
                     !isElementVisible(SELECTOR.thirdColumn),
                 title: "Turn 3-way diff off",
                 description:
-                    "Click <strong>3 again</strong> to return to the normal two-column diff.",
+                    "Click <strong>3</strong> again to return to the normal two-column diff.",
             }),
         });
     }
@@ -535,7 +545,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.tourButton,
             "More help",
-            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment. <br /><br />You can start the tour again by clicking the <strong>Tour</strong> button.',
+            'If you have more questions, the <a href="/faq">FAQ</a> is a good next stop, or feel free to join the <a href="https://discord.gg/sutqNShRRs" target="_blank" rel="noreferrer">decomp.me Discord server</a>, where people ask for help, share scratches, and discuss decompilation in a collaborative environment. <br /><br />You can start the tour again by clicking the <strong>Tour</strong> button; otherwise, click <strong>Finish</strong> to end the tour.',
         ),
     );
 

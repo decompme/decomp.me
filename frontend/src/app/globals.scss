@@ -147,6 +147,10 @@ body.no-scroll {
         a:hover {
             color: var(--g1700);
         }
+
+        li {
+            margin-left: 0.5rem;
+        }
     }
 
     .boarding-popover-footer {
