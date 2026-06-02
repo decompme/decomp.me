@@ -407,15 +407,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         makeStep(
             SELECTOR.targetColumn,
             "Target column",
-            "The target column shows the assembly code that you are trying to match. <br /><br />" +
-                "The meaning of the diff letters is as follows: <ul>" +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_change}">|</b> generic diffs</li>` +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_remove}">&lt;</b> missing instruction</li>` +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_add}">&gt;</b> added instruction</li>` +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.immediate}">i</b> immediate diffs</li>` +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.register}">r</b> register diffs</li>` +
-                `<li><b class="${diffStyles.diffLegendToken} ${diffStyles.stack}">s</b> stack diffs</li>` +
-                "</ul>",
+            `The target column shows the assembly code that you are trying to match. <br /><br />The meaning of the diff letters is as follows: <ul><li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_change}">|</b> generic diffs</li><li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_remove}">&lt;</b> missing instruction</li><li><b class="${diffStyles.diffLegendToken} ${diffStyles.diff_add}">&gt;</b> added instruction</li><li><b class="${diffStyles.diffLegendToken} ${diffStyles.immediate}">i</b> immediate diffs</li><li><b class="${diffStyles.diffLegendToken} ${diffStyles.register}">r</b> register diffs</li><li><b class="${diffStyles.diffLegendToken} ${diffStyles.stack}">s</b> stack diffs</li></ul>`,
         ),
     );
     addIfPresent(
