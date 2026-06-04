@@ -257,6 +257,8 @@
     "bcc2.0": "Borland C++ Compiler 2.0",
     "bcc3.1": "Borland C++ Compiler 3.1",
 
+    "msc5.1": "Microsoft C Compiler 5.1",
+
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 
     "ndk-r8e-gcc-4.4.3": "Android NDK r8e (GCC 4.4.3)",
