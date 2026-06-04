@@ -1639,7 +1639,7 @@ MSC_51 = MicrosoftCCompiler(
     cc=(
         "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
         'cat "${INPUT}" | unix2dos > dos_src.c && '
-        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c /AM ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
+        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
         'cp out.o "${OUTPUT}"'
     ),
 )
