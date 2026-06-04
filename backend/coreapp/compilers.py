@@ -911,7 +911,7 @@ IDO71_CXX = IDOCompiler(
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
     base_compiler=IDO71,
-    language=Language.CXX,
+    language=Language.OLD_CXX,
 )
 
 IDO60 = IDOCompiler(
