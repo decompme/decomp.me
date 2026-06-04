@@ -8,6 +8,38 @@ const storageSubscribers = new Map<string, SubscriberSet>();
 // Memoized storage values to allow shallow comparison
 const storageCache = new Map<string, unknown>();
 
+export function parseStorageValue<T>(
+    key: string,
+    serialized: string,
+): T | undefined {
+    return parseStorageValueWithMetadata<T>(key, serialized).value;
+}
+
+function parseStorageValueWithMetadata<T>(
+    key: string,
+    serialized: string,
+): { value: T | undefined; legacyRawString: boolean } {
+    try {
+        return { value: JSON.parse(serialized) as T, legacyRawString: false };
+    } catch (err) {
+        if (isLegacyRawString(serialized)) {
+            return { value: serialized as T, legacyRawString: true };
+        }
+
+        console.error(`Failed to parse localStorage for key "${key}":`, err);
+        return { value: undefined, legacyRawString: false };
+    }
+}
+
+function isLegacyRawString(value: string) {
+    const firstCharacter = value.trimStart().charAt(0);
+    return (
+        firstCharacter !== "{" &&
+        firstCharacter !== "[" &&
+        firstCharacter !== '"'
+    );
+}
+
 function notifySubscribers<T>(key: string, value: T | undefined) {
     if (value === undefined) {
         storageCache.delete(key);
@@ -37,15 +69,24 @@ if (localStorageAvailable()) {
             }
             const serialized = localStorage.getItem(key);
             if (serialized !== null) {
-                try {
-                    item = JSON.parse(serialized) as T;
+                const parsed = parseStorageValueWithMetadata<T>(
+                    key,
+                    serialized,
+                );
+                item = parsed.value;
+                if (item !== undefined) {
                     storageCache.set(key, item);
+                    if (parsed.legacyRawString) {
+                        try {
+                            localStorage.setItem(key, JSON.stringify(item));
+                        } catch (err) {
+                            console.error(
+                                `Error migrating localStorage key "${key}":`,
+                                err,
+                            );
+                        }
+                    }
                     return item;
-                } catch (err) {
-                    console.error(
-                        `Failed to parse localStorage for key "${key}":`,
-                        err,
-                    );
                 }
             }
             return undefined;
@@ -74,14 +115,7 @@ if (localStorageAvailable()) {
         } else if (storageSubscribers.has(event.key)) {
             let value: unknown;
             if (event.newValue !== null) {
-                try {
-                    value = JSON.parse(event.newValue);
-                } catch (err) {
-                    console.error(
-                        `Failed to parse localStorage for key "${event.key}":`,
-                        err,
-                    );
-                }
+                value = parseStorageValue(event.key, event.newValue);
             }
             notifySubscribers(event.key, value);
         }

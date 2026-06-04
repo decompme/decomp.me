@@ -1,4 +1,6 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
+from unittest.mock import patch
 
 from django.urls import reverse
 from parameterized import param, parameterized
@@ -8,8 +10,10 @@ from coreapp import compilers
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
     GCC281PM,
+    GHS5322,
     IDO53,
     IDO71,
+    MSVC40,
     MWCC_247_92,
     PBX_GCC3,
     WATCOM_105_C,
@@ -18,7 +22,7 @@ from coreapp.compilers import (
 )
 from coreapp.diff_wrapper import DiffWrapper
 from coreapp.flags import Language
-from coreapp.models.scratch import Assembly
+from coreapp.models.scratch import Asm, Assembly
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 
@@ -229,6 +233,43 @@ nop
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
 
+    def test_language_flags(self) -> None:
+        """
+        Ensure compiler flags that switch source language are reflected in metadata.
+        """
+        self.assertEqual(GHS5322.get_language(""), Language.C)
+        self.assertEqual(MSVC40.get_language(""), Language.C)
+        self.assertEqual(MWCC_247_92.get_language("-lang=c++"), Language.CXX)
+        self.assertEqual(GHS5322.get_language("--g++"), Language.CXX)
+        self.assertEqual(MSVC40.get_language("/TP"), Language.CXX)
+
+    @requiresCompiler(IDO71)
+    def test_diff_can_score_target_only(self) -> None:
+        """
+        Ensure diffs can be generated and scored even when compilation failed.
+        """
+        target_asm = Asm(
+            hash="target-only-diff",
+            data=".text\nglabel func\njr $ra\nnop",
+        )
+        with patch("coreapp.models.scratch.Assembly.save", autospec=True):
+            target_assembly = CompilerWrapper.assemble_asm(N64, target_asm)
+
+        diff = DiffWrapper.diff(
+            target_assembly,
+            N64,
+            "func",
+            b"",
+            diff_flags=[],
+        )
+
+        diff_result: dict[str, Any] = diff.result  # type: ignore
+        self.assertTrue(diff_result is not None and "rows" in diff_result)
+        self.assertGreater(len(diff_result["rows"]), 0)
+        self.assertEqual(200, diff_result.get("max_score"))
+        self.assertEqual(200, diff_result.get("current_score"))
+        self.assertEqual(None, diff.errors)
+
     @parameterized.expand(
         input=[
             (c,)
@@ -243,10 +284,14 @@ nop
         Ensure that we can run a simple compilation/diff for all available compilers
         """
         code = "int func(void) { return 5; }"
-        if compiler.language == Language.PASCAL:
+        language = compiler.get_language()
+        if language in (Language.CXX, Language.OLD_CXX):
+            code = 'extern "C" int func(void) { return 5; }'
+
+        if language == Language.PASCAL:
             code = "function func(): integer; begin func := 5; end;"
 
-        if compiler.language == Language.ASSEMBLY:
+        if language == Language.ASSEMBLY:
             code = "nada"
 
         result = CompilerWrapper.compile_code(

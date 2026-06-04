@@ -180,6 +180,7 @@ function applyDefaultDiffTab(
 export type Props = {
     scratch: Readonly<api.Scratch>;
     onChange: (scratch: Partial<api.Scratch>) => void;
+    deleteScratch: () => Promise<void>;
     parentScratch?: api.Scratch;
     initialCompilation?: Readonly<api.Compilation>;
     offline: boolean;
@@ -188,6 +189,7 @@ export type Props = {
 export default function Scratch({
     scratch,
     onChange,
+    deleteScratch,
     parentScratch,
     initialCompilation,
     offline,
@@ -227,20 +229,24 @@ export default function Scratch({
     const compilerOptsScrollPosition = useRef(0);
 
     const [isModified, setIsModified] = useState(false);
-    const [isDirty, setIsDirty] = useState(false);
     const setScratch = useCallback(
         (partial: Partial<api.Scratch>) => {
+            const hasChanges = Object.entries(partial).some(
+                ([key, value]) =>
+                    !Object.is(scratch[key as keyof api.Scratch], value),
+            );
+
+            if (!hasChanges) return;
+
             onChange(partial);
             setIsModified(true);
-            setIsDirty(true);
         },
-        [onChange],
+        [onChange, scratch],
     );
 
     const [perSaveObj, setPerSaveObj] = useState({});
     const saveCallback = () => {
         setPerSaveObj({});
-        setIsDirty(false);
     };
 
     const shouldCompare = !isModified;
@@ -559,8 +565,8 @@ export default function Scratch({
                     isCompiling={isCompiling}
                     scratch={scratch}
                     setScratch={setScratch}
-                    isDirty={isDirty}
                     saveCallback={saveCallback}
+                    deleteScratch={deleteScratch}
                     setDecompilationTabEnabled={setDecompilationTabEnabled}
                 />
                 {matchProgressBarEnabledSetting && (

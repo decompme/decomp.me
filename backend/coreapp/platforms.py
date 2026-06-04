@@ -1,10 +1,11 @@
 import functools
 import logging
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, OrderedDict
+from typing import Any
 
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 from coreapp import compilers
 from coreapp.flags import (
@@ -32,7 +33,7 @@ class Platform:
     has_decompiler: bool = False
 
     @property
-    @functools.lru_cache()
+    @functools.lru_cache
     def asm_prelude(self) -> str:
         asm_prelude_path: Path = Path(__file__).parent / "asm_preludes" / f"{self.id}.s"
         if asm_prelude_path.is_file():
@@ -46,8 +47,8 @@ class Platform:
         self,
         include_compilers: bool = False,
         include_num_scratches: bool = False,
-    ) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {
+    ) -> dict[str, Any]:
+        ret: dict[str, Any] = {
             "id": self.id,
             "name": self.name,
             "description": self.description,
@@ -67,7 +68,7 @@ class Platform:
 
 def from_id(platform_id: str) -> Platform:
     if platform_id not in _platforms:
-        raise APIException(f"Unknown platform: {platform_id}")
+        raise ValidationError(f"Unknown platform: {platform_id}")
     return _platforms[platform_id]
 
 
@@ -224,7 +225,7 @@ NDS_ARM9 = Platform(
     description="ARMv5TE",
     arch="arm32",
     assemble_cmd='sed -i -e "s/;/;@/" "$INPUT" && arm-none-eabi-as -march=armv5te -mthumb -o "$OUTPUT" "$PRELUDE" "$INPUT"',
-    objdump_cmd="arm-none-eabi-objdump",
+    objdump_cmd="arm-none-eabi-objdump -marmv5te",
     nm_cmd="arm-none-eabi-nm",
     has_decompiler=True,
 )

@@ -52,13 +52,16 @@ class UserTests(BaseTestCase):
 
     def test_set_user_profile_middleware(self) -> None:
         """
-        Ensure that an anonymous profile is created for requests.
+        Ensure that cookie-less current-user reads stay stateless.
         """
 
         response = self.client.get(self.current_user_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Profile.objects.count(), 1)
+        self.assertTrue(response.json()["is_ephemeral"])
+        self.assertIsNone(response.json()["id"])
+        self.assertEqual(Profile.objects.count(), 0)
         self.assertEqual(User.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
 
     @responses.activate
     def test_github_login(self) -> None:

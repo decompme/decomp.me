@@ -2,15 +2,9 @@ import logging
 import re
 import subprocess
 import time
-from dataclasses import dataclass
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Optional,
-    Sequence,
-    Tuple,
     TypeVar,
 )
 
@@ -26,6 +20,7 @@ from .error import AssemblyError, CompilationError
 from .libraries import Library
 from .models.scratch import Asm, Assembly
 from .sandbox import Sandbox
+from .wrapper_result import CompilationResult
 
 # Thanks to Guido van Rossum for the following fix
 # https://github.com/python/mypy/issues/5107#issuecomment-529372406
@@ -44,19 +39,7 @@ WINE = "wine"
 WIBO = "wibo"
 
 
-@dataclass
-class DiffResult:
-    result: Optional[Dict[str, Any]] = None
-    errors: Optional[str] = None
-
-
-@dataclass
-class CompilationResult:
-    elf_object: bytes
-    errors: str
-
-
-def _check_assembly_cache(*args: str) -> Tuple[Optional[Assembly], str]:
+def _check_assembly_cache(*args: str) -> tuple[Assembly | None, str]:
     hash = util.gen_hash(args)
     return Assembly.objects.filter(hash=hash).first(), hash
 
@@ -123,13 +106,13 @@ class CompilerWrapper:
         libraries: Sequence[Library] = (),
     ) -> CompilationResult:
         if compiler == compilers.DUMMY:
-            return CompilationResult(f"compiled({context}\n{code}".encode("UTF-8"), "")
+            return CompilationResult(f"compiled({context}\n{code}".encode(), "")
 
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
         with Sandbox() as sandbox:
-            ext = compiler.language.get_file_extension()
+            ext = compiler.get_language(compiler_flags).get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
             ctx_file = f"ctx.{ext}"
@@ -173,18 +156,15 @@ class CompilerWrapper:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                logger.warning("%s does not exist, creating it!", compiler.path)
-                compiler.path.mkdir(parents=True)
+                raise CompilationError(f"Compiler {compiler.id} is not installed")
 
             # Run compiler
             try:
                 st = round(time.time() * 1000)
                 libraries_compiler_flags = " ".join(
-                    (
-                        compiler.library_include_flag
-                        + str(lib.get_include_path(compiler.platform.id))
-                        for lib in libraries
-                    )
+                    compiler.library_include_flag
+                    + str(lib.get_include_path(compiler.platform.id))
+                    for lib in libraries
                 )
                 wibo_path = settings.COMPILER_BASE_PATH / "common" / "wibo_dlls"
                 compile_proc = sandbox.run_subprocess(
@@ -226,7 +206,7 @@ class CompilerWrapper:
 
             if not object_path.exists():
                 error_msg = (
-                    "Compiler did not create an object file: %s" % compile_proc.stdout
+                    f"Compiler did not create an object file: {compile_proc.stdout}"
                 )
                 logger.debug(error_msg)
                 raise CompilationError(error_msg)

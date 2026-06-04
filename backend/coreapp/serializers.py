@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import User
 from html_json_forms.serializers import JSONFormSerializer
@@ -9,8 +9,8 @@ from rest_framework.relations import PKOnlyObject, SlugRelatedField
 from coreapp import platforms
 
 from . import compilers
-from .flags import LanguageFlagSet
 from .libraries import Library
+from .models.best_fork import BestFork
 from .models.github import GitHubUser
 from .models.preset import Preset
 from .models.profile import Profile
@@ -18,20 +18,21 @@ from .models.project import Project, ProjectMember
 from .models.scratch import Context, Scratch
 
 
-def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str, Any]:
+def serialize_profile(profile: Profile, num_scratches: bool = False) -> dict[str, Any]:
     if profile.user is None:
         return {
             "is_anonymous": True,
+            "is_ephemeral": profile.id is None,
             "id": profile.id,
             "is_online": profile.is_online(),
             "is_admin": False,
             "username": f"{profile.pseudonym} (anon)",
-            "frog_color": profile.get_frog_color(),
+            "frog_color": profile.get_frog_color() if profile.id else (0, 0.5, 0.5),
         }
     else:
         user = profile.user
 
-        gh_user: Optional[GitHubUser] = getattr(user, "github", None)
+        gh_user: GitHubUser | None = getattr(user, "github", None)
         if not gh_user:
             # NOTE: All models with an "owner" should fetch related "owner__user__github"
             # in order to avoid N+1 queries when a Profile is serialized for each object.
@@ -48,12 +49,13 @@ def serialize_profile(profile: Profile, num_scratches: bool = False) -> Dict[str
 
         if num_scratches:
             res["num_scratches"] = Scratch.objects.filter(owner__user=user).count()
+            res["num_presets"] = Preset.objects.filter(owner__user=user).count()
 
         return res
 
 
 if TYPE_CHECKING:
-    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, Dict[str, Any]]
+    ProfileFieldBaseClass = serializers.RelatedField[Profile, str, dict[str, Any]]
 else:
     ProfileFieldBaseClass = serializers.RelatedField
 
@@ -75,24 +77,6 @@ class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
         fields = ["id", "name"]
-
-
-class TersePresetSerializer(serializers.ModelSerializer[Preset]):
-    libraries = serializers.ListField(child=LibrarySerializer(), default=list)
-    owner = ProfileField(read_only=True)
-
-    class Meta:
-        model = Preset
-        fields = [
-            "id",
-            "name",
-            "owner",
-            "platform",
-            "compiler",
-            "compiler_flags",
-            "diff_flags",
-            "libraries",
-        ]
 
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
@@ -122,6 +106,9 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         ]
 
     def get_num_scratches(self, preset: Preset) -> int:
+        annotated_count = getattr(preset, "num_scratches", None)
+        if annotated_count is not None:
+            return int(annotated_count)
         return Scratch.objects.filter(preset=preset).count()
 
     def validate_platform(self, platform: str) -> str:
@@ -138,9 +125,26 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
             raise serializers.ValidationError(f"Unknown compiler: {compiler}")
         return compiler
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        compiler = compilers.from_id(data["compiler"])
-        platform = platforms.from_id(data["platform"])
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        if self.instance is not None:
+            invalid_fields = set(data) - {"compiler_flags"}
+            if invalid_fields:
+                raise serializers.ValidationError(
+                    "Only compiler_flags can be edited on an existing preset."
+                )
+
+        compiler_id = data.get("compiler")
+        platform_id = data.get("platform")
+
+        if compiler_id is None and self.instance is not None:
+            compiler_id = self.instance.compiler
+        if platform_id is None and self.instance is not None:
+            platform_id = self.instance.platform
+        if not isinstance(compiler_id, str) or not isinstance(platform_id, str):
+            raise serializers.ValidationError("Compiler and platform are required.")
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(platform_id)
 
         if compiler.platform != platform:
             raise serializers.ValidationError(
@@ -161,7 +165,11 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     source_code = serializers.CharField(allow_blank=True, required=False)
     target_asm = serializers.CharField(allow_blank=True, required=False)
     target_obj = serializers.FileField(allow_null=True, required=False)
-    context = serializers.CharField(allow_blank=True)  # type: ignore
+    context = serializers.CharField(
+        allow_blank=True,
+        default="",
+        required=False,
+    )  # type: ignore
     diff_label = serializers.CharField(allow_blank=True, required=False)
     libraries = serializers.JSONField(default=list)  # type: ignore
 
@@ -193,7 +201,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
                     )
         return libraries
 
-    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
             # Preset dictates platform
@@ -241,12 +249,78 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
         return data
 
 
+class ScratchCompileSerializer(serializers.Serializer[None]):
+    compiler = serializers.CharField(required=False)
+    compiler_flags = serializers.CharField(allow_blank=True, required=False)
+    diff_flags = serializers.ListField(child=serializers.CharField(), required=False)
+    diff_label = serializers.CharField(allow_blank=True, required=False)
+    source_code = serializers.CharField(
+        allow_blank=True, required=False, trim_whitespace=False
+    )
+    context = serializers.CharField(
+        allow_blank=True, required=False, trim_whitespace=False
+    )  # type: ignore[assignment]
+    libraries = serializers.ListField(child=LibrarySerializer(), required=False)
+    include_objects = serializers.BooleanField(default=False, required=False)
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        scratch = self._context.get("scratch")
+        compiler_id = data.get("compiler")
+        if scratch is None or compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(scratch.platform)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
+
+class ScratchDecompileSerializer(serializers.Serializer[None]):
+    compiler = serializers.CharField(required=False)
+    context = serializers.CharField(allow_blank=True, required=False)  # type: ignore[assignment]
+
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        scratch = self._context.get("scratch")
+        compiler_id = data.get("compiler")
+        if scratch is None or compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform = platforms.from_id(scratch.platform)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
+
 class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     slug = serializers.SlugField(read_only=True)
     parent = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
     owner = ProfileField(read_only=True)
     source_code = serializers.CharField(allow_blank=True, trim_whitespace=False)
-    context = serializers.CharField(write_only=True, required=False, allow_blank=True)  # type: ignore[assignment]
+    context = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+    )  # type: ignore[assignment]
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
@@ -292,6 +366,30 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
             instance.context_fk = Context.get_or_create_from_text(context_text)
         return super().update(instance, validated_data)
 
+    def validate_compiler(self, compiler: str) -> str:
+        try:
+            compilers.from_id(compiler)
+        except Exception:
+            raise serializers.ValidationError(f"Unknown compiler: {compiler}")
+        return compiler
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        compiler_id = data.get("compiler")
+        if compiler_id is None:
+            return data
+
+        compiler = compilers.from_id(compiler_id)
+        platform_id = self.instance.platform if self.instance else data.get("platform")
+        if platform_id is None:
+            return data
+
+        platform = platforms.from_id(platform_id)
+        if compiler.platform != platform:
+            raise serializers.ValidationError(
+                f"Compiler {compiler.id} is not compatible with platform {platform.id}"
+            )
+        return data
+
     def get_language(self, scratch: Scratch) -> str:
         """
         Strategy for extracting a scratch's language:
@@ -299,31 +397,12 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         - Otherwise, fallback to the compiler's default language
         """
         compiler = compilers.from_id(scratch.compiler)
-        language_flag_set = next(
-            (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
-            None,
-        )
-
-        if language_flag_set:
-            matches = [
-                (flag, language)
-                for flag, language in language_flag_set.flags.items()
-                if flag in scratch.compiler_flags
-            ]
-
-            if matches:
-                # taking the longest avoids detecting C++ as C
-                longest_match = max(matches, key=lambda m: len(m[0]))
-                return longest_match[1].value
-
-        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
-        # have a flag within it.
-        # Either way: fall back to the compiler default.
-        return compiler.language.value
+        return compiler.get_language(scratch.compiler_flags).get_display_name()
 
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)
+    best_fork = serializers.SerializerMethodField()
 
     class Meta:
         model = Scratch
@@ -342,7 +421,24 @@ class TerseScratchSerializer(ScratchSerializer):
             "parent",
             "preset",
             "libraries",
+            "best_fork",
         ]
+
+    def get_best_fork(self, scratch: Scratch) -> dict[str, Any] | None:
+        try:
+            best_fork: BestFork = scratch.best_fork
+        except BestFork.DoesNotExist:
+            return None
+
+        fork = best_fork.fork
+        return {
+            "slug": fork.slug,
+            "owner": serialize_profile(fork.owner) if fork.owner else None,
+            "score": best_fork.score,
+            "max_score": best_fork.max_score,
+            "is_match": best_fork.is_match,
+            "updated_at": best_fork.updated_at,
+        }
 
 
 # On initial creation, include the "claim_token" field.
@@ -360,7 +456,7 @@ class ProjectSerializer(JSONFormSerializer, serializers.ModelSerializer[Project]
 
     class Meta:
         model = Project
-        exclude: List[str] = []
+        exclude: list[str] = []
 
     def create(self, validated_data: Any) -> Project:
         project = Project.objects.create(**validated_data)

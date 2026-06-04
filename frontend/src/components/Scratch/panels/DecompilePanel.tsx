@@ -29,13 +29,21 @@ export default function DecompilePanel({ scratch }: Props) {
     const url = scratchUrl(scratch);
 
     useEffect(() => {
+        let isCurrent = true;
+
         api.post(`${url}/decompile`, {
             context: debouncedContext,
             compiler: scratch.compiler,
         }).then(({ decompilation }: { decompilation: string }) => {
+            if (!isCurrent) return;
+
             setDecompiledCode(decompilation);
             setValueVersion((v) => v + 1);
         });
+
+        return () => {
+            isCurrent = false;
+        };
     }, [scratch.compiler, debouncedContext, url]);
 
     const isLoading =

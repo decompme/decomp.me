@@ -8,13 +8,16 @@ import {
     type RefObject,
 } from "react";
 
-import Router from "next/router";
-
 import useResizeObserver from "@react-hook/resize-observer";
 
 import { joinTitles } from "./title";
 
 const shouldIgnoreNextWarnBeforeUnload = { current: false }; // ref
+const navigationWarning = {
+    enabled: false,
+    message: "Are you sure you want to leave this page?",
+};
+const historyGuardKey = "__decompMeNavigationGuard";
 
 export function useSize<T extends HTMLElement>(): {
     width: number | undefined;
@@ -37,6 +40,17 @@ export function ignoreNextWarnBeforeUnload() {
     shouldIgnoreNextWarnBeforeUnload.current = true;
 }
 
+export function confirmNavigation() {
+    if (!navigationWarning.enabled) return true;
+
+    if (shouldIgnoreNextWarnBeforeUnload.current) {
+        shouldIgnoreNextWarnBeforeUnload.current = false;
+        return true;
+    }
+
+    return confirm(navigationWarning.message);
+}
+
 export function useWarnBeforeUnload(
     enabled: boolean,
     message = "Are you sure you want to leave this page?",
@@ -47,43 +61,132 @@ export function useWarnBeforeUnload(
     enabledRef.current = enabled;
     messageRef.current = message;
 
-    // Based on code from https://github.com/vercel/next.js/issues/2476#issuecomment-563190607
-    useEffect(() => {
-        const routeChangeStart = (url: string) => {
+    useLayoutEffect(() => {
+        navigationWarning.enabled = enabledRef.current;
+        navigationWarning.message = messageRef.current;
+        let shouldLeaveAfterPop = false;
+        let restoreHistoryGuardTimeout: number | undefined;
+        let didArmHistoryGuard = false;
+
+        const armHistoryGuard = () => {
             if (
-                Router.asPath !== url &&
-                enabledRef.current &&
-                !shouldIgnoreNextWarnBeforeUnload.current &&
-                !confirm(messageRef.current)
+                !enabledRef.current ||
+                window.history.state?.[historyGuardKey]
             ) {
-                shouldIgnoreNextWarnBeforeUnload.current = false;
-
-                Router.events.emit("routeChangeError");
-                Router.replace(Router, Router.asPath);
-
-                // This error shows onscreen in dev but we can't do anything about it
-                throw new Error("abort route change - ignore this error");
+                return;
             }
+
+            // Add a same-URL sentinel so browser Back hits our popstate handler
+            // before leaving the dirty scratch page.
+            window.history.pushState(
+                {
+                    ...(window.history.state ?? {}),
+                    [historyGuardKey]: true,
+                },
+                "",
+                window.location.href,
+            );
+            didArmHistoryGuard = true;
+        };
+
+        armHistoryGuard();
+
+        const onClick = (event: MouseEvent) => {
+            if (
+                event.defaultPrevented ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                event.button !== 0
+            ) {
+                return;
+            }
+
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            const anchor = target.closest<HTMLAnchorElement>("a[href]");
+            const linkTarget = anchor?.getAttribute("target");
+            if (
+                !anchor ||
+                (linkTarget && linkTarget.toLowerCase() !== "_self") ||
+                anchor.hasAttribute("download")
+            ) {
+                return;
+            }
+
+            const href = new URL(anchor.href, window.location.href);
+            if (href.href === window.location.href) return;
+            if (
+                href.origin === window.location.origin &&
+                href.pathname === window.location.pathname &&
+                href.search === window.location.search
+            ) {
+                return;
+            }
+
+            if (!confirmNavigation()) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+        };
+
+        const onPopState = () => {
+            if (shouldLeaveAfterPop) {
+                shouldLeaveAfterPop = false;
+                return;
+            }
+
+            if (!enabledRef.current) {
+                return;
+            }
+
+            if (confirmNavigation()) {
+                shouldLeaveAfterPop = true;
+                window.history.back();
+                return;
+            }
+
+            // Back landed on the real page entry. Re-arm after the traversal
+            // settles so repeated Back clicks keep prompting.
+            restoreHistoryGuardTimeout = window.setTimeout(() => {
+                armHistoryGuard();
+            });
         };
 
         const onUnload = (event: BeforeUnloadEvent) => {
             if (enabledRef.current) {
+                if (shouldIgnoreNextWarnBeforeUnload.current) {
+                    shouldIgnoreNextWarnBeforeUnload.current = false;
+                    return;
+                }
+
                 event.preventDefault();
                 event.returnValue = messageRef.current;
                 return event.returnValue;
             }
         };
 
+        document.addEventListener("click", onClick, { capture: true });
+        window.addEventListener("popstate", onPopState, { capture: true });
         window.addEventListener("beforeunload", onUnload, { capture: true });
-        Router.events.on("routeChangeStart", routeChangeStart);
 
         return () => {
+            navigationWarning.enabled = false;
+            window.clearTimeout(restoreHistoryGuardTimeout);
+            if (didArmHistoryGuard && window.history.state?.[historyGuardKey]) {
+                window.history.back();
+            }
+            document.removeEventListener("click", onClick, { capture: true });
+            window.removeEventListener("popstate", onPopState, {
+                capture: true,
+            });
             window.removeEventListener("beforeunload", onUnload, {
                 capture: true,
             });
-            Router.events.off("routeChangeStart", routeChangeStart);
         };
-    }, [enabledRef, messageRef]);
+    }, [enabled, enabledRef, message, messageRef]);
 }
 
 export function usePageTitle(...breadcrumbs: string[]) {

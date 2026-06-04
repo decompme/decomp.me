@@ -1,4 +1,5 @@
 const { config } = require("dotenv");
+const path = require("node:path");
 
 for (const envFile of [".env.local", ".env"]) {
     config({ path: `../${envFile}` });
@@ -15,14 +16,10 @@ const getEnvBool = (key, fallback = false) => {
     return fallback;
 };
 
-const removeImports = require("next-remove-imports")({
-    //test: /node_modules([\s\S]*?)\.(tsx|ts|js|mjs|jsx)$/,
-    //matchImports: "\\.(less|css|scss|sass|styl)$"
-});
-
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost");
+const svgrLoader = path.join(__dirname, "loaders/svgr-webpack.js");
 
-let app = removeImports({
+let app = {
     async redirects() {
         return [
             {
@@ -76,34 +73,20 @@ let app = removeImports({
             },
         ];
     },
-    webpack(config) {
-        config.module.rules.push({
-            test: /\.svg$/,
-            use: ["@svgr/webpack"],
-        });
-
-        // @open-rpc/client-js brings in some dependencies which, in turn, have optional dependencies.
-        // This confuses the heck out of webpack, so tell it should just sub in a CommonJS-style "require" statement
-        // instead (which will fail and trigger the fallback at runtime)
-        // https://stackoverflow.com/questions/58697934/webpack-how-do-you-require-an-optional-dependency-in-bundle-saslprep
-        config.externals.push({
-            encoding: "commonjs encoding",
-            bufferutil: "commonjs bufferutil",
-            "utf-8-validate": "commonjs utf-8-validate",
-        });
-
-        // All of the vscode-* packages (jsonrpc, languageserver-protocol, etc.) are distributed as UMD modules.
-        // This also leaves webpack with no idea how to handle require statements.
-        // umd-compat-loader strips away the header UMD adds to allow browsers to parse ES modules
-        // and just treats the importee as an ES module.
-        config.module.rules.push({
-            test: /node_modules[\\|/](vscode-.*)/,
-            use: {
-                loader: "umd-compat-loader",
+    turbopack: {
+        rules: {
+            "*.svg": {
+                loaders: [
+                    {
+                        loader: svgrLoader,
+                        options: {
+                            runtimeConfig: false,
+                        },
+                    },
+                ],
+                as: "*.js",
             },
-        });
-
-        return config;
+        },
     },
     images: {
         remotePatterns: [
@@ -131,10 +114,10 @@ let app = removeImports({
         NEXT_PUBLIC_COMMIT_HASH: process.env.GIT_HASH ?? "abc123",
         OBJDIFF_BASE: process.env.OBJDIFF_BASE,
     },
-});
+};
 
 if (process.env.ANALYZE === "true") {
-    app = require("@next/bundle-analyzer")(app);
+    app = require("@next/bundle-analyzer")()(app);
 }
 
 const isVercel = !!process.env.VERCEL;
@@ -145,7 +128,6 @@ if (!isVercel) {
         project: "frontend",
         silent: !process.env.CI,
         tunnelRoute: "/monitoring",
-        disableLogger: true,
     };
     module.exports = withSentryConfig(app, sentryConfig);
 } else {

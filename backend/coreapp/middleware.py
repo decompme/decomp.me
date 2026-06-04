@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import TYPE_CHECKING, Callable, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -24,7 +25,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 if TYPE_CHECKING:
 
     class Request(DRFRequest):
-        user: Union[User, AnonymousUser]
+        user: User | AnonymousUser
         profile: Profile
 
 else:
@@ -64,6 +65,10 @@ def is_public_request(req: Request) -> bool:
     return False
 
 
+def is_ephemeral_profile_request(req: Request) -> bool:
+    return req.method == "GET" and req.path == "/api/user" and not req.COOKIES
+
+
 def set_user_profile(
     get_response: Callable[[HttpRequest], Response],
 ) -> Callable[[Request], Response]:
@@ -89,6 +94,11 @@ def set_user_profile(
             request.profile = Profile()
             return get_response(request)
 
+        # Avoid creating persistent profiles on anonymous requests
+        if is_ephemeral_profile_request(request):
+            request.profile = Profile()
+            return get_response(request)
+
         profile = None
 
         # Try user-linked profile
@@ -106,7 +116,7 @@ def set_user_profile(
                 if profile and profile.user and request.user.is_anonymous:
                     request.user = profile.user
 
-        # Avoid creating persistent for public endpoints
+        # Avoid creating persistent profiles for public endpoints
         if not profile and is_public_request(request):
             request.profile = Profile()
             return get_response(request)

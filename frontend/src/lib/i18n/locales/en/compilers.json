@@ -328,6 +328,9 @@
     "gcc_source_language.-x c": "C",
     "gcc_source_language.-x c++": "C++",
 
+    "ghs_source_language": "Source language",
+    "ghs_source_language.--g++": "C++",
+
     "ido_opt_level": "Optimization level",
     "ido_opt_level.-O0": "No optimization",
     "ido_opt_level.-O1": "Some optimization",
@@ -427,7 +430,8 @@
     "msvc_rtlib./MLd": "Debug Single-Threaded",
     "msvc_rtlib./MTd": "Debug Multithreaded",
     "msvc_rtlib./MDd": "Debug Multithreaded DLL",
-    "msvc_compile_cpp": "compile as C++",
+    "msvc_source_language": "Source language",
+    "msvc_source_language./TP": "C++",
     "msvc_use_rtti": "enable C++ RTTI",
     "msvc_use_ehsc": "enable C++ EH",
     "msvc_disable_stack_checking": "disable stack checking calls",

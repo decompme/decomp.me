@@ -2,8 +2,8 @@
 
 import { useEffect, useReducer, type ReactNode } from "react";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/components/Link";
+import { useRouter } from "@/lib/navigation";
 
 import { ThreeBarsIcon, XIcon } from "@primer/octicons-react";
 import clsx from "clsx";
@@ -50,7 +50,12 @@ export default function Nav({ children }: Props) {
             data-open={isOpen}
             data-force-toggle={!!children}
         >
-            <ul className={clsx(styles.header, "px-2 md:px-8 lg:px-16")}>
+            <ul
+                className={clsx(
+                    styles.header,
+                    "px-2 py-1 md:px-4 md:py-2 lg:px-16",
+                )}
+            >
                 <li className={styles.headerItemMenuToggle}>
                     <button
                         id="navtoggle"

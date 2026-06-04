@@ -1,7 +1,8 @@
 import hashlib
 import json
 import logging
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import itsdangerous
 from django.conf import settings
@@ -22,10 +23,6 @@ def gen_scratch_id() -> str:
         return gen_scratch_id()
 
     return ret
-
-
-def gen_claim_token() -> str:
-    return get_random_string(length=32)
 
 
 class Asm(models.Model):
@@ -70,6 +67,8 @@ class LibrariesField(models.JSONField):
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
+        if res is None:
+            return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
@@ -84,7 +83,7 @@ class Context(models.Model):
     hash = models.BinaryField(max_length=8, unique=True, db_index=True)
 
     @classmethod
-    def get_or_create_from_text(cls, text: Optional[str]) -> Optional["Context"]:
+    def get_or_create_from_text(cls, text: str | None) -> "Context | None":
         if text is None:
             return None
 
@@ -167,6 +166,18 @@ class Scratch(models.Model):
 
     def is_claimable(self) -> bool:
         return self.owner is None
+
+    @property
+    def has_score(self) -> bool:
+        return self.score >= 0
+
+    @property
+    def is_match(self) -> bool:
+        return self.score == 0 or self.match_override
+
+    @property
+    def has_usable_result(self) -> bool:
+        return self.has_score or self.match_override
 
     @property
     def claim_token(self) -> str:

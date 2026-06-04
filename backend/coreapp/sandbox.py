@@ -6,7 +6,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Self
 
 from django.conf import settings
 
@@ -22,10 +22,10 @@ else:
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __enter__(self) -> "Sandbox":
+    def __enter__(self) -> Self:
         self.use_jail = settings.USE_SANDBOX_JAIL
 
-        tmpdir: Optional[Path] = None
+        tmpdir: Path | None = None
         if self.use_jail:
             # Only use SANDBOX_TMP_PATH if USE_SANDBOX_JAIL is enabled,
             # otherwise use the system default
@@ -48,7 +48,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             path = Path("/tmp") / path.relative_to(self.path)
         return str(path)
 
-    def sandbox_command(self, mounts: List[Path], env: Dict[str, str]) -> List[str]:
+    def sandbox_command(self, mounts: list[Path], env: dict[str, str]) -> list[str]:
         if not self.use_jail:
             return []
 
@@ -69,6 +69,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--chroot", str(settings.SANDBOX_CHROOT_PATH),
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
+            "--bindmount", f"{self.path}:/var/tmp",
             "--bindmount_ro", "/dev",
             "--bindmount_ro", "/bin",
             "--bindmount_ro", "/etc/alternatives",
@@ -80,12 +81,14 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
             "--bindmount_ro", "/sys",
-            "--bindmount", f"{self.path}:/var/tmp",
             "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
             "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
             "--env", f"PATH={PATH}",
             "--cwd", "/tmp",
-            "--rlimit_fsize", "soft",
+            # NOTE: "soft" resolves to a near-infinite RLIMIT_FSIZE in nsjail >=3.6,
+            # which causes some of the compilers/tooling to fail with "File too large" (SIGXFSZ).
+            # Use a large finite value instead.
+            "--rlimit_fsize", "512",  # 512 MB
             "--rlimit_nofile", "soft",
             # the following are settings that can be removed once we are done with wine
             "--bindmount_ro", f"{settings.WINEPREFIX}:/wine",
@@ -109,12 +112,12 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
 
     def run_subprocess(
         self,
-        args: Union[str, List[str]],
+        args: str | list[str],
         *,
-        mounts: Optional[List[Path]] = None,
-        env: Optional[Dict[str, str]] = None,
+        mounts: list[Path] | None = None,
+        env: dict[str, str] | None = None,
         shell: bool = False,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> subprocess.CompletedProcess[str]:
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}

@@ -1,13 +1,13 @@
 from sqlite3 import IntegrityError
 from subprocess import CalledProcessError
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, Self
 
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from rest_framework.views import exception_handler
 
 
-def custom_exception_handler(exc: Exception, context: Any) -> Optional[Response]:
+def custom_exception_handler(exc: Exception, context: Any) -> Response | None:
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
@@ -47,12 +47,15 @@ class SubprocessError(Exception):
         self.stdout = ""
         self.stderr = ""
 
-    @staticmethod
-    def from_process_error(ex: CalledProcessError) -> "SubprocessError":
-        error = SubprocessError(f"{ex.cmd[0]} returned {ex.returncode}")
-        error.stdout = ex.stdout
-        error.stderr = ex.stderr
-        error.msg = ex.stdout
+    @classmethod
+    def from_process_error(cls, ex: CalledProcessError) -> Self:
+        command = ex.cmd[0] if isinstance(ex.cmd, list) else ex.cmd
+        error = cls(f"{command} returned {ex.returncode}")
+        error.stdout = ex.stdout or ""
+        error.stderr = ex.stderr or ""
+        if error.stdout:
+            error.msg = error.stdout
+            error.args = (error.msg,)
         return error
 
 
@@ -77,18 +80,19 @@ class SandboxError(SubprocessError):
 
 
 class AssemblyError(SubprocessError):
-    SUBPROCESS_NAME: ClassVar[str] = "Compiler"
+    SUBPROCESS_NAME: ClassVar[str] = "Assembler"
 
-    @staticmethod
-    def from_process_error(ex: CalledProcessError) -> "SubprocessError":
-        error = super(AssemblyError, AssemblyError).from_process_error(ex)
+    @classmethod
+    def from_process_error(cls, ex: CalledProcessError) -> Self:
+        error = super().from_process_error(ex)
 
         error_lines = []
-        for line in ex.stdout.splitlines():
+        for line in error.stdout.splitlines():
             if "asm.s:" in line:
                 error_lines.append(line[line.find("asm.s:") + len("asm.s:") :].strip())
             else:
                 error_lines.append(line)
         error.msg = "\n".join(error_lines)
+        error.args = (error.msg,)
 
         return error

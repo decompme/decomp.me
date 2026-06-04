@@ -6,6 +6,8 @@ import YourScratchList from "@/components/YourScratchList";
 
 import WelcomeInfo from "./WelcomeInfo";
 
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
     const title = "decomp.me";
 
@@ -41,7 +43,10 @@ export default function Page() {
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
                     <h2 className="mb-2 text-lg">Recent activity</h2>
-                    <ScratchList url="/scratch?page_size=20&has_owner=true" />
+                    <ScratchList
+                        isPublic
+                        url="/scratch?page_size=20&has_owner=true"
+                    />
                 </section>
             </div>
         </main>

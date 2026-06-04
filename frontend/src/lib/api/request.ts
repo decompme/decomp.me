@@ -103,6 +103,15 @@ export async function get(url: string) {
     });
 }
 
+export async function getPublic(url: string) {
+    console.info("GET public", normalizeUrl(url));
+    return await errorHandledFetchJson(url, {
+        ...commonOpts,
+        credentials: "omit",
+        cache: "default",
+    });
+}
+
 export async function post(
     url: string,
     data: Json | FormData,

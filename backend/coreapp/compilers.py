@@ -1,14 +1,14 @@
 import enum
 import logging
 import platform as platform_stdlib
+from collections import OrderedDict
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import ClassVar, List, Optional, OrderedDict
+from typing import ClassVar
 
 from django.conf import settings
-from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -32,6 +32,7 @@ from coreapp.flags import (
     COMMON_WATCOM_FLAGS,
     Flags,
     Language,
+    LanguageFlagSet,
 )
 from coreapp.platforms import (
     ANDROID_X86,
@@ -74,7 +75,7 @@ class Compiler:
     platform: Platform
     flags: ClassVar[Flags]
     library_include_flag: str
-    base_compiler: Optional["Compiler"] = None
+    base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
     language: Language = Language.C
 
@@ -93,6 +94,25 @@ class Compiler:
         if not self.path.exists():
             print(f"Compiler {self.id} not found at {self.path}")
         return self.path.exists()
+
+    def get_language(self, compiler_flags: str = "") -> Language:
+        language_flag_set = next(
+            (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
+            None,
+        )
+        if language_flag_set is None:
+            return self.language
+
+        matches = [
+            (flag, language)
+            for flag, language in language_flag_set.flags.items()
+            if flag in compiler_flags
+        ]
+        if not matches:
+            return self.language
+
+        # Taking the longest avoids detecting C++ as C.
+        return max(matches, key=lambda match: len(match[0]))[1]
 
 
 @dataclass(frozen=True)
@@ -232,20 +252,17 @@ class GHSCompiler(Compiler):
 
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
-        raise APIException(
-            f"Unknown compiler: {compiler_id}",
-            str(status.HTTP_400_BAD_REQUEST),
-        )
+        raise ValidationError(f"Unknown compiler: {compiler_id}")
     return _compilers[compiler_id]
 
 
 @cache
-def available_compilers() -> List[Compiler]:
+def available_compilers() -> list[Compiler]:
     return list(_compilers.values())
 
 
 @cache
-def available_platforms() -> List[Platform]:
+def available_platforms() -> list[Platform]:
     pset = set(compiler.platform for compiler in available_compilers())
 
     return sorted(pset, key=lambda p: p.name)
@@ -281,6 +298,7 @@ AGBCC_ARM = GCCCompiler(
 AGBCCPP = GCCCompiler(
     id="agbccpp",
     platform=GBA,
+    language=Language.CXX,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcp -quiet $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 # N3DS
@@ -402,8 +420,8 @@ PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
     '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
@@ -553,9 +571,9 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 SATURN_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
     'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
@@ -936,6 +954,7 @@ GCC272SN0001CXX = GCCCompiler(
     id="gcc2.7.2sn0001-cxx",
     base_compiler=GCC272SN0001,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q "$OUTPUT".s -o "$OUTPUT".obj '
@@ -961,6 +980,7 @@ GCC272SN0006CXX = GCCCompiler(
     id="gcc2.7.2sn0006-cxx",
     base_compiler=GCC272SN0006,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -986,6 +1006,7 @@ GCC281SNCXX = GCCCompiler(
     id="gcc2.8.1sn-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& ${WIBO} "${COMPILER_DIR}"/asn64.exe -q -G0 "$OUTPUT".s -o "$OUTPUT".obj '
@@ -996,6 +1017,7 @@ GCC281SNEWCXX = GCCCompiler(
     id="gcc2.8.1snew-cxx",
     base_compiler=GCC281SN,
     platform=N64,
+    language=Language.CXX,
     cc=CCN64_CPP_CXX
     + '| ${WIBO} "${COMPILER_DIR}"/cc1pln64.exe ${COMPILER_FLAGS} -o "$OUTPUT".s '
     '&& python3 "${COMPILER_DIR}"/modern-asn64.py mips-linux-gnu-as "$OUTPUT".s -G0 -EB -mtune=vr4300 -march=vr4300 -mabi=32 -O1 --no-construct-floats -o "$OUTPUT"',
@@ -1113,6 +1135,7 @@ XCODE_GCC401_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS,
     base_compiler=XCODE_GCC401_C,
+    language=Language.CXX,
 )
 
 XCODE_24_C = GCCCompiler(
@@ -1126,6 +1149,7 @@ XCODE_24_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_24_C,
+    language=Language.CXX,
 )
 
 XCODE_GCC400_C = GCCCompiler(
@@ -1139,6 +1163,7 @@ XCODE_GCC400_CPP = GCCCompiler(
     platform=MACOSX,
     cc=GCC_CC1PLUS_ALT,
     base_compiler=XCODE_GCC400_C,
+    language=Language.CXX,
 )
 
 PBX_GCC3 = GCCCompiler(
@@ -1549,6 +1574,7 @@ WATCOM_105_CPP = WatcomCompiler(
     id="wpp10.5",
     base_compiler=WATCOM_105_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1562,6 +1588,7 @@ WATCOM_105A_CPP = WatcomCompiler(
     id="wpp10.5a",
     base_compiler=WATCOM_105A_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1575,6 +1602,7 @@ WATCOM_106_CPP = WatcomCompiler(
     id="wpp10.6",
     base_compiler=WATCOM_106_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
@@ -1588,13 +1616,14 @@ WATCOM_110_CPP = WatcomCompiler(
     id="wpp11.0",
     base_compiler=WATCOM_110_C,
     platform=MSDOS,
+    language=Language.CXX,
     cc=WATCOM_CXX,
 )
 
 BORLAND_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'
 )
 
@@ -1636,7 +1665,7 @@ ANDROID_R8E_47_C = GCCCompiler(
     cc='"$COMPILER_DIR"/toolchains/x86-4.7/prebuilt/linux-x86_64/bin/i686-linux-android-gcc -c --sysroot="$COMPILER_DIR"/platforms/android-9/arch-x86 $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
-_all_compilers: List[Compiler] = [
+_all_compilers: list[Compiler] = [
     DUMMY,
     DUMMY_LONGRUNNING,
     # GBA

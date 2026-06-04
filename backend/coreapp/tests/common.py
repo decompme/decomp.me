@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 from unittest import skip, skipIf
 
 from django.urls import reverse
@@ -24,7 +25,7 @@ class BaseTestCase(APITestCase):
         self.client.credentials(HTTP_USER_AGENT="Firefrogz 1.0")
 
     # Create a scratch and return it as a DB object
-    def create_scratch(self, partial: Dict[str, Any]) -> Scratch:
+    def create_scratch(self, partial: dict[str, Any]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         data = response.json()

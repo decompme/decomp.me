@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 const subtitle = "mt-8 text-xl font-semibold tracking-tight text-gray-11";
 const link = "text-blue-11 hover:underline active:translate-y-px";

@@ -48,7 +48,8 @@ services:
       - ./frontend:/frontend
       - .env:/.env
   nginx:
-    image: nginx:1.28-alpine
+    build:
+      context: nginx
     ports:
       - "80:80"
     volumes:
@@ -56,3 +57,4 @@ services:
       - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
+      - ./backend/static:/var/www/static

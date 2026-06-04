@@ -1,5 +1,3 @@
-from typing import Optional
-
 import django_filters
 from django.contrib.auth import logout
 from django.db.models import Count
@@ -15,9 +13,11 @@ from ..decorators.cache import globally_cacheable
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.github import GitHubUser
+from ..models.preset import Preset
 from ..models.profile import Profile
 from ..models.scratch import Scratch
-from ..serializers import TerseScratchSerializer, serialize_profile
+from ..serializers import PresetSerializer, TerseScratchSerializer, serialize_profile
+from .preset import PresetPagination
 from .scratch import ScratchPagination, ScratchViewSet
 
 
@@ -67,7 +67,7 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        profile: Optional[Profile] = self.request.profile  # type: ignore[attr-defined]
+        profile: Profile | None = self.request.profile  # type: ignore[attr-defined]
         if profile is None:  # should be impossible due to middleware
             return Scratch.objects.none()
         return ScratchViewSet.queryset.filter(owner__id=profile.id)
@@ -94,6 +94,32 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
     def get_queryset(self) -> QuerySet[Scratch]:
         return ScratchViewSet.queryset.filter(
             owner__user__username=self.kwargs["username"]
+        )
+
+
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
+class UserPresetList(generics.ListAPIView):  # type: ignore
+    """
+    Gets a user's presets
+    """
+
+    pagination_class = PresetPagination
+    serializer_class = PresetSerializer
+    filterset_fields = ["platform", "compiler"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["creation_time", "id", "name", "compiler", "num_scratches"]
+
+    def get_queryset(self) -> QuerySet[Preset]:
+        return (
+            Preset.objects.filter(owner__user__username=self.kwargs["username"])
+            .select_related("owner__user", "owner__user__github")
+            .annotate(num_scratches=Count("scratch"))
         )
 
 

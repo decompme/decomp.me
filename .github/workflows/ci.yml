@@ -7,10 +7,10 @@ on:
 jobs:
   backend_test_docker_dev:
     name: backend tests (docker dev container)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build decompme_backend image
         run: |-
           docker build backend --target dev -t decompme_backend
@@ -44,6 +44,7 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
+            -e DUMMY_COMPILER=1 \
             decompme_backend \
               -c 'cd /decomp.me/backend && \
               uv sync && \
@@ -54,10 +55,10 @@ jobs:
 
   backend_test_docker_prod:
     name: backend tests (docker prod container)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build decompme_backend image
         run: |-
           docker build backend --target prod -t decompme_backend
@@ -93,8 +94,8 @@ jobs:
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
             -e TIMEOUT_SCALE_FACTOR=10 \
-            -e DATABASE_URL=sqlite:///:memory: \
             -e DUMMY_COMPILER=1 \
+            -e DATABASE_URL=sqlite:///:memory: \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
               -c '\
@@ -103,11 +104,11 @@ jobs:
 
   docker_compose_test:
     name: test docker compose
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch compilers and libraries
         run: |
@@ -169,11 +170,11 @@ jobs:
 
   frontend_lint:
     name: biome
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
@@ -186,20 +187,24 @@ jobs:
         run: |
           cd frontend
           yarn lint
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          yarn test
 
   mypy:
     name: mypy
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: "latest"
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v5
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - run: |-
           cd backend
           uv sync
@@ -207,17 +212,17 @@ jobs:
 
   ruff:
     name: ruff
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: "latest"
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v5
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - run: |-
           cd backend
           uv sync

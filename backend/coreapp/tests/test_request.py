@@ -1,23 +1,56 @@
+import subprocess
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from coreapp import compilers, platforms
+from coreapp.error import AssemblyError, ObjdumpError, custom_exception_handler
 from coreapp.models.profile import Profile
 from coreapp.sandbox import Sandbox
 from coreapp.tests.common import BaseTestCase, requiresCompiler
 
 
 class RequestTests(APITestCase):
-    def test_create_profile(self) -> None:
+    def test_cookie_less_current_user_does_not_create_profile(self) -> None:
         """
-        Ensure that we create a profile for a normal request
+        Ensure that a passive current-user read does not create a session profile.
         """
 
         response = self.client.get(reverse("current-user"), HTTP_USER_AGENT="browser")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        self.assertTrue(response.json()["is_ephemeral"])
+        self.assertIsNone(response.json()["id"])
+        self.assertEqual(Profile.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
+
+    def test_anonymous_scratch_create_creates_profile(self) -> None:
+        """
+        Ensure that stateful anonymous requests still create a session profile.
+        """
+
+        scratch_dict = {
+            "compiler": compilers.DUMMY.id,
+            "platform": platforms.DUMMY.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+        }
+        response = self.client.post(
+            reverse("scratch-list"),
+            scratch_dict,
+            format="json",
+            HTTP_USER_AGENT="browser",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
         self.assertEqual(Profile.objects.count(), 1)
+        self.assertIn("sessionid", response.cookies)
+
+        user_response = self.client.get(
+            reverse("current-user"), HTTP_USER_AGENT="browser"
+        )
+        self.assertFalse(user_response.json()["is_ephemeral"])
 
     def test_node_fetch_request(self) -> None:
         """
@@ -30,6 +63,16 @@ class RequestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(Profile.objects.count(), 0)
+
+    def test_assembly_errors_are_reported_as_assembler_errors(self) -> None:
+        response = custom_exception_handler(AssemblyError("bad asm"), {})
+
+        self.assertIsNotNone(response)
+        assert response is not None
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["code"], "Assembler")
+        self.assertEqual(response.data["kind"], "AssemblyError")
+        self.assertEqual(response.data["detail"], "Assembler error: bad asm")
 
 
 class TimeoutTests(BaseTestCase):
@@ -74,3 +117,17 @@ class TimeoutTests(BaseTestCase):
 
             self.assertEqual(sandboxed_proc.returncode, 0)
             self.assertIn(expected_output, sandboxed_proc.stdout)
+
+    def test_sandbox_subprocess_error_preserves_output(self) -> None:
+        missing_command = "definitely-not-a-real-command"
+
+        with self.settings(DEBUG=False):
+            with Sandbox() as sandbox:
+                with self.assertRaises(subprocess.CalledProcessError) as cm:
+                    sandbox.run_subprocess([missing_command], shell=True)
+
+        error = ObjdumpError.from_process_error(cm.exception)
+
+        self.assertIsInstance(error, ObjdumpError)
+        self.assertIn(missing_command, str(error))
+        self.assertIn("command not found", str(error))
