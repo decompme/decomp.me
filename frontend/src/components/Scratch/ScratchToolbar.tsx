@@ -168,7 +168,7 @@ function ActionButton({
     text,
     dataTour,
 }: {
-    onClick: (event?: any) => void;
+    onClick: (event: MouseEvent<HTMLButtonElement>) => void | Promise<void>;
     disabled?: boolean;
     title?: string;
     icon: JSX.Element;

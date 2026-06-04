@@ -13,15 +13,11 @@ const CLICK_TARGET_CLASS = "scratch-tour-click-target";
 
 const SELECTOR = {
     toolbar: '[data-tour="scratch-toolbar"]',
-    scratchView: '[data-tour="scratch-view"]',
     leftPane: '[data-tour="scratch-layout-left"]',
     rightPane: '[data-tour="scratch-layout-right"]',
     tourButton: '[data-tour="scratch-action-tour"]',
-    compileButton: '[data-tour="scratch-action-compile"]',
-    saveButton: '[data-tour="scratch-action-save"]',
     forkButton: '[data-tour="scratch-action-fork"]',
     decompileButton: '[data-tour="scratch-action-decompile"]',
-    exportButton: '[data-tour="scratch-action-export"]',
     aboutTab: '[data-tour="scratch-tab-about"]',
     aboutPanel: '[data-tour="scratch-about-panel"]',
     familyTab: '[data-tour="scratch-tab-family"]',
@@ -41,8 +37,6 @@ const SELECTOR = {
     currentColumn: '[data-tour="scratch-diff-column-current-full"]',
     thirdColumn: '[data-tour="scratch-diff-column-previous-full"]',
     diffToggles: '[data-tour="scratch-diff-toggles"]',
-    targetToggle: '[data-tour="scratch-diff-toggle-target"]',
-    currentToggle: '[data-tour="scratch-diff-toggle-current"]',
     threeWayToggle: '[data-tour="scratch-diff-toggle-three-way"]',
     compressionToggle: '[data-tour="scratch-diff-toggle-compression"]',
     objdiffTab: '[data-tour="scratch-tab-objdiff"]',
@@ -181,6 +175,8 @@ function resetBoarding(boarding: Boarding) {
     try {
         boarding.reset(true, "cancel");
     } catch (error) {
+        // boarding.js can throw this when cleanup races with a partially
+        // initialized tour overlay.
         if (
             !(error instanceof Error) ||
             error.message !== "No SVG found to unmount"
@@ -247,7 +243,7 @@ function addDecompilationInfoStep(steps: TourStep[], selector: string) {
     steps.push(
         makeStep(
             selector,
-            "Decompilation",
+            "Decompilation pane",
             "When the platform supports it, this tab will show the results of running a decompiler against the target assembly and contents of the scratch context.",
         ),
     );
@@ -384,7 +380,7 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         panelSelector: SELECTOR.aboutPanel,
         tabTitle: "About tab",
         tabDescription: "Now click the <strong>About</strong> tab.",
-        panelTitle: "About",
+        panelTitle: "About tab",
         panelDescription:
             "The about tab shows the score, owner, platform, preset, timestamps, parent scratch, and any notes that have been added to the scratch.",
     });
@@ -397,9 +393,9 @@ function buildTourSteps(boarding: Boarding): TourStep[] {
         tabTitle: "Compilation tab",
         tabDescription:
             "Click <strong>Compilation</strong> to inspect the current diff.",
-        panelTitle: "Compilation",
+        panelTitle: "Compilation pane",
         panelDescription:
-            "The compilation panel shows the current assembly diff and compiler output. The lower the score the better; a score of 0 means the generated output matches the target.",
+            "The compilation pane shows the current assembly diff and compiler output. The lower the score the better; a score of 0 means the generated output matches the target.",
         panelPreferredSide: "left",
     });
     addIfPresent(
