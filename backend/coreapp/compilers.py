@@ -250,6 +250,13 @@ class GHSCompiler(Compiler):
     library_include_flag: str = "-I"
 
 
+@dataclass(frozen=True)
+class MicrosoftCCompiler(Compiler):
+    platform = MSDOS
+    flags: ClassVar[Flags] = []
+    library_include_flag: str = ""
+
+
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
         raise ValidationError(f"Unknown compiler: {compiler_id}")
@@ -1626,6 +1633,17 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
+MSC_51 = MicrosoftCCompiler(
+    id="msc5.1",
+    platform=MSDOS,
+    cc=(
+        "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+        'cat "${INPUT}" | unix2dos > dos_src.c && '
+        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c /AM ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
+        'cp out.o "${OUTPUT}"'
+    ),
+)
+
 CL_XBOX = '${WIBO} "${COMPILER_DIR}/cl.exe" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC_PPC_14_00_2110 = MSVCCompiler(
@@ -1897,6 +1915,8 @@ _all_compilers: list[Compiler] = [
     # Borland, DOS
     BORLAND_20_C,
     BORLAND_31_C,
+    # Microsoft C compiler
+    MSC_51,
     # Xbox 360
     MSVC_PPC_14_00_2110,
     MSVC_PPC_16_00_11886_00,

@@ -216,6 +216,7 @@ msdos:
   - wcc11.0
   - bcc2.0
   - bcc3.1
+  - msc5.1
 
 wiiu:
   - ghs5.3.22
