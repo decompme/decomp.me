@@ -33,6 +33,7 @@
         "@sentry/nextjs": "^10.52.0",
         "allotment": "^1.20.3",
         "ansi-to-react": "^6.1.6",
+        "boarding.js": "^3.7.3",
         "clsx": "^2.1.1",
         "codemirror": "^6.0.1",
         "dotenv": "^16.4.5",

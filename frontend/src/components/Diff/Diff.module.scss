@@ -52,6 +52,29 @@
     }
 }
 
+.columnTourTarget {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.columnTourTarget-base {
+    left: 0;
+    width: var(--diff-left-width);
+}
+
+.columnTourTarget-current {
+    left: var(--diff-left-width);
+    right: var(--diff-right-width);
+}
+
+.columnTourTarget-previous {
+    right: 0;
+    width: var(--diff-right-width);
+}
+
 .searchPanel {
     position: absolute;
     z-index: 120;
@@ -246,6 +269,16 @@
 .stack { color: #abc501; }
 .register { color: #aa8b00; }
 .symbol { color: #fff; }
+
+.diffLegendToken {
+    display: inline-block;
+    min-width: 1.25ch;
+    margin-right: 0.35rem;
+
+    font-family: var(--monospace);
+    font-weight: 700;
+    text-align: center;
+}
 
 .delay_slot {
     font-weight: bold;

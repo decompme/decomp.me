@@ -52,6 +52,7 @@ import styles from "./Scratch.module.scss";
 import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
 import ScratchToolbar from "./ScratchToolbar";
+import ScratchTour from "./ScratchTour";
 import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
@@ -322,6 +323,7 @@ export default function Scratch({
                         tabKey={id}
                         label="About"
                         className={styles.about}
+                        dataTour="scratch-tab-about"
                     >
                         {() => (
                             <AboutPanel
@@ -339,6 +341,7 @@ export default function Scratch({
                         key={id}
                         tabKey={id}
                         label="Source code"
+                        dataTour="scratch-tab-source"
                         onSelect={() => {
                             sourceEditor.current?.focus?.();
                             saveContext();
@@ -355,6 +358,7 @@ export default function Scratch({
                             onSelectedLineChange={setSelectedSourceLine}
                             extensions={cmExtensionsSource}
                             placeholder="Write the code for the function you are matching here."
+                            dataTour="scratch-source-editor"
                         />
                     </Tab>
                 );
@@ -365,6 +369,7 @@ export default function Scratch({
                         tabKey={id}
                         label="Context"
                         className={styles.context}
+                        dataTour="scratch-tab-context"
                         onSelect={() => {
                             contextEditor.current?.focus?.();
                             saveSource();
@@ -380,6 +385,7 @@ export default function Scratch({
                             }}
                             extensions={cmExtensionsContext}
                             placeholder="Add your typedefs, structs, and declarations here."
+                            dataTour="scratch-context-editor"
                         />
                     </Tab>
                 );
@@ -390,6 +396,7 @@ export default function Scratch({
                         tabKey={id}
                         label="Options"
                         className={styles.compilerOptsTab}
+                        dataTour="scratch-tab-options"
                     >
                         {() => (
                             <ScrollRestorer
@@ -418,6 +425,7 @@ export default function Scratch({
                     <Tab
                         key={id}
                         tabKey={id}
+                        dataTour="scratch-tab-compilation"
                         label={
                             <>
                                 Compilation
@@ -460,6 +468,7 @@ export default function Scratch({
                         tabKey={id}
                         label="objdiff"
                         className={styles.diffTab}
+                        dataTour="scratch-tab-objdiff"
                     >
                         {compilation && (
                             <ObjdiffPanel
@@ -476,6 +485,7 @@ export default function Scratch({
                         <Tab
                             key={id}
                             tabKey={id}
+                            dataTour="scratch-tab-decompilation"
                             label={
                                 <>
                                     Decompilation
@@ -493,14 +503,24 @@ export default function Scratch({
                 );
             case TabId.FAMILY:
                 return (
-                    <Tab key={id} tabKey={id} label="Family">
+                    <Tab
+                        key={id}
+                        tabKey={id}
+                        label="Family"
+                        dataTour="scratch-tab-family"
+                    >
                         {() => <FamilyPanel scratch={scratch} />}
                     </Tab>
                 );
             case TabId.PROBLEMS:
                 return (
                     compilation?.compiler_output && (
-                        <Tab key={id} tabKey={id} label="Problems">
+                        <Tab
+                            key={id}
+                            tabKey={id}
+                            label="Problems"
+                            dataTour="scratch-tab-problems"
+                        >
                             {() => (
                                 <ProblemPanel
                                     text={compilation.compiler_output}
@@ -555,7 +575,12 @@ export default function Scratch({
     );
 
     return (
-        <div ref={container.ref} className={styles.container}>
+        <div
+            ref={container.ref}
+            className={styles.container}
+            data-tour="scratch-view"
+        >
+            <ScratchTour />
             <ErrorBoundary>
                 <ScratchMatchBanner scratch={scratch} />
             </ErrorBoundary>

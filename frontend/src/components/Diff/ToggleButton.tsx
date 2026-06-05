@@ -9,6 +9,7 @@ type ToggleButtonProps = {
     disabledLabel?: string;
     enabledLabel?: string;
     padding?: string;
+    dataTour?: string;
 };
 
 export default function ToggleButton({
@@ -19,6 +20,7 @@ export default function ToggleButton({
     disabledLabel = "Show ",
     enabledLabel = "Hide ",
     padding = "px-2 py-1",
+    dataTour,
 }: ToggleButtonProps) {
     return (
         <button
@@ -31,6 +33,7 @@ export default function ToggleButton({
                     ? `${enabled ? enabledLabel : disabledLabel}${title}`
                     : undefined
             }
+            data-tour={dataTour}
             className={clsx(
                 padding,
                 "text-md",

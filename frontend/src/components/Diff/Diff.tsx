@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { FoldIcon, SearchIcon } from "@primer/octicons-react";
+import clsx from "clsx";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { useDebounce } from "use-debounce";
@@ -479,9 +480,23 @@ export default function Diff({
         >
             {columnCount >= 2 && <DragBar pos={bar1Px} onChange={setBar1Px} />}
             {columnCount === 3 && <DragBar pos={bar2Px} onChange={setBar2Px} />}
+            {columns.map((col) => (
+                <div
+                    key={col}
+                    className={clsx(
+                        styles.columnTourTarget,
+                        styles[`columnTourTarget-${col}`],
+                    )}
+                    data-tour={`scratch-diff-column-${col}-full`}
+                />
+            ))}
             <div className={styles.headers}>
                 {columns.map((col) => (
-                    <div key={col} className={styles.header}>
+                    <div
+                        key={col}
+                        className={styles.header}
+                        data-tour={`scratch-diff-column-${col}`}
+                    >
                         {COLUMN_LABELS[col]}
                         <CopyButton
                             title="Copy content"
@@ -508,37 +523,46 @@ export default function Diff({
                         {col === rightmostColumn && (
                             <>
                                 <div className={styles.spacer} />
-                                <ToggleButton
-                                    label="T"
-                                    title="Target column"
-                                    enabled={columnState.base}
-                                    setEnabled={(enabled) =>
-                                        setColumn("base", enabled)
-                                    }
-                                />
-                                <ToggleButton
-                                    label="C"
-                                    title="Current column"
-                                    enabled={columnState.current}
-                                    setEnabled={(enabled) =>
-                                        setColumn("current", enabled)
-                                    }
-                                />
-                                <ToggleButton
-                                    label="3"
-                                    title="3-way diff"
-                                    enabled={threeWayDiffEnabled}
-                                    setEnabled={handleSetThreeWayDiff}
-                                />
-                                <ToggleButton
-                                    label={<FoldIcon size={16} />}
-                                    disabledLabel="Collapse streaks of "
-                                    enabledLabel="Show all "
-                                    title="matching lines"
-                                    padding="px-1 py-1"
-                                    enabled={compressionEnabled}
-                                    setEnabled={setCompressionEnabled}
-                                />
+                                <div
+                                    className="flex items-center gap-1"
+                                    data-tour="scratch-diff-toggles"
+                                >
+                                    <ToggleButton
+                                        label="T"
+                                        title="Target column"
+                                        enabled={columnState.base}
+                                        setEnabled={(enabled) =>
+                                            setColumn("base", enabled)
+                                        }
+                                        dataTour="scratch-diff-toggle-target"
+                                    />
+                                    <ToggleButton
+                                        label="C"
+                                        title="Current column"
+                                        enabled={columnState.current}
+                                        setEnabled={(enabled) =>
+                                            setColumn("current", enabled)
+                                        }
+                                        dataTour="scratch-diff-toggle-current"
+                                    />
+                                    <ToggleButton
+                                        label="3"
+                                        title="3-way diff"
+                                        enabled={threeWayDiffEnabled}
+                                        setEnabled={handleSetThreeWayDiff}
+                                        dataTour="scratch-diff-toggle-three-way"
+                                    />
+                                    <ToggleButton
+                                        label={<FoldIcon size={16} />}
+                                        disabledLabel="Collapse streaks of "
+                                        enabledLabel="Show all "
+                                        title="matching lines"
+                                        padding="px-1 py-1"
+                                        enabled={compressionEnabled}
+                                        setEnabled={setCompressionEnabled}
+                                        dataTour="scratch-diff-toggle-compression"
+                                    />
+                                </div>
                             </>
                         )}
                     </div>

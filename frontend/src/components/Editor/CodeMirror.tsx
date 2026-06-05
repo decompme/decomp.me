@@ -58,6 +58,7 @@ export interface Props {
     viewRef?: RefObject<EditorView | null>;
     extensions: Extension; // const
     placeholder?: string;
+    dataTour?: string;
 }
 
 export default function CodeMirror({
@@ -70,6 +71,7 @@ export default function CodeMirror({
     viewRef: viewRefProp,
     extensions,
     placeholder: placeholderText,
+    dataTour,
 }: Props) {
     const { ref: el, width } = useSize<HTMLDivElement>();
 
@@ -204,6 +206,7 @@ export default function CodeMirror({
             ref={el}
             onMouseMove={debouncedOnMouseMove}
             className={clsx(styles.container, className)}
+            data-tour={dataTour}
             style={
                 {
                     "--cm-font-size": `${fontSize}px`,
