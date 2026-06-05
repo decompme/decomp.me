@@ -686,9 +686,17 @@ EE_GCC296 = GCCPS2Compiler(
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
+# Keep ASLR/Wine mappings away from Cygwin 1.5's fixed cygheap range.
+EE_GCC32_030210_BETA2_CC = (
+    "WINEPRELOADRESERVE=60000000-68000000 "
+    'WINEPATH="${COMPILER_DIR}"/dll/ setarch i386 -R ${WINE} '
+    '"${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- '
+    '$COMPILER_FLAGS "$INPUT" -o "$OUTPUT"'
+)
+
 EE_GCC32_030210_BETA2 = GCCPS2Compiler(
     id="ee-gcc3.2-030210-beta2",
-    cc='WINEPATH="${COMPILER_DIR}"/dll/ ${WINE} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
+    cc=EE_GCC32_030210_BETA2_CC,
 )
 
 EE_GCC32_030926 = GCCPS2Compiler(
