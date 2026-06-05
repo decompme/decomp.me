@@ -880,13 +880,18 @@ MWCCPSP_3_0_1_219 = MWCCPSPCompiler(
     cc=MWCCPSP_CC,
 )
 
-IDO_41_CC = '"${COMPILER_DIR}"/usr/bin/qemu-irix-4.0 -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -I "{COMPILER_DIR}"/usr/include -EL -c -Xcpluscomm -G0 -non_shared ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 # N64
 IDO41 = IDOCompiler(
     id="ido4.1",
     platform=N64,
-    cc=IDO_41_CC
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix-4.0 -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -I "{COMPILER_DIR}"/usr/include -EL -c -Xcpluscomm ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
     + '&& python3  "${COMPILER_DIR}"/usr/bin/ecoff_tool.py --convert-elf "$OUTPUT" -o "$OUTPUT"',
+)
+
+IDO52 = IDOCompiler(
+    id="ido5.2",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/lib/driver" -I "{COMPILER_DIR}"/usr/include -c -Xcpluscomm -G0 -non_shared -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO53 = IDOCompiler(
@@ -906,6 +911,14 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71_CXX = IDOCompiler(
+    id="ido7.1_c++",
+    platform=N64,
+    cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/NCC" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    base_compiler=IDO71,
+    language=Language.OLD_CXX,
 )
 
 IDO60 = IDOCompiler(
@@ -1792,10 +1805,12 @@ _all_compilers: list[Compiler] = [
     MWCPS2_301B210_060308,
     # N64
     IDO41,
+    IDO52,
     IDO53,
     IDO53_CXX,
     IDO60,
     IDO71,
+    IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,
     GCC272SN0001,
