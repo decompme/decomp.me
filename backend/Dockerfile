@@ -187,7 +187,7 @@ COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 COPY --from=binutils /binutils/ /usr/bin/
 COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 
-COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:1.1.1 /usr/local/bin/wibo /usr/bin/
 
 WORKDIR /backend
 
