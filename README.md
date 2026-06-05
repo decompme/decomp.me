@@ -15,6 +15,7 @@ A collaborative decompilation and reverse engineering website, built with Next.j
 
 - Want to contribute code? Start with [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 - Running decomp.me locally? See [DOCKER.md](docs/DOCKER.md).
+- Got a compiler you want to add? Check out [COMPILER.md](docs/COMPILER.md).
 - Maintaining database backups or restoring production data? See [POSTGRES.md](docs/POSTGRES.md).
 
 ## Contributing
