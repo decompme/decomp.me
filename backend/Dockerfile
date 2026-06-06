@@ -1,4 +1,4 @@
-# This image intentionally targets amd64 because Wine/wine32 and the bundled
+# This image intentionally targets amd64 because the bundled
 # compiler/binutils artifacts are x86 Linux binaries.
 FROM --platform=linux/amd64 ubuntu:26.04 AS base
 
@@ -136,8 +136,7 @@ RUN ARCHIVE=android-ndk-r8e-linux-x86_64.tar.bz2; \
 
 FROM python314 AS dependencies
 
-RUN dpkg --add-architecture i386 \
-    && add-apt-repository -y ppa:dosemu2/ppa \
+RUN add-apt-repository -y ppa:dosemu2/ppa \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && apt-get update \
     && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
@@ -153,8 +152,6 @@ RUN dpkg --add-architecture i386 \
     libtinfo6 \
     netcat-traditional \
     wget \
-    wine \
-    wine32:i386 \
     && rm -rf /var/lib/apt/lists/*
 
 # NOTE: libtinfo5 is required for clang
@@ -168,19 +165,13 @@ RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
 
 RUN mkdir -p /etc/fonts
 
-ENV WINEPREFIX=/tmp/wine
 
-# Ensure /sandbox and wine dirs have correct ownership
+# Ensure /sandbox has correct ownership
 RUN mkdir -p /sandbox \
-    && chown -R ubuntu:ubuntu /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown ubuntu:ubuntu "${WINEPREFIX}"
+    && chown -R ubuntu:ubuntu /sandbox
 
 # Switch to non-root user
 USER ubuntu
-
-# Initialize wine files to /home/ubuntu/.wine
-RUN wineboot --init
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -229,7 +220,6 @@ COPY --from=uv-install /backend/.venv /backend/.venv
 COPY manage.py /backend
 COPY housekeeping.py /backend
 
-COPY wine /backend/wine
 COPY decompme /backend/decompme
 COPY libraries /backend/libraries
 COPY compilers /backend/compilers
