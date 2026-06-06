@@ -35,9 +35,6 @@ else:
 
 logger = logging.getLogger(__name__)
 
-WINE = "wine"
-WIBO = "wibo"
-
 
 def _check_assembly_cache(*args: str) -> tuple[Assembly | None, str]:
     hash = util.gen_hash(args)
@@ -82,12 +79,9 @@ class CompilerWrapper:
     @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
-            r"wine: could not load .*\.dll.*\n?",
-            r"wineserver: could not save registry .*\n?",
             r"### .*\.exe Driver Error:.*\n?",
             r"#   Cannot find my executable .*\n?",
             r"### MWCPPC\.exe Driver Error:.*\n?",
-            r"Fontconfig error:.*\n?",
         ]
 
         for str in filter_strings:
@@ -174,8 +168,7 @@ class CompilerWrapper:
                     ),
                     shell=True,
                     env={
-                        "WINE": WINE,
-                        "WIBO": WIBO,
+                        "WIBO": "wibo",
                         "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
