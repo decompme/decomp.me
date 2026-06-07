@@ -1,4 +1,5 @@
 import datetime
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -130,7 +131,8 @@ class HousekeepingTests(TestCase):
         self.assertTrue(Profile.objects.filter(pk=new_scratchless_profile.pk).exists())
         self.assertTrue(Profile.objects.filter(pk=self.foo.pk).exists())
 
-    def test_removes_orphan_contexts(self) -> None:
+    @patch("coreapp.housekeeping.time.sleep", return_value=None)
+    def test_removes_orphan_contexts(self, _sleep: object) -> None:
         orphan_context = Context.get_or_create_from_text("orphan context")
         used_context = Context.get_or_create_from_text("used context")
         assert orphan_context is not None
@@ -144,7 +146,25 @@ class HousekeepingTests(TestCase):
         self.assertFalse(Context.objects.filter(pk=self.context.pk).exists())
         self.assertTrue(Context.objects.filter(pk=used_context.pk).exists())
 
-    def test_removes_orphan_assemblies(self) -> None:
+    def test_keeps_context_referenced_between_orphan_checks(
+        self,
+    ) -> None:
+        pending_context = Context.get_or_create_from_text("pending context")
+        assert pending_context is not None
+
+        def create_referencing_scratch(_delay: float) -> None:
+            self.create_scratch(owner=self.foo, context=pending_context)
+
+        with patch(
+            "coreapp.housekeeping.time.sleep", side_effect=create_referencing_scratch
+        ):
+            deleted = remove_orphan_contexts(self.cutoff_datetime)
+
+        self.assertEqual(deleted, 1)
+        self.assertTrue(Context.objects.filter(pk=pending_context.pk).exists())
+
+    @patch("coreapp.housekeeping.time.sleep", return_value=None)
+    def test_removes_orphan_assemblies(self, _sleep: object) -> None:
         orphan_assembly = self.create_assembly("orphan")
         live_assembly = self.create_assembly("live")
         self.create_scratch(owner=self.foo).target_assembly = live_assembly
@@ -157,7 +177,25 @@ class HousekeepingTests(TestCase):
         self.assertFalse(Assembly.objects.filter(pk=self.assembly.pk).exists())
         self.assertTrue(Assembly.objects.filter(pk=live_assembly.pk).exists())
 
-    def test_removes_orphan_asms(self) -> None:
+    def test_keeps_assembly_referenced_between_orphan_checks(self) -> None:
+        pending_assembly = self.create_assembly("pending")
+
+        def create_referencing_scratch(_delay: float) -> None:
+            self.create_scratch(owner=self.foo)
+            Scratch.objects.filter(owner=self.foo).update(
+                target_assembly=pending_assembly
+            )
+
+        with patch(
+            "coreapp.housekeeping.time.sleep", side_effect=create_referencing_scratch
+        ):
+            deleted = remove_orphan_assemblies(self.cutoff_datetime)
+
+        self.assertEqual(deleted, 1)
+        self.assertTrue(Assembly.objects.filter(pk=pending_assembly.pk).exists())
+
+    @patch("coreapp.housekeeping.time.sleep", return_value=None)
+    def test_removes_orphan_asms(self, _sleep: object) -> None:
         orphan_asm = Asm.objects.create(hash="orphan-asm", data="jr $ra\nnop")
         used_asm = Asm.objects.create(hash="used-asm", data="jr $ra\nnop")
         self.create_assembly("used", asm=used_asm)
@@ -168,7 +206,24 @@ class HousekeepingTests(TestCase):
         self.assertFalse(Asm.objects.filter(pk=orphan_asm.pk).exists())
         self.assertTrue(Asm.objects.filter(pk=used_asm.pk).exists())
 
-    def test_orphan_asm_cleanup_follows_orphan_assembly_cleanup(self) -> None:
+    def test_keeps_asm_referenced_between_orphan_checks(self) -> None:
+        pending_asm = Asm.objects.create(hash="pending-asm", data="jr $ra\nnop")
+
+        def create_referencing_assembly(_delay: float) -> None:
+            self.create_assembly("pending", asm=pending_asm)
+
+        with patch(
+            "coreapp.housekeeping.time.sleep", side_effect=create_referencing_assembly
+        ):
+            deleted = remove_orphan_asms(self.cutoff_datetime)
+
+        self.assertEqual(deleted, 0)
+        self.assertTrue(Asm.objects.filter(pk=pending_asm.pk).exists())
+
+    @patch("coreapp.housekeeping.time.sleep", return_value=None)
+    def test_orphan_asm_cleanup_follows_orphan_assembly_cleanup(
+        self, _sleep: object
+    ) -> None:
         orphan_assembly = self.create_assembly("orphan")
         source_asm = orphan_assembly.source_asm
         assert source_asm is not None
