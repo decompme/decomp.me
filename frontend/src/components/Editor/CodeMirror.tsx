@@ -6,8 +6,15 @@ import {
     useRef,
 } from "react";
 
-import { type Extension, EditorState } from "@codemirror/state";
-import { EditorView, placeholder } from "@codemirror/view";
+import { addCursorAbove, addCursorBelow } from "@codemirror/commands";
+import { type Extension, EditorState, Prec } from "@codemirror/state";
+import {
+    EditorView,
+    placeholder,
+    keymap,
+    drawSelection,
+    rectangularSelection,
+} from "@codemirror/view";
 import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -136,6 +143,18 @@ export default function CodeMirror({
 
                             return null;
                         },
+                    ),
+                    EditorState.allowMultipleSelections.of(true),
+                    drawSelection(),
+                    rectangularSelection(),
+                    Prec.highest(
+                        keymap.of([
+                            { key: "Ctrl-Shift-ArrowUp", run: addCursorAbove },
+                            {
+                                key: "Ctrl-Shift-ArrowDown",
+                                run: addCursorBelow,
+                            },
+                        ]),
                     ),
 
                     extensionsRef.current,
