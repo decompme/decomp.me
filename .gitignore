@@ -25,3 +25,6 @@ docker.prod.env
 send_update.py
 update.sh
 .venv/
+nginx/production/runtime/*.conf
+!nginx/production/runtime/*.conf.example
+.deploy.env

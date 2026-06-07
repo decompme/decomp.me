@@ -124,16 +124,19 @@ jobs:
           echo 'CONN_MAX_AGE=60' >> docker.prod.env
           echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
-          echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
 
       - name: Comment out SSL server configuration from nginx
         run: |
-          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production/default.conf
 
       - name: Bring up postgres and nginx containers
         run: |
+          cp ./nginx/production/runtime/geo.conf.example      ./nginx/production/runtime/geo.conf
+          cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
+          docker compose -f docker-compose.prod.yaml build nginx
           docker compose -f docker-compose.prod.yaml up -d postgres nginx
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
           docker compose logs nginx | grep "ready for start up"
@@ -141,20 +144,20 @@ jobs:
 
       - name: Build and bring up up backend container
         run: |
-          docker compose -f docker-compose.prod.yaml build backend
-          docker compose -f docker-compose.prod.yaml up -d backend
+          docker compose -f docker-compose.prod.yaml build backend-blue
+          docker compose -f docker-compose.prod.yaml up -d backend-blue
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Build and bring up up frontend container
         run: |
-          docker compose -f docker-compose.prod.yaml build frontend
-          docker compose -f docker-compose.prod.yaml up -d frontend
+          docker compose -f docker-compose.prod.yaml build frontend-blue
+          docker compose -f docker-compose.prod.yaml up -d frontend-blue
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Sanity check the endpoints
         run: |
-          curl --silent http://localhost:8080/ | head -c 256
-          curl --silent http://localhost:8000/api/ | jq
+          curl --silent http://localhost/healthz | jq
+          curl --silent http://localhost/api/healthz | jq
 
       - name: Shut everything down
         run: |

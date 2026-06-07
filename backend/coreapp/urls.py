@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
     compiler,
+    health,
     library,
     platform,
     preset,
@@ -22,6 +23,7 @@ router.register(r"project", project.ProjectViewSet)
 urlpatterns = [
     *router.urls,
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
+    path("healthz", health.HealthCheck.as_view(), name="healthz"),
     path(
         "compiler/<str:platform>/<str:compiler>",
         compiler.SingleCompilerDetail.as_view(),
