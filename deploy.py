@@ -8,7 +8,7 @@ import sys
 import time
 from pathlib import Path
 
-DEPLOY_ENV = Path(".deploy-env")
+DEPLOY_ENV = Path(".deploy.env")
 UPSTREAM_CONF = Path("nginx/production/runtime/upstream.conf")
 
 DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
