@@ -1,50 +1,74 @@
-services:
-  backend:
-    build:
-      context: backend
-      target: prod
-    cap_drop:
-      - all
-    cap_add:
-      - setuid
-      - setgid
-      - setfcap
-    env_file:
-      - docker.prod.env
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
-    security_opt:
-      - apparmor=unconfined
-      - seccomp=unconfined
-    volumes:
-      # persist compilers + libraries
-      - ./backend/compilers:/backend/compilers
-      - ./backend/libraries:/backend/libraries
-      # static files for django /admin control panel
-      - ./backend/static:/backend/static
-    tmpfs:
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
-    networks:
-      - decompme
-    # uncommment for local testing
-    # entrypoint: tail -f /dev/null
+x-backend-base: &backend-base
+  build:
+    context: backend
+    target: prod
+  cap_drop:
+    - all
+  cap_add:
+    - setuid
+    - setgid
+    - setfcap
+  env_file:
+    - docker.prod.env
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/stats"]
+    interval: 15s
+    timeout: 3s
+    retries: 10
+    start_period: 20s
+  security_opt:
+    - apparmor=unconfined
+    - seccomp=unconfined
+  volumes:
+    # persist compilers + libraries
+    - ./backend/compilers:/backend/compilers
+    - ./backend/libraries:/backend/libraries
+    # static files for django /admin control panel
+    - ./backend/static:/backend/static
+  tmpfs:
+    # Use a separate tmpfs to prevent a rogue jailed process
+    # from filling /tmp on the parent container
+    - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+  networks:
+    - decompme
+x-frontend-base: &frontend-base
+  build:
+    context: frontend
+    target: prod
+  env_file:
+    - docker.prod.env
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+    interval: 15s
+    timeout: 3s
+    retries: 10
+    start_period: 20s
+  networks:
+    - decompme
 
-  frontend:
-    build:
-      context: frontend
-      target: prod
-    env_file:
-      - docker.prod.env
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-    networks:
-      - decompme
+services:
+  backend-blue:
+    <<: *backend-base
+    image: ghcr.io/decompme/decompme-backend:${BLUE_TAG:-latest}
+  frontend-blue:
+    <<: *frontend-base
+    image: ghcr.io/decompme/decompme-frontend:${BLUE_TAG:-latest}
+    environment:
+      INTERNAL_API_BASE: http://backend-blue:8000/api
+
+  backend-green:
+    <<: *backend-base
+    image: ghcr.io/decompme/decompme-backend:${GREEN_TAG:-latest}
+  frontend-green:
+    <<: *frontend-base
+    image: ghcr.io/decompme/decompme-frontend:${GREEN_TAG:-latest}
+    environment:
+      INTERNAL_API_BASE: http://backend-green:8000/api
 
   nginx:
+    image: ghcr.io/decompme/decompme-nginx:${NGINX_TAG:-latest}
     build:
       context: nginx
     ports:
@@ -53,8 +77,7 @@ services:
     restart: unless-stopped
     volumes:
       # repo files
-      - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/geo.conf:/etc/nginx/conf.d/000_geo.conf:ro
+      - ./nginx/production/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
       # certbot
       - ./certbot:/var/www/certbot
@@ -66,8 +89,8 @@ services:
       # TODO: mount static + public files from frontend
     # BOOTSTRAP: allow nginx to start before backend/frontend containers are up
     #extra_hosts:
-    #  - "backend=172.17.0.1"   # docker0 bridge
-    #  - "frontend=172.17.0.1"  # docker0 bridge
+    #  - "backend-blue=172.17.0.1"   # docker0 bridge
+    #  - "frontend-blue=172.17.0.1"  # docker0 bridge
     networks:
       - decompme
 

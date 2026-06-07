@@ -35,6 +35,12 @@ services:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+    # healthcheck:
+    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/stats"]
+    #   interval: 15s
+    #   timeout: 3s
+    #   retries: 10
+    #   start_period: 20s
   frontend:
     build:
       context: frontend
@@ -53,8 +59,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/development.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
+      - ./nginx/development/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/down.html:ro
       - ./backend/media:/media
       - ./backend/static:/var/www/static
