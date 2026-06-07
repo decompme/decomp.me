@@ -18,11 +18,11 @@ BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
 ACTIVE_SLOT = "ACTIVE_SLOT"
-SLOT_COLOURS = {
+SLOT_COLORS = {
     "blue": "\033[34m",
     "green": "\033[32m",
 }
-RESET_COLOUR = "\033[0m"
+RESET_COLOR = "\033[0m"
 
 
 def run(cmd, *, env=None, check=True, capture=False, quiet=False):
@@ -80,9 +80,9 @@ def other_slot(slot):
 
 
 def colour_slot(slot):
-    if not sys.stdout.isatty() or slot not in SLOT_COLOURS:
+    if not sys.stdout.isatty() or slot not in SLOT_COLORS:
         return slot
-    return f"{SLOT_COLOURS[slot]}{slot}{RESET_COLOUR}"
+    return f"{SLOT_COLORS[slot]}{slot}{RESET_COLOR}"
 
 
 def validate_tag(tag):
@@ -229,8 +229,8 @@ def nginx_fetch(url, env):
 
 def smoke_test(slot, env):
     print(f"Smoke testing {slot} from nginx...")
-    nginx_fetch(f"http://backend-{slot}:8000/api/stats", env)
-    nginx_fetch(f"http://frontend-{slot}:8080/", env)
+    nginx_fetch(f"http://backend-{slot}:8000/api/healthz", env)
+    nginx_fetch(f"http://frontend-{slot}:8080/healthz", env)
 
 
 def nginx_test_and_reload(env):

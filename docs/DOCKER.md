@@ -9,39 +9,37 @@ You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose]
 
 ## Production
 
-0. Create a `docker.prod.env` and set the necessary configuration options (see .env for inspiration).
+Production uses `docker-compose.prod.yaml` with blue/green backend and frontend slots. See [PRODUCTION.md](PRODUCTION.md) for the deployment runbook.
+
+Create a `docker.prod.env` and set the necessary configuration options.
 
 ```bash
 nano docker.prod.env
 ```
 
-1. Bring up postgres & nginx containers
+Bring up the shared production services.
 
 ```bash
-docker compose -f docker-compose.prod.yaml up -d postgres nginx
+docker compose -f docker-compose.prod.yaml up -d postgres nginx certbot
 ```
 
-2. Build and bring up backend
+Deploy an app image tag with the blue/green deploy script.
 
 ```bash
-docker compose -f docker-compose.prod.yaml build backend
-docker compose -f docker-compose.prod.yaml up -d backend
+python3 deploy.py deploy githash
 ```
 
-3. Build and bring up frontend (relies on backend for SSR)
+Use the migration flow for deploys that require database maintenance.
 
 ```bash
-# NOTE: this can be overridden if needed, i.e. --build-arg INTERNAL_API_BASE=https://decomp.me/api
-docker compose -f docker-compose.prod.yaml build frontend
-docker compose -f docker-compose.prod.yaml up -d frontend
+python3 deploy.py migrate githash
 ```
-
 
 ### SSL Certificates Bootstrap
 
 In order to bring up nginx we need to have SSL certificates. In order to do that we need to get nginx to run only on port 80, then run certbot to fetch the certs.
 
-1. Modify the `nginx/production.conf` to comment out the *whole* `server { listen 443 ssl http2; ... }` block.
+1. Modify `nginx/production/default.conf` to comment out the whole HTTPS server block between `{{HTTPS_SERVER_BLOCK_START}}` and `{{HTTPS_SERVER_BLOCK_END}}`.
 
 2. Bring up nginx
 

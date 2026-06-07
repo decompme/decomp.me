@@ -12,7 +12,7 @@ x-backend-base: &backend-base
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/stats"]
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
     interval: 15s
     timeout: 3s
     retries: 10
@@ -40,7 +40,7 @@ x-frontend-base: &frontend-base
     - docker.prod.env
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
     interval: 15s
     timeout: 3s
     retries: 10

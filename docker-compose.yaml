@@ -35,12 +35,8 @@ services:
       # Use a separate tmpfs to prevent a rogue jailed process
       # from filling /tmp on the parent container
       - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
-    # healthcheck:
-    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/stats"]
-    #   interval: 15s
-    #   timeout: 3s
-    #   retries: 10
-    #   start_period: 20s
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
   frontend:
     build:
       context: frontend
