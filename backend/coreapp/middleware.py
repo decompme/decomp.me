@@ -66,7 +66,11 @@ def is_public_get_request(req: Request) -> bool:
 
 
 def is_ephemeral_profile_request(req: Request) -> bool:
-    return req.method in ("GET", "HEAD") and req.path == "/api/user" and "sessionid" not in req.COOKIES
+    return (
+        req.method in ("GET", "HEAD")
+        and req.path == "/api/user"
+        and "sessionid" not in req.COOKIES
+    )
 
 
 def set_user_profile(
