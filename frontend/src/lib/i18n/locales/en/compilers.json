@@ -3,6 +3,8 @@
 
     "agbccpp": "agbccpp",
 
+    "gcc2.96": "gcc2.96",
+
     "armcc_40_771": "4.0 build 771",
     "armcc_40_821": "4.0 build 821",
     "armcc_40_865": "4.0 build 865",
