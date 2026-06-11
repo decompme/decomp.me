@@ -4,6 +4,7 @@ common:
 gba:
   - agbcc
   - agbccpp
+  - gcc2.96
 
 gc_wii:
   - mwcc_233_144

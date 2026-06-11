@@ -295,6 +295,12 @@ OLD_AGBCC = GCCCompiler(
     base_compiler=AGBCC,
 )
 
+GCC_296 = GCCCompiler(
+    id = "gcc2.96",
+    platform=GBA,
+    cc='"${COMPILER_DIR}"/usr/local/bin/arm-elf-gcc $COMPILER_FLAGS -S -o - "$INPUT" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"'
+)
+
 AGBCC_ARM = GCCCompiler(
     id="agbcc_arm",
     platform=GBA,
@@ -1686,6 +1692,7 @@ _all_compilers: list[Compiler] = [
     OLD_AGBCC,
     AGBCC_ARM,
     AGBCCPP,
+    GCC_296,
     # N3DS
     ARMCC_40_771,
     ARMCC_40_821,
