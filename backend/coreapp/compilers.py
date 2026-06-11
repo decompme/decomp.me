@@ -296,9 +296,9 @@ OLD_AGBCC = GCCCompiler(
 )
 
 GCC_296 = GCCCompiler(
-    id = "gcc2.96",
+    id="gcc2.96",
     platform=GBA,
-    cc='"${COMPILER_DIR}"/usr/local/bin/arm-elf-gcc $COMPILER_FLAGS -S -o - "$INPUT" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"'
+    cc='"${COMPILER_DIR}"/usr/local/bin/arm-elf-gcc $COMPILER_FLAGS -S -o - "$INPUT" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
 AGBCC_ARM = GCCCompiler(
