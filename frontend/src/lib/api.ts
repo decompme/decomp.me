@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useRouter } from "@/lib/navigation";
 
@@ -172,6 +172,28 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     return isScratchSaved(scratch, saved);
 }
 
+function getScratchCompileInputKey(scratch: Scratch | null): string {
+    return JSON.stringify({
+        compiler: scratch?.compiler,
+        compiler_flags: scratch?.compiler_flags,
+        diff_flags: scratch?.diff_flags,
+        diff_label: scratch?.diff_label,
+        source_code: scratch?.source_code,
+        context: scratch?.context,
+        libraries: scratch?.libraries,
+    });
+}
+
+type CompilationState = {
+    compilation: Compilation | null;
+    inputKey: string | null;
+};
+
+type CompileRequest = {
+    promise: Promise<void>;
+    runAgain: boolean;
+};
+
 export function useCompilation(
     scratch: Scratch | null,
     autoRecompile: boolean,
@@ -185,58 +207,91 @@ export function useCompilation(
     isCompilationOld: boolean;
 } {
     const savedScratch = useSavedScratch(scratch);
-    const [compileRequestPromise, setCompileRequestPromise] =
-        useState<Promise<void>>(null);
-    const [compilation, setCompilation] = useState<Compilation>(initial);
+    const [isCompiling, setIsCompiling] = useState(false);
+    const compileInputKey = useMemo(
+        () => getScratchCompileInputKey(scratch),
+        [scratch],
+    );
+    const [compilationState, setCompilationState] = useState<CompilationState>(
+        () => ({
+            compilation: initial,
+            inputKey: initial ? compileInputKey : null,
+        }),
+    );
+    const compilation = compilationState.compilation;
     const [isCompilationOld, setIsCompilationOld] = useState(false);
+    const [queuedCompile, setQueuedCompile] = useState(false);
     const sUrl = scratchUrl(scratch);
     const hasInitialized = useRef(false);
+    const compileRequestRef = useRef<CompileRequest | null>(null);
 
-    const compile = useCallback(() => {
-        if (compileRequestPromise) return compileRequestPromise;
-
-        if (!scratch)
-            return Promise.reject(
-                new Error("Cannot compile without a scratch"),
-            );
-
-        if (!scratch.compiler)
-            return Promise.reject(
-                new Error("Cannot compile before a compiler is set"),
-            );
-
-        const promise = post(
-            `${scratchUrl(scratch)}/compile`,
-            buildScratchCompileRequest(savedScratch, scratch),
-        )
-            .then((compilation: Compilation) => {
-                return compilation;
-            })
-            .then((compilation: Compilation) => {
-                setCompilation(compilation);
-            })
-            .finally(() => {
-                setCompileRequestPromise(null);
-                setIsCompilationOld(false);
-            })
-            .catch((error) => {
-                if (error instanceof ResponseError) {
-                    setCompilation({
-                        compiler_output: error.json?.detail,
-                        diff_output: null,
-                        success: false,
-                        left_object: null,
-                        right_object: null,
-                    });
-                } else {
-                    return Promise.reject(error);
+    const compile = useCallback(
+        (queueIfRunning = false) => {
+            if (compileRequestRef.current) {
+                if (queueIfRunning) {
+                    compileRequestRef.current.runAgain = true;
                 }
-            });
+                return compileRequestRef.current.promise;
+            }
 
-        setCompileRequestPromise(promise);
+            if (!scratch)
+                return Promise.reject(
+                    new Error("Cannot compile without a scratch"),
+                );
 
-        return promise;
-    }, [compileRequestPromise, savedScratch, scratch]);
+            if (!scratch.compiler)
+                return Promise.reject(
+                    new Error("Cannot compile before a compiler is set"),
+                );
+
+            const requestInputKey = compileInputKey;
+            const promise = post(
+                `${scratchUrl(scratch)}/compile`,
+                buildScratchCompileRequest(savedScratch, scratch),
+            )
+                .then((compilation: Compilation) => {
+                    return compilation;
+                })
+                .then((compilation: Compilation) => {
+                    setCompilationState({
+                        compilation,
+                        inputKey: requestInputKey,
+                    });
+                })
+                .finally(() => {
+                    const runAgain = compileRequestRef.current?.runAgain;
+                    compileRequestRef.current = null;
+                    setIsCompiling(false);
+                    if (runAgain) {
+                        setQueuedCompile(true);
+                    } else {
+                        setIsCompilationOld(false);
+                    }
+                })
+                .catch((error) => {
+                    if (error instanceof ResponseError) {
+                        setCompilationState({
+                            compilation: {
+                                compiler_output: error.json?.detail,
+                                diff_output: null,
+                                success: false,
+                                left_object: null,
+                                right_object: null,
+                            },
+                            inputKey: requestInputKey,
+                        });
+                    } else {
+                        return Promise.reject(error);
+                    }
+                });
+
+            compileRequestRef.current = { promise, runAgain: false };
+            setIsCompiling(true);
+
+            return promise;
+        },
+        [compileInputKey, savedScratch, scratch],
+    );
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl);
@@ -253,42 +308,48 @@ export function useCompilation(
     });
 
     useEffect(() => {
+        if (isCompiling || !queuedCompile) return;
+
+        setQueuedCompile(false);
+        compile();
+    }, [compile, isCompiling, queuedCompile]);
+
+    useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
             if (!compilation) {
                 compile();
             }
         } else {
+            if (compileInputKey === compilationState.inputKey) {
+                return;
+            }
+
             setIsCompilationOld(true);
 
             if (autoRecompile) {
                 if (scratch && scratch.compiler !== "") {
-                    debouncedCompile();
+                    debouncedCompile(true);
                 } else {
-                    setCompilation(null);
+                    setCompilationState({
+                        compilation: null,
+                        inputKey: compileInputKey,
+                    });
                 }
             }
         }
     }, [
         // eslint-disable-line react-hooks/exhaustive-deps
-        debouncedCompile,
         autoRecompile,
-
-        // fields passed to compilations
-        scratch.compiler,
-        scratch.compiler_flags,
-        scratch.diff_flags,
-        scratch.diff_label,
-        scratch.source_code,
-        scratch.context,
-        scratch.libraries,
+        compileInputKey,
+        compilationState.inputKey,
     ]);
 
     return {
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: !!compileRequestPromise,
+        isCompiling,
         isCompilationOld,
     };
 }
