@@ -172,6 +172,28 @@ export function useIsScratchSaved(scratch: Scratch, enabled = true): boolean {
     return isScratchSaved(scratch, saved);
 }
 
+function getScratchCompileInputKey(scratch: Scratch | null): string {
+    return JSON.stringify({
+        compiler: scratch?.compiler,
+        compiler_flags: scratch?.compiler_flags,
+        diff_flags: scratch?.diff_flags,
+        diff_label: scratch?.diff_label,
+        source_code: scratch?.source_code,
+        context: scratch?.context,
+        libraries: scratch?.libraries,
+    });
+}
+
+type CompilationState = {
+    compilation: Compilation | null;
+    inputKey: string | null;
+};
+
+type CompileRequest = {
+    promise: Promise<void>;
+    runAgain: boolean;
+};
+
 export function useCompilation(
     scratch: Scratch | null,
     autoRecompile: boolean,
@@ -185,46 +207,31 @@ export function useCompilation(
     isCompilationOld: boolean;
 } {
     const savedScratch = useSavedScratch(scratch);
-    const [compileRequestPromise, setCompileRequestPromise] =
-        useState<Promise<void>>(null);
-    const [compilation, setCompilation] = useState<Compilation>(initial);
+    const [isCompiling, setIsCompiling] = useState(false);
+    const compileInputKey = useMemo(
+        () => getScratchCompileInputKey(scratch),
+        [scratch],
+    );
+    const [compilationState, setCompilationState] = useState<CompilationState>(
+        () => ({
+            compilation: initial,
+            inputKey: initial ? compileInputKey : null,
+        }),
+    );
+    const compilation = compilationState.compilation;
     const [isCompilationOld, setIsCompilationOld] = useState(false);
+    const [queuedCompile, setQueuedCompile] = useState(false);
     const sUrl = scratchUrl(scratch);
     const hasInitialized = useRef(false);
-    const compileRequestPromiseRef = useRef<Promise<void> | null>(null);
-    const pendingCompileRef = useRef(false);
-    const compileInputKey = useMemo(
-        () =>
-            JSON.stringify({
-                compiler: scratch?.compiler,
-                compiler_flags: scratch?.compiler_flags,
-                diff_flags: scratch?.diff_flags,
-                diff_label: scratch?.diff_label,
-                source_code: scratch?.source_code,
-                context: scratch?.context,
-                libraries: scratch?.libraries,
-            }),
-        [
-            scratch?.compiler,
-            scratch?.compiler_flags,
-            scratch?.diff_flags,
-            scratch?.diff_label,
-            scratch?.source_code,
-            scratch?.context,
-            scratch?.libraries,
-        ],
-    );
-    const compiledInputKeyRef = useRef<string | null>(
-        initial ? compileInputKey : null,
-    );
+    const compileRequestRef = useRef<CompileRequest | null>(null);
 
     const compile = useCallback(
         (queueIfRunning = false) => {
-            if (compileRequestPromiseRef.current) {
+            if (compileRequestRef.current) {
                 if (queueIfRunning) {
-                    pendingCompileRef.current = true;
+                    compileRequestRef.current.runAgain = true;
                 }
-                return compileRequestPromiseRef.current;
+                return compileRequestRef.current.promise;
             }
 
             if (!scratch)
@@ -246,33 +253,40 @@ export function useCompilation(
                     return compilation;
                 })
                 .then((compilation: Compilation) => {
-                    compiledInputKeyRef.current = requestInputKey;
-                    setCompilation(compilation);
+                    setCompilationState({
+                        compilation,
+                        inputKey: requestInputKey,
+                    });
                 })
                 .finally(() => {
-                    compileRequestPromiseRef.current = null;
-                    setCompileRequestPromise(null);
-                    if (!pendingCompileRef.current) {
+                    const runAgain = compileRequestRef.current?.runAgain;
+                    compileRequestRef.current = null;
+                    setIsCompiling(false);
+                    if (runAgain) {
+                        setQueuedCompile(true);
+                    } else {
                         setIsCompilationOld(false);
                     }
                 })
                 .catch((error) => {
                     if (error instanceof ResponseError) {
-                        compiledInputKeyRef.current = requestInputKey;
-                        setCompilation({
-                            compiler_output: error.json?.detail,
-                            diff_output: null,
-                            success: false,
-                            left_object: null,
-                            right_object: null,
+                        setCompilationState({
+                            compilation: {
+                                compiler_output: error.json?.detail,
+                                diff_output: null,
+                                success: false,
+                                left_object: null,
+                                right_object: null,
+                            },
+                            inputKey: requestInputKey,
                         });
                     } else {
                         return Promise.reject(error);
                     }
                 });
 
-            compileRequestPromiseRef.current = promise;
-            setCompileRequestPromise(promise);
+            compileRequestRef.current = { promise, runAgain: false };
+            setIsCompiling(true);
 
             return promise;
         },
@@ -294,11 +308,11 @@ export function useCompilation(
     });
 
     useEffect(() => {
-        if (compileRequestPromise || !pendingCompileRef.current) return;
+        if (isCompiling || !queuedCompile) return;
 
-        pendingCompileRef.current = false;
+        setQueuedCompile(false);
         compile();
-    }, [compile, compileRequestPromise]);
+    }, [compile, isCompiling, queuedCompile]);
 
     useEffect(() => {
         if (!hasInitialized.current) {
@@ -307,7 +321,7 @@ export function useCompilation(
                 compile();
             }
         } else {
-            if (compileInputKey === compiledInputKeyRef.current) {
+            if (compileInputKey === compilationState.inputKey) {
                 return;
             }
 
@@ -317,7 +331,10 @@ export function useCompilation(
                 if (scratch && scratch.compiler !== "") {
                     debouncedCompile(true);
                 } else {
-                    setCompilation(null);
+                    setCompilationState({
+                        compilation: null,
+                        inputKey: compileInputKey,
+                    });
                 }
             }
         }
@@ -325,13 +342,14 @@ export function useCompilation(
         // eslint-disable-line react-hooks/exhaustive-deps
         autoRecompile,
         compileInputKey,
+        compilationState.inputKey,
     ]);
 
     return {
         compilation,
         compile,
         debouncedCompile,
-        isCompiling: !!compileRequestPromise,
+        isCompiling,
         isCompilationOld,
     };
 }
