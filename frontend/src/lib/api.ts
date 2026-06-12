@@ -191,9 +191,16 @@ export function useCompilation(
     const [isCompilationOld, setIsCompilationOld] = useState(false);
     const sUrl = scratchUrl(scratch);
     const hasInitialized = useRef(false);
+    const compileRequestPromiseRef = useRef<Promise<void> | null>(null);
+    const pendingCompileRef = useRef(false);
 
-    const compile = useCallback(() => {
-        if (compileRequestPromise) return compileRequestPromise;
+    const compile = useCallback((queueIfRunning = false) => {
+        if (compileRequestPromiseRef.current) {
+            if (queueIfRunning) {
+                pendingCompileRef.current = true;
+            }
+            return compileRequestPromiseRef.current;
+        }
 
         if (!scratch)
             return Promise.reject(
@@ -216,8 +223,11 @@ export function useCompilation(
                 setCompilation(compilation);
             })
             .finally(() => {
+                compileRequestPromiseRef.current = null;
                 setCompileRequestPromise(null);
-                setIsCompilationOld(false);
+                if (!pendingCompileRef.current) {
+                    setIsCompilationOld(false);
+                }
             })
             .catch((error) => {
                 if (error instanceof ResponseError) {
@@ -233,10 +243,11 @@ export function useCompilation(
                 }
             });
 
+        compileRequestPromiseRef.current = promise;
         setCompileRequestPromise(promise);
 
         return promise;
-    }, [compileRequestPromise, savedScratch, scratch]);
+    }, [savedScratch, scratch]);
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl);
@@ -253,6 +264,13 @@ export function useCompilation(
     });
 
     useEffect(() => {
+        if (compileRequestPromise || !pendingCompileRef.current) return;
+
+        pendingCompileRef.current = false;
+        compile();
+    }, [compile, compileRequestPromise]);
+
+    useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
             if (!compilation) {
@@ -263,7 +281,7 @@ export function useCompilation(
 
             if (autoRecompile) {
                 if (scratch && scratch.compiler !== "") {
-                    debouncedCompile();
+                    debouncedCompile(true);
                 } else {
                     setCompilation(null);
                 }
