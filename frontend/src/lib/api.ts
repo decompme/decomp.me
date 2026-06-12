@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useRouter } from "@/lib/navigation";
 
@@ -193,6 +193,30 @@ export function useCompilation(
     const hasInitialized = useRef(false);
     const compileRequestPromiseRef = useRef<Promise<void> | null>(null);
     const pendingCompileRef = useRef(false);
+    const compileInputKey = useMemo(
+        () =>
+            JSON.stringify({
+                compiler: scratch?.compiler,
+                compiler_flags: scratch?.compiler_flags,
+                diff_flags: scratch?.diff_flags,
+                diff_label: scratch?.diff_label,
+                source_code: scratch?.source_code,
+                context: scratch?.context,
+                libraries: scratch?.libraries,
+            }),
+        [
+            scratch?.compiler,
+            scratch?.compiler_flags,
+            scratch?.diff_flags,
+            scratch?.diff_label,
+            scratch?.source_code,
+            scratch?.context,
+            scratch?.libraries,
+        ],
+    );
+    const compiledInputKeyRef = useRef<string | null>(
+        initial ? compileInputKey : null,
+    );
 
     const compile = useCallback(
         (queueIfRunning = false) => {
@@ -213,6 +237,7 @@ export function useCompilation(
                     new Error("Cannot compile before a compiler is set"),
                 );
 
+            const requestInputKey = compileInputKey;
             const promise = post(
                 `${scratchUrl(scratch)}/compile`,
                 buildScratchCompileRequest(savedScratch, scratch),
@@ -221,6 +246,7 @@ export function useCompilation(
                     return compilation;
                 })
                 .then((compilation: Compilation) => {
+                    compiledInputKeyRef.current = requestInputKey;
                     setCompilation(compilation);
                 })
                 .finally(() => {
@@ -232,6 +258,7 @@ export function useCompilation(
                 })
                 .catch((error) => {
                     if (error instanceof ResponseError) {
+                        compiledInputKeyRef.current = requestInputKey;
                         setCompilation({
                             compiler_output: error.json?.detail,
                             diff_output: null,
@@ -249,7 +276,7 @@ export function useCompilation(
 
             return promise;
         },
-        [savedScratch, scratch],
+        [compileInputKey, savedScratch, scratch],
     );
 
     // If the scratch we're looking at changes, we need to recompile
@@ -280,6 +307,10 @@ export function useCompilation(
                 compile();
             }
         } else {
+            if (compileInputKey === compiledInputKeyRef.current) {
+                return;
+            }
+
             setIsCompilationOld(true);
 
             if (autoRecompile) {
@@ -293,15 +324,7 @@ export function useCompilation(
     }, [
         // eslint-disable-line react-hooks/exhaustive-deps
         autoRecompile,
-
-        // fields passed to compilations
-        scratch.compiler,
-        scratch.compiler_flags,
-        scratch.diff_flags,
-        scratch.diff_label,
-        scratch.source_code,
-        scratch.context,
-        scratch.libraries,
+        compileInputKey,
     ]);
 
     return {
