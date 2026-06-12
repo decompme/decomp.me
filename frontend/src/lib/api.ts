@@ -271,7 +271,6 @@ export function useCompilation(
         }
     }, [
         // eslint-disable-line react-hooks/exhaustive-deps
-        debouncedCompile,
         autoRecompile,
 
         // fields passed to compilations
