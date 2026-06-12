@@ -194,60 +194,63 @@ export function useCompilation(
     const compileRequestPromiseRef = useRef<Promise<void> | null>(null);
     const pendingCompileRef = useRef(false);
 
-    const compile = useCallback((queueIfRunning = false) => {
-        if (compileRequestPromiseRef.current) {
-            if (queueIfRunning) {
-                pendingCompileRef.current = true;
+    const compile = useCallback(
+        (queueIfRunning = false) => {
+            if (compileRequestPromiseRef.current) {
+                if (queueIfRunning) {
+                    pendingCompileRef.current = true;
+                }
+                return compileRequestPromiseRef.current;
             }
-            return compileRequestPromiseRef.current;
-        }
 
-        if (!scratch)
-            return Promise.reject(
-                new Error("Cannot compile without a scratch"),
-            );
+            if (!scratch)
+                return Promise.reject(
+                    new Error("Cannot compile without a scratch"),
+                );
 
-        if (!scratch.compiler)
-            return Promise.reject(
-                new Error("Cannot compile before a compiler is set"),
-            );
+            if (!scratch.compiler)
+                return Promise.reject(
+                    new Error("Cannot compile before a compiler is set"),
+                );
 
-        const promise = post(
-            `${scratchUrl(scratch)}/compile`,
-            buildScratchCompileRequest(savedScratch, scratch),
-        )
-            .then((compilation: Compilation) => {
-                return compilation;
-            })
-            .then((compilation: Compilation) => {
-                setCompilation(compilation);
-            })
-            .finally(() => {
-                compileRequestPromiseRef.current = null;
-                setCompileRequestPromise(null);
-                if (!pendingCompileRef.current) {
-                    setIsCompilationOld(false);
-                }
-            })
-            .catch((error) => {
-                if (error instanceof ResponseError) {
-                    setCompilation({
-                        compiler_output: error.json?.detail,
-                        diff_output: null,
-                        success: false,
-                        left_object: null,
-                        right_object: null,
-                    });
-                } else {
-                    return Promise.reject(error);
-                }
-            });
+            const promise = post(
+                `${scratchUrl(scratch)}/compile`,
+                buildScratchCompileRequest(savedScratch, scratch),
+            )
+                .then((compilation: Compilation) => {
+                    return compilation;
+                })
+                .then((compilation: Compilation) => {
+                    setCompilation(compilation);
+                })
+                .finally(() => {
+                    compileRequestPromiseRef.current = null;
+                    setCompileRequestPromise(null);
+                    if (!pendingCompileRef.current) {
+                        setIsCompilationOld(false);
+                    }
+                })
+                .catch((error) => {
+                    if (error instanceof ResponseError) {
+                        setCompilation({
+                            compiler_output: error.json?.detail,
+                            diff_output: null,
+                            success: false,
+                            left_object: null,
+                            right_object: null,
+                        });
+                    } else {
+                        return Promise.reject(error);
+                    }
+                });
 
-        compileRequestPromiseRef.current = promise;
-        setCompileRequestPromise(promise);
+            compileRequestPromiseRef.current = promise;
+            setCompileRequestPromise(promise);
 
-        return promise;
-    }, [savedScratch, scratch]);
+            return promise;
+        },
+        [savedScratch, scratch],
+    );
 
     // If the scratch we're looking at changes, we need to recompile
     const [url, setUrl] = useState(sUrl);
