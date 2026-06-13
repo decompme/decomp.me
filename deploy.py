@@ -14,6 +14,7 @@ UPSTREAM_CONF = Path("nginx/production/runtime/upstream.conf")
 DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
+INFRA_SERVICES = ["postgres", "nginx", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
@@ -238,6 +239,14 @@ def nginx_test_and_reload(env):
     run([*DOCKER_COMPOSE, "exec", "-T", "nginx", "nginx", "-s", "reload"], env=env)
 
 
+def ensure_services(services, env):
+    run([*DOCKER_COMPOSE, "up", "-d", "--no-recreate", *services], env=env)
+
+
+def ensure_infra(env):
+    ensure_services(INFRA_SERVICES, env)
+
+
 def print_status(state, env):
     print("Deployment state:")
     active = state.get(ACTIVE_SLOT, "unknown")
@@ -292,6 +301,8 @@ def cmd_deploy(args):
 
     print(f"Deploying tag {args.tag} to {slot}")
 
+    ensure_infra(env)
+
     run([*DOCKER_COMPOSE, "pull", f"backend-{slot}", f"frontend-{slot}"], env=env)
     run(
         [
@@ -325,6 +336,32 @@ def cmd_deploy(args):
     print_status(state, env)
 
 
+def cmd_ensure(args):
+    state = read_env_file()
+    active = state.get(ACTIVE_SLOT, "blue")
+    if active not in SLOTS:
+        raise SystemExit("Cannot ensure services: ACTIVE_SLOT is missing or invalid")
+
+    env = compose_env(state)
+    services = [
+        *INFRA_SERVICES,
+        f"backend-{active}",
+        f"frontend-{active}",
+    ]
+
+    print(f"Ensuring shared services and active {active} slot are running.")
+    ensure_services(services, env)
+
+    wait_for_healthy("postgres", env)
+    wait_for_healthy("nginx", env)
+    wait_for_healthy("certbot", env)
+    wait_for_healthy(f"backend-{active}", env)
+    wait_for_healthy(f"frontend-{active}", env)
+
+    print()
+    print_status(state, env)
+
+
 def cmd_rollback(args):
     state = read_env_file()
     active = state.get(ACTIVE_SLOT)
@@ -337,6 +374,8 @@ def cmd_rollback(args):
     print(f"Rolling back from {active} to {slot}")
     print("No images will be pulled; rollback uses the already-running previous slot.")
     print()
+
+    ensure_infra(env)
 
     smoke_test(slot, env)
     switch_upstream(slot, env)
@@ -363,7 +402,9 @@ def cmd_migrate(args):
     print("This will stop app containers, run migrations, and restart on blue.")
     print()
 
-    run([*DOCKER_COMPOSE, "up", "-d", "postgres"], env=env)
+    run([*DOCKER_COMPOSE, "pull", "backend-blue", "frontend-blue"], env=env)
+
+    ensure_infra(env)
 
     run(
         [
@@ -377,8 +418,6 @@ def cmd_migrate(args):
         env=env,
         check=False,
     )
-
-    run([*DOCKER_COMPOSE, "pull", "backend-blue", "frontend-blue"], env=env)
 
     run(
         [
@@ -420,6 +459,9 @@ def main():
 
     status = sub.add_parser("status")
     status.set_defaults(func=cmd_status)
+
+    ensure = sub.add_parser("ensure")
+    ensure.set_defaults(func=cmd_ensure)
 
     rollback = sub.add_parser("rollback")
     rollback.set_defaults(func=cmd_rollback)
