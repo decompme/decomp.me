@@ -18,8 +18,10 @@ const getEnvBool = (key, fallback = false) => {
 
 const mediaUrl = new URL(process.env.MEDIA_URL ?? "http://localhost");
 const svgrLoader = path.join(__dirname, "loaders/svgr-webpack.js");
-const publicDynamicPageCache =
-    "public, s-maxage=300, stale-while-revalidate=3600";
+
+const publicDynamicPageCache = `public, s-maxage=${60 * 5}, stale-while-revalidate=${60 * 5}`;
+const publicImageCache = `public, max-age=${60 * 60 * 24}, stale-while-revalidate=${60 * 60 * 24}`;
+const publicCreditsPageCache = `public, s-maxage=${60 * 60}, stale-while-revalidate=${60 * 60 * 24}`;
 
 let app = {
     async redirects() {
@@ -69,7 +71,7 @@ let app = {
                 headers: [
                     {
                         key: "Cache-Control",
-                        value: "public, max-age=86400, stale-while-revalidate=86400",
+                        value: publicImageCache,
                     },
                 ],
             },
@@ -105,7 +107,7 @@ let app = {
                 headers: [
                     {
                         key: "Cache-Control",
-                        value: "public, s-maxage=3600, stale-while-revalidate=86400",
+                        value: publicCreditsPageCache,
                     },
                 ],
             },
