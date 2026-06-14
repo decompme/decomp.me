@@ -121,15 +121,31 @@
     &:focus {
         border-color: var(--accent);
     }
+
+    &::placeholder {
+        color: var(--g800);
+        opacity: 1;
+    }
 }
 
 .searchCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     min-width: 3.5rem;
+    height: 1.65rem;
+    padding: 0 0.45rem;
 
     font-family: var(--monospace);
     font-size: 0.75rem;
     color: var(--g1100);
-    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    background: var(--g200);
+    border: 1px solid var(--g400);
+    border-radius: 4px;
 }
 
 .searchPanelButton {

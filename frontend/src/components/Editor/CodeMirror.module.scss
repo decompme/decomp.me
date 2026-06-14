@@ -129,8 +129,10 @@
 
             outline: none !important;
 
+            &::placeholder,
             &::-webkit-input-placeholder {
-                color: var(--g700);
+                color: var(--g800);
+                opacity: 1;
             }
         }
 
@@ -152,8 +154,11 @@
     }
 
     :global(.cm-panel.cm-search) {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns:
+            minmax(10rem, 22rem) max-content max-content max-content
+            max-content max-content max-content max-content 1fr;
+        grid-auto-rows: 1.8rem;
         gap: 0.35rem;
         align-items: center;
         padding: 0.45rem 2.5rem 0.45rem 0.65rem;
@@ -162,28 +167,37 @@
         border-bottom: 1px solid var(--g400);
 
         br {
-            flex-basis: 100%;
-            width: 0;
-            height: 0;
-            margin: 0;
-            content: "";
+            display: none;
         }
 
         :global(.cm-textfield) {
-            flex: 1 1 14rem;
-            max-width: 22rem;
-            min-width: 10rem;
+            width: 100%;
             height: 1.8rem;
             margin: 0;
             padding: 0 0.55rem;
 
-            background: var(--g200);
-            border-color: var(--g500);
+            color: var(--g1600);
+            background: var(--g300);
+            border-color: var(--g700);
 
             &:focus {
-                border-color: var(--a800);
-                box-shadow: 0 0 0 1px var(--a800);
+                border-color: var(--accent);
             }
+        }
+
+        input[name="replace"] {
+            grid-row: 2;
+            grid-column: 1;
+        }
+
+        button[name="replace"] {
+            grid-row: 2;
+            grid-column: 2;
+        }
+
+        button[name="replaceAll"] {
+            grid-row: 2;
+            grid-column: 3;
         }
 
         :global(.cm-button),
@@ -243,7 +257,7 @@
             min-width: 10ch;
             padding: 0 0.45rem;
 
-            color: var(--g900);
+            color: var(--g1100);
             font-size: 0.75rem;
             font-variant-numeric: tabular-nums;
             background: var(--g200);
