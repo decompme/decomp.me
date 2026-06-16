@@ -43,6 +43,23 @@ def _check_assembly_cache(*args: str) -> tuple[Assembly | None, str]:
 
 class CompilerWrapper:
     @staticmethod
+    def get_compiler_command(compiler: Compiler, compiler_flags: str) -> str:
+        cc_cmd = compiler.cc
+
+        if (
+            isinstance(compiler, compilers.WatcomCompiler)
+            and compiler.language == Language.C
+            and any(flag in {"-0", "-1", "-2"} for flag in compiler_flags.split())
+        ):
+            cc_cmd = cc_cmd.replace("/wcc386.exe", "/wcc.exe")
+
+        # IDO hack to support -KPIC
+        if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
+            cc_cmd = cc_cmd.replace("-non_shared", "")
+
+        return cc_cmd
+
+    @staticmethod
     def filter_compiler_flags(compiler_flags: str) -> str:
         # Remove irrelevant flags that are part of the base compiler configs or
         # don't affect matching, but clutter the compiler settings field.
@@ -128,7 +145,7 @@ class CompilerWrapper:
                 f.write(code)
                 f.write("\n")
 
-            cc_cmd = compiler.cc
+            cc_cmd = CompilerWrapper.get_compiler_command(compiler, compiler_flags)
 
             # MWCC requires the file to exist for DWARF line numbers,
             # and requires the file contents for error messages
@@ -144,10 +161,6 @@ class CompilerWrapper:
                 with src_path.open("w") as f:
                     f.write(code)
                     f.write("\n")
-
-            # IDO hack to support -KPIC
-            if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
-                cc_cmd = cc_cmd.replace("-non_shared", "")
 
             if compiler.platform != platforms.DUMMY and not compiler.path.exists():
                 raise CompilationError(f"Compiler {compiler.id} is not installed")

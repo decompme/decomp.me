@@ -17,6 +17,7 @@ from coreapp.compilers import (
     MWCC_247_92,
     PBX_GCC3,
     WATCOM_105_C,
+    WATCOM_105_CPP,
     Compiler,
     DummyCompiler,
 )
@@ -220,6 +221,21 @@ nop
         self.assertGreater(
             len(result.elf_object), 0, "The compilation result should be non-null"
         )
+
+    def test_watcom_16_bit_codegen_uses_16_bit_compiler(self) -> None:
+        for flag in ("-0", "-1", "-2"):
+            with self.subTest(flag=flag):
+                cc_cmd = CompilerWrapper.get_compiler_command(WATCOM_105_C, flag)
+                self.assertIn("/wcc.exe", cc_cmd)
+                self.assertNotIn("/wcc386.exe", cc_cmd)
+
+    def test_watcom_32_bit_codegen_uses_386_compiler(self) -> None:
+        cc_cmd = CompilerWrapper.get_compiler_command(WATCOM_105_C, "-3r")
+        self.assertIn("/wcc386.exe", cc_cmd)
+
+    def test_watcom_cpp_keeps_386_compiler(self) -> None:
+        cc_cmd = CompilerWrapper.get_compiler_command(WATCOM_105_CPP, "-2")
+        self.assertIn("/wpp386.exe", cc_cmd)
 
     def test_dummy_compiler(self) -> None:
         """
