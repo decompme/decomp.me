@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 
 import Link from "@/components/Link";
 
@@ -52,7 +53,7 @@ function DiscordLink() {
     );
 }
 
-export const metadata = {
+export const metadata: Metadata = {
     title: "Frequently Asked Questions",
 };
 
@@ -102,10 +103,9 @@ export default function Page() {
 
             <Question question={"Why does writing matching code matter?"} />
             <p className="my-4">
-                A <b>byte-perfect</b> match ensures the function's behavior
-                (including undefined behavior) is reproduced exactly.
-                Verification becomes simple: either the assembly matches, or it
-                doesn't.
+                A <b>byte-perfect</b> match means the generated machine code is
+                identical to the original. Verification becomes simple: either
+                the assembly matches, or it doesn't.
             </p>
             <p className="my-4">
                 Although symbol names, comments, and other source-level
@@ -205,9 +205,8 @@ export default function Page() {
                 <FaqLink href="https://github.com/matt-kempster/m2c">
                     m2c
                 </FaqLink>{" "}
-                decompiler to generate an initial C approximation of a function.
-                At the time of writing, m2c supports several architectures
-                including MIPS, PowerPC, and ARM.
+                decompiler for supported platforms to generate an initial C
+                approximation of a function.
             </p>
             <p className="my-4">
                 This output is intended as a starting point and usually requires
@@ -251,6 +250,10 @@ export default function Page() {
                 approach matching and experiment with modifying them.
             </p>
             <p className="my-4">
+                A good first step is to open an existing scratch, make a small
+                change, and see how the score changes.
+            </p>
+            <p className="my-4">
                 We hope to make the site more beginner-friendly in the future.
             </p>
 
@@ -259,7 +262,7 @@ export default function Page() {
             />
             <p className="my-4">
                 No. Anyone can create scratches and experiment with matching
-                assembly or exploring compiler behaviour.
+                assembly or exploring compiler behavior.
             </p>
             <p className="my-4">
                 Many scratches come from larger decompilation projects, but
@@ -317,15 +320,23 @@ export default function Page() {
 
             <Title title={"Platforms and Compilers"} />
 
+            <Question question={"What's a preset?"} />
+            <p className="my-4">
+                A preset is a combination of settings for a particular project.
+                It includes the platform (e.g., n64), compiler (e.g., IDO 7.1),
+                compiler flags (e.g., -O2), and any libraries needed to build
+                code for a game or project.
+            </p>
+
             <Question
                 question={"Can you add a preset for a game I'm working on?"}
             />
             <p className="my-4">
-                Yes. You can request one by opening a{" "}
-                <FaqLink href="https://github.com/decompme/decomp.me/issues">
-                    GitHub Issue
-                </FaqLink>{" "}
-                or asking in our <DiscordLink />.
+                Yes. You can request one by filling out the{" "}
+                <FaqLink href="https://github.com/decompme/decomp.me/issues/new?template=create-or-update-a-compiler-preset.md">
+                    compiler preset issue template
+                </FaqLink>
+                {"."}
             </p>
 
             <Question
@@ -336,12 +347,12 @@ export default function Page() {
                 <FaqLink href="https://github.com/decompme/compilers">
                     compilers repository
                 </FaqLink>
-                . After adding the compiler there, it can easily be integrated
-                into decomp.me. See{" "}
-                <FaqLink href="https://github.com/decompme/decomp.me/pull/910">
-                    this PR
+                . Once a compiler is added there, decomp.me can be updated to
+                use it. See the{" "}
+                <FaqLink href="https://github.com/decompme/decomp.me/blob/main/docs/COMPILER.md">
+                    compiler setup instructions
                 </FaqLink>{" "}
-                for an example.
+                for details.
             </p>
 
             <Question
