@@ -433,8 +433,8 @@ PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
     '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
 )
 
@@ -584,9 +584,9 @@ GCC2723_MIPSEL = GCCPS1Compiler(
 SATURN_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CPP.EXE D:\\dos_src.c -o D:\\src_proc.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "CC1.EXE -quiet ${COMPILER_FLAGS} D:\\src_proc.c -o D:\\output.s") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "AS.EXE D:\\output.s -o D:\\output.o") && '
     'sh-elf-objcopy -Icoff-sh -Oelf32-sh output.o "${OUTPUT}"'
 )
 
@@ -1631,7 +1631,7 @@ WATCOM_110_CPP = WatcomCompiler(
 BORLAND_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
     'cat "${INPUT}" | unix2dos > dos_src.c && '
-    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
+    '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K . -E "D:\\bin\\bcc.exe -ID:\\include ${COMPILER_FLAGS} -c -oout.o dos_src.c") && '
     'cp out.o "${OUTPUT}"'
 )
 
@@ -1653,7 +1653,7 @@ MSC_51 = MicrosoftCCompiler(
     cc=(
         "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
         'cat "${INPUT}" | unix2dos > dos_src.c && '
-        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
+        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
         'cp out.o "${OUTPUT}"'
     ),
 )
