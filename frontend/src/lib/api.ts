@@ -451,7 +451,7 @@ export function usePaginated<T>(
     const [previous, setPrevious] = useState<string | null>(
         firstPage?.previous,
     );
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(!firstPage);
 
     useEffect(() => {
         let isCurrent = true;
