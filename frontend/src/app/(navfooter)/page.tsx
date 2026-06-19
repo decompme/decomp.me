@@ -39,7 +39,10 @@ export default function Page() {
             <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 p-8 md:flex-row">
                 <section className="md:w-1/2 lg:w-1/4">
                     <h2 className="mb-2 text-lg">Your scratches</h2>
-                    <YourScratchList item={SingleLineScratchItem} />
+                    <YourScratchList
+                        item={SingleLineScratchItem}
+                        skeletonVariant="compact"
+                    />
                 </section>
                 <section className="md:w-1/2 lg:w-3/4">
                     <h2 className="mb-2 text-lg">Recent activity</h2>

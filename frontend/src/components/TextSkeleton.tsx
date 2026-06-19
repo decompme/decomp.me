@@ -61,28 +61,6 @@ export const DIFF = ` 0:    stwu    r1,-0x20(r1)
 7c:    addi    r1,r1,0x20
 80:    blr`;
 
-export const SCRATCH_LIST = `
-    ------------------------------------------------------------------------
-     zEntButton_Init__FPvPv                                     XX  ethteck
-     mwcc_247_108_pikmin2 • 0% matched • 3 years ago
-    ------------------------------------------------------------------------
-
-    ------------------------------------------------------------------------
-     func_ovl8_80380F1C                                           XX  jtl3d
-     Super Smash Bros. • 99.19% matched • 11 hours ago
-    ------------------------------------------------------------------------
-
-    ------------------------------------------------------------------------
-     func_us_801B8234                                          XX  gamezter
-     Castlevania: Symphony of the Night • 89.17% matched • 17 hours ago
-    ------------------------------------------------------------------------
-
-    ------------------------------------------------------------------------
-     bhCheckSubTask                                           XX  Mc-muffin
-     Resident Evil: Code Veronica X • 99.69% matched • 2 days ago
-    ------------------------------------------------------------------------
-`;
-
 export function TextSkeleton({ text }: { text: string }) {
     const lines = useMemo(
         () =>
