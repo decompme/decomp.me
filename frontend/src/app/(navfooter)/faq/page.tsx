@@ -79,7 +79,7 @@ export default function Page() {
             </p>
             <p className="my-4">
                 It is an{" "}
-                <FaqLink href="https://www.github.com/decomp.me">
+                <FaqLink href="https://www.github.com/decompme/decomp.me">
                     open-source project
                 </FaqLink>{" "}
                 run by volunteers in their free time.
