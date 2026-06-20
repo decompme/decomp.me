@@ -204,11 +204,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
-            # Preset dictates platform
+            # Preset dictates platform and compiler.
             data["platform"] = platforms.from_id(preset.platform)
-
-            if "compiler" not in data or not data["compiler"]:
-                data["compiler"] = preset.compiler
+            data["compiler"] = preset.compiler
 
             if "compiler_flags" not in data or not data["compiler_flags"]:
                 data["compiler_flags"] = preset.compiler_flags
