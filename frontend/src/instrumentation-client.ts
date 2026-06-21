@@ -16,6 +16,8 @@ if (isSentryEnabled) {
 
         ignoreErrors: [
             /* clangd language server */
+            "invalid AST",
+            "Uncaught RuntimeError: memory access out of bounds",
             "Aborted(). Build with -sASSERTIONS for more info.",
             "Aborted(InternalError: out of memory). Build with -sASSERTIONS for more info.",
         ],
