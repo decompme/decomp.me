@@ -1572,6 +1572,20 @@ WATCOM_CXX = (
     + "\" | sed 's:/:\\\\:g')"
 )
 
+WATCOM_100A_C = WatcomCompiler(
+    id="wcc10.0a",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_100A_CPP = WatcomCompiler(
+    id="wpp10.0a",
+    base_compiler=WATCOM_100A_C,
+    platform=MSDOS,
+    language=Language.CXX,
+    cc=WATCOM_CXX,
+)
+
 WATCOM_105_C = WatcomCompiler(
     id="wcc10.5",
     platform=MSDOS,
@@ -1920,6 +1934,8 @@ _all_compilers: list[Compiler] = [
     MSVC80,
     MSVC80P,
     # Watcom, DOS and Win32
+    WATCOM_100A_C,
+    WATCOM_100A_CPP,
     WATCOM_105_C,
     WATCOM_105_CPP,
     WATCOM_105A_C,
