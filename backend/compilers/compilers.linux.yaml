@@ -211,6 +211,7 @@ macosx:
   - gcc3-1041
 
 msdos:
+  - wcc10.0a
   - wcc10.5
   - wcc10.5a
   - wcc10.6
