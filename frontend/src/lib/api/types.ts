@@ -79,6 +79,20 @@ export type Compilation = {
     success: boolean;
 };
 
+export type StatelessCompileResult = {
+    success: boolean;
+    elf_object: string; // base64 encoded
+    errors: string;
+};
+
+export type StatelessDiffResult = {
+    success: boolean;
+    result: DiffOutput | null;
+    errors: string | null;
+    left_object?: string; // base64 encoded
+    right_object?: string; // base64 encoded
+};
+
 export type DiffOutput = {
     arch_str: string;
     current_score: number;
