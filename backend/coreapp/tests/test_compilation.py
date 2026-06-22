@@ -1,3 +1,4 @@
+import base64
 from collections.abc import Callable
 from typing import Any
 from unittest.mock import patch
@@ -25,6 +26,7 @@ from coreapp.flags import Language
 from coreapp.models.scratch import Asm, Assembly
 from coreapp.platforms import N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.wrapper_result import CompilationResult, DiffResult
 
 
 def all_compilers_name_func(
@@ -319,3 +321,51 @@ nop
         self.assertTrue(diff_result is not None and "rows" in diff_result)
         self.assertGreater(len(diff_result["rows"]), 0)
         self.assertEqual(None, diff.errors)
+
+
+class StatelessCompileDiffTests(BaseTestCase):
+    @patch("coreapp.views.cromper.CompilerWrapper.compile_code")
+    @patch("coreapp.views.cromper.DiffWrapper.diff")
+    def test_compile_and_diff_endpoints_match_cromper_contract(
+        self,
+        diff_mock: Any,
+        compile_mock: Any,
+    ) -> None:
+        compiler = compilers.available_compilers()[0]
+        compile_mock.return_value = CompilationResult(b"compiled", "compile warning")
+        diff_mock.return_value = DiffResult({"rows": ["a", "b"]}, "diff warning")
+
+        compile_response = self.client.post(
+            reverse("compile"),
+            {
+                "compiler_id": compiler.id,
+                "code": "int changed;",
+                "context": "typedef int changed_t;",
+                "function": "changed",
+                "libraries": [],
+            },
+            format="json",
+        )
+
+        self.assertEqual(compile_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(compile_response.json()["success"])
+        self.assertEqual(compile_response.json()["errors"], "compile warning")
+        compiled_object = compile_response.json()["elf_object"]
+        self.assertEqual(base64.b64decode(compiled_object), b"compiled")
+
+        diff_response = self.client.post(
+            reverse("diff"),
+            {
+                "platform_id": N64.id,
+                "diff_label": "changed",
+                "diff_flags": [],
+                "target_elf": base64.b64encode(b"target").decode("utf-8"),
+                "compiled_elf": compiled_object,
+            },
+            format="json",
+        )
+
+        self.assertEqual(diff_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(diff_response.json()["success"])
+        self.assertEqual(diff_response.json()["errors"], "diff warning")
+        self.assertEqual(diff_response.json()["result"], {"rows": ["a", "b"]})

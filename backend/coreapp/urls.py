@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from coreapp.views import (
     compiler,
+    cromper,
     health,
     library,
     platform,
@@ -22,6 +23,8 @@ router.register(r"project", project.ProjectViewSet)
 
 urlpatterns = [
     *router.urls,
+    path("compile", cromper.CompileView.as_view(), name="compile"),
+    path("diff", cromper.DiffView.as_view(), name="diff"),
     path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
     path("healthz", health.HealthCheck.as_view(), name="healthz"),
     path(
