@@ -40,8 +40,6 @@ ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 ARG OBJDIFF_BASE=https://diff.decomp.me/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
-ARG GIT_HASH
-
 RUN yarn build && rm -rf .next/cache
 
 
