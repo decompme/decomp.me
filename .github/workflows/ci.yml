@@ -160,7 +160,7 @@ jobs:
 
       - name: Check docker compose status
         run: |
-          docker compose -f docker-compose.prod.yaml psql
+          docker compose -f docker-compose.prod.yaml ps
 
       - name: Sanity check the endpoints
         run: |

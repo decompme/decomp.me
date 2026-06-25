@@ -347,20 +347,23 @@ def cmd_ensure(args):
         raise SystemExit("Cannot ensure services: ACTIVE_SLOT is missing or invalid")
 
     env = compose_env(state)
-    services = [
-        *INFRA_SERVICES,
+    pre_nginx_services = [
+        "postgres",
+        "certbot",
         f"backend-{active}",
         f"frontend-{active}",
     ]
 
     print(f"Ensuring shared services and active {active} slot are running.")
-    ensure_services(services, env)
+    ensure_services(pre_nginx_services, env)
 
     wait_for_healthy("postgres", env)
-    wait_for_healthy("nginx", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)
+
+    ensure_services(["nginx"], env)
+    wait_for_healthy("nginx", env)
 
     print()
     print_status(state, env)
