@@ -40,6 +40,9 @@ ENV GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
 ARG OBJDIFF_BASE=https://diff.decomp.me/
 ENV OBJDIFF_BASE=${OBJDIFF_BASE}
 
+ARG GIT_HASH=abc123
+ENV GIT_HASH=${GIT_HASH}
+
 RUN yarn build && rm -rf .next/cache
 
 
@@ -50,15 +53,12 @@ WORKDIR /frontend
 ENV NODE_ENV=production
 
 # Copy only required files
-COPY --from=builder /frontend/public ./public
-COPY --from=builder /frontend/.next ./.next
 COPY --from=builder /frontend/node_modules ./node_modules
 COPY --from=builder /frontend/package.json ./package.json
+COPY --from=builder /frontend/public ./public
+COPY --from=builder /frontend/.next ./.next
 
 ARG NEXT_PUBLIC_SENTRY_DSN=https://206c1a30d26affa7a77beb00550733c8@o4504592968581120.ingest.us.sentry.io/4509486010400768
 ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
-
-ARG GIT_HASH=abc123
-ENV GIT_HASH=${GIT_HASH}
 
 CMD ["yarn", "start"]
