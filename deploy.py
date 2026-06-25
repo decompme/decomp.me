@@ -303,7 +303,11 @@ def cmd_deploy(args):
 
     ensure_infra(env)
 
-    run([*DOCKER_COMPOSE, "pull", f"backend-{slot}", f"frontend-{slot}"], env=env)
+    if args.pull:
+        run([*DOCKER_COMPOSE, "pull", f"backend-{slot}", f"frontend-{slot}"], env=env)
+    else:
+        print("Skipping image pull; using locally available images.")
+
     run(
         [
             *DOCKER_COMPOSE,
@@ -467,6 +471,13 @@ def main():
     rollback.set_defaults(func=cmd_rollback)
 
     deploy = sub.add_parser("deploy")
+    deploy.add_argument(
+        "--no-pull",
+        dest="pull",
+        action="store_false",
+        help="Use locally available images instead of pulling the target slot images.",
+    )
+    deploy.set_defaults(pull=True)
     deploy.add_argument("tag")
     deploy.add_argument(
         "slot", choices=["auto", "blue", "green"], nargs="?", default="auto"

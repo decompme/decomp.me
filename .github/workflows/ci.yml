@@ -115,7 +115,7 @@ jobs:
           sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
           sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
 
-      - name: Setup dummy docker.prod.dev
+      - name: Setup dummy production env
         run: |
           echo 'POSTGRES_USER=decompme' >> docker.prod.env
           echo 'POSTGRES_PASSWORD=decompme' >> docker.prod.env
@@ -127,32 +127,40 @@ jobs:
           echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
+          echo 'ACTIVE_SLOT=blue' >> .deploy.env
+          echo 'BLUE_TAG=latest' >> .deploy.env
+          echo 'GREEN_TAG=latest' >> .deploy.env
+          echo 'NGINX_TAG=latest' >> .deploy.env
 
       - name: Comment out SSL server configuration from nginx
         run: |
           sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production/default.conf
 
-      - name: Bring up postgres and nginx containers
+      - name: Prepare production runtime config
         run: |
           cp ./nginx/production/runtime/geo.conf.example      ./nginx/production/runtime/geo.conf
           cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
-          docker compose -f docker-compose.prod.yaml build nginx
-          docker compose -f docker-compose.prod.yaml up -d postgres nginx
-          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
-          docker compose logs nginx | grep "ready for start up"
-          ! docker compose logs nginx | grep -q "nginx-1 exited with code"
 
-      - name: Build and bring up up backend container
+      - name: Build production images
         run: |
-          docker compose -f docker-compose.prod.yaml build backend-blue
-          docker compose -f docker-compose.prod.yaml up -d backend-blue
-          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+          docker compose -f docker-compose.prod.yaml build nginx backend-blue frontend-blue
 
-      - name: Build and bring up up frontend container
+      - name: Ensure production services
         run: |
-          docker compose -f docker-compose.prod.yaml build frontend-blue
-          docker compose -f docker-compose.prod.yaml up -d frontend-blue
-          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+          python3 deploy.py ensure
+
+      - name: Sanity check the endpoints
+        run: |
+          curl --silent http://localhost/healthz | jq
+          curl --silent http://localhost/api/healthz | jq
+
+      - name: Deploy green slot
+        run: |
+          python3 deploy.py deploy --no-pull latest green
+
+      - name: Check docker compose status
+        run: |
+          docker compose -f docker-compose.prod.yaml psql
 
       - name: Sanity check the endpoints
         run: |
@@ -160,10 +168,12 @@ jobs:
           curl --silent http://localhost/api/healthz | jq
 
       - name: Shut everything down
+        if: always()
         run: |
           docker compose -f docker-compose.prod.yaml down
 
       - name: Print out image sizes
+        if: always()
         run: |
           docker image ls
 
