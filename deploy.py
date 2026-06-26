@@ -303,7 +303,11 @@ def cmd_deploy(args):
 
     ensure_infra(env)
 
-    run([*DOCKER_COMPOSE, "pull", f"backend-{slot}", f"frontend-{slot}"], env=env)
+    if args.pull:
+        run([*DOCKER_COMPOSE, "pull", f"backend-{slot}", f"frontend-{slot}"], env=env)
+    else:
+        print("Skipping image pull; using locally available images.")
+
     run(
         [
             *DOCKER_COMPOSE,
@@ -343,20 +347,23 @@ def cmd_ensure(args):
         raise SystemExit("Cannot ensure services: ACTIVE_SLOT is missing or invalid")
 
     env = compose_env(state)
-    services = [
-        *INFRA_SERVICES,
+    pre_nginx_services = [
+        "postgres",
+        "certbot",
         f"backend-{active}",
         f"frontend-{active}",
     ]
 
     print(f"Ensuring shared services and active {active} slot are running.")
-    ensure_services(services, env)
+    ensure_services(pre_nginx_services, env)
 
     wait_for_healthy("postgres", env)
-    wait_for_healthy("nginx", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)
+
+    ensure_services(["nginx"], env)
+    wait_for_healthy("nginx", env)
 
     print()
     print_status(state, env)
@@ -467,6 +474,13 @@ def main():
     rollback.set_defaults(func=cmd_rollback)
 
     deploy = sub.add_parser("deploy")
+    deploy.add_argument(
+        "--no-pull",
+        dest="pull",
+        action="store_false",
+        help="Use locally available images instead of pulling the target slot images.",
+    )
+    deploy.set_defaults(pull=True)
     deploy.add_argument("tag")
     deploy.add_argument(
         "slot", choices=["auto", "blue", "green"], nargs="?", default="auto"

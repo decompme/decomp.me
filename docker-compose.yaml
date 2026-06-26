@@ -26,6 +26,7 @@ services:
     ports:
       - "8000:8000"
       - "5678:5678"  # vscode debugger
+    restart: unless-stopped
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
@@ -44,16 +45,30 @@ services:
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
     ports:
       - "8080:8080"
+    restart: unless-stopped
     volumes:
       - ./frontend:/frontend
       - .env:/.env
   nginx:
     build:
       context: nginx
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     ports:
       - "80:80"
+    restart: unless-stopped
     volumes:
       - ./nginx/development/:/etc/nginx/conf.d/:ro
       - ./frontend/down.html:/var/www/down.html:ro

@@ -71,6 +71,12 @@ services:
     image: ghcr.io/decompme/decompme-nginx:${NGINX_TAG:-latest}
     build:
       context: nginx
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     ports:
       - "80:80"
       - "443:443"
