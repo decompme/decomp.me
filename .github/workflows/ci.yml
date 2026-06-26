@@ -145,6 +145,10 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yaml build nginx backend-blue frontend-blue
 
+      - name: Ensure production services
+        run: |
+          timeout 180s python3 deploy.py ensure || true
+
       - name: Check docker compose logs
         run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
@@ -152,10 +156,6 @@ jobs:
       - name: Check docker compose status
         run: |
           docker compose -f docker-compose.prod.yaml ps
-
-      - name: Ensure production services
-        run: |
-          timeout 60s python3 deploy.py ensure
 
       - name: Sanity check the endpoints
         run: |
