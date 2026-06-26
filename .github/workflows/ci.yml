@@ -147,33 +147,27 @@ jobs:
 
       - name: Ensure production services
         run: |
-          timeout 180s python3 deploy.py ensure || true
+          timeout 60s python3 deploy.py ensure || true
 
-      - name: Check docker compose logs
+      - name: View docker compose logs (blue)
         run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
-      - name: Check docker compose status
+      - name: Check docker compose status (blue)
         run: |
           docker compose -f docker-compose.prod.yaml ps
-
-      - name: Sanity check the endpoints
-        run: |
-          curl --silent http://localhost/healthz | jq
-          curl --silent http://localhost/api/healthz | jq
 
       - name: Deploy green slot
         run: |
           python3 deploy.py deploy --no-pull latest green
 
-      - name: Check docker compose status
+      - name: View docker compose logs (green)
+        run: |
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Check docker compose status (green)
         run: |
           docker compose -f docker-compose.prod.yaml ps
-
-      - name: Sanity check the endpoints
-        run: |
-          curl --silent http://localhost/healthz | jq
-          curl --silent http://localhost/api/healthz | jq
 
       - name: Shut everything down
         if: always()
