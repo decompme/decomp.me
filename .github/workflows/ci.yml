@@ -149,6 +149,13 @@ jobs:
         run: |
           timeout 180s python3 deploy.py ensure || true
 
+      - name: debug nginx
+        run: |
+          docker compose -f docker-compose.prod.yaml exec -T nginx getent hosts localhost
+          docker compose -f docker-compose.prod.yaml exec -T nginx wget -S -O- http://localhost/nginx-healthz
+          docker compose -f docker-compose.prod.yaml exec -T nginx wget -S -O- http://127.0.0.1/nginx-healthz
+          docker inspect -f '{{range .State.Health.Log}}{{.Output}}{{end}}' decompme-nginx-1
+
       - name: Check docker compose logs
         run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
