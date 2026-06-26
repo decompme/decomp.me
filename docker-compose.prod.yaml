@@ -72,7 +72,7 @@ services:
     build:
       context: nginx
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/nginx-healthz"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/nginx-healthz"]
       interval: 15s
       timeout: 3s
       retries: 10
