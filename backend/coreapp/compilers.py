@@ -420,6 +420,12 @@ CLANG_800 = ClangCompiler(
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
 
+CLANG_900 = ClangCompiler(
+    id="clang-9.0.0",
+    platform=SWITCH,
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
 # PS1
 PSYQ_COMPILE_BAT = "\r\n".join(
     [
@@ -1726,6 +1732,7 @@ _all_compilers: list[Compiler] = [
     CLANG_391,
     CLANG_401,
     CLANG_800,
+    CLANG_900,
     # PS1
     PSYQ_263_221,
     PSYQ33,
