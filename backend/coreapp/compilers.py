@@ -432,7 +432,7 @@ PSYQ_COMPILE_BAT = "\r\n".join(
 PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
-    '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
+    '/usr/bin/cpp -P "${INPUT}" | unix2dos > dos_src.c && '
     '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
     '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
@@ -505,7 +505,8 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 PS1_GCC = (
-    '${COMPILER_DIR}/cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
+    # -P flag suppresses line directives that GCC chokes on
+    '/usr/bin/cpp -P -nostdinc "${INPUT}" -o "${INPUT}".i && '
     'eval "${COMPILER_DIR}/gcc ${COMPILER_FLAGS} -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}".i"'
 )
 
