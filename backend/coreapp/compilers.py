@@ -506,7 +506,7 @@ PSYQ46 = GCCPS1Compiler(
 
 PS1_GCC = (
     # Fixup "# 0" line directives because cc1plus chokes on them
-    '/usr/bin/cpp -nostdinc "${INPUT}" | sed -i "s/^# 0/# 1/g" > "${INPUT}".i && '
+    '/usr/bin/cpp -nostdinc "${INPUT}" | sed "s/^# 0/# 1/" > "${INPUT}".i && '
     'eval "${COMPILER_DIR}/gcc ${COMPILER_FLAGS} -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}".i"'
 )
 
