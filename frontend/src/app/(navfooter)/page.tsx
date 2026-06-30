@@ -36,7 +36,7 @@ export default function Page() {
             <header className="w-full py-16">
                 <WelcomeInfo />
             </header>
-            <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 p-8 md:flex-row">
+            <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 px-8 py-4 md:flex-row md:py-8">
                 <section className="md:w-1/2 lg:w-1/4">
                     <h2 className="mb-2 text-lg">Your scratches</h2>
                     <YourScratchList
