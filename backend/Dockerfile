@@ -155,9 +155,9 @@ RUN add-apt-repository -y ppa:dosemu2/ppa \
     && rm -rf /var/lib/apt/lists/*
 
 # NOTE: libtinfo5 is required for clang
-RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
+RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.2_amd64.deb; \
     URL=https://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/$ARCHIVE; \
-    SHA256=ab89265d8dd18bda6a29d7c796367d6d9f22a39a8fa83589577321e7caf3857b; \
+    SHA256=b9bb64e716a7d9de05b1b33992763142ca81bcae3a7f8ce7e29fa3c6fd32f1e8; \
     wget -O "$ARCHIVE" "$URL" \
     && echo "$SHA256  $ARCHIVE" | sha256sum -c - \
     && apt install "./$ARCHIVE" \
