@@ -170,7 +170,7 @@ WORKDIR /cromper
 
 COPY pyproject.toml uv.lock /cromper/
 
-RUN uv sync --locked
+RUN uv sync --locked --no-install-project
 
 
 FROM dependencies AS prod
