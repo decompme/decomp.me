@@ -364,7 +364,6 @@ function useCompilerMetadata(): CompilerMetadata | undefined {
         "/compilers",
         getPublic,
         {
-            refreshInterval: 1000 * 60 * 15, // 15 minutes
             onErrorRetry,
         },
     );

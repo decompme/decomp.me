@@ -8,7 +8,15 @@ import { ScratchItemPlatformList } from "@/components/ScratchItem";
 import { get, getPublic } from "@/lib/api/request";
 import type { PlatformBase, ScratchCount } from "@/lib/api/types";
 
+function isValidPlatformId(id: string): boolean {
+    return /^[A-Za-z0-9._-]+$/.test(id);
+}
+
 async function getPlatform(id: string): Promise<PlatformBase | undefined> {
+    if (!isValidPlatformId(id)) {
+        return undefined;
+    }
+
     const { platforms } = await getPublic("/compilers");
 
     return platforms?.[id];
