@@ -107,11 +107,15 @@ class ScratchDetailTests(BaseTestCase):
         self.create_logged_in_user()
         token = self.claim_tokens[scratch.slug]
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim", {"token": token})
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": token}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()["success"])
 
-        response = self.client.post(f"/api/scratch/{scratch.slug}/claim", {"token": token})
+        response = self.client.post(
+            f"/api/scratch/{scratch.slug}/claim", {"token": token}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.json()["success"])
 

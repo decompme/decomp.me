@@ -23,16 +23,26 @@ class BaseTestCase(APITestCase):
 
         mock_client = MockCromperClient()
         self._patches = [
-            patch("coreapp.cromper_client.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.cromper_client.get_cromper_client", return_value=mock_client
+            ),
             patch("coreapp.serializers.get_cromper_client", return_value=mock_client),
             patch("coreapp.views.scratch.get_cromper_client", return_value=mock_client),
-            patch("coreapp.views.compiler.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.views.compiler.get_cromper_client", return_value=mock_client
+            ),
             patch("coreapp.views.library.get_cromper_client", return_value=mock_client),
-            patch("coreapp.views.platform.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.views.platform.get_cromper_client", return_value=mock_client
+            ),
         ]
         for active_patch in self._patches:
             active_patch.start()
-        self.addCleanup(lambda: [active_patch.stop() for active_patch in reversed(self._patches)])
+        self.addCleanup(self.stop_patches)
+
+    def stop_patches(self) -> None:
+        for active_patch in reversed(self._patches):
+            active_patch.stop()
 
     def create_scratch(self, partial: dict[str, Any]) -> Scratch:
         response = self.client.post(reverse("scratch-list"), partial, format="json")

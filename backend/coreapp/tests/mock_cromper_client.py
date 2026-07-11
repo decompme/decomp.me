@@ -15,34 +15,60 @@ class MockCromperClient:
             compilers=["dummy"],
             has_decompiler=True,
         )
+        self.n64_platform = Platform(
+            id="n64",
+            name="Nintendo 64",
+            description="MIPS",
+            arch="mips",
+            compilers=["gcc2.8.1pm"],
+            has_decompiler=True,
+        )
         self.dummy_compiler = Compiler(
             id="dummy",
             platform=self.dummy_platform,
-            flags=[],
-            diff_flags=[],
+            flags="",
+            diff_flags="",
+            language=Language.C,
+        )
+        self.n64_compiler = Compiler(
+            id="gcc2.8.1pm",
+            platform=self.n64_platform,
+            flags="",
+            diff_flags="",
             language=Language.C,
         )
 
     def get_compilers(self) -> dict[str, Compiler]:
-        return {self.dummy_compiler.id: self.dummy_compiler}
+        return {
+            self.dummy_compiler.id: self.dummy_compiler,
+            self.n64_compiler.id: self.n64_compiler,
+        }
 
     def get_platforms(self) -> dict[str, Platform]:
-        return {self.dummy_platform.id: self.dummy_platform}
+        return {
+            self.dummy_platform.id: self.dummy_platform,
+            self.n64_platform.id: self.n64_platform,
+        }
 
     def get_libraries(self, platform: str = "") -> list[dict[str, Any]]:
-        if platform and platform != self.dummy_platform.id:
-            return []
-        return [{"name": "directx", "supported_versions": ["8.0"], "platform": "dummy"}]
+        libraries = [
+            {"name": "directx", "supported_versions": ["8.0"], "platform": "dummy"}
+        ]
+        if platform:
+            return [library for library in libraries if library["platform"] == platform]
+        return libraries
 
     def get_compiler_by_id(self, compiler_id: str) -> Compiler:
-        if compiler_id != self.dummy_compiler.id:
-            raise ValueError(f"Unknown compiler: {compiler_id}")
-        return self.dummy_compiler
+        try:
+            return self.get_compilers()[compiler_id]
+        except KeyError as exc:
+            raise ValueError(f"Unknown compiler: {compiler_id}") from exc
 
     def get_platform_by_id(self, platform_id: str) -> Platform:
-        if platform_id != self.dummy_platform.id:
-            raise ValueError(f"Unknown platform: {platform_id}")
-        return self.dummy_platform
+        try:
+            return self.get_platforms()[platform_id]
+        except KeyError as exc:
+            raise ValueError(f"Unknown platform: {platform_id}") from exc
 
     def assemble_asm(self, platform_id: str, asm: Any) -> dict[str, Any]:
         if asm.data.strip() == "":
@@ -99,12 +125,18 @@ def mock_cromper(func):
     def wrapper(*args, **kwargs):
         mock_client = MockCromperClient()
         with (
-            patch("coreapp.cromper_client.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.cromper_client.get_cromper_client", return_value=mock_client
+            ),
             patch("coreapp.serializers.get_cromper_client", return_value=mock_client),
             patch("coreapp.views.scratch.get_cromper_client", return_value=mock_client),
-            patch("coreapp.views.compiler.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.views.compiler.get_cromper_client", return_value=mock_client
+            ),
             patch("coreapp.views.library.get_cromper_client", return_value=mock_client),
-            patch("coreapp.views.platform.get_cromper_client", return_value=mock_client),
+            patch(
+                "coreapp.views.platform.get_cromper_client", return_value=mock_client
+            ),
         ):
             return func(*args, **kwargs)
 

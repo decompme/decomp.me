@@ -90,7 +90,8 @@ def cache_object(platform_arch: str, file: File[Any]) -> Assembly:
 def compile_scratch(scratch: Scratch, context: str | None = None) -> CompilationResult:
     try:
         libraries = [
-            lib.to_json() if isinstance(lib, Library) else lib for lib in scratch.libraries
+            lib.to_json() if isinstance(lib, Library) else lib
+            for lib in scratch.libraries
         ]
         scratch_context = (
             scratch.context_fk.text if context is None and scratch.context_fk else ""
