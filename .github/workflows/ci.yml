@@ -83,7 +83,7 @@ jobs:
 
       - name: Comment out SSL server configuration from nginx
         run: |
-          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production/default.conf
 
       - name: Bring up postgres and nginx containers
         run: |
