@@ -5,7 +5,6 @@ from coreapp.views import (
     compiler,
     health,
     library,
-    platform,
     preset,
     project,
     scratch,
@@ -22,25 +21,7 @@ router.register(r"project", project.ProjectViewSet)
 
 urlpatterns = [
     *router.urls,
-    path("compiler", compiler.CompilerDetail.as_view(), name="compiler"),
     path("healthz", health.HealthCheck.as_view(), name="healthz"),
-    path(
-        "compiler/<str:platform>/<str:compiler>",
-        compiler.SingleCompilerDetail.as_view(),
-        name="available-compiler",
-    ),
-    path(
-        "compiler/<str:platform>",
-        compiler.SingleCompilerDetail.as_view(),
-        name="available-compilers",
-    ),
-    path("library", library.LibraryDetail.as_view(), name="library"),
-    path("platform", platform.PlatformDetail.as_view(), name="platform"),
-    path(
-        "platform/<slug:id>",
-        platform.single_platform,
-        name="platform-detail",
-    ),
     path("stats", stats.StatsDetail.as_view(), name="stats"),
     path(
         "scratch-count", scratch_count.ScratchCountView.as_view(), name="scratch-count"

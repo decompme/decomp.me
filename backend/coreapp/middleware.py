@@ -41,10 +41,9 @@ def disable_csrf(
 
 def is_public_get_request(req: Request) -> bool:
     public_paths = [
-        "/api/compiler",
+        "/api/compilers",
         "/api/healthz$",
-        "/api/library",
-        "/api/platform",
+        "/api/libraries",
         "/api/preset",
         "/api/scratch-count$",
         "/api/scratch/[A-Za-z0-9]+/compile$",

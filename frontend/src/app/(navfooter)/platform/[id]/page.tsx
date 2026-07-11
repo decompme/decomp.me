@@ -5,17 +5,23 @@ import { notFound } from "next/navigation";
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
 import ScratchList from "@/components/ScratchList";
 import { ScratchItemPlatformList } from "@/components/ScratchItem";
-import { get } from "@/lib/api/request";
+import { get, getPublic } from "@/lib/api/request";
 import type { PlatformBase, ScratchCount } from "@/lib/api/types";
 
+async function getPlatform(id: string): Promise<PlatformBase | undefined> {
+    const { platforms } = await getPublic("/compilers");
+
+    return platforms?.[id];
+}
+
 export async function generateMetadata(props: {
-    params: Promise<{ id: number }>;
+    params: Promise<{ id: string }>;
 }): Promise<Metadata> {
     const params = await props.params;
     let platform: PlatformBase;
 
     try {
-        platform = await get(`/platform/${params.id}`);
+        platform = await getPlatform(params.id);
     } catch (error) {
         console.error(error);
     }
@@ -50,11 +56,11 @@ export async function generateMetadata(props: {
     };
 }
 
-export default async function Page(props: { params: Promise<{ id: number }> }) {
+export default async function Page(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     let platform: PlatformBase;
     try {
-        platform = await get(`/platform/${params.id}`);
+        platform = await getPlatform(params.id);
     } catch (error) {
         console.error(error);
     }

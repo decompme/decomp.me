@@ -355,12 +355,15 @@ export function useCompilation(
 }
 
 export function usePlatform(id: string | undefined): Platform | undefined {
-    const url = typeof id === "string" && id ? `/platform/${id}` : null;
-    const { data } = useSWRImmutable(url, get, {
+    const url = typeof id === "string" && id ? "/compilers" : null;
+    const { data } = useSWRImmutable<{
+        platforms: Record<string, Platform>;
+    }>(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
-    return data;
+
+    return id ? data?.platforms?.[id] : undefined;
 }
 
 export function useCompiler(
@@ -369,32 +372,59 @@ export function useCompiler(
 ): Compiler | undefined {
     const url =
         typeof platform === "string" && typeof compiler === "string"
-            ? `/compiler/${platform}/${compiler}`
+            ? "/compilers"
             : null;
-    const { data } = useSWRImmutable(url, get, {
+    const { data } = useSWRImmutable<{
+        compilers: Record<string, Omit<Compiler, "id">>;
+    }>(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
 
-    return data?.[compiler];
+    const compilerData = data?.compilers?.[compiler];
+
+    if (!compilerData || compilerData.platform !== platform) {
+        return undefined;
+    }
+
+    return {
+        id: compiler,
+        ...compilerData,
+    };
 }
 
 export function useCompilers(platform: string): Record<string, Compiler> {
-    const url = typeof platform === "string" ? `/compiler/${platform}` : null;
-    const { data } = useSWRImmutable(url, get, {
+    const url = typeof platform === "string" ? "/compilers" : null;
+    const { data } = useSWRImmutable<{
+        compilers: Record<string, Omit<Compiler, "id">>;
+    }>(url, getPublic, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
 
-    return data || {};
+    if (!data?.compilers) {
+        return {};
+    }
+
+    return Object.fromEntries(
+        Object.entries(data.compilers)
+            .filter(([, compiler]) => compiler.platform === platform)
+            .map(([id, compiler]) => [
+                id,
+                {
+                    id,
+                    ...compiler,
+                },
+            ]),
+    );
 }
 
 export function useLibraries(platform: string): LibraryVersions[] {
     const getByPlatform = ([url, platform]: [string | null, string]) => {
-        return get(url && platform && `${url}?platform=${platform}`);
+        return getPublic(url && platform && `${url}?platform=${platform}`);
     };
 
-    const url = typeof platform === "string" ? "/library" : null;
+    const url = typeof platform === "string" ? "/libraries" : null;
     const { data } = useSWRImmutable([url, platform], getByPlatform, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,

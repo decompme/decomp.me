@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from coreapp.models.profile import Profile
 from coreapp.tests.common import BaseTestCase
+from coreapp.tests.mock_cromper_client import mock_cromper
 
 
 class RequestTests(APITestCase):
@@ -30,6 +31,22 @@ class RequestTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Profile.objects.count(), 0)
+
+    @mock_cromper
+    def test_compilers_is_stateless(self) -> None:
+        response = self.client.get(reverse("compilers"), HTTP_USER_AGENT="browser")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Profile.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
+
+    @mock_cromper
+    def test_libraries_is_stateless(self) -> None:
+        response = self.client.get(reverse("libraries"), HTTP_USER_AGENT="browser")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Profile.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
 
 
 class StatefulRequestTests(BaseTestCase):

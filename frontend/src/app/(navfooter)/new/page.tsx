@@ -10,7 +10,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewScratchPage() {
-    const availablePlatforms = await getPublic("/platform");
+    const { platforms: availablePlatforms } = await getPublic("/compilers");
 
     return (
         <main>

@@ -114,7 +114,7 @@ jobs:
         run: |
           curl --silent http://localhost:8080/ | head -c 256
           curl --silent http://localhost:8000/api/ | jq
-          curl --silent http://localhost:8000/api/platform | jq
+          curl --silent http://localhost:8000/api/compilers | jq
 
       - name: Shut everything down
         run: |

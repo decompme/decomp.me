@@ -1,7 +1,5 @@
 import Link from "@/components/Link";
 
-import useSWRImmutable from "swr/immutable";
-
 import * as api from "@/lib/api";
 
 export type Props = {
@@ -9,10 +7,7 @@ export type Props = {
 };
 
 export default function PlatformName({ platform }: Props) {
-    const { data } = useSWRImmutable<api.PlatformBase>(
-        `/platform/${platform}`,
-        api.get,
-    );
+    const data = api.usePlatform(platform);
 
     return (
         <>
