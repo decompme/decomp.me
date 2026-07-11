@@ -37,6 +37,37 @@ class RequestTests(APITestCase):
         response = self.client.get(reverse("compilers"), HTTP_USER_AGENT="browser")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "compilers": {
+                    "dummy": {"platform": "dummy", "flags": "", "diff_flags": ""},
+                    "gcc2.8.1pm": {
+                        "platform": "n64",
+                        "flags": "",
+                        "diff_flags": "",
+                    },
+                },
+                "platforms": {
+                    "dummy": {
+                        "id": "dummy",
+                        "name": "Dummy Platform",
+                        "description": "A dummy platform for testing",
+                        "arch": "mips",
+                        "compilers": ["dummy"],
+                        "has_decompiler": True,
+                    },
+                    "n64": {
+                        "id": "n64",
+                        "name": "Nintendo 64",
+                        "description": "MIPS",
+                        "arch": "mips",
+                        "compilers": ["gcc2.8.1pm"],
+                        "has_decompiler": True,
+                    },
+                },
+            },
+        )
         self.assertEqual(Profile.objects.count(), 0)
         self.assertNotIn("sessionid", response.cookies)
 
@@ -45,6 +76,18 @@ class RequestTests(APITestCase):
         response = self.client.get(reverse("libraries"), HTTP_USER_AGENT="browser")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "libraries": [
+                    {
+                        "name": "directx",
+                        "supported_versions": ["8.0"],
+                        "platform": "dummy",
+                    }
+                ]
+            },
+        )
         self.assertEqual(Profile.objects.count(), 0)
         self.assertNotIn("sessionid", response.cookies)
 

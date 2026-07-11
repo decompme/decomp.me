@@ -354,6 +354,10 @@ export function useCompilation(
     };
 }
 
+/**
+ * Unified metadata returned by `/compilers`.
+ * Compiler IDs are the object keys, so each compiler entry omits its own `id`.
+ */
 type CompilerMetadata = {
     compilers: Record<string, Omit<Compiler, "id">>;
     platforms: Record<string, Platform>;
