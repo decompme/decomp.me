@@ -65,8 +65,8 @@ services:
     restart: on-failure
     volumes:
       # repo files
-      - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/geo.conf:/etc/nginx/conf.d/geo.conf:ro
+      - ./nginx/production/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/production/runtime:/etc/nginx/conf.d/runtime:ro
       - ./frontend/down.html:/var/www/decomp.me/down.html:ro
       # certbot
       - ./certbot:/var/www/certbot

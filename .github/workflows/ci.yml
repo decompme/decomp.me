@@ -80,6 +80,8 @@ jobs:
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
           echo 'CROMPER_URL=http://cromper:8888' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
+          cp nginx/production/runtime/geo.conf.example nginx/production/runtime/geo.conf
+          cp nginx/production/runtime/upstream.conf.example nginx/production/runtime/upstream.conf
 
       - name: Comment out SSL server configuration from nginx
         run: |
