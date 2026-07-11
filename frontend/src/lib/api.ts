@@ -354,32 +354,48 @@ export function useCompilation(
     };
 }
 
-export function usePlatform(id: string | undefined): Platform | undefined {
-    const url = typeof id === "string" && id ? "/compilers" : null;
-    const { data } = useSWRImmutable<{
-        platforms: Record<string, Platform>;
-    }>(url, getPublic, {
-        refreshInterval: 1000 * 60 * 15, // 15 minutes
-        onErrorRetry,
-    });
+type CompilerMetadata = {
+    compilers: Record<string, Omit<Compiler, "id">>;
+    platforms: Record<string, Platform>;
+};
 
-    return id ? data?.platforms?.[id] : undefined;
+function useCompilerMetadata(): CompilerMetadata | undefined {
+    const { data } = useSWRImmutable<CompilerMetadata>(
+        "/compilers",
+        getPublic,
+        {
+            refreshInterval: 1000 * 60 * 15, // 15 minutes
+            onErrorRetry,
+        },
+    );
+
+    return data;
+}
+
+export function usePlatform(id: string | undefined): Platform | undefined {
+    const data = useCompilerMetadata();
+
+    if (typeof id !== "string" || !id) {
+        return undefined;
+    }
+
+    return data?.platforms?.[id];
 }
 
 export function useCompiler(
     platform: string,
     compiler: string,
 ): Compiler | undefined {
-    const url =
-        typeof platform === "string" && typeof compiler === "string"
-            ? "/compilers"
-            : null;
-    const { data } = useSWRImmutable<{
-        compilers: Record<string, Omit<Compiler, "id">>;
-    }>(url, getPublic, {
-        refreshInterval: 1000 * 60 * 15, // 15 minutes
-        onErrorRetry,
-    });
+    const data = useCompilerMetadata();
+
+    if (
+        typeof platform !== "string" ||
+        !platform ||
+        typeof compiler !== "string" ||
+        !compiler
+    ) {
+        return undefined;
+    }
 
     const compilerData = data?.compilers?.[compiler];
 
@@ -394,15 +410,9 @@ export function useCompiler(
 }
 
 export function useCompilers(platform: string): Record<string, Compiler> {
-    const url = typeof platform === "string" ? "/compilers" : null;
-    const { data } = useSWRImmutable<{
-        compilers: Record<string, Omit<Compiler, "id">>;
-    }>(url, getPublic, {
-        refreshInterval: 1000 * 60 * 15, // 15 minutes
-        onErrorRetry,
-    });
+    const data = useCompilerMetadata();
 
-    if (!data?.compilers) {
+    if (typeof platform !== "string" || !platform || !data?.compilers) {
         return {};
     }
 
