@@ -18,7 +18,7 @@ export async function generateMetadata(props: {
     params: Promise<{ id: string }>;
 }): Promise<Metadata> {
     const params = await props.params;
-    let platform: PlatformBase;
+    let platform: PlatformBase | undefined;
 
     try {
         platform = await getPlatform(params.id);
@@ -58,7 +58,8 @@ export async function generateMetadata(props: {
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    let platform: PlatformBase;
+    let platform: PlatformBase | undefined;
+
     try {
         platform = await getPlatform(params.id);
     } catch (error) {
