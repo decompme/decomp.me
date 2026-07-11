@@ -6,7 +6,8 @@ export interface Page<T> {
 
 export interface AnonymousUser {
     is_anonymous: true;
-    id: number;
+    is_ephemeral: boolean;
+    id: number | null;
     is_online: boolean;
     is_admin: boolean;
     username: string;
@@ -22,6 +23,11 @@ export interface User {
     username: string;
 
     github_id: number | null;
+}
+
+export interface ScratchUser extends User {
+    num_scratches: number;
+    num_presets: number;
 }
 
 export interface TerseScratch {
@@ -40,6 +46,16 @@ export interface TerseScratch {
     match_override: boolean;
     project: string;
     libraries: Library[];
+    best_fork: BestFork | null;
+}
+
+export interface BestFork {
+    slug: string;
+    owner: AnonymousUser | User | null;
+    score: number;
+    max_score: number;
+    is_match: boolean;
+    updated_at: string;
 }
 
 export interface Scratch extends TerseScratch {
@@ -112,6 +128,12 @@ export type Flag =
           type: "flagset";
           id: string;
           flags: string[];
+      }
+    | {
+          type: "parameter";
+          format: "string" | "int" | "hex" | "int-or-hex";
+          id: string;
+          flag: string;
       };
 
 export type Library = {

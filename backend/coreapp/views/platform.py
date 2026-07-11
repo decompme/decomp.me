@@ -1,0 +1,53 @@
+from datetime import datetime
+
+from django.utils.decorators import method_decorator
+from django.utils.timezone import now
+from rest_framework.decorators import api_view
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from coreapp.models.preset import Preset
+from coreapp.views.compiler import CompilerDetail
+
+from ..cromper_client import get_cromper_client
+from ..decorators.cache import globally_cacheable
+from ..decorators.django import condition
+
+boot_time = now()
+
+
+def endpoint_updated(request: Request) -> datetime:
+    return max(Preset.most_recent_updated(request), boot_time)
+
+
+@method_decorator(
+    globally_cacheable(max_age=300, stale_while_revalidate=30), name="dispatch"
+)
+class PlatformDetail(APIView):
+    @condition(last_modified_func=endpoint_updated)
+    def head(self, request: Request) -> Response:
+        return Response()
+
+    @condition(last_modified_func=endpoint_updated)
+    def get(self, request: Request) -> Response:
+        return Response(CompilerDetail.platforms_json())
+
+
+@api_view(["GET"])
+@globally_cacheable(max_age=300, stale_while_revalidate=30)
+def single_platform(request: Request, id: str) -> Response:
+    for platform in get_cromper_client().get_platforms().values():
+        if platform.id == id:
+            return Response(
+                {
+                    "id": platform.id,
+                    "name": platform.name,
+                    "description": platform.description,
+                    "arch": platform.arch,
+                    "compilers": platform.compilers,
+                    "has_decompiler": platform.has_decompiler,
+                }
+            )
+
+    return Response(status=404)

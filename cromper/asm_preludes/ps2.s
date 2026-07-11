@@ -29,9 +29,9 @@
 
 # A data symbol.
 .macro dlabel label, visibility=global
-    .\visibility \label
-    .type \label, @object
-    \label:
+    .\visibility "\label"
+    .type "\label", @object
+    "\label":
 .endm
 
 # End of a data symbol.

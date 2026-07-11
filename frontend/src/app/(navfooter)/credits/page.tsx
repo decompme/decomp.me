@@ -46,6 +46,8 @@ const ICON_SOURCES = {
     "PerSPire Font by Sean Liew": "https://www.fontspace.com/sean-liew",
 };
 
+export const dynamic = "force-dynamic";
+
 type Contributor =
     | {
           type: "decompme";

@@ -16,6 +16,20 @@
     flex-direction: column;
 }
 
+.changedTabMarker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    line-height: 1;
+
+    color: var(--link);
+    cursor: pointer;
+}
+
 .editor {
     display: flex;
     align-items: stretch;
@@ -51,9 +65,4 @@
     height: 100%;
     overflow: auto;
     min-width: 400px;
-}
-
-.progressbar {
-    padding-left: 1em;
-    padding-right: 1em;
 }

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import { isAnonUser, type User, type AnonymousUser } from "@/lib/api/types";
 
@@ -7,19 +7,33 @@ import UserAvatar from "./UserAvatar";
 export type Props = {
     user: User | AnonymousUser;
     showUsername?: boolean; // default = true
+    truncateUsername?: boolean; // default = true
 };
 
-export default function UserLink({ user, showUsername }: Props) {
+export default function UserLink({
+    user,
+    showUsername,
+    truncateUsername,
+}: Props) {
     if (!user) {
         return <span>?</span>;
     }
 
     const url: string | null = isAnonUser(user) ? null : `/u/${user.username}`;
+    const shouldTruncateUsername = truncateUsername !== false;
 
     const inner = (
-        <div className="flex flex-row items-center">
-            <UserAvatar user={user} className="mr-1 size-5" />
-            {showUsername !== false && <span>{user.username}</span>}
+        <div className="flex min-w-0 flex-row items-center">
+            <UserAvatar user={user} className="mr-1 size-5 shrink-0" />
+            {showUsername !== false && (
+                <span
+                    className={
+                        shouldTruncateUsername ? "min-w-0 truncate" : undefined
+                    }
+                >
+                    {user.username}
+                </span>
+            )}
         </div>
     );
 
@@ -28,11 +42,7 @@ export default function UserLink({ user, showUsername }: Props) {
     }
 
     return (
-        <Link
-            href={url}
-            prefetch={false}
-            className="hover:underline active:translate-y-px"
-        >
+        <Link href={url} className="hover:underline active:translate-y-px">
             {inner}
         </Link>
     );

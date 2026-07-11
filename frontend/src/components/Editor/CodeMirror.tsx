@@ -6,8 +6,15 @@ import {
     useRef,
 } from "react";
 
-import { type Extension, EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { addCursorAbove, addCursorBelow } from "@codemirror/commands";
+import { type Extension, EditorState, Prec } from "@codemirror/state";
+import {
+    EditorView,
+    placeholder,
+    keymap,
+    drawSelection,
+    rectangularSelection,
+} from "@codemirror/view";
 import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -21,7 +28,15 @@ function useLeadingTrailingDebounceCallback(
     callback: () => void,
     delay: number,
 ) {
-    const timeout = useRef<any>(null);
+    const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timeout.current) {
+                clearTimeout(timeout.current);
+            }
+        };
+    }, []);
 
     return useCallback(() => {
         if (timeout.current) {
@@ -32,7 +47,7 @@ function useLeadingTrailingDebounceCallback(
         }
 
         timeout.current = setTimeout(() => {
-            timeout.current = undefined;
+            timeout.current = null;
 
             // Trailing
             callback();
@@ -49,6 +64,8 @@ export interface Props {
     className?: string;
     viewRef?: RefObject<EditorView | null>;
     extensions: Extension; // const
+    placeholder?: string;
+    dataTour?: string;
 }
 
 export default function CodeMirror({
@@ -60,6 +77,8 @@ export default function CodeMirror({
     className,
     viewRef: viewRefProp,
     extensions,
+    placeholder: placeholderText,
+    dataTour,
 }: Props) {
     const { ref: el, width } = useSize<HTMLDivElement>();
 
@@ -87,8 +106,12 @@ export default function CodeMirror({
 
     // Defer calls to onChange to avoid excessive re-renders
     const propagateValue = useLeadingTrailingDebounceCallback(() => {
-        onChangeRef.current?.(viewRef.current.state.doc.toString());
+        const view = viewRef.current;
+        if (view) {
+            onChangeRef.current?.(view.state.doc.toString());
+        }
     }, 100);
+    const animationFrameIds = useRef(new Set<number>());
 
     // Initial view creation
     useEffect(() => {
@@ -96,6 +119,7 @@ export default function CodeMirror({
             state: EditorState.create({
                 doc: valueRef.current,
                 extensions: [
+                    placeholder(placeholderText || ""),
                     EditorState.transactionExtender.of(
                         ({ docChanged, newDoc, newSelection }) => {
                             // value / onChange
@@ -110,13 +134,27 @@ export default function CodeMirror({
                             ).number;
                             if (hoveredLineRef.current !== line) {
                                 hoveredLineRef.current = line;
-                                requestAnimationFrame(() => {
+                                const frameId = requestAnimationFrame(() => {
+                                    animationFrameIds.current.delete(frameId);
                                     onSelectedLineChangeRef.current?.(line);
                                 });
+                                animationFrameIds.current.add(frameId);
                             }
 
                             return null;
                         },
+                    ),
+                    EditorState.allowMultipleSelections.of(true),
+                    drawSelection(),
+                    rectangularSelection(),
+                    Prec.highest(
+                        keymap.of([
+                            { key: "Ctrl-Shift-ArrowUp", run: addCursorAbove },
+                            {
+                                key: "Ctrl-Shift-ArrowDown",
+                                run: addCursorBelow,
+                            },
+                        ]),
                     ),
 
                     extensionsRef.current,
@@ -128,6 +166,10 @@ export default function CodeMirror({
         if (viewRefProp) viewRefProp.current = viewRef.current;
 
         return () => {
+            for (const frameId of animationFrameIds.current) {
+                cancelAnimationFrame(frameId);
+            }
+            animationFrameIds.current.clear();
             viewRef.current.destroy();
             viewRef.current = null;
             if (viewRefProp) viewRefProp.current = null;
@@ -183,6 +225,7 @@ export default function CodeMirror({
             ref={el}
             onMouseMove={debouncedOnMouseMove}
             className={clsx(styles.container, className)}
+            data-tour={dataTour}
             style={
                 {
                     "--cm-font-size": `${fontSize}px`,

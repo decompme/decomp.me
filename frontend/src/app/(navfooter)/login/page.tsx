@@ -2,13 +2,14 @@
 
 import { useState, useEffect, Suspense } from "react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { useSWRConfig } from "swr";
 
 import GitHubLoginButton from "@/components/GitHubLoginButton";
 import LoadingSpinner from "@/components/loading.svg";
 import * as api from "@/lib/api";
+import { useRouter } from "@/lib/navigation";
 import { requestMissingScopes } from "@/lib/oauth";
 
 function Login() {

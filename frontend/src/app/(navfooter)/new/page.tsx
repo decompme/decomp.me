@@ -1,4 +1,4 @@
-import { get } from "@/lib/api/request";
+import { getPublic } from "@/lib/api/request";
 
 import DESCRIPTION from "./description";
 import NewScratchForm from "./NewScratchForm";
@@ -7,8 +7,10 @@ export const metadata = {
     title: "New scratch",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function NewScratchPage() {
-    const availablePlatforms = await get("/platform");
+    const availablePlatforms = await getPublic("/platform");
 
     return (
         <main>

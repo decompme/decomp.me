@@ -1,8 +1,6 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import useSWR from "swr";
-
-import { CopyIcon } from "@primer/octicons-react";
 
 import LoadingSpinner from "@/components/loading.svg";
 import { PlatformIcon } from "@/components/PlatformSelect/PlatformIcon";
@@ -10,11 +8,11 @@ import PlatformName from "@/components/PlatformSelect/PlatformName";
 import { getScoreText } from "@/components/ScoreBadge";
 import TimeAgo from "@/components/TimeAgo";
 import UserLink from "@/components/user/UserLink";
+import CopyButton from "@/components/CopyButton";
 import { type Scratch, type PresetBase, get, usePreset } from "@/lib/api";
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls";
 
 import styles from "./AboutPanel.module.scss";
-import { useState } from "react";
 
 function ScratchLink({ url }: { url: string }) {
     const { data: scratch, error } = useSWR<Scratch>(url, get);
@@ -33,11 +31,7 @@ function ScratchLink({ url }: { url: string }) {
 
     return (
         <span className={styles.scratchLinkContainer}>
-            <Link
-                href={scratchUrl(scratch)}
-                className={styles.scratchLink}
-                prefetch={false}
-            >
+            <Link href={scratchUrl(scratch)} className={styles.scratchLink}>
                 {scratch.name || "Untitled scratch"}
             </Link>
             {scratch.owner && (
@@ -58,36 +52,19 @@ export type Props = {
 export default function AboutPanel({ scratch, setScratch }: Props) {
     const preset: PresetBase = usePreset(scratch.preset);
 
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy text to clipboard: ", err);
-        }
-    };
-
     return (
-        <div className={styles.container}>
+        <div className={styles.container} data-tour="scratch-about-panel">
             <div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Name</p>
                     <span>{scratch.name}</span>
-                    <button
-                        className={styles.copyIcon}
+                    <CopyButton
                         title="Copy Scratch link to clipboard"
-                        onClick={() =>
-                            copyToClipboard(
-                                `${window.location.origin}${scratchUrl(scratch)}`,
-                            )
+                        text={() =>
+                            `${typeof window !== "undefined" ? window.location.origin : ""}${scratchUrl(scratch)}`
                         }
-                    >
-                        <CopyIcon />
-                    </button>
-                    {copied && <span className={styles.copied}>Copied!</span>}
+                        className={"ml-1"}
+                    />
                 </div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Score</p>
@@ -122,9 +99,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
                 {preset && (
                     <div className={styles.horizontalField}>
                         <p className={styles.label}>Preset</p>
-                        <Link href={presetUrl(preset)} prefetch={false}>
-                            {preset.name}
-                        </Link>
+                        <Link href={presetUrl(preset)}>{preset.name}</Link>
                     </div>
                 )}
                 <div className={styles.horizontalField}>

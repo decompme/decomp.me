@@ -1,0 +1,6 @@
+upstream backend_upstream {
+    server backend-blue:8000;
+}
+upstream frontend_upstream {
+    server frontend-blue:8080;
+}

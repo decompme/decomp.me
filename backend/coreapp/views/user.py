@@ -1,11 +1,10 @@
 import django_filters
-
 from django.contrib.auth import logout
+from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-
-from rest_framework import generics, filters
+from rest_framework import filters, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,9 +13,11 @@ from ..decorators.cache import globally_cacheable
 from ..filters.search import NonEmptySearchFilter
 from ..middleware import Request
 from ..models.github import GitHubUser
+from ..models.preset import Preset
 from ..models.profile import Profile
 from ..models.scratch import Scratch
-from ..serializers import TerseScratchSerializer, serialize_profile
+from ..serializers import PresetSerializer, TerseScratchSerializer, serialize_profile
+from .preset import PresetPagination
 from .scratch import ScratchPagination, ScratchViewSet
 
 
@@ -66,9 +67,10 @@ class CurrentUserScratchList(generics.ListAPIView):  # type: ignore
     ordering_fields = ["creation_time", "last_updated", "score", "match_percent"]
 
     def get_queryset(self) -> QuerySet[Scratch]:
-        if self.request.profile.id is None:
+        profile: Profile | None = self.request.profile  # type: ignore[attr-defined]
+        if profile is None:  # should be impossible due to middleware
             return Scratch.objects.none()
-        return ScratchViewSet.queryset.filter(owner__id=self.request.profile.id)
+        return ScratchViewSet.queryset.filter(owner__id=profile.id)
 
 
 @method_decorator(
@@ -95,6 +97,32 @@ class UserScratchList(generics.ListAPIView):  # type: ignore
         )
 
 
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
+class UserPresetList(generics.ListAPIView):  # type: ignore
+    """
+    Gets a user's presets
+    """
+
+    pagination_class = PresetPagination
+    serializer_class = PresetSerializer
+    filterset_fields = ["platform", "compiler"]
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        NonEmptySearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["creation_time", "id", "name", "compiler", "num_scratches"]
+
+    def get_queryset(self) -> QuerySet[Preset]:
+        return (
+            Preset.objects.filter(owner__user__username=self.kwargs["username"])
+            .select_related("owner__user", "owner__user__github")
+            .annotate(num_scratches=Count("scratch"))
+        )
+
+
 @api_view(["GET"])  # type: ignore
 @globally_cacheable(max_age=300, stale_while_revalidate=30)
 def user(request: Request, username: str) -> Response:
@@ -103,5 +131,28 @@ def user(request: Request, username: str) -> Response:
     """
 
     return Response(
-        serialize_profile(get_object_or_404(Profile, user__username=username))
+        serialize_profile(
+            get_object_or_404(Profile, user__username=username), num_scratches=True
+        )
     )
+
+
+@method_decorator(
+    globally_cacheable(max_age=60, stale_while_revalidate=30), name="dispatch"
+)
+class UserScratchStats(APIView):
+    def get(self, request: Request, username: str) -> Response:
+        groupby = "platform"
+
+        qs = Scratch.objects.filter(owner__user__username=username)
+        data = qs.values(groupby).annotate(count=Count("slug")).order_by("-count")
+
+        resp = Response(
+            {
+                "groupby": groupby,
+                "results": [
+                    {"group": row[groupby], "count": row["count"]} for row in data
+                ],
+            }
+        )
+        return resp

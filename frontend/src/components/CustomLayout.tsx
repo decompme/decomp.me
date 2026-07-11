@@ -73,6 +73,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
     } else {
         const els = [];
         const minCollapsedHeight = 37;
+        const defaultSizes = [];
         for (let index = 0; index < layout.children.length; index++) {
             const child = layout.children[index];
 
@@ -84,13 +85,26 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
                 onChange(clone);
             };
 
+            defaultSizes.push(child.size);
+
             els.push(
                 <Allotment.Pane key={child.key} minSize={minCollapsedHeight}>
-                    <CustomLayout
-                        renderTab={renderTab}
-                        layout={child}
-                        onChange={setChild}
-                    />
+                    <div
+                        className="size-full min-h-0"
+                        data-tour={
+                            child.key === 1
+                                ? "scratch-layout-left"
+                                : child.key === 2
+                                  ? "scratch-layout-right"
+                                  : undefined
+                        }
+                    >
+                        <CustomLayout
+                            renderTab={renderTab}
+                            layout={child}
+                            onChange={setChild}
+                        />
+                    </div>
                 </Allotment.Pane>,
             );
         }
@@ -99,6 +113,7 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
             <Allotment
                 key={layout.kind} // Force remount when layout.kind changes
                 vertical={layout.kind === "vertical"}
+                defaultSizes={defaultSizes}
             >
                 {els}
             </Allotment>

@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -24,13 +23,12 @@ class Project(models.Model):
         return self.slug
 
     def is_member(self, profile: Profile) -> bool:
-        for member in self.members():
-            if member.user.profile == profile:
-                return True
-        return False
-
-    def members(self) -> List["ProjectMember"]:
-        return [m for m in ProjectMember.objects.filter(project=self)]
+        if profile.user_id is None:
+            return False
+        return ProjectMember.objects.filter(
+            project=self,
+            user_id=profile.user_id,
+        ).exists()
 
 
 class ProjectMember(models.Model):

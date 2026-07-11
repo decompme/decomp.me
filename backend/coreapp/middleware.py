@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import Callable, TYPE_CHECKING, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -21,7 +22,7 @@ class AnonymousUser(auth.models.AnonymousUser):
 if TYPE_CHECKING:
 
     class Request(DRFRequest):
-        user: Union[User, AnonymousUser]
+        user: User | AnonymousUser
         profile: Profile
 
 else:
@@ -38,27 +39,36 @@ def disable_csrf(
     return middleware
 
 
-def is_public_request(req: Request) -> bool:
-    methods_paths = [
-        ("GET", "/api/compiler"),
-        ("GET", "/api/library"),
-        ("GET", "/api/platform"),
-        ("GET", "/api/preset"),
-        ("GET", "/api/scratch-count$"),
-        ("GET", "/api/scratch/[A-Za-z0-9]+/compile$"),
-        ("GET", "/api/scratch/[A-Za-z0-9]+/export$"),
-        ("GET", "/api/scratch/[A-Za-z0-9]+/family$"),
-        ("GET", "/api/scratch/[A-Za-z0-9]+$"),
-        ("GET", "/api/scratch$"),
-        ("GET", "/api/search$"),
-        ("GET", "/api/stats$"),
-        ("GET", "/api/users"),
+def is_public_get_request(req: Request) -> bool:
+    public_paths = [
+        "/api/compiler",
+        "/api/healthz$",
+        "/api/library",
+        "/api/platform",
+        "/api/preset",
+        "/api/scratch-count$",
+        "/api/scratch/[A-Za-z0-9]+/compile$",
+        "/api/scratch/[A-Za-z0-9]+/export$",
+        "/api/scratch/[A-Za-z0-9]+/family$",
+        "/api/scratch/[A-Za-z0-9]+$",
+        "/api/scratch$",
+        "/api/search$",
+        "/api/stats$",
+        "/api/users",
     ]
-    for method, path in methods_paths:
-        if req.method == method and re.match(path, req.path):
+    for path in public_paths:
+        if req.method == "GET" and re.match(path, req.path):
             return True
 
     return False
+
+
+def is_ephemeral_profile_request(req: Request) -> bool:
+    return (
+        req.method in ("GET", "HEAD")
+        and req.path == "/api/user"
+        and "sessionid" not in req.COOKIES
+    )
 
 
 def set_user_profile(
@@ -79,10 +89,21 @@ def set_user_profile(
             "YandexRenderResourcesBot",
             "SentryUptimeBot",
             "Discord",
+            "Wget",
         ]
 
         # Avoid creating persistent profiles for SSR or bots
         if not user_agent or any(bot in user_agent for bot in bot_signatures):
+            request.profile = Profile()
+            return get_response(request)
+
+        # Avoid creating persistent profiles on anonymous requests
+        if is_ephemeral_profile_request(request):
+            request.profile = Profile()
+            return get_response(request)
+
+        # Avoid creating persistent profiles on HEAD or OPTIONS requests
+        if request.method in ("HEAD", "OPTIONS"):
             request.profile = Profile()
             return get_response(request)
 
@@ -103,8 +124,8 @@ def set_user_profile(
                 if profile and profile.user and request.user.is_anonymous:
                     request.user = profile.user
 
-        # Avoid creating persistent for public endpoints
-        if not profile and is_public_request(request):
+        # Avoid creating persistent profiles for public endpoints
+        if not profile and is_public_get_request(request):
             request.profile = Profile()
             return get_response(request)
 
@@ -153,6 +174,18 @@ def strip_cookie_vary(
                     response.headers["Vary"] = ", ".join(vary_headers)
                 else:
                     del response.headers["Vary"]
+        return response
+
+    return middleware
+
+
+def strip_session(
+    get_response: Callable[[HttpRequest], Response],
+) -> Callable[[Request], Response]:
+    def middleware(request: Request) -> Response:
+        response = get_response(request)
+        if is_public_get_request(request):
+            response.cookies.clear()
         return response
 
     return middleware

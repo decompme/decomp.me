@@ -1,5 +1,3 @@
-from typing import Optional
-
 import requests
 from django.conf import settings
 from django.contrib.auth import login
@@ -73,7 +71,7 @@ class GitHubUser(models.Model):
                 "GitHub API returned invalid JSON."
             )
 
-        error: Optional[str] = response_json.get("error")
+        error: str | None = response_json.get("error")
         if error == "bad_verification_code":
             raise BadOAuthCodeException()
         elif error:

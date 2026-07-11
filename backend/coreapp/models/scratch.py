@@ -1,16 +1,20 @@
+import hashlib
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
-from attr import dataclass
-from django.db import models
+import itsdangerous
+from django.conf import settings
 from django.contrib import admin
+from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
+
+from .profile import Profile
 
 if TYPE_CHECKING:
     from coreapp.compiler_utils import Language
-
-from .profile import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +24,7 @@ class Library:
     name: str
     version: str
 
-    def to_json(self):
+    def to_json(self) -> dict[str, str]:
         return {
             "name": self.name,
             "version": self.version,
@@ -34,10 +38,6 @@ def gen_scratch_id() -> str:
         return gen_scratch_id()
 
     return ret
-
-
-def gen_claim_token() -> str:
-    return get_random_string(length=32)
 
 
 class Asm(models.Model):
@@ -74,14 +74,13 @@ class LibrariesField(models.JSONField):
 
     def deconstruct(self) -> tuple[str, str, Sequence[Any], dict[str, Any]]:
         name, path, args, kwargs = super().deconstruct()
-        # remove encoder from the generated migrations. If we don't do this,
-        # makemigrations generates invalid migrations that try to access the
-        # local MyEncoder...
         kwargs.pop("encoder", None)
         return name, path, args, kwargs
 
     def to_python(self, value: Any) -> list[Library]:
         res = super().to_python(value)
+        if res is None:
+            return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
 
     def from_db_value(self, *args: Any, **kwargs: Any) -> list[Library]:
@@ -89,6 +88,32 @@ class LibrariesField(models.JSONField):
         if res is None:
             return []
         return [Library(name=lib["name"], version=lib["version"]) for lib in res]
+
+
+class Context(models.Model):
+    text = models.TextField()
+    hash = models.BinaryField(max_length=8, unique=True, db_index=True)
+
+    @classmethod
+    def get_or_create_from_text(cls, text: str | None) -> "Context | None":
+        if text is None:
+            return None
+
+        text = text.strip()
+        if not text:
+            return None
+
+        h = hashlib.blake2b(text.encode("utf-8"), digest_size=8).digest()
+        try:
+            obj, _ = cls.objects.get_or_create(hash=h, defaults={"text": text})
+        except IntegrityError:
+            obj = cls.objects.get(hash=h)
+            if obj.text != text:
+                raise ValueError("Hash collision detected for this Context")
+        return obj
+
+    def __str__(self) -> str:
+        return f"Context({self.hash.hex()})"
 
 
 class Scratch(models.Model):
@@ -106,7 +131,7 @@ class Scratch(models.Model):
     )
     target_assembly = models.ForeignKey(Assembly, on_delete=models.CASCADE)
     source_code = models.TextField(blank=True)
-    context = models.TextField(blank=True)
+    context_fk = models.ForeignKey(Context, null=True, on_delete=models.PROTECT)
     diff_label = models.CharField(
         max_length=1024, blank=True
     )  # blank means diff from the start of the file
@@ -129,18 +154,19 @@ class Scratch(models.Model):
         related_name="children",
     )
     owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
-    claim_token = models.CharField(
-        max_length=64, blank=True, null=True, default=gen_claim_token
-    )
 
     class Meta:
         ordering = ["-creation_time"]
+        indexes = [
+            models.Index(fields=["-creation_time"], name="scratch_created_idx"),
+            models.Index(fields=["-last_updated"], name="scratch_updated_idx"),
+            models.Index(fields=["score"], name="scratch_score_idx"),
+        ]
         verbose_name_plural = "Scratches"
 
     def __str__(self) -> str:
         return self.slug
 
-    # hash for etagging
     def __hash__(self) -> int:
         return hash((self.slug, self.last_updated))
 
@@ -155,41 +181,43 @@ class Scratch(models.Model):
     def is_claimable(self) -> bool:
         return self.owner is None
 
+    @property
+    def has_score(self) -> bool:
+        return self.score >= 0
+
+    @property
+    def is_match(self) -> bool:
+        return self.score == 0 or self.match_override
+
+    @property
+    def has_usable_result(self) -> bool:
+        return self.has_score or self.match_override
+
+    @property
+    def claim_token(self) -> str:
+        serializer = itsdangerous.URLSafeSerializer(
+            settings.SECRET_KEY, salt="claim-token"
+        )
+        return serializer.dumps({"slug": self.slug})
+
+    def verify_claim_token(self, token: str) -> bool:
+        serializer = itsdangerous.URLSafeSerializer(
+            settings.SECRET_KEY, salt="claim-token"
+        )
+        try:
+            data: dict[str, str] = serializer.loads(token)
+            return isinstance(data, dict) and data.get("slug") == self.slug
+        except itsdangerous.BadData:
+            return False
+
     def get_language(self) -> "Language":
         from coreapp.cromper_client import get_cromper_client
 
         cromper = get_cromper_client()
         compiler = cromper.get_compiler_by_id(self.compiler)
-
-        """
-        Strategy for extracting a scratch's language:
-        - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
-        - Otherwise, fallback to the compiler's default language
-        """
-        # TODO need a more robust way to do this
-        # language_flag_set = next(
-        #     (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
-        #     None,
-        # )
-
-        # if language_flag_set:
-        #     matches = [
-        #         (flag, language)
-        #         for flag, language in language_flag_set.flags.items()
-        #         if flag in self.compiler_flags
-        #     ]
-
-        #     if matches:
-        #         # taking the longest avoids detecting C++ as C
-        #         longest_match = max(matches, key=lambda m: len(m[0]))
-        #         return longest_match[1].value
-
-        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
-        # have a flag within it.
-        # Either way: fall back to the compiler default.
         return compiler.language
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
-    raw_id_fields = ["owner", "parent", "family"]
+    raw_id_fields = ["owner", "parent", "family", "context_fk"]
     readonly_fields = ["target_assembly"]

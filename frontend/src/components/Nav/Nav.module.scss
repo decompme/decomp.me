@@ -14,8 +14,6 @@ $padding: 8px;
 
 .header {
     min-height: $inner-size;
-    padding-top: $padding;
-    padding-bottom: $padding;
     box-sizing: content-box;
 
     display: grid;
@@ -30,6 +28,9 @@ $padding: 8px;
 
 .headerItemMenuToggle {
     grid-area: menutoggle;
+
+    align-items: center;
+    display: flex;
 
     & > button {
         width: $inner-size;

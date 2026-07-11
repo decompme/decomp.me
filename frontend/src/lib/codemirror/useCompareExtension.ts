@@ -70,6 +70,8 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(
         private worker = new Worker(
             new URL("./useCompareExtension.worker.ts", import.meta.url),
         );
+        private isDestroyed = false;
+        private updateId = 0;
 
         constructor(private view: EditorView) {
             this.updateDiff();
@@ -102,10 +104,15 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(
         }
 
         async updateDiff() {
+            const updateId = ++this.updateId;
             const diff = await this.calculateDiff(
                 this.view.state.facet(targetString),
                 this.view.state.doc.toString(),
             );
+
+            if (this.isDestroyed || updateId !== this.updateId) {
+                return;
+            }
 
             // Convert diff changes to a map of line numbers -> change type
             let map: DiffLineMap = {};
@@ -128,6 +135,11 @@ const diffLineCalcPlugin = ViewPlugin.fromClass(
                     diffLineMap.of(map),
                 ),
             });
+        }
+
+        destroy() {
+            this.isDestroyed = true;
+            this.worker.terminate();
         }
     },
 );

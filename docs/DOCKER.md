@@ -1,72 +1,12 @@
 # Docker
 
-## Prerequisites:
+## Prerequisites
+
+You will need to have at least 4GB RAM available, ideally 6GB+.
 
 ### Docker
 
 You will need [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/). Follow the instructions for your distro.
-
-
-## Production
-
-0. Create a `docker.prod.env` and set the necessary configuration options (see .env for inspiration).
-
-```bash
-nano docker.prod.env
-```
-
-1. Bring up postgres & nginx containers
-
-```bash
-docker compose -f docker-compose.prod.yaml up -d postgres nginx
-```
-
-2. Build and bring up backend
-
-```bash
-docker compose -f docker-compose.prod.yaml build backend
-docker compose -f docker-compose.prod.yaml up -d backend
-```
-
-3. Build and bring up frontend (relies on backend for SSR)
-
-```bash
-# NOTE: this can be overridden if needed, i.e. --build-arg INTERNAL_API_BASE=https://decomp.me/api
-docker compose -f docker-compose.prod.yaml build frontend
-docker compose -f docker-compose.prod.yaml up -d frontend
-```
-
-
-### SSL Certificates Bootstrap
-
-In order to bring up nginx we need to have SSL certificates. In order to do that we need to get nginx to run only on port 80, then run certbot to fetch the certs.
-
-1. Modify the `nginx/production.conf` to comment out the *whole* `server { listen 443 ssl http2; ... }` block.
-
-2. Bring up nginx
-
-```
-docker compose -f docker-compose.prod.yaml up -d nginx
-```
-
-3. Run certbot:
-
-```bash
-docker compose run --rm certbot certonly \
-  --webroot -w /var/www/certbot \
-  -d decomp.me -d www.decomp.me \
-  --email you@your-email.com \
-  --agree-tos \
-  --no-eff-email
-```
-
-4. Uncomment the 443 block and then send a reload trigger to nginx
-
-```
-docker compose exec nginx nginx -t # sanity check configuration OK
-docker compose exec nginx nginx -s reload
-```
-
 
 ## Development
 
@@ -74,7 +14,7 @@ There is a `docker-compose.yaml` file to help you spin up a dev instance quickly
 
 **Run in foreground:**
 
-```sh
+```bash
 docker compose up --build
 ```
 
@@ -85,7 +25,7 @@ Navigate to [http://localhost:80](http://localhost:80) in your browser.
 
 **Run daemonised:**
 
-```sh
+```bash
 docker compose up -d && docker compose logs -f
 ```
 You can CTRL+C to stop tailing logs. If you want to stop the processes then running `docker compose down` will shut everything down.
@@ -116,6 +56,64 @@ If you wish to run decomp.me on one machine and connect from a *different* one (
 
 E.g. if your hostname is `mylaptop`:
 
-```sh
+```bash
 ALLOWED_HOSTS="backend,localhost,127.0.0.1,mylaptop"
+```
+
+## Production
+
+Production uses `docker-compose.prod.yaml` with blue/green backend and frontend slots. See [PRODUCTION.md](PRODUCTION.md) for the deployment runbook.
+
+Create a `docker.prod.env` and set the necessary configuration options.
+
+```bash
+nano docker.prod.env
+```
+
+Bring up the shared production services.
+
+```bash
+docker compose -f docker-compose.prod.yaml up -d postgres nginx certbot
+```
+
+Deploy an app image tag with the blue/green deploy script.
+
+```bash
+python3 deploy.py deploy githash
+```
+
+Use the migration flow for deploys that require database maintenance.
+
+```bash
+python3 deploy.py migrate githash
+```
+
+### SSL Certificates Bootstrap
+
+In order to bring up nginx we need to have SSL certificates. In order to do that we need to get nginx to run only on port 80, then run certbot to fetch the certs.
+
+1. Modify `nginx/production/default.conf` to comment out the whole HTTPS server block between `{{HTTPS_SERVER_BLOCK_START}}` and `{{HTTPS_SERVER_BLOCK_END}}`.
+
+2. Bring up nginx
+
+```bash
+docker compose -f docker-compose.prod.yaml up -d nginx
+```
+
+3. Run certbot:
+
+```bash
+docker compose run --rm certbot certonly \
+  --webroot -w /var/www/certbot \
+  -d decomp.me -d www.decomp.me \
+  --email you@your-email.com \
+  --agree-tos \
+  --no-eff-email
+```
+
+4. Uncomment the 443 block and then send a reload trigger to nginx
+
+```bash
+docker compose exec nginx nginx -t # sanity check configuration OK
+docker compose exec nginx nginx -s reload
 ```

@@ -10,7 +10,9 @@ import {
     useLanguageServerEnabled,
     useVimModeEnabled,
     useThreeWayDiffBase,
-    useObjdiffClientEnabled,
+    useDefaultDiffTab,
+    useSwapVerticalLayout,
+    DefaultDiffTab,
 } from "@/lib/settings";
 
 import Checkbox from "../Checkbox";
@@ -28,8 +30,8 @@ export default function EditorSettings() {
         useLanguageServerEnabled();
     const [vimModeEnabled, setVimModeEnabled] = useVimModeEnabled();
     const [threeWayDiffBase, setThreeWayDiffBase] = useThreeWayDiffBase();
-    const [objdiffClientEnabled, setObjdiffClientEnabled] =
-        useObjdiffClientEnabled();
+    const [defaultDiffTab, setDefaultDiffTab] = useDefaultDiffTab();
+    const [swapVerticalLayout, setSwapVerticalLayout] = useSwapVerticalLayout();
 
     const [downloadingLanguageServer, setDownloadingLanguageServer] =
         useState(false);
@@ -44,6 +46,7 @@ export default function EditorSettings() {
         }
 
         if (languageServerEnabled) {
+            let isCurrent = true;
             setDownloadingLanguageServer(true);
 
             import("@clangd-wasm/clangd-wasm").then(
@@ -52,9 +55,19 @@ export default function EditorSettings() {
                     // is is a way to make sure the wasm file ends up in the browser's cache.
                     fetch(ClangdStdioTransport.getDefaultWasmURL(false))
                         .then((res) => res.blob())
-                        .then(() => setDownloadingLanguageServer(false));
+                        .then(() => {
+                            if (isCurrent) {
+                                setDownloadingLanguageServer(false);
+                            }
+                        });
                 },
             );
+
+            return () => {
+                isCurrent = false;
+            };
+        } else {
+            setDownloadingLanguageServer(false);
         }
     }, [languageServerEnabled]);
 
@@ -74,6 +87,15 @@ export default function EditorSettings() {
                     <span className="font-mono text-gray-11">diff.py -3</span> )
                 </div>
             ),
+        },
+    };
+
+    const defaultDiffTabOptions = {
+        [DefaultDiffTab.ASM_DIFFER]: {
+            label: "asm-differ",
+        },
+        [DefaultDiffTab.OBJDIFF]: {
+            label: "objdiff",
         },
     };
 
@@ -113,12 +135,33 @@ export default function EditorSettings() {
                     options={threeWayDiffOptions}
                 />
             </Section>
+            <Section title="Default diff tab">
+                <div className="text-gray-11">
+                    Choose which diff tool should be shown by default when
+                    viewing a scratch.
+                </div>
+                <RadioList
+                    value={defaultDiffTab}
+                    onChange={(value: string) => {
+                        setDefaultDiffTab(value as DefaultDiffTab);
+                    }}
+                    options={defaultDiffTabOptions}
+                />
+            </Section>
             <Section title="Match progress bar">
                 <Checkbox
                     checked={matchProgressBarEnabled}
                     onChange={setMatchProgressBarEnabled}
                     label="Show progress bar on scratch editor"
                     description="Show a progress bar at the top of the editor to visually display the match percent of a scratch."
+                />
+            </Section>
+            <Section title="Mobile layout">
+                <Checkbox
+                    checked={swapVerticalLayout}
+                    onChange={setSwapVerticalLayout}
+                    label="Show diff above editor"
+                    description="Position the diff panel above the code editor on mobile."
                 />
             </Section>
             <Section title="Language server">
@@ -141,14 +184,6 @@ export default function EditorSettings() {
                     onChange={setVimModeEnabled}
                     label="Enable vim bindings"
                     description="Enable vim bindings in the scratch editor"
-                />
-            </Section>
-            <Section title="Experiments">
-                <Checkbox
-                    checked={objdiffClientEnabled}
-                    onChange={setObjdiffClientEnabled}
-                    label="Enable objdiff integration [alpha]"
-                    description="Enable objdiff tab in the scratch editor. Still under development."
                 />
             </Section>
         </>

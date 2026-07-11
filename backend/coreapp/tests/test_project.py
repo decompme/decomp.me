@@ -1,12 +1,13 @@
 import tempfile
 
+from django.contrib.auth.models import User
+from django.urls import reverse
+from rest_framework import status
+
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
 from coreapp.models.project import Project, ProjectMember
 from coreapp.tests.common import BaseTestCase
-from django.contrib.auth.models import User
-from django.urls import reverse
-from rest_framework import status
 
 
 class ProjectTests(BaseTestCase):
@@ -104,3 +105,8 @@ class ProjectTests(BaseTestCase):
                 p = Project.objects.first()
                 assert p is not None
                 self.assertEqual(p.description, "new description")
+
+    def test_unsaved_profile_is_not_project_member(self) -> None:
+        project = ProjectTests.create_test_project()
+
+        self.assertFalse(project.is_member(Profile()))

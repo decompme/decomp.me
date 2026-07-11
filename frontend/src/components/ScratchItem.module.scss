@@ -6,7 +6,7 @@
 
     overflow: hidden;
 
-    padding: 1em;
+    padding: calc(1em - 4px) 1em;
 
     border: 1px solid inherit;
     border-radius: inherit;
@@ -20,49 +20,111 @@
     }
 }
 
+.icon {
+    flex-shrink: 0;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.improvement {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.35rem;
+    justify-content: center;
+    min-width: 5rem;
+    height: 1.4rem;
+    padding: 0 0.5rem;
+
+    border-radius: 0.5em;
+
+    background: var(--link);
+    color: white;
+    font-size: 0.8em;
+    font-weight: 600;
+    line-height: 1;
+
+    &.match {
+        background: var(--accent);
+    }
+
+    span {
+        transform: translateX(-2px);
+    }
+}
+
+.improvementIcon {
+    flex-shrink: 0;
+    color: white;
+}
+
 .scratch {
+    display: grid;
+    gap: 8px;
+
     line-height: 1.5;
 
     .header {
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 0.5em;
 
-        .name {
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-        /* If two children, align them to the left and right */
-        &:has(> :last-child:nth-child(2)) {
-            grid-template-columns: 1fr auto;
+        .title {
+            min-width: 0;
         }
     }
 
-    .icon {
-        width: 1.2em;
-        height: 1.2em;
+    .title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        min-width: 0;
+    }
+
+    .name {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .owner {
+        flex-shrink: 0;
+        white-space: nowrap;
         color: var(--g1200);
     }
 
+    .improvementSlot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1rem;
+    }
+
     .metadata {
-        display: flex;
-        align-items: flex-end;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.75rem;
 
         color: var(--g900);
 
-        > span {
-            flex-grow: 1;
+        .metadataText {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .metadataAside {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .actions {
-            padding-top: 0.25em;
+            flex-shrink: 0;
         }
     }
 }
@@ -77,20 +139,128 @@
 
     padding: 0.4em 0;
 
-    .icon {
-        flex-shrink: 0;
-        width: 1.2em;
-        height: 1.2em;
-    }
-
     .name {
         flex-grow: 1;
 
         overflow: hidden;
         text-overflow: ellipsis;
     }
+}
 
-    .metadata {
-        color: var(--g1200);
+.skeletonItem {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 70px;
+    padding: calc(1em - 4px) 1em;
+
+    border: 1px solid inherit;
+    border-radius: inherit;
+}
+
+.skeletonCompact {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4em;
+
+    min-height: auto;
+    padding: 0.4em 0;
+
+    border: none;
+}
+
+.skeletonHeader,
+.skeletonMetadata {
+    display: grid;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.skeletonHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.skeletonMetadata {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+}
+
+.skeletonIcon,
+.skeletonTitle,
+.skeletonBadge,
+.skeletonMetaLong,
+.skeletonMetaShort,
+.skeletonPill {
+    display: block;
+
+    background: linear-gradient(
+        100deg,
+        var(--g300) 35%,
+        var(--g400) 50%,
+        var(--g300) 65%
+    );
+    background-size: 220% 100%;
+
+    animation: scratch-item-skeleton 1.3s ease-in-out infinite;
+}
+
+.skeletonIcon {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.skeletonTitle {
+    width: min(28ch, 72%);
+    height: 1.2em;
+}
+
+.skeletonBadge {
+    width: 5rem;
+    height: 1.4rem;
+}
+
+.skeletonMetaLong {
+    width: min(36ch, 82%);
+    height: 1em;
+}
+
+.skeletonMetaShort {
+    width: 7ch;
+    height: 1em;
+}
+
+.skeletonPill {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+}
+
+.skeletonCompact .skeletonTitle {
+    flex: 1;
+    width: auto;
+    max-width: none;
+    height: 1em;
+}
+
+@keyframes scratch-item-skeleton {
+    from {
+        background-position: 120% 0;
+    }
+
+    to {
+        background-position: -120% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonIcon,
+    .skeletonTitle,
+    .skeletonBadge,
+    .skeletonMetaLong,
+    .skeletonMetaShort,
+    .skeletonPill {
+        animation: none;
     }
 }

@@ -52,7 +52,10 @@ export default function DragBar({ pos, onChange }: Props) {
             ref={ref}
             className={`${styles.vertical} ${isActive && styles.active}`}
             style={{ left: `${pos}px` }}
-            onMouseDown={() => setIsActive(true)}
+            onMouseDown={(event) => {
+                event.preventDefault();
+                setIsActive(true);
+            }}
             onTouchMove={() => setIsActive(true)}
         />
     );

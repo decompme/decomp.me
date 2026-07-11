@@ -3,11 +3,16 @@
 
     "agbccpp": "agbccpp",
 
+    "gcc2.96": "gcc2.96",
+
     "armcc_40_771": "4.0 build 771",
     "armcc_40_821": "4.0 build 821",
+    "armcc_40_865": "4.0 build 865",
+    "armcc_40_902": "4.0 build 902",
     "armcc_41_561": "4.1 build 561",
     "armcc_41_713": "4.1 build 713",
     "armcc_41_791": "4.1 build 791",
+    "armcc_41_844": "4.1 build 844",
     "armcc_41_894": "4.1 build 894",
     "armcc_41_921": "4.1 build 921",
     "armcc_41_1049": "4.1 build 1049",
@@ -32,7 +37,6 @@
     "ee-gcc2.95.3-114": "EE GCC 2.95.3 (SN BUILD v1.14)",
     "ee-gcc2.95.3-136": "EE GCC 2.95.3 (SN BUILD v1.36)",
     "ee-gcc2.96": "EE GCC 2.96 build 001003-1",
-    "ee-gcc3.2-030210-beta2": "EE GCC 3.2 build 030210 Beta 2",
     "ee-gcc3.2-030926": "EE GCC 3.2 build 030926",
     "ee-gcc3.2-040921": "EE GCC 3.2 build 040921",
 
@@ -84,15 +88,16 @@
     "ido5.3_asm_irix": "IDO 5.3 AS",
     "ido5.3_c++_irix": "IDO 5.3 C++",
     "ido6.0_irix": "IDO 6.0",
-
     "mips_pro_744_irix": "MIPS Pro 7.4.4",
-
     "ido6.0": "IDO 6.0",
     "ido7.1_irix": "IDO 7.1",
+    "ido4.1": "IDO 4.1",
     "ido5.3": "IDO 5.3",
+    "ido5.2": "IDO 5.2",
     "ido5.3_c++": "IDO 5.3 C++",
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
+    "ido7.1_c++": "IDO 7.1 C++",
     "ido7.1Pascal": "IDO 7.1 Pascal",
 
     "mips_pro_744": "MIPS Pro 7.4.4",
@@ -110,6 +115,9 @@
     "msvc7.1": "Microsoft Visual C/C++ 7.1 .NET 2003",
     "msvc8.0": "Microsoft Visual C/C++ 8.0",
     "msvc8.0p": "Microsoft Visual C/C++ 8.0 (Patched)",
+
+    "msvc_ppc_14.00.2110": "Microsoft C/C++ Compiler 14.00.2110 for PowerPC",
+    "msvc_ppc_16.00.11886.00": "Microsoft C/C++ Compiler 16.00.11886.00 for PowerPC",
 
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
@@ -184,6 +192,7 @@
     "gcc2.5.7-psx": "gcc 2.5.7-psx + maspsx",
     "gcc2.6.0-psx": "gcc 2.6.0-psx + maspsx",
     "gcc2.6.3-psx": "gcc 2.6.3-psx + maspsx",
+    "gcc2.7.2-cdk": "gcc 2.7.2-970404 + maspsx",
     "gcc2.7.2-psx": "gcc 2.7.2-psx + maspsx",
     "gcc2.8.0-psx": "gcc 2.8.0-psx + maspsx",
     "gcc2.8.1-psx": "gcc 2.8.1-psx + maspsx",
@@ -234,6 +243,8 @@
     "pspsnc_1.2.7503.0": "SN 1.2.7503.0",
     "psp-gcc-1.3.1": "GCC 3.3.3+allegrex-2.2.1-psp-1.3.1",
 
+    "wcc10.0a": "Watcom Optimizing C i386 Compiler 10.0a",
+    "wpp10.0a": "Watcom Optimizing C++ i386 Compiler 10.0a",
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
     "wcc10.5a": "Watcom Optimizing C i386 Compiler 10.5a",
@@ -246,7 +257,12 @@
     "bcc2.0": "Borland C++ Compiler 2.0",
     "bcc3.1": "Borland C++ Compiler 3.1",
 
+    "msc5.1": "Microsoft C Compiler 5.1",
+
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
+
+    "ndk-r8e-gcc-4.4.3": "Android NDK r8e (GCC 4.4.3)",
+    "ndk-r8e-gcc-4.7": "Android NDK r8e (GCC 4.7)",
 
     "armcc_opt_level": "Optimization level",
     "armcc_opt_level.-O0": "No optimization",
@@ -313,6 +329,9 @@
     "gcc_source_language": "Source language",
     "gcc_source_language.-x c": "C",
     "gcc_source_language.-x c++": "C++",
+
+    "ghs_source_language": "Source language",
+    "ghs_source_language.--g++": "C++",
 
     "ido_opt_level": "Optimization level",
     "ido_opt_level.-O0": "No optimization",
@@ -413,7 +432,8 @@
     "msvc_rtlib./MLd": "Debug Single-Threaded",
     "msvc_rtlib./MTd": "Debug Multithreaded",
     "msvc_rtlib./MDd": "Debug Multithreaded DLL",
-    "msvc_compile_cpp": "compile as C++",
+    "msvc_source_language": "Source language",
+    "msvc_source_language./TP": "C++",
     "msvc_use_rtti": "enable C++ RTTI",
     "msvc_use_ehsc": "enable C++ EH",
     "msvc_disable_stack_checking": "disable stack checking calls",
@@ -515,6 +535,7 @@
     "mips_mreg_names.-Mreg-names=64": "ABI N64",
     "mips_mreg_names.-Mreg-names=numeric": "Numeric registers",
     "mno_aliases": "Disable pseudo instructions",
+    "adjust_vma": "Objdump start offset",
     "no_show_rodata_refs": "Hide rodata refs in diff, e.g. jtbl labels",
     "diff_function_symbols": "Include function labels in diff",
     "diff_reloc": "Diff relocation",

@@ -306,6 +306,9 @@ class LanguageServerPlugin implements PluginValue {
     }
 
     destroy() {
+        if (this.changesTimeout) {
+            clearTimeout(this.changesTimeout);
+        }
         this.client.detachPlugin(this);
     }
 

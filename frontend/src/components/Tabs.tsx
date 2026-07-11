@@ -8,6 +8,7 @@ import {
     type RefObject,
     useLayoutEffect,
     useRef,
+    useEffect,
 } from "react";
 
 import { XIcon } from "@primer/octicons-react";
@@ -44,6 +45,7 @@ export type TabContent = ReactNode | (() => ReactNode);
 export type TabProps = {
     children?: TabContent;
     className?: string;
+    dataTour?: string;
     tabKey: string;
     label?: ReactNode;
     disabled?: boolean;
@@ -76,6 +78,7 @@ export class Tab extends Component<TabProps> {
                             role="tab"
                             aria-selected={ctx.activeTab === key}
                             className={styles.tabButton}
+                            data-tour={this.props.dataTour}
                             disabled={this.props.disabled}
                             onClick={() => {
                                 ctx.setActive(key);
@@ -188,10 +191,13 @@ export default function Tabs({
 
     // Switch to first tab if active tab is not found
     const activeChild = tabs[activeTab];
+    const hasActiveChild = !!activeChild;
     const firstTab = Object.keys(tabs)[0];
-    if (!activeChild && firstTab) {
-        onChange(firstTab);
-    }
+    useEffect(() => {
+        if (!hasActiveChild && firstTab) {
+            onChange(firstTab);
+        }
+    }, [hasActiveChild, firstTab, onChange]);
 
     return (
         <TABS_CTX.Provider
@@ -220,7 +226,7 @@ export default function Tabs({
             >
                 <div
                     role="tablist"
-                    className={styles.tabButtons}
+                    className={clsx(styles.tabButtons, "min-h-10 sm:min-h-12")}
                     style={{ background }}
                     onMouseMove={() => {
                         // If the event propagated here, no non-disabled tab is hovered over
@@ -255,6 +261,9 @@ export default function Tabs({
                                     styles.tabPanelContent,
                                     props.className,
                                 )}
+                                data-tour={
+                                    props.dataTour && `${props.dataTour}-panel`
+                                }
                             >
                                 <ErrorBoundary>{children}</ErrorBoundary>
                             </div>

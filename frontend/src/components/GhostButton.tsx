@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import clsx from "clsx";
 
@@ -29,7 +29,7 @@ export default function GhostButton({
 
     if (href) {
         return (
-            <Link href={href} prefetch={false} className={cn} onClick={onClick}>
+            <Link href={href} className={cn} onClick={onClick}>
                 {children}
             </Link>
         );
