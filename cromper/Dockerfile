@@ -46,6 +46,8 @@ FROM base AS dependencies
 RUN dpkg --add-architecture i386 \
     && add-apt-repository -y ppa:dosemu2/ppa \
     && add-apt-repository -y ppa:stsp-0/dj64 \
+    && echo "deb http://archive.ubuntu.com/ubuntu jammy universe" > /etc/apt/sources.list.d/jammy.list \
+    && printf "Package: *\nPin: release n=jammy\nPin-Priority: 100\n" > /etc/apt/preferences.d/jammy \
     && apt-get update \
     && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
     binutils-aarch64-linux-gnu \
@@ -68,17 +70,15 @@ RUN dpkg --add-architecture i386 \
     libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
+    libtinfo5 \
     libtinfo6 \
     netcat-traditional \
     unzip \
     wget \
     wine \
     wine32:i386 \
+    && rm -f /etc/apt/sources.list.d/jammy.list /etc/apt/preferences.d/jammy \
     && rm -rf /var/lib/apt/lists/*
-
-RUN wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb \
-    && apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb \
-    && rm libtinfo5_6.3-2ubuntu0.1_amd64.deb
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
