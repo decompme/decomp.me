@@ -1,5 +1,4 @@
 import contextlib
-import getpass
 import logging
 import os
 import shlex
@@ -25,7 +24,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         sandbox_chroot_path: Optional[Path] = None,
         compiler_base_path: Optional[Path] = None,
         library_base_path: Optional[Path] = None,
-        wineprefix: Optional[Path] = None,
         nsjail_bin_path: Optional[Path] = None,
         sandbox_disable_proc: bool = False,
         debug: bool = True,
@@ -35,7 +33,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         self.sandbox_chroot_path = sandbox_chroot_path or Path("/tmp/sandbox/root")
         self.compiler_base_path = compiler_base_path or Path("compilers")
         self.library_base_path = library_base_path or Path("libraries")
-        self.wineprefix = wineprefix or Path("/tmp/wine")
         self.nsjail_bin_path = nsjail_bin_path or Path("/bin/nsjail")
         self.sandbox_disable_proc = sandbox_disable_proc
         self.debug = debug
@@ -69,14 +66,7 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             return []
 
         self.sandbox_chroot_path.mkdir(parents=True, exist_ok=True)
-        self.wineprefix.mkdir(parents=True, exist_ok=True)
-
         assert ":" not in str(self.path)
-        assert ":" not in str(self.wineprefix)
-
-        # wine-specific hacks
-        user = getpass.getuser()
-        (self.path / "Temp").mkdir(parents=True, exist_ok=True)
 
         # fmt: off
         wrapper = [
@@ -103,11 +93,6 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--cwd", "/tmp",
             "--rlimit_fsize", "soft",
             "--rlimit_nofile", "soft",
-            # the following are settings that can be removed once we are done with wine
-            "--bindmount_ro", f"{self.wineprefix}:/wine",
-            "--bindmount", f"{self.path}/Temp:/wine/drive_c/users/{user}/Temp",
-            "--env", "WINEDEBUG=-all",
-            "--env", "WINEPREFIX=/wine",
         ]
         # fmt: on
         if self.sandbox_disable_proc:

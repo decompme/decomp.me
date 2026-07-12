@@ -43,8 +43,7 @@ RUN git clone "https://github.com/google/nsjail" \
 
 FROM base AS dependencies
 
-RUN dpkg --add-architecture i386 \
-    && add-apt-repository -y ppa:dosemu2/ppa \
+RUN add-apt-repository -y ppa:dosemu2/ppa \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && echo "deb http://archive.ubuntu.com/ubuntu jammy universe" > /etc/apt/sources.list.d/jammy.list \
     && printf "Package: *\nPin: release n=jammy\nPin-Priority: 100\n" > /etc/apt/preferences.d/jammy \
@@ -75,8 +74,6 @@ RUN dpkg --add-architecture i386 \
     netcat-traditional \
     unzip \
     wget \
-    wine \
-    wine32:i386 \
     && rm -f /etc/apt/sources.list.d/jammy.list /etc/apt/preferences.d/jammy \
     && rm -rf /var/lib/apt/lists/*
 
@@ -105,19 +102,12 @@ RUN wget "https://github.com/OmniBlade/binutils-gdb/releases/download/omf-build/
 
 RUN mkdir -p /etc/fonts
 
-ENV WINEPREFIX=/tmp/wine
-
-# Ensure /sandbox and wine dirs have correct ownership
+# Ensure /sandbox has correct ownership
 RUN mkdir -p /sandbox \
-    && chown -R ubuntu:ubuntu /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown ubuntu:ubuntu "${WINEPREFIX}"
+    && chown -R ubuntu:ubuntu /sandbox
 
 # Switch to non-root user
 USER ubuntu
-
-# Initialize wine files to /home/ubuntu/.wine
-RUN wineboot --init
 
 # Set working directory
 WORKDIR /cromper
@@ -199,7 +189,6 @@ COPY --chown=ubuntu:ubuntu docker_entrypoint.sh /cromper/
 # ENV LIBRARY_BASE_PATH=/cromper/libraries
 # ENV SANDBOX_TMP_PATH=/tmp/sandbox
 # ENV SANDBOX_CHROOT_PATH=/tmp/sandbox/root
-# ENV WINEPREFIX=/tmp/wine
 # ENV CROMPER_PORT=8888
 # ENV USE_SANDBOX_JAIL=true
 # ENV SANDBOX_DISABLE_PROC=true

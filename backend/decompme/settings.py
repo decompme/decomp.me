@@ -34,7 +34,6 @@ env = environ.Env(
     GITHUB_CLIENT_ID=(str, ""),
     GITHUB_CLIENT_SECRET=(str, ""),
     COMPILATION_CACHE_SIZE=(int, 100),
-    WINEPREFIX=(str, "/tmp/wine"),
     SENTRY_DSN=(str, ""),
     SENTRY_SAMPLE_RATE=(float, 0.0),
     SENTRY_TIMEOUT=(int, 3),
@@ -219,8 +218,6 @@ GITHUB_CLIENT_ID = env("GITHUB_CLIENT_ID", str)
 GITHUB_CLIENT_SECRET = env("GITHUB_CLIENT_SECRET", str)
 
 COMPILATION_CACHE_SIZE = env("COMPILATION_CACHE_SIZE", int)
-
-WINEPREFIX = Path(env("WINEPREFIX"))
 
 SENTRY_DSN = env("SENTRY_DSN", str)
 SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", float)
