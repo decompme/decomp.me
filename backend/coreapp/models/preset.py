@@ -43,18 +43,7 @@ class Preset(models.Model):
         )
 
 
-def _get_compiler_choices() -> list[tuple[str, str]]:
-    from coreapp.compilers import available_compilers
-
-    return sorted(
-        [(c.id, f"{c.id} ({c.platform.name})") for c in available_compilers()],
-        key=lambda x: x[1].lower(),
-    )
-
-
 class PresetAdminForm(forms.ModelForm):  # type: ignore[type-arg]
-    compiler = forms.ChoiceField(choices=_get_compiler_choices)
-
     class Meta:
         model = Preset
         fields = "__all__"
