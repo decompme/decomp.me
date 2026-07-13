@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django import forms
 from django.contrib import admin
 from django.db import models
 from django.utils.timezone import now
@@ -42,5 +43,23 @@ class Preset(models.Model):
         )
 
 
+def _get_compiler_choices() -> list[tuple[str, str]]:
+    from coreapp.compilers import available_compilers
+
+    return sorted(
+        [(c.id, f"{c.id} ({c.platform.name})") for c in available_compilers()],
+        key=lambda x: x[1].lower(),
+    )
+
+
+class PresetAdminForm(forms.ModelForm):  # type: ignore[type-arg]
+    compiler = forms.ChoiceField(choices=_get_compiler_choices)
+
+    class Meta:
+        model = Preset
+        fields = "__all__"
+
+
 class PresetAdmin(admin.ModelAdmin[Preset]):
-    raw_id_fields = ["owner"]
+    form = PresetAdminForm
+    autocomplete_fields = ["owner"]
