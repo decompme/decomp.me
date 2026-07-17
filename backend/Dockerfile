@@ -17,6 +17,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
 
 WORKDIR /backend
 
+RUN chown ubuntu:ubuntu /backend
+
 
 FROM base AS dev
 
