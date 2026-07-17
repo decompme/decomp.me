@@ -11,6 +11,7 @@ RUN apt-get update \
     python3 \
     python3.14-dev \
     python3.14-venv \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.11 /uv /bin/uv
