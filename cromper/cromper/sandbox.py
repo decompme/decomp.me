@@ -72,6 +72,8 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             str(self.nsjail_bin_path),
             "--mode", "o",
             "--chroot", str(self.sandbox_chroot_path),
+            # Docker user namespaces cannot remount the jail root read-only.
+            "--rw",
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
             "--bindmount", f"{self.path}:/var/tmp",
