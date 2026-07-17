@@ -126,11 +126,12 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         return compiler
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        editable_fields = {"compiler", "assembler_flags", "compiler_flags", "diff_flags", "decompiler_flags"}
         if self.instance is not None:
-            invalid_fields = set(data) - {"compiler_flags"}
+            invalid_fields = set(data) - editable_fields
             if invalid_fields:
                 raise serializers.ValidationError(
-                    "Only compiler_flags can be edited on an existing preset."
+                    f"Only the following fields can be edited on an existing preset: {', '.join(editable_fields)}."
                 )
 
         compiler_id = data.get("compiler")
