@@ -45,23 +45,42 @@ jobs:
               -c 'uv run python manage.py test'
 
   cromper_test:
-    name: cromper tests
+    name: cromper tests (docker dev container)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
-        with:
-          version: "latest"
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
+      - name: Build Cromper development image
+        run: docker build cromper --target dev -t decompme_cromper
       - name: Run Cromper tests
         run: |-
-          cd cromper
-          uv sync --all-extras
-          uv run pytest
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
+          for dir in cromper/.venv cromper/compilers cromper/libraries; do
+            mkdir -p "$dir"
+            sudo chown -R "$USER_1000:$USER_1000" "$dir"
+          done
+          docker run --rm \
+            -v $(pwd)/cromper:/cromper \
+            --security-opt apparmor=unconfined \
+            --security-opt seccomp=unconfined \
+            --cap-drop all \
+            --cap-add setuid \
+            --cap-add setgid \
+            --cap-add setfcap \
+            --tmpfs /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700 \
+            --entrypoint /bin/bash \
+            -e COMPILER_BASE_PATH=/cromper/compilers \
+            -e LIBRARY_BASE_PATH=/cromper/libraries \
+            -e USE_SANDBOX_JAIL=true \
+            -e SANDBOX_DISABLE_PROC=true \
+            decompme_cromper \
+              -c 'cd /cromper && \
+              uv sync --locked --all-extras && \
+              uv run --locked compilers/download.py --compilers-dir $COMPILER_BASE_PATH && \
+              uv run --locked libraries/download.py --libraries-dir $LIBRARY_BASE_PATH && \
+              uv run --locked pytest'
 
   docker_compose_test:
     name: test docker compose
@@ -204,7 +223,7 @@ jobs:
           python-version: "3.14"
       - run: |-
           cd cromper
-          uv sync --all-extras
-          uv run mypy .
-          uv run ruff check
-          uv run ruff format --check
+          uv sync --locked --all-extras
+          uv run --locked mypy .
+          uv run --locked ruff check
+          uv run --locked ruff format --check

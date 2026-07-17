@@ -11,8 +11,8 @@ dependencies = [
     "tornado>=6.5.2",
     "requests>=2.32.5",
     "python-dotenv>=1.0.0",
-    "m2c @ git+https://github.com/matt-kempster/m2c.git",
-    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
+    "m2c @ git+https://github.com/matt-kempster/m2c.git@2853e096eb2368f601cd0f05119e98d74c2edca6",
+    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git@5074289a13ced3a4ca4359c94d3f337d760a93ca",
     "pyyaml>=6.0.3",
 ]
 
