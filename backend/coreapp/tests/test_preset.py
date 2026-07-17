@@ -4,11 +4,10 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp.compilers import GCC281PM, IDO53
 from coreapp.models.preset import Preset
 from coreapp.models.profile import Profile
-from coreapp.platforms import DUMMY, N64, PS1
 from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.mock_cromper_client import DUMMY, GCC281PM, IDO53, N64, PS1
 
 SAMPLE_PRESET_DICT = {
     "name": "Kitty's Adventure",

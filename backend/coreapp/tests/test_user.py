@@ -3,9 +3,12 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp import compilers, platforms
 from coreapp.models.github import GitHubUser
 from coreapp.models.profile import Profile
+from coreapp.tests import (
+    mock_cromper_client as compilers,
+    mock_cromper_client as platforms,
+)
 from coreapp.tests.common import BaseTestCase
 
 GITHUB_USER = {

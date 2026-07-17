@@ -1,11 +1,10 @@
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp.compilers import IDO71
 from coreapp.models.scratch import Scratch
-from coreapp.platforms import N64
 from coreapp.serializers import TerseScratchSerializer
 from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.mock_cromper_client import IDO71, N64
 from coreapp.views.scratch import update_scratch_score
 from coreapp.wrapper_result import DiffResult
 

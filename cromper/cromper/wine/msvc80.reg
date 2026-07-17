@@ -1,0 +1,11 @@
+Windows Registry Editor Version 5.00
+
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Defaults\Provider Types\Type 001]
+"Name"="Microsoft Strong Cryptographic Provider"
+"TypeName"="RSA Full (Signature and Key Exchange)"
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Defaults\Provider\Microsoft Strong Cryptographic Provider]
+"Image Path"="rsaenh.dll"
+"SigInFile"=dword:0
+"Type"=dword:1

@@ -11,12 +11,27 @@ from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp import compilers, platforms
-from coreapp.compilers import EE_GCC29_991111, GCC281PM, IDO53, IDO71, MWCC_242_81
-from coreapp.libraries import Library
-from coreapp.models.scratch import Assembly, Context, LibrariesField, Scratch
-from coreapp.platforms import GC_WII, N64
+from coreapp.models.scratch import (
+    Assembly,
+    Context,
+    LibrariesField,
+    Library,
+    Scratch,
+)
+from coreapp.tests import (
+    mock_cromper_client as compilers,
+    mock_cromper_client as platforms,
+)
 from coreapp.tests.common import BaseTestCase, requiresCompiler
+from coreapp.tests.mock_cromper_client import (
+    EE_GCC29_991111,
+    GC_WII,
+    GCC281PM,
+    IDO53,
+    IDO71,
+    MWCC_242_81,
+    N64,
+)
 from coreapp.views.scratch import compile_scratch_update_score
 
 

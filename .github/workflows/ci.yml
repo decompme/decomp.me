@@ -4,6 +4,7 @@ on:
     branches:
       - main
   pull_request:
+
 jobs:
   backend_test_docker_dev:
     name: backend tests (docker dev container)
@@ -11,45 +12,20 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - name: Build decompme_backend image
+      - name: Build backend development image
+        run: docker build backend --target dev -t decompme_backend
+      - name: Run backend tests
         run: |-
-          docker build backend --target dev -t decompme_backend
-      - name: Run tests
-        run: |-
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          # NOTE: CI does not run as 'ubuntu' user
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          for dir in backend/.venv sandbox local_files compilers libraries; do
-            mkdir -p "$dir"
-            sudo chown "${USER_1000}:${USER_1000}" "$dir"
-          done
+          mkdir -p backend/.venv
+          sudo chown "${USER_1000}:${USER_1000}" backend/.venv
           docker run \
             -v $(pwd):/decomp.me \
-            -v $(pwd)/local_files:/local_files \
-            -v $(pwd)/compilers:/compilers \
-            -v $(pwd)/libraries:/libraries \
-            --security-opt apparmor=unconfined \
-            --security-opt seccomp=unconfined \
-            --cap-drop all \
-            --cap-add setuid \
-            --cap-add setgid \
-            --cap-add setfcap \
-            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
             --entrypoint /bin/bash \
-            -e COMPILER_BASE_PATH=/compilers \
-            -e LIBRARY_BASE_PATH=/libraries \
-            -e LOCAL_FILE_DIR=/local_files \
-            -e USE_SANDBOX_JAIL=on \
-            -e SANDBOX_DISABLE_PROC=true \
-            -e TIMEOUT_SCALE_FACTOR=10 \
-            -e DUMMY_COMPILER=1 \
+            -e DATABASE_URL=sqlite:///:memory: \
+            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
-              -c 'cd /decomp.me/backend && \
-              uv sync && \
-              uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
-              uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
-              uv run python manage.py test'
+              -c 'cd /decomp.me/backend && uv sync && uv run python manage.py test'
 
   backend_test_docker_prod:
     name: backend tests (docker prod container)
@@ -57,65 +33,71 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - name: Build decompme_backend image
+      - name: Build backend production image
+        run: docker build backend --target prod -t decompme_backend
+      - name: Run backend tests
         run: |-
-          docker build backend --target prod -t decompme_backend
-      - name: Fetch compilers and libraries
-        run: |-
-          python3 -m pip install requests
-          python3 backend/compilers/download.py
-          python3 backend/libraries/download.py
-          export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
-          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
-      - name: Run tests
+          docker run \
+            --entrypoint /bin/bash \
+            -e DATABASE_URL=sqlite:///:memory: \
+            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
+            decompme_backend \
+              -c 'uv run python manage.py test'
+
+  cromper_test:
+    name: cromper tests (docker dev container)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build Cromper development image
+        run: docker build cromper --target dev -t decompme_cromper
+      - name: Run Cromper tests
         run: |-
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          mkdir -p local_files && sudo chown ${USER_1000}:${USER_1000} local_files
-          docker run \
-            -v $(pwd)/local_files:/local_files \
-            -v $(pwd)/backend/compilers:/compilers \
-            -v $(pwd)/backend/libraries:/libraries \
+          for dir in cromper/.venv cromper/compilers cromper/libraries; do
+            mkdir -p "$dir"
+            sudo chown -R "$USER_1000:$USER_1000" "$dir"
+          done
+          docker run --rm \
+            -v $(pwd)/cromper:/cromper \
             --security-opt apparmor=unconfined \
             --security-opt seccomp=unconfined \
             --cap-drop all \
             --cap-add setuid \
             --cap-add setgid \
             --cap-add setfcap \
-            --tmpfs /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700 \
+            --tmpfs /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700 \
             --entrypoint /bin/bash \
-            -e LOCAL_FILE_DIR=/local_files \
-            -e COMPILER_BASE_PATH=/compilers \
-            -e LIBRARY_BASE_PATH=/libraries \
-            -e USE_SANDBOX_JAIL=on \
+            -e COMPILER_BASE_PATH=/cromper/compilers \
+            -e LIBRARY_BASE_PATH=/cromper/libraries \
+            -e USE_SANDBOX_JAIL=true \
             -e SANDBOX_DISABLE_PROC=true \
-            -e TIMEOUT_SCALE_FACTOR=10 \
-            -e DUMMY_COMPILER=1 \
-            -e DATABASE_URL=sqlite:///:memory: \
-            -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
-            decompme_backend \
-              -c 'uv run python manage.py test'
+            decompme_cromper \
+              -c 'cd /cromper && \
+              uv sync --locked --all-extras && \
+              uv run --locked compilers/download.py --compilers-dir $COMPILER_BASE_PATH && \
+              uv run --locked libraries/download.py --libraries-dir $LIBRARY_BASE_PATH && \
+              uv run --locked pytest'
 
   docker_compose_test:
     name: test docker compose
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
 
       - name: Fetch compilers and libraries
         run: |
           python3 -m pip install requests
-          python3 backend/compilers/download.py
-          python3 backend/libraries/download.py
+          python3 cromper/compilers/download.py
+          python3 cromper/libraries/download.py
           export USER_1000=$(getent passwd 1000 | cut -d: -f1)
-          sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
-          sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
+          sudo chown -R "${USER_1000}:${USER_1000}" cromper/compilers cromper/libraries
 
-      - name: Setup dummy production env
+      - name: Setup dummy production environment
         run: |
           echo 'POSTGRES_USER=decompme' >> docker.prod.env
           echo 'POSTGRES_PASSWORD=decompme' >> docker.prod.env
@@ -123,14 +105,17 @@ jobs:
           echo 'DATABASE_URL=psql://decompme:decompme@postgres:5432/decompme' >> docker.prod.env
           echo 'CONN_MAX_AGE=60' >> docker.prod.env
           echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
-          echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'CROMPER_URL=http://cromper:8888' >> docker.prod.env
+          echo 'CROMPER_PORT=8888' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
+          echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
           echo 'ACTIVE_SLOT=blue' >> .deploy.env
           echo 'BLUE_TAG=latest' >> .deploy.env
           echo 'GREEN_TAG=latest' >> .deploy.env
           echo 'NGINX_TAG=latest' >> .deploy.env
+          echo 'CROMPER_TAG=latest' >> .deploy.env
 
       - name: Comment out SSL server configuration from nginx
         run: |
@@ -138,50 +123,48 @@ jobs:
 
       - name: Prepare production runtime config
         run: |
-          cp ./nginx/production/runtime/geo.conf.example      ./nginx/production/runtime/geo.conf
+          cp ./nginx/production/runtime/geo.conf.example ./nginx/production/runtime/geo.conf
           cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
 
       - name: Build production images
         run: |
-          docker compose -f docker-compose.prod.yaml build nginx backend-blue frontend-blue
+          docker compose -f docker-compose.prod.yaml build cromper nginx backend-blue frontend-blue
 
       - name: Ensure production services
         run: |
-          timeout 60s python3 deploy.py ensure || true
+          timeout 120s python3 deploy.py ensure
 
       - name: View docker compose logs (blue)
+        if: always()
         run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Check docker compose status (blue)
-        run: |
-          docker compose -f docker-compose.prod.yaml ps
+        run: docker compose -f docker-compose.prod.yaml ps
 
       - name: Deploy green slot
-        run: |
-          python3 deploy.py deploy --no-pull latest green
+        run: python3 deploy.py deploy --no-pull latest green
 
       - name: View docker compose logs (green)
+        if: always()
         run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
       - name: Check docker compose status (green)
-        run: |
-          docker compose -f docker-compose.prod.yaml ps
+        run: docker compose -f docker-compose.prod.yaml ps
 
       - name: Shut everything down
         if: always()
-        run: |
-          docker compose -f docker-compose.prod.yaml down
+        run: docker compose -f docker-compose.prod.yaml down
 
-      - name: Print out image sizes
+      - name: Print image sizes
         if: always()
-        run: |
-          docker image ls
+        run: docker image ls
 
   frontend_lint:
-    name: biome
+    name: frontend lint and tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Setup Node.js 24
@@ -203,9 +186,10 @@ jobs:
           cd frontend
           yarn test
 
-  mypy:
-    name: mypy
+  backend_lint:
+    name: backend lint and type check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -218,12 +202,15 @@ jobs:
           python-version: "3.14"
       - run: |-
           cd backend
-          uv sync
-          uv run mypy
+          uv sync --all-extras
+          uv run mypy .
+          uv run ruff check
+          uv run ruff format --check
 
-  ruff:
-    name: ruff
+  cromper_lint:
+    name: cromper lint and type check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -235,7 +222,8 @@ jobs:
         with:
           python-version: "3.14"
       - run: |-
-          cd backend
-          uv sync
-          uv run ruff check .
-          uv run ruff format --check .
+          cd cromper
+          uv sync --locked --all-extras
+          uv run --locked mypy .
+          uv run --locked ruff check
+          uv run --locked ruff format --check

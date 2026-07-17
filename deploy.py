@@ -14,10 +14,11 @@ UPSTREAM_CONF = Path("nginx/production/runtime/upstream.conf")
 DOCKER_COMPOSE = ["docker", "compose", "-f", "docker-compose.prod.yaml"]
 
 SLOTS = {"blue", "green"}
-INFRA_SERVICES = ["postgres", "nginx", "certbot"]
+INFRA_SERVICES = ["postgres", "cromper", "nginx", "certbot"]
 BLUE_TAG = "BLUE_TAG"
 GREEN_TAG = "GREEN_TAG"
 NGINX_TAG = "NGINX_TAG"
+CROMPER_TAG = "CROMPER_TAG"
 ACTIVE_SLOT = "ACTIVE_SLOT"
 SLOT_COLORS = {
     "blue": "\033[34m",
@@ -51,7 +52,7 @@ def read_env_file():
 
 
 def write_env_file(data):
-    keys = [ACTIVE_SLOT, BLUE_TAG, GREEN_TAG, NGINX_TAG]
+    keys = [ACTIVE_SLOT, BLUE_TAG, GREEN_TAG, NGINX_TAG, CROMPER_TAG]
     lines = []
 
     for key in keys:
@@ -73,6 +74,7 @@ def compose_env(state):
     env.setdefault(BLUE_TAG, "latest")
     env.setdefault(GREEN_TAG, "latest")
     env.setdefault(NGINX_TAG, "latest")
+    env.setdefault(CROMPER_TAG, "latest")
     return env
 
 
@@ -232,6 +234,7 @@ def smoke_test(slot, env):
     print(f"Smoke testing {slot} from nginx...")
     nginx_fetch(f"http://backend-{slot}:8000/api/healthz", env)
     nginx_fetch(f"http://frontend-{slot}:8080/healthz", env)
+    nginx_fetch("http://cromper:8888/health", env)
 
 
 def nginx_test_and_reload(env):
@@ -254,6 +257,7 @@ def print_status(state, env):
     print(f"  blue tag:    {state.get(BLUE_TAG, 'unset')}")
     print(f"  green tag:   {state.get(GREEN_TAG, 'unset')}")
     print(f"  nginx tag:   {state.get(NGINX_TAG, 'latest')}")
+    print(f"  cromper tag: {state.get(CROMPER_TAG, 'latest')}")
     print()
 
     print("Slot health:")
@@ -349,6 +353,7 @@ def cmd_ensure(args):
     env = compose_env(state)
     pre_nginx_services = [
         "postgres",
+        "cromper",
         "certbot",
         f"backend-{active}",
         f"frontend-{active}",
@@ -358,6 +363,7 @@ def cmd_ensure(args):
     ensure_services(pre_nginx_services, env)
 
     wait_for_healthy("postgres", env)
+    wait_for_healthy("cromper", env)
     wait_for_healthy("certbot", env)
     wait_for_healthy(f"backend-{active}", env)
     wait_for_healthy(f"frontend-{active}", env)

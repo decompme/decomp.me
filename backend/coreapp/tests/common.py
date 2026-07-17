@@ -1,20 +1,21 @@
 from collections.abc import Callable
 from typing import Any
-from unittest import skip, skipIf
+from unittest import skipIf
 
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from coreapp import compilers, platforms
-from coreapp.compilers import Compiler
+from coreapp.compiler_utils import Compiler
 from coreapp.models.scratch import Scratch
+from coreapp.tests import (
+    mock_cromper_client as compilers,
+    mock_cromper_client as platforms,
+)
+from coreapp.tests.mock_cromper_client import patch_cromper
 
 
 def requiresCompiler(*compilers: Compiler) -> Callable[..., Any]:
-    for c in compilers:
-        if not c.available():
-            return skip(f"Compiler {c.id} not available")
     return skipIf(False, "")
 
 
@@ -22,6 +23,7 @@ class BaseTestCase(APITestCase):
     def setUp(self) -> None:
         super().setUp()
         self.claim_tokens: dict[str, str] = dict()  # slug -> claim_token
+        self.enterContext(patch_cromper())
         self.client.credentials(HTTP_USER_AGENT="Firefrogz 1.0")
 
     # Create a scratch and return it as a DB object

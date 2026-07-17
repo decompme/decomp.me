@@ -8,8 +8,6 @@ authors = [
 license = {text = "MIT"}
 requires-python = ">=3.12"
 dependencies = [
-    "asm-differ @ git+https://github.com/simonlindholm/asm-differ.git",
-    "m2c @ git+https://github.com/matt-kempster/m2c.git",
     "django-cleanup>=9.0.0",
     "django-cors-headers>=4.6.0",
     "django-environ>=0.13.0",

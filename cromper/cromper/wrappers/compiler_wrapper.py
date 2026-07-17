@@ -2,51 +2,60 @@ import logging
 import re
 import subprocess
 import time
-from collections.abc import Callable, Sequence
-from typing import (
-    TYPE_CHECKING,
-    TypeVar,
-)
+from dataclasses import dataclass
 
-from django.conf import settings
+from cromper import util
 
-import coreapp.util as util
-from coreapp import compilers, platforms
-from coreapp.compilers import Compiler, CompilerType
-from coreapp.flags import Language
-from coreapp.platforms import Platform
-
-from .error import AssemblyError, CompilationError
-from .libraries import Library
-from .models.scratch import Asm, Assembly
-from .sandbox import Sandbox
-from .wrapper_result import CompilationResult
-
-# Thanks to Guido van Rossum for the following fix
-# https://github.com/python/mypy/issues/5107#issuecomment-529372406
-if TYPE_CHECKING:
-    F = TypeVar("F")
-
-    def lru_cache(maxsize: int = 128, typed: bool = False) -> Callable[[F], F]:
-        pass
-
-else:
-    from functools import lru_cache
+from ..compilers import Compiler, CompilerType
+from ..error import AssemblyError, CompilationError
+from ..flags import Language
+from ..libraries import Library
+from ..platforms import Platform
+from ..sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
 
 
-def _check_assembly_cache(*args: str) -> tuple[Assembly | None, str]:
-    hash = util.gen_hash(args)
-    return Assembly.objects.filter(hash=hash).first(), hash
+@dataclass
+class CompilationResult:
+    elf_object: bytes
+    errors: str
+
+
+@dataclass
+class AssemblyData:
+    """Simplified representation of assembly data."""
+
+    data: str
+    hash: str
+
+
+@dataclass
+class AssemblyResult:
+    """Result of assembly operation."""
+
+    hash: str
+    arch: str
+    elf_object: bytes
 
 
 class CompilerWrapper:
+    def __init__(
+        self,
+        use_sandbox_jail: bool = False,
+        compilation_timeout_seconds: int = 10,
+        assembly_timeout_seconds: int = 3,
+        **sandbox_kwargs,
+    ):
+        self.use_sandbox_jail = use_sandbox_jail
+        self.compilation_timeout_seconds = compilation_timeout_seconds
+        self.assembly_timeout_seconds = assembly_timeout_seconds
+        self.sandbox_kwargs = sandbox_kwargs
+
     @staticmethod
     def filter_compiler_flags(compiler_flags: str) -> str:
         # Remove irrelevant flags that are part of the base compiler configs or
         # don't affect matching, but clutter the compiler settings field.
-        # TODO: use cfg for this?
         skip_flags_with_args = {
             "-B",
             "-I",
@@ -89,23 +98,18 @@ class CompilerWrapper:
 
         return input.strip()
 
-    @staticmethod
-    @lru_cache(maxsize=settings.COMPILATION_CACHE_SIZE)
     def compile_code(
+        self,
         compiler: Compiler,
         compiler_flags: str,
         code: str,
         context: str,
-        function: str = "",
-        libraries: Sequence[Library] = (),
+        libraries: list[Library] = [],  # Library type would be defined separately
     ) -> CompilationResult:
-        if compiler == compilers.DUMMY:
-            return CompilationResult(f"compiled({context}\n{code}".encode(), "")
-
         code = code.replace("\r\n", "\n")
         context = context.replace("\r\n", "\n")
 
-        with Sandbox() as sandbox:
+        with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
             ext = compiler.get_language(compiler_flags).get_file_extension()
             code_file = f"code.{ext}"
             src_file = f"src.{ext}"
@@ -149,8 +153,8 @@ class CompilerWrapper:
             if compiler.type == CompilerType.IDO and "-KPIC" in compiler_flags:
                 cc_cmd = cc_cmd.replace("-non_shared", "")
 
-            if compiler.platform != platforms.DUMMY and not compiler.path.exists():
-                raise CompilationError(f"Compiler {compiler.id} is not installed")
+            # Generate a function label when the request does not provide one.
+            fname = util.random_string()
 
             # Run compiler
             try:
@@ -160,11 +164,13 @@ class CompilerWrapper:
                     + str(lib.get_include_path(compiler.platform.id))
                     for lib in libraries
                 )
-                wibo_path = settings.COMPILER_BASE_PATH / "common" / "wibo_dlls"
+                wibo_path = (
+                    self.sandbox_kwargs["compiler_base_path"] / "common" / "wibo_dlls"
+                )
                 compile_proc = sandbox.run_subprocess(
                     cc_cmd,
                     mounts=(
-                        [compiler.path] if compiler.platform != platforms.DUMMY else []
+                        [compiler.get_path(self.sandbox_kwargs["compiler_base_path"])]
                     ),
                     shell=True,
                     env={
@@ -172,15 +178,17 @@ class CompilerWrapper:
                         "WIBO_PATH": sandbox.rewrite_path(wibo_path),
                         "INPUT": sandbox.rewrite_path(code_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
-                        "COMPILER_DIR": sandbox.rewrite_path(compiler.path),
+                        "COMPILER_DIR": sandbox.rewrite_path(
+                            compiler.get_path(self.sandbox_kwargs["compiler_base_path"])
+                        ),
                         "COMPILER_FLAGS": sandbox.quote_options(
                             compiler_flags + " " + libraries_compiler_flags
                         ),
-                        "FUNCTION": function,
+                        "FUNCTION": fname,
                         "MWCIncludes": "/tmp",
                         "TMPDIR": "/tmp",
                     },
-                    timeout=settings.COMPILATION_TIMEOUT_SECONDS,
+                    timeout=self.compilation_timeout_seconds,
                 )
                 et = round(time.time() * 1000)
                 logger.debug(f"Compilation finished in: {et - st} ms")
@@ -213,28 +221,13 @@ class CompilerWrapper:
 
             return CompilationResult(object_bytes, compile_errors)
 
-    @staticmethod
-    def assemble_asm(platform: Platform, asm: Asm) -> Assembly:
+    def assemble_asm(self, platform: Platform, asm: AssemblyData) -> AssemblyResult:
         if not platform.assemble_cmd:
             raise AssemblyError(
                 f"Assemble command for platform {platform.id} not found"
             )
 
-        cached_assembly, hash = _check_assembly_cache(platform.id, asm.hash)
-        if cached_assembly:
-            logger.debug(f"Assembly cache hit! hash: {hash}")
-            return cached_assembly
-
-        if platform == platforms.DUMMY:
-            assembly = Assembly(
-                hash=hash,
-                arch=platform.arch,
-                source_asm=asm,
-            )
-            assembly.save()
-            return assembly
-
-        with Sandbox() as sandbox:
+        with Sandbox(use_jail=self.use_sandbox_jail, **self.sandbox_kwargs) as sandbox:
             asm_prelude_path = sandbox.path / "prelude.s"
             asm_prelude_path.write_text(platform.asm_prelude)
 
@@ -254,8 +247,11 @@ class CompilerWrapper:
                         "PRELUDE": sandbox.rewrite_path(asm_prelude_path),
                         "INPUT": sandbox.rewrite_path(asm_path),
                         "OUTPUT": sandbox.rewrite_path(object_path),
+                        "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                            sandbox.compiler_base_path
+                        ),
                     },
-                    timeout=settings.ASSEMBLY_TIMEOUT_SECONDS,
+                    timeout=self.assembly_timeout_seconds,
                 )
             except subprocess.CalledProcessError as e:
                 raise AssemblyError.from_process_error(e)
@@ -271,11 +267,8 @@ class CompilerWrapper:
             if not object_path.exists():
                 raise AssemblyError("Assembler did not create an object file")
 
-            assembly = Assembly(
-                hash=hash,
+            return AssemblyResult(
+                hash=asm.hash,
                 arch=platform.arch,
-                source_asm=asm,
                 elf_object=object_path.read_bytes(),
             )
-            assembly.save()
-            return assembly

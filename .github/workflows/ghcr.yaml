@@ -21,6 +21,9 @@ jobs:
           - name: backend
             context: backend
             target: prod
+          - name: cromper
+            context: cromper
+            target: prod
           - name: frontend
             context: frontend
             target: prod
