@@ -126,7 +126,13 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         return compiler
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        editable_fields = {"compiler", "assembler_flags", "compiler_flags", "diff_flags", "decompiler_flags"}
+        editable_fields = {
+            "compiler",
+            "assembler_flags",
+            "compiler_flags",
+            "diff_flags",
+            "decompiler_flags",
+        }
         if self.instance is not None:
             invalid_fields = set(data) - editable_fields
             if invalid_fields:
