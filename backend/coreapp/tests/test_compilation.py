@@ -35,6 +35,17 @@ def all_compilers_name_func(
 
 
 class CompilationTests(BaseTestCase):
+    def test_compile_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"diff_flags": [""]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     @requiresCompiler(GCC281PM)
     def test_simple_compilation(self) -> None:
         """
