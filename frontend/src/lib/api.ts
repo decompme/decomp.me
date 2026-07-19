@@ -270,9 +270,14 @@ export function useCompilation(
                 })
                 .catch((error) => {
                     if (error instanceof ResponseError) {
+                        const compilerOutput =
+                            typeof error.json?.detail === "string"
+                                ? error.json.detail
+                                : JSON.stringify(error.json, null, 2) ||
+                                  `Compilation request failed (HTTP ${error.status})`;
                         setCompilationState({
                             compilation: {
-                                compiler_output: error.json?.detail,
+                                compiler_output: compilerOutput,
                                 diff_output: null,
                                 success: false,
                                 left_object: null,
