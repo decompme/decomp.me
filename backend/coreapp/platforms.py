@@ -172,6 +172,7 @@ SATURN = Platform(
     objdump_cmd="sh-elf-objdump",
     nm_cmd="sh-elf-nm",
     diff_flags=COMMON_DIFF_FLAGS,
+    has_decompiler=True,
 )
 
 DREAMCAST = Platform(
