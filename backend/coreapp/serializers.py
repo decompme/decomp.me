@@ -73,6 +73,14 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
+class DiffFlagsField(serializers.ListField):
+    child = serializers.CharField(allow_blank=True)
+
+    def to_internal_value(self, data: Any) -> list[str]:
+        flags = super().to_internal_value(data)
+        return [flag for flag in flags if flag]
+
+
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
@@ -81,6 +89,7 @@ class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    diff_flags = DiffFlagsField(required=False)
     num_scratches = serializers.SerializerMethodField()
     owner = ProfileField(read_only=True)
 
@@ -158,7 +167,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    diff_flags = serializers.JSONField(required=False)
+    diff_flags = DiffFlagsField(required=False)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Preset.objects.all()
     )
@@ -250,7 +259,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchCompileSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    diff_flags = serializers.ListField(child=serializers.CharField(), required=False)
+    diff_flags = DiffFlagsField(required=False)
     diff_label = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(
         allow_blank=True, required=False, trim_whitespace=False
@@ -322,6 +331,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    diff_flags = DiffFlagsField(required=False)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )

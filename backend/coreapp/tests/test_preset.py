@@ -69,6 +69,15 @@ class PresetTests(BaseTestCase):
         self.create_admin()
         self.create_preset(SAMPLE_PRESET_DICT)
 
+    def test_admin_create_preset_drops_blank_diff_flags(self) -> None:
+        self.create_admin()
+
+        preset = self.create_preset(
+            {**DUMMY_PRESET_DICT, "diff_flags": ["", "  ", "-DIFFdifflib"]}
+        )
+
+        self.assertEqual(preset.diff_flags, ["-DIFFdifflib"])
+
     def test_create_preset_not_authenticated(self) -> None:
         response = self.client.post(reverse("preset-list"), SAMPLE_PRESET_DICT)
         assert response.status_code == status.HTTP_403_FORBIDDEN

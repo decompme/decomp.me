@@ -44,6 +44,19 @@ class ScratchListTests(BaseTestCase):
 
 
 class ScratchCreationTests(BaseTestCase):
+    def test_create_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_scratch(
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+                "diff_flags": ["", "  ", "-DIFFdifflib"],
+            }
+        )
+
+        self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
+
     @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
@@ -346,6 +359,23 @@ class ScratchLibrariesTests(BaseTestCase):
 
 
 class ScratchModificationTests(BaseTestCase):
+    def test_update_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.client.post(
+            reverse("scratch-claim", kwargs={"pk": scratch.slug}),
+            {"token": self.claim_tokens[scratch.slug]},
+        )
+
+        response = self.client.patch(
+            reverse("scratch-detail", kwargs={"pk": scratch.slug}),
+            {"diff_flags": ["", "-DIFFdifflib"]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        scratch.refresh_from_db()
+        self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
+
     def test_update_rejects_invalid_compiler(self) -> None:
         scratch = self.create_nop_scratch()
         response = self.client.post(
