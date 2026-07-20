@@ -288,6 +288,12 @@ AGBCC = GCCCompiler(
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
+AGBCC_FE8J = GCCCompiler(
+    id="agbcc-fe8j",
+    platform=GBA,
+    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+)
+
 OLD_AGBCC = GCCCompiler(
     id="old_agbcc",
     platform=GBA,
@@ -1704,6 +1710,7 @@ _all_compilers: list[Compiler] = [
     DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
+    AGBCC_FE8J,
     OLD_AGBCC,
     AGBCC_ARM,
     AGBCCPP,

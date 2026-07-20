@@ -9,6 +9,7 @@ from rest_framework import status
 from coreapp import compilers
 from coreapp.compiler_wrapper import CompilerWrapper
 from coreapp.compilers import (
+    AGBCC_FE8J,
     GCC281PM,
     GHS5322,
     IDO53,
@@ -35,6 +36,18 @@ def all_compilers_name_func(
 
 
 class CompilationTests(BaseTestCase):
+    @requiresCompiler(AGBCC_FE8J)
+    def test_agbcc_fe8j_promotion_flag(self) -> None:
+        result = CompilerWrapper.compile_code(
+            AGBCC_FE8J,
+            "-O2 -mthumb-interwork -mjp-promote",
+            "int func(void) { return 5; }",
+            "",
+            "func",
+        )
+
+        self.assertGreater(len(result.elf_object), 0)
+
     def test_compile_drops_blank_diff_flags(self) -> None:
         scratch = self.create_nop_scratch()
 
