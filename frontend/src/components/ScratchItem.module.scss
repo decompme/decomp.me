@@ -38,14 +38,14 @@
 
     border-radius: 0.5em;
 
-    background: var(--link);
+    background: var(--link-muted);
     color: white;
     font-size: 0.8em;
     font-weight: 600;
     line-height: 1;
 
     &.match {
-        background: var(--accent);
+        background: var(--accent-muted);
     }
 
     span {
