@@ -179,7 +179,7 @@ DREAMCAST = Platform(
     id="dreamcast",
     name="Dreamcast",
     description="SH4 (little-endian)",
-    arch="sh4",
+    arch="sh4el",
     assemble_cmd='sh-elf-as --isa=sh4 --little --relax -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="sh-elf-objdump",
     nm_cmd="sh-elf-nm",
