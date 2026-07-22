@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import User
@@ -77,6 +78,15 @@ class DiffFlagsField(serializers.ListField):
     child = serializers.CharField(allow_blank=True)
 
     def to_internal_value(self, data: Any) -> list[str]:
+        if isinstance(data, list) and len(data) == 1 and isinstance(data[0], str):
+            try:
+                decoded_data = json.loads(data[0])
+            except json.JSONDecodeError:
+                pass
+            else:
+                if isinstance(decoded_data, list):
+                    data = decoded_data
+
         flags = super().to_internal_value(data)
         return [flag for flag in flags if flag]
 

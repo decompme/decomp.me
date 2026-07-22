@@ -163,6 +163,33 @@ nop
         self.assertEqual(bytes(scratch.target_assembly.elf_object), object_bytes)
         self.assertEqual(scratch.libraries, [Library(name="directx", version="9.0")])
 
+    def test_create_object_scratch_with_multipart_diff_flags(self) -> None:
+        """Ensure multipart object uploads decode JSON-encoded diff flags."""
+        object_bytes = b"\x4c\x01dummy coff object"
+        upload = SimpleUploadedFile(
+            "target.o", object_bytes, content_type="application/octet-stream"
+        )
+        diff_flags = [
+            "--disassemble=iModelCull__FP8RpAtomicP11RwMatrixTag",
+            "-DIFFdifflib",
+        ]
+        response = self.client.post(
+            reverse("scratch-list"),
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "source_code": "",
+                "diff_flags": json.dumps(diff_flags),
+                "target_obj": upload,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+
+        scratch = Scratch.objects.get(slug=response.json()["slug"])
+        self.assertEqual(scratch.diff_flags, diff_flags)
+
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
         """
