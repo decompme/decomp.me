@@ -68,3 +68,4 @@ class Profile(models.Model):
 
 class ProfileAdmin(admin.ModelAdmin[Profile]):
     raw_id_fields = ["user"]
+    search_fields = ["user__username", "pseudonym"]
