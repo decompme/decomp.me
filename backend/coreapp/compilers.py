@@ -1372,6 +1372,11 @@ PRODG_393 = GCCGCCompiler(
 # NDS_ARM9
 MWCCARM_CC = '${WIBO} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
+MWCC_20_56 = MWCCNDSArm9Compiler(
+    id="mwcc_20_56",
+    cc=MWCCARM_CC,
+)
+
 MWCC_20_72 = MWCCNDSArm9Compiler(
     id="mwcc_20_72",
     cc=MWCCARM_CC,
@@ -1894,6 +1899,7 @@ _all_compilers: list[Compiler] = [
     PRODG_381,
     PRODG_393,
     # NDS
+    MWCC_20_56,
     MWCC_20_72,
     MWCC_20_79,
     MWCC_20_82,
