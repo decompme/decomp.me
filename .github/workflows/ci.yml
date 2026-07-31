@@ -39,7 +39,6 @@ jobs:
             --entrypoint /bin/bash \
             -e COMPILER_BASE_PATH=/compilers \
             -e LIBRARY_BASE_PATH=/libraries \
-            -e WINEPREFIX=/tmp/wine \
             -e LOCAL_FILE_DIR=/local_files \
             -e USE_SANDBOX_JAIL=on \
             -e SANDBOX_DISABLE_PROC=true \
@@ -50,7 +49,6 @@ jobs:
               uv sync && \
               uv run compilers/download.py --compilers-dir ${COMPILER_BASE_PATH} && \
               uv run libraries/download.py --libraries-dir ${LIBRARY_BASE_PATH} && \
-              for r in wine/*.reg; do regedit $r; done && \
               uv run python manage.py test'
 
   backend_test_docker_prod:
@@ -98,9 +96,7 @@ jobs:
             -e DATABASE_URL=sqlite:///:memory: \
             -e SECRET_KEY=secret-key-secret-key-secret-key-secret-key-secret-key-secret-key \
             decompme_backend \
-              -c '\
-              for r in wine/*.reg; do regedit $r; done && \
-              uv run python manage.py test'
+              -c 'uv run python manage.py test'
 
   docker_compose_test:
     name: test docker compose
@@ -119,7 +115,7 @@ jobs:
           sudo chown -R ${USER_1000}:${USER_1000} backend/compilers
           sudo chown -R ${USER_1000}:${USER_1000} backend/libraries
 
-      - name: Setup dummy docker.prod.dev
+      - name: Setup dummy production env
         run: |
           echo 'POSTGRES_USER=decompme' >> docker.prod.env
           echo 'POSTGRES_PASSWORD=decompme' >> docker.prod.env
@@ -128,43 +124,58 @@ jobs:
           echo 'CONN_MAX_AGE=60' >> docker.prod.env
           echo 'CONN_HEALTH_CHECKS="true"' >> docker.prod.env
           echo 'SANDBOX_DISABLE_PROC="true"' >> docker.prod.env
-          echo 'ALLOWED_HOSTS="backend,localhost,127.0.0.1"' >> docker.prod.env
+          echo 'ALLOWED_HOSTS="backend,backend-green,backend-blue,localhost,127.0.0.1"' >> docker.prod.env
           echo 'USE_SANDBOX_JAIL="on"' >> docker.prod.env
           echo 'CI=true' >> docker.prod.env
+          echo 'ACTIVE_SLOT=blue' >> .deploy.env
+          echo 'BLUE_TAG=latest' >> .deploy.env
+          echo 'GREEN_TAG=latest' >> .deploy.env
+          echo 'NGINX_TAG=latest' >> .deploy.env
 
       - name: Comment out SSL server configuration from nginx
         run: |
-          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production.conf
+          sed -i '/{{HTTPS_SERVER_BLOCK_START}}/,/{{HTTPS_SERVER_BLOCK_END}}/s/^/#/' nginx/production/default.conf
 
-      - name: Bring up postgres and nginx containers
+      - name: Prepare production runtime config
         run: |
-          docker compose -f docker-compose.prod.yaml up -d postgres nginx
-          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
-          docker compose logs nginx | grep "ready for start up"
-          ! docker compose logs nginx | grep -q "nginx-1 exited with code"
+          cp ./nginx/production/runtime/geo.conf.example      ./nginx/production/runtime/geo.conf
+          cp ./nginx/production/runtime/upstream.conf.example ./nginx/production/runtime/upstream.conf
 
-      - name: Build and bring up up backend container
+      - name: Build production images
         run: |
-          docker compose -f docker-compose.prod.yaml build backend
-          docker compose -f docker-compose.prod.yaml up -d backend
-          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+          docker compose -f docker-compose.prod.yaml build nginx backend-blue frontend-blue
 
-      - name: Build and bring up up frontend container
+      - name: Ensure production services
         run: |
-          docker compose -f docker-compose.prod.yaml -f docker-compose.build.yaml build frontend
-          docker compose -f docker-compose.prod.yaml up -d frontend
+          timeout 60s python3 deploy.py ensure || true
+
+      - name: View docker compose logs (blue)
+        run: |
           timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
 
-      - name: Sanity check the endpoints
+      - name: Check docker compose status (blue)
         run: |
-          curl --silent http://localhost:8080/ | head -c 256
-          curl --silent http://localhost:8000/api/ | jq
+          docker compose -f docker-compose.prod.yaml ps
+
+      - name: Deploy green slot
+        run: |
+          python3 deploy.py deploy --no-pull latest green
+
+      - name: View docker compose logs (green)
+        run: |
+          timeout 15s docker compose -f docker-compose.prod.yaml logs -f || true
+
+      - name: Check docker compose status (green)
+        run: |
+          docker compose -f docker-compose.prod.yaml ps
 
       - name: Shut everything down
+        if: always()
         run: |
           docker compose -f docker-compose.prod.yaml down
 
       - name: Print out image sizes
+        if: always()
         run: |
           docker image ls
 

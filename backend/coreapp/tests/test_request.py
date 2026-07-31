@@ -12,6 +12,14 @@ from coreapp.tests.common import BaseTestCase, requiresCompiler
 
 
 class RequestTests(APITestCase):
+    def test_health_check_is_stateless(self) -> None:
+        response = self.client.get(reverse("healthz"), HTTP_USER_AGENT="browser")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"ok": True})
+        self.assertEqual(Profile.objects.count(), 0)
+        self.assertNotIn("sessionid", response.cookies)
+
     def test_cookie_less_current_user_does_not_create_profile(self) -> None:
         """
         Ensure that a passive current-user read does not create a session profile.

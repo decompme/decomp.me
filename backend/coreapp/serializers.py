@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import User
@@ -73,6 +74,23 @@ class LibrarySerializer(serializers.Serializer[Library]):
     version = serializers.CharField()
 
 
+class DiffFlagsField(serializers.ListField):
+    child = serializers.CharField(allow_blank=True)
+
+    def to_internal_value(self, data: Any) -> list[str]:
+        if isinstance(data, list) and len(data) == 1 and isinstance(data[0], str):
+            try:
+                decoded_data = json.loads(data[0])
+            except json.JSONDecodeError:
+                pass
+            else:
+                if isinstance(decoded_data, list):
+                    data = decoded_data
+
+        flags = super().to_internal_value(data)
+        return [flag for flag in flags if flag]
+
+
 class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
     class Meta:
         model = Preset
@@ -81,6 +99,7 @@ class TinyPresetSerializer(serializers.ModelSerializer[Preset]):
 
 class PresetSerializer(serializers.ModelSerializer[Preset]):
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    diff_flags = DiffFlagsField(required=False)
     num_scratches = serializers.SerializerMethodField()
     owner = ProfileField(read_only=True)
 
@@ -126,11 +145,18 @@ class PresetSerializer(serializers.ModelSerializer[Preset]):
         return compiler
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        editable_fields = {
+            "compiler",
+            "assembler_flags",
+            "compiler_flags",
+            "diff_flags",
+            "decompiler_flags",
+        }
         if self.instance is not None:
-            invalid_fields = set(data) - {"compiler_flags"}
+            invalid_fields = set(data) - editable_fields
             if invalid_fields:
                 raise serializers.ValidationError(
-                    "Only compiler_flags can be edited on an existing preset."
+                    f"Only the following fields can be edited on an existing preset: {', '.join(editable_fields)}."
                 )
 
         compiler_id = data.get("compiler")
@@ -158,7 +184,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(allow_blank=True, required=False)
     platform = serializers.CharField(allow_blank=True, required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    diff_flags = serializers.JSONField(required=False)
+    diff_flags = DiffFlagsField(required=False)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Preset.objects.all()
     )
@@ -204,11 +230,9 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         if "preset" in data:
             preset: Preset = data["preset"]
-            # Preset dictates platform
+            # Preset dictates platform and compiler.
             data["platform"] = platforms.from_id(preset.platform)
-
-            if "compiler" not in data or not data["compiler"]:
-                data["compiler"] = preset.compiler
+            data["compiler"] = preset.compiler
 
             if "compiler_flags" not in data or not data["compiler_flags"]:
                 data["compiler_flags"] = preset.compiler_flags
@@ -252,7 +276,7 @@ class ScratchCreateSerializer(serializers.Serializer[None]):
 class ScratchCompileSerializer(serializers.Serializer[None]):
     compiler = serializers.CharField(required=False)
     compiler_flags = serializers.CharField(allow_blank=True, required=False)
-    diff_flags = serializers.ListField(child=serializers.CharField(), required=False)
+    diff_flags = DiffFlagsField(required=False)
     diff_label = serializers.CharField(allow_blank=True, required=False)
     source_code = serializers.CharField(
         allow_blank=True, required=False, trim_whitespace=False
@@ -324,6 +348,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     context_text = serializers.SerializerMethodField(read_only=True)
     language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
+    diff_flags = DiffFlagsField(required=False)
     preset = serializers.PrimaryKeyRelatedField(
         required=False, allow_null=True, queryset=Preset.objects.all()
     )

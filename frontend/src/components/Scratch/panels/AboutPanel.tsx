@@ -53,7 +53,7 @@ export default function AboutPanel({ scratch, setScratch }: Props) {
     const preset: PresetBase = usePreset(scratch.preset);
 
     return (
-        <div className={styles.container}>
+        <div className={styles.container} data-tour="scratch-about-panel">
             <div>
                 <div className={styles.horizontalField}>
                     <p className={styles.label}>Name</p>

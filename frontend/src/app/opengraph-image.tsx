@@ -10,6 +10,7 @@ const IMAGE_WIDTH_PX = 1200;
 const IMAGE_HEIGHT_PX = 400;
 
 export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export default async function HomeOG() {
     const OpenSansSemiBold = fetch(

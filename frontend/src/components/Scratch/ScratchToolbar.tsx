@@ -5,6 +5,7 @@ import {
     type FC,
     type ClipboardEvent,
     type KeyboardEvent,
+    type MouseEvent,
     type JSX,
 } from "react";
 
@@ -13,6 +14,7 @@ import {
     DownloadIcon,
     FileIcon,
     IterationsIcon,
+    MilestoneIcon,
     RepoForkedIcon,
     SyncIcon,
     TrashIcon,
@@ -48,6 +50,13 @@ function exportScratchZip(scratch: api.Scratch) {
     a.href = url;
     a.download = `${scratch.name}.zip`;
     a.click();
+}
+
+function startScratchTour(event?: MouseEvent<HTMLButtonElement>) {
+    event?.currentTarget.blur();
+    window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("scratch-tour:start"));
+    }, 0);
 }
 
 function EditTimeAgo({ date }: { date: string }) {
@@ -157,12 +166,14 @@ function ActionButton({
     title,
     icon,
     text,
+    dataTour,
 }: {
-    onClick: (event?: any) => void;
+    onClick: (event: MouseEvent<HTMLButtonElement>) => void | Promise<void>;
     disabled?: boolean;
     title?: string;
     icon: JSX.Element;
     text: string;
+    dataTour?: string;
 }) {
     return (
         <button
@@ -170,6 +181,7 @@ function ActionButton({
             disabled={disabled}
             title={title}
             aria-label={text}
+            data-tour={dataTour}
         >
             {icon}
             <span className="hidden md:inline">{text}</span>
@@ -185,6 +197,7 @@ function Actions({
     saveCallback,
     deleteScratch,
     setDecompilationTabEnabled,
+    tourTargetsEnabled = true,
 }: Props) {
     const userIsYou = api.useUserIsYou();
     const forkScratch = api.useForkScratchAndGo(scratch);
@@ -245,6 +258,11 @@ function Actions({
                         title={isSaved ? "No unsaved changes" : fuzzyShortcut}
                         text={isSaved ? "Saved" : "Save"}
                         icon={isSaved ? <CheckIcon /> : <UploadIcon />}
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-save"
+                                : undefined
+                        }
                     />
                 </li>
             )}
@@ -255,6 +273,9 @@ function Actions({
                     title={!canSave ? fuzzyShortcut : undefined}
                     text={!canSave ? "Fork to save" : "Fork"}
                     icon={<RepoForkedIcon />}
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-fork" : undefined
+                    }
                 />
             </li>
             {((scratch.owner && userIsYou(scratch.owner)) || isAdmin) && (
@@ -272,6 +293,11 @@ function Actions({
                         }}
                         text="Delete"
                         icon={<TrashIcon />}
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-delete"
+                                : undefined
+                        }
                     />
                 </li>
             )}
@@ -280,6 +306,9 @@ function Actions({
                     onClick={() => exportScratchZip(scratch)}
                     text="Export"
                     icon={<DownloadIcon />}
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-export" : undefined
+                    }
                 />
             </li>
             <li>
@@ -289,6 +318,11 @@ function Actions({
                     disabled={isCompiling}
                     text="Compile"
                     icon={<SyncIcon />}
+                    dataTour={
+                        tourTargetsEnabled
+                            ? "scratch-action-compile"
+                            : undefined
+                    }
                 />
             </li>
             {platform?.has_decompiler && (
@@ -297,9 +331,24 @@ function Actions({
                         onClick={() => setDecompilationTabEnabled(true)}
                         icon={<IterationsIcon />}
                         text="Decompile"
+                        dataTour={
+                            tourTargetsEnabled
+                                ? "scratch-action-decompile"
+                                : undefined
+                        }
                     />
                 </li>
             )}
+            <li className="hidden md:list-item">
+                <ActionButton
+                    onClick={startScratchTour}
+                    icon={<MilestoneIcon />}
+                    text="Tour"
+                    dataTour={
+                        tourTargetsEnabled ? "scratch-action-tour" : undefined
+                    }
+                />
+            </li>
         </ul>
     );
 }
@@ -329,7 +378,10 @@ function useActionsLocation(): [ActionsLocation, FC<Props>] {
                 aria-hidden={location !== ActionsLocation.IN_NAV}
                 className={styles.inNavActionsContainer}
             >
-                <Actions {...props} />
+                <Actions
+                    {...props}
+                    tourTargetsEnabled={location === ActionsLocation.IN_NAV}
+                />
             </div>
         ),
     ];
@@ -343,6 +395,7 @@ export type Props = {
     saveCallback: () => void;
     deleteScratch: () => Promise<void>;
     setDecompilationTabEnabled: (enabled: boolean) => void;
+    tourTargetsEnabled?: boolean;
 };
 
 export default function ScratchToolbar(props: Props) {
@@ -354,7 +407,7 @@ export default function ScratchToolbar(props: Props) {
     return (
         <>
             <Nav>
-                <div className={styles.container}>
+                <div className={styles.container} data-tour="scratch-toolbar">
                     <Breadcrumbs
                         className={styles.breadcrumbs}
                         pages={[
@@ -381,13 +434,16 @@ export default function ScratchToolbar(props: Props) {
                                             platform={scratch.platform}
                                             size={20}
                                         />
-                                        <ScratchName
-                                            name={scratch.name}
-                                            onChange={
-                                                userIsYou(scratch.owner) &&
-                                                ((name) => setScratch({ name }))
-                                            }
-                                        />
+                                        <span data-tour="scratch-name">
+                                            <ScratchName
+                                                name={scratch.name}
+                                                onChange={
+                                                    userIsYou(scratch.owner) &&
+                                                    ((name) =>
+                                                        setScratch({ name }))
+                                                }
+                                            />
+                                        </span>
                                         <span className="hidden md:inline">
                                             <EditTimeAgo
                                                 date={scratch.last_updated}
@@ -408,7 +464,7 @@ export default function ScratchToolbar(props: Props) {
                         "border-gray-6 border-b",
                     )}
                 >
-                    <Actions {...props} />
+                    <Actions {...props} tourTargetsEnabled />
                 </div>
             )}
         </>

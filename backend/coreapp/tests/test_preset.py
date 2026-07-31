@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp.compilers import GCC281PM
+from coreapp.compilers import GCC281PM, IDO53
 from coreapp.models.preset import Preset
 from coreapp.models.profile import Profile
 from coreapp.platforms import DUMMY, N64, PS1
@@ -68,6 +68,15 @@ class PresetTests(BaseTestCase):
     def test_admin_create_preset(self) -> None:
         self.create_admin()
         self.create_preset(SAMPLE_PRESET_DICT)
+
+    def test_admin_create_preset_drops_blank_diff_flags(self) -> None:
+        self.create_admin()
+
+        preset = self.create_preset(
+            {**DUMMY_PRESET_DICT, "diff_flags": ["", "  ", "-DIFFdifflib"]}
+        )
+
+        self.assertEqual(preset.diff_flags, ["-DIFFdifflib"])
 
     def test_create_preset_not_authenticated(self) -> None:
         response = self.client.post(reverse("preset-list"), SAMPLE_PRESET_DICT)
@@ -261,3 +270,17 @@ class PresetTests(BaseTestCase):
         )  # should override preset's value
         # self.assertEqual(scratch.decompiler_flags, preset.decompiler_flags)
         self.assertEqual(scratch.libraries, preset.libraries)
+
+    @requiresCompiler(GCC281PM, IDO53)
+    def test_create_scratch_from_preset_ignores_compiler_override(self) -> None:
+        self.create_admin()
+        preset = self.create_preset(SAMPLE_PRESET_DICT)
+        scratch_dict = {
+            "preset": str(preset.id),
+            "compiler": IDO53.id,
+            "context": "",
+            "target_asm": "jr $ra\nnop\n",
+        }
+        scratch = self.create_scratch(scratch_dict)
+        self.assertEqual(scratch.platform, preset.platform)
+        self.assertEqual(scratch.compiler, preset.compiler)

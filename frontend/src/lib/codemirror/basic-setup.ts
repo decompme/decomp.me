@@ -22,6 +22,7 @@ import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 
 import defaultKeymap from "./default-keymap";
 import defaultTheme from "./default-theme";
+import searchCount from "./search-count";
 
 const basicSetup: Extension = [
     lineNumbers(),
@@ -40,6 +41,7 @@ const basicSetup: Extension = [
     //crosshairCursor({ key: "Control" }),
     highlightActiveLine(),
     highlightSelectionMatches({ highlightWordAroundCursor: true }),
+    searchCount,
     indentationMarkers({
         colors: {
             light: "var(--code-indentation-marker)",
@@ -61,6 +63,7 @@ export const decompileSetup: Extension = [
     foldGutter(),
     drawSelection(),
     highlightActiveLine(),
+    searchCount,
     indentationMarkers({
         colors: {
             light: "var(--code-indentation-marker)",

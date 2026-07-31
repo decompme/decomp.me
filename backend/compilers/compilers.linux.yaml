@@ -3,7 +3,9 @@ common:
 
 gba:
   - agbcc
+  - agbcc-fe8j
   - agbccpp
+  - gcc2.96
 
 gc_wii:
   - mwcc_233_144
@@ -77,6 +79,7 @@ n3ds:
   - armcc_504_82
 
 nds_arm9:
+  - mwcc_20_56
   - mwcc_20_72
   - mwcc_20_79
   - mwcc_20_82
@@ -146,7 +149,6 @@ ps2:
   - ee-gcc2.95.3-114
   - ee-gcc2.95.3-136
   - ee-gcc2.96
-  - ee-gcc3.2-030210-beta2
   - ee-gcc3.2-030926
   - ee-gcc3.2-040921
   - mwcps2-2.3-991202
@@ -211,12 +213,14 @@ macosx:
   - gcc3-1041
 
 msdos:
+  - wcc10.0a
   - wcc10.5
   - wcc10.5a
   - wcc10.6
   - wcc11.0
   - bcc2.0
   - bcc3.1
+  - msc5.1
 
 wiiu:
   - ghs5.3.22

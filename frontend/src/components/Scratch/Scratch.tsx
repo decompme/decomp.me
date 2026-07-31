@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import type { EditorView } from "@codemirror/view";
+import { DotFillIcon } from "@primer/octicons-react";
 import { vim } from "@replit/codemirror-vim";
 
 import * as api from "@/lib/api";
@@ -52,6 +53,7 @@ import styles from "./Scratch.module.scss";
 import ScratchMatchBanner from "./ScratchMatchBanner";
 import ScratchProgressBar from "./ScratchProgressBar";
 import ScratchToolbar from "./ScratchToolbar";
+import ScratchTour from "./ScratchTour";
 import { StreamLanguage } from "@codemirror/language";
 import { pascal } from "@/lib/codemirror/pascal";
 import ObjdiffPanel from "../Diff/ObjdiffPanel";
@@ -163,6 +165,58 @@ function cloneValue<T>(layout: T): T {
     return JSON.parse(JSON.stringify(layout)) as T;
 }
 
+function sameTextIgnoringLineEndings(a: string, b: string): boolean {
+    return a.replace(/\r\n?/g, "\n") === b.replace(/\r\n?/g, "\n");
+}
+
+function areJsonStringifiedValuesEqual(a: unknown, b: unknown): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function doScratchOptionsDiffer(
+    scratch: Readonly<api.Scratch>,
+    parentScratch: Readonly<api.Scratch>,
+): boolean {
+    return (
+        scratch.platform !== parentScratch.platform ||
+        scratch.compiler !== parentScratch.compiler ||
+        scratch.compiler_flags !== parentScratch.compiler_flags ||
+        !areJsonStringifiedValuesEqual(
+            scratch.diff_flags,
+            parentScratch.diff_flags,
+        ) ||
+        scratch.diff_label !== parentScratch.diff_label ||
+        !areJsonStringifiedValuesEqual(
+            scratch.libraries,
+            parentScratch.libraries,
+        ) ||
+        scratch.match_override !== parentScratch.match_override ||
+        scratch.preset !== parentScratch.preset
+    );
+}
+
+function isTabActiveInLayout(layout: Layout, tab: TabId): boolean {
+    let active = false;
+    visitLayout(layout, (node) => {
+        if (node.kind === "pane" && node.activeTab === tab) {
+            active = true;
+        }
+    });
+    return active;
+}
+
+function ChangedTabMarker({ label }: { label: string }) {
+    return (
+        <span
+            className={styles.changedTabMarker}
+            title={label}
+            aria-label={label}
+        >
+            <DotFillIcon size={16} />
+        </span>
+    );
+}
+
 function applyDefaultDiffTab(
     layout: Layout,
     defaultDiffTab: DefaultDiffTab,
@@ -208,6 +262,9 @@ export default function Scratch({
     const [layout, setLayout] = useState<Layout>(undefined);
     const [layoutName, setLayoutName] =
         useState<keyof typeof DEFAULT_LAYOUTS>(undefined);
+    const [viewedChangedTabs, setViewedChangedTabs] = useState<Set<TabId>>(
+        () => new Set(),
+    );
 
     const [autoRecompileSetting] = useAutoRecompileSetting();
     const [autoRecompileDelaySetting] = useAutoRecompileDelaySetting();
@@ -250,6 +307,14 @@ export default function Scratch({
     };
 
     const shouldCompare = !isModified;
+    const contextDiffersFromParent =
+        shouldCompare &&
+        parentScratch &&
+        !sameTextIgnoringLineEndings(scratch.context, parentScratch.context);
+    const optionsDifferFromParent =
+        shouldCompare &&
+        parentScratch &&
+        doScratchOptionsDiffer(scratch, parentScratch);
     const sourceCompareExtension = useCompareExtension(
         sourceEditor,
         shouldCompare ? parentScratch?.source_code : undefined,
@@ -291,7 +356,26 @@ export default function Scratch({
     // If the version of the scratch changes, refresh code editors
     useEffect(() => {
         incrementValueVersion();
+        setViewedChangedTabs(new Set());
     }, [scratch.slug, scratch.last_updated]);
+
+    useEffect(() => {
+        if (!layout) return;
+
+        setViewedChangedTabs((current) => {
+            const next = new Set(current);
+
+            if (isTabActiveInLayout(layout, TabId.CONTEXT)) {
+                next.add(TabId.CONTEXT);
+            }
+
+            if (isTabActiveInLayout(layout, TabId.OPTIONS)) {
+                next.add(TabId.OPTIONS);
+            }
+
+            return next.size === current.size ? current : next;
+        });
+    }, [layout]);
 
     const [useVim] = useVimModeEnabled();
     const cmExtensionsSource = useMemo(
@@ -322,6 +406,7 @@ export default function Scratch({
                         tabKey={id}
                         label="About"
                         className={styles.about}
+                        dataTour="scratch-tab-about"
                     >
                         {() => (
                             <AboutPanel
@@ -339,6 +424,7 @@ export default function Scratch({
                         key={id}
                         tabKey={id}
                         label="Source code"
+                        dataTour="scratch-tab-source"
                         onSelect={() => {
                             sourceEditor.current?.focus?.();
                             saveContext();
@@ -355,6 +441,7 @@ export default function Scratch({
                             onSelectedLineChange={setSelectedSourceLine}
                             extensions={cmExtensionsSource}
                             placeholder="Write the code for the function you are matching here."
+                            dataTour="scratch-source-editor"
                         />
                     </Tab>
                 );
@@ -363,8 +450,17 @@ export default function Scratch({
                     <Tab
                         key={id}
                         tabKey={id}
-                        label="Context"
+                        label={
+                            <>
+                                Context
+                                {contextDiffersFromParent &&
+                                    !viewedChangedTabs.has(TabId.CONTEXT) && (
+                                        <ChangedTabMarker label="Context has changes vs parent scratch." />
+                                    )}
+                            </>
+                        }
                         className={styles.context}
+                        dataTour="scratch-tab-context"
                         onSelect={() => {
                             contextEditor.current?.focus?.();
                             saveSource();
@@ -380,6 +476,7 @@ export default function Scratch({
                             }}
                             extensions={cmExtensionsContext}
                             placeholder="Add your typedefs, structs, and declarations here."
+                            dataTour="scratch-context-editor"
                         />
                     </Tab>
                 );
@@ -388,8 +485,17 @@ export default function Scratch({
                     <Tab
                         key={id}
                         tabKey={id}
-                        label="Options"
+                        label={
+                            <>
+                                Options
+                                {optionsDifferFromParent &&
+                                    !viewedChangedTabs.has(TabId.OPTIONS) && (
+                                        <ChangedTabMarker label="Options have changes vs parent scratch." />
+                                    )}
+                            </>
+                        }
                         className={styles.compilerOptsTab}
+                        dataTour="scratch-tab-options"
                     >
                         {() => (
                             <ScrollRestorer
@@ -418,6 +524,7 @@ export default function Scratch({
                     <Tab
                         key={id}
                         tabKey={id}
+                        dataTour="scratch-tab-compilation"
                         label={
                             <>
                                 Compilation
@@ -460,6 +567,7 @@ export default function Scratch({
                         tabKey={id}
                         label="objdiff"
                         className={styles.diffTab}
+                        dataTour="scratch-tab-objdiff"
                     >
                         {compilation && (
                             <ObjdiffPanel
@@ -476,6 +584,7 @@ export default function Scratch({
                         <Tab
                             key={id}
                             tabKey={id}
+                            dataTour="scratch-tab-decompilation"
                             label={
                                 <>
                                     Decompilation
@@ -493,14 +602,24 @@ export default function Scratch({
                 );
             case TabId.FAMILY:
                 return (
-                    <Tab key={id} tabKey={id} label="Family">
+                    <Tab
+                        key={id}
+                        tabKey={id}
+                        label="Family"
+                        dataTour="scratch-tab-family"
+                    >
                         {() => <FamilyPanel scratch={scratch} />}
                     </Tab>
                 );
             case TabId.PROBLEMS:
                 return (
                     compilation?.compiler_output && (
-                        <Tab key={id} tabKey={id} label="Problems">
+                        <Tab
+                            key={id}
+                            tabKey={id}
+                            label="Problems"
+                            dataTour="scratch-tab-problems"
+                        >
                             {() => (
                                 <ProblemPanel
                                     text={compilation.compiler_output}
@@ -555,7 +674,12 @@ export default function Scratch({
     );
 
     return (
-        <div ref={container.ref} className={styles.container}>
+        <div
+            ref={container.ref}
+            className={styles.container}
+            data-tour="scratch-view"
+        >
+            <ScratchTour />
             <ErrorBoundary>
                 <ScratchMatchBanner scratch={scratch} />
             </ErrorBoundary>

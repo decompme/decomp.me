@@ -116,6 +116,8 @@ class DiffWrapper:
             reg_categories={},
             show_rodata_refs=show_rodata_refs,
             diff_function_symbols=diff_function_symbols,
+            # Other
+            ref_file=None,
         )
 
     @staticmethod

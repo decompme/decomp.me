@@ -89,11 +89,22 @@ export default function CustomLayout({ renderTab, layout, onChange }: Props) {
 
             els.push(
                 <Allotment.Pane key={child.key} minSize={minCollapsedHeight}>
-                    <CustomLayout
-                        renderTab={renderTab}
-                        layout={child}
-                        onChange={setChild}
-                    />
+                    <div
+                        className="size-full min-h-0"
+                        data-tour={
+                            child.key === 1
+                                ? "scratch-layout-left"
+                                : child.key === 2
+                                  ? "scratch-layout-right"
+                                  : undefined
+                        }
+                    >
+                        <CustomLayout
+                            renderTab={renderTab}
+                            layout={child}
+                            onChange={setChild}
+                        />
+                    </div>
                 </Allotment.Pane>,
             );
         }

@@ -250,6 +250,13 @@ class GHSCompiler(Compiler):
     library_include_flag: str = "-I"
 
 
+@dataclass(frozen=True)
+class MicrosoftCCompiler(Compiler):
+    platform = MSDOS
+    flags: ClassVar[Flags] = []
+    library_include_flag: str = ""
+
+
 def from_id(compiler_id: str) -> Compiler:
     if compiler_id not in _compilers:
         raise ValidationError(f"Unknown compiler: {compiler_id}")
@@ -281,11 +288,23 @@ AGBCC = GCCCompiler(
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
+AGBCC_FE8J = GCCCompiler(
+    id="agbcc-fe8j",
+    platform=GBA,
+    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
+)
+
 OLD_AGBCC = GCCCompiler(
     id="old_agbcc",
     platform=GBA,
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/old_agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
     base_compiler=AGBCC,
+)
+
+GCC_296 = GCCCompiler(
+    id="gcc2.96",
+    platform=GBA,
+    cc='"${COMPILER_DIR}"/usr/local/bin/arm-elf-gcc $COMPILER_FLAGS -S -o - "$INPUT" | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
 AGBCC_ARM = GCCCompiler(
@@ -419,7 +438,7 @@ PSYQ_COMPILE_BAT = "\r\n".join(
 PSYQ_MSDOS_CC = (
     "echo \"\\$_hdimage = '+0 $(pwd) +1'\" > .dosemurc && "
     f'echo "{PSYQ_COMPILE_BAT}" >> COMPILE.BAT && '
-    '/usr/bin/cpp -E "${INPUT}" | unix2dos > dos_src.c && '
+    '/usr/bin/cpp "${INPUT}" | unix2dos > dos_src.c && '
     '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "D:\\COMPILE.BAT") && '
     '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K "${COMPILER_DIR}" -E "ASPSX.EXE -quiet D:\\output.s -o D:\\output.obj") && '
     '${COMPILER_DIR}/psyq-obj-parser output.obj -o "${OUTPUT}"'
@@ -492,7 +511,8 @@ PSYQ46 = GCCPS1Compiler(
 )
 
 PS1_GCC = (
-    '/usr/bin/cpp -E -lang-c -nostdinc "${INPUT}" -o "${INPUT}".i && '
+    # Fixup "# 0" line directives because cc1plus chokes on them
+    '/usr/bin/cpp -nostdinc "${INPUT}" | sed "s/^# 0/# 1/" > "${INPUT}".i && '
     'eval "${COMPILER_DIR}/gcc ${COMPILER_FLAGS} -c -pipe -B${COMPILER_DIR}/ -o "${OUTPUT}" "${INPUT}".i"'
 )
 
@@ -677,11 +697,6 @@ EE_GCC2953_136 = GCCPS2Compiler(
 EE_GCC296 = GCCPS2Compiler(
     id="ee-gcc2.96",
     cc='"${COMPILER_DIR}"/bin/ee-gcc -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
-)
-
-EE_GCC32_030210_BETA2 = GCCPS2Compiler(
-    id="ee-gcc3.2-030210-beta2",
-    cc='WINEPATH="${COMPILER_DIR}"/dll/ ${WINE} "${COMPILER_DIR}"/bin/ee-gcc.exe -c -B "${COMPILER_DIR}"/bin/ee- $COMPILER_FLAGS "$INPUT" -o "$OUTPUT"',
 )
 
 EE_GCC32_030926 = GCCPS2Compiler(
@@ -1066,7 +1081,7 @@ GCC440MIPS64ELF = GCCCompiler(
 GHS5322 = GHSCompiler(
     id="ghs5.3.22",
     platform=WIIU,
-    cc='${WINE} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+    cc='${WIBO} "${COMPILER_DIR}/bin/cxppc.exe" -c -tmp="${OUTPUT}".s ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 # IRIX
@@ -1369,6 +1384,11 @@ PRODG_393 = GCCGCCompiler(
 # NDS_ARM9
 MWCCARM_CC = '${WIBO} "${COMPILER_DIR}/mwccarm.exe" -pragma "msg_show_realref off" -c -proc arm946e -nostdinc -stderr ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 
+MWCC_20_56 = MWCCNDSArm9Compiler(
+    id="mwcc_20_56",
+    cc=MWCCARM_CC,
+)
+
 MWCC_20_72 = MWCCNDSArm9Compiler(
     id="mwcc_20_72",
     cc=MWCCARM_CC,
@@ -1576,6 +1596,20 @@ WATCOM_CXX = (
     + "\" | sed 's:/:\\\\:g')"
 )
 
+WATCOM_100A_C = WatcomCompiler(
+    id="wcc10.0a",
+    platform=MSDOS,
+    cc=WATCOM_CC,
+)
+
+WATCOM_100A_CPP = WatcomCompiler(
+    id="wpp10.0a",
+    base_compiler=WATCOM_100A_C,
+    platform=MSDOS,
+    language=Language.CXX,
+    cc=WATCOM_CXX,
+)
+
 WATCOM_105_C = WatcomCompiler(
     id="wcc10.5",
     platform=MSDOS,
@@ -1651,6 +1685,17 @@ BORLAND_31_C = BorlandCompiler(
     cc=BORLAND_MSDOS_CC,
 )
 
+MSC_51 = MicrosoftCCompiler(
+    id="msc5.1",
+    platform=MSDOS,
+    cc=(
+        "echo \"\\$_hdimage = '+0 ${COMPILER_DIR} +1'\" > .dosemurc && "
+        'cat "${INPUT}" | unix2dos > dos_src.c && '
+        '(HOME="$(pwd)" LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/i386-pc-dj64/lib64 /usr/bin/dosemu -quiet -dumb -f .dosemurc -p -K . -E "D:\\BIN\\CL.EXE /c ${COMPILER_FLAGS} /Foout.o dos_src.c") && '
+        'cp out.o "${OUTPUT}"'
+    ),
+)
+
 CL_XBOX = '${WIBO} "${COMPILER_DIR}/cl.exe" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC_PPC_14_00_2110 = MSVCCompiler(
@@ -1682,9 +1727,11 @@ _all_compilers: list[Compiler] = [
     DUMMY_LONGRUNNING,
     # GBA
     AGBCC,
+    AGBCC_FE8J,
     OLD_AGBCC,
     AGBCC_ARM,
     AGBCCPP,
+    GCC_296,
     # N3DS
     ARMCC_40_771,
     ARMCC_40_821,
@@ -1771,7 +1818,6 @@ _all_compilers: list[Compiler] = [
     EE_GCC2953_114,
     EE_GCC2953_136,
     EE_GCC296,
-    EE_GCC32_030210_BETA2,
     EE_GCC32_030926,
     EE_GCC32_040921,
     MWCPS2_23_991202,
@@ -1867,6 +1913,7 @@ _all_compilers: list[Compiler] = [
     PRODG_381,
     PRODG_393,
     # NDS
+    MWCC_20_56,
     MWCC_20_72,
     MWCC_20_79,
     MWCC_20_82,
@@ -1915,6 +1962,8 @@ _all_compilers: list[Compiler] = [
     MSVC80,
     MSVC80P,
     # Watcom, DOS and Win32
+    WATCOM_100A_C,
+    WATCOM_100A_CPP,
     WATCOM_105_C,
     WATCOM_105_CPP,
     WATCOM_105A_C,
@@ -1926,6 +1975,8 @@ _all_compilers: list[Compiler] = [
     # Borland, DOS
     BORLAND_20_C,
     BORLAND_31_C,
+    # Microsoft C compiler
+    MSC_51,
     # Xbox 360
     MSVC_PPC_14_00_2110,
     MSVC_PPC_16_00_11886_00,

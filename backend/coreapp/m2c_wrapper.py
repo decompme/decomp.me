@@ -29,6 +29,8 @@ PLATFORM_ID_TO_M2C_ARCH = {
     "gba": "gba",
     "n3ds": "arm",
     "nds_arm9": "arm",
+    # superh
+    "saturn": "sh2",
 }
 
 

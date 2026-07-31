@@ -22,6 +22,7 @@ import styles from "./ScratchItem.module.scss";
 import UserLink from "./user/UserLink";
 
 type MatchPercentSource = api.TerseScratch | api.BestFork;
+export type ScratchItemSkeletonVariant = "row" | "compact";
 
 function isMatchPercentOverride(source: MatchPercentSource) {
     return "match_override" in source ? source.match_override : source.is_match;
@@ -293,6 +294,41 @@ export function ScratchItemPresetList({
             showPlatform={false}
             showPresetOrCompiler={false}
         />
+    );
+}
+
+export function ScratchItemSkeleton({
+    variant = "row",
+}: {
+    variant?: ScratchItemSkeletonVariant;
+}) {
+    return (
+        <li
+            className={clsx(styles.skeletonItem, {
+                [styles.skeletonCompact]: variant === "compact",
+            })}
+            aria-hidden="true"
+        >
+            {variant === "compact" ? (
+                <>
+                    <span className={styles.skeletonIcon} />
+                    <span className={styles.skeletonTitle} />
+                    <span className={styles.skeletonPill} />
+                </>
+            ) : (
+                <>
+                    <div className={styles.skeletonHeader}>
+                        <span className={styles.skeletonIcon} />
+                        <span className={styles.skeletonTitle} />
+                        <span className={styles.skeletonBadge} />
+                    </div>
+                    <div className={styles.skeletonMetadata}>
+                        <span className={styles.skeletonMetaLong} />
+                        <span className={styles.skeletonMetaShort} />
+                    </div>
+                </>
+            )}
+        </li>
     );
 }
 

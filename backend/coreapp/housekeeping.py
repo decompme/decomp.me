@@ -1,4 +1,6 @@
 import datetime
+import time
+from collections.abc import Callable
 from typing import Protocol
 
 from django.apps import apps
@@ -14,6 +16,7 @@ def get_model(model_name: str) -> type[DjangoModel]:
 
 
 DEFAULT_DELETE_BATCH_SIZE = 1000
+ORPHAN_DELETE_CONFIRMATION_DELAY_SECONDS = 3.0
 
 
 def perform_delete(
@@ -34,6 +37,21 @@ def perform_delete(
 
     deleted, _ = qs.delete()
     return deleted
+
+
+def confirmed_orphan_queryset(
+    build_queryset: Callable[[], QuerySet[Model]],
+    delay_seconds: float = ORPHAN_DELETE_CONFIRMATION_DELAY_SECONDS,
+) -> QuerySet[Model]:
+    first_pass_ids = set(build_queryset().values_list("pk", flat=True))
+    if first_pass_ids and delay_seconds > 0:
+        time.sleep(delay_seconds)
+
+    second_pass = build_queryset()
+    second_pass_ids = set(
+        second_pass.filter(pk__in=first_pass_ids).values_list("pk", flat=True)
+    )
+    return second_pass.filter(pk__in=second_pass_ids)
 
 
 def remove_ownerless_scratches(
@@ -65,9 +83,11 @@ def remove_orphan_contexts(
     Context = get_model("Context")
     Scratch = get_model("Scratch")
 
-    to_delete = Context.objects.annotate(
-        has_scratch=Exists(Scratch.objects.filter(context_fk=OuterRef("pk")))
-    ).filter(has_scratch=False)
+    to_delete = confirmed_orphan_queryset(
+        lambda: Context.objects.annotate(
+            has_scratch=Exists(Scratch.objects.filter(context_fk=OuterRef("pk")))
+        ).filter(has_scratch=False)
+    )
 
     return perform_delete(to_delete, dry_run=dry_run)
 
@@ -78,9 +98,11 @@ def remove_orphan_assemblies(
     Assembly = get_model("Assembly")
     Scratch = get_model("Scratch")
 
-    to_delete = Assembly.objects.annotate(
-        has_scratch=Exists(Scratch.objects.filter(target_assembly=OuterRef("pk")))
-    ).filter(has_scratch=False)
+    to_delete = confirmed_orphan_queryset(
+        lambda: Assembly.objects.annotate(
+            has_scratch=Exists(Scratch.objects.filter(target_assembly=OuterRef("pk")))
+        ).filter(has_scratch=False)
+    )
 
     return perform_delete(to_delete, dry_run=dry_run)
 
@@ -91,9 +113,11 @@ def remove_orphan_asms(
     Asm = get_model("Asm")
     Assembly = get_model("Assembly")
 
-    to_delete = Asm.objects.annotate(
-        has_assembly=Exists(Assembly.objects.filter(source_asm=OuterRef("pk")))
-    ).filter(has_assembly=False)
+    to_delete = confirmed_orphan_queryset(
+        lambda: Asm.objects.annotate(
+            has_assembly=Exists(Assembly.objects.filter(source_asm=OuterRef("pk")))
+        ).filter(has_assembly=False)
+    )
 
     return perform_delete(to_delete, dry_run=dry_run)
 

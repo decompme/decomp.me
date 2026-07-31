@@ -1,4 +1,4 @@
-# This image intentionally targets amd64 because Wine/wine32 and the bundled
+# This image intentionally targets amd64 because the bundled
 # compiler/binutils artifacts are x86 Linux binaries.
 FROM --platform=linux/amd64 ubuntu:26.04 AS base
 
@@ -136,8 +136,7 @@ RUN ARCHIVE=android-ndk-r8e-linux-x86_64.tar.bz2; \
 
 FROM python314 AS dependencies
 
-RUN dpkg --add-architecture i386 \
-    && add-apt-repository -y ppa:dosemu2/ppa \
+RUN add-apt-repository -y ppa:dosemu2/ppa \
     && add-apt-repository -y ppa:stsp-0/dj64 \
     && apt-get update \
     && apt-get install -y -o APT::Immediate-Configure=false --no-install-recommends \
@@ -153,14 +152,12 @@ RUN dpkg --add-architecture i386 \
     libtinfo6 \
     netcat-traditional \
     wget \
-    wine \
-    wine32:i386 \
     && rm -rf /var/lib/apt/lists/*
 
 # NOTE: libtinfo5 is required for clang
-RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
+RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.2_amd64.deb; \
     URL=https://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/$ARCHIVE; \
-    SHA256=ab89265d8dd18bda6a29d7c796367d6d9f22a39a8fa83589577321e7caf3857b; \
+    SHA256=b9bb64e716a7d9de05b1b33992763142ca81bcae3a7f8ce7e29fa3c6fd32f1e8; \
     wget -O "$ARCHIVE" "$URL" \
     && echo "$SHA256  $ARCHIVE" | sha256sum -c - \
     && apt install "./$ARCHIVE" \
@@ -168,26 +165,20 @@ RUN ARCHIVE=libtinfo5_6.3-2ubuntu0.1_amd64.deb; \
 
 RUN mkdir -p /etc/fonts
 
-ENV WINEPREFIX=/tmp/wine
 
-# Ensure /sandbox and wine dirs have correct ownership
+# Ensure /sandbox has correct ownership
 RUN mkdir -p /sandbox \
-    && chown -R ubuntu:ubuntu /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown ubuntu:ubuntu "${WINEPREFIX}"
+    && chown -R ubuntu:ubuntu /sandbox
 
 # Switch to non-root user
 USER ubuntu
-
-# Initialize wine files to /home/ubuntu/.wine
-RUN wineboot --init
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
 COPY --from=binutils /binutils/ /usr/bin/
 COPY --from=binutils /binutils-libs/ /usr/lib/x86_64-linux-gnu/
 
-COPY --from=ghcr.io/decompals/wibo:1.0.1 /usr/local/bin/wibo /usr/bin/
+COPY --from=ghcr.io/decompals/wibo:1.1.1 /usr/local/bin/wibo /usr/bin/
 
 WORKDIR /backend
 
@@ -229,7 +220,6 @@ COPY --from=uv-install /backend/.venv /backend/.venv
 COPY manage.py /backend
 COPY housekeeping.py /backend
 
-COPY wine /backend/wine
 COPY decompme /backend/decompme
 COPY libraries /backend/libraries
 COPY compilers /backend/compilers

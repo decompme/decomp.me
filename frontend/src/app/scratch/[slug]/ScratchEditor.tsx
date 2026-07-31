@@ -35,13 +35,6 @@ function ScratchEditorInner({
 
     useWarnBeforeScratchUnload(scratch, !isDeleting);
 
-    // If the static props scratch changes (i.e. router push / page redirect), reset `scratch`.
-    useEffect(() => {
-        if (currentScratchUrl !== initialScratchUrl) {
-            setScratch(initialScratch);
-        }
-    }, [currentScratchUrl, initialScratch, initialScratchUrl]);
-
     // If the server scratch owner changes (i.e. scratch was claimed), update local scratch owner.
     // You can trigger this by:
     // 1. Logging out
@@ -170,6 +163,7 @@ export interface Props {
 
 export default function ScratchEditor(props: Props) {
     const [offline, setOffline] = useState(false);
+    const initialScratchUrl = scratchUrl(props.initialScratch);
 
     const offlineMiddleware = useMemo<Middleware>(() => {
         return (_useSWRNext) => {
@@ -198,7 +192,11 @@ export default function ScratchEditor(props: Props) {
     return (
         <>
             <SWRConfig value={{ use: [offlineMiddleware], onSuccess }}>
-                <ScratchEditorInner {...props} offline={offline} />
+                <ScratchEditorInner
+                    key={initialScratchUrl}
+                    {...props}
+                    offline={offline}
+                />
             </SWRConfig>
         </>
     );

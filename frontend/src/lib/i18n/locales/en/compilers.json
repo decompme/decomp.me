@@ -1,7 +1,11 @@
 {
     "agbcc": "agbcc",
 
+    "agbcc-fe8j": "agbcc (Fire Emblem 8 JP)",
+
     "agbccpp": "agbccpp",
+
+    "gcc2.96": "gcc2.96",
 
     "armcc_40_771": "4.0 build 771",
     "armcc_40_821": "4.0 build 821",
@@ -38,7 +42,6 @@
     "ee-gcc2.95.3-114": "EE GCC 2.95.3 (SN BUILD v1.14)",
     "ee-gcc2.95.3-136": "EE GCC 2.95.3 (SN BUILD v1.36)",
     "ee-gcc2.96": "EE GCC 2.96 build 001003-1",
-    "ee-gcc3.2-030210-beta2": "EE GCC 3.2 build 030210 Beta 2",
     "ee-gcc3.2-030926": "EE GCC 3.2 build 030926",
     "ee-gcc3.2-040921": "EE GCC 3.2 build 040921",
 
@@ -121,6 +124,7 @@
     "msvc_ppc_14.00.2110": "Microsoft C/C++ Compiler 14.00.2110 for PowerPC",
     "msvc_ppc_16.00.11886.00": "Microsoft C/C++ Compiler 16.00.11886.00 for PowerPC",
 
+    "mwcc_20_56": "2.0 build 56",
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
     "mwcc_20_82": "2.0 build 82 (MW 1.2sp2p3)",
@@ -245,6 +249,8 @@
     "pspsnc_1.2.7503.0": "SN 1.2.7503.0",
     "psp-gcc-1.3.1": "GCC 3.3.3+allegrex-2.2.1-psp-1.3.1",
 
+    "wcc10.0a": "Watcom Optimizing C i386 Compiler 10.0a",
+    "wpp10.0a": "Watcom Optimizing C++ i386 Compiler 10.0a",
     "wcc10.5": "Watcom Optimizing C i386 Compiler 10.5",
     "wpp10.5": "Watcom Optimizing C++ i386 Compiler 10.5",
     "wcc10.5a": "Watcom Optimizing C i386 Compiler 10.5a",
@@ -256,6 +262,8 @@
 
     "bcc2.0": "Borland C++ Compiler 2.0",
     "bcc3.1": "Borland C++ Compiler 3.1",
+
+    "msc5.1": "Microsoft C Compiler 5.1",
 
     "cygnus-2.7-96Q3": "cygnus-2.7-96Q3 SOA-960904",
 

@@ -2,7 +2,7 @@ from django.test.testcases import TestCase
 from django.urls import reverse
 from rest_framework import status
 
-from coreapp.compilers import GCC281PM, IDO53, MWCC_247_92
+from coreapp.compilers import CYGNUS_2_7_96Q3, GCC281PM, IDO53, MWCC_247_92
 from coreapp.decompiler_wrapper import DECOMP_WITH_CONTEXT_FAILED_PREAMBLE
 from coreapp.m2c_wrapper import M2CWrapper
 from coreapp.platforms import N64
@@ -143,3 +143,21 @@ class M2CTests(TestCase):
             "s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n",
             c_code,
         )
+
+    def test_superh(self) -> None:
+        c_code = M2CWrapper.decompile(
+            """
+        .global test
+        test:
+        mov.l r14,@-r15
+        mov r15,r14
+        mov.l @r15+,r14
+        rts
+        mov #1,r0
+        """,
+            "",
+            "saturn",
+            CYGNUS_2_7_96Q3,
+        )
+
+        self.assertEqual("s32 test(void) {\n    return 1;\n}\n", c_code)

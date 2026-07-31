@@ -90,7 +90,6 @@ yarn dev
 
 ### Optional steps
 - [Configure vscode for development](VSCODE.md)
-- [Configure wine for Windows compiler on Linux](WINE.md)
 - [Set up GitHub authentication](GITHUB.md)
 - [Install nsjail to run the compiler sandbox](SANDBOX.md)
 - Download [wibo](https://github.com/decompals/WiBo/releases/latest) and add it to your system path (for running Windows compilers from Linux)

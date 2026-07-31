@@ -6,8 +6,15 @@ import {
     useRef,
 } from "react";
 
-import { type Extension, EditorState } from "@codemirror/state";
-import { EditorView, placeholder } from "@codemirror/view";
+import { addCursorAbove, addCursorBelow } from "@codemirror/commands";
+import { type Extension, EditorState, Prec } from "@codemirror/state";
+import {
+    EditorView,
+    placeholder,
+    keymap,
+    drawSelection,
+    rectangularSelection,
+} from "@codemirror/view";
 import clsx from "clsx";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -58,6 +65,7 @@ export interface Props {
     viewRef?: RefObject<EditorView | null>;
     extensions: Extension; // const
     placeholder?: string;
+    dataTour?: string;
 }
 
 export default function CodeMirror({
@@ -70,6 +78,7 @@ export default function CodeMirror({
     viewRef: viewRefProp,
     extensions,
     placeholder: placeholderText,
+    dataTour,
 }: Props) {
     const { ref: el, width } = useSize<HTMLDivElement>();
 
@@ -134,6 +143,18 @@ export default function CodeMirror({
 
                             return null;
                         },
+                    ),
+                    EditorState.allowMultipleSelections.of(true),
+                    drawSelection(),
+                    rectangularSelection(),
+                    Prec.highest(
+                        keymap.of([
+                            { key: "Ctrl-Shift-ArrowUp", run: addCursorAbove },
+                            {
+                                key: "Ctrl-Shift-ArrowDown",
+                                run: addCursorBelow,
+                            },
+                        ]),
                     ),
 
                     extensionsRef.current,
@@ -204,6 +225,7 @@ export default function CodeMirror({
             ref={el}
             onMouseMove={debouncedOnMouseMove}
             className={clsx(styles.container, className)}
+            data-tour={dataTour}
             style={
                 {
                     "--cm-font-size": `${fontSize}px`,

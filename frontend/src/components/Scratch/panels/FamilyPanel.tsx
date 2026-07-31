@@ -20,7 +20,10 @@ type Props = {
 
 export default function FamilyPanel({ scratch }: Props) {
     return (
-        <div className="h-full overflow-auto p-4">
+        <div
+            className="h-full overflow-auto p-4"
+            data-tour="scratch-family-panel"
+        >
             <SortableFamilyList scratch={scratch} />
         </div>
     );

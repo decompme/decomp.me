@@ -16,6 +16,20 @@
     flex-direction: column;
 }
 
+.changedTabMarker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    line-height: 1;
+
+    color: var(--link);
+    cursor: pointer;
+}
+
 .editor {
     display: flex;
     align-items: stretch;

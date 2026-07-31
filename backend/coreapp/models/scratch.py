@@ -147,6 +147,11 @@ class Scratch(models.Model):
 
     class Meta:
         ordering = ["-creation_time"]
+        indexes = [
+            models.Index(fields=["-creation_time"], name="scratch_created_idx"),
+            models.Index(fields=["-last_updated"], name="scratch_updated_idx"),
+            models.Index(fields=["score"], name="scratch_score_idx"),
+        ]
         verbose_name_plural = "Scratches"
 
     def __str__(self) -> str:

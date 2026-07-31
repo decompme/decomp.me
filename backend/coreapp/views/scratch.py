@@ -620,7 +620,9 @@ class ScratchViewSet(
         else:
             family = subqueries[0].union(*subqueries[1:])
 
-        family_ids = family.values_list("slug", flat=True)
+        # Materialize the union before the final fetch so Postgres can use slug
+        # index lookups instead of planning joins across the full scratch table.
+        family_ids = list(family.values_list("slug", flat=True))
         family = ScratchViewSet.queryset.filter(slug__in=family_ids).order_by(
             "creation_time"
         )
