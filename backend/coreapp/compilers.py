@@ -893,6 +893,12 @@ IDO53 = IDOCompiler(
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
+SSB_IDO53 = IDOCompiler(
+    id="ssb_ido5.3",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+)
+
 IDO53_CXX = IDOCompiler(
     id="ido5.3_c++",
     platform=N64,
@@ -904,6 +910,12 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+SSB_IDO71 = IDOCompiler(
+    id="ssb_ido7.1",
+    platform=N64,
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
 )
 
 IDO71_CXX = IDOCompiler(
@@ -1789,9 +1801,11 @@ _all_compilers: list[Compiler] = [
     IDO41,
     IDO52,
     IDO53,
+    SSB_IDO53,
     IDO53_CXX,
     IDO60,
     IDO71,
+    SSB_IDO71,
     IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,

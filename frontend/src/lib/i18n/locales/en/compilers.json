@@ -95,15 +95,15 @@
     "ido7.1_irix": "IDO 7.1",
     "ido4.1": "IDO 4.1",
     "ido5.3": "IDO 5.3",
+    "ssb_ido5.3": "SSB IDO 5.3",
     "ido5.2": "IDO 5.2",
     "ido5.3_c++": "IDO 5.3 C++",
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
+    "ssb_ido7.1": "SSB IDO 7.1",
     "ido7.1_c++": "IDO 7.1 C++",
     "ido7.1Pascal": "IDO 7.1 Pascal",
-
     "mips_pro_744": "MIPS Pro 7.4.4",
-
     "msvc4.0": "Microsoft Visual C/C++ 4.0",
     "msvc4.1": "Microsoft Visual C/C++ 4.1",
     "msvc4.2": "Microsoft Visual C/C++ 4.2",
