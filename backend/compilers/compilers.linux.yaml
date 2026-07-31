@@ -54,9 +54,11 @@ n64:
   - ido4.1
   - ido5.2
   - ido5.3
+  - ssb_ido5.3
   - ido5.3_c++
   - ido6.0
   - ido7.1
+  - ssb_ido7.1
   - mips_pro_744
   - egcs_1.1.2-4
   - egcs_1.1.2-4c
