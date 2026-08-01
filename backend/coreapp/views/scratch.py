@@ -3,15 +3,17 @@ import hashlib
 import io
 import json
 import logging
+import math
 import re
 import zipfile
+from collections import defaultdict
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import django_filters
 from django.core.files import File
-from django.db.models import Case, F, FloatField, Value, When
-from django.db.models.functions import Cast
+from django.db.models import Case, F, FloatField, Max, Value, When, Window
+from django.db.models.functions import Cast, RowNumber
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, QueryDict
 from django.utils.decorators import method_decorator
@@ -30,16 +32,17 @@ from ..decorators.django import condition
 from ..diff_wrapper import DiffWrapper
 from ..error import CompilationError, DiffError
 from ..filters.scratch import ScratchFilter
-from ..filters.search import NonEmptySearchFilter
+from ..filters.search import NonEmptySearchFilter, validate_search_query
 from ..libraries import Library
 from ..middleware import Request
 from ..models.best_fork import update_best_forks_for_scratch
 from ..models.preset import Preset
 from ..models.scratch import Asm, Assembly, Scratch
-from ..pagination import SafeCursorPagination
+from ..pagination import SafeCursorPagination, ScratchBestByNamePagination
 from ..platforms import Platform
 from ..serializers import (
     ClaimableScratchSerializer,
+    ScratchBestByNameGroupSerializer,
     ScratchCompileSerializer,
     ScratchCreateSerializer,
     ScratchDecompileSerializer,
@@ -69,6 +72,19 @@ def get_db_asm(request_asm: str) -> Asm:
 
 # 1 MB
 MAX_FILE_SIZE = 1000 * 1024
+
+UNTITLED_SCRATCH_NAME = "Untitled"
+
+MAX_BEST_BY_NAME_DEPTH = 10
+DEFAULT_BEST_BY_NAME_DEPTH = 1
+
+BEST_BY_NAME_ORDERING = {
+    "best_match": "-best_match_percent",
+    "name": "name",
+    "latest": "-latest_activity",
+    "oldest": "latest_activity",
+}
+DEFAULT_BEST_BY_NAME_ORDERING = "best_match"
 
 
 def cache_object(platform: Platform, file: File[Any]) -> Assembly:
@@ -252,7 +268,7 @@ def create_scratch(
         preset: Preset = data["preset"]
         preset_id = str(preset.id)
 
-    name = data.get("name", diff_label) or "Untitled"
+    name = data.get("name", diff_label) or UNTITLED_SCRATCH_NAME
 
     libraries = [
         Library(**lib) if isinstance(lib, dict) else lib for lib in data["libraries"]
@@ -630,3 +646,128 @@ class ScratchViewSet(
         return Response(
             TerseScratchSerializer(family, many=True, context={"request": request}).data
         )
+
+    def _best_by_name_eligible_queryset(self, request: Request) -> QuerySet[Scratch]:
+        queryset = (
+            Scratch.objects.all()
+            .exclude(name=UNTITLED_SCRATCH_NAME)
+            .annotate(match_percent=self.match_percent)
+        )
+
+        filterset = ScratchFilter(
+            data=request.query_params, queryset=queryset, request=request
+        )
+        if not filterset.is_valid():
+            raise serializers.ValidationError(filterset.errors)
+        queryset = filterset.qs
+
+        search = request.query_params.get("search", "").strip()
+        if search:
+            validate_search_query(search)
+            queryset = queryset.filter(name__icontains=search)
+
+        min_match = request.query_params.get("min_match")
+        if min_match:
+            try:
+                min_match_value = float(min_match)
+            except ValueError:
+                raise serializers.ValidationError(
+                    {"min_match": "Must be a number."}
+                ) from None
+            if not math.isfinite(min_match_value) or not (
+                0.0 <= min_match_value <= 1.0
+            ):
+                raise serializers.ValidationError(
+                    {"min_match": "Must be a number between 0.0 and 1.0."}
+                )
+            queryset = queryset.filter(match_percent__gte=min_match_value)
+
+        return queryset
+
+    @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1))
+    @action(detail=False, methods=["GET"], url_path="best-by-name")
+    def best_by_name(self, request: Request) -> Response:
+        if not request.query_params.get("platform") or not request.query_params.get(
+            "preset"
+        ):
+            raise serializers.ValidationError(
+                {"detail": "Both 'platform' and 'preset' are required."}
+            )
+
+        try:
+            depth = int(request.query_params.get("depth", DEFAULT_BEST_BY_NAME_DEPTH))
+        except ValueError:
+            raise serializers.ValidationError(
+                {"depth": "Must be an integer."}
+            ) from None
+        depth = max(1, min(depth, MAX_BEST_BY_NAME_DEPTH))
+
+        ordering_param = request.query_params.get(
+            "ordering", DEFAULT_BEST_BY_NAME_ORDERING
+        )
+        if ordering_param not in BEST_BY_NAME_ORDERING:
+            raise serializers.ValidationError(
+                {
+                    "ordering": "Must be one of: "
+                    + ", ".join(sorted(BEST_BY_NAME_ORDERING))
+                }
+            )
+        group_ordering = BEST_BY_NAME_ORDERING[ordering_param]
+
+        eligible = self._best_by_name_eligible_queryset(request)
+
+        name_groups = (
+            eligible.values("name")
+            .annotate(
+                best_match_percent=Max("match_percent"),
+                latest_activity=Max("last_updated"),
+            )
+            .order_by(group_ordering, "name")
+        )
+
+        paginator = ScratchBestByNamePagination()
+        page = cast(
+            "list[dict[str, Any]]",
+            paginator.paginate_queryset(name_groups, request, view=self) or [],
+        )
+        names_on_page = [group["name"] for group in page]
+
+        ranked = (
+            eligible.filter(name__in=names_on_page)
+            .select_related("owner__user__github")
+            .annotate(
+                name_rank=Window(
+                    expression=RowNumber(),
+                    partition_by=[F("name")],
+                    order_by=[
+                        F("match_percent").desc(),
+                        F("last_updated").desc(),
+                        F("creation_time").desc(),
+                        F("pk").desc(),
+                    ],
+                )
+            )
+            .filter(name_rank__lte=depth)
+            .order_by("name", "name_rank")
+        )
+
+        candidates_by_name: dict[str, list[Scratch]] = defaultdict(list)
+        for scratch in ranked:
+            candidates_by_name[scratch.name].append(scratch)
+
+        groups = [
+            {
+                "name": group["name"],
+                "best_match_percent": group["best_match_percent"],
+                "latest_activity": group["latest_activity"],
+                "scratches": candidates_by_name.get(group["name"], []),
+            }
+            for group in page
+        ]
+
+        serializer = ScratchBestByNameGroupSerializer(
+            groups,  # type: ignore[arg-type]
+            many=True,
+            context={"request": request},
+        )
+        return paginator.get_paginated_response(serializer.data)

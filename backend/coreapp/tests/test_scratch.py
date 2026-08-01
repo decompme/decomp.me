@@ -2,18 +2,22 @@ import base64
 import io
 import json
 import zipfile
+from datetime import timedelta
 from time import sleep
 from typing import Any
 from urllib.parse import urlencode
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import ProtectedError
+from django.db.models.signals import post_init
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 
 from coreapp import compilers, platforms
 from coreapp.compilers import EE_GCC29_991111, GCC281PM, IDO53, IDO71, MWCC_242_81
 from coreapp.libraries import Library
+from coreapp.models.preset import Preset
 from coreapp.models.scratch import Assembly, Context, LibrariesField, Scratch
 from coreapp.platforms import GC_WII, N64
 from coreapp.tests.common import BaseTestCase, requiresCompiler
@@ -880,3 +884,258 @@ class ScratchExportTests(BaseTestCase):
         self.assertIn("code.c", file_names)
         self.assertIn("ctx.c", file_names)
         self.assertNotIn("current.o", file_names)
+
+
+class ScratchBestByNameTests(BaseTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.preset = Preset.objects.create(
+            name="Test Preset",
+            platform=platforms.DUMMY.id,
+            compiler=compilers.DUMMY.id,
+        )
+        self.other_preset = Preset.objects.create(
+            name="Other Preset",
+            platform=platforms.DUMMY.id,
+            compiler=compilers.DUMMY.id,
+        )
+
+    def make_scratch(
+        self,
+        name: str,
+        score: int,
+        max_score: int,
+        preset: Preset | None,
+        match_override: bool = False,
+    ) -> Scratch:
+        scratch = self.create_nop_scratch()
+        scratch.name = name
+        scratch.preset = preset
+        scratch.score = score
+        scratch.max_score = max_score
+        scratch.match_override = match_override
+        scratch.save()
+        return scratch
+
+    def get_best_by_name(self, **params: Any) -> Any:
+        params.setdefault("platform", platforms.DUMMY.id)
+        params.setdefault("preset", self.preset.id)
+        response = self.client.get(reverse("scratch-best-by-name"), params)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
+        return response.json()
+
+    def test_requires_platform_and_preset(self) -> None:
+        response = self.client.get(reverse("scratch-best-by-name"))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.get(
+            reverse("scratch-best-by-name"), {"platform": platforms.DUMMY.id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_ranks_by_match_percent_not_raw_score(self) -> None:
+        worse_match = self.make_scratch(
+            "func_a", score=5, max_score=10, preset=self.preset
+        )
+        better_match = self.make_scratch(
+            "func_a", score=50, max_score=1000, preset=self.preset
+        )
+
+        data = self.get_best_by_name(depth=2)
+
+        self.assertEqual(data["count"], 1)
+        group = data["results"][0]
+        self.assertEqual(group["name"], "func_a")
+        self.assertEqual(len(group["scratches"]), 2)
+        self.assertEqual(group["scratches"][0]["slug"], better_match.slug)
+        self.assertEqual(group["scratches"][0]["rank"], 1)
+        self.assertEqual(group["scratches"][1]["slug"], worse_match.slug)
+        self.assertEqual(group["scratches"][1]["rank"], 2)
+
+    def test_includes_100_percent_matches(self) -> None:
+        perfect = self.make_scratch(
+            "func_b", score=0, max_score=1000, preset=self.preset
+        )
+
+        data = self.get_best_by_name()
+        group = data["results"][0]
+        self.assertEqual(group["scratches"][0]["slug"], perfect.slug)
+        self.assertEqual(group["scratches"][0]["match_percent"], 1.0)
+        self.assertEqual(group["best_match_percent"], 1.0)
+
+    def test_match_override_counts_as_full_match(self) -> None:
+        overridden = self.make_scratch(
+            "func_b2", score=42, max_score=1000, preset=self.preset, match_override=True
+        )
+
+        data = self.get_best_by_name()
+        group = data["results"][0]
+        self.assertEqual(group["scratches"][0]["slug"], overridden.slug)
+        self.assertEqual(group["scratches"][0]["match_percent"], 1.0)
+
+    def test_depth_limits_candidates_per_group(self) -> None:
+        for i in range(5):
+            self.make_scratch("func_c", score=i * 10, max_score=100, preset=self.preset)
+
+        data = self.get_best_by_name(depth=3)
+        group = data["results"][0]
+        self.assertEqual(len(group["scratches"]), 3)
+        self.assertEqual([c["rank"] for c in group["scratches"]], [1, 2, 3])
+        match_percents = [c["match_percent"] for c in group["scratches"]]
+        self.assertEqual(match_percents, sorted(match_percents, reverse=True))
+
+    def test_high_cardinality_function_does_not_load_losing_rows(self) -> None:
+        loser_count = 200
+        for i in range(loser_count):
+            self.make_scratch(
+                "func_popular", score=i + 1, max_score=1000, preset=self.preset
+            )
+        winner = self.make_scratch(
+            "func_popular", score=0, max_score=1000, preset=self.preset
+        )
+
+        instantiated_pks: list[str] = []
+
+        def on_init(sender: type[Scratch], instance: Scratch, **kwargs: Any) -> None:
+            instantiated_pks.append(instance.pk)
+
+        post_init.connect(on_init, sender=Scratch)
+        try:
+            data = self.get_best_by_name(depth=1)
+        finally:
+            post_init.disconnect(on_init, sender=Scratch)
+
+        group = data["results"][0]
+        self.assertEqual(len(group["scratches"]), 1)
+        self.assertEqual(group["scratches"][0]["slug"], winner.slug)
+
+        self.assertEqual(instantiated_pks, [winner.slug])
+
+    def test_filters_platform_and_preset_before_ranking(self) -> None:
+        excluded = self.make_scratch(
+            "func_d", score=0, max_score=100, preset=self.other_preset
+        )
+        included = self.make_scratch(
+            "func_d", score=50, max_score=100, preset=self.preset
+        )
+
+        data = self.get_best_by_name()
+        group = data["results"][0]
+        slugs = [c["slug"] for c in group["scratches"]]
+        self.assertNotIn(excluded.slug, slugs)
+        self.assertIn(included.slug, slugs)
+
+    def test_excludes_untitled_placeholder_scratches(self) -> None:
+        untitled = self.make_scratch(
+            "Untitled", score=0, max_score=100, preset=self.preset
+        )
+        named = self.make_scratch(
+            "func_named", score=0, max_score=100, preset=self.preset
+        )
+
+        data = self.get_best_by_name()
+
+        names = [group["name"] for group in data["results"]]
+        self.assertNotIn("Untitled", names)
+        self.assertIn("func_named", names)
+
+        all_slugs = [
+            candidate["slug"]
+            for group in data["results"]
+            for candidate in group["scratches"]
+        ]
+        self.assertNotIn(untitled.slug, all_slugs)
+        self.assertIn(named.slug, all_slugs)
+
+    def test_deterministic_tie_break_by_last_updated(self) -> None:
+        older = self.make_scratch("func_e", score=0, max_score=100, preset=self.preset)
+        newer = self.make_scratch("func_e", score=0, max_score=100, preset=self.preset)
+
+        Scratch.objects.filter(slug=older.slug).update(
+            last_updated=timezone.now() - timedelta(days=1)
+        )
+        Scratch.objects.filter(slug=newer.slug).update(last_updated=timezone.now())
+
+        data = self.get_best_by_name(depth=2)
+        group = data["results"][0]
+        self.assertEqual(group["scratches"][0]["slug"], newer.slug)
+        self.assertEqual(group["scratches"][1]["slug"], older.slug)
+
+    def test_pagination_covers_all_groups_without_duplicates(self) -> None:
+        names = ["func_f", "func_g", "func_h"]
+        for name in names:
+            self.make_scratch(name, score=0, max_score=100, preset=self.preset)
+
+        seen: list[str] = []
+        page = 1
+        while True:
+            data = self.get_best_by_name(page_size=2, page=page)
+            seen.extend(group["name"] for group in data["results"])
+            if data["next"] is None:
+                break
+            page += 1
+
+        self.assertCountEqual(seen, names)
+
+    def test_clamps_depth_to_maximum(self) -> None:
+        for i in range(12):
+            self.make_scratch("func_i", score=i, max_score=100, preset=self.preset)
+
+        data = self.get_best_by_name(depth=999)
+        group = data["results"][0]
+        self.assertEqual(len(group["scratches"]), 10)
+
+    def test_empty_result_for_unmatched_preset(self) -> None:
+        empty_preset = Preset.objects.create(
+            name="Empty Preset",
+            platform=platforms.DUMMY.id,
+            compiler=compilers.DUMMY.id,
+        )
+
+        data = self.get_best_by_name(preset=empty_preset.id)
+        self.assertEqual(data["count"], 0)
+        self.assertEqual(data["results"], [])
+
+    def test_rejects_invalid_ordering(self) -> None:
+        response = self.client.get(
+            reverse("scratch-best-by-name"),
+            {
+                "platform": platforms.DUMMY.id,
+                "preset": str(self.preset.id),
+                "ordering": "not-a-real-ordering",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_rejects_invalid_min_match(self) -> None:
+        for invalid_value in ["nan", "inf", "-inf", "-0.1", "1.1", "100"]:
+            response = self.client.get(
+                reverse("scratch-best-by-name"),
+                {
+                    "platform": platforms.DUMMY.id,
+                    "preset": str(self.preset.id),
+                    "min_match": invalid_value,
+                },
+            )
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_400_BAD_REQUEST,
+                f"min_match={invalid_value!r} should be rejected",
+            )
+
+    def test_accepts_boundary_min_match(self) -> None:
+        self.make_scratch("func_boundary", score=0, max_score=100, preset=self.preset)
+        for boundary_value in ["0", "0.0", "1", "1.0"]:
+            response = self.client.get(
+                reverse("scratch-best-by-name"),
+                {
+                    "platform": platforms.DUMMY.id,
+                    "preset": str(self.preset.id),
+                    "min_match": boundary_value,
+                },
+            )
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK,
+                f"min_match={boundary_value!r} should be accepted",
+            )

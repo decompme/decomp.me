@@ -193,6 +193,26 @@ export interface Platform extends PlatformBase {
     compilers: string[];
 }
 
+export interface BestByNameCandidate {
+    rank: number;
+    slug: string;
+    match_percent: number;
+    score: number;
+    max_score: number;
+    owner: AnonymousUser | User | null;
+    compiler: string;
+    preset: number | null;
+    creation_time: string;
+    last_updated: string;
+}
+
+export interface BestByNameGroup {
+    name: string;
+    best_match_percent: number;
+    latest_activity: string;
+    scratches: BestByNameCandidate[];
+}
+
 export interface ScratchResult {
     type: "scratch";
     item: TerseScratch;

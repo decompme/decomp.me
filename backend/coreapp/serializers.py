@@ -466,6 +466,26 @@ class TerseScratchSerializer(ScratchSerializer):
         }
 
 
+class ScratchBestByNameCandidateSerializer(serializers.Serializer[Scratch]):
+    rank = serializers.IntegerField(source="name_rank", read_only=True)
+    slug = serializers.SlugField(read_only=True)
+    match_percent = serializers.FloatField(read_only=True)
+    score = serializers.IntegerField(read_only=True)
+    max_score = serializers.IntegerField(read_only=True)
+    owner = ProfileField(read_only=True)
+    compiler = serializers.CharField(read_only=True)
+    preset = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore
+    creation_time = serializers.DateTimeField(read_only=True)
+    last_updated = serializers.DateTimeField(read_only=True)
+
+
+class ScratchBestByNameGroupSerializer(serializers.Serializer[dict[str, Any]]):
+    name = serializers.CharField(read_only=True)
+    best_match_percent = serializers.FloatField(read_only=True)
+    latest_activity = serializers.DateTimeField(read_only=True)
+    scratches = ScratchBestByNameCandidateSerializer(many=True, read_only=True)
+
+
 # On initial creation, include the "claim_token" field.
 class ClaimableScratchSerializer(ScratchSerializer):
     claim_token = serializers.CharField(read_only=True)
