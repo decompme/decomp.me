@@ -1,8 +1,8 @@
 import unittest
 
-from cromper.compilers import GCC281PM, IDO53, MWCC_247_92
+from cromper.compilers import CYGNUS_2_7_96Q3, GCC281PM, IDO53, MWCC_247_92
 from cromper.compilers import Compiler
-from cromper.platforms import GC_WII, N64, Platform
+from cromper.platforms import GC_WII, N64, SATURN, Platform
 from cromper.wrappers.decompiler_wrapper import (
     DecompilerWrapper,
     DECOMP_WITH_CONTEXT_FAILED_PREAMBLE,
@@ -185,6 +185,27 @@ class M2CTests(CromperTestCase):
 
         expected = "s32 func_800B43A8(s32 arg0, s32 arg1) {\n    return (arg0 ^ arg0) - arg1;\n}\n"
         self.assertEqual(expected, c_code)
+
+    def test_superh_decompilation(self) -> None:
+        """Ensure that we can decompile SuperH code."""
+        wrapper = M2CWrapper()
+
+        c_code = wrapper.decompile(
+            asm="""
+        .global test
+        test:
+        mov.l r14,@-r15
+        mov r15,r14
+        mov.l @r15+,r14
+        rts
+        mov #1,r0
+        """,
+            context="",
+            platform_id=SATURN.id,
+            compiler=CYGNUS_2_7_96Q3,
+        )
+
+        self.assertEqual("s32 test(void) {\n    return 1;\n}\n", c_code)
 
     def test_get_triple(self) -> None:
         """Test M2C triple generation for different architectures and compilers."""

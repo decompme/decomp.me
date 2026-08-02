@@ -1,6 +1,8 @@
 {
     "agbcc": "agbcc",
 
+    "agbcc-fe8j": "agbcc (Fire Emblem 8 JP)",
+
     "agbccpp": "agbccpp",
 
     "gcc2.96": "gcc2.96",
@@ -119,6 +121,7 @@
     "msvc_ppc_14.00.2110": "Microsoft C/C++ Compiler 14.00.2110 for PowerPC",
     "msvc_ppc_16.00.11886.00": "Microsoft C/C++ Compiler 16.00.11886.00 for PowerPC",
 
+    "mwcc_20_56": "2.0 build 56",
     "mwcc_20_72": "2.0 build 72 (MW 1.2base)",
     "mwcc_20_79": "2.0 build 79 (MW 1.2sp2)",
     "mwcc_20_82": "2.0 build 82 (MW 1.2sp2p3)",

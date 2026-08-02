@@ -59,6 +59,19 @@ class ScratchListTests(BaseTestCase):
 
 
 class ScratchCreationTests(BaseTestCase):
+    def test_create_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_scratch(
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "target_asm": "jr $ra\nnop\n",
+                "diff_flags": ["", "  ", "-DIFFdifflib"],
+            }
+        )
+
+        self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
+
     @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
@@ -164,6 +177,33 @@ nop
         self.assertIsNone(scratch.target_assembly.source_asm)
         self.assertEqual(bytes(scratch.target_assembly.elf_object), object_bytes)
         self.assertEqual(scratch.libraries, [Library(name="directx", version="9.0")])
+
+    def test_create_object_scratch_with_multipart_diff_flags(self) -> None:
+        """Ensure multipart object uploads decode JSON-encoded diff flags."""
+        object_bytes = b"\x4c\x01dummy coff object"
+        upload = SimpleUploadedFile(
+            "target.o", object_bytes, content_type="application/octet-stream"
+        )
+        diff_flags = [
+            "--disassemble=iModelCull__FP8RpAtomicP11RwMatrixTag",
+            "-DIFFdifflib",
+        ]
+        response = self.client.post(
+            reverse("scratch-list"),
+            {
+                "compiler": compilers.DUMMY.id,
+                "platform": platforms.DUMMY.id,
+                "context": "",
+                "source_code": "",
+                "diff_flags": json.dumps(diff_flags),
+                "target_obj": upload,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
+
+        scratch = Scratch.objects.get(slug=response.json()["slug"])
+        self.assertEqual(scratch.diff_flags, diff_flags)
 
     @requiresCompiler(IDO71)
     def test_max_score(self) -> None:
@@ -361,6 +401,23 @@ class ScratchLibrariesTests(BaseTestCase):
 
 
 class ScratchModificationTests(BaseTestCase):
+    def test_update_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_nop_scratch()
+        self.client.post(
+            reverse("scratch-claim", kwargs={"pk": scratch.slug}),
+            {"token": self.claim_tokens[scratch.slug]},
+        )
+
+        response = self.client.patch(
+            reverse("scratch-detail", kwargs={"pk": scratch.slug}),
+            {"diff_flags": ["", "-DIFFdifflib"]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        scratch.refresh_from_db()
+        self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
+
     def test_update_rejects_invalid_compiler(self) -> None:
         scratch = self.create_nop_scratch()
         response = self.client.post(
@@ -469,6 +526,17 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("left_object", response.json())
         self.assertNotIn("right_object", response.json())
+
+    def test_compile_drops_blank_diff_flags(self) -> None:
+        scratch = self.create_nop_scratch()
+
+        response = self.client.post(
+            reverse("scratch-compile", kwargs={"pk": scratch.slug}),
+            {"diff_flags": [""]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @requiresCompiler(GCC281PM, EE_GCC29_991111)
     def test_compile_post_rejects_mismatched_compiler_platform(self) -> None:

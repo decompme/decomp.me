@@ -3,6 +3,7 @@ common:
 
 gba:
   - agbcc
+  - agbcc-fe8j
   - agbccpp
   - gcc2.96
 
@@ -78,6 +79,7 @@ n3ds:
   - armcc_504_82
 
 nds_arm9:
+  - mwcc_20_56
   - mwcc_20_72
   - mwcc_20_79
   - mwcc_20_82
