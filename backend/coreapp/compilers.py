@@ -930,7 +930,7 @@ IDO71 = IDOCompiler(
 SSB_IDO71 = IDOCompiler(
     id="ssb_ido7.1",
     platform=N64,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO71_CXX = IDOCompiler(
