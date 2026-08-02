@@ -911,7 +911,7 @@ IDO53 = IDOCompiler(
 SSB_IDO53 = IDOCompiler(
     id="ssb_ido5.3",
     platform=N64,
-    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"'
+    cc='"${COMPILER_DIR}"/usr/bin/qemu-irix -silent -L "${COMPILER_DIR}" "${COMPILER_DIR}/usr/bin/cc" -irix4 -I "{COMPILER_DIR}"/usr/include -G 0 -EB -32 -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO53_CXX = IDOCompiler(
