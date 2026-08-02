@@ -7,29 +7,41 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Self
 
-from django.conf import settings
-
-from coreapp.error import SandboxError
-
 logger = logging.getLogger(__name__)
 
-PATH: str
-if settings.USE_SANDBOX_JAIL:
-    PATH = "/bin:/usr/bin"
-else:
-    PATH = os.environ["PATH"]
+
+class SandboxError(Exception):
+    """Sandbox execution error."""
 
 
 class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
-    def __enter__(self) -> Self:
-        self.use_jail = settings.USE_SANDBOX_JAIL
+    def __init__(
+        self,
+        use_jail: bool = False,
+        sandbox_tmp_path: Path | None = None,
+        sandbox_chroot_path: Path | None = None,
+        compiler_base_path: Path | None = None,
+        library_base_path: Path | None = None,
+        nsjail_bin_path: Path | None = None,
+        sandbox_disable_proc: bool = False,
+        debug: bool = True,
+    ):
+        self.use_jail = use_jail
+        self.sandbox_tmp_path = sandbox_tmp_path or Path("/tmp/sandbox")
+        self.sandbox_chroot_path = sandbox_chroot_path or Path("/tmp/sandbox/root")
+        self.compiler_base_path = compiler_base_path or Path("compilers")
+        self.library_base_path = library_base_path or Path("libraries")
+        self.nsjail_bin_path = nsjail_bin_path or Path("/bin/nsjail")
+        self.sandbox_disable_proc = sandbox_disable_proc
+        self.debug = debug
 
-        tmpdir: Path | None = None
+    def __enter__(self) -> Self:
+        tmpdir: str | None = None
         if self.use_jail:
-            # Only use SANDBOX_TMP_PATH if USE_SANDBOX_JAIL is enabled,
+            # Only use sandbox_tmp_path if USE_SANDBOX_JAIL is enabled,
             # otherwise use the system default
-            tmpdir = settings.SANDBOX_TMP_PATH
-            tmpdir.mkdir(parents=True, exist_ok=True)
+            self.sandbox_tmp_path.mkdir(parents=True, exist_ok=True)
+            tmpdir = str(self.sandbox_tmp_path)
 
         self.temp_dir = TemporaryDirectory(dir=tmpdir, ignore_cleanup_errors=True)
         self.path = Path(self.temp_dir.name)
@@ -51,15 +63,17 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         if not self.use_jail:
             return []
 
-        settings.SANDBOX_CHROOT_PATH.mkdir(parents=True, exist_ok=True)
+        self.sandbox_chroot_path.mkdir(parents=True, exist_ok=True)
 
         assert ":" not in str(self.path)
 
         # fmt: off
         wrapper = [
-            str(settings.SANDBOX_NSJAIL_BIN_PATH),
+            str(self.nsjail_bin_path),
             "--mode", "o",
-            "--chroot", str(settings.SANDBOX_CHROOT_PATH),
+            "--chroot", str(self.sandbox_chroot_path),
+            # Docker user namespaces cannot remount the jail root read-only.
+            "--rw",
             "--bindmount", f"{self.path}:/tmp",
             "--bindmount", f"{self.path}:/run/user/{os.getuid()}",
             "--bindmount", f"{self.path}:/var/tmp",
@@ -74,9 +88,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--bindmount_ro", "/usr",
             "--bindmount_ro", "/proc",
             "--bindmount_ro", "/sys",
-            "--bindmount_ro", str(settings.COMPILER_BASE_PATH),
-            "--bindmount_ro", str(settings.LIBRARY_BASE_PATH),
-            "--env", f"PATH={PATH}",
+            "--bindmount_ro", str(self.compiler_base_path),
+            "--bindmount_ro", str(self.library_base_path),
+            "--env", "PATH=/usr/bin:/bin",
             "--cwd", "/tmp",
             # NOTE: "soft" resolves to a near-infinite RLIMIT_FSIZE in nsjail >=3.6,
             # which causes some of the compilers/tooling to fail with "File too large" (SIGXFSZ).
@@ -85,10 +99,10 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
             "--rlimit_nofile", "soft",
         ]
         # fmt: on
-        if settings.SANDBOX_DISABLE_PROC:
+        if self.sandbox_disable_proc:
             wrapper.append("--disable_proc")  # needed for running inside Docker
 
-        if not settings.DEBUG:
+        if not self.debug:
             wrapper.append("--really_quiet")
         for mount in mounts:
             wrapper.extend(["--bindmount_ro", str(mount)])
@@ -110,6 +124,9 @@ class Sandbox(contextlib.AbstractContextManager["Sandbox"]):
         mounts = mounts if mounts is not None else []
         env = env if env is not None else {}
         timeout = None if timeout == 0 else timeout
+
+        print("Running ", args)
+        print("With env:", env)
 
         try:
             wrapper = self.sandbox_command(mounts, env)

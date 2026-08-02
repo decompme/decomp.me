@@ -9,9 +9,11 @@ services:
     volumes:
       - ./postgres:/var/lib/postgresql/data
       - ./pgdump:/pgdump
-  backend:
+    restart: unless-stopped
+
+  cromper:
     build:
-      context: backend
+      context: cromper
       target: dev
     cap_drop:
       - all
@@ -20,24 +22,50 @@ services:
       - setgid
       - setfcap
     environment:
-      - ENABLE_SWITCH_SUPPORT=NO
-    env_file:
-      - backend/docker.dev.env
+      CROMPER_PORT: 8888
+      USE_SANDBOX_JAIL: "true"
+      SANDBOX_DISABLE_PROC: "true"
     ports:
-      - "8000:8000"
-      - "5678:5678"  # vscode debugger
+      - "8888:8888"
     restart: unless-stopped
     security_opt:
       - apparmor=unconfined
       - seccomp=unconfined
     volumes:
-      - ./backend:/backend
+      - ./cromper:/cromper
+      - ./cromper/compilers:/cromper/compilers:ro
+      - ./cromper/libraries:/cromper/libraries:ro
     tmpfs:
-      # Use a separate tmpfs to prevent a rogue jailed process
-      # from filling /tmp on the parent container
-      - /sandbox/tmp:exec,uid=1000,gid=1000,size=64M,mode=0700
+      - /tmp/sandbox:exec,uid=1000,gid=1000,size=256M,mode=0700
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
+  backend:
+    build:
+      context: backend
+      target: dev
+    env_file:
+      - backend/docker.dev.env
+    depends_on:
+      cromper:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+      - "5678:5678" # vscode debugger
+    restart: unless-stopped
+    volumes:
+      - ./backend:/backend
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
   frontend:
     build:
       context: frontend
@@ -45,18 +73,20 @@ services:
     environment:
       API_BASE: /api
       INTERNAL_API_BASE: http://backend:8000/api
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
-      interval: 15s
-      timeout: 3s
-      retries: 10
-      start_period: 20s
+      INTERNAL_CROMPER_BASE: http://cromper:8888
     ports:
       - "8080:8080"
     restart: unless-stopped
     volumes:
       - ./frontend:/frontend
       - .env:/.env
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
   nginx:
     build:
       context: nginx
