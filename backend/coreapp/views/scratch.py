@@ -688,9 +688,7 @@ class ScratchViewSet(
     @action(detail=False, methods=["GET"], url_path="best-by-name")
     def best_by_name(self, request: Request) -> Response:
         if not request.query_params.get("preset"):
-            raise serializers.ValidationError(
-                {"detail": "'preset' is required."}
-            )
+            raise serializers.ValidationError({"detail": "'preset' is required."})
 
         try:
             depth = int(request.query_params.get("depth", DEFAULT_BEST_BY_NAME_DEPTH))
