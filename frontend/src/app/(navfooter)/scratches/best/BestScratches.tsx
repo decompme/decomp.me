@@ -206,7 +206,6 @@ export default function BestScratches({
         }
 
         const params = new URLSearchParams({
-            platform,
             preset: String(presetId),
             depth,
             ordering,
@@ -221,14 +220,7 @@ export default function BestScratches({
         }
 
         return `/scratch/best-by-name?${params.toString()}`;
-    }, [
-        platform,
-        presetId,
-        depth,
-        ordering,
-        debouncedSearch,
-        minMatchFraction,
-    ]);
+    }, [presetId, depth, ordering, debouncedSearch, minMatchFraction]);
 
     return (
         <section>

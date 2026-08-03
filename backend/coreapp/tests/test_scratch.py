@@ -918,20 +918,20 @@ class ScratchBestByNameTests(BaseTestCase):
         return scratch
 
     def get_best_by_name(self, **params: Any) -> Any:
-        params.setdefault("platform", platforms.DUMMY.id)
         params.setdefault("preset", self.preset.id)
         response = self.client.get(reverse("scratch-best-by-name"), params)
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         return response.json()
 
-    def test_requires_platform_and_preset(self) -> None:
+    def test_requires_preset(self) -> None:
         response = self.client.get(reverse("scratch-best-by-name"))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_does_not_require_platform(self) -> None:
         response = self.client.get(
-            reverse("scratch-best-by-name"), {"platform": platforms.DUMMY.id}
+            reverse("scratch-best-by-name"), {"preset": self.preset.id}
         )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_ranks_by_match_percent_not_raw_score(self) -> None:
         worse_match = self.make_scratch(

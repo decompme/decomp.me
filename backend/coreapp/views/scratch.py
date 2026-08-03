@@ -687,11 +687,9 @@ class ScratchViewSet(
     @method_decorator(globally_cacheable(max_age=5, stale_while_revalidate=1))
     @action(detail=False, methods=["GET"], url_path="best-by-name")
     def best_by_name(self, request: Request) -> Response:
-        if not request.query_params.get("platform") or not request.query_params.get(
-            "preset"
-        ):
+        if not request.query_params.get("preset"):
             raise serializers.ValidationError(
-                {"detail": "Both 'platform' and 'preset' are required."}
+                {"detail": "'preset' is required."}
             )
 
         try:
