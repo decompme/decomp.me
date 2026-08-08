@@ -936,9 +936,9 @@ IDO71 = IDOCompiler(
 IDO71_IRIX4 = IDOIrix4Compiler(
     id="ido7.1_irix4",
     platform=N64,
-    base_compiler=IDO41,
-    cc='"${COMPILER_DIR}/../../cc-irix4"'
-    ' --frontend "${COMPILER_DIR}" --backend "${COMPILER_DIR}/../ido7.1"'
+    base_compiler=IDO71,
+    cc='"${COMPILER_DIR}/cc-irix4"'
+    ' --frontend "${COMPILER_DIR}/../ido4.1" --backend "${COMPILER_DIR}"'
     ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
