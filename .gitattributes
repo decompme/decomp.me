@@ -1,1 +1,2 @@
 *.sh text eol=lf
+backend/compilers/cc-irix4 text eol=lf

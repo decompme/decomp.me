@@ -207,6 +207,26 @@ COMMON_IDO_FLAGS: Flags = [
     Checkbox("pass", "-v"),
 ]
 
+# The IRIX 4 frontend pipeline runs the compiler passes directly instead of
+# going through the cc driver, so driver-only flags (-KPIC, -non_shared) are
+# meaningless here and the frontend's own knobs are exposed instead.
+#
+# -g is capped at 1 and -mips at 2 because accom implements no more than that;
+# the stock driver fails the same way on -g2, -g3 and -mips3 under -irix4. -G
+# is a flagset rather than a parameter flag because parameter flags serialise
+# as "-G=0", which IDO's argument parser does not accept.
+COMMON_IDO_IRIX4_FLAGS: Flags = [
+    FlagSet(id="ido_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
+    FlagSet(id="ido_debug_level", flags=["-g0", "-g1"]),
+    FlagSet(id="mips_version", flags=["-mips1", "-mips2"]),
+    FlagSet(id="ido_gp_size", flags=["-G0", "-G4", "-G8"]),
+    FlagSet(id="accom_ansi_mode", flags=["-Xxansi", "-Xansi"]),
+    Checkbox("accom_no_prototypes", "-Xnoprototypes"),
+    Checkbox("acpp_line_comments", "-Wp,-+"),
+    Checkbox("ido_sopt", "-sopt"),
+    Checkbox("pass", "-v"),
+]
+
 COMMON_DIFF_FLAGS: Flags = [
     FlagSet(
         id="diff_algorithm",

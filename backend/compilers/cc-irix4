@@ -1,0 +1,144 @@
+#!/bin/sh
+# IDO 7.1 with the IRIX 4 compatibility frontend.
+#
+# Reproduces what the stock IDO 7.1 driver does for `cc -irix4`: preprocessing
+# and the C frontend come from the IRIX 4 toolchain (acpp + accom, run under
+# qemu-irix), and the backend is stock IDO 7.1 (uopt/ugen/as1). Verified to
+# produce byte-identical objects to `cc -c -irix4` run against a full IRIX 4
+# subtree.
+#
+# It exists because the two halves live in different compiler packages: the
+# frontend in ido4.1, the backend in ido7.1. Both are used unmodified, so no
+# new compiler package is needed - hence this script living in the repo rather
+# than being shipped inside one.
+#
+# usage: cc-irix4 --frontend <ido4.1 dir> --backend <ido7.1 dir> \
+#                 [flags] -o output.o input.c
+set -e
+
+frontend=
+backend=
+opt=-O1
+debug=-g0
+mips=-mips2
+# The driver's own default is 8, but this compiler is N64-only and every other
+# N64 IDO entry on the site compiles at -G 0. Defaulting to 8 would silently
+# change codegen for anyone carrying flags over from ido7.1. -G8 stays
+# selectable for the driver default.
+gpsize=0
+ansi=-Xxansi
+prototypes=-Xprototypes
+sopt=0
+verbose=0
+out=
+input=
+cppargs=""
+accomargs=""
+
+add_cpp() { cppargs="$cppargs $1"; }
+add_accom() { accomargs="$accomargs $1"; }
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --frontend) shift; frontend=$1 ;;
+        --backend) shift; backend=$1 ;;
+        -O0|-O1|-O2|-O3) opt=$1 ;;
+        # accom implements -Xg0/-Xg1 only, and knows mips1/mips2 only. The
+        # stock driver fails the same way on -g2, -g3 and -mips3 under -irix4.
+        -g0|-g1|-g2|-g3) debug=$1 ;;
+        -mips1|-mips2|-mips3) mips=$1 ;;
+        # -G accepted as -G0, -G 0 and -G=0; the site's flagset emits -G0.
+        -G) shift; gpsize=$1 ;;
+        -G=*) gpsize=${1#-G=} ;;
+        -G*) gpsize=${1#-G} ;;
+        -Xansi|-Xxansi) ansi=$1 ;;
+        -Xprototypes) prototypes=-Xprototypes ;;
+        -Xnoprototypes) prototypes= ;;
+        -sopt) sopt=1 ;;
+        # accom is strict C89, but acpp's -+ strips // comments before it ever
+        # sees them. This is what the driver's -Xcpluscomm/-Wp,-+ reach.
+        -Xcpluscomm) add_cpp "-+" ;;
+        -Wp,*)
+            IFS=,
+            for wparg in ${1#-Wp,}; do [ -n "$wparg" ] && add_cpp "$wparg"; done
+            unset IFS
+            ;;
+        -X*) add_accom "$1" ;;
+        -D*|-U*) add_cpp "$1" ;;
+        -I) shift; add_cpp "-I$1" ;;
+        -I*) add_cpp "$1" ;;
+        -trigraphs|-nostdinc) add_cpp "$1" ;;
+        -v) verbose=1 ;;
+        -o) shift; out=$1 ;;
+        # Driver-level flags with no meaning once the passes are run directly.
+        # -irix4 is accepted as a no-op: it is what this compiler *is*, and
+        # scratches carried over from a driver-based setup will still pass it.
+        -c|-non_shared|-KPIC|-32|-EB|-irix4) ;;
+        -woff) shift ;;
+        -woff*) ;;
+        -*) echo "cc-irix4: unsupported flag: $1" >&2; exit 1 ;;
+        *) input=$1 ;;
+    esac
+    shift
+done
+
+[ -n "$frontend" ] || { echo "cc-irix4: --frontend not set" >&2; exit 1; }
+[ -n "$backend" ] || { echo "cc-irix4: --backend not set" >&2; exit 1; }
+[ -n "$input" ] || { echo "cc-irix4: no input file" >&2; exit 1; }
+[ -n "$out" ] || { echo "cc-irix4: no output file (-o)" >&2; exit 1; }
+
+qemu="$frontend/usr/bin/qemu-irix-4.0"
+for needed in "$qemu" "$frontend/usr/lib/acpp" "$frontend/usr/lib/accom" \
+              "$backend/uopt" "$backend/ugen" "$backend/as1"; do
+    [ -x "$needed" ] || {
+        echo "cc-irix4: missing $needed (are the ido4.1 and ido7.1" \
+             "compilers installed?)" >&2
+        exit 1
+    }
+done
+
+work="$out.irix4work"
+rm -rf "$work"
+mkdir -p "$work"
+trap 'rm -rf "$work"' EXIT
+
+mipsnum=${mips#-mips}
+
+run() {
+    [ "$verbose" -eq 1 ] && echo "+ $*" >&2
+    "$@"
+}
+
+# 1. IRIX 4 preprocessor. Define set matches what the 7.1 driver passes to
+#    acpp under -irix4, minus the /usr/irix4 system include path (the site
+#    compiles self-contained translation units).
+run "$qemu" -silent -L "$frontend" "$frontend/usr/lib/acpp" \
+    -D__EXTENSIONS__ -trigraphs -undef -p \
+    -DLANGUAGE_C -D_LANGUAGE_C -D__INLINE_INTRINSICS \
+    -Dsgi -DSVR3 -D__SVR3 -D__sgi -Dunix -Dmips -Dhost_mips \
+    -D__unix -D__host_mips -D__DSO__ \
+    -DSYSTYPE_SYSV -D_SYSTYPE_SYSV -D_LONGLONG \
+    "-D__mips=$mipsnum" -D_MIPSEB -DMIPSEB \
+    $cppargs "$input" > "$work/src.i"
+
+# 2. Optional external source optimiser. The driver runs copt between acpp and
+#    accom under -sopt, on the preprocessed source rather than on ucode.
+source_i="$work/src.i"
+if [ "$sopt" -eq 1 ]; then
+    run "$qemu" -silent -L "$frontend" "$frontend/usr/lib/copt" \
+        "-I=$work/src.i" "-CMP=$work/src.copt.i" -cp=i
+    source_i="$work/src.copt.i"
+fi
+
+# 3. IRIX 4 C frontend -> ucode (.B) + symbol table (.T).
+run "$qemu" -silent -L "$frontend" "$frontend/usr/lib/accom" \
+    -Xv "$mips" -EB "-X${debug#-}" "$opt" $prototypes "$ansi" $accomargs \
+    -XS"$work/src.T" < "$source_i" > "$work/src.B"
+
+# 4. Stock IDO 7.1 backend, native.
+run "$backend/uopt" -G "$gpsize" "$mips" -EB "$debug" "$opt" \
+    "$work/src.B" "$work/src.O" -t "$work/src.T" "$work/uo"
+run "$backend/ugen" -G "$gpsize" "$mips" -EB "$debug" "$opt" \
+    "$work/src.O" -o "$work/src.G" -t "$work/src.T" -temp "$work/ug"
+run "$backend/as1" -t5_ll_sc_bug -elf -G "$gpsize" -p0 "$mips" -EB "$debug" "$opt" \
+    "$work/src.G" -o "$out" -t "$work/src.T"

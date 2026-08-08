@@ -22,6 +22,7 @@ from coreapp.flags import (
     COMMON_GCC_SATURN_FLAGS,
     COMMON_GHS_FLAGS,
     COMMON_IDO_FLAGS,
+    COMMON_IDO_IRIX4_FLAGS,
     COMMON_MSVC_FLAGS,
     COMMON_MWCC_NDS_ARM9_FLAGS,
     COMMON_MWCC_PS2_FLAGS,
@@ -190,6 +191,11 @@ class IDOCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.IDO
     flags: ClassVar[Flags] = COMMON_IDO_FLAGS
     library_include_flag: str = "-I"
+
+
+@dataclass(frozen=True)
+class IDOIrix4Compiler(IDOCompiler):
+    flags: ClassVar[Flags] = COMMON_IDO_IRIX4_FLAGS
 
 
 @dataclass(frozen=True)
@@ -925,6 +931,15 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71_IRIX4 = IDOIrix4Compiler(
+    id="ido7.1_irix4",
+    platform=N64,
+    base_compiler=IDO41,
+    cc='"${COMPILER_DIR}/../../cc-irix4"'
+    ' --frontend "${COMPILER_DIR}" --backend "${COMPILER_DIR}/../ido7.1"'
+    ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO71_CXX = IDOCompiler(
@@ -1845,6 +1860,7 @@ _all_compilers: list[Compiler] = [
     IDO53_CXX,
     IDO60,
     IDO71,
+    IDO71_IRIX4,
     IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,
