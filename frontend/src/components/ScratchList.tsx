@@ -42,7 +42,6 @@ export interface Props {
     showDeleteButtons?: boolean;
     skeletonVariant?: ScratchItemSkeletonVariant;
     availablePlatforms?: Record<string, PlatformBase>;
-    fixedPlatform?: string;
 }
 
 function ScratchListSkeleton({
@@ -72,20 +71,16 @@ export default function ScratchList({
     showDeleteButtons,
     skeletonVariant,
     availablePlatforms,
-    fixedPlatform,
 }: Props) {
     const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
     const [filters, setFilters] = useState<ScratchFilterState>({});
-    const activeFilters = fixedPlatform
-        ? { ...filters, platform: fixedPlatform }
-        : filters;
-    const isFilterable = availablePlatforms !== undefined || !!fixedPlatform;
+    const isFilterable = availablePlatforms !== undefined;
     const { results, isLoading, hasNext, loadNext } =
         usePaginated<TerseScratch>(
             buildScratchListUrl(
                 url || "/scratch",
                 sortMode.toString(),
-                activeFilters,
+                filters,
             ),
             { isPublic },
         );
@@ -97,25 +92,27 @@ export default function ScratchList({
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
                 <h2 className="font-medium text-lg tracking-tight">{title}</h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                    {isFilterable && (
-                        <ScratchFilters
-                            availablePlatforms={availablePlatforms}
-                            filters={activeFilters}
-                            onPlatformChange={(platform) => {
-                                setFilters(selectScratchPlatform(platform));
-                            }}
-                            onPresetChange={(preset) => {
-                                setFilters((current) =>
-                                    selectScratchPreset(current, preset),
-                                );
-                            }}
-                        />
-                    )}
                     {isSortable && (
                         <Sort sortMode={sortMode} setSortMode={setSortMode} />
                     )}
                 </div>
             </div>
+            {isFilterable && (
+                <div className="flex justify-end pb-2">
+                    <ScratchFilters
+                        availablePlatforms={availablePlatforms}
+                        filters={filters}
+                        onPlatformChange={(platform) => {
+                            setFilters(selectScratchPlatform(platform));
+                        }}
+                        onPresetChange={(preset) => {
+                            setFilters((current) =>
+                                selectScratchPreset(current, preset),
+                            );
+                        }}
+                    />
+                </div>
+            )}
             <ul
                 className={clsx(
                     styles.list,
