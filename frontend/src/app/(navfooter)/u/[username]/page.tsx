@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import Profile from "@/components/user/Profile";
-import { get } from "@/lib/api/request";
-import type { ScratchUser } from "@/lib/api/types";
+import { get, getPublic } from "@/lib/api/request";
+import type { PlatformBase, ScratchUser } from "@/lib/api/types";
 
 export async function generateMetadata(props: {
     params: Promise<{ username: string }>;
@@ -36,15 +36,19 @@ export default async function Page(props: {
 }) {
     const params = await props.params;
     let user: ScratchUser;
+    let availablePlatforms: Record<string, PlatformBase>;
     try {
-        user = await get(`/users/${params.username}`);
+        [user, availablePlatforms] = await Promise.all([
+            get(`/users/${params.username}`),
+            getPublic("/platform"),
+        ]);
     } catch (error) {
         console.error(error);
     }
 
-    if (!user) {
+    if (!user || !availablePlatforms) {
         return notFound();
     }
 
-    return <Profile user={user} />;
+    return <Profile user={user} availablePlatforms={availablePlatforms} />;
 }

@@ -9,7 +9,14 @@ import clsx from "clsx";
 import AsyncButton from "./AsyncButton";
 import Button from "./Button";
 import styles from "./ScratchList.module.scss";
-import { type TerseScratch, usePaginated } from "@/lib/api";
+import ScratchFilters from "./ScratchFilters";
+import {
+    buildScratchListUrl,
+    selectScratchPlatform,
+    selectScratchPreset,
+    type ScratchFilterState,
+} from "./ScratchList.state";
+import { type PlatformBase, type TerseScratch, usePaginated } from "@/lib/api";
 import { scratchUrl } from "@/lib/api/urls";
 import {
     ScratchItem,
@@ -34,6 +41,8 @@ export interface Props {
     isPublic?: boolean;
     showDeleteButtons?: boolean;
     skeletonVariant?: ScratchItemSkeletonVariant;
+    availablePlatforms?: Record<string, PlatformBase>;
+    fixedPlatform?: string;
 }
 
 function ScratchListSkeleton({
@@ -62,11 +71,22 @@ export default function ScratchList({
     isPublic,
     showDeleteButtons,
     skeletonVariant,
+    availablePlatforms,
+    fixedPlatform,
 }: Props) {
     const [sortMode, setSortMode] = useState(SortMode.NEWEST_FIRST);
+    const [filters, setFilters] = useState<ScratchFilterState>({});
+    const activeFilters = fixedPlatform
+        ? { ...filters, platform: fixedPlatform }
+        : filters;
+    const isFilterable = availablePlatforms !== undefined || !!fixedPlatform;
     const { results, isLoading, hasNext, loadNext } =
         usePaginated<TerseScratch>(
-            `${url || "/scratch"}&ordering=${sortMode.toString()}`,
+            buildScratchListUrl(
+                url || "/scratch",
+                sortMode.toString(),
+                activeFilters,
+            ),
             { isPublic },
         );
 
@@ -74,11 +94,27 @@ export default function ScratchList({
 
     return (
         <>
-            <div className="flex justify-between pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
                 <h2 className="font-medium text-lg tracking-tight">{title}</h2>
-                {isSortable && (
-                    <Sort sortMode={sortMode} setSortMode={setSortMode} />
-                )}
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                    {isFilterable && (
+                        <ScratchFilters
+                            availablePlatforms={availablePlatforms}
+                            filters={activeFilters}
+                            onPlatformChange={(platform) => {
+                                setFilters(selectScratchPlatform(platform));
+                            }}
+                            onPresetChange={(preset) => {
+                                setFilters((current) =>
+                                    selectScratchPreset(current, preset),
+                                );
+                            }}
+                        />
+                    )}
+                    {isSortable && (
+                        <Sort sortMode={sortMode} setSortMode={setSortMode} />
+                    )}
+                </div>
             </div>
             <ul
                 className={clsx(

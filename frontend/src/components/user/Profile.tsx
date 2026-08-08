@@ -6,7 +6,7 @@ import { MarkGithubIcon } from "@primer/octicons-react";
 
 import GhostButton from "@/components/GhostButton";
 import Tabs, { Tab } from "@/components/Tabs";
-import type { ScratchUser } from "@/lib/api/types";
+import type { PlatformBase, ScratchUser } from "@/lib/api/types";
 import { userGithubHtmlUrl } from "@/lib/api/urls";
 
 import PresetsTab from "./tabs/PresetsTab";
@@ -51,7 +51,13 @@ function CustomLayout({ renderTab, layout, onChange }: Props) {
     );
 }
 
-export default function Profile({ user }: { user: ScratchUser }) {
+export default function Profile({
+    user,
+    availablePlatforms,
+}: {
+    user: ScratchUser;
+    availablePlatforms: Record<string, PlatformBase>;
+}) {
     const [layout, setLayout] = useState<TabLayout>({
         ...defaultTabLayout,
         tabs:
@@ -69,7 +75,12 @@ export default function Profile({ user }: { user: ScratchUser }) {
                         tabKey={id}
                         label={`Scratches (${user.num_scratches.toLocaleString("en-US")})`}
                     >
-                        {() => <ScratchesTab user={user} />}
+                        {() => (
+                            <ScratchesTab
+                                user={user}
+                                availablePlatforms={availablePlatforms}
+                            />
+                        )}
                     </Tab>
                 );
             case TabId.PRESETS:

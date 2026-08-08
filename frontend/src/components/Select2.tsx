@@ -5,10 +5,17 @@ export type Props = {
     options: { [key: string]: string };
     value: string;
     className?: string;
+    ariaLabel?: string;
     onChange: (value: string) => void;
 };
 
-export default function Select({ options, value, onChange, className }: Props) {
+export default function Select({
+    options,
+    value,
+    onChange,
+    className,
+    ariaLabel,
+}: Props) {
     useEffect(() => {
         if (!value) onChange(Object.keys(options)[0]);
     }, [value, options, onChange]);
@@ -18,6 +25,7 @@ export default function Select({ options, value, onChange, className }: Props) {
             className={`relative inline-flex select-none rounded border border-[var(--g400)] bg-[var(--g200)] px-[10px] py-2 text-[0.8rem] text-[var(--g1600)] ${className}`}
         >
             <select
+                aria-label={ariaLabel}
                 value={value}
                 onChange={(event) => {
                     onChange(event.target.value);
