@@ -382,6 +382,23 @@ export default function Page() {
                 GitHub issue or submit a pull request.
             </p>
 
+            <Question question="Can I submit a PR?" />
+            <p className="my-4">
+                Please feel free to work through any of the{" "}
+                <FaqLink href="https://github.com/decompme/decomp.me/issues">
+                    open issues
+                </FaqLink>
+                . If you have an idea that is not covered by an existing issue,
+                please raise one first so it can be discussed before you spend
+                time implementing it.
+            </p>
+            <p className="my-4">
+                We generally only accept contributions from people who use the
+                site or are actively involved in the wider decompilation
+                community. This helps us keep contributions useful,
+                well-considered, and aligned with the project's needs.
+            </p>
+
             <Title title={"Project Info"} />
 
             <Question
@@ -389,7 +406,9 @@ export default function Page() {
             />
             <p className="my-4">
                 We occasionally provide database dumps on request - just ask in
-                our <DiscordLink />. Please do not attempt to scrape the site.
+                our <DiscordLink />. Please do not attempt to scrape the site,
+                hook up an LLM, or otherwise make repeated, automated, requests
+                to decomp.me
             </p>
 
             <Question question={"How do I report a bug?"} />
