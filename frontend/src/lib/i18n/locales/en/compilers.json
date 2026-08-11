@@ -103,6 +103,7 @@
     "ido5.3_c++": "IDO 5.3 C++",
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
+    "ido7.1_irix4": "IDO 7.1 (IRIX 4 frontend)",
     "ido7.1_c++": "IDO 7.1 C++",
     "ido7.1Pascal": "IDO 7.1 Pascal",
 
