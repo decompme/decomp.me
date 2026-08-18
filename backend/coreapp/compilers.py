@@ -936,6 +936,18 @@ IDO71_IRIX4 = IDOCompiler(
     ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
+IDO71_IRIX4_CXX = IDOCompiler(
+    id="ido7.1_irix4_c++",
+    platform=N64,
+    base_compiler=IDO71,
+    language=Language.OLD_CXX,
+    cc='"${COMPILER_DIR}/OCC-irix4"'
+    ' --frontend "${COMPILER_DIR}/../ido4.1"'
+    ' --cfront "${COMPILER_DIR}/../ido5.3_c++"'
+    ' --backend "${COMPILER_DIR}"'
+    ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
 IDO71_CXX = IDOCompiler(
     id="ido7.1_c++",
     platform=N64,
@@ -1855,6 +1867,7 @@ _all_compilers: list[Compiler] = [
     IDO60,
     IDO71,
     IDO71_IRIX4,
+    IDO71_IRIX4_CXX,
     IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,
