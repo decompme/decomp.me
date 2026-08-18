@@ -941,7 +941,7 @@ IDO71_IRIX4_CXX = IDOCompiler(
     platform=N64,
     base_compiler=IDO71,
     language=Language.OLD_CXX,
-    cc='"${COMPILER_DIR}/OCC-irix4"'
+    cc='"${COMPILER_DIR}/cc-irix4"'
     ' --frontend "${COMPILER_DIR}/../ido4.1"'
     ' --cfront "${COMPILER_DIR}/../ido5.3_c++"'
     ' --backend "${COMPILER_DIR}"'
