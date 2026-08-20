@@ -3,7 +3,6 @@ common:
 
 gba:
   - agbcc
-  - agbcc-fe8j
   - agbccpp
   - gcc2.96
 
