@@ -3,7 +3,7 @@ from typing import Any
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import QuerySet
 from rest_framework.exceptions import ParseError
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
@@ -25,3 +25,9 @@ class SafeCursorPagination(CursorPagination):
     def _cursor_has_position(self) -> bool:
         cursor = getattr(self, "cursor", None)
         return getattr(cursor, "position", None) is not None
+
+
+class ScratchBestByNamePagination(PageNumberPagination):
+    page_size = 25
+    page_size_query_param = "page_size"
+    max_page_size = 100

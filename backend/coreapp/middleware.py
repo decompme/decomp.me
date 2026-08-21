@@ -50,6 +50,7 @@ def is_public_get_request(req: Request) -> bool:
         "/api/platform",
         "/api/preset",
         "/api/scratch-count$",
+        "/api/scratch/best-by-name$",
         "/api/scratch/[A-Za-z0-9]+/compile$",
         "/api/scratch/[A-Za-z0-9]+/export$",
         "/api/scratch/[A-Za-z0-9]+/family$",
