@@ -1592,6 +1592,13 @@ MSVC80P = MSVCCompiler(
     platform=WIN32,
     cc=CL_WIN,
 )
+
+MSVC120U4 = MSVCCompiler(
+    id="msvc12.0u4",
+    platform=WIN32,
+    cc=CL_WIN,
+)
+
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1970,6 +1977,7 @@ _all_compilers: list[Compiler] = [
     MSVC71,
     MSVC80,
     MSVC80P,
+    MSVC120U4,
     # Watcom, DOS and Win32
     WATCOM_100A_C,
     WATCOM_100A_CPP,
