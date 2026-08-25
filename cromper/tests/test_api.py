@@ -51,18 +51,42 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertIn("compilers", data)
         self.assertIsInstance(data["compilers"], dict)
         self.assertGreater(len(data["compilers"]), 0)
+        self.assertIn("flags", data)
+        self.assertIsInstance(data["flags"], dict)
 
-    # def test_compilers_endpoint_platform(self):
-    #     """Test the compilers endpoint."""
-    #     response = self.fetch("/compiler/platform_id")
-    #     self.assertEqual(response.code, 200)
-    #     data = json.loads(response.body)
+        for compiler in data["compilers"].values():
+            self.assertIn("class", compiler)
+            self.assertNotIn("flags", compiler)
+            self.assertIn(compiler["class"], data["flags"])
 
-    # def test_compilers_endpoint_platform_compiler(self):
-    #     """Test the compilers endpoint."""
-    #     response = self.fetch("/compiler/platform_id/compiler_id")
-    #     self.assertEqual(response.code, 200)
-    #     data = json.loads(response.body)
+        for flag_class in data["flags"].values():
+            self.assertIsInstance(flag_class["flags"], list)
+            if "parent" in flag_class:
+                self.assertIn(flag_class["parent"], data["flags"])
+
+    def test_compilers_endpoint_platform(self):
+        """Test platform-filtered compiler metadata and flag classes."""
+        response = self.fetch(f"/compiler/{N64.id}")
+        self.assertEqual(response.code, 200)
+
+        data = json.loads(response.body)
+        self.assertIn("compilers", data)
+        self.assertIn("flags", data)
+        self.assertTrue(data["compilers"])
+        for compiler in data["compilers"].values():
+            self.assertEqual(compiler["platform"], N64.id)
+            self.assertIn(compiler["class"], data["flags"])
+
+    def test_compilers_endpoint_single(self):
+        """Test a single compiler includes its required flag-class ancestry."""
+        response = self.fetch(f"/compiler/{N64.id}/gcc2.8.1pm")
+        self.assertEqual(response.code, 200)
+
+        data = json.loads(response.body)
+        self.assertEqual(list(data["compilers"]), ["gcc2.8.1pm"])
+        compiler = data["compilers"]["gcc2.8.1pm"]
+        self.assertEqual(compiler["class"], "gcc")
+        self.assertIn("gcc", data["flags"])
 
     def test_libraries_endpoint(self):
         """Test the libraries endpoint."""

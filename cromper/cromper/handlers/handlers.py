@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import tornado.web
 
 from ..config import CromperConfig
-from cromper import libraries
+from cromper import flags, libraries
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -106,21 +106,25 @@ class CompilerHandler(BaseHandler):
         """
         available_compilers = self.config.compilers_instance.available_compilers()
 
-        compilers_data = {
-            c.id: c.to_json()
-            for c in sorted(available_compilers, key=lambda x: x.id)
-            if (platform_id is None or c.platform.id == platform_id)
-            and (compiler_id is None or c.id == compiler_id)
-        }
-        if len(compilers_data) == 0:
+        selected_compilers = [
+            compiler
+            for compiler in sorted(available_compilers, key=lambda item: item.id)
+            if (platform_id is None or compiler.platform.id == platform_id)
+            and (compiler_id is None or compiler.id == compiler_id)
+        ]
+        if not selected_compilers:
             self.set_status(404)
             return self.write({"error": "Unknown platform/compiler"})
 
-        if platform_id or compiler_id:
-            return self.write(compilers_data)
+        compilers_data = {
+            compiler.id: compiler.to_json() for compiler in selected_compilers
+        }
+        flag_classes = flags.compiler_flag_classes_to_json(
+            {compiler.flag_class for compiler in selected_compilers}
+        )
 
         # TODO: Remove the 'compilers' key one day
-        return self.write({"compilers": compilers_data})
+        return self.write({"compilers": compilers_data, "flags": flag_classes})
 
 
 class LibrariesHandler(BaseHandler):

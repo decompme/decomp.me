@@ -175,10 +175,25 @@ export type CompilerBase = {
     id: string;
 };
 
-export type Compiler = CompilerBase & {
+export type CompilerMetadata = CompilerBase & {
     platform: string;
-    flags: Flag[];
+    class: string;
     diff_flags: Flag[];
+    language: [string, string];
+};
+
+export type CompilerFlagClass = {
+    flags: Flag[];
+    parent?: string;
+};
+
+export type CompilersResponse = {
+    compilers: Record<string, CompilerMetadata>;
+    flags: Record<string, CompilerFlagClass>;
+};
+
+export type Compiler = CompilerMetadata & {
+    flags: Flag[];
 };
 
 export interface PlatformBase {

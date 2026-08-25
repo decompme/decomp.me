@@ -15,6 +15,7 @@ import type {
     Compilation,
     Page,
     Compiler,
+    CompilersResponse,
     LibraryVersions,
     Platform,
     Preset,
@@ -22,6 +23,7 @@ import type {
     ClaimableScratch,
 } from "./api/types";
 import { scratchUrl } from "./api/urls";
+import { resolveCompilersResponse } from "./api/compilerFlags";
 import {
     buildScratchCompileRequest,
     buildScratchSavePatch,
@@ -376,22 +378,23 @@ export function useCompiler(
         typeof platform === "string" && typeof compiler === "string"
             ? `/compiler/${platform}/${compiler}`
             : null;
-    const { data } = useSWRImmutable(url, get, {
+    const { data } = useSWRImmutable<CompilersResponse>(url, get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
+    const compilers = useMemo(() => resolveCompilersResponse(data), [data]);
 
-    return data?.[compiler];
+    return compilers[compiler];
 }
 
 export function useCompilers(platform: string): Record<string, Compiler> {
     const url = typeof platform === "string" ? `/compiler/${platform}` : null;
-    const { data } = useSWRImmutable(url, get, {
+    const { data } = useSWRImmutable<CompilersResponse>(url, get, {
         refreshInterval: 1000 * 60 * 15, // 15 minutes
         onErrorRetry,
     });
 
-    return data || {};
+    return useMemo(() => resolveCompilersResponse(data), [data]);
 }
 
 export function useLibraries(platform: string): LibraryVersions[] {

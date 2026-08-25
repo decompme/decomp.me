@@ -5,29 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from .flags import (
-    COMMON_ARMCC_FLAGS,
-    COMMON_BORLAND_FLAGS,
-    COMMON_CLANG_FLAGS,
-    COMMON_GCC_FLAGS,
-    COMMON_GCC_GC_FLAGS,
-    COMMON_GCC_PS1_FLAGS,
-    COMMON_GCC_PS2_FLAGS,
-    COMMON_GCC_SATURN_FLAGS,
-    COMMON_GHS_FLAGS,
-    COMMON_IDO_FLAGS,
-    COMMON_MSVC_FLAGS,
-    COMMON_MWCC_NDS_ARM9_FLAGS,
-    COMMON_MWCC_PS2_FLAGS,
-    COMMON_MWCC_PSP_FLAGS,
-    COMMON_MWCC_WII_GC_FLAGS,
-    COMMON_SHC_FLAGS,
-    COMMON_SHC_OLD_FLAGS,
-    COMMON_WATCOM_FLAGS,
-    Flags,
-    Language,
-    LanguageFlagSet,
-)
+from .flags import Language, LanguageFlagSet, resolve_compiler_flags
 from .platforms import (
     ANDROID_X86,
     DREAMCAST,
@@ -95,7 +73,7 @@ class Compiler:
     id: str
     cc: str
     platform: Platform
-    flags: ClassVar[Flags]
+    flag_class: ClassVar[str] = "other"
     library_include_flag: str
     base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
@@ -118,7 +96,11 @@ class Compiler:
 
     def get_language(self, compiler_flags: str = "") -> Language:
         language_flag_set = next(
-            (flag for flag in self.flags if isinstance(flag, LanguageFlagSet)),
+            (
+                flag
+                for flag in resolve_compiler_flags(self.flag_class)
+                if isinstance(flag, LanguageFlagSet)
+            ),
             None,
         )
         if language_flag_set is None:
@@ -138,7 +120,7 @@ class Compiler:
         return {
             "id": self.id,
             "platform": self.platform.id,
-            "flags": [f.to_json() for f in self.flags],
+            "class": self.flag_class,
             "diff_flags": [f.to_json() for f in self.platform.diff_flags],
             "language": self.language.value,
         }
@@ -146,128 +128,129 @@ class Compiler:
 
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_CLANG_FLAGS
+    flag_class: ClassVar[str] = "clang"
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class ArmccCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_ARMCC_FLAGS
+    flag_class: ClassVar[str] = "armcc"
     library_include_flag: str = "-J"
 
 
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_SHC_FLAGS
+    flag_class: ClassVar[str] = "shc"
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class SHCOldCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_SHC_OLD_FLAGS
+    flag_class: ClassVar[str] = "shc-old"
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.GCC
-    flags: ClassVar[Flags] = COMMON_GCC_FLAGS
+    flag_class: ClassVar[str] = "gcc"
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     platform: Platform = PS1
-    flags: ClassVar[Flags] = COMMON_GCC_PS1_FLAGS
+    flag_class: ClassVar[str] = "gcc-ps1"
 
 
 @dataclass(frozen=True)
 class GCCPS2Compiler(GCCCompiler):
     platform: Platform = PS2
-    flags: ClassVar[Flags] = COMMON_GCC_PS2_FLAGS
+    flag_class: ClassVar[str] = "gcc-ps2"
 
 
 @dataclass(frozen=True)
 class GCCGCCompiler(GCCCompiler):
     platform: Platform = GC_WII
-    flags: ClassVar[Flags] = COMMON_GCC_GC_FLAGS
+    flag_class: ClassVar[str] = "gcc-gc"
 
 
 @dataclass(frozen=True)
 class GCCSaturnCompiler(GCCCompiler):
     platform: Platform = SATURN
-    flags: ClassVar[Flags] = COMMON_GCC_SATURN_FLAGS
+    flag_class: ClassVar[str] = "gcc-saturn"
 
 
 @dataclass(frozen=True)
 class IDOCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.IDO
-    flags: ClassVar[Flags] = COMMON_IDO_FLAGS
+    flag_class: ClassVar[str] = "ido"
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.MWCC
+    flag_class: ClassVar[str] = "mwcc"
 
 
 @dataclass(frozen=True)
 class MWCCNDSArm9Compiler(MWCCCompiler):
     platform: Platform = NDS_ARM9
-    flags: ClassVar[Flags] = COMMON_MWCC_NDS_ARM9_FLAGS
+    flag_class: ClassVar[str] = "mwcc-nds-arm9"
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPS2Compiler(MWCCCompiler):
     platform: Platform = PS2
-    flags: ClassVar[Flags] = COMMON_MWCC_PS2_FLAGS
+    flag_class: ClassVar[str] = "mwcc-ps2"
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPSPCompiler(MWCCCompiler):
     platform: Platform = PSP
-    flags: ClassVar[Flags] = COMMON_MWCC_PSP_FLAGS
+    flag_class: ClassVar[str] = "mwcc-psp"
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCWiiGCCompiler(MWCCCompiler):
     platform: Platform = GC_WII
-    flags: ClassVar[Flags] = COMMON_MWCC_WII_GC_FLAGS
+    flag_class: ClassVar[str] = "mwcc-wii-gc"
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MSVCCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
+    flag_class: ClassVar[str] = "msvc"
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_WATCOM_FLAGS
+    flag_class: ClassVar[str] = "watcom"
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class BorlandCompiler(Compiler):
-    flags: ClassVar[Flags] = COMMON_BORLAND_FLAGS
+    flag_class: ClassVar[str] = "borland"
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GHSCompiler(Compiler):
     platform: Platform = WIIU
-    flags: ClassVar[Flags] = COMMON_GHS_FLAGS
+    flag_class: ClassVar[str] = "ghs"
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MicrosoftCCompiler(Compiler):
     platform = MSDOS
-    flags: ClassVar[Flags] = []
+    flag_class: ClassVar[str] = "microsoft-c"
     library_include_flag: str = ""
 
 
