@@ -83,8 +83,8 @@ class ScratchCreationTests(BaseTestCase):
             }
         )
 
-        self.assertEqual(scratch.language, "CXX")
-        self.assertEqual(scratch.get_language().get_display_name(), "C++")
+        self.assertEqual(scratch.language, "C++")
+        self.assertEqual(scratch.get_language(), "C++")
 
     def test_legacy_scratch_lazily_persists_language(self) -> None:
         scratch = self.create_nop_scratch()
@@ -92,7 +92,7 @@ class ScratchCreationTests(BaseTestCase):
         scratch.refresh_from_db()
 
         self.assertIsNone(scratch.language)
-        self.assertEqual(scratch.get_language().get_display_name(), "C")
+        self.assertEqual(scratch.get_language(), "C")
 
         scratch.refresh_from_db()
         self.assertEqual(scratch.language, "C")
@@ -460,7 +460,7 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(response.json()["language"], "C++")
 
         scratch.refresh_from_db()
-        self.assertEqual(scratch.language, "CXX")
+        self.assertEqual(scratch.language, "C++")
 
     def test_update_rejects_invalid_compiler(self) -> None:
         scratch = self.create_nop_scratch()

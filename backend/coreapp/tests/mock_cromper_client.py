@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Any
 from unittest.mock import patch
 
-from coreapp.compiler_utils import Compiler, Language, Platform
+from coreapp.compiler_utils import Compiler, Platform
 
 _DUMMY_PLATFORM = Platform(
     id="dummy",
@@ -112,14 +112,23 @@ class MockCromperClient:
         except KeyError:
             raise ValueError(f"Unknown platform: {platform_id}")
 
-    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> Language:
+    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> str:
         self.get_compiler_by_id(compiler_id)
         cxx_flags = ("-x c++", "-lang=c++", "--cpp", "--g++", "/TP")
         if any(flag in compiler_flags for flag in cxx_flags):
-            return Language.CXX
+            return "C++"
         if "-lang=objc" in compiler_flags:
-            return Language.OBJECTIVE_C
-        return Language.C
+            return "ObjectiveC"
+        return "C"
+
+    def resolve_language_extension(
+        self, compiler_id: str, compiler_flags: str = ""
+    ) -> str:
+        return (
+            "cpp"
+            if self.resolve_language(compiler_id, compiler_flags) == "C++"
+            else "c"
+        )
 
     def assemble_asm(self, platform_id: str, asm: Any) -> dict[str, Any]:
         """Return mock assembly result."""

@@ -6,7 +6,6 @@ that don't require the full compilation infrastructure.
 """
 
 from dataclasses import dataclass
-from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -17,27 +16,6 @@ class Platform:
     arch: str
     compilers: list[str]
     has_decompiler: bool = False
-
-
-# TODO copied from cromper, should deduplicate
-class Language(Enum):
-    # Keep these member names and metadata in sync with cromper.flags.Language.
-    C = ("C", "c")
-    OLD_CXX = ("C++", "c++")
-    CXX = ("C++", "cpp")
-    PASCAL = ("Pascal", "p")
-    ASSEMBLY = ("Assembly", "s")
-    OBJECTIVE_C = ("ObjectiveC", "m")
-
-    def __init__(self, display_name: str, file_extension: str):
-        self.display_name = display_name
-        self.file_extension = file_extension
-
-    def get_file_extension(self) -> str:
-        return self.file_extension
-
-    def get_display_name(self) -> str:
-        return self.display_name
 
 
 @dataclass(frozen=True)

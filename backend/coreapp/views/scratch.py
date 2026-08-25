@@ -573,7 +573,9 @@ class ScratchViewSet(
                 zip_f.writestr("target.s", scratch.target_assembly.source_asm.data)
             zip_f.writestr("target.o", scratch.target_assembly.elf_object)
 
-            src_ext = scratch.get_language().get_file_extension()
+            src_ext = get_cromper_client().resolve_language_extension(
+                scratch.compiler, scratch.compiler_flags
+            )
             zip_f.writestr(f"code.{src_ext}", scratch.source_code)
             if scratch.context_fk and scratch.context_fk.text:
                 zip_f.writestr(f"ctx.{src_ext}", scratch.context_fk.text)

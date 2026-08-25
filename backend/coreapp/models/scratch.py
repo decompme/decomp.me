@@ -3,16 +3,13 @@ import json
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import itsdangerous
 from django.conf import settings
 from django.contrib import admin
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
-
-if TYPE_CHECKING:
-    from coreapp.compiler_utils import Language
 
 from .profile import Profile
 
@@ -213,24 +210,16 @@ class Scratch(models.Model):
         except itsdangerous.BadData:
             return False
 
-    def get_language(self) -> "Language":
-        from coreapp.compiler_utils import Language
+    def get_language(self) -> str:
         from coreapp.cromper_client import get_cromper_client
 
         if self.language:
-            try:
-                return Language[self.language]
-            except KeyError:
-                logger.warning(
-                    "Scratch %s has unknown stored language %r",
-                    self.slug,
-                    self.language,
-                )
+            return self.language
 
         language = get_cromper_client().resolve_language(
             self.compiler, self.compiler_flags
         )
-        self.language = language.name
+        self.language = language
         if self.pk:
             Scratch.objects.filter(pk=self.pk).update(language=self.language)
         return language

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 import requests
 from django.conf import settings
 
-from coreapp.compiler_utils import Compiler, Language, Platform
+from coreapp.compiler_utils import Compiler, Platform
 
 
 @dataclass
@@ -136,8 +136,8 @@ class CromperClient:
                 return platform
         raise ValueError(f"Unknown platform: {platform_id}")
 
-    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> Language:
-        """Resolve a compiler invocation's effective source language."""
+    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> str:
+        """Resolve a compiler invocation's effective language shorthand."""
         response = self._make_request(
             "POST",
             "/compiler/language",
@@ -146,18 +146,29 @@ class CromperClient:
                 "compiler_flags": compiler_flags,
             },
         )
-        language_id = response.get("language")
-        if not isinstance(language_id, str):
-            raise CromperError(
-                f"Invalid language response from cromper: {language_id!r}"
-            )
+        language = response.get("language")
+        if not isinstance(language, str):
+            raise CromperError(f"Invalid language response from cromper: {language!r}")
+        return language
 
-        try:
-            return Language[language_id]
-        except KeyError as e:
+    def resolve_language_extension(
+        self, compiler_id: str, compiler_flags: str = ""
+    ) -> str:
+        """Resolve a compiler invocation's effective source file extension."""
+        response = self._make_request(
+            "POST",
+            "/compiler/extension",
+            json={
+                "compiler_id": compiler_id,
+                "compiler_flags": compiler_flags,
+            },
+        )
+        extension = response.get("extension")
+        if not isinstance(extension, str):
             raise CromperError(
-                f"Unknown language response from cromper: {language_id!r}"
-            ) from e
+                f"Invalid extension response from cromper: {extension!r}"
+            )
+        return extension
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""

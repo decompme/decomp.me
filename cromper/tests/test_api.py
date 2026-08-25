@@ -105,9 +105,27 @@ class CromperAPITests(AsyncHTTPTestCase):
         self.assertEqual(response.code, 200)
 
         data = json.loads(response.body)
-        self.assertEqual(data["language"], "CXX")
-        self.assertEqual(data["display_name"], "C++")
+        self.assertEqual(data["language"], "C++")
+        self.assertNotIn("extension", data)
+
+    def test_compiler_extension_endpoint(self):
+        """Test resolving the effective source extension from compiler flags."""
+        response = self.fetch(
+            "/compiler/extension",
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            body=json.dumps(
+                {
+                    "compiler_id": "ee-gcc2.9-991111",
+                    "compiler_flags": "-O2 -x c++",
+                }
+            ),
+        )
+        self.assertEqual(response.code, 200)
+
+        data = json.loads(response.body)
         self.assertEqual(data["extension"], "cpp")
+        self.assertNotIn("language", data)
 
     def test_compiler_language_endpoint_unknown_compiler(self):
         response = self.fetch(

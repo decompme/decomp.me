@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase
 
-from coreapp.compiler_utils import Language
 from coreapp.cromper_client import CromperClient, CromperError
 
 
@@ -51,15 +50,11 @@ class CromperClientCompilerTests(SimpleTestCase):
         with patch.object(
             client,
             "_make_request",
-            return_value={
-                "language": "CXX",
-                "display_name": "C++",
-                "extension": "cpp",
-            },
+            return_value={"language": "C++"},
         ) as make_request:
             language = client.resolve_language("ido7.1", "-x c++")
 
-        self.assertIs(language, Language.CXX)
+        self.assertEqual(language, "C++")
         make_request.assert_called_once_with(
             "POST",
             "/compiler/language",
@@ -69,13 +64,33 @@ class CromperClientCompilerTests(SimpleTestCase):
             },
         )
 
-    def test_rejects_unknown_resolved_language(self) -> None:
+    def test_resolves_language_extension(self) -> None:
         client = CromperClient("http://cromper")
 
         with patch.object(
             client,
             "_make_request",
-            return_value={"language": "NOT_A_LANGUAGE"},
+            return_value={"extension": "cpp"},
+        ) as make_request:
+            extension = client.resolve_language_extension("ido7.1", "-x c++")
+
+        self.assertEqual(extension, "cpp")
+        make_request.assert_called_once_with(
+            "POST",
+            "/compiler/extension",
+            json={
+                "compiler_id": "ido7.1",
+                "compiler_flags": "-x c++",
+            },
+        )
+
+    def test_rejects_invalid_language_response(self) -> None:
+        client = CromperClient("http://cromper")
+
+        with patch.object(
+            client,
+            "_make_request",
+            return_value={"language": []},
         ):
-            with self.assertRaisesRegex(CromperError, "Unknown language response"):
+            with self.assertRaisesRegex(CromperError, "Invalid language"):
                 client.resolve_language("ido7.1")
