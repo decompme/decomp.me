@@ -47,13 +47,13 @@ GC_WII = Platform(
     has_decompiler=True,
 )
 
-DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "", "", Language.C)
-DUMMY_LONGRUNNING = Compiler("dummy-longrunning", _DUMMY_PLATFORM, "", "", Language.C)
-GCC281PM = Compiler("gcc2.8.1pm", N64, "", "", Language.C)
-IDO53 = Compiler("ido5.3", N64, "", "", Language.C)
-IDO71 = Compiler("ido7.1", N64, "", "", Language.C)
-EE_GCC29_991111 = Compiler("ee-gcc2.9-991111", PS2, "", "", Language.C)
-MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "", "", Language.C)
+DUMMY = Compiler("dummy", _DUMMY_PLATFORM, "other", [])
+DUMMY_LONGRUNNING = Compiler("dummy-longrunning", _DUMMY_PLATFORM, "other", [])
+GCC281PM = Compiler("gcc2.8.1pm", N64, "gcc", [])
+IDO53 = Compiler("ido5.3", N64, "ido", [])
+IDO71 = Compiler("ido7.1", N64, "ido", [])
+EE_GCC29_991111 = Compiler("ee-gcc2.9-991111", PS2, "gcc-ps2", [])
+MWCC_242_81 = Compiler("mwcc_242_81", GC_WII, "mwcc-wii-gc", [])
 
 _PLATFORMS = {
     platform.id: platform for platform in (_DUMMY_PLATFORM, N64, PS1, PS2, GC_WII)
@@ -112,6 +112,15 @@ class MockCromperClient:
         except KeyError:
             raise ValueError(f"Unknown platform: {platform_id}")
 
+    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> Language:
+        self.get_compiler_by_id(compiler_id)
+        cxx_flags = ("-x c++", "-lang=c++", "--cpp", "--g++", "/TP")
+        if any(flag in compiler_flags for flag in cxx_flags):
+            return Language.CXX
+        if "-lang=objc" in compiler_flags:
+            return Language.OBJECTIVE_C
+        return Language.C
+
     def assemble_asm(self, platform_id: str, asm: Any) -> dict[str, Any]:
         """Return mock assembly result."""
         # Create a simple mock ELF object
@@ -159,7 +168,9 @@ class MockCromperClient:
         diff_flags: list[str] = [],
     ) -> dict[str, Any]:
         """Return mock diff result."""
-        is_exact_match = b"li $v0,2" in target_elf and b"return 2" in compiled_elf
+        is_exact_match = (
+            b"li $v0,2" in bytes(target_elf) and b"return 2" in compiled_elf
+        )
         return {
             "result": {
                 "current_score": 0 if is_exact_match else 200,

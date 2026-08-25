@@ -54,7 +54,6 @@ describe("resolveCompilersResponse", () => {
                     platform: "n64",
                     class: "child",
                     diff_flags: [],
-                    language: ["C", "c"],
                 },
             },
             flags: {

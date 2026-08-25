@@ -122,7 +122,6 @@ class Compiler:
             "platform": self.platform.id,
             "class": self.flag_class,
             "diff_flags": [f.to_json() for f in self.platform.diff_flags],
-            "language": self.language.value,
         }
 
 

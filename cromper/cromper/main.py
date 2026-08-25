@@ -17,9 +17,10 @@ from .handlers.diff import DiffHandler
 
 from .handlers.handlers import (
     CompilerHandler,
+    CompilerLanguageHandler,
+    HealthHandler,
     LibrariesHandler,
     PlatformHandler,
-    HealthHandler,
 )
 
 from .config import CromperConfig
@@ -37,6 +38,11 @@ def make_app(config: CromperConfig) -> tornado.web.Application:
             (
                 r"/platform(?:/([^/]+))?",
                 PlatformHandler,
+                dict(config=config, executor=thread_executor),
+            ),
+            (
+                r"/compiler/language",
+                CompilerLanguageHandler,
                 dict(config=config, executor=thread_executor),
             ),
             (

@@ -57,6 +57,7 @@ class CromperAPITests(AsyncHTTPTestCase):
         for compiler in data["compilers"].values():
             self.assertIn("class", compiler)
             self.assertNotIn("flags", compiler)
+            self.assertNotIn("language", compiler)
             self.assertIn(compiler["class"], data["flags"])
 
         for flag_class in data["flags"].values():
@@ -87,6 +88,54 @@ class CromperAPITests(AsyncHTTPTestCase):
         compiler = data["compilers"]["gcc2.8.1pm"]
         self.assertEqual(compiler["class"], "gcc")
         self.assertIn("gcc", data["flags"])
+
+    def test_compiler_language_endpoint(self):
+        """Test resolving the effective language from compiler flags."""
+        response = self.fetch(
+            "/compiler/language",
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            body=json.dumps(
+                {
+                    "compiler_id": "ee-gcc2.9-991111",
+                    "compiler_flags": "-O2 -x c++",
+                }
+            ),
+        )
+        self.assertEqual(response.code, 200)
+
+        data = json.loads(response.body)
+        self.assertEqual(data["language"], "CXX")
+        self.assertEqual(data["display_name"], "C++")
+        self.assertEqual(data["extension"], "cpp")
+
+    def test_compiler_language_endpoint_unknown_compiler(self):
+        response = self.fetch(
+            "/compiler/language",
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            body=json.dumps(
+                {
+                    "compiler_id": "nonexistent_compiler",
+                    "compiler_flags": "",
+                }
+            ),
+        )
+        self.assertEqual(response.code, 404)
+
+    def test_compiler_language_endpoint_rejects_invalid_flags(self):
+        response = self.fetch(
+            "/compiler/language",
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            body=json.dumps(
+                {
+                    "compiler_id": "gcc2.8.1pm",
+                    "compiler_flags": [],
+                }
+            ),
+        )
+        self.assertEqual(response.code, 400)
 
     def test_libraries_endpoint(self):
         """Test the libraries endpoint."""

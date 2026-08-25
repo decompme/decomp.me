@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 import requests
 from django.conf import settings
 
-from coreapp.compiler_utils import Compiler, Platform
+from coreapp.compiler_utils import Compiler, Language, Platform
 
 
 @dataclass
@@ -79,13 +79,26 @@ class CromperClient:
             response_json = response.get("compilers", {})
 
             self._compilers_cache = {}
-            for key in response_json:
-                platform_id = response_json[key].get("platform")
-                platform = self.get_platform_by_id(platform_id)
-                del response_json[key]["platform"]
-                self._compilers_cache[key] = Compiler(
-                    id=key, platform=platform, **response_json[key]
-                )
+            for compiler_id, compiler_data in response_json.items():
+                try:
+                    response_id = compiler_data.get("id", compiler_id)
+                    if response_id != compiler_id:
+                        raise ValueError(
+                            f"Compiler ID {response_id!r} does not match key "
+                            f"{compiler_id!r}"
+                        )
+
+                    platform = self.get_platform_by_id(compiler_data["platform"])
+                    self._compilers_cache[compiler_id] = Compiler(
+                        id=compiler_id,
+                        platform=platform,
+                        flag_class=compiler_data["class"],
+                        diff_flags=compiler_data.get("diff_flags", []),
+                    )
+                except (KeyError, TypeError, ValueError) as e:
+                    raise CromperError(
+                        f"Invalid compiler metadata for {compiler_id!r}: {e}"
+                    ) from e
 
             logger.info(f"Cached {len(self._compilers_cache)} compilers")
         return self._compilers_cache
@@ -122,6 +135,29 @@ class CromperClient:
             if id == platform_id:
                 return platform
         raise ValueError(f"Unknown platform: {platform_id}")
+
+    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> Language:
+        """Resolve a compiler invocation's effective source language."""
+        response = self._make_request(
+            "POST",
+            "/compiler/language",
+            json={
+                "compiler_id": compiler_id,
+                "compiler_flags": compiler_flags,
+            },
+        )
+        language_id = response.get("language")
+        if not isinstance(language_id, str):
+            raise CromperError(
+                f"Invalid language response from cromper: {language_id!r}"
+            )
+
+        try:
+            return Language[language_id]
+        except KeyError as e:
+            raise CromperError(
+                f"Unknown language response from cromper: {language_id!r}"
+            ) from e
 
     def refresh_cache(self) -> None:
         """Force refresh of compilers and platforms cache."""

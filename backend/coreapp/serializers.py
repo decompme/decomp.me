@@ -394,12 +394,30 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     def create(self, validated_data: dict[str, Any]) -> Scratch:
         context_text = validated_data.pop("context", "")
         validated_data["context_fk"] = Context.get_or_create_from_text(context_text)
+        validated_data["language"] = (
+            get_cromper_client()
+            .resolve_language(
+                validated_data["compiler"],
+                validated_data.get("compiler_flags", ""),
+            )
+            .name
+        )
         return super().create(validated_data)
 
     def update(self, instance: Scratch, validated_data: dict[str, Any]) -> Scratch:
         if "context" in validated_data:
             context_text = validated_data.pop("context", "")
             instance.context_fk = Context.get_or_create_from_text(context_text)
+
+        if "compiler" in validated_data or "compiler_flags" in validated_data:
+            compiler = validated_data.get("compiler", instance.compiler)
+            compiler_flags = validated_data.get(
+                "compiler_flags", instance.compiler_flags
+            )
+            validated_data["language"] = (
+                get_cromper_client().resolve_language(compiler, compiler_flags).name
+            )
+
         return super().update(instance, validated_data)
 
     def validate_compiler(self, compiler: str) -> str:
@@ -428,7 +446,7 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         return data
 
     def get_language(self, scratch: Scratch) -> str:
-        return scratch.get_language().value
+        return scratch.get_language().get_display_name()
 
 
 class TerseScratchSerializer(ScratchSerializer):

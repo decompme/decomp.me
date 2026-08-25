@@ -130,6 +130,7 @@ class Scratch(models.Model):
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100, blank=True)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
+    language = models.CharField(max_length=32, null=True, blank=True, editable=False)
     diff_flags = models.JSONField(default=list, blank=True)
     preset = models.ForeignKey(
         "Preset", null=True, blank=True, on_delete=models.SET_NULL
@@ -213,38 +214,26 @@ class Scratch(models.Model):
             return False
 
     def get_language(self) -> "Language":
+        from coreapp.compiler_utils import Language
         from coreapp.cromper_client import get_cromper_client
 
-        cromper = get_cromper_client()
-        compiler = cromper.get_compiler_by_id(self.compiler)
+        if self.language:
+            try:
+                return Language[self.language]
+            except KeyError:
+                logger.warning(
+                    "Scratch %s has unknown stored language %r",
+                    self.slug,
+                    self.language,
+                )
 
-        """
-        Strategy for extracting a scratch's language:
-        - If the scratch's compiler has a LanguageFlagSet in its flags, attempt to match a language flag against that
-        - Otherwise, fallback to the compiler's default language
-        """
-        # TODO need a more robust way to do this
-        # language_flag_set = next(
-        #     (i for i in compiler.flags if isinstance(i, LanguageFlagSet)),
-        #     None,
-        # )
-
-        # if language_flag_set:
-        #     matches = [
-        #         (flag, language)
-        #         for flag, language in language_flag_set.flags.items()
-        #         if flag in self.compiler_flags
-        #     ]
-
-        #     if matches:
-        #         # taking the longest avoids detecting C++ as C
-        #         longest_match = max(matches, key=lambda m: len(m[0]))
-        #         return longest_match[1].value
-
-        # If we're here, either the compiler doesn't have a LanguageFlagSet, or the scratch doesn't
-        # have a flag within it.
-        # Either way: fall back to the compiler default.
-        return compiler.language
+        language = get_cromper_client().resolve_language(
+            self.compiler, self.compiler_flags
+        )
+        self.language = language.name
+        if self.pk:
+            Scratch.objects.filter(pk=self.pk).update(language=self.language)
+        return language
 
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):

@@ -179,7 +179,6 @@ export type CompilerMetadata = CompilerBase & {
     platform: string;
     class: string;
     diff_flags: Flag[];
-    language: [string, string];
 };
 
 export type CompilerFlagClass = {
