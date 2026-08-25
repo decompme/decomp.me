@@ -1,8 +1,6 @@
 {
     "agbcc": "agbcc",
 
-    "agbcc-fe8j": "agbcc (Fire Emblem 8 JP)",
-
     "agbccpp": "agbccpp",
 
     "gcc2.96": "gcc2.96",
@@ -25,6 +23,7 @@
     "clang-3.9.1": "Clang 3.9.1",
     "clang-4.0.1": "Clang 4.0.1",
     "clang-8.0.0": "Clang 8.0.0",
+    "clang-9.0.0": "Clang 9.0.0",
 
     "iop-gcc2.8.1": "IOP GCC 2.8.1",
     "iop-gcc2.95.2-102": "IOP GCC 2.95.2 (SN BUILD v1.02)",
@@ -99,6 +98,8 @@
     "ido5.3_c++": "IDO 5.3 C++",
     "ido5.3Pascal": "IDO 5.3 Pascal",
     "ido7.1": "IDO 7.1",
+    "ido7.1_irix4": "IDO 7.1 (IRIX 4 frontend)",
+    "ido7.1_irix4_c++": "IDO 7.1 C++ (IRIX 4 cfront)",
     "ido7.1_c++": "IDO 7.1 C++",
     "ido7.1Pascal": "IDO 7.1 Pascal",
 

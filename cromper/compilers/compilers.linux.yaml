@@ -3,7 +3,6 @@ common:
 
 gba:
   - agbcc
-  - agbcc-fe8j
   - agbccpp
   - gcc2.96
 
@@ -108,6 +107,7 @@ switch:
   - clang-3.9.1
   - clang-4.0.1
   - clang-8.0.0
+  - clang-9.0.0
 
 ps1:
   - psyq3.3

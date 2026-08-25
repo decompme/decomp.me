@@ -5,7 +5,7 @@ requires-python = ">=3.10"
 [[package]]
 name = "asm-differ"
 version = "0.1.0"
-source = { git = "https://github.com/simonlindholm/asm-differ.git?rev=6299ebf95dd54e572f71b87a34cac37bc85b7870#6299ebf95dd54e572f71b87a34cac37bc85b7870" }
+source = { git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7#f49f9b26a7b91f3da6c8d555a87218efb28bbea7" }
 dependencies = [
     { name = "colorama" },
     { name = "cxxfilt" },
@@ -128,8 +128,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=6299ebf95dd54e572f71b87a34cac37bc85b7870" },
-    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=71f32a335a5db5155dddc555dcbca35872501af1" },
+    { name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ.git?rev=f49f9b26a7b91f3da6c8d555a87218efb28bbea7" },
+    { name = "m2c", git = "https://github.com/matt-kempster/m2c.git?rev=19f2ddb22dcf5161c27b7eae62f142e697ae895f" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.18.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.2.0" },
@@ -276,7 +276,7 @@ wheels = [
 [[package]]
 name = "m2c"
 version = "0.1.0"
-source = { git = "https://github.com/matt-kempster/m2c.git?rev=71f32a335a5db5155dddc555dcbca35872501af1#71f32a335a5db5155dddc555dcbca35872501af1" }
+source = { git = "https://github.com/matt-kempster/m2c.git?rev=19f2ddb22dcf5161c27b7eae62f142e697ae895f#19f2ddb22dcf5161c27b7eae62f142e697ae895f" }
 dependencies = [
     { name = "graphviz" },
 ]

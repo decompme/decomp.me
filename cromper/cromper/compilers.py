@@ -278,12 +278,6 @@ AGBCC = GCCCompiler(
     cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
 )
 
-AGBCC_FE8J = GCCCompiler(
-    id="agbcc-fe8j",
-    platform=GBA,
-    cc='/usr/bin/cpp -E -I "${COMPILER_DIR}"/include -iquote include -nostdinc -undef "$INPUT" | "${COMPILER_DIR}"/bin/agbcc $COMPILER_FLAGS -o - | arm-none-eabi-as -mcpu=arm7tdmi -o "$OUTPUT"',
-)
-
 OLD_AGBCC = GCCCompiler(
     id="old_agbcc",
     platform=GBA,
@@ -412,6 +406,12 @@ CLANG_401 = ClangCompiler(
 
 CLANG_800 = ClangCompiler(
     id="clang-8.0.0",
+    platform=SWITCH,
+    cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
+)
+
+CLANG_900 = ClangCompiler(
+    id="clang-9.0.0",
     platform=SWITCH,
     cc='TOOLROOT="$COMPILER_DIR" "$COMPILER_DIR"/bin/clang++ -c -target aarch64-linux-elf --sysroot="$COMPILER_DIR"/botw-lib-musl-25ed8669943bee65a650700d340e451eda2a26ba -mcpu=cortex-a57+fp+simd+crypto+crc -mno-implicit-float -fstandalone-debug -fPIC -Wl,-Bsymbolic-functions -shared -stdlib=libc++ -nostdlib $COMPILER_FLAGS -o "$OUTPUT" "$INPUT"',
 )
@@ -909,6 +909,27 @@ IDO71 = IDOCompiler(
     id="ido7.1",
     platform=N64,
     cc='USR_LIB="${COMPILER_DIR}" "${COMPILER_DIR}/cc" -c -Xcpluscomm -G0 -non_shared -Wab,-r4300_mul -woff 649,838,712 -32 ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71_IRIX4 = IDOCompiler(
+    id="ido7.1_irix4",
+    platform=N64,
+    base_compiler=IDO71,
+    cc='"${COMPILER_DIR}/cc-irix4"'
+    ' --frontend "${COMPILER_DIR}/../ido4.1" --backend "${COMPILER_DIR}"'
+    ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
+)
+
+IDO71_IRIX4_CXX = IDOCompiler(
+    id="ido7.1_irix4_c++",
+    platform=N64,
+    base_compiler=IDO71,
+    language=Language.OLD_CXX,
+    cc='"${COMPILER_DIR}/cc-irix4"'
+    ' --frontend "${COMPILER_DIR}/../ido4.1"'
+    ' --cfront "${COMPILER_DIR}/../ido5.3_c++"'
+    ' --backend "${COMPILER_DIR}"'
+    ' -c ${COMPILER_FLAGS} -o "${OUTPUT}" "${INPUT}"',
 )
 
 IDO71_CXX = IDOCompiler(
@@ -1703,7 +1724,6 @@ ANDROID_R8E_47_C = GCCCompiler(
 _all_compilers: list[Compiler] = [
     # GBA
     AGBCC,
-    AGBCC_FE8J,
     OLD_AGBCC,
     AGBCC_ARM,
     AGBCCPP,
@@ -1727,6 +1747,7 @@ _all_compilers: list[Compiler] = [
     CLANG_391,
     CLANG_401,
     CLANG_800,
+    CLANG_900,
     # PS1
     PSYQ_263_221,
     PSYQ33,
@@ -1826,6 +1847,8 @@ _all_compilers: list[Compiler] = [
     IDO53_CXX,
     IDO60,
     IDO71,
+    IDO71_IRIX4,
+    IDO71_IRIX4_CXX,
     IDO71_CXX,
     MIPS_PRO_744,
     GCC272KMC,

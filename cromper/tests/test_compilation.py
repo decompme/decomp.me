@@ -6,7 +6,6 @@ import unittest
 
 from cromper.wrappers.compiler_wrapper import CompilationResult
 from cromper.compilers import (
-    AGBCC_FE8J,
     GCC281PM,
     IDO53,
     MWCC_247_92,
@@ -74,20 +73,6 @@ class CompilationTests(CromperTestCase):
 
         self.assertIsInstance(result, CompilationResult)
         self.assertIsValidElfObject(result.elf_object)
-
-    @requiresCompiler(AGBCC_FE8J)
-    def test_agbcc_fe8j_promotion_flag(self) -> None:
-        """Ensure the FE8J agbcc wrapper accepts its promotion flag."""
-        wrapper = self.create_compiler_wrapper()
-        result = wrapper.compile_code(
-            compiler=AGBCC_FE8J,
-            compiler_flags="-O2 -mthumb-interwork -mjp-promote",
-            code="int func(void) { return 5; }",
-            context="",
-            libraries=[],
-        )
-
-        self.assertIsValidElfObject(result.elf_object, "FE8J agbcc compilation")
 
     @requiresCompiler(GCC281PM)
     def test_giant_compilation(self) -> None:
