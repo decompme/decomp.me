@@ -1,4 +1,5 @@
 import enum
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 ASMDIFF_FLAG_PREFIX = "-DIFF"
@@ -135,46 +136,31 @@ Flags = list[
 class FlagClass:
     name: str
     flags: Flags
-    parent: str | None = None
+    parent: "FlagClass | None" = None
 
     def to_json(self) -> dict[str, object]:
         data: dict[str, object] = {
             "flags": [flag.to_json() for flag in self.flags],
         }
         if self.parent is not None:
-            data["parent"] = self.parent
+            data["parent"] = self.parent.name
         return data
 
 
-def _resolve_flags(
-    name: str,
-    classes: dict[str, FlagClass],
-    class_type: str,
-) -> Flags:
+def resolve_flags(flag_class: FlagClass) -> Flags:
     resolved: Flags = []
-    seen: set[str] = set()
+    seen: set[int] = set()
 
     while True:
-        if name in seen:
-            raise ValueError(f"Cyclic {class_type} flag class inheritance at {name}")
-        seen.add(name)
-
-        flag_class = classes.get(name)
-        if flag_class is None:
-            raise ValueError(f"Unknown {class_type} flag class: {name}")
+        identity = id(flag_class)
+        if identity in seen:
+            raise ValueError(f"Cyclic flag class inheritance")
+        seen.add(identity)
 
         resolved[0:0] = flag_class.flags
         if flag_class.parent is None:
             return resolved
-        name = flag_class.parent
-
-
-def resolve_compiler_flags(name: str) -> Flags:
-    return _resolve_flags(name, COMPILER_FLAG_CLASSES, "compiler")
-
-
-def resolve_diff_flags(name: str) -> Flags:
-    return _resolve_flags(name, DIFF_FLAG_CLASSES, "diff")
+        flag_class = flag_class.parent
 
 
 COMMON_ARMCC_FLAGS = FlagClass(
@@ -250,7 +236,7 @@ SHC_FLAGS = FlagClass(
         FlagSet(id="shc_fpu", flags=["-fpu=single", "-fpu=double"]),
         Checkbox(id="shc_aggressive", flag="-aggressive=2"),
     ],
-    parent=COMMON_SHC_OLD_FLAGS.name,
+    parent=COMMON_SHC_OLD_FLAGS,
 )
 COMMON_GCC_FLAGS = FlagClass(
     name="gcc",
@@ -309,7 +295,7 @@ COMMON_MIPS_DIFF_FLAGS = FlagClass(
         Checkbox("mno_aliases", "-Mno-aliases"),
         Checkbox("no_show_rodata_refs", ASMDIFF_FLAG_PREFIX + "no_show_rodata_refs"),
     ],
-    parent=COMMON_DIFF_FLAGS.name,
+    parent=COMMON_DIFF_FLAGS,
 )
 
 COMMON_MWCC_FLAGS = FlagClass(
@@ -389,21 +375,21 @@ MWCC_NDS_ARM9_FLAGS = FlagClass(
         Checkbox(id="mwcc_rostr", flag="-rostr"),
         Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
     ],
-    parent=COMMON_MWCC_FLAGS.name,
+    parent=COMMON_MWCC_FLAGS,
 )
 MWCC_PS2_FLAGS = FlagClass(
     name="mwcc-ps2",
     flags=[
         FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
     ],
-    parent=COMMON_MWCC_FLAGS.name,
+    parent=COMMON_MWCC_FLAGS,
 )
 MWCC_PSP_FLAGS = FlagClass(
     name="mwcc-psp",
     flags=[
         FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
     ],
-    parent=COMMON_MWCC_FLAGS.name,
+    parent=COMMON_MWCC_FLAGS,
 )
 MWCC_WII_GC_FLAGS = FlagClass(
     name="mwcc-wii-gc",
@@ -424,7 +410,7 @@ MWCC_WII_GC_FLAGS = FlagClass(
         Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
         Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
     ],
-    parent=COMMON_MWCC_FLAGS.name,
+    parent=COMMON_MWCC_FLAGS,
 )
 COMMON_GCC_PS1_FLAGS = FlagClass(
     name="gcc-ps1",
@@ -448,7 +434,7 @@ GCC_PS2_FLAGS = FlagClass(
             },
         ),
     ],
-    parent=COMMON_GCC_FLAGS.name,
+    parent=COMMON_GCC_FLAGS,
 )
 COMMON_GCC_SATURN_FLAGS = FlagClass(
     name="gcc-saturn",
@@ -469,7 +455,7 @@ GCC_GC_FLAGS = FlagClass(
             },
         ),
     ],
-    parent=COMMON_GCC_FLAGS.name,
+    parent=COMMON_GCC_FLAGS,
 )
 COMMON_GHS_FLAGS = FlagClass(
     name="ghs",
@@ -554,7 +540,7 @@ COMMON_WATCOM_FLAGS = FlagClass(
 COMMON_MSDOS_DIFF_FLAGS = FlagClass(
     name="msdos",
     flags=[Checkbox("diff_reloc", "--reloc")],
-    parent=COMMON_DIFF_FLAGS.name,
+    parent=COMMON_DIFF_FLAGS,
 )
 
 COMMON_BORLAND_FLAGS = FlagClass(name="borland", flags=[])
@@ -564,76 +550,32 @@ OTHER_FLAGS = FlagClass(name="other", flags=[])
 MICROSOFT_C_FLAGS = FlagClass(name="microsoft-c", flags=[])
 
 
-COMPILER_FLAG_CLASSES: dict[str, FlagClass] = {
-    flag_class.name: flag_class
-    for flag_class in (
-        OTHER_FLAGS,
-        COMMON_ARMCC_FLAGS,
-        COMMON_CLANG_FLAGS,
-        COMMON_SHC_OLD_FLAGS,
-        SHC_FLAGS,
-        COMMON_GCC_FLAGS,
-        COMMON_GCC_PS1_FLAGS,
-        GCC_PS2_FLAGS,
-        COMMON_GCC_SATURN_FLAGS,
-        GCC_GC_FLAGS,
-        COMMON_IDO_FLAGS,
-        COMMON_MWCC_FLAGS,
-        MWCC_NDS_ARM9_FLAGS,
-        MWCC_PS2_FLAGS,
-        MWCC_PSP_FLAGS,
-        MWCC_WII_GC_FLAGS,
-        COMMON_MSVC_FLAGS,
-        COMMON_WATCOM_FLAGS,
-        COMMON_BORLAND_FLAGS,
-        COMMON_GHS_FLAGS,
-        MICROSOFT_C_FLAGS,
-    )
-}
-
-
-DIFF_FLAG_CLASSES: dict[str, FlagClass] = {
-    flag_class.name: flag_class
-    for flag_class in (
-        COMMON_DIFF_FLAGS,
-        COMMON_MIPS_DIFF_FLAGS,
-        COMMON_MSDOS_DIFF_FLAGS,
-    )
-}
-
-
 def _flag_classes_to_json(
-    names: set[str],
-    classes: dict[str, FlagClass],
-    class_type: str,
+    flag_classes: Iterable[FlagClass]
 ) -> dict[str, dict[str, object]]:
-    required_names: set[str] = set()
-    for initial_name in names:
-        name: str | None = initial_name
-        lineage: set[str] = set()
-        while name is not None:
-            if name in lineage:
-                raise ValueError(
-                    f"Cyclic {class_type} flag class inheritance at {name}"
-                )
-            lineage.add(name)
+    required_classes: dict[int, FlagClass] = {}
+    for initial_class in flag_classes:
+        flag_class: FlagClass | None = initial_class
+        lineage: set[int] = set()
+        while flag_class is not None:
+            identity = id(flag_class)
+            if identity in lineage:
+                raise ValueError(f"Cyclic flag class inheritance")
+            lineage.add(identity)
+            required_classes[identity] = flag_class
+            flag_class = flag_class.parent
 
-            flag_class = classes.get(name)
-            if flag_class is None:
-                raise ValueError(f"Unknown {class_type} flag class: {name}")
-            required_names.add(name)
-            name = flag_class.parent
-
-    return {name: classes[name].to_json() for name in sorted(required_names)}
+    ordered_classes = sorted(required_classes.values(), key=lambda value: value.name)
+    return {flag_class.name: flag_class.to_json() for flag_class in ordered_classes}
 
 
 def compiler_flag_classes_to_json(
-    names: set[str],
+    flag_classes: Iterable[FlagClass],
 ) -> dict[str, dict[str, object]]:
-    return _flag_classes_to_json(names, COMPILER_FLAG_CLASSES, "compiler")
+    return _flag_classes_to_json(flag_classes)
 
 
 def diff_flag_classes_to_json(
-    names: set[str],
+    flag_classes: Iterable[FlagClass],
 ) -> dict[str, dict[str, object]]:
-    return _flag_classes_to_json(names, DIFF_FLAG_CLASSES, "diff")
+    return _flag_classes_to_json(flag_classes)

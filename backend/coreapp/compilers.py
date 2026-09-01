@@ -50,7 +50,7 @@ class Compiler:
     id: str
     cc: str
     platform: Platform
-    flag_class: ClassVar[str] = flags.OTHER_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.OTHER_FLAGS
     library_include_flag: str
     base_compiler: "Compiler | None" = None
     type: ClassVar[CompilerType] = CompilerType.OTHER
@@ -76,7 +76,7 @@ class Compiler:
         language_flag_set = next(
             (
                 flag
-                for flag in flags.resolve_compiler_flags(self.flag_class)
+                for flag in flags.resolve_flags(self.flag_class)
                 if isinstance(flag, flags.LanguageFlagSet)
             ),
             None,
@@ -112,129 +112,129 @@ class DummyLongRunningCompiler(DummyCompiler):
 
 @dataclass(frozen=True)
 class ClangCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_CLANG_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_CLANG_FLAGS
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class ArmccCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_ARMCC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_ARMCC_FLAGS
     library_include_flag: str = "-J"
 
 
 @dataclass(frozen=True)
 class SHCCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.SHC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.SHC_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class SHCOldCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_SHC_OLD_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_SHC_OLD_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.GCC
-    flag_class: ClassVar[str] = flags.COMMON_GCC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_FLAGS
     library_include_flag: str = "-isystem"
 
 
 @dataclass(frozen=True)
 class GCCPS1Compiler(GCCCompiler):
     platform: Platform = PS1
-    flag_class: ClassVar[str] = flags.COMMON_GCC_PS1_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_PS1_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCPS2Compiler(GCCCompiler):
     platform: Platform = PS2
-    flag_class: ClassVar[str] = flags.GCC_PS2_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.GCC_PS2_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCGCCompiler(GCCCompiler):
     platform: Platform = GC_WII
-    flag_class: ClassVar[str] = flags.GCC_GC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.GCC_GC_FLAGS
 
 
 @dataclass(frozen=True)
 class GCCSaturnCompiler(GCCCompiler):
     platform: Platform = SATURN
-    flag_class: ClassVar[str] = flags.COMMON_GCC_SATURN_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GCC_SATURN_FLAGS
 
 
 @dataclass(frozen=True)
 class IDOCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.IDO
-    flag_class: ClassVar[str] = flags.COMMON_IDO_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_IDO_FLAGS
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MWCCCompiler(Compiler):
     type: ClassVar[CompilerType] = CompilerType.MWCC
-    flag_class: ClassVar[str] = flags.COMMON_MWCC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_MWCC_FLAGS
 
 
 @dataclass(frozen=True)
 class MWCCNDSArm9Compiler(MWCCCompiler):
     platform: Platform = NDS_ARM9
-    flag_class: ClassVar[str] = flags.MWCC_NDS_ARM9_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_NDS_ARM9_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPS2Compiler(MWCCCompiler):
     platform: Platform = PS2
-    flag_class: ClassVar[str] = flags.MWCC_PS2_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_PS2_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCPSPCompiler(MWCCCompiler):
     platform: Platform = PSP
-    flag_class: ClassVar[str] = flags.MWCC_PSP_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_PSP_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MWCCWiiGCCompiler(MWCCCompiler):
     platform: Platform = GC_WII
-    flag_class: ClassVar[str] = flags.MWCC_WII_GC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.MWCC_WII_GC_FLAGS
     library_include_flag: str = "-IZ:"
 
 
 @dataclass(frozen=True)
 class MSVCCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_MSVC_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_MSVC_FLAGS
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_WATCOM_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_WATCOM_FLAGS
     library_include_flag: str = "/IZ:"
 
 
 @dataclass(frozen=True)
 class BorlandCompiler(Compiler):
-    flag_class: ClassVar[str] = flags.COMMON_BORLAND_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_BORLAND_FLAGS
     library_include_flag: str = ""
 
 
 @dataclass(frozen=True)
 class GHSCompiler(Compiler):
     platform: Platform = WIIU
-    flag_class: ClassVar[str] = flags.COMMON_GHS_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.COMMON_GHS_FLAGS
     library_include_flag: str = "-I"
 
 
 @dataclass(frozen=True)
 class MicrosoftCCompiler(Compiler):
     platform = MSDOS
-    flag_class: ClassVar[str] = flags.MICROSOFT_C_FLAGS.name
+    flag_class: ClassVar[flags.FlagClass] = flags.MICROSOFT_C_FLAGS
     library_include_flag: str = ""
 
 

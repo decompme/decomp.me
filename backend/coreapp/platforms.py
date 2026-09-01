@@ -22,13 +22,15 @@ class Platform:
     assemble_cmd: str
     objdump_cmd: str
     nm_cmd: str
-    diff_flag_class: str = field(default=flags.COMMON_DIFF_FLAGS.name, hash=False)
+    diff_flag_class: flags.FlagClass = field(
+        default=flags.COMMON_DIFF_FLAGS, hash=False
+    )
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
 
     @property
     def diff_flags(self) -> flags.Flags:
-        return flags.resolve_diff_flags(self.diff_flag_class)
+        return flags.resolve_flags(self.diff_flag_class)
 
     @property
     @functools.lru_cache
@@ -89,7 +91,7 @@ MSDOS = Platform(
     objdump_cmd="omf-objdump --no-objects",
     nm_cmd="omf-nm",
     supports_objdump_disassemble=True,
-    diff_flag_class=flags.COMMON_MSDOS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MSDOS_DIFF_FLAGS,
 )
 
 WIN32 = Platform(
@@ -121,7 +123,7 @@ N64 = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -133,7 +135,7 @@ IRIX = Platform(
     assemble_cmd='mips-linux-gnu-as -march=vr4300 -mabi=32 -KPIC -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -145,7 +147,7 @@ PS1 = Platform(
     assemble_cmd='mips-linux-gnu-as -EL -march=r3000 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-linux-gnu-objdump",
     nm_cmd="mips-linux-gnu-nm",
-    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -157,7 +159,7 @@ PSP = Platform(
     assemble_cmd='mips-ps2-decompals-as -EL -march=gs464 -mabi=32 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
-    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
@@ -191,7 +193,7 @@ PS2 = Platform(
     assemble_cmd='mips-ps2-decompals-as -EL -march=r5900 -o "$OUTPUT" "$PRELUDE" "$INPUT"',
     objdump_cmd="mips-ps2-decompals-objdump",
     nm_cmd="mips-ps2-decompals-nm",
-    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS.name,
+    diff_flag_class=flags.COMMON_MIPS_DIFF_FLAGS,
     has_decompiler=True,
 )
 
