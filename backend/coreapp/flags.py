@@ -551,7 +551,7 @@ MICROSOFT_C_FLAGS = FlagClass(name="microsoft-c", flags=[])
 
 
 def _flag_classes_to_json(
-    flag_classes: Iterable[FlagClass]
+    flag_classes: Iterable[FlagClass],
 ) -> dict[str, dict[str, object]]:
     required_classes: dict[int, FlagClass] = {}
     for initial_class in flag_classes:
