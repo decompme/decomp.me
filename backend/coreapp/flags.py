@@ -154,7 +154,7 @@ def resolve_flags(flag_class: FlagClass) -> Flags:
     while True:
         identity = id(flag_class)
         if identity in seen:
-            raise ValueError(f"Cyclic flag class inheritance")
+            raise ValueError("Cyclic flag class inheritance")
         seen.add(identity)
 
         resolved[0:0] = flag_class.flags
@@ -560,7 +560,7 @@ def _flag_classes_to_json(
         while flag_class is not None:
             identity = id(flag_class)
             if identity in lineage:
-                raise ValueError(f"Cyclic flag class inheritance")
+                raise ValueError("Cyclic flag class inheritance")
             lineage.add(identity)
             required_classes[identity] = flag_class
             flag_class = flag_class.parent
