@@ -12,17 +12,23 @@ class CompilerEndpointTests(APITestCase):
         self.assertIsInstance(data["compilers"], dict)
         self.assertIn("flags", data)
         self.assertIsInstance(data["flags"], dict)
+        self.assertIn("diff_flags", data)
+        self.assertIsInstance(data["diff_flags"], dict)
 
         for compiler in data["compilers"].values():
             self.assertIn("id", compiler)
             self.assertIn("class", compiler)
+            self.assertIn("diff_class", compiler)
             self.assertNotIn("flags", compiler)
+            self.assertNotIn("diff_flags", compiler)
             self.assertIn(compiler["class"], data["flags"])
+            self.assertIn(compiler["diff_class"], data["diff_flags"])
 
-        for flag_class in data["flags"].values():
-            self.assertIsInstance(flag_class["flags"], list)
-            if "parent" in flag_class:
-                self.assertIn(flag_class["parent"], data["flags"])
+        for field in ("flags", "diff_flags"):
+            for flag_class in data[field].values():
+                self.assertIsInstance(flag_class["flags"], list)
+                if "parent" in flag_class:
+                    self.assertIn(flag_class["parent"], data[field])
 
     def test_compilers_endpoint(self) -> None:
         response = self.client.get(reverse("compilers"))
@@ -63,4 +69,6 @@ class CompilerEndpointTests(APITestCase):
         self.assertEqual(list(data["compilers"]), [GCC281PM.id])
         compiler = data["compilers"][GCC281PM.id]
         self.assertEqual(compiler["class"], "gcc")
+        self.assertEqual(compiler["diff_class"], "mips")
         self.assertIn("gcc", data["flags"])
+        self.assertEqual(data["diff_flags"]["mips"]["parent"], "common")

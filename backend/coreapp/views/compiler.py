@@ -25,7 +25,7 @@ def compiler_metadata_json(
             "id": compiler.id,
             "platform": compiler.platform.id,
             "class": compiler.flag_class,
-            "diff_flags": [flag.to_json() for flag in compiler.platform.diff_flags],
+            "diff_class": compiler.platform.diff_flag_class,
         }
         for compiler in selected_compilers
     }
@@ -38,6 +38,9 @@ def compiler_response_json(
         "compilers": compiler_metadata_json(selected_compilers),
         "flags": flags.compiler_flag_classes_to_json(
             {compiler.flag_class for compiler in selected_compilers}
+        ),
+        "diff_flags": flags.diff_flag_classes_to_json(
+            {compiler.platform.diff_flag_class for compiler in selected_compilers}
         ),
     }
 

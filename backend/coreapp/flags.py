@@ -132,7 +132,7 @@ Flags = list[
 
 
 @dataclass(frozen=True)
-class CompilerFlagClass:
+class FlagClass:
     flags: Flags
     parent: str | None = None
 
@@ -145,23 +145,35 @@ class CompilerFlagClass:
         return data
 
 
-def resolve_compiler_flags(name: str) -> Flags:
+def _resolve_flags(
+    name: str,
+    classes: dict[str, FlagClass],
+    class_type: str,
+) -> Flags:
     resolved: Flags = []
     seen: set[str] = set()
 
     while True:
         if name in seen:
-            raise ValueError(f"Cyclic compiler flag class inheritance at {name}")
+            raise ValueError(f"Cyclic {class_type} flag class inheritance at {name}")
         seen.add(name)
 
-        flag_class = COMPILER_FLAG_CLASSES.get(name)
+        flag_class = classes.get(name)
         if flag_class is None:
-            raise ValueError(f"Unknown compiler flag class: {name}")
+            raise ValueError(f"Unknown {class_type} flag class: {name}")
 
         resolved[0:0] = flag_class.flags
         if flag_class.parent is None:
             return resolved
         name = flag_class.parent
+
+
+def resolve_compiler_flags(name: str) -> Flags:
+    return _resolve_flags(name, COMPILER_FLAG_CLASSES, "compiler")
+
+
+def resolve_diff_flags(name: str) -> Flags:
+    return _resolve_flags(name, DIFF_FLAG_CLASSES, "diff")
 
 
 COMMON_ARMCC_FLAGS: Flags = [
@@ -460,39 +472,48 @@ COMMON_MSDOS_DIFF_FLAGS: Flags = [Checkbox("diff_reloc", "--reloc")]
 COMMON_BORLAND_FLAGS: Flags = []
 
 
-COMPILER_FLAG_CLASSES: dict[str, CompilerFlagClass] = {
-    "other": CompilerFlagClass(flags=[]),
-    "armcc": CompilerFlagClass(flags=COMMON_ARMCC_FLAGS),
-    "clang": CompilerFlagClass(flags=COMMON_CLANG_FLAGS),
-    "shc-old": CompilerFlagClass(flags=COMMON_SHC_OLD_FLAGS),
-    "shc": CompilerFlagClass(flags=SHC_FLAGS, parent="shc-old"),
-    "gcc": CompilerFlagClass(flags=COMMON_GCC_FLAGS),
-    "gcc-ps1": CompilerFlagClass(flags=COMMON_GCC_PS1_FLAGS),
-    "gcc-ps2": CompilerFlagClass(flags=GCC_PS2_FLAGS, parent="gcc"),
-    "gcc-saturn": CompilerFlagClass(flags=COMMON_GCC_SATURN_FLAGS),
-    "gcc-gc": CompilerFlagClass(flags=GCC_GC_FLAGS, parent="gcc"),
-    "ido": CompilerFlagClass(flags=COMMON_IDO_FLAGS),
-    "mwcc": CompilerFlagClass(flags=COMMON_MWCC_FLAGS),
-    "mwcc-nds-arm9": CompilerFlagClass(
+COMPILER_FLAG_CLASSES: dict[str, FlagClass] = {
+    "other": FlagClass(flags=[]),
+    "armcc": FlagClass(flags=COMMON_ARMCC_FLAGS),
+    "clang": FlagClass(flags=COMMON_CLANG_FLAGS),
+    "shc-old": FlagClass(flags=COMMON_SHC_OLD_FLAGS),
+    "shc": FlagClass(flags=SHC_FLAGS, parent="shc-old"),
+    "gcc": FlagClass(flags=COMMON_GCC_FLAGS),
+    "gcc-ps1": FlagClass(flags=COMMON_GCC_PS1_FLAGS),
+    "gcc-ps2": FlagClass(flags=GCC_PS2_FLAGS, parent="gcc"),
+    "gcc-saturn": FlagClass(flags=COMMON_GCC_SATURN_FLAGS),
+    "gcc-gc": FlagClass(flags=GCC_GC_FLAGS, parent="gcc"),
+    "ido": FlagClass(flags=COMMON_IDO_FLAGS),
+    "mwcc": FlagClass(flags=COMMON_MWCC_FLAGS),
+    "mwcc-nds-arm9": FlagClass(
         flags=MWCC_NDS_ARM9_FLAGS,
         parent="mwcc",
     ),
-    "mwcc-ps2": CompilerFlagClass(flags=MWCC_PS2_FLAGS, parent="mwcc"),
-    "mwcc-psp": CompilerFlagClass(flags=MWCC_PSP_FLAGS, parent="mwcc"),
-    "mwcc-wii-gc": CompilerFlagClass(
+    "mwcc-ps2": FlagClass(flags=MWCC_PS2_FLAGS, parent="mwcc"),
+    "mwcc-psp": FlagClass(flags=MWCC_PSP_FLAGS, parent="mwcc"),
+    "mwcc-wii-gc": FlagClass(
         flags=MWCC_WII_GC_FLAGS,
         parent="mwcc",
     ),
-    "msvc": CompilerFlagClass(flags=COMMON_MSVC_FLAGS),
-    "watcom": CompilerFlagClass(flags=COMMON_WATCOM_FLAGS),
-    "borland": CompilerFlagClass(flags=COMMON_BORLAND_FLAGS),
-    "ghs": CompilerFlagClass(flags=COMMON_GHS_FLAGS),
-    "microsoft-c": CompilerFlagClass(flags=[]),
+    "msvc": FlagClass(flags=COMMON_MSVC_FLAGS),
+    "watcom": FlagClass(flags=COMMON_WATCOM_FLAGS),
+    "borland": FlagClass(flags=COMMON_BORLAND_FLAGS),
+    "ghs": FlagClass(flags=COMMON_GHS_FLAGS),
+    "microsoft-c": FlagClass(flags=[]),
 }
 
 
-def compiler_flag_classes_to_json(
+DIFF_FLAG_CLASSES: dict[str, FlagClass] = {
+    "common": FlagClass(flags=COMMON_DIFF_FLAGS),
+    "mips": FlagClass(flags=COMMON_MIPS_DIFF_FLAGS, parent="common"),
+    "msdos": FlagClass(flags=COMMON_MSDOS_DIFF_FLAGS, parent="common"),
+}
+
+
+def _flag_classes_to_json(
     names: set[str],
+    classes: dict[str, FlagClass],
+    class_type: str,
 ) -> dict[str, dict[str, object]]:
     required_names: set[str] = set()
     for initial_name in names:
@@ -500,15 +521,27 @@ def compiler_flag_classes_to_json(
         lineage: set[str] = set()
         while name is not None:
             if name in lineage:
-                raise ValueError(f"Cyclic compiler flag class inheritance at {name}")
+                raise ValueError(
+                    f"Cyclic {class_type} flag class inheritance at {name}"
+                )
             lineage.add(name)
 
-            flag_class = COMPILER_FLAG_CLASSES.get(name)
+            flag_class = classes.get(name)
             if flag_class is None:
-                raise ValueError(f"Unknown compiler flag class: {name}")
+                raise ValueError(f"Unknown {class_type} flag class: {name}")
             required_names.add(name)
             name = flag_class.parent
 
-    return {
-        name: COMPILER_FLAG_CLASSES[name].to_json() for name in sorted(required_names)
-    }
+    return {name: classes[name].to_json() for name in sorted(required_names)}
+
+
+def compiler_flag_classes_to_json(
+    names: set[str],
+) -> dict[str, dict[str, object]]:
+    return _flag_classes_to_json(names, COMPILER_FLAG_CLASSES, "compiler")
+
+
+def diff_flag_classes_to_json(
+    names: set[str],
+) -> dict[str, dict[str, object]]:
+    return _flag_classes_to_json(names, DIFF_FLAG_CLASSES, "diff")

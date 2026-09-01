@@ -1,13 +1,8 @@
-import type {
-    Compiler,
-    CompilerFlagClass,
-    CompilersResponse,
-    Flag,
-} from "./types";
+import type { Compiler, FlagClass, CompilersResponse, Flag } from "./types";
 
-export function resolveCompilerFlags(
+export function resolveFlags(
     className: string,
-    classes: Record<string, CompilerFlagClass>,
+    classes: Record<string, FlagClass>,
     resolved = new Map<string, Flag[]>(),
     resolving = new Set<string>(),
 ): Flag[] {
@@ -16,17 +11,15 @@ export function resolveCompilerFlags(
 
     const flagClass = classes[className];
     if (!flagClass) {
-        throw new Error(`Unknown compiler flag class: ${className}`);
+        throw new Error(`Unknown flag class: ${className}`);
     }
     if (resolving.has(className)) {
-        throw new Error(
-            `Cyclic compiler flag class inheritance at ${className}`,
-        );
+        throw new Error(`Cyclic flag class inheritance at ${className}`);
     }
 
     resolving.add(className);
     const parentFlags = flagClass.parent
-        ? resolveCompilerFlags(flagClass.parent, classes, resolved, resolving)
+        ? resolveFlags(flagClass.parent, classes, resolved, resolving)
         : [];
     resolving.delete(className);
 
@@ -40,16 +33,22 @@ export function resolveCompilersResponse(
 ): Record<string, Compiler> {
     if (!response) return {};
 
-    const resolved = new Map<string, Flag[]>();
+    const resolvedCompilerFlags = new Map<string, Flag[]>();
+    const resolvedDiffFlags = new Map<string, Flag[]>();
     return Object.fromEntries(
         Object.entries(response.compilers).map(([id, compiler]) => [
             id,
             {
                 ...compiler,
-                flags: resolveCompilerFlags(
+                flags: resolveFlags(
                     compiler.class,
                     response.flags,
-                    resolved,
+                    resolvedCompilerFlags,
+                ),
+                diff_flags: resolveFlags(
+                    compiler.diff_class,
+                    response.diff_flags,
+                    resolvedDiffFlags,
                 ),
             },
         ]),
