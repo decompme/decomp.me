@@ -357,7 +357,6 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
         allow_blank=True,
     )  # type: ignore[assignment]
     context_text = serializers.SerializerMethodField(read_only=True)
-    language = serializers.SerializerMethodField()
     libraries = serializers.ListField(child=LibrarySerializer(), default=list)
     diff_flags = DiffFlagsField(required=False)
     preset = serializers.PrimaryKeyRelatedField(
@@ -394,25 +393,12 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
     def create(self, validated_data: dict[str, Any]) -> Scratch:
         context_text = validated_data.pop("context", "")
         validated_data["context_fk"] = Context.get_or_create_from_text(context_text)
-        validated_data["language"] = get_cromper_client().resolve_language(
-            validated_data["compiler"],
-            validated_data.get("compiler_flags", ""),
-        )
         return super().create(validated_data)
 
     def update(self, instance: Scratch, validated_data: dict[str, Any]) -> Scratch:
         if "context" in validated_data:
             context_text = validated_data.pop("context", "")
             instance.context_fk = Context.get_or_create_from_text(context_text)
-
-        if "compiler" in validated_data or "compiler_flags" in validated_data:
-            compiler = validated_data.get("compiler", instance.compiler)
-            compiler_flags = validated_data.get(
-                "compiler_flags", instance.compiler_flags
-            )
-            validated_data["language"] = get_cromper_client().resolve_language(
-                compiler, compiler_flags
-            )
 
         return super().update(instance, validated_data)
 
@@ -440,10 +426,6 @@ class ScratchSerializer(serializers.ModelSerializer[Scratch]):
                 f"Compiler {compiler.id} is not compatible with platform {platform.id}"
             )
         return data
-
-    def get_language(self, scratch: Scratch) -> str:
-        return scratch.get_language()
-
 
 class TerseScratchSerializer(ScratchSerializer):
     owner = ProfileField(read_only=True)

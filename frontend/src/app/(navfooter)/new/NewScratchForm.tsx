@@ -265,7 +265,7 @@ export default function NewScratchForm({
     const submit = async () => {
         setSubmissionError(null);
 
-        let scratch: api.ClaimableScratch;
+        let scratch: api.ClaimableScratchData;
         try {
             scratch = await api.post("/scratch", {
                 target_asm: draft.asm,

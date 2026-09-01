@@ -136,21 +136,6 @@ class CromperClient:
                 return platform
         raise ValueError(f"Unknown platform: {platform_id}")
 
-    def resolve_language(self, compiler_id: str, compiler_flags: str = "") -> str:
-        """Resolve a compiler invocation's effective language shorthand."""
-        response = self._make_request(
-            "POST",
-            "/compiler/language",
-            json={
-                "compiler_id": compiler_id,
-                "compiler_flags": compiler_flags,
-            },
-        )
-        language = response.get("language")
-        if not isinstance(language, str):
-            raise CromperError(f"Invalid language response from cromper: {language!r}")
-        return language
-
     def resolve_language_extension(
         self, compiler_id: str, compiler_flags: str = ""
     ) -> str:

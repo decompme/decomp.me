@@ -127,7 +127,6 @@ class Scratch(models.Model):
     compiler = models.CharField(max_length=100)
     platform = models.CharField(max_length=100, blank=True)
     compiler_flags = models.TextField(max_length=1000, default="", blank=True)
-    language = models.CharField(max_length=32, null=True, blank=True, editable=False)
     diff_flags = models.JSONField(default=list, blank=True)
     preset = models.ForeignKey(
         "Preset", null=True, blank=True, on_delete=models.SET_NULL
@@ -209,21 +208,6 @@ class Scratch(models.Model):
             return isinstance(data, dict) and data.get("slug") == self.slug
         except itsdangerous.BadData:
             return False
-
-    def get_language(self) -> str:
-        from coreapp.cromper_client import get_cromper_client
-
-        if self.language:
-            return self.language
-
-        language = get_cromper_client().resolve_language(
-            self.compiler, self.compiler_flags
-        )
-        self.language = language
-        if self.pk:
-            Scratch.objects.filter(pk=self.pk).update(language=self.language)
-        return language
-
 
 class ScratchAdmin(admin.ModelAdmin[Scratch]):
     raw_id_fields = ["owner", "parent", "family", "context_fk"]

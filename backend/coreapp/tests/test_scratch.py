@@ -99,31 +99,6 @@ class ScratchCreationTests(BaseTestCase):
 
         self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
 
-    def test_create_persists_resolved_language(self) -> None:
-        scratch = self.create_scratch(
-            {
-                "compiler": compilers.DUMMY.id,
-                "platform": platforms.DUMMY.id,
-                "compiler_flags": "-x c++",
-                "context": "",
-                "target_asm": "jr $ra\nnop\n",
-            }
-        )
-
-        self.assertEqual(scratch.language, "C++")
-        self.assertEqual(scratch.get_language(), "C++")
-
-    def test_legacy_scratch_lazily_persists_language(self) -> None:
-        scratch = self.create_nop_scratch()
-        Scratch.objects.filter(pk=scratch.pk).update(language=None)
-        scratch.refresh_from_db()
-
-        self.assertIsNone(scratch.language)
-        self.assertEqual(scratch.get_language(), "C")
-
-        scratch.refresh_from_db()
-        self.assertEqual(scratch.language, "C")
-
     @requiresCompiler(IDO71)
     def test_accept_late_rodata(self) -> None:
         """
@@ -469,25 +444,6 @@ class ScratchModificationTests(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         scratch.refresh_from_db()
         self.assertEqual(scratch.diff_flags, ["-DIFFdifflib"])
-
-    def test_update_compiler_flags_refreshes_language(self) -> None:
-        scratch = self.create_nop_scratch()
-        self.client.post(
-            reverse("scratch-claim", kwargs={"pk": scratch.slug}),
-            {"token": self.claim_tokens[scratch.slug]},
-        )
-
-        response = self.client.patch(
-            reverse("scratch-detail", kwargs={"pk": scratch.slug}),
-            {"compiler_flags": "-x c++"},
-            format="json",
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()["language"], "C++")
-
-        scratch.refresh_from_db()
-        self.assertEqual(scratch.language, "C++")
 
     def test_update_rejects_invalid_compiler(self) -> None:
         scratch = self.create_nop_scratch()

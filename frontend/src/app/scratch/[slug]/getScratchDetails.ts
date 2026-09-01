@@ -1,9 +1,10 @@
+import { getScratch } from "@/lib/api/scratchLanguage";
 import { get, bubbleNotFound, ResponseError } from "@/lib/api/request";
 import type { Scratch, Compilation } from "@/lib/api/types";
 import { scratchParentUrl, scratchUrl } from "@/lib/api/urls";
 
 export default async function getScratchDetails(slug: string) {
-    const scratch: Scratch = await get(`/scratch/${slug}`).catch(
+    const scratch: Scratch = await getScratch(`/scratch/${slug}`).catch(
         bubbleNotFound,
     );
 
@@ -19,7 +20,7 @@ export default async function getScratchDetails(slug: string) {
     }
 
     const parentScratch: Scratch | null = scratch.parent
-        ? await get(scratchParentUrl(scratch))
+        ? await getScratch(scratchParentUrl(scratch))
         : null;
 
     return {

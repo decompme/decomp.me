@@ -9,13 +9,19 @@ import { getScoreText } from "@/components/ScoreBadge";
 import TimeAgo from "@/components/TimeAgo";
 import UserLink from "@/components/user/UserLink";
 import CopyButton from "@/components/CopyButton";
-import { type Scratch, type PresetBase, get, usePreset } from "@/lib/api";
+import {
+    type Scratch,
+    type TerseScratch,
+    type PresetBase,
+    get,
+    usePreset,
+} from "@/lib/api";
 import { presetUrl, scratchUrl, scratchParentUrl } from "@/lib/api/urls";
 
 import styles from "./AboutPanel.module.scss";
 
 function ScratchLink({ url }: { url: string }) {
-    const { data: scratch, error } = useSWR<Scratch>(url, get);
+    const { data: scratch, error } = useSWR<TerseScratch>(url, get);
 
     if (error) {
         throw error;

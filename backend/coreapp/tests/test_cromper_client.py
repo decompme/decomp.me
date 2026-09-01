@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase
 
-from coreapp.cromper_client import CromperClient, CromperError
+from coreapp.cromper_client import CromperClient
 
 
 class CromperClientCompilerTests(SimpleTestCase):
@@ -44,26 +44,6 @@ class CromperClientCompilerTests(SimpleTestCase):
         self.assertEqual(compiler.flag_class, "ido")
         self.assertEqual(compiler.diff_flags, diff_flags)
 
-    def test_resolves_language(self) -> None:
-        client = CromperClient("http://cromper")
-
-        with patch.object(
-            client,
-            "_make_request",
-            return_value={"language": "C++"},
-        ) as make_request:
-            language = client.resolve_language("ido7.1", "-x c++")
-
-        self.assertEqual(language, "C++")
-        make_request.assert_called_once_with(
-            "POST",
-            "/compiler/language",
-            json={
-                "compiler_id": "ido7.1",
-                "compiler_flags": "-x c++",
-            },
-        )
-
     def test_resolves_language_extension(self) -> None:
         client = CromperClient("http://cromper")
 
@@ -83,14 +63,3 @@ class CromperClientCompilerTests(SimpleTestCase):
                 "compiler_flags": "-x c++",
             },
         )
-
-    def test_rejects_invalid_language_response(self) -> None:
-        client = CromperClient("http://cromper")
-
-        with patch.object(
-            client,
-            "_make_request",
-            return_value={"language": []},
-        ):
-            with self.assertRaisesRegex(CromperError, "Invalid language"):
-                client.resolve_language("ido7.1")
