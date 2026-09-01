@@ -218,32 +218,6 @@ class CompilationTests(CromperTestCase):
             )
 
 
-class CompilerFilteringTests(CromperTestCase):
-    """Test compiler flag filtering functionality."""
-
-    def test_filter_compiler_flags(self) -> None:
-        """Test that compiler flag filtering works correctly."""
-        from cromper.wrappers.compiler_wrapper import CompilerWrapper
-
-        test_cases = [
-            # (input_flags, expected_output)
-            ("-O2 -g", "-O2 -g"),  # Basic flags should pass through
-            ("-O2 -B/path -g", "-O2 -g"),  # -B flag should be removed
-            ("-I/include -O2", "-O2"),  # -I flag should be removed
-            ("-ffreestanding -O2", "-O2"),  # -ffreestanding should be removed
-            ("-O2 -non_shared -g", "-O2 -g"),  # -non_shared should be removed
-            ("-Xcpluscomm -O2", "-O2"),  # -Xcpluscomm should be removed
-            ("-Wab,-r4300_mul -O2", "-O2"),  # -Wab,-r4300_mul should be removed
-            ("-c -O2", "-O2"),  # -c should be removed
-            ("-B/path/to/dir -I/inc -U MACRO -O2", "-O2"),  # Multiple filtered flags
-        ]
-
-        for input_flags, expected in test_cases:
-            with self.subTest(input_flags=input_flags):
-                result = CompilerWrapper.filter_compiler_flags(input_flags)
-                self.assertEqual(result, expected)
-
-
 # Dynamically add individual compiler tests to the CompilationTests class
 for compiler in compilers.all_compilers():
     compiler_test_method = _make_compiler_test(compiler)

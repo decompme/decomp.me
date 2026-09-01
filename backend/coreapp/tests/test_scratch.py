@@ -59,6 +59,33 @@ class ScratchListTests(BaseTestCase):
 
 
 class ScratchCreationTests(BaseTestCase):
+    def test_create_filters_compiler_flags(self) -> None:
+        test_cases = [
+            ("-O2 -g", "-O2 -g"),
+            ("-O2 -B/path -g", "-O2 -g"),
+            ("-I/include -O2", "-O2"),
+            ("-ffreestanding -O2", "-O2"),
+            ("-O2 -non_shared -g", "-O2 -g"),
+            ("-Xcpluscomm -O2", "-O2"),
+            ("-Wab,-r4300_mul -O2", "-O2"),
+            ("-c -O2", "-O2"),
+            ("-B/path/to/dir -I/inc -U MACRO -O2", "-O2"),
+        ]
+
+        for compiler_flags, expected in test_cases:
+            with self.subTest(compiler_flags=compiler_flags):
+                scratch = self.create_scratch(
+                    {
+                        "compiler": compilers.DUMMY.id,
+                        "platform": platforms.DUMMY.id,
+                        "compiler_flags": compiler_flags,
+                        "context": "",
+                        "target_asm": "jr $ra\nnop\n",
+                    }
+                )
+
+                self.assertEqual(scratch.compiler_flags, expected)
+
     def test_create_drops_blank_diff_flags(self) -> None:
         scratch = self.create_scratch(
             {

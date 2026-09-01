@@ -53,39 +53,6 @@ class CompilerWrapper:
         self.sandbox_kwargs = sandbox_kwargs
 
     @staticmethod
-    def filter_compiler_flags(compiler_flags: str) -> str:
-        # Remove irrelevant flags that are part of the base compiler configs or
-        # don't affect matching, but clutter the compiler settings field.
-        skip_flags_with_args = {
-            "-B",
-            "-I",
-            "-U",
-        }
-        skip_flags = {
-            "-ffreestanding",
-            "-non_shared",
-            "-Xcpluscomm",
-            "-Wab,-r4300_mul",
-            "-c",
-        }
-
-        skip_next = False
-        flags = []
-        for flag in compiler_flags.split():
-            if skip_next:
-                skip_next = False
-                continue
-            if flag in skip_flags:
-                continue
-            if flag in skip_flags_with_args:
-                skip_next = True
-                continue
-            if any(flag.startswith(f) for f in skip_flags_with_args):
-                continue
-            flags.append(flag)
-        return " ".join(flags)
-
-    @staticmethod
     def filter_compile_errors(input: str) -> str:
         filter_strings = [
             r"### .*\.exe Driver Error:.*\n?",
