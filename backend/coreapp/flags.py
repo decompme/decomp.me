@@ -130,6 +130,40 @@ Flags = list[
     | IntOrHexParameterFlag
 ]
 
+
+@dataclass(frozen=True)
+class CompilerFlagClass:
+    flags: Flags
+    parent: str | None = None
+
+    def to_json(self) -> dict[str, object]:
+        data: dict[str, object] = {
+            "flags": [flag.to_json() for flag in self.flags],
+        }
+        if self.parent is not None:
+            data["parent"] = self.parent
+        return data
+
+
+def resolve_compiler_flags(name: str) -> Flags:
+    resolved: Flags = []
+    seen: set[str] = set()
+
+    while True:
+        if name in seen:
+            raise ValueError(f"Cyclic compiler flag class inheritance at {name}")
+        seen.add(name)
+
+        flag_class = COMPILER_FLAG_CLASSES.get(name)
+        if flag_class is None:
+            raise ValueError(f"Unknown compiler flag class: {name}")
+
+        resolved[0:0] = flag_class.flags
+        if flag_class.parent is None:
+            return resolved
+        name = flag_class.parent
+
+
 COMMON_ARMCC_FLAGS: Flags = [
     FlagSet(
         id="armcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Ospace", "-Otime"]
@@ -184,12 +218,11 @@ COMMON_SHC_OLD_FLAGS: Flags = [
     Checkbox(id="shc_inline", flag="-inline"),
 ]
 
-COMMON_SHC_FLAGS: Flags = COMMON_SHC_OLD_FLAGS + [
+SHC_FLAGS: Flags = [
     FlagSet(id="shc_round", flags=["-round=zero", "-round=nearest"]),
     FlagSet(id="shc_fpu", flags=["-fpu=single", "-fpu=double"]),
     Checkbox(id="shc_aggressive", flag="-aggressive=2"),
 ]
-
 COMMON_GCC_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(
@@ -286,7 +319,7 @@ COMMON_MWCC_FLAGS: Flags = [
     Checkbox(id="mwcc_line_numbers_on", flag="-sym on"),
 ]
 
-COMMON_MWCC_NDS_ARM9_FLAGS = COMMON_MWCC_FLAGS + [
+MWCC_NDS_ARM9_FLAGS: Flags = [
     FlagSet(
         id="mwcc_floating_point",
         flags=[
@@ -298,16 +331,13 @@ COMMON_MWCC_NDS_ARM9_FLAGS = COMMON_MWCC_FLAGS + [
     Checkbox(id="mwcc_rostr", flag="-rostr"),
     Checkbox(id="mwcc_enc_sjis", flag="-enc SJIS"),
 ]
-
-COMMON_MWCC_PS2_FLAGS = COMMON_MWCC_FLAGS + [
+MWCC_PS2_FLAGS: Flags = [
     FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
 ]
-
-COMMON_MWCC_PSP_FLAGS = COMMON_MWCC_FLAGS + [
+MWCC_PSP_FLAGS: Flags = [
     FlagSet(id="mwcc_floating_point", flags=["-fp off", "-fp single"]),
 ]
-
-COMMON_MWCC_WII_GC_FLAGS = COMMON_MWCC_FLAGS + [
+MWCC_WII_GC_FLAGS: Flags = [
     FlagSet(
         id="mwcc_floating_point",
         flags=[
@@ -324,7 +354,6 @@ COMMON_MWCC_WII_GC_FLAGS = COMMON_MWCC_FLAGS + [
     Checkbox(id="mwcc_fp_contract_on", flag="-fp_contract on"),
     Checkbox(id="mwcc_use_lmw_stmw_on", flag="-use_lmw_stmw on"),
 ]
-
 COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="psyq_opt_level", flags=["-O0", "-O1", "-O2", "-O3", "-Os"]),
     FlagSet(id="gcc_debug_level", flags=["-g0", "-g1", "-g2", "-g3"]),
@@ -333,7 +362,7 @@ COMMON_GCC_PS1_FLAGS: Flags = [
     FlagSet(id="endianness", flags=["-mel", "-meb"]),
 ]
 
-COMMON_GCC_PS2_FLAGS: Flags = COMMON_GCC_FLAGS + [
+GCC_PS2_FLAGS: Flags = [
     LanguageFlagSet(
         id="gcc_source_language",
         flags={
@@ -342,13 +371,12 @@ COMMON_GCC_PS2_FLAGS: Flags = COMMON_GCC_FLAGS + [
         },
     ),
 ]
-
 COMMON_GCC_SATURN_FLAGS: Flags = [
     FlagSet(id="gcc_opt_level", flags=["-O0", "-O1", "-O2", "-O3"]),
     FlagSet(id="gcc_arch", flags=["-m2"]),
 ]
 
-COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
+GCC_GC_FLAGS: Flags = [
     LanguageFlagSet(
         id="gcc_source_language",
         flags={
@@ -357,7 +385,6 @@ COMMON_GCC_GC_FLAGS: Flags = COMMON_GCC_FLAGS + [
         },
     ),
 ]
-
 COMMON_GHS_FLAGS: Flags = [
     FlagSet(id="ghs_c_dialect", flags=["-c99", "-C99", "-ANSI", "-ansi", "-gcc"]),
     FlagSet(
@@ -431,3 +458,57 @@ COMMON_WATCOM_FLAGS: Flags = [
 COMMON_MSDOS_DIFF_FLAGS: Flags = [Checkbox("diff_reloc", "--reloc")]
 
 COMMON_BORLAND_FLAGS: Flags = []
+
+
+COMPILER_FLAG_CLASSES: dict[str, CompilerFlagClass] = {
+    "other": CompilerFlagClass(flags=[]),
+    "armcc": CompilerFlagClass(flags=COMMON_ARMCC_FLAGS),
+    "clang": CompilerFlagClass(flags=COMMON_CLANG_FLAGS),
+    "shc-old": CompilerFlagClass(flags=COMMON_SHC_OLD_FLAGS),
+    "shc": CompilerFlagClass(flags=SHC_FLAGS, parent="shc-old"),
+    "gcc": CompilerFlagClass(flags=COMMON_GCC_FLAGS),
+    "gcc-ps1": CompilerFlagClass(flags=COMMON_GCC_PS1_FLAGS),
+    "gcc-ps2": CompilerFlagClass(flags=GCC_PS2_FLAGS, parent="gcc"),
+    "gcc-saturn": CompilerFlagClass(flags=COMMON_GCC_SATURN_FLAGS),
+    "gcc-gc": CompilerFlagClass(flags=GCC_GC_FLAGS, parent="gcc"),
+    "ido": CompilerFlagClass(flags=COMMON_IDO_FLAGS),
+    "mwcc": CompilerFlagClass(flags=COMMON_MWCC_FLAGS),
+    "mwcc-nds-arm9": CompilerFlagClass(
+        flags=MWCC_NDS_ARM9_FLAGS,
+        parent="mwcc",
+    ),
+    "mwcc-ps2": CompilerFlagClass(flags=MWCC_PS2_FLAGS, parent="mwcc"),
+    "mwcc-psp": CompilerFlagClass(flags=MWCC_PSP_FLAGS, parent="mwcc"),
+    "mwcc-wii-gc": CompilerFlagClass(
+        flags=MWCC_WII_GC_FLAGS,
+        parent="mwcc",
+    ),
+    "msvc": CompilerFlagClass(flags=COMMON_MSVC_FLAGS),
+    "watcom": CompilerFlagClass(flags=COMMON_WATCOM_FLAGS),
+    "borland": CompilerFlagClass(flags=COMMON_BORLAND_FLAGS),
+    "ghs": CompilerFlagClass(flags=COMMON_GHS_FLAGS),
+    "microsoft-c": CompilerFlagClass(flags=[]),
+}
+
+
+def compiler_flag_classes_to_json(
+    names: set[str],
+) -> dict[str, dict[str, object]]:
+    required_names: set[str] = set()
+    for initial_name in names:
+        name: str | None = initial_name
+        lineage: set[str] = set()
+        while name is not None:
+            if name in lineage:
+                raise ValueError(f"Cyclic compiler flag class inheritance at {name}")
+            lineage.add(name)
+
+            flag_class = COMPILER_FLAG_CLASSES.get(name)
+            if flag_class is None:
+                raise ValueError(f"Unknown compiler flag class: {name}")
+            required_names.add(name)
+            name = flag_class.parent
+
+    return {
+        name: COMPILER_FLAG_CLASSES[name].to_json() for name in sorted(required_names)
+    }
