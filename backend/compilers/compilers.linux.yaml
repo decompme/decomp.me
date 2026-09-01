@@ -239,6 +239,7 @@ win32:
   - msvc7.1
   - msvc8.0
   - msvc8.0p
+  - msvc12.0u4
 
 xbox360:
   - msvc_ppc_14.00.2110
