@@ -4,6 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from coreapp.compilers import GCC281PM
+from coreapp.flags import COMMON_DIFF_FLAGS, COMMON_GCC_FLAGS, COMMON_MIPS_DIFF_FLAGS
 
 
 class CompilerEndpointTests(APITestCase):
@@ -68,7 +69,10 @@ class CompilerEndpointTests(APITestCase):
         self.assert_compilers_response(data)
         self.assertEqual(list(data["compilers"]), [GCC281PM.id])
         compiler = data["compilers"][GCC281PM.id]
-        self.assertEqual(compiler["class"], "gcc")
-        self.assertEqual(compiler["diff_class"], "mips")
-        self.assertIn("gcc", data["flags"])
-        self.assertEqual(data["diff_flags"]["mips"]["parent"], "common")
+        self.assertEqual(compiler["class"], COMMON_GCC_FLAGS.name)
+        self.assertEqual(compiler["diff_class"], COMMON_MIPS_DIFF_FLAGS.name)
+        self.assertIn(COMMON_GCC_FLAGS.name, data["flags"])
+        self.assertEqual(
+            data["diff_flags"][COMMON_MIPS_DIFF_FLAGS.name]["parent"],
+            COMMON_DIFF_FLAGS.name,
+        )
